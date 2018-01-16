@@ -1,0 +1,78 @@
+---
+title: "Lesson 1 - ggplot Examples"
+author: "DS705"
+date: "1/14/2018"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(DS705data)
+require(ggplot2)
+require(gridExtra)
+```
+
+## Histogram
+
+```{r, fig.height=3,fig.width=4,fig.align='center'}
+# you can play with fig.height and fig.width to adjust the size
+data(HealthExam)
+Men <- HealthExam[HealthExam$Sex=="M",]
+ggplot( Men, aes( x = Height) ) + 
+  geom_histogram( binwidth = 2,
+                  colour = "black",
+                  fill = "darkseagreen2")
+```
+
+You can and should play with the `binwidth` parameter to find a value that nicely summarizes the data.
+
+## Histogram with normal density curve
+
+```{r, fig.height=3,fig.width=4,fig.align='center'}
+ggplot( Men,  aes( x = Height)) + 
+  geom_histogram( aes( y = ..density..),
+                 binwidth = 2,
+                 colour = "black",
+                 fill = "darkseagreen2") + 
+  stat_function( fun = dnorm,
+                 args = list( mean = mean(Men$Height),
+                              sd = sd(Men$Height)))
+```
+
+## Boxplot
+
+```{r, fig.height=3,fig.width=4,fig.align='center'}
+ggplot( data = Men, aes( x = "", y = Height)) + 
+  geom_boxplot() + 
+  labs( x = "Men")
+```
+
+A single boxplot isn't very exciting.  As we'll see later we often use a boxplot to compare quantitative data for multiple groups, e.g. heights of men and women like this:
+
+```{r, fig.height = 3, fig.width = 4, fig.align = 'center'}
+ggplot(data = HealthExam, aes( x = Sex, y = Height)) + 
+  geom_boxplot()
+```
+
+## Putting plots side-by-side and adding color
+
+```{r, fig.align = 'center'}
+plot1 <- ggplot( data = Men, aes( x = "", y = Height)) + 
+  geom_boxplot( colour = "black",
+                fill = "darkseagreen2") + 
+  labs( x = "Men")
+
+plot2 <- ggplot( data = Men, aes( x = "", y = Cholesterol)) + 
+  geom_boxplot( colour = "black",
+               fill = "plum2") + 
+  labs( x = "Men")
+
+grid.arrange( plot1, plot2, ncol = 2)
+```
+
+A nice chart of pre-defined colors for use in ggplot2 can be found here:
+
+http://sape.inf.usi.ch/quick-reference/ggplot2/colour
