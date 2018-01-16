@@ -1,0 +1,80 @@
+---
+title: "Lesson 3 - ggplot2 Examples"
+author: "DS705"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+require(DS705data)
+require(ggplot2)
+```
+
+## Boxplots
+
+```{r, fig.height=3,fig.width=4,fig.align='center'}
+mileage <- c(50,58,43,48,50,66,32,73,55,78,43,66,57,40,54,
+             26,33,21,37,39,23,48,58,28,39,22,38,41,50,43);
+cartype <- c(rep("sports",15),rep("luxury",15));
+cardata <- data.frame(mileage,cartype)
+ggplot(data = cardata, aes( x = cartype, y = mileage, fill = cartype)) + 
+  geom_boxplot()
+```
+
+
+## Histograms
+
+Facets are useful for dividing or splitting up the data based on a factor variable and making multiple plots.  Find a bunch more information here:
+
+http://www.cookbook-r.com/Graphs/Facets_(ggplot2)/
+
+We'll use it to stack histograms based split up by cartype.
+
+```{r}
+# stacked vertically
+ggplot(cardata, aes(x=mileage)) + 
+  geom_histogram(binwidth=5, colour="black", fill="white") + 
+    facet_grid(cartype ~ .)
+
+# side-by-side
+ggplot(cardata, aes(x=mileage)) + 
+  geom_histogram(binwidth=5, colour="black", fill="white") + 
+    facet_grid(. ~ cartype)
+```
+
+
+## Overlapping Options
+
+Find more about some of these at 
+
+http://www.cookbook-r.com/Graphs/Plotting_distributions_(ggplot2)/
+
+```{r}
+# Overlaid histograms
+ggplot(cardata, aes(x=mileage, fill=cartype)) +
+    geom_histogram(binwidth=5, alpha=.5, position="identity")
+
+# Interleaved histograms
+ggplot(cardata, aes(x=mileage, fill=cartype)) +
+    geom_histogram(binwidth=5, position="dodge")
+
+# Density plots
+ggplot(cardata, aes(x=mileage, colour=cartype)) + 
+  geom_density()
+
+# Density plots with semi-transparent fill
+ggplot(cardata, aes(x=mileage, fill=cartype)) +
+  geom_density(alpha=.3)
+
+# Overlaid histograms with density
+ggplot(cardata, aes(x=mileage,y=..density..,fill=cartype)) +
+  geom_histogram(binwidth=5, alpha=.5, position="identity") + 
+  geom_density(alpha=.1)
+```
+
