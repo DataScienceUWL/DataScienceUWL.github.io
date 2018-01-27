@@ -1,0 +1,51 @@
+---
+title: "Lesson 11 - ggplot2 Examples"
+author: "DS705"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+require(DS705data)
+require(ggplot2)
+library(psych)
+data("police")
+```
+
+We'll make a version of the scree plot from the Lesson 11 presentation, but the plot won't match exactly.  The data was modified after that plot was produced, but this will still show you how to make a scree plot.
+
+```{r, message=FALSE, warning=FALSE}
+# choose variables as in presentation
+police2 <- police[,-14]
+police3 <- police2[,-10]
+police4 <- police3[,3:14]
+
+# apply PCA
+output <- princomp(police4, cor=TRUE)
+
+# get variances from output
+variances <- output$sdev^2
+comp <- 1:length(variances)
+
+# identify components with large variance
+keep <- variances > 1
+
+# put data in dataframe for ggplot
+df <- data.frame( comp, variances, keep )
+
+ggplot(df, aes( x = comp, y = variances ) ) + 
+  geom_line() + 
+  geom_point( aes( color = keep, shape = keep ), size = 3) + 
+  geom_hline( yintercept = 1, linetype = 'dashed') + 
+  scale_x_continuous( breaks = seq(0,12,by=2) ) + 
+  labs( x = "Component", y = "Eigenvalues", title = "Scree Plot")
+
+```
+
+Notice how we colored and shaped the points according to whether or not the eigenvalue corresponding to the component was greater than 1.

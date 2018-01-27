@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r message=FALSE}
 require(DS705data)
 require(ggplot2)
+require(GGally)
 ```
 
 ```{r, message=FALSE, warning=FALSE}
@@ -57,3 +58,25 @@ ggplot() +
         y = 'Prob. of Species Richness at least 4',
         title = "Probabilities with 95% Confidence Bands (FISH = 0)")
 ```
+
+In swirl we saw how to use `pairs()` to make a matrix of scatterplots for examinining the relationships between quantitative variables.  `ggplot2` doesn't have that built-in but the package `GGally` has some nice tools including a command called `ggpairs()`.  We've loaded `GGally` at the top of this file, but you may have to install it first.
+
+```{r}
+data(HealthExam)
+ggpairs(HealthExam, mapping = aes( alpha = .4), columns = c("Weight", "SysBP","BodyMass","Cholesterol") )
+```
+
+We get some added stuff that `pairs()` doesn't provide including kernel density estimates for each quantitative variable and correlation coefficients.  You can also get more information if you have a factor variable like gender.  You can color using a factor variable like Sex in this case.
+
+```{r}
+data(HealthExam)
+ggpairs(HealthExam, aes( alpha = .4, color = Sex), columns = c("Weight", "SysBP","BodyMass","Cholesterol") )
+```
+
+You could also add a factor variable as an additional column.  We've adde message=FALSE to the next R chunk to suppress some warnings about using 30 bins.
+
+```{r message = FALSE}
+data(HealthExam)
+ggpairs(HealthExam, aes( alpha = .4, color = Sex), columns = c("Weight", "SysBP","BodyMass","Cholesterol","Sex") )
+```
+
