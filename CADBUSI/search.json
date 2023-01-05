@@ -61,5 +61,61 @@
     "title": "Data Pipeline",
     "section": "",
     "text": "Below we describe our process for selecting, anonymizing, labeling, and preprocessing breast ultrasound images from Mayo so they may be used to train models locally at UW-La Crosse. It’s a rather cumbersome process and steps A, B, and C might be able to be done completely within Visage. Even step D might be launched from Visage\n\nStep A: - Data Acquisition and Deidentification (Datamart, Notion, Python)\n\nPart 1 – Identify relevant breast ultrasound studies\n\nDr. Ellis uses Datamart (Mayo Clinic/Radiology/Breast Imaging Section: Dashboards) to get spreadsheet that includes MRN and Accession Numbers for studies from patients with prior breast ultrasound and ultrasound-guided breast biopsy\n\nPart 2 – Use Notion to pull dicom files from database to Mayo workstation using breast ultrasound accession number\n\nPython is used to parse Datamart spreadsheet into multiple Notion query spreadsheets (<= 100 studies each)\nEach Notion query spreadsheet is manually uploaded to Notion.\n\nNotion pulls the dicom files and partially removes PHI from the dicom headers. (no pixel level de-id)\nManually download the partly deidentified dicom files from Notion to Mayo workstation\n\nPart 3 – Deidentification on Mayo workstation using Python to:\n\nclean dicom headers (saved locally as json files)\nblack out portion of image with PHI\nsave images locally as png files, videos are processed similarly\naccession numbers replaced with anonymized values and identification key saved locally as csv file\nnon PHI summary info saved to separate csv file\n\n\nStep B: Transfer Clinical Data from Mayo to UW-La Crosse\n\nbreast ultrasound images, BI-RADS scores, and breast biopsy pathologies are transfered as png and csv files\nno PHI is transfered\nonly anonymized data is shared via OneDrive\n\nStep C: Labeling (Python, Labelbox - see section at bottom of page)\n\nPart 1 – Most relevant images selection, to include best orthogonal views when possible\n\nLabelbox API and python used to upload studies for Dr. Ellis to choose best images\n\nPart 2 – Image Annotation and Segmentation\n\nMost relevant images combined locally into a single image panel which is uploaded to Labelbox queue\nDr. Ellis uses dropdowns and segmentation tools in Labelbox to annotate and segment (see sample image near the end of this page)\nSegmentation masks and annotation data downloaded from Labelbox\n\n\nStep D: Final Data Preparation\n\nPart 1 - Download masks and annotation from Labelbox\nPart 2 - Panels and annotations are processed locally using python. Including\n\nExtract pixel level text information about ultrasound probe orientation and left or right breast\nCrop the image to the largest rectangular region in the ultrasound part of the image\nUse a trained UNET segmentation model to identify and remove, via inpainting, pixel level annotations in the ultrasound image\nAdd filenames, anonymized patient IDs, resolution, pathology, probe orientation, left/right, etc. to database\n\nPart 3 - Images, masks, and labels are added to local database.\n\n\n\n\nWe upload a panel of 6 images to Labelbox. The two rows are the same images. The top row is used for segmentation (usually just the lesion is traced with a freehand tool), while the bottom row is maintained for reference. Dr. Ellis uses the drop down boxes to choose one label from each of the categories. In the future we want the radiologist to first select up to three images from each study: best two orthogonal views (without doppler) and best single doppler. The two non-doppler images will each need the lesion segmented and one or more labels selected within each of the categories. The doppler image will need only a single label.\nThe second row wouldn’t really be necessary if only a thin boundary for the segmentation mask was shown. The blue fill in Labelbox obscures the lesion too much to assess if the boundary is well drawn.\nHere is a sample:\n\n\n\nSample Labelbox Panel Image"
+  },
+  {
+    "objectID": "Future Capstones.html",
+    "href": "Future Capstones.html",
+    "title": "Future Capstones",
+    "section": "",
+    "text": "The projects described below would be appropriate for satisfying the capstone requirements in the Masters of Science in Data Science Program. If you’re interested in working on one of these projects please contact Dr. Baggett (jbaggett at uwlax.edu)."
+  },
+  {
+    "objectID": "Future Capstones.html#organize-and-develop-protocols-for-ultrasound-images-database",
+    "href": "Future Capstones.html#organize-and-develop-protocols-for-ultrasound-images-database",
+    "title": "Future Capstones",
+    "section": "Organize and Develop Protocols for Ultrasound Images Database",
+    "text": "Organize and Develop Protocols for Ultrasound Images Database\nWe have built a pipeline to de-identify, download, label, and process breast ultrasound images from Mayo. This data needs to be organized with a suitable way of storing all of the auxiliary information about each image/studies. Both the original de-identified images and their cropped and processed counterparts should be stored. A dynamic report (e.g. a notebook) should be developed that generates summary information each time the dataset is updated. Finally protocols for filtering the data should be developed. The report and filters will be similar this paper about the NYU Breast Ultrasound Dataset."
+  },
+  {
+    "objectID": "Future Capstones.html#develop-a-business-plan-for-build-cad-system-and-ui",
+    "href": "Future Capstones.html#develop-a-business-plan-for-build-cad-system-and-ui",
+    "title": "Future Capstones",
+    "section": "Develop a Business Plan for build CAD System and UI",
+    "text": "Develop a Business Plan for build CAD System and UI\nStudy competing products (for examples see this page) and interview radiologists to determine a UI design and roadmap for building Computer Aided Diagnosis software to support decisions about breast care based on breast ultrasound imagery. You’ll need to develop a broad understanding of what’s possible with current deep learning models, but you won’t have to implement the models in this project."
+  },
+  {
+    "objectID": "Future Capstones.html#robustness-of-feature-extraction-for-downstream-modeling",
+    "href": "Future Capstones.html#robustness-of-feature-extraction-for-downstream-modeling",
+    "title": "Future Capstones",
+    "section": "Robustness of Feature Extraction for Downstream Modeling",
+    "text": "Robustness of Feature Extraction for Downstream Modeling\nGiven a breast ultrasound image that displays a lesion as well as a digital mask that shows which pixels are in the lesion we can extract quantitative and qualitative features from the image that are used in as predictors in a machine learning model for predicting malignancy. We have such a model that performs quite well, but to be useful we’ll need to automatically generate (segment) the lesion boundaries. We need to understand how the performance of the predictive model changes due to inaccuracies in the estimated boundary. To get an idea what this might look like see the paper “BIRADS Features-Oriented Semi-supervised Deep Learning for Breast Ultrasound Computer-Aided Diagnosis”. You can ask Dr. Baggett for a copy of this paper."
+  },
+  {
+    "objectID": "Future Capstones.html#explore-semi-supervised-learning-for-breast-ultrasound-deep-learning-models",
+    "href": "Future Capstones.html#explore-semi-supervised-learning-for-breast-ultrasound-deep-learning-models",
+    "title": "Future Capstones",
+    "section": "Explore Semi-Supervised Learning for Breast Ultrasound Deep Learning Models",
+    "text": "Explore Semi-Supervised Learning for Breast Ultrasound Deep Learning Models\nFor all of the images/studies in our dataset we know the pathology of the lesion (benign or malignant) because the lesion has been biopsied. However there are many other characteristics of the lesion that we’d like to predict such as whether the boundary is smooth or irregular. Since labeling these characteristics requires much time and expertise it isn’t feasible to collect the labels for the entire dataset. In this project you’ll explore using semi-supervised learning to train deep learning models when only part of the dataset is labeled. Both convolutional neural network and transformer models should be trained."
+  },
+  {
+    "objectID": "Future Capstones.html#explore-self-supervised-learning-for-breast-ultrasound-deep-learning-models",
+    "href": "Future Capstones.html#explore-self-supervised-learning-for-breast-ultrasound-deep-learning-models",
+    "title": "Future Capstones",
+    "section": "Explore Self-Supervised Learning for Breast Ultrasound Deep Learning Models",
+    "text": "Explore Self-Supervised Learning for Breast Ultrasound Deep Learning Models\nVision transformer models require large datasets to train from scratch and transfer learning may not work well if the target data (breast ultrasound images) is very different from the data used to train the model (natural images, Imagenet). Self-supervised learning replaces the classification task of the model with an alternative task so that the core of the model learns the features of the target data. Once the model is trained on a self-supervised task, the trained model is used to initialize the classification model. The idea for this project is to follow the approach in Is it Time to Replace CNNs with Transformers for Medical Images? but to apply it to breast ultrasound images."
+  },
+  {
+    "objectID": "Future Capstones.html#refine-mult-task-model-for-predicting-malignancy-bi-rads-characteristics-and-bi-rads-score",
+    "href": "Future Capstones.html#refine-mult-task-model-for-predicting-malignancy-bi-rads-characteristics-and-bi-rads-score",
+    "title": "Future Capstones",
+    "section": "Refine Mult-task Model for Predicting Malignancy, BI-RADS Characteristics, and BI-RADS score",
+    "text": "Refine Mult-task Model for Predicting Malignancy, BI-RADS Characteristics, and BI-RADS score\nJosh Jarvey, an MSDS graduate, implemented a variation of the multitask model found in BI-RADS-Net: An Explainable Multitask Learning Approach for Cancer Diagnosis in Breast Ultrasound Images for his capstone project. The model should be refined and retrained using new data since the previous dataset was too small and incorrectly labeled."
+  },
+  {
+    "objectID": "Future Capstones.html#refine-multi-task-model-for-predicting-malignancy-bi-rads-characteristics-and-bi-rads-score",
+    "href": "Future Capstones.html#refine-multi-task-model-for-predicting-malignancy-bi-rads-characteristics-and-bi-rads-score",
+    "title": "Future Capstones",
+    "section": "Refine Multi-task Model for Predicting Malignancy, BI-RADS Characteristics, and BI-RADS score",
+    "text": "Refine Multi-task Model for Predicting Malignancy, BI-RADS Characteristics, and BI-RADS score\nJosh Jarvey, an MSDS graduate, implemented a variation of the multitask model found in BI-RADS-Net: An Explainable Multitask Learning Approach for Cancer Diagnosis in Breast Ultrasound Images for his capstone project. The model should be refined and retrained using new data since the previous dataset was too small and incorrectly labeled."
   }
 ]
