@@ -1,0 +1,82 @@
+---
+title: "Lesson 7 - ggplot2 Examples"
+author: "DS705"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+require(DS705data)
+require(ggplot2)
+require(GGally)
+```
+
+```{r, message=FALSE, warning=FALSE}
+data(farmpond)
+rich.out <- glm(RICH~FISH + TOTNITR,data=farmpond,family="binomial")
+xv <- seq(0,15,.1) # create a sequence of values for plotting
+n <- length(xv)
+newdata <- data.frame( FISH = c( rep(0,n), rep(1,n) ), 
+                       TOTNITR = c( xv, xv) )
+prob <- predict(rich.out, newdata, type = "response")
+dfPlot = cbind( newdata, prob )
+dfPlot$FISH = factor(dfPlot$FISH) # make FISH a factor for plotting distinct groups
+
+ggplot() + 
+  geom_line( data = dfPlot, aes( x= TOTNITR, y = prob, group = FISH, color = FISH ),
+             size = 1, linetype = 'dashed') + 
+  geom_point( data = farmpond, aes( x = TOTNITR, y = RICH), shape = 1 ) + 
+  labs( x = 'Total Nitrogen (mg/L)', y = 'Prob. of Species Richness at least 4')
+```
+
+```{r}
+newdata0 <- data.frame( FISH = rep(0,n), TOTNITR = xv )
+raw <- predict(rich.out, newdata0, se.fit=TRUE) 
+prob0 <- exp(raw$fit)/(1+exp(raw$fit))
+# define the level of confidence
+C = .95
+# get the appropriate critical value for the given level of confidence
+crit = qnorm(1-(1-C)/2)
+# lower confidence band
+lwr = exp(raw$fit-crit*raw$se.fit)/(1+exp(raw$fit-crit*raw$se.fit))
+# upper confidence band
+upr = exp(raw$fit+crit*raw$se.fit)/(1+exp(raw$fit+crit*raw$se.fit))
+# put it all in a dataframe for ggplot
+dfPlot <- data.frame( xv, prob0, lwr, upr )
+ggplot() + 
+  geom_line( data = dfPlot, aes( x = xv, y = prob0), color = 'blue') + 
+  geom_ribbon( data = dfPlot, aes( x = xv, ymin = lwr, ymax = upr), 
+               fill = 'blue', alpha = 0.2) +
+  geom_point( data = farmpond, aes( x = TOTNITR, y = RICH), shape = 1 ) +
+  labs( x = 'Total Nitrogen (mg/L)', 
+        y = 'Prob. of Species Richness at least 4',
+        title = "Probabilities with 95% Confidence Bands (FISH = 0)")
+```
+
+In swirl we saw how to use `pairs()` to make a matrix of scatterplots for examinining the relationships between quantitative variables.  `ggplot2` doesn't have that built-in but the package `GGally` has some nice tools including a command called `ggpairs()`.  We've loaded `GGally` at the top of this file, but you may have to install it first.
+
+```{r}
+data(HealthExam)
+ggpairs(HealthExam, mapping = aes( alpha = .4), columns = c("Weight", "SysBP","BodyMass","Cholesterol") )
+```
+
+We get some added stuff that `pairs()` doesn't provide including kernel density estimates for each quantitative variable and correlation coefficients.  You can also get more information if you have a factor variable like gender.  You can color using a factor variable like Sex in this case.
+
+```{r}
+data(HealthExam)
+ggpairs(HealthExam, aes( alpha = .4, color = Sex), columns = c("Weight", "SysBP","BodyMass","Cholesterol") )
+```
+
+You could also add a factor variable as an additional column.  We've adde message=FALSE to the next R chunk to suppress some warnings about using 30 bins.
+
+```{r message = FALSE}
+data(HealthExam)
+ggpairs(HealthExam, aes( alpha = .4, color = Sex), columns = c("Weight", "SysBP","BodyMass","Cholesterol","Sex") )
+```
+

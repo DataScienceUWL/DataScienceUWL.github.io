@@ -1,0 +1,52 @@
+---
+title: "Lesson 2 - ggplot2 Examples"
+author: "DS705"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+require(ggplot2)
+```
+
+## More Histograms
+
+```{r, fig.height=3,fig.width=4,fig.align='center'}
+health = data.frame( chol = c(136,180,218,226,232,243,244,281,294,335,
+          355,370,377,393,408,444,521,718,867,1357) )
+
+ggplot( health, aes( x = chol) ) + 
+  geom_histogram( binwidth = 100,
+                  colour = "black",
+                  fill = "darkseagreen2")
+```
+
+## Histogram with vertical lines to illustrate confidence bounds
+
+```{r}
+ci1 <- t.test( health$chol, conf.level=0.95 )$conf.int
+
+B <- 5000; rs <- replicate( B, sample( health$chol, replace = T ) )
+bd <- apply( rs, 2, mean )
+ci2 <- quantile( bd, c( .025, .975) )
+df <- data.frame(bd)
+
+ggplot( df, aes( x = bd) ) + 
+  geom_histogram( binwidth = 20,
+                  colour = "black",
+                  fill = "lightgoldenrod2") + 
+  geom_vline( aes( xintercept = ci1[1]),
+              color="red",linetype="dashed",size=1) + 
+    geom_vline( aes( xintercept = ci1[2]),
+              color="red",linetype="dashed",size=1) + 
+    geom_vline( aes( xintercept = ci2[1]),
+              color="blue",linetype="dashed",size=1) + 
+    geom_vline( aes( xintercept = ci2[2]),
+              color="blue",linetype="dashed",size=1)
+```

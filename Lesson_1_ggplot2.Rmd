@@ -1,0 +1,131 @@
+---
+title: "Lesson 1 - ggplot2 Examples"
+author: "DS705"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+require(DS705data)
+require(ggplot2)
+require(gridExtra)
+```
+
+`ggplot2` is an R package for graphics that tends to produce nicer graphs than the base graphics. `ggplot2` is one of several packages that make up the tidyverse which is both a set of packages and a philosophy that is maintained by Hadley Wickham.  Hadley Wickham is arguably one of the most important figures in data science and particularly in R.  You can learn more about ggplot2 here:  http://ggplot2.tidyverse.org/ (*please read the intro to get an idea of the structure of ggplot2*) and also in the free online book "R for Data Science" which can be found here: http://r4ds.had.co.nz/.  Check out the chapters on Data visualization and Graphics for communication.
+
+For most of the lessons in this course you can follow along with these notes to see how to make similar graphics using ggplot2.  We're just touching the surface of what can be done with ggplot2.  Among other things you can change the overall look of the graphics by using themes, but we won't go into that here.
+
+
+## Histogram
+
+```{r, fig.height=3,fig.width=4,fig.align='center'}
+# you can play with fig.height and fig.width in the rmd file 
+# to adjust the size of the figure
+data(HealthExam)
+Men <- HealthExam[HealthExam$Sex=="M",]
+ggplot( Men, aes( x = Height) ) + 
+  geom_histogram( binwidth = 2,
+                  colour = "black",
+                  fill = "darkseagreen2")
+```
+
+You can and should play with the `binwidth` parameter to find a value that nicely summarizes the data.
+
+## Histogram with normal density curve
+
+```{r, fig.height=3,fig.width=4,fig.align='center'}
+ggplot( Men,  aes( x = Height)) + 
+  geom_histogram( aes( y = ..density..),
+                 binwidth = 2,
+                 colour = "black",
+                 fill = "darkseagreen2") + 
+  stat_function( fun = dnorm,
+                 args = list( mean = mean(Men$Height),
+                              sd = sd(Men$Height)))
+```
+
+## Boxplot
+
+```{r, fig.height=3,fig.width=4,fig.align='center'}
+ggplot( data = Men, aes( x = "", y = Height)) + 
+  geom_boxplot() + 
+  labs( x = "Men")
+```
+
+A single boxplot isn't very exciting.  As we'll see later we often use a boxplot to compare quantitative data for multiple groups, e.g. heights of men and women like this:
+
+```{r, fig.height = 3, fig.width = 4, fig.align = 'center'}
+ggplot(data = HealthExam, aes( x = Sex, y = Height)) + 
+  geom_boxplot()
+```
+
+## Putting plots side-by-side and adding color
+
+```{r, fig.align = 'center'}
+plot1 <- ggplot( data = Men, aes( x = "", y = Height)) + 
+  geom_boxplot( colour = "black",
+                fill = "darkseagreen2") + 
+  labs( x = "Men")
+
+plot2 <- ggplot( data = Men, aes( x = "", y = Cholesterol)) + 
+  geom_boxplot( colour = "black",
+               fill = "plum2") + 
+  labs( x = "Men")
+
+grid.arrange( plot1, plot2, ncol = 2)
+```
+
+`grid.arrange` is one way to put multiple plots together, particularly if they are for different variables.  In the Lesson 3 ggplot examples you'll learn about facets which are useful for producing multiple plots of the same variable split up for different groups.
+
+A nice chart of pre-defined colors for use in ggplot2 can be found here:
+
+http://sape.inf.usi.ch/quick-reference/ggplot2/colour
+
+## Normal Quantile (Probability) Plots
+
+```{r}
+plot1 <- ggplot( data = Men, aes( sample = Height) ) + 
+  stat_qq() 
+plot2 <- ggplot( data = Men, aes( sample = Cholesterol ) ) + 
+  stat_qq()
+grid.arrange( plot1, plot2, ncol = 2)
+```
+
+Or if you'd like to some titles:
+
+```{r}
+plot1 <- ggplot( data = Men, aes( sample = Height) ) + 
+  stat_qq() + 
+  labs( title = "Height" )
+plot2 <- ggplot( data = Men, aes( sample = Cholesterol ) ) + 
+  stat_qq() + 
+  labs( title = "Cholesterol" )
+grid.arrange( plot1, plot2, ncol = 2)
+```
+
+Most things in `ggplot2` are straight-forward after you get the hang of them, but the package doesn't come with a convenience function for adding a line to the plot similar to `qqline()` in the base package.  We've made our own with the help of this source on stackoverflow:  https://stackoverflow.com/questions/4357031/qqnorm-and-qqline-in-ggplot2/
+
+```{r}
+qqplot.data <- function ( vec ) # argument: vector of numbers
+{
+  # following four lines from base R's qqline()
+  y <- quantile(vec[!is.na(vec)], c(0.25, 0.75))
+  x <- qnorm(c(0.25, 0.75))
+  slope <- diff(y)/diff(x)
+  int <- y[1L] - slope * x[1L]
+
+  d <- data.frame(resids = vec)
+
+  ggplot(d, aes(sample = resids)) + stat_qq() + geom_abline(slope = slope, intercept = int)
+
+}
+plot1 <- qqplot.data( Men$Height ) + labs( title = "Height")
+plot2 <- qqplot.data( Men$Cholesterol ) + labs( title = "Cholesterol")
+grid.arrange( plot1, plot2, ncol = 2)
+```

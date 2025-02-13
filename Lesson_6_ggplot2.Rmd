@@ -1,0 +1,132 @@
+---
+title: "Lesson 6 - ggplot2 Examples"
+author: "DS705"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+require(DS705data)
+require(ggplot2)
+require(ggfortify) # adds some functionality for regression diagnostics
+require(gridExtra)
+```
+
+Setup the regression data from the presentation:
+```{r}
+production = data.frame(
+  NumItems = c(175,189,344, 88,114,338,271,173,284,277,
+               337, 58,146,277,123,227, 63,337,146, 68),
+  RunTime =  c(195,215,243,162,185,231,234,166,253,196,
+               220,168,207,225,169,215,147,230,208,172)
+)
+```
+
+# Basic Scatterplots with regression lines
+
+The code for these plots was adapted from http://www.cookbook-r.com/Graphs/Scatterplots_(ggplot2)/
+
+```{r fig.height = 3, fig.width = 4}
+
+ggplot( data = production, aes( x = NumItems, y = RunTime) ) + 
+  geom_point( shape = 1) # use hollow circles
+
+ggplot( data = production, aes( x = NumItems, y = RunTime) ) + 
+  geom_point( shape =  1) + 
+  geom_smooth( method = lm ) # add linear regression line includes 95% confidence band by default
+
+ggplot( data = production, aes( x = NumItems, y = RunTime) ) + 
+  geom_point( shape =  1) + 
+  geom_smooth( method = lm, # add linear regression line
+               se = FALSE ) # remove confidence bands
+
+ggplot( data = production, aes( x = NumItems, y = RunTime) ) + 
+  geom_point( shape =  1) + 
+  geom_smooth() # add loess smoothed fit with confidence region
+# loess stands for local regression and uses nearest-neigbors 
+# to achieve a local fit
+
+ggplot( data = production, aes( x = NumItems, y = RunTime) ) + 
+  geom_point( shape =  1) + 
+  geom_smooth( span = .5 ) # change the smoothness parameter for less smoothing
+```                             
+
+We don't cover local regression or `loess` in this class, but you're likely to see it around.  I really like this simple explanation of LOESS smoothing and the role of the span parameter:  https://stackoverflow.com/a/44242805.
+
+## Adding a prediction interval band
+
+`ggplot2` doesn't have this built in so you'll have to add it yourself:
+
+```{r, message = FALSE, fig.height=3, fig.width=4}
+# sort the dataframe by NumItems so that predictions will be 
+# in the correct order for plotting
+production <- production[ order( production$NumItems ),]
+
+model <- lm( RunTime ~ NumItems, data = production)
+# bind the predicted values to the dataframe
+productionNew <- cbind( production, predict( model, interval="prediction") )
+
+ggplot( data = productionNew, aes( x = NumItems, y = RunTime ) ) + 
+  geom_point() +
+  geom_smooth(method=lm, se = TRUE) + 
+  geom_ribbon( aes( ymin = lwr, ymax = upr), 
+               fill = 'blue', alpha = 0.2)
+```
+
+## Linear Regression Diagnostics
+
+Many of the plots that were discussed in the presentations are available by using `autoplot()` from the `ggfortify` package.
+
+```{r}
+# change width to a subset of 1 through 6, e.g. c(1,3,5) to see
+# only some of the plots
+autoplot( model, which = 1:6, ncol = 2, label.size = 3)
+```
+
+## Mutliple Regression Lines
+
+There is probably a nicer way to put this together, but this shows how to reproduce the plots near the end of the second presentation.
+
+```{r}
+data(HealthExam)
+model <- lm(Cholesterol~AgeGroup + SysBP + AgeGroup:SysBP,data=HealthExam)
+
+ggplot( data = HealthExam, aes( x = SysBP, y = Cholesterol) ) +
+  geom_point(aes( color = AgeGroup) ) + 
+  scale_color_manual( values = c("red", "darkgreen", "blue") ) + 
+  geom_abline( intercept = 524, slope = -2.39, color = "red" ) + 
+  geom_abline( intercept = -875.6, slope = 10.65, color = "darkgreen" ) + 
+  geom_abline( intercept = 116.7, slope = 1.82, color = "blue" )
+```
+
+Here are the plots separated by age group.
+
+```{r fig.height = 3, fig.width=9}
+plot1 <- ggplot( data = HealthExam[HealthExam$AgeGroup=="18 to 35",], 
+        aes( x = SysBP, y = Cholesterol) ) +
+  geom_point( color = "red" ) + 
+  geom_abline( intercept = 524, slope = -2.39, color = "red" ) + 
+  labs( title = "Age Group 18 to 35")
+
+plot2 <- ggplot( data = HealthExam[HealthExam$AgeGroup=="36 to 64",], 
+        aes( x = SysBP, y = Cholesterol) ) +
+  geom_point( color = "darkgreen" ) + 
+  geom_abline( intercept = -875.6, slope = 10.65, color = "darkgreen" ) +
+  labs( title = "Age Group 36 to 64")
+
+plot3 <- ggplot( data = HealthExam[HealthExam$AgeGroup=="65+",], 
+        aes( x = SysBP, y = Cholesterol) ) +
+  geom_point( color = "blue" ) + 
+  geom_abline( intercept = 116.7, slope = 1.82, color = "blue" ) + 
+  labs( title = "Age Group 65+")
+  
+grid.arrange(plot1,plot2,plot3,ncol=3)
+```
+
+There may be a more elegant way to produce the last few plots showing regression lines by group.  Let us know if you find it.

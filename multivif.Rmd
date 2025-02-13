@@ -1,0 +1,86 @@
+---
+title: "Multicollinearity and VIFs"
+author: "DS705"
+date: "3/3/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Predicting Wages
+
+This example is based on the publically available data and analysis at http://lib.stat.cmu.edu/datasets/CPS_85_Wages.  You can read more about the variables and the original analysis at that link.  First we'll load the data:
+
+```{r}
+wagedf <- read.csv('https://datascienceuwl.github.io/wages.csv')
+```
+
+According to the authors of the original study it works best to predict the logarithm of wages from the other predictors.
+
+```{r}
+lmodel<- lm( log(WAGE)~ OCCUPATION + SECTOR + UNION + EDUCATION 
+             + EXPERIENCE + AGE + SEX + MARR + RACE + SOUTH, data = wagedf)
+summary(lmodel)
+```
+
+For the notes that follow here, I'm borrowing extensively from this great article:  https://datascienceplus.com/multicollinearity-in-r/.  It goes into a lot more detail than I will here.
+
+Now the overall p-value is ridiculously small indicating that the predictor variables are explaining a statistically significant portion of the variation in the log transformed wages.  According to $R^2$, about 31% of the variation in log wages is explained by the linear relationship between log wages and the predictors.
+
+However, there is something strange going on.  Look at the p-values for the predictors by themselves.  SEX is the most significant, but none of the p-values is nearly as small as the overall p-value.  If there are relationships among the predictor variables it doesn't change the overall fit of the model, but it can obscure our ability to determine which predictors are individually significant.  When those relationships among the variables are linear we call that multicollinearity.
+
+Notice that the p-values for OCCUPATION, EDUCATION, EXPERIENCE, and AGE are all fairly large which seems to indicate that none of those variables is statistically significant.  However, common sense says otherwise.  Of course wages are related to experience.
+
+Let's look at diagnostics:
+
+```{r}
+par(mfrow=c(2,2))
+plot(lmodel)
+par(mfrow=c(1,1))
+```
+
+Nothing there seems weird.  Normality for the residuals is OK, the residuals versus fitted values plot doesn't show any unusual patterns or fanning.  OK so far.
+
+We can look at the pairwise correlations among the predictors.  There are numerous ways to do this.  I'll use the ggpairs plot from the GGally package.  You can find an example here: https://datascienceuwl.github.io/Lesson_7_ggplot2.html
+
+```{r message=FALSE}
+require(ggplot2)
+require(GGally)
+ggpairs(wagedf[,-6])
+```
+
+Most of the variables don't appear to be much correlated.  But there is a very high positive correlation between AGE and EXPERIENCE. This isn't really surprising, but the individual p-values in the analysis above are found assuming that the predictor variables are unrelated.  We have a multicollinearity problem here.  Let's compute the variance inflation factors to determine which predictors have high VIF' indicating that their individual p-values are unreliable.
+
+```{r, message=FALSE}
+require(HH)
+vif(lmodel)
+```
+
+Wow!  AGE, EXPERIENCE, and EDUCATION are all showing large VIF's ($\mbox{VIF} \geq 10$) so there is some definite multicollinearity present in those variables.  What do we do?  There are more advanced techniques, but the simplest thing to do when possible is to remove obviously redundant variables and try again.  Which variable(s) to remove?  In this case AGE and EXPERIENCE are highly correlated and seem redundant.  Let's take out EXPERIENCE and see what happens.
+
+```{r}
+lmodel2<- lm( log(WAGE) ~ OCCUPATION + SECTOR + UNION + EDUCATION 
+             + AGE + SEX + MARR + RACE + SOUTH, data = wagedf)
+summary(lmodel2)
+```
+
+Notice that the value of $R^2$ didn't really change.  Multicollinearity doesn't change how well the overall model fits the data, but it can make it difficult to see which predictors are significant.
+
+Are we rid of the multicollinearity problem in our new model?
+
+```{r}
+vif(lmodel2)
+```
+Excellent, now all the VIF's are well under 10 so we can trust the individual p-values.  Now looking at the p-value for OCCUPATION we can see that it's not significant at the 10% significance level so it likely wouldn't hurt to leave it out in the interest of having a simpler model.  
+
+```{r}
+lmodel3<- lm( log(WAGE) ~ SECTOR + UNION + EDUCATION 
+             + AGE + SEX + MARR + RACE + SOUTH, data = wagedf)
+summary(lmodel3)
+```
+
+Since the p-values for MARR and RACE are not significant at the 5% significance level, you could consider taking those out as well.  
+
+Finally, this example can give you something to think about in terms of the difference between statistics (or statistical learning) and machine learning.  In the machine learning approach we're usually just interested in having a predictive model so our first model is as good as the others.  In a statistical way of thinking we want to understand which predictors are important so the first model isn't good enough because we can't tell which variables are important.

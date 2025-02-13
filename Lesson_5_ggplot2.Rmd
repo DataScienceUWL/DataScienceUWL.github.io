@@ -1,0 +1,72 @@
+---
+title: "Lesson 5 - ggplot2 Examples"
+author: "DS705"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+require(DS705data)
+require(ggplot2)
+```
+
+## Bar Graphs/Charts for a Single Categorical Variable
+
+To make a bar chart where we specify the value or height of each bar we might do something like this:
+
+```{r}
+dat <- data.frame(
+  loanType = factor(c("Mort","Auto","Credit","Other"),
+                    levels=c("Mort","Auto","Credit","Other")),
+  observed = c(24,21,6,4)
+)
+ggplot(data = dat, aes( x = loanType, y = observed, fill = observed) ) + 
+  geom_bar( stat = "identity" ) + 
+  labs( x = "Type of Loan", 
+        y = "Number Observed", 
+        title = "Loans Summary" )
+```
+
+If we want R to tabulate the counts for us and make a bar graph it might go like this:
+
+```{r}
+data("HealthExam") # from DS705data package
+ggplot( data = HealthExam, aes( x = Region )) +
+  geom_bar(stat="count")
+ggplot( data = HealthExam, aes( x = Region, fill = Region )) +
+  geom_bar(stat="count")
+```
+
+## Bar Graphs/Charts for two categorical variables
+
+Here are some examples for plotting the distribution of Age Group within each region:
+
+```{r}
+ggplot( data = HealthExam, aes( x = Region, fill = AgeGroup) ) + 
+  geom_bar(stat="count")
+
+ggplot( data = HealthExam, aes( x = Region, fill = AgeGroup) ) + 
+  geom_bar(stat="count",position=position_dodge())
+
+ggplot( data = HealthExam, aes( x = Region, fill = AgeGroup) ) + 
+  geom_bar(stat="count",position=position_dodge(), color="black")
+```
+
+The last one is our favorite for this example.  However, the default colors in ggplot2 aren't color-blind friendly as they have equal luminance.  See this article to learn about changing color palettes, in particular check out the information about the `RColorBrewer` package:
+http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
+
+We'll close with an example of manually defining a color-blind friendly palette and using it for our last graph.  This palette comes from the website that we just mentioned.
+
+```{r}
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+ggplot( data = HealthExam, aes( x = Region, fill = AgeGroup) ) + 
+  geom_bar(stat="count",position=position_dodge(), color="black") +
+    scale_fill_manual(values=cbPalette)
+```
