@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12.3 - The Dot Product | MTH 310</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/white.min.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root {
+    --accent-blue: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-amber: #e09f3e;
+    --accent-purple: #6c3483; --fg: #222222; --bg: #ffffff;
+}
+.reveal { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; font-size: 30px; color: var(--fg); }
+.reveal .slides section { text-align: left; }
+.reveal .slides > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides > section > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides section::-webkit-scrollbar { width: 6px; }
+.reveal .slides section::-webkit-scrollbar-track { background: transparent; }
+.reveal .slides section::-webkit-scrollbar-thumb { background: rgba(0,119,182,0.2); border-radius: 3px; }
+.reveal .slides section::-webkit-scrollbar-thumb:hover { background: rgba(0,119,182,0.4); }
+.reveal .slides > section::after, .reveal .slides > section > section::after {
+    content: ''; display: block; height: 0; clear: both; }
+.reveal h1,.reveal h2,.reveal h3 { text-transform: none; font-weight: 600; }
+.reveal h1 { font-size: 2.2em; color: var(--accent-blue); }
+.reveal h2 { font-size: 1.35em; color: var(--accent-blue); border-bottom: 2px solid rgba(0,119,182,0.25);
+    padding-bottom: 0.2em; margin-bottom: 0.4em; margin-top: 0; }
+.reveal h3 { font-size: 1.1em; color: var(--accent-green); margin: 0.2em 0; }
+.reveal p { margin: 0.3em 0; line-height: 1.4; }
+.reveal li { margin-bottom: 0.15em; line-height: 1.35; }
+.reveal ul,.reveal ol { margin-left: 0.5em; }
+.title-slide { text-align: center !important; }
+.title-slide h1 { font-size: 2.8em; margin-bottom: 0.1em; }
+.title-slide .subtitle { font-size: 1.4em; color: #b07d00; }
+.title-slide .course-info { font-size: 0.85em; color: #595959; margin-top: 2em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-blue);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.theorem-box { background: #fdf6ec; border-left-color: var(--accent-amber); }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.solution { background: #fffdf5; border-left: 4px solid var(--accent-amber);
+    border-radius: 8px; padding: 0.4em 0.8em; margin-top: 0.3em; color: #7a5c00; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7;
+    border-radius: 8px; padding: 0.5em 0.8em; margin: 0.4em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #666; margin: 0.3em 0; font-size: 0.85em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red);
+    border-radius: 10px; padding: 1em 1.5em; text-align: center; margin: 1em 0; }
+.hw-box h3 { color: var(--accent-red); margin: 0 0 0.3em 0; }
+.two-col { display: flex; gap: 1.2em; align-items: flex-start; }
+.two-col > * { flex: 1; }
+.fig-container { text-align: center; margin: 0.3em 0; }
+.fig-container img { max-height: 60vh; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    cursor: zoom-in; transition: opacity 0.15s; }
+.fig-container img:hover { opacity: 0.8; }
+.fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
+.fig-link { display: inline-block; }
+.textbook-fig img { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; }
+.plotly-figure { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); overflow: hidden; }
+.plotly-figure .js-plotly-plot { width: 100% !important; height: 100% !important; }
+.two-col .plotly-figure { max-width: 90%; margin: 0 auto; }
+/* Lightbox overlay */
+#lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
+    cursor: zoom-out; backdrop-filter: blur(4px); }
+#lightbox.active { display: flex; }
+#lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5); object-fit: contain; background: white; }
+#lightbox .lb-caption { position: absolute; bottom: 1.5em; left: 50%;
+    transform: translateX(-50%); color: #fff; font-size: 0.55em;
+    background: rgba(0,0,0,0.7); padding: 0.3em 1em; border-radius: 4px; }
+#lightbox .lb-close { position: absolute; top: 0.8em; right: 1.2em;
+    color: #fff; font-size: 1.5em; cursor: pointer; transition: color 0.15s;
+    background: none; border: none; padding: 0.2em 0.5em; }
+#lightbox .lb-close:hover { color: #e09f3e; }
+#lightbox .lb-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.interactive-link { color: var(--accent-blue); text-decoration: none; font-size: 0.9em; }
+.interactive-link:hover { text-decoration: underline; }
+.desmos-container { text-align: center; margin: 0.3em auto; }
+.desmos-container iframe { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    border: 1px solid #ddd; }
+.desmos-label { font-size: 0.65em; color: var(--accent-blue); margin-top: 0.2em; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.4em;
+    color: var(--accent-blue); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+aside.notes { display: none; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 0.5em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.3em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.75em; color: var(--accent-blue);
+    text-align: center; margin-bottom: 0.1em; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 18vh; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+.small { font-size: 0.8em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-blue);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600;
+    font-size: 16px; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+table { border-collapse: collapse; font-size: 0.8em; margin: 0.5em 0; }
+th, td { padding: 0.2em 0.6em; border-bottom: 1px solid #ddd; }
+th { color: var(--accent-blue); }
+.reveal .progress { color: var(--accent-blue); }
+.reveal .slide-number { color: #767676; font-size: 0.5em; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<a href="#" class="skip-link" onclick="Reveal.next();return false;">Skip to first slide</a>
+<div class="reveal">
+<div class="slides">
+<section class="title-slide" data-background-gradient="radial-gradient(circle at 30% 50%, #e8f4f8 0%, #f8f9fa 70%)">
+  <h1>12.3</h1>
+  <p class="subtitle">The Dot Product</p>
+  <hr style="border-color:rgba(0,212,255,0.3);width:60%;margin:1em auto;" aria-hidden="true">
+  <p class="course-info">MTH 310 &mdash; Calculus III<br>  Vectors and the Geometry of Space</p>
+</section>
+
+<section>
+<h2>The Dot Product</h2>
+<div class="fragment"><p>We can <strong>add</strong> vectors and <strong>scale</strong> them. But can we "multiply" two vectors?</p>
+<p>The <strong>dot product</strong> takes two vectors and gives a <strong>scalar</strong> (a number).</p></div>
+<div class="defn-box fragment">
+  <div class="defn-title">Definition 1: Dot Product</div>
+  <p>If \(\vec{a} = \langle a_1, a_2, a_3 \rangle\) and \(\vec{b} = \langle b_1, b_2, b_3 \rangle\), then</p>
+<p>\[\vec{a} \cdot \vec{b} = a_1 b_1 + a_2 b_2 + a_3 b_3\]</p>
+</div>
+<div class="key-point fragment"><p>Multiply corresponding components and add.</p></div>
+<aside class="notes">Emphasize: the result is a NUMBER, not a vector. Students often forget this.</aside>
+</section>
+
+<section>
+<h2>Computing Dot Products</h2>
+<div class="example-box">
+  <div class="example-title">Example 1</div>
+  <p>Compute each dot product.</p>
+</div>
+<div class="fragment"><p>\(\langle 2, 4 \rangle \cdot \langle 3, -1 \rangle\)</p></div>
+<div class="fragment"><p>\(\langle 2, 4 \rangle \cdot \langle 3, -1 \rangle = 2(3) + 4(-1) = 6 - 4 = 2\)</p></div>
+<div class="fragment"><p>\(\langle -1, 7, 4 \rangle \cdot \langle 6, 2, -\tfrac{1}{2} \rangle\)</p></div>
+<div class="fragment"><p>\(\langle -1, 7, 4 \rangle \cdot \langle 6, 2, -\tfrac{1}{2} \rangle = -6 + 14 - 2 = 6\)</p></div>
+<div class="fragment"><p>\((\vec{i} + 2\vec{j} - 3\vec{k}) \cdot (2\vec{j} - \vec{k})\)</p></div>
+<div class="fragment"><p>\(\langle 1, 2, -3 \rangle \cdot \langle 0, 2, -1 \rangle = 0 + 4 + 3 = 7\)</p></div>
+<div class="key-point fragment"><p>\(\vec{a} \cdot \vec{a} = a_1^2 + a_2^2 + a_3^2 = |\vec{a}|^2\) &mdash; the dot product of a vector with itself gives the <strong>square of its magnitude</strong>.</p></div>
+</section>
+
+<section>
+<h2>Properties of the Dot Product</h2>
+<div class="defn-box fragment">
+  <div class="defn-title">Definition 2: Properties</div>
+  <ol>
+<li>\(\vec{a} \cdot \vec{a} = |\vec{a}|^2\)</li>
+<li>\(\vec{a} \cdot \vec{b} = \vec{b} \cdot \vec{a}\) &emsp; (commutative)</li>
+<li>\(\vec{a} \cdot (\vec{b} + \vec{c}) = \vec{a} \cdot \vec{b} + \vec{a} \cdot \vec{c}\) &emsp; (distributive)</li>
+<li>\((c\,\vec{a}) \cdot \vec{b} = c(\vec{a} \cdot \vec{b}) = \vec{a} \cdot (c\,\vec{b})\)</li>
+<li>\(\vec{0} \cdot \vec{a} = 0\)</li>
+</ol>
+</div>
+<div class="fragment"><p>These follow directly from the component definition. Property 1 is especially useful &mdash; it connects the dot product to length.</p></div>
+<aside class="notes">These are easy to verify algebraically. Don't dwell; the geometric interpretation (next slide) is the real payoff.</aside>
+</section>
+
+<section>
+<h2>The Geometric Meaning &mdash; Angles</h2>
+<div class="fragment"><div class="two-col">
+  <div><div class="defn-box">
+  <div class="defn-title">Definition 3: Geometric Form of the Dot Product</div>
+  <p>If \(\theta\) is the angle between \(\vec{a}\) and \(\vec{b}\) (with \(0 \leq \theta \leq \pi\)), then</p>
+<p>\[\vec{a} \cdot \vec{b} = |\vec{a}|\,|\vec{b}|\cos\theta\]</p>
+</div></div>
+  <div><div class="fig-container textbook-fig">
+  <a href="../figures/12_3_4.png" target="_blank" rel="noopener" class="fig-link" data-src="../figures/12_3_4.png"><img src="../figures/12_3_4.png" alt="Triangle OAB in 3D with vectors a and b from the origin to points A and B, and the difference vector a minus b as the third side, used for the law of cosines proof." style="max-height:60vh;"></a>
+  <div class="fig-caption"><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></div>
+</div></div>
+</div></div>
+<div class="fragment"><p>This connects <strong>algebra</strong> (the component formula) with <strong>geometry</strong> (the angle between vectors)!</p></div>
+<div class="key-point fragment"><p>\[\cos\theta = \frac{\vec{a} \cdot \vec{b}}{|\vec{a}|\,|\vec{b}|}\]</p></div>
+<div class="fig-container fragment">
+  <a href="figures/law_of_cosines_triangle.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/law_of_cosines_triangle.png"><img src="figures/law_of_cosines_triangle.png" alt="Triangle OAB with side a (blue) from O to A, side b (red) from O to B, and the third side a minus b (green) from A to B. The angle theta at vertex O is marked with an amber arc." style="max-height:60vh;"></a>
+  <div class="fig-caption"><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></div>
+</div>
+<aside class="notes">The proof uses the law of cosines applied to the triangle formed by a, b, and a - b. Worth showing if time permits.</aside>
+</section>
+
+<section>
+<h2>Example: Finding the Angle Between Vectors</h2>
+<div class="example-box">
+  <div class="example-title">Example 2</div>
+  <p>Find the angle between \(\vec{a} = \langle -1, 3, 4 \rangle\) and \(\vec{b} = \langle 5, 2, 1 \rangle\).</p>
+</div>
+<div class="fragment"><p class="work-prompt">Compute a dot b, then |a| and |b|, then use the angle formula.</p></div>
+<div class="fragment"><p>\(\vec{a} \cdot \vec{b} = (-1)(5) + (3)(2) + (4)(1) = -5 + 6 + 4 = 5\)</p></div>
+<div class="fragment"><p>\(|\vec{a}| = \sqrt{1 + 9 + 16} = \sqrt{26}\), &ensp; \(|\vec{b}| = \sqrt{25 + 4 + 1} = \sqrt{30}\)</p></div>
+<div class="fragment"><p>\(\cos\theta = \dfrac{5}{\sqrt{26}\,\sqrt{30}} = \dfrac{5}{\sqrt{780}}\)</p></div>
+<div class="key-point fragment"><p>\(\theta = \arccos\!\left(\dfrac{5}{\sqrt{780}}\right) \approx 79.7°\)</p></div>
+</section>
+
+<section>
+<h2>Orthogonality</h2>
+<div class="defn-box fragment">
+  <div class="defn-title">Definition 4: Orthogonal Vectors</div>
+  <p>Two vectors \(\vec{a}\) and \(\vec{b}\) are <strong>orthogonal</strong> (perpendicular) if and only if</p>
+<p>\[\vec{a} \cdot \vec{b} = 0\]</p>
+</div>
+<div class="fragment"><p><strong>Why?</strong> Because \(\cos 90° = 0\), so \(\vec{a} \cdot \vec{b} = |\vec{a}|\,|\vec{b}| \cdot 0 = 0\).</p></div>
+<div class="fragment"><div class="two-col">
+  <div><div class="fragment"><table>
+<thead><tr><th scope="col">Sign of \(\vec{a} \cdot \vec{b}\)</th><th scope="col">Angle between vectors</th></tr></thead>
+<tbody>
+<tr><td>\(\vec{a} \cdot \vec{b} > 0\)</td><td>Acute (\(\theta < 90°\))</td></tr>
+<tr><td>\(\vec{a} \cdot \vec{b} = 0\)</td><td>Right angle (\(\theta = 90°\))</td></tr>
+<tr><td>\(\vec{a} \cdot \vec{b} < 0\)</td><td>Obtuse (\(\theta > 90°\))</td></tr>
+</tbody>
+</table></div></div>
+  <div><div class="fig-container textbook-fig">
+  <a href="../figures/12_3_6.png" target="_blank" rel="noopener" class="fig-link" data-src="../figures/12_3_6.png"><img src="../figures/12_3_6.png" alt="Three pairs of vectors showing acute angle (dot product positive), right angle (dot product zero), and obtuse angle (dot product negative)." style="max-height:60vh;"></a>
+  <div class="fig-caption"><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></div>
+</div></div>
+</div></div>
+<div class="key-point fragment"><p>This is the <strong>most important</strong> use of the dot product &mdash; a quick test for perpendicularity!</p></div>
+</section>
+
+<section>
+<h2>Your Turn &mdash; Orthogonality Check</h2>
+<div class="example-box">
+  <div class="example-title">Example 3</div>
+  <p>Are \(\vec{u} = \langle 2, 1, -1 \rangle\) and \(\vec{v} = \langle 1, -1, 1 \rangle\) orthogonal?</p>
+</div>
+<div class="fragment"><p class="work-prompt">Compute u dot v and check if it equals zero.</p></div>
+<div class="fragment"><p>\(\vec{u} \cdot \vec{v} = 2(1) + 1(-1) + (-1)(1) = 2 - 1 - 1 = 0\)</p></div>
+<div class="key-point fragment"><p>Yes, \(\vec{u}\) and \(\vec{v}\) are <strong>orthogonal</strong>!</p></div>
+</section>
+
+<section>
+<h2>Projections</h2>
+<div class="fragment"><p>How much of \(\vec{b}\) points in the direction of \(\vec{a}\)?</p></div>
+<div class="fig-container fragment">
+  <a href="figures/projection_shadow.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/projection_shadow.png"><img src="figures/projection_shadow.png" alt="Projection diagram: vectors a (blue) and b (red) start from point P. A dashed perpendicular drops from the tip of b to the line of a at point S. The projection vector proj_a b (amber) goes from P to S. The scalar component comp_a b is labeled below." style="max-height:60vh;"></a>
+  <div class="fig-caption"><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></div>
+</div>
+<div class="defn-box fragment">
+  <div class="defn-title">Definition 5: Scalar and Vector Projections</div>
+  <p><strong>Scalar projection</strong> (component of \(\vec{b}\) onto \(\vec{a}\)):</p>
+<p>\[\text{comp}_{\vec{a}}\,\vec{b} = \frac{\vec{a} \cdot \vec{b}}{|\vec{a}|}\]</p>
+<p>This is a <strong>number</strong> &mdash; the signed length of the shadow.</p>
+<p><strong>Vector projection</strong> of \(\vec{b}\) onto \(\vec{a}\):</p>
+<p>\[\text{proj}_{\vec{a}}\,\vec{b} = \frac{\vec{a} \cdot \vec{b}}{|\vec{a}|^2}\,\vec{a}\]</p>
+<p>This is a <strong>vector</strong> &mdash; the actual shadow vector along \(\vec{a}\).</p>
+</div>
+<div class="fragment"><div class="two-col">
+  <div><div class="fig-container textbook-fig">
+  <a href="../figures/12_3_8.png" target="_blank" rel="noopener" class="fig-link" data-src="../figures/12_3_8.png"><img src="../figures/12_3_8.png" alt="Scalar projection diagram: vectors a and b from point P, with angle theta between them. The perpendicular from the tip of b meets a at point S, giving the scalar component comp_a b equals |b| cos theta." style="max-height:60vh;"></a>
+  <div class="fig-caption"><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></div>
+</div>
+<div class="key-point fragment"><p><strong>comp = how far, &ensp; proj = the actual vector</strong></p></div></div>
+  <div><div class="fig-container textbook-fig">
+  <a href="../figures/12_3_7.png" target="_blank" rel="noopener" class="fig-link" data-src="../figures/12_3_7.png"><img src="../figures/12_3_7.png" alt="Vector projection in two cases: when the angle is acute, proj_a b points in the same direction as a; when the angle is obtuse, proj_a b points opposite to a." style="max-height:60vh;"></a>
+  <div class="fig-caption"><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></div>
+</div></div>
+</div></div>
+<aside class="notes">Draw a picture showing b, a, and the projection as a shadow. The scalar projection can be negative if the angle is obtuse.</aside>
+</section>
+
+<section>
+<h2>Example: Computing Projections</h2>
+<div class="example-box">
+  <div class="example-title">Example 4</div>
+  <p>Find the scalar and vector projections of \(\vec{b} = \langle 12, 1, 2 \rangle\) onto \(\vec{a} = \langle -1, 4, 8 \rangle\).</p>
+</div>
+<div class="fragment"><p class="work-prompt">Compute a dot b, then |a|, then use the projection formulas.</p></div>
+<div class="fragment"><p>\(\vec{a} \cdot \vec{b} = (-1)(12) + (4)(1) + (8)(2) = -12 + 4 + 16 = 8\)</p></div>
+<div class="fragment"><p>\(|\vec{a}| = \sqrt{1 + 16 + 64} = \sqrt{81} = 9\)</p></div>
+<div class="fragment"><p>\(\text{comp}_{\vec{a}}\,\vec{b} = \dfrac{8}{9}\)</p></div>
+<div class="key-point fragment"><p>\(\text{proj}_{\vec{a}}\,\vec{b} = \dfrac{8}{81}\,\langle -1, 4, 8 \rangle = \left\langle -\dfrac{8}{81},\; \dfrac{32}{81},\; \dfrac{64}{81} \right\rangle\)</p></div>
+</section>
+
+<section>
+<h2>Work &mdash; A Physical Application</h2>
+<div class="fragment"><div class="two-col">
+  <div><div><p>When force is aligned with motion: \(W = |\vec{F}| \cdot |\vec{D}|\)</p>
+<p>When force is at an angle \(\theta\) to the motion:</p></div>
+<div class="key-point fragment"><p>\(W = \text{comp}_{\vec{D}}\,\vec{F} \cdot |\vec{D}| = \vec{F} \cdot \vec{D}\)</p></div></div>
+  <div><div class="fig-container textbook-fig">
+  <a href="../figures/12_3_9.png" target="_blank" rel="noopener" class="fig-link" data-src="../figures/12_3_9.png"><img src="../figures/12_3_9.png" alt="Work diagram: force vector F at angle theta to horizontal displacement vector D from P to Q. The projection of F onto D gives the component of force in the direction of motion." style="max-height:60vh;"></a>
+  <div class="fig-caption"><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></div>
+</div></div>
+</div></div>
+<div class="example-box">
+  <div class="example-title">Example 5</div>
+  <p>A wagon is pulled 100 m by a force of 70 N applied at \(35°\) above horizontal. Find the work done.</p>
+</div>
+<div class="fragment"><div class="two-col">
+  <div><p class="work-prompt">Set up the force and displacement vectors, then compute F dot D.</p></div>
+  <div><div class="fig-container">
+  <a href="figures/unit_circle_direction.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/unit_circle_direction.png"><img src="figures/unit_circle_direction.png" alt="Unit circle with a radius drawn at angle theta, showing the endpoint (cos theta, sin theta). Dashed projections to the axes label cos theta and sin theta." style="max-height:60vh;"></a>
+  <div class="fig-caption"><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></div>
+</div></div>
+</div></div>
+<div class="fragment"><p>\(\vec{F} = 70\langle \cos 35°,\, \sin 35° \rangle\), &ensp; \(\vec{D} = \langle 100, 0 \rangle\)</p></div>
+<div class="key-point fragment"><p>\(W = \vec{F} \cdot \vec{D} = 70\cos 35° \cdot 100 + 70\sin 35° \cdot 0 = 7000\cos 35° \approx 5734 \text{ N\cdot m}\)</p></div>
+</section>
+
+<section>
+<h2>Your Turn &mdash; Work</h2>
+<div class="example-box">
+  <div class="example-title">Example 6</div>
+  <p>A box is pushed 5 m along the floor by a 40 N force applied at \(20°\) below horizontal. Find the work done.</p>
+</div>
+<div class="fragment"><p class="work-prompt">Set up the force and displacement vectors, then compute F dot D.</p></div>
+<div class="fragment"><p>The horizontal component of the force does the work:</p></div>
+<div class="key-point fragment"><p>\(W = 40\cos 20° \cdot 5 = 200\cos 20° \approx 187.9 \text{ J}\)</p></div>
+</section>
+
+<section>
+<h2>Section 12.3 Summary</h2>
+<div class="summary-grid">
+<div class="defn-box"><div class="defn-title">Dot Product</div><p class="small">\(\vec{a} \cdot \vec{b} = a_1 b_1 + a_2 b_2 + a_3 b_3\)</p></div>
+<div class="defn-box"><div class="defn-title">Geometric Form</div><p class="small">\(\vec{a} \cdot \vec{b} = |\vec{a}|\,|\vec{b}|\cos\theta\)</p></div>
+<div class="defn-box"><div class="defn-title">Angle Formula</div><p class="small">\(\cos\theta = \dfrac{\vec{a} \cdot \vec{b}}{|\vec{a}|\,|\vec{b}|}\)</p></div>
+<div class="defn-box"><div class="defn-title">Orthogonal</div><p class="small">\(\vec{a} \cdot \vec{b} = 0\)</p></div>
+<div class="defn-box"><div class="defn-title">Scalar Projection</div><p class="small">\(\text{comp}_{\vec{a}}\,\vec{b} = \dfrac{\vec{a} \cdot \vec{b}}{|\vec{a}|}\)</p></div>
+<div class="defn-box"><div class="defn-title">Vector Projection</div><p class="small">\(\text{proj}_{\vec{a}}\,\vec{b} = \dfrac{\vec{a} \cdot \vec{b}}{|\vec{a}|^2}\,\vec{a}\)</p></div>
+<div class="defn-box"><div class="defn-title">Work</div><p class="small">\(W = \vec{F} \cdot \vec{D}\)</p></div>
+</div>
+<div class="key-point fragment"><p><strong>Big idea:</strong> The dot product connects the <em>algebra</em> of components to the <em>geometry</em> of angles and projections.</p></div>
+</section>
+
+<section>
+<h2>Homework</h2>
+<div class="hw-box"><h3>Section 12.3</h3>
+<p style="font-size:1.3em;color:var(--accent-amber);">5, 7, 11, 19, 23ab, 27, 39, 41, 45, 49, 57</p>
+</div>
+<div class="key-point fragment" style="margin-top:1.5em;"><strong>Next time:</strong> Section 12.4 &mdash; The Cross Product</div>
+</section>
+</div>
+</div>
+<!-- Lightbox overlay -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged figure" tabindex="-1">
+  <button class="lb-close" aria-label="Close lightbox">&times;</button>
+  <img src="" alt="">
+  <div class="lb-caption"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<script>
+Reveal.initialize({
+    hash: true, slideNumber: 'c/t', progress: true, center: false,
+    transition: 'slide', width: 1280, height: 800, margin: 0.04,
+    // Allow mouse wheel to scroll overflowing slide content instead of advancing
+    mouseWheel: false,
+    plugins: [RevealNotes]
+});
+Reveal.on('slidechanged', () => { MathJax?.typesetPromise?.(); });
+// Fragment auto-scroll: configurable via meta.fragment_scroll in content.yaml
+// Value is the max fraction down the slide viewport (0.0=top, 1.0=bottom)
+var FRAG_SCROLL_TARGET = 0.67;
+function findScrollContainer(el) {
+    var section = el.closest('section');
+    while (section) {
+        if (section.scrollHeight > section.clientHeight + 1) return section;
+        var parent = section.parentElement?.closest('section, .slides, .reveal');
+        if (!parent || parent === section) break;
+        section = parent;
+    }
+    return null;
+}
+function scrollToFragment(frag, direction) {
+    var container = findScrollContainer(frag);
+    if (!container) return;
+    var fragRect = frag.getBoundingClientRect();
+    var containerRect = container.getBoundingClientRect();
+    // Reveal.js scales slides via CSS transform — account for the scale factor
+    var scale = containerRect.height / container.clientHeight || 1;
+    // Convert screen-space positions to unscaled slide-space
+    var fragBottom = (fragRect.bottom - containerRect.top) / scale + container.scrollTop;
+    var fragTop = (fragRect.top - containerRect.top) / scale + container.scrollTop;
+    var targetLine = container.clientHeight * FRAG_SCROLL_TARGET;
+    if (direction === 'forward') {
+        // Scroll so the fragment's bottom is at the target line
+        var desiredScrollTop = fragBottom - targetLine;
+        if (desiredScrollTop > container.scrollTop) {
+            container.scrollTo({ top: desiredScrollTop, behavior: 'smooth' });
+        }
+    } else {
+        // Scrolling backward: find the previous visible fragment and scroll to it
+        // If the fragment's top is above the viewport, scroll up to show it
+        var desiredScrollTop = fragTop - targetLine * 0.5;
+        if (desiredScrollTop < container.scrollTop) {
+            container.scrollTo({ top: Math.max(0, desiredScrollTop), behavior: 'smooth' });
+        }
+    }
+}
+// Add spacer to scrollable slides so the last fragment can scroll up to the target line
+Reveal.on('ready', () => {
+    var slideH = Reveal.getConfig().height || 800;
+    var spacerH = Math.round((1 - FRAG_SCROLL_TARGET) * slideH);
+    document.querySelectorAll('.reveal .slides > section, .reveal .slides > section > section').forEach(function(s) {
+        if (s.querySelector('.fragment')) {
+            var spacer = document.createElement('div');
+            spacer.style.height = spacerH + 'px';
+            spacer.style.pointerEvents = 'none';
+            spacer.setAttribute('aria-hidden', 'true');
+            s.appendChild(spacer);
+        }
+    });
+});
+Reveal.on('fragmentshown', (event) => {
+    MathJax?.typesetPromise?.();
+    if (!event.fragment) return;
+    setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
+});
+Reveal.on('fragmenthidden', (event) => {
+    MathJax?.typesetPromise?.();
+    if (!event.fragment) return;
+    // Scroll back to the previous fragment or top of slide
+    var prev = event.fragment.previousElementSibling;
+    while (prev && !prev.classList.contains('fragment')) {
+        prev = prev.previousElementSibling;
+    }
+    var target = prev || event.fragment.closest('section')?.querySelector('h2') || event.fragment;
+    setTimeout(function() { scrollToFragment(target, 'backward'); }, 80);
+});
+Reveal.on('ready', () => { MathJax?.typesetPromise?.(); });
+
+// ── Resize Plotly figures when slides become visible ──
+function resizePlotlyInSlide(event) {
+    var slide = event?.currentSlide || document.querySelector('.reveal .present');
+    if (!slide) return;
+    slide.querySelectorAll('.js-plotly-plot').forEach(function(gd) {
+        Plotly.Plots.resize(gd);
+    });
+}
+Reveal.on('slidechanged', resizePlotlyInSlide);
+Reveal.on('ready', resizePlotlyInSlide);
+Reveal.on('fragmentshown', function(event) {
+    var frag = event.fragment;
+    frag.querySelectorAll('.js-plotly-plot').forEach(function(gd) {
+        Plotly.Plots.resize(gd);
+    });
+});
+
+// ── Lightbox for figures (accessible: focus trap, focus return) ──
+(function() {
+    const lb = document.getElementById('lightbox');
+    const lbImg = lb.querySelector('img');
+    const lbCap = lb.querySelector('.lb-caption');
+    const lbClose = lb.querySelector('.lb-close');
+    var triggerEl = null;
+
+    function openLightbox(src, alt, caption) {
+        lbImg.src = src;
+        lbImg.alt = alt;
+        lbCap.textContent = caption || alt;
+        lb.classList.add('active');
+        lbClose.focus();
+    }
+
+    function closeLightbox() {
+        lb.classList.remove('active');
+        lbImg.src = '';
+        if (triggerEl) { triggerEl.focus(); triggerEl = null; }
+    }
+
+    // Open lightbox on figure click (prevent default link navigation)
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.fig-link');
+        if (!link) return;
+        e.preventDefault();
+        e.stopPropagation();
+        triggerEl = link;
+        var src = link.getAttribute('data-src');
+        var alt = link.querySelector('img')?.alt || '';
+        var caption = link.closest('.fig-container')?.querySelector('.fig-caption')?.textContent || '';
+        openLightbox(src, alt, caption);
+    });
+
+    // Close on click anywhere on overlay
+    lb.addEventListener('click', function() { closeLightbox(); });
+
+    // Prevent closing when clicking the image itself (let user right-click → open in tab)
+    lbImg.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    // Close on Escape; trap Tab within lightbox
+    document.addEventListener('keydown', function(e) {
+        if (!lb.classList.contains('active')) return;
+        if (e.key === 'Escape') { closeLightbox(); }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            lbClose.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>

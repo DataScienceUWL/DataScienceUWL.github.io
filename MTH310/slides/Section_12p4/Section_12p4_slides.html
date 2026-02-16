@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12.4 - The Cross Product | MTH 310</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/white.min.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root {
+    --accent-blue: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-amber: #e09f3e;
+    --accent-purple: #6c3483; --fg: #222222; --bg: #ffffff;
+}
+.reveal { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; font-size: 30px; color: var(--fg); }
+.reveal .slides section { text-align: left; }
+.reveal .slides > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides > section > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides section::-webkit-scrollbar { width: 6px; }
+.reveal .slides section::-webkit-scrollbar-track { background: transparent; }
+.reveal .slides section::-webkit-scrollbar-thumb { background: rgba(0,119,182,0.2); border-radius: 3px; }
+.reveal .slides section::-webkit-scrollbar-thumb:hover { background: rgba(0,119,182,0.4); }
+.reveal .slides > section::after, .reveal .slides > section > section::after {
+    content: ''; display: block; height: 0; clear: both; }
+.reveal h1,.reveal h2,.reveal h3 { text-transform: none; font-weight: 600; }
+.reveal h1 { font-size: 2.2em; color: var(--accent-blue); }
+.reveal h2 { font-size: 1.35em; color: var(--accent-blue); border-bottom: 2px solid rgba(0,119,182,0.25);
+    padding-bottom: 0.2em; margin-bottom: 0.4em; margin-top: 0; }
+.reveal h3 { font-size: 1.1em; color: var(--accent-green); margin: 0.2em 0; }
+.reveal p { margin: 0.3em 0; line-height: 1.4; }
+.reveal li { margin-bottom: 0.15em; line-height: 1.35; }
+.reveal ul,.reveal ol { margin-left: 0.5em; }
+.title-slide { text-align: center !important; }
+.title-slide h1 { font-size: 2.8em; margin-bottom: 0.1em; }
+.title-slide .subtitle { font-size: 1.4em; color: #b07d00; }
+.title-slide .course-info { font-size: 0.85em; color: #595959; margin-top: 2em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-blue);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.theorem-box { background: #fdf6ec; border-left-color: var(--accent-amber); }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.solution { background: #fffdf5; border-left: 4px solid var(--accent-amber);
+    border-radius: 8px; padding: 0.4em 0.8em; margin-top: 0.3em; color: #7a5c00; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7;
+    border-radius: 8px; padding: 0.5em 0.8em; margin: 0.4em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #666; margin: 0.3em 0; font-size: 0.85em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red);
+    border-radius: 10px; padding: 1em 1.5em; text-align: center; margin: 1em 0; }
+.hw-box h3 { color: var(--accent-red); margin: 0 0 0.3em 0; }
+.two-col { display: flex; gap: 1.2em; align-items: flex-start; }
+.two-col > * { flex: 1; }
+.fig-container { text-align: center; margin: 0.3em 0; }
+.fig-container img { max-height: 60vh; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    cursor: zoom-in; transition: opacity 0.15s; }
+.fig-container img:hover { opacity: 0.8; }
+.fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
+.fig-link { display: inline-block; }
+.textbook-fig img { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; }
+.plotly-figure { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); overflow: hidden; }
+.plotly-figure .js-plotly-plot { width: 100% !important; height: 100% !important; }
+.two-col .plotly-figure { max-width: 90%; margin: 0 auto; }
+/* Lightbox overlay */
+#lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
+    cursor: zoom-out; backdrop-filter: blur(4px); }
+#lightbox.active { display: flex; }
+#lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5); object-fit: contain; background: white; }
+#lightbox .lb-caption { position: absolute; bottom: 1.5em; left: 50%;
+    transform: translateX(-50%); color: #fff; font-size: 0.55em;
+    background: rgba(0,0,0,0.7); padding: 0.3em 1em; border-radius: 4px; }
+#lightbox .lb-close { position: absolute; top: 0.8em; right: 1.2em;
+    color: #fff; font-size: 1.5em; cursor: pointer; transition: color 0.15s;
+    background: none; border: none; padding: 0.2em 0.5em; }
+#lightbox .lb-close:hover { color: #e09f3e; }
+#lightbox .lb-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.interactive-link { color: var(--accent-blue); text-decoration: none; font-size: 0.9em; }
+.interactive-link:hover { text-decoration: underline; }
+.desmos-container { text-align: center; margin: 0.3em auto; }
+.desmos-container iframe { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    border: 1px solid #ddd; }
+.desmos-label { font-size: 0.65em; color: var(--accent-blue); margin-top: 0.2em; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.4em;
+    color: var(--accent-blue); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+aside.notes { display: none; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 0.5em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.3em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.75em; color: var(--accent-blue);
+    text-align: center; margin-bottom: 0.1em; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 18vh; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+.small { font-size: 0.8em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-blue);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600;
+    font-size: 16px; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+table { border-collapse: collapse; font-size: 0.8em; margin: 0.5em 0; }
+th, td { padding: 0.2em 0.6em; border-bottom: 1px solid #ddd; }
+th { color: var(--accent-blue); }
+.reveal .progress { color: var(--accent-blue); }
+.reveal .slide-number { color: #767676; font-size: 0.5em; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<a href="#" class="skip-link" onclick="Reveal.next();return false;">Skip to first slide</a>
+<div class="reveal">
+<div class="slides">
+<section class="title-slide" data-background-gradient="radial-gradient(circle at 30% 50%, #e8f4f8 0%, #f8f9fa 70%)">
+  <h1>12.4</h1>
+  <p class="subtitle">The Cross Product</p>
+  <hr style="border-color:rgba(0,212,255,0.3);width:60%;margin:1em auto;" aria-hidden="true">
+  <p class="course-info">MTH 310 &mdash; Calculus III<br>  Vectors and the Geometry of Space</p>
+</section>
+
+<section>
+<h2>The Cross Product &mdash; A New Kind of Product</h2>
+<div class="fragment"><p>The <strong>dot product</strong> takes two vectors and returns a <strong>scalar</strong> (\(\vec{a} \cdot \vec{b} \in \mathbb{R}\)).</p>
+<p>Now we introduce a second way to multiply vectors:</p></div>
+<div class="key-point fragment"><p>The <strong>cross product</strong> \(\vec{a} \times \vec{b}\) takes two vectors in \(\mathbb{R}^3\) and returns a <strong>vector</strong> that is <strong>perpendicular</strong> to both \(\vec{a}\) and \(\vec{b}\).</p></div>
+<div class="fragment"><ul>
+<li>The cross product is <strong>only defined in 3D</strong> (not 2D!)</li>
+<li>It's used everywhere: torque, angular momentum, normal vectors to surfaces, area calculations</li>
+</ul></div>
+<aside class="notes">Contrast with the dot product: dot gives a scalar (measures alignment), cross gives a vector (perpendicular to both inputs). Students often confuse the two at first.</aside>
+</section>
+
+<section>
+<section>
+<h2>Quick Review: Determinants</h2>
+<div class="defn-box fragment">
+  <div class="defn-title">Definition 1: 2 &times; 2 Determinant</div>
+  <p>\[\begin{vmatrix} a & b \\ c & d \end{vmatrix} = ad - bc\]</p>
+</div>
+<div class="example-box">
+  <div class="example-title">Example 1</div>
+  <p>Compute the determinant \(\begin{vmatrix} 2 & 3 \\ 4 & 1 \end{vmatrix}\).</p>
+</div>
+<div class="fragment"><p>\[\begin{vmatrix} 2 & 3 \\ 4 & 1 \end{vmatrix} = (2)(1) - (3)(4) = 2 - 12 = -10\]</p></div>
+</section>
+<section>
+<h2>Quick Review: Determinants</h2>
+<div class="defn-box fragment">
+  <div class="defn-title">Definition 2: 3 &times; 3 Determinant (Cofactor Expansion)</div>
+  <p>Expand along the <strong>first row</strong>:</p>
+<p>\[\begin{vmatrix} a_1 & a_2 & a_3 \\ b_1 & b_2 & b_3 \\ c_1 & c_2 & c_3 \end{vmatrix} = a_1 \begin{vmatrix} b_2 & b_3 \\ c_2 & c_3 \end{vmatrix} - a_2 \begin{vmatrix} b_1 & b_3 \\ c_1 & c_3 \end{vmatrix} + a_3 \begin{vmatrix} b_1 & b_2 \\ c_1 & c_2 \end{vmatrix}\]</p>
+<p>Notice the <strong>alternating signs</strong>: \(+\), \(-\), \(+\).</p>
+</div>
+<div class="example-box">
+  <div class="example-title">Example 2</div>
+  <p>Compute the determinant:</p>
+<p>\[\begin{vmatrix} 2 & 3 & 1 \\ 4 & 1 & -3 \\ -2 & 5 & 2 \end{vmatrix}\]</p>
+</div>
+<div class="fragment"><p class="work-prompt">Expand along the first row using the cofactor formula.</p></div>
+<div class="fragment"><p><strong>Setup:</strong> Expand along the first row with alternating signs \(+\), \(-\), \(+\):</p>
+<p>\[= 2\begin{vmatrix} 1 & -3 \\ 5 & 2 \end{vmatrix} - 3\begin{vmatrix} 4 & -3 \\ -2 & 2 \end{vmatrix} + 1\begin{vmatrix} 4 & 1 \\ -2 & 5 \end{vmatrix}\]</p></div>
+<div class="fragment"><p><strong>Expand</strong> each 2x2 determinant:</p>
+<p>\[= 2(1 \cdot 2 - (-3) \cdot 5) - 3(4 \cdot 2 - (-3)(-2)) + 1(4 \cdot 5 - 1 \cdot (-2))\]</p></div>
+<div class="key-point fragment"><p><strong>Simplify:</strong></p>
+<p>\[= 2(2 + 15) - 3(8 - 6) + 1(20 + 2) = 2(17) - 3(2) + 1(22) = 34 - 6 + 22 = 50\]</p>
+<p>Note: this gives a <strong>scalar</strong>.</p></div>
+<aside class="notes">Most students have seen 2x2 determinants. The 3x3 cofactor expansion is the key skill they'll need for the cross product formula.</aside>
+</section>
+</section>
+
+<section>
+<h2>The Cross Product Formula</h2>
+<div class="defn-box fragment">
+  <div class="defn-title">Definition 3: Cross Product</div>
+  <p>If \(\vec{a} = \langle a_1, a_2, a_3 \rangle\) and \(\vec{b} = \langle b_1, b_2, b_3 \rangle\), then:</p>
+<p>\[\vec{a} \times \vec{b} = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \\ a_1 & a_2 & a_3 \\ b_1 & b_2 & b_3 \end{vmatrix}\]</p>
+</div>
+<div class="fragment"><p>Expanding along the first row:</p>
+<p>\[\vec{a} \times \vec{b} = \vec{i}(a_2 b_3 - a_3 b_2) - \vec{j}(a_1 b_3 - a_3 b_1) + \vec{k}(a_1 b_2 - a_2 b_1)\]</p></div>
+<div class="key-point fragment"><p>The result is a <strong>vector</strong> (note the \(\vec{i}\), \(\vec{j}\), \(\vec{k}\)). This is a "symbolic" determinant &mdash; the first row contains vectors, not numbers.</p></div>
+<aside class="notes">Emphasize the minus sign on the j component &mdash; it's the most common source of errors. Some students find it helpful to cover the row and column of the entry they're expanding.</aside>
+</section>
+
+<section>
+<section>
+<h2>Example 3: Computing a Cross Product</h2>
+<div class="example-box">
+  <div class="example-title">Example 3</div>
+  <p>Let \(\vec{a} = \langle -1, 3, 4 \rangle\) and \(\vec{b} = \langle 5, 2, 1 \rangle\). Find \(\vec{a} \times \vec{b}\).</p>
+</div>
+<div class="fragment"><p class="work-prompt">Set up the 3x3 determinant and expand along the first row.</p></div>
+<div class="fragment"><p><strong>Step 1 &mdash; Set up the determinant:</strong></p>
+<p>\[\vec{a} \times \vec{b} = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \\ -1 & 3 & 4 \\ 5 & 2 & 1 \end{vmatrix}\]</p></div>
+<div class="fragment"><p><strong>Step 2 &mdash; Expand:</strong></p>
+<p>\[= \vec{i}(3 \cdot 1 - 4 \cdot 2) - \vec{j}((-1) \cdot 1 - 4 \cdot 5) + \vec{k}((-1) \cdot 2 - 3 \cdot 5)\]</p></div>
+<div class="fragment"><p><strong>Step 3 &mdash; Simplify:</strong></p>
+<p>\[= \vec{i}(3 - 8) - \vec{j}(-1 - 20) + \vec{k}(-2 - 15)\]</p>
+<p>\[= -5\,\vec{i} + 21\,\vec{j} - 17\,\vec{k} = \langle -5, 21, -17 \rangle\]</p></div>
+</section>
+<section>
+<h2>Example 3: Computing a Cross Product</h2>
+<div class="fragment"><p><strong>Verification:</strong> \(\vec{a} \times \vec{b}\) should be perpendicular to both inputs, so the dot products should be zero:</p>
+<p>\[\vec{a} \cdot (\vec{a} \times \vec{b}) = \langle -1, 3, 4 \rangle \cdot \langle -5, 21, -17 \rangle = 5 + 63 - 68 = 0 \;\checkmark\]</p></div>
+<div class="key-point fragment"><p>The result is a <strong>vector</strong>, and it's perpendicular to both inputs. Always verify with a quick dot product!</p></div>
+</section>
+</section>
+
+<section>
+<h2>Your Turn: Cross Product Practice</h2>
+<div class="example-box">
+  <div class="example-title">Example 4</div>
+  <p>Compute \(\langle 1, 0, 2 \rangle \times \langle 3, 1, -1 \rangle\).</p>
+</div>
+<div class="fragment"><p class="work-prompt">Set up the determinant and expand. Check your answer with a dot product.</p></div>
+<div class="fragment"><p><strong>Determinant setup:</strong></p>
+<p>\[\begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \\ 1 & 0 & 2 \\ 3 & 1 & -1 \end{vmatrix}\]</p></div>
+<div class="fragment"><p><strong>Expand:</strong></p>
+<p>\[= \vec{i}(0 \cdot (-1) - 2 \cdot 1) - \vec{j}(1 \cdot (-1) - 2 \cdot 3) + \vec{k}(1 \cdot 1 - 0 \cdot 3)\]</p>
+<p>\[= \vec{i}(0 - 2) - \vec{j}(-1 - 6) + \vec{k}(1 - 0)\]</p>
+<p>\[= \langle -2, 7, 1 \rangle\]</p></div>
+<div class="key-point fragment"><p><strong>Check:</strong> \(\langle 1, 0, 2 \rangle \cdot \langle -2, 7, 1 \rangle = -2 + 0 + 2 = 0\;\checkmark\)</p></div>
+</section>
+
+<section>
+<section>
+<h2>Key Properties of the Cross Product</h2>
+<div class="fragment"><p>Here are the properties you'll use most often:</p></div>
+<div class="fragment"><table>
+<thead><tr><th scope="col">Property</th><th scope="col">Meaning</th></tr></thead>
+<tbody>
+<tr><td>\(\vec{a} \times \vec{a} = \vec{0}\)</td><td>A vector is parallel to itself, so the cross product is the zero vector</td></tr>
+<tr><td>\(\vec{a} \times \vec{b}\) is orthogonal to both \(\vec{a}\) and \(\vec{b}\)</td><td>The result is perpendicular to both inputs</td></tr>
+<tr><td>\(\vec{a} \times \vec{b} = -(\vec{b} \times \vec{a})\)</td><td><strong>Anti-commutative</strong> &mdash; swapping order flips the sign</td></tr>
+</tbody>
+</table></div>
+<div class="key-point fragment"><p>Order matters! \(\vec{a} \times \vec{b} \neq \vec{b} \times \vec{a}\) (they point in <strong>opposite</strong> directions).</p></div>
+</section>
+<section>
+<h2>Key Properties of the Cross Product</h2>
+<div class="fragment"><div class="two-col">
+  <div><div><p><strong>Which direction does \(\vec{a} \times \vec{b}\) point?</strong> Use the <strong>right-hand rule</strong>:</p>
+<ol>
+<li>Point your fingers along \(\vec{a}\)</li>
+<li>Curl them toward \(\vec{b}\)</li>
+<li>Your <strong>thumb</strong> points in the direction of \(\vec{a} \times \vec{b}\)</li>
+</ol></div></div>
+  <div><div class="fig-container textbook-fig">
+  <a href="../figures/12_4_5.png" target="_blank" rel="noopener" class="fig-link" data-src="../figures/12_4_5.png"><img src="../figures/12_4_5.png" alt="Right-hand rule illustration: vectors a and b with angle theta between them, and a cross b pointing upward perpendicular to both. A right hand shows fingers curling from a toward b with the thumb pointing in the direction of a cross b." style="max-height:60vh;"></a>
+  <div class="fig-caption"><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></div>
+</div></div>
+</div></div>
+<aside class="notes">Have students physically do the right-hand rule at their desks. Switching the order (b cross a) gives the opposite direction &mdash; demonstrate with the left hand or by curling in the other direction.</aside>
+</section>
+</section>
+
+<section>
+<section>
+<h2>Magnitude of the Cross Product</h2>
+<div class="defn-box fragment">
+  <div class="defn-title">Definition 4: Magnitude Formula</div>
+  <p>\[|\vec{a} \times \vec{b}| = |\vec{a}|\,|\vec{b}|\,\sin\theta\]</p>
+<p>where \(\theta\) is the angle between \(\vec{a}\) and \(\vec{b}\) (\(0 \leq \theta \leq \pi\)).</p>
+</div>
+<div class="fragment"><p>Compare with the dot product:</p>
+<ul>
+<li><strong>Dot product:</strong> \(\vec{a} \cdot \vec{b} = |\vec{a}|\,|\vec{b}|\,\cos\theta\) &mdash; measures <strong>alignment</strong></li>
+<li><strong>Cross product magnitude:</strong> \(|\vec{a} \times \vec{b}| = |\vec{a}|\,|\vec{b}|\,\sin\theta\) &mdash; measures <strong>perpendicularity</strong></li>
+</ul></div>
+</section>
+<section>
+<h2>Magnitude of the Cross Product</h2>
+<div class="fragment"><p>If \(\theta = 0\) or \(\theta = \pi\) (vectors are <strong>parallel</strong>), then \(\sin\theta = 0\), so:</p></div>
+<div class="key-point fragment"><p>\(\vec{a}\) and \(\vec{b}\) are <strong>parallel</strong> if and only if \(\vec{a} \times \vec{b} = \vec{0}\).</p></div>
+<div class="fragment"><p>This gives us two tests:</p>
+<ul>
+<li><strong>Parallel test:</strong> \(\vec{a} \times \vec{b} = \vec{0}\)</li>
+<li><strong>Perpendicular test (from 12.3):</strong> \(\vec{a} \cdot \vec{b} = 0\)</li>
+</ul></div>
+<aside class="notes">Draw the analogy: dot product = 0 means perpendicular, cross product = 0 means parallel. They're complementary tools.</aside>
+</section>
+</section>
+
+<section>
+<h2>Area from the Cross Product</h2>
+<div class="fragment"><div class="two-col">
+  <div><div><p>Recall that the area of a parallelogram is base \(\times\) height:</p>
+<p>\[\text{Area} = |\vec{a}|\,(|\vec{b}|\sin\theta) = |\vec{a} \times \vec{b}|\]</p></div>
+<div class="key-point fragment"><ul>
+<li><strong>Parallelogram</strong> with sides \(\vec{a}\) and \(\vec{b}\): Area \(= |\vec{a} \times \vec{b}|\)</li>
+<li><strong>Triangle</strong> with sides \(\vec{a}\) and \(\vec{b}\): Area \(= \tfrac{1}{2}|\vec{a} \times \vec{b}|\)</li>
+</ul></div></div>
+  <div><div class="fig-container textbook-fig">
+  <a href="../figures/12_4_7.png" target="_blank" rel="noopener" class="fig-link" data-src="../figures/12_4_7.png"><img src="../figures/12_4_7.png" alt="Parallelogram with sides a and b, angle theta between them. A dashed line shows the height |b| sin theta, illustrating that the area equals |a| times |b| sin theta, which is the magnitude of a cross b." style="max-height:60vh;"></a>
+  <div class="fig-caption"><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></div>
+</div></div>
+</div></div>
+<div class="fragment"><p>This is incredibly useful: find the area of <strong>any triangle in 3D</strong> just from its three vertices!</p></div>
+<div class="fig-container fragment">
+  <a href="figures/triangle_area_parallelogram.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/triangle_area_parallelogram.png"><img src="figures/triangle_area_parallelogram.png" alt="3D triangle PQR with edge vectors PQ (red) and PR (green). Dashed lines complete a parallelogram. The triangle area equals half the parallelogram area, which is half the magnitude of PQ cross PR." style="max-height:60vh;"></a>
+  <div class="fig-caption"><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></div>
+</div>
+<aside class="notes">Draw the parallelogram on the board showing that |b|sin(theta) is the height. The triangle is half the parallelogram.</aside>
+</section>
+
+<section>
+<h2>Example 5: Normal Vector and Area from Three Points</h2>
+<div class="example-box">
+  <div class="example-title">Example 5</div>
+  <p>Given \(P(-2, 1, 7)\), \(Q(-3, 4, 11)\), and \(R(3, 3, 8)\):</p>
+<p>(a) Find a vector perpendicular to the plane through \(P\), \(Q\), \(R\).</p>
+<p>(b) Find the area of triangle \(PQR\).</p>
+</div>
+<div class="fragment"><p class="work-prompt">Form two edge vectors from P, then take their cross product.</p></div>
+<div class="fragment"><p><strong>Step 1 &mdash; Edge vectors:</strong></p>
+<p>\[\vec{PQ} = Q - P = \langle -3 - (-2),\; 4 - 1,\; 11 - 7 \rangle = \langle -1, 3, 4 \rangle\]</p>
+<p>\[\vec{PR} = R - P = \langle 3 - (-2),\; 3 - 1,\; 8 - 7 \rangle = \langle 5, 2, 1 \rangle\]</p></div>
+<div class="fragment"><p><strong>Step 2 &mdash; Normal vector</strong> (cross product &mdash; already computed in Example 3!):</p>
+<p>\[\vec{PQ} \times \vec{PR} = \langle -5, 21, -17 \rangle\]</p></div>
+<div class="key-point fragment"><p><strong>Step 3 &mdash; Area of triangle:</strong></p>
+<p>\[\text{Area} = \tfrac{1}{2}|\langle -5, 21, -17 \rangle| = \tfrac{1}{2}\sqrt{25 + 441 + 289} = \tfrac{1}{2}\sqrt{755} \approx 13.74\]</p></div>
+<div class="fragment"><div class="two-col">
+  <div><div class="key-point fragment"><p>The cross product of two edge vectors gives a <strong>normal vector</strong> to the plane &mdash; a vector pointing straight out of the surface. We'll use this constantly in Section 12.5.</p></div></div>
+  <div><div class="fig-container">
+  <a href="figures/normal_vector_plane.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/normal_vector_plane.png"><img src="figures/normal_vector_plane.png" alt="3D diagram of triangle PQR with edge vectors PQ (red) and PR (green) from P. The normal vector n = PQ cross PR (amber) rises from the centroid, perpendicular to the plane." style="max-height:60vh;"></a>
+  <div class="fig-caption"><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></div>
+</div></div>
+</div></div>
+</section>
+
+<section>
+<h2>Cross Products of the Standard Basis Vectors</h2>
+<div class="fragment"><p>The standard basis vectors \(\vec{i}\), \(\vec{j}\), \(\vec{k}\) follow a <strong>cyclic pattern</strong>:</p></div>
+<div class="fragment"><p><strong>Forward (cyclic order \(\vec{i} \to \vec{j} \to \vec{k} \to \vec{i}\)):</strong></p>
+<p>\[\vec{i} \times \vec{j} = \vec{k}, \qquad \vec{j} \times \vec{k} = \vec{i}, \qquad \vec{k} \times \vec{i} = \vec{j}\]</p></div>
+<div class="fragment"><p><strong>Backward (reversed order = negative):</strong></p>
+<p>\[\vec{j} \times \vec{i} = -\vec{k}, \qquad \vec{k} \times \vec{j} = -\vec{i}, \qquad \vec{i} \times \vec{k} = -\vec{j}\]</p></div>
+<div class="fragment"><div class="two-col">
+  <div><div class="key-point fragment"><p>Remember the cyclic pattern: \(\vec{i} \to \vec{j} \to \vec{k} \to \vec{i} \to \cdots\) Going forward gives a positive result; going backward gives a negative.</p></div></div>
+  <div><div class="fig-container">
+  <a href="figures/cyclic_ijk.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/cyclic_ijk.png"><img src="figures/cyclic_ijk.png" alt="Circular mnemonic diagram with i (red), j (green), k (blue) in a circle connected by clockwise arrows. Going clockwise: i cross j equals k, j cross k equals i, k cross i equals j. Reversing gives negatives." style="max-height:60vh;"></a>
+  <div class="fig-caption"><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></div>
+</div></div>
+</div></div>
+<aside class="notes">Draw the cyclic diagram on the board: i, j, k in a circle with arrows. Clockwise = positive, counterclockwise = negative (or vice versa depending on your convention).</aside>
+</section>
+
+<section>
+<h2>Section 12.4 Summary</h2>
+<div class="summary-grid">
+<div class="defn-box"><div class="defn-title">Cross Product</div><p class="small">\(\vec{a} \times \vec{b} = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \\ a_1 & a_2 & a_3 \\ b_1 & b_2 & b_3 \end{vmatrix}\)</p></div>
+<div class="defn-box"><div class="defn-title">Result</div><p class="small">Always a <strong>vector</strong>, perpendicular to both inputs</p></div>
+<div class="defn-box"><div class="defn-title">Direction</div><p class="small">Right-hand rule: curl from \(\vec{a}\) to \(\vec{b}\), thumb points along \(\vec{a} \times \vec{b}\)</p></div>
+<div class="defn-box"><div class="defn-title">Magnitude</div><p class="small">\(|\vec{a} \times \vec{b}| = |\vec{a}|\,|\vec{b}|\sin\theta\)</p></div>
+<div class="defn-box"><div class="defn-title">Parallel Test</div><p class="small">\(\vec{a} \times \vec{b} = \vec{0}\) iff \(\vec{a} \parallel \vec{b}\)</p></div>
+<div class="defn-box"><div class="defn-title">Area</div><p class="small">Parallelogram: \(|\vec{a} \times \vec{b}|\). Triangle: \(\tfrac{1}{2}|\vec{a} \times \vec{b}|\)</p></div>
+</div>
+<div class="key-point fragment"><p><strong>Dot product</strong> (\(\cos\theta\), scalar, perpendicularity test) and <strong>cross product</strong> (\(\sin\theta\), vector, parallel test) are complementary tools.</p></div>
+</section>
+
+<section>
+<h2>Homework</h2>
+<div class="hw-box"><h3>Section 12.4</h3>
+<p style="font-size:1.3em;color:var(--accent-amber);">2, 3, 13, 16, 17, 19, 27, 29, 43, 44</p>
+</div>
+<div class="key-point fragment" style="margin-top:1.5em;"><strong>Next time:</strong> Section 12.5 &mdash; Equations of Lines and Planes</div>
+</section>
+</div>
+</div>
+<!-- Lightbox overlay -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged figure" tabindex="-1">
+  <button class="lb-close" aria-label="Close lightbox">&times;</button>
+  <img src="" alt="">
+  <div class="lb-caption"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<script>
+Reveal.initialize({
+    hash: true, slideNumber: 'c/t', progress: true, center: false,
+    transition: 'slide', width: 1280, height: 800, margin: 0.04,
+    // Allow mouse wheel to scroll overflowing slide content instead of advancing
+    mouseWheel: false,
+    plugins: [RevealNotes]
+});
+Reveal.on('slidechanged', () => { MathJax?.typesetPromise?.(); });
+// Fragment auto-scroll: configurable via meta.fragment_scroll in content.yaml
+// Value is the max fraction down the slide viewport (0.0=top, 1.0=bottom)
+var FRAG_SCROLL_TARGET = 0.67;
+function findScrollContainer(el) {
+    var section = el.closest('section');
+    while (section) {
+        if (section.scrollHeight > section.clientHeight + 1) return section;
+        var parent = section.parentElement?.closest('section, .slides, .reveal');
+        if (!parent || parent === section) break;
+        section = parent;
+    }
+    return null;
+}
+function scrollToFragment(frag, direction) {
+    var container = findScrollContainer(frag);
+    if (!container) return;
+    var fragRect = frag.getBoundingClientRect();
+    var containerRect = container.getBoundingClientRect();
+    // Reveal.js scales slides via CSS transform — account for the scale factor
+    var scale = containerRect.height / container.clientHeight || 1;
+    // Convert screen-space positions to unscaled slide-space
+    var fragBottom = (fragRect.bottom - containerRect.top) / scale + container.scrollTop;
+    var fragTop = (fragRect.top - containerRect.top) / scale + container.scrollTop;
+    var targetLine = container.clientHeight * FRAG_SCROLL_TARGET;
+    if (direction === 'forward') {
+        // Scroll so the fragment's bottom is at the target line
+        var desiredScrollTop = fragBottom - targetLine;
+        if (desiredScrollTop > container.scrollTop) {
+            container.scrollTo({ top: desiredScrollTop, behavior: 'smooth' });
+        }
+    } else {
+        // Scrolling backward: find the previous visible fragment and scroll to it
+        // If the fragment's top is above the viewport, scroll up to show it
+        var desiredScrollTop = fragTop - targetLine * 0.5;
+        if (desiredScrollTop < container.scrollTop) {
+            container.scrollTo({ top: Math.max(0, desiredScrollTop), behavior: 'smooth' });
+        }
+    }
+}
+// Add spacer to scrollable slides so the last fragment can scroll up to the target line
+Reveal.on('ready', () => {
+    var slideH = Reveal.getConfig().height || 800;
+    var spacerH = Math.round((1 - FRAG_SCROLL_TARGET) * slideH);
+    document.querySelectorAll('.reveal .slides > section, .reveal .slides > section > section').forEach(function(s) {
+        if (s.querySelector('.fragment')) {
+            var spacer = document.createElement('div');
+            spacer.style.height = spacerH + 'px';
+            spacer.style.pointerEvents = 'none';
+            spacer.setAttribute('aria-hidden', 'true');
+            s.appendChild(spacer);
+        }
+    });
+});
+Reveal.on('fragmentshown', (event) => {
+    MathJax?.typesetPromise?.();
+    if (!event.fragment) return;
+    setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
+});
+Reveal.on('fragmenthidden', (event) => {
+    MathJax?.typesetPromise?.();
+    if (!event.fragment) return;
+    // Scroll back to the previous fragment or top of slide
+    var prev = event.fragment.previousElementSibling;
+    while (prev && !prev.classList.contains('fragment')) {
+        prev = prev.previousElementSibling;
+    }
+    var target = prev || event.fragment.closest('section')?.querySelector('h2') || event.fragment;
+    setTimeout(function() { scrollToFragment(target, 'backward'); }, 80);
+});
+Reveal.on('ready', () => { MathJax?.typesetPromise?.(); });
+
+// ── Resize Plotly figures when slides become visible ──
+function resizePlotlyInSlide(event) {
+    var slide = event?.currentSlide || document.querySelector('.reveal .present');
+    if (!slide) return;
+    slide.querySelectorAll('.js-plotly-plot').forEach(function(gd) {
+        Plotly.Plots.resize(gd);
+    });
+}
+Reveal.on('slidechanged', resizePlotlyInSlide);
+Reveal.on('ready', resizePlotlyInSlide);
+Reveal.on('fragmentshown', function(event) {
+    var frag = event.fragment;
+    frag.querySelectorAll('.js-plotly-plot').forEach(function(gd) {
+        Plotly.Plots.resize(gd);
+    });
+});
+
+// ── Lightbox for figures (accessible: focus trap, focus return) ──
+(function() {
+    const lb = document.getElementById('lightbox');
+    const lbImg = lb.querySelector('img');
+    const lbCap = lb.querySelector('.lb-caption');
+    const lbClose = lb.querySelector('.lb-close');
+    var triggerEl = null;
+
+    function openLightbox(src, alt, caption) {
+        lbImg.src = src;
+        lbImg.alt = alt;
+        lbCap.textContent = caption || alt;
+        lb.classList.add('active');
+        lbClose.focus();
+    }
+
+    function closeLightbox() {
+        lb.classList.remove('active');
+        lbImg.src = '';
+        if (triggerEl) { triggerEl.focus(); triggerEl = null; }
+    }
+
+    // Open lightbox on figure click (prevent default link navigation)
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.fig-link');
+        if (!link) return;
+        e.preventDefault();
+        e.stopPropagation();
+        triggerEl = link;
+        var src = link.getAttribute('data-src');
+        var alt = link.querySelector('img')?.alt || '';
+        var caption = link.closest('.fig-container')?.querySelector('.fig-caption')?.textContent || '';
+        openLightbox(src, alt, caption);
+    });
+
+    // Close on click anywhere on overlay
+    lb.addEventListener('click', function() { closeLightbox(); });
+
+    // Prevent closing when clicking the image itself (let user right-click → open in tab)
+    lbImg.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    // Close on Escape; trap Tab within lightbox
+    document.addEventListener('keydown', function(e) {
+        if (!lb.classList.contains('active')) return;
+        if (e.key === 'Escape') { closeLightbox(); }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            lbClose.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>
