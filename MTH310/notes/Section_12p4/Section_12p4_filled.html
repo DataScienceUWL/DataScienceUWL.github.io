@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 12.4: The Cross Product | MTH 310</title>
+<style>
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #e09f3e;
+    --bg: #ffffff; --fg: #1a1a1a;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; max-width: 900px;
+    margin: 0 auto; padding: 1em 2em; color: var(--fg); background: var(--bg);
+    font-size: 1.05rem; line-height: 1.6; }
+h1 { font-size: 1.8em; color: var(--accent-cyan); border-bottom: 3px solid var(--accent-cyan);
+    padding-bottom: 0.2em; }
+h2 { font-size: 1.4em; color: var(--accent-cyan); margin-top: 1.5em;
+    border-bottom: 1px solid #ddd; padding-bottom: 0.15em; }
+h3 { font-size: 1.1em; margin: 0.5em 0 0.2em 0; }
+h4 { font-size: 1em; color: var(--accent-cyan); margin: 0.3em 0; }
+p { margin: 0.5em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 1em 0; }
+.course-info { color: #666; font-size: 0.9em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-cyan);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.defn-box h3, .defn-box .defn-title { color: var(--accent-red); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box h3, .theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.example-box h3, .example-box .example-title { color: var(--accent-green); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.solution { border: 1px solid #ddd; border-radius: 4px; margin: 0.5em 0; }
+.solution summary { padding: 0.5em 0.8em; cursor: pointer; font-weight: 600;
+    color: #8a6200; background: #fffdf5; border-radius: 4px; }
+.solution > div, .solution > p, .solution > ul, .solution > ol {
+    padding: 0.5em 1em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 4px;
+    padding: 0.8em 1em; margin: 0.8em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #595959; margin: 0.5em 0; font-size: 0.9em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red); border-radius: 6px;
+    padding: 0.8em 1.2em; text-align: center; margin: 1em 0; font-size: 1.1em; }
+.desmos-container { text-align: center; margin: 1em 0; }
+.desmos-container figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.desmos-container iframe { border: 1px solid #ddd; border-radius: 6px; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.2em;
+    color: var(--accent-cyan); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+figure { margin: 0.8em 0; text-align: center; }
+figure img { max-width: 100%; height: auto; max-height: 500px; border-radius: 4px; }
+figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 4px; border: 1px solid #ddd; }
+.plotly-figure { border-radius: 4px; overflow: hidden; margin: 0.5em 0; }
+.plotly-figure .js-plotly-plot { width: 100% !important; height: 100% !important; }
+.plotly-alt { margin-top: 0.3em; font-size: 0.85em; color: #666; }
+.plotly-alt summary { cursor: pointer; color: var(--accent-cyan); }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 1em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.5em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 200px; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.8em; color: #666; }
+table { border-collapse: collapse; margin: 0.5em 0; }
+th, td { padding: 0.3em 0.8em; border: 1px solid #ddd; text-align: center; }
+th { background: #f0f7ff; color: var(--accent-cyan); }
+.small { font-size: 0.85em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+a { color: var(--accent-cyan); }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media (max-width: 600px) {
+    body { padding: 0.5em 1em; }
+    .summary-grid { grid-template-columns: 1fr; }
+}
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <h1>Section 12.4: The Cross Product</h1>
+  <p class="course-info">MTH 310 &mdash; Calculus III | Vectors and the Geometry of Space</p>
+</header>
+<hr aria-hidden="true">
+
+<section aria-label="The Cross Product &mdash; A New Kind of Product">
+  <h2>The Cross Product &mdash; A New Kind of Product</h2>
+  <div><p>The <strong>dot product</strong> takes two vectors and returns a <strong>scalar</strong> (\(\vec{a} \cdot \vec{b} \in \mathbb{R}\)).</p>
+<p>Now we introduce a second way to multiply vectors:</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The <strong>cross product</strong> \(\vec{a} \times \vec{b}\) takes two vectors in \(\mathbb{R}^3\) and returns a <strong>vector</strong> that is <strong>perpendicular</strong> to both \(\vec{a}\) and \(\vec{b}\).</p></aside>
+<div><ul>
+<li>The cross product is <strong>only defined in 3D</strong> (not 2D!)</li>
+<li>It's used everywhere: torque, angular momentum, normal vectors to surfaces, area calculations</li>
+</ul></div>
+</section>
+
+<section aria-label="Quick Review: Determinants">
+  <h2>Quick Review: Determinants</h2>
+  <section class="defn-box" role="region" aria-label="Definition 1: 2 &times; 2 Determinant">
+  <h3 class="defn-title">Definition 1: 2 &times; 2 Determinant</h3>
+  <p>\[\begin{vmatrix} a & b \\ c & d \end{vmatrix} = ad - bc\]</p>
+</section>
+<section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Compute the determinant \(\begin{vmatrix} 2 & 3 \\ 4 & 1 \end{vmatrix}\).</p>
+</section>
+<div><p>\[\begin{vmatrix} 2 & 3 \\ 4 & 1 \end{vmatrix} = (2)(1) - (3)(4) = 2 - 12 = -10\]</p></div>
+
+<section class="defn-box" role="region" aria-label="Definition 2: 3 &times; 3 Determinant (Cofactor Expansion)">
+  <h3 class="defn-title">Definition 2: 3 &times; 3 Determinant (Cofactor Expansion)</h3>
+  <p>Expand along the <strong>first row</strong>:</p>
+<p>\[\begin{vmatrix} a_1 & a_2 & a_3 \\ b_1 & b_2 & b_3 \\ c_1 & c_2 & c_3 \end{vmatrix} = a_1 \begin{vmatrix} b_2 & b_3 \\ c_2 & c_3 \end{vmatrix} - a_2 \begin{vmatrix} b_1 & b_3 \\ c_1 & c_3 \end{vmatrix} + a_3 \begin{vmatrix} b_1 & b_2 \\ c_1 & c_2 \end{vmatrix}\]</p>
+<p>Notice the <strong>alternating signs</strong>: \(+\), \(-\), \(+\).</p>
+</section>
+<section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Compute the determinant:</p>
+<p>\[\begin{vmatrix} 2 & 3 & 1 \\ 4 & 1 & -3 \\ -2 & 5 & 2 \end{vmatrix}\]</p>
+</section>
+<p class="work-prompt">Expand along the first row using the cofactor formula.</p>
+<div><p><strong>Setup:</strong> Expand along the first row with alternating signs \(+\), \(-\), \(+\):</p>
+<p>\[= 2\begin{vmatrix} 1 & -3 \\ 5 & 2 \end{vmatrix} - 3\begin{vmatrix} 4 & -3 \\ -2 & 2 \end{vmatrix} + 1\begin{vmatrix} 4 & 1 \\ -2 & 5 \end{vmatrix}\]</p></div>
+<div><p><strong>Expand</strong> each 2x2 determinant:</p>
+<p>\[= 2(1 \cdot 2 - (-3) \cdot 5) - 3(4 \cdot 2 - (-3)(-2)) + 1(4 \cdot 5 - 1 \cdot (-2))\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Simplify:</strong></p>
+<p>\[= 2(2 + 15) - 3(8 - 6) + 1(20 + 2) = 2(17) - 3(2) + 1(22) = 34 - 6 + 22 = 50\]</p>
+<p>Note: this gives a <strong>scalar</strong>.</p></aside>
+</section>
+
+<section aria-label="The Cross Product Formula">
+  <h2>The Cross Product Formula</h2>
+  <section class="defn-box" role="region" aria-label="Definition 3: Cross Product">
+  <h3 class="defn-title">Definition 3: Cross Product</h3>
+  <p>If \(\vec{a} = \langle a_1, a_2, a_3 \rangle\) and \(\vec{b} = \langle b_1, b_2, b_3 \rangle\), then:</p>
+<p>\[\vec{a} \times \vec{b} = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \\ a_1 & a_2 & a_3 \\ b_1 & b_2 & b_3 \end{vmatrix}\]</p>
+</section>
+<div><p>Expanding along the first row:</p>
+<p>\[\vec{a} \times \vec{b} = \vec{i}(a_2 b_3 - a_3 b_2) - \vec{j}(a_1 b_3 - a_3 b_1) + \vec{k}(a_1 b_2 - a_2 b_1)\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The result is a <strong>vector</strong> (note the \(\vec{i}\), \(\vec{j}\), \(\vec{k}\)). This is a "symbolic" determinant &mdash; the first row contains vectors, not numbers.</p></aside>
+</section>
+
+<section aria-label="Example 3: Computing a Cross Product">
+  <h2>Example 3: Computing a Cross Product</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Let \(\vec{a} = \langle -1, 3, 4 \rangle\) and \(\vec{b} = \langle 5, 2, 1 \rangle\). Find \(\vec{a} \times \vec{b}\).</p>
+</section>
+<p class="work-prompt">Set up the 3x3 determinant and expand along the first row.</p>
+<div><p><strong>Step 1 &mdash; Set up the determinant:</strong></p>
+<p>\[\vec{a} \times \vec{b} = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \\ -1 & 3 & 4 \\ 5 & 2 & 1 \end{vmatrix}\]</p></div>
+<div><p><strong>Step 2 &mdash; Expand:</strong></p>
+<p>\[= \vec{i}(3 \cdot 1 - 4 \cdot 2) - \vec{j}((-1) \cdot 1 - 4 \cdot 5) + \vec{k}((-1) \cdot 2 - 3 \cdot 5)\]</p></div>
+<div><p><strong>Step 3 &mdash; Simplify:</strong></p>
+<p>\[= \vec{i}(3 - 8) - \vec{j}(-1 - 20) + \vec{k}(-2 - 15)\]</p>
+<p>\[= -5\,\vec{i} + 21\,\vec{j} - 17\,\vec{k} = \langle -5, 21, -17 \rangle\]</p></div>
+
+<div><p><strong>Verification:</strong> \(\vec{a} \times \vec{b}\) should be perpendicular to both inputs, so the dot products should be zero:</p>
+<p>\[\vec{a} \cdot (\vec{a} \times \vec{b}) = \langle -1, 3, 4 \rangle \cdot \langle -5, 21, -17 \rangle = 5 + 63 - 68 = 0 \;\checkmark\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The result is a <strong>vector</strong>, and it's perpendicular to both inputs. Always verify with a quick dot product!</p></aside>
+</section>
+
+<section aria-label="Your Turn: Cross Product Practice">
+  <h2>Your Turn: Cross Product Practice</h2>
+  <section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>Compute \(\langle 1, 0, 2 \rangle \times \langle 3, 1, -1 \rangle\).</p>
+</section>
+<p class="work-prompt">Set up the determinant and expand. Check your answer with a dot product.</p>
+<div><p><strong>Determinant setup:</strong></p>
+<p>\[\begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \\ 1 & 0 & 2 \\ 3 & 1 & -1 \end{vmatrix}\]</p></div>
+<div><p><strong>Expand:</strong></p>
+<p>\[= \vec{i}(0 \cdot (-1) - 2 \cdot 1) - \vec{j}(1 \cdot (-1) - 2 \cdot 3) + \vec{k}(1 \cdot 1 - 0 \cdot 3)\]</p>
+<p>\[= \vec{i}(0 - 2) - \vec{j}(-1 - 6) + \vec{k}(1 - 0)\]</p>
+<p>\[= \langle -2, 7, 1 \rangle\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Check:</strong> \(\langle 1, 0, 2 \rangle \cdot \langle -2, 7, 1 \rangle = -2 + 0 + 2 = 0\;\checkmark\)</p></aside>
+</section>
+
+<section aria-label="Key Properties of the Cross Product">
+  <h2>Key Properties of the Cross Product</h2>
+  <div><p>Here are the properties you'll use most often:</p></div>
+<table>
+<thead><tr><th scope="col">Property</th><th scope="col">Meaning</th></tr></thead>
+<tbody>
+<tr><td>\(\vec{a} \times \vec{a} = \vec{0}\)</td><td>A vector is parallel to itself, so the cross product is the zero vector</td></tr>
+<tr><td>\(\vec{a} \times \vec{b}\) is orthogonal to both \(\vec{a}\) and \(\vec{b}\)</td><td>The result is perpendicular to both inputs</td></tr>
+<tr><td>\(\vec{a} \times \vec{b} = -(\vec{b} \times \vec{a})\)</td><td><strong>Anti-commutative</strong> &mdash; swapping order flips the sign</td></tr>
+</tbody>
+</table>
+<aside class="key-point" role="note" aria-label="Key point"><p>Order matters! \(\vec{a} \times \vec{b} \neq \vec{b} \times \vec{a}\) (they point in <strong>opposite</strong> directions).</p></aside>
+
+<div><p><strong>Which direction does \(\vec{a} \times \vec{b}\) point?</strong> Use the <strong>right-hand rule</strong>:</p>
+<ol>
+<li>Point your fingers along \(\vec{a}\)</li>
+<li>Curl them toward \(\vec{b}\)</li>
+<li>Your <strong>thumb</strong> points in the direction of \(\vec{a} \times \vec{b}\)</li>
+</ol></div>
+<figure class="textbook-fig">
+  <img src="../figures/12_4_5.png" alt="Right-hand rule illustration: vectors a and b with angle theta between them, and a cross b pointing upward perpendicular to both. A right hand shows fingers curling from a toward b with the thumb pointing in the direction of a cross b." style="max-width:100%; max-height:500px;">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+</section>
+
+<section aria-label="Magnitude of the Cross Product">
+  <h2>Magnitude of the Cross Product</h2>
+  <section class="defn-box" role="region" aria-label="Definition 4: Magnitude Formula">
+  <h3 class="defn-title">Definition 4: Magnitude Formula</h3>
+  <p>\[|\vec{a} \times \vec{b}| = |\vec{a}|\,|\vec{b}|\,\sin\theta\]</p>
+<p>where \(\theta\) is the angle between \(\vec{a}\) and \(\vec{b}\) (\(0 \leq \theta \leq \pi\)).</p>
+</section>
+<div><p>Compare with the dot product:</p>
+<ul>
+<li><strong>Dot product:</strong> \(\vec{a} \cdot \vec{b} = |\vec{a}|\,|\vec{b}|\,\cos\theta\) &mdash; measures <strong>alignment</strong></li>
+<li><strong>Cross product magnitude:</strong> \(|\vec{a} \times \vec{b}| = |\vec{a}|\,|\vec{b}|\,\sin\theta\) &mdash; measures <strong>perpendicularity</strong></li>
+</ul></div>
+
+<div><p>If \(\theta = 0\) or \(\theta = \pi\) (vectors are <strong>parallel</strong>), then \(\sin\theta = 0\), so:</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\vec{a}\) and \(\vec{b}\) are <strong>parallel</strong> if and only if \(\vec{a} \times \vec{b} = \vec{0}\).</p></aside>
+<div><p>This gives us two tests:</p>
+<ul>
+<li><strong>Parallel test:</strong> \(\vec{a} \times \vec{b} = \vec{0}\)</li>
+<li><strong>Perpendicular test (from 12.3):</strong> \(\vec{a} \cdot \vec{b} = 0\)</li>
+</ul></div>
+</section>
+
+<section aria-label="Area from the Cross Product">
+  <h2>Area from the Cross Product</h2>
+  <div><p>Recall that the area of a parallelogram is base \(\times\) height:</p>
+<p>\[\text{Area} = |\vec{a}|\,(|\vec{b}|\sin\theta) = |\vec{a} \times \vec{b}|\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><ul>
+<li><strong>Parallelogram</strong> with sides \(\vec{a}\) and \(\vec{b}\): Area \(= |\vec{a} \times \vec{b}|\)</li>
+<li><strong>Triangle</strong> with sides \(\vec{a}\) and \(\vec{b}\): Area \(= \tfrac{1}{2}|\vec{a} \times \vec{b}|\)</li>
+</ul></aside>
+<figure class="textbook-fig">
+  <img src="../figures/12_4_7.png" alt="Parallelogram with sides a and b, angle theta between them. A dashed line shows the height |b| sin theta, illustrating that the area equals |a| times |b| sin theta, which is the magnitude of a cross b." style="max-width:100%; max-height:500px;">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+<div><p>This is incredibly useful: find the area of <strong>any triangle in 3D</strong> just from its three vertices!</p></div>
+<figure>
+  <img src="figures/triangle_area_parallelogram.png" alt="3D triangle PQR with edge vectors PQ (red) and PR (green). Dashed lines complete a parallelogram. The triangle area equals half the parallelogram area, which is half the magnitude of PQ cross PR." style="max-width:100%; max-height:500px;">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+</section>
+
+<section aria-label="Example 5: Normal Vector and Area from Three Points">
+  <h2>Example 5: Normal Vector and Area from Three Points</h2>
+  <section class="example-box" role="region" aria-label="Example 5">
+  <h3 class="example-title">Example 5</h3>
+  <p>Given \(P(-2, 1, 7)\), \(Q(-3, 4, 11)\), and \(R(3, 3, 8)\):</p>
+<p>(a) Find a vector perpendicular to the plane through \(P\), \(Q\), \(R\).</p>
+<p>(b) Find the area of triangle \(PQR\).</p>
+</section>
+<p class="work-prompt">Form two edge vectors from P, then take their cross product.</p>
+<div><p><strong>Step 1 &mdash; Edge vectors:</strong></p>
+<p>\[\vec{PQ} = Q - P = \langle -3 - (-2),\; 4 - 1,\; 11 - 7 \rangle = \langle -1, 3, 4 \rangle\]</p>
+<p>\[\vec{PR} = R - P = \langle 3 - (-2),\; 3 - 1,\; 8 - 7 \rangle = \langle 5, 2, 1 \rangle\]</p></div>
+<div><p><strong>Step 2 &mdash; Normal vector</strong> (cross product &mdash; already computed in Example 3!):</p>
+<p>\[\vec{PQ} \times \vec{PR} = \langle -5, 21, -17 \rangle\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Step 3 &mdash; Area of triangle:</strong></p>
+<p>\[\text{Area} = \tfrac{1}{2}|\langle -5, 21, -17 \rangle| = \tfrac{1}{2}\sqrt{25 + 441 + 289} = \tfrac{1}{2}\sqrt{755} \approx 13.74\]</p></aside>
+<aside class="key-point" role="note" aria-label="Key point"><p>The cross product of two edge vectors gives a <strong>normal vector</strong> to the plane &mdash; a vector pointing straight out of the surface. We'll use this constantly in Section 12.5.</p></aside>
+<figure>
+  <img src="figures/normal_vector_plane.png" alt="3D diagram of triangle PQR with edge vectors PQ (red) and PR (green) from P. The normal vector n = PQ cross PR (amber) rises from the centroid, perpendicular to the plane." style="max-width:100%; max-height:500px;">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+</section>
+
+<section aria-label="Cross Products of the Standard Basis Vectors">
+  <h2>Cross Products of the Standard Basis Vectors</h2>
+  <div><p>The standard basis vectors \(\vec{i}\), \(\vec{j}\), \(\vec{k}\) follow a <strong>cyclic pattern</strong>:</p></div>
+<div><p><strong>Forward (cyclic order \(\vec{i} \to \vec{j} \to \vec{k} \to \vec{i}\)):</strong></p>
+<p>\[\vec{i} \times \vec{j} = \vec{k}, \qquad \vec{j} \times \vec{k} = \vec{i}, \qquad \vec{k} \times \vec{i} = \vec{j}\]</p></div>
+<div><p><strong>Backward (reversed order = negative):</strong></p>
+<p>\[\vec{j} \times \vec{i} = -\vec{k}, \qquad \vec{k} \times \vec{j} = -\vec{i}, \qquad \vec{i} \times \vec{k} = -\vec{j}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Remember the cyclic pattern: \(\vec{i} \to \vec{j} \to \vec{k} \to \vec{i} \to \cdots\) Going forward gives a positive result; going backward gives a negative.</p></aside>
+<figure>
+  <img src="figures/cyclic_ijk.png" alt="Circular mnemonic diagram with i (red), j (green), k (blue) in a circle connected by clockwise arrows. Going clockwise: i cross j equals k, j cross k equals i, k cross i equals j. Reversing gives negatives." style="max-width:100%; max-height:500px;">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+</section>
+
+<section aria-label="Section 12.4 Summary">
+  <h2>Section 12.4 Summary</h2>
+  <div class="summary-grid">
+<section class="defn-box" role="region" aria-label="Cross Product"><h4>Cross Product</h4><p>\(\vec{a} \times \vec{b} = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \\ a_1 & a_2 & a_3 \\ b_1 & b_2 & b_3 \end{vmatrix}\)</p></section>
+<section class="defn-box" role="region" aria-label="Result"><h4>Result</h4><p>Always a <strong>vector</strong>, perpendicular to both inputs</p></section>
+<section class="defn-box" role="region" aria-label="Direction"><h4>Direction</h4><p>Right-hand rule: curl from \(\vec{a}\) to \(\vec{b}\), thumb points along \(\vec{a} \times \vec{b}\)</p></section>
+<section class="defn-box" role="region" aria-label="Magnitude"><h4>Magnitude</h4><p>\(|\vec{a} \times \vec{b}| = |\vec{a}|\,|\vec{b}|\sin\theta\)</p></section>
+<section class="defn-box" role="region" aria-label="Parallel Test"><h4>Parallel Test</h4><p>\(\vec{a} \times \vec{b} = \vec{0}\) iff \(\vec{a} \parallel \vec{b}\)</p></section>
+<section class="defn-box" role="region" aria-label="Area"><h4>Area</h4><p>Parallelogram: \(|\vec{a} \times \vec{b}|\). Triangle: \(\tfrac{1}{2}|\vec{a} \times \vec{b}|\)</p></section>
+</div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Dot product</strong> (\(\cos\theta\), scalar, perpendicularity test) and <strong>cross product</strong> (\(\sin\theta\), vector, parallel test) are complementary tools.</p></aside>
+</section>
+
+<section aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 12.4:</strong> 2, 3, 13, 16, 17, 19, 27, 29, 43, 44</div>
+</section>
+</main>
+</body>
+</html>

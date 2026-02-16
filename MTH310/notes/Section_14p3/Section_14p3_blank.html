@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 14.3: Partial Derivatives &mdash; Handout</title>
+<style>
+@page { size: letter; margin: 0.4in 0.5in; }
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #b5850e;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    max-width: 7.5in; margin: 0 auto; padding: 0.3em;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.35; }
+.handout-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left h1 { font-size: 1.3em; color: var(--accent-cyan); margin: 0; }
+.header-left p { margin: 0.05em 0; color: #666; font-size: 0.85em; }
+.header-right { text-align: right; font-size: 0.85em; color: #333; }
+hr { border: none; border-top: 2px solid var(--accent-cyan); margin: 0.3em 0; }
+h2 { font-size: 1.1em; color: var(--accent-cyan); margin: 0.4em 0 0.15em 0;
+    border-bottom: 1px solid #ccc; padding-bottom: 0.05em; }
+h3, h4 { font-size: 0.95em; margin: 0.15em 0; }
+p { margin: 0.15em 0; }
+.defn-box { background: #f0f7ff; border-left: 3px solid var(--accent-cyan);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 3px solid var(--accent-green);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
+    padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
+.blank-space { margin: 0.2em 0; position: relative;
+    border: 1px dashed #ccc; border-radius: 3px; box-sizing: border-box; }
+.blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
+    color: #767676; font-style: italic; }
+.hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
+    padding: 0.3em 0.8em; text-align: center; margin: 0.5em 0; }
+.desmos-link { background: #f0f7ff; border-radius: 3px; padding: 0.2em 0.5em;
+    margin: 0.3em 0; font-size: 0.8em; }
+.desmos-link a { color: var(--accent-cyan); word-break: break-all; }
+.two-col-print { display: flex; gap: 0.6em; align-items: flex-start; }
+.two-col-print > * { flex: 1; }
+figure { margin: 0.1em 0; text-align: center; }
+figure img { max-width: 100%; max-height: 3.0in; }
+figcaption { font-size: 0.7em; color: #666; margin-top: 0.05em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 2px; border: 1px solid #ddd; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.image-grid { display: flex; gap: 0.4em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.2em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.8em; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 1.5in; max-width: 100%; }
+.image-grid .grid-cell.textbook-fig img { padding: 2px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+table { border-collapse: collapse; font-size: 0.85em; margin: 0.15em auto; }
+th, td { padding: 0.1em 0.4em; border: 1px solid #ccc; text-align: center; }
+th { background: #f0f7ff; }
+.small { font-size: 0.8em; }
+ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
+li { margin-bottom: 0.05em; }
+.pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
+.homework-section { page-break-before: auto; }
+.defn-box, .example-box, .key-point { page-break-inside: avoid; break-inside: avoid; }
+.example-group { page-break-inside: avoid; break-inside: avoid; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media print {
+    body { padding: 0; max-width: none; }
+    .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    a::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    figure img { max-height: 2.8in; }
+    .skip-link { display: none; }
+}
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <div class="handout-header">
+    <div class="header-left">
+      <h1>Section 14.3: Partial Derivatives</h1>
+      <p>Partial Derivatives</p>
+    </div>
+    <div class="header-right">
+      <p>MTH 310<br>Calculus III</p>
+    </div>
+  </div>
+</header>
+<hr aria-hidden="true">
+
+<section aria-label="Partial Derivatives &mdash; Motivation and Definition">
+  <h2>Partial Derivatives &mdash; Motivation and Definition</h2>
+  <div><p>In Calc I, \(f'(x)\) measures how \(f\) changes as \(x\) changes.</p>
+<p>For \(f(x,y)\), we have <strong>two</strong> input variables. How do we measure the rate of change?</p>
+<p><strong>Idea:</strong> Change one variable at a time, holding the other constant.</p></div>
+<section class="defn-box" role="region" aria-label="Partial Derivatives">
+  <h3 class="defn-title">Partial Derivatives</h3>
+  <p>\[f_x(x,y) = \lim_{h \to 0} \frac{f(x+h,\, y) - f(x,y)}{h}\]</p>
+<p>\[f_y(x,y) = \lim_{k \to 0} \frac{f(x,\, y+k) - f(x,y)}{k}\]</p>
+</section>
+<div><p><strong>Notation:</strong> All of these mean the same thing:</p>
+<p>\[f_x = \frac{\partial f}{\partial x} = \frac{\partial}{\partial x} f(x,y) = D_x f\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>These are just Calc I derivatives in disguise. The only new idea: <strong>hold the other variable constant</strong>.</p></aside>
+</section>
+
+<section aria-label="Computing Partial Derivatives">
+  <h2>Computing Partial Derivatives</h2>
+  <div><p><strong>The Rule:</strong> To find \(f_x\), treat \(y\) as a constant and differentiate with respect to \(x\) using all your Calc I rules.</p>
+<p>For \(f_y\), treat \(x\) as a constant and differentiate with respect to \(y\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>You already know how to do this! Every derivative rule from Calc I (power, product, quotient, chain) still applies &mdash; you're just ignoring one variable.</p></aside>
+</section>
+
+<section class="example-group" aria-label="Example 1: Polynomial Partials">
+  <h2>Example 1: Polynomial Partials</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Find \(f_x\) and \(f_y\) for \(f(x,y) = 3x^2 y + xy^2 + y - 1\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: For f_x, treat y as a constant. For f_y, treat x as a constant." style="min-height:1in;">
+  <div class="blank-prompt">For f_x, treat y as a constant. For f_y, treat x as a constant.</div>
+</div>
+</section>
+
+<section class="example-group" aria-label="Your Turn: Compute Partials">
+  <h2>Your Turn: Compute Partials</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Find \(f_x\) and \(f_y\) for \(f(x,y) = x^2 \ln y + y \sin x\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: For f_x, treat y as a constant — which terms involve x? For f_y, treat x as a constant." style="min-height:1.75in;">
+  <div class="blank-prompt">For f_x, treat y as a constant — which terms involve x? For f_y, treat x as a constant.</div>
+</div>
+</section>
+
+<section aria-label="Geometric Interpretation of Partial Derivatives">
+  <h2>Geometric Interpretation of Partial Derivatives</h2>
+  <div class="two-col-print">
+  <div><div><p>Slice the surface \(z = f(x,y)\) with the plane \(y = b\).</p>
+<p>This gives a <strong>trace curve</strong> \(C_1\) in the \(xz\)-plane.</p>
+<p>\(f_x(a,b)\) = <strong>slope of the tangent</strong> to \(C_1\) at the point \((a,\, b,\, f(a,b))\).</p></div>
+<div><p>Similarly, slicing with \(x = a\) gives a trace \(C_2\), and \(f_y(a,b)\) is the slope of the tangent to \(C_2\).</p></div></div>
+  <div><figure>
+  <img src="figures/partial_deriv_geometry.png" alt="A 3D surface with two trace curves: C1 (red) is the intersection of the surface with the plane y=b, and C2 (green) is the intersection with the plane x=a. Dashed tangent lines show the slopes f_x and f_y at the point P(a,b,f(a,b)).">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+</div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(f_x(a,b)\) = slope in the <strong>\(x\)-direction</strong>. \(f_y(a,b)\) = slope in the <strong>\(y\)-direction</strong>. Each partial derivative captures only <strong>one direction</strong> of change.</p></aside>
+</section>
+
+<section class="example-group" aria-label="Example 3: Different Rules for Different Variables">
+  <h2>Example 3: Different Rules for Different Variables</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Find both partial derivatives of \(f(x,y) = x^y\).</p>
+<p>This is interesting because \(x\) and \(y\) play <strong>different roles</strong> &mdash; one is the base, one is the exponent.</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: For f_x, treat y as constant (power rule). For f_y, treat x as constant (exponential rule)." style="min-height:2.5in;">
+  <div class="blank-prompt">For f_x, treat y as constant (power rule). For f_y, treat x as constant (exponential rule).</div>
+</div>
+</section>
+
+<section class="example-group" aria-label="Example 4: Rates of Change &mdash; Heat Index">
+  <h2>Example 4: Rates of Change &mdash; Heat Index</h2>
+  <section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>The heat index \(I\) is the perceived temperature as a function of actual temperature \(T\) and relative humidity \(H\).</p>
+<p>Use the table to estimate \(f_T(96, 70)\) and \(f_H(96, 70)\), and interpret each.</p>
+</section>
+<table>
+<thead><tr><th scope="col">\(T\) \\ \(H\)</th><th scope="col">50</th><th scope="col">55</th><th scope="col">60</th><th scope="col">65</th><th scope="col">70</th><th scope="col">75</th><th scope="col">80</th><th scope="col">85</th><th scope="col">90</th></tr></thead>
+<tbody>
+<tr><td>90</td><td>96</td><td>98</td><td>100</td><td>103</td><td>106</td><td>109</td><td>112</td><td>115</td><td>119</td></tr>
+<tr><td>92</td><td>100</td><td>103</td><td>105</td><td>108</td><td>112</td><td>115</td><td>119</td><td>123</td><td>128</td></tr>
+<tr><td>94</td><td>104</td><td>107</td><td>111</td><td>114</td><td>118</td><td>122</td><td>127</td><td>132</td><td>137</td></tr>
+<tr><td><strong>96</strong></td><td>109</td><td>113</td><td>116</td><td>121</td><td><strong>125</strong></td><td>130</td><td>135</td><td>141</td><td>146</td></tr>
+<tr><td>98</td><td>114</td><td>118</td><td>123</td><td>127</td><td>133</td><td>138</td><td>144</td><td>150</td><td>157</td></tr>
+<tr><td>100</td><td>119</td><td>124</td><td>129</td><td>135</td><td>141</td><td>147</td><td>154</td><td>161</td><td>168</td></tr>
+<tr><td colspan="10" style="color:#595959;">Heat index values for temperature T (°F) and relative humidity H (%)</td></tr>
+</tbody>
+</table>
+<div class="blank-space" role="region" aria-label="Student workspace: Use the difference quotient with nearby table values. Hold one variable constant while varying the other." style="min-height:2.5in;">
+  <div class="blank-prompt">Use the difference quotient with nearby table values. Hold one variable constant while varying the other.</div>
+</div>
+</section>
+
+<section aria-label="Higher-Order Partial Derivatives">
+  <h2>Higher-Order Partial Derivatives</h2>
+  <div><p>Just like in Calc I, we can differentiate <strong>again</strong> to get second (and higher) derivatives.</p></div>
+<div><p>For \(f(x,y)\), there are <strong>four</strong> second-order partial derivatives:</p>
+<ul>
+<li>\(f_{xx} = \dfrac{\partial^2 f}{\partial x^2}\) &mdash; differentiate twice with respect to \(x\)</li>
+<li>\(f_{yy} = \dfrac{\partial^2 f}{\partial y^2}\) &mdash; differentiate twice with respect to \(y\)</li>
+<li>\(f_{xy} = \dfrac{\partial^2 f}{\partial y \,\partial x}\) &mdash; first \(x\), then \(y\)</li>
+<li>\(f_{yx} = \dfrac{\partial^2 f}{\partial x \,\partial y}\) &mdash; first \(y\), then \(x\)</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Interpretation:</strong></p>
+<ul>
+<li>\(f_{xx}\) = concavity in the \(x\)-direction (is the surface curving up or down as you walk in \(x\)?)</li>
+<li>\(f_{yy}\) = concavity in the \(y\)-direction</li>
+<li>\(f_{xy}\) = how the \(x\)-slope changes as you move in \(y\) (a <strong>mixed</strong> partial)</li>
+</ul></aside>
+<div><p><strong>Notation warning:</strong> \(f_{xy}\) means differentiate with respect to \(x\) <strong>first</strong>, then \(y\). Read the subscripts left to right.</p></div>
+<div class="pagebreak" aria-hidden="true"></div>
+</section>
+
+<section aria-label="Clairaut's Theorem">
+  <h2>Clairaut's Theorem</h2>
+  <div><p>Are \(f_{xy}\) and \(f_{yx}\) always equal? That is, does the <strong>order of differentiation</strong> matter?</p></div>
+<section class="defn-box theorem-box" role="region" aria-label="Theorem: Clairaut's Theorem">
+  <h3 class="defn-title">Theorem: Clairaut's Theorem</h3>
+  <p>Suppose \(f\) is defined on a disk \(D\) containing the point \((a,b)\).</p>
+<p>If \(f_{xy}\) and \(f_{yx}\) are both <strong>continuous</strong> on \(D\), then:</p>
+<p>\[f_{xy}(a,b) = f_{yx}(a,b)\]</p>
+</section>
+<div><p><strong>Practical use:</strong> For polynomials, trig functions, exponentials, and all the "nice" functions we encounter in this course, mixed partials are equal:</p>
+<p>\[f_{xy} = f_{yx}, \qquad f_{xxy} = f_{xyx} = f_{yxx}, \qquad \text{etc.}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>For any function built from standard Calc I functions, the <strong>order of differentiation doesn't matter</strong>. Differentiate in whichever order is easiest!</p></aside>
+</section>
+
+<section class="example-group" aria-label="The Clairaut Puzzle">
+  <h2>The Clairaut Puzzle</h2>
+  <section class="example-box" role="region" aria-label="Example 5">
+  <h3 class="example-title">Example 5</h3>
+  <p>You are told that there is a function \(f\) whose partial derivatives are:</p>
+<p>\[f_x(x,y) = x + 4y \qquad \text{and} \qquad f_y(x,y) = 3x - y\]</p>
+<p>Should you believe it?</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Check whether Clairaut's theorem is satisfied." style="min-height:2in;">
+  <div class="blank-prompt">Check whether Clairaut's theorem is satisfied.</div>
+</div>
+</section>
+
+<section class="example-group" aria-label="Example 6: Laplace's Equation">
+  <h2>Example 6: Laplace's Equation</h2>
+  <section class="example-box" role="region" aria-label="Example 6">
+  <h3 class="example-title">Example 6</h3>
+  <p>Verify that \(u = \ln\sqrt{x^2 + y^2}\) satisfies <strong>Laplace's equation</strong>:</p>
+<p>\[u_{xx} + u_{yy} = 0\]</p>
+<p>Laplace's equation appears throughout physics &mdash; it describes steady-state heat flow, electrostatics, and fluid flow.</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Simplify u first, then find u_x, u_xx, u_y, u_yy, and add the second derivatives." style="min-height:3in;">
+  <div class="blank-prompt">Simplify u first, then find u_x, u_xx, u_y, u_yy, and add the second derivatives.</div>
+</div>
+</section>
+
+<section class="example-group" aria-label="Example 7: Implicit Partial Differentiation">
+  <h2>Example 7: Implicit Partial Differentiation</h2>
+  <section class="example-box" role="region" aria-label="Example 7">
+  <h3 class="example-title">Example 7</h3>
+  <p>If \(yz = \ln(x + z)\), find \(\dfrac{\partial z}{\partial x}\).</p>
+<p>When \(z\) is defined <strong>implicitly</strong> as a function of \(x\) and \(y\), we differentiate both sides with respect to \(x\), treating \(y\) as a constant and \(z\) as a function of \(x\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Differentiate both sides with respect to x. Remember z depends on x, so use the chain rule." style="min-height:3in;">
+  <div class="blank-prompt">Differentiate both sides with respect to x. Remember z depends on x, so use the chain rule.</div>
+</div>
+</section>
+
+<section class="homework-section" aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 14.3:</strong> 1, 2, 4, 5, 6, 9-36 odd, 39, 41, 45, 51, 63, 64, 80, 84a, 85</div>
+</section>
+</main>
+</body>
+</html>

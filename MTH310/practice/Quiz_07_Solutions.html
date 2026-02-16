@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz 7 Solutions | MTH 310 Calculus III</title>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']]
+            },
+            options: {
+                enableMenu: true,
+                menuOptions: {
+                    settings: {
+                        assistiveMml: true
+                    }
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #000;
+            color: #fff;
+            padding: 8px;
+            z-index: 100;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .course-info {
+            font-size: 1.1em;
+            margin: 5px 0;
+        }
+
+        .problem {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .problem-header {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .solution {
+            color: #4B0082;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed #4B0082;
+        }
+
+        .solution-label {
+            font-weight: bold;
+            color: #4B0082;
+        }
+
+        .figure-container {
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #000;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header>
+        <h1>Quiz 7 Solutions</h1>
+        <p class="course-info">MTH 310: Calculus III</p>
+        <p class="course-info">Fall 2024</p>
+        <p class="course-info"><em>You may use a calculator.</em></p>
+    </header>
+
+    <main id="main-content">
+
+        <!-- Problem 1 -->
+        <article class="problem" aria-labelledby="problem1-header">
+            <div class="problem-header" id="problem1-header">
+                Problem 1: Volume Between Surfaces (Polar Coordinates)
+            </div>
+
+            <p>Find the volume above the paraboloid \(z = x^2 + y^2\) and below the half-cone \(z = \sqrt{x^2 + y^2}\).</p>
+
+            <!-- Diagram showing paraboloid and cone cross-section in r-z plane (r ≥ 0) -->
+            <div class="figure-container">
+                <svg viewBox="0 0 180 140" width="225" height="175" role="img" aria-labelledby="vol-title vol-desc">
+                    <title id="vol-title">Volume between paraboloid and cone</title>
+                    <desc id="vol-desc">Cross-section in the r-z plane (r greater than or equal to 0) showing the paraboloid z = r squared (curved) below and the cone z = r (straight line) above, both passing through the origin and intersecting at r = 1, z = 1. The shaded region between them represents the volume to be calculated.</desc>
+
+                    <!-- Coordinate system: r=0 at x=30, z=0 at y=120, scale: 100px per unit r, 80px per unit z -->
+
+                    <!-- Shaded region between curves (cone above, paraboloid below) -->
+                    <!-- Trace cone from origin to (1,1), then paraboloid back to origin -->
+                    <polygon points="30,120 40,112 50,104 60,96 70,88 80,80 90,72 100,64 110,56 120,48 130,40 130,40 125,48 120,55 115,62 110,69 105,75 100,81 95,86 90,91 85,96 80,100 75,104 70,107 65,110 60,113 55,115 50,117 45,118 40,119 35,120 30,120"
+                             fill="#e8e0f0" stroke="none"/>
+
+                    <!-- Axes -->
+                    <line x1="30" y1="125" x2="30" y2="15" stroke="#000" stroke-width="1"/>
+                    <line x1="25" y1="120" x2="160" y2="120" stroke="#000" stroke-width="1"/>
+                    <!-- Axis arrows -->
+                    <polygon points="30,15 27,22 33,22" fill="#000"/>
+                    <polygon points="160,120 153,117 153,123" fill="#000"/>
+                    <text x="163" y="124" font-size="11" font-family="serif">r</text>
+                    <text x="34" y="20" font-size="11" font-family="serif">z</text>
+
+                    <!-- Tick marks -->
+                    <line x1="130" y1="118" x2="130" y2="122" stroke="#000" stroke-width="1"/>
+                    <text x="127" y="133" font-size="9" font-family="serif">1</text>
+                    <line x1="28" y1="40" x2="32" y2="40" stroke="#000" stroke-width="1"/>
+                    <text x="18" y="43" font-size="9" font-family="serif">1</text>
+
+                    <!-- Paraboloid z = r² (smooth polyline, 21 points from r=0 to r=1) -->
+                    <!-- At r: z=r², x=30+100r, y=120-80z -->
+                    <polyline points="30,120 35,120 40,119 45,118 50,117 55,115 60,113 65,110 70,107 75,104 80,100 85,96 90,91 95,86 100,81 105,75 110,69 115,62 120,55 125,48 130,40"
+                              fill="none" stroke="#4B0082" stroke-width="2"/>
+                    <text x="133" y="70" font-size="10" font-family="serif" fill="#4B0082">z = r²</text>
+
+                    <!-- Cone z = r (straight line from origin, r ≥ 0) -->
+                    <line x1="30" y1="120" x2="130" y2="40" stroke="#4B0082" stroke-width="2"/>
+                    <text x="133" y="35" font-size="10" font-family="serif" fill="#4B0082">z = r</text>
+
+                    <!-- Intersection points -->
+                    <circle cx="30" cy="120" r="3" fill="#4B0082"/>
+                    <text x="12" y="132" font-size="9" font-family="serif" fill="#666">(0,0)</text>
+                    <circle cx="130" cy="40" r="3" fill="#4B0082"/>
+                    <text x="118" y="33" font-size="9" font-family="serif" fill="#666">(1,1)</text>
+                </svg>
+                <p style="font-size: 10pt; font-style: italic;">Cross-section in the r-z plane</p>
+            </div>
+
+            <!-- 3D visualization (generated with matplotlib) -->
+            <figure class="figure-container">
+                <img src="figures/paraboloid_and_cone.png"
+                     alt="3D visualization of paraboloid and cone: The blue surface is the paraboloid z = x² + y² (equivalently z = r² in cylindrical coordinates), which opens upward from the origin like a bowl. The orange surface is the cone z = √(x² + y²) (equivalently z = r), which is a straight-sided cone emanating from the origin. The two surfaces intersect along a circle at height z = 1, where r = 1. Between z = 0 and z = 1, the cone lies above the paraboloid, creating a bounded region of revolution around the z-axis."
+                     width="400"
+                     style="max-width: 100%; height: auto;">
+                <figcaption style="font-size: 10pt; font-style: italic; margin-top: 10px;">
+                    3D view: Paraboloid \(z = x^2 + y^2\) (blue) and cone \(z = \sqrt{x^2+y^2}\) (orange)
+                </figcaption>
+            </figure>
+
+            <div class="solution">
+                <p class="solution-label">Solution:</p>
+
+                <p><strong>Setup:</strong> The surfaces intersect when \(x^2 + y^2 = \sqrt{x^2 + y^2}\), i.e., when \(r^2 = r\), giving \(r = 0\) or \(r = 1\). The region of integration is the unit disk.</p>
+
+                <p>In polar coordinates: \(z_{\text{top}} = r\) (cone) and \(z_{\text{bottom}} = r^2\) (paraboloid).</p>
+
+                <p><strong>Step 1:</strong> Set up the integral.</p>
+                <p>\[V = \iint_D (z_{\text{top}} - z_{\text{bottom}}) \, dA = \int_0^{2\pi} \int_0^1 (r - r^2) \cdot r \, dr \, d\theta\]</p>
+
+                <p><strong>Step 2:</strong> Evaluate the inner integral.</p>
+                <p>\[V = \int_0^{2\pi} d\theta \int_0^1 (r^2 - r^3) \, dr = 2\pi \left[\frac{r^3}{3} - \frac{r^4}{4}\right]_0^1\]</p>
+                <p>\[= 2\pi \left(\frac{1}{3} - \frac{1}{4}\right) = 2\pi \cdot \frac{1}{12} = \boxed{\frac{\pi}{6}}\]</p>
+            </div>
+        </article>
+
+        <!-- Problem 2 -->
+        <article class="problem" aria-labelledby="problem2-header">
+            <div class="problem-header" id="problem2-header">
+                Problem 2: Surface Area
+            </div>
+
+            <p>Find the area of the part of the surface \(z = x + y^2\) that lies above the triangle with vertices \((0, 0)\), \((0, 1)\), and \((1, 1)\). One order of integration is much easier than the other.</p>
+
+            <!-- Triangle diagram -->
+            <div class="figure-container">
+                <svg viewBox="0 0 120 120" width="150" height="150" role="img" aria-labelledby="tri-title tri-desc">
+                    <title id="tri-title">Triangular region T</title>
+                    <desc id="tri-desc">A triangle with vertices at (0,0), (0,1), and (1,1), bounded by y = x on the right.</desc>
+                    <!-- Axes -->
+                    <line x1="20" y1="100" x2="110" y2="100" stroke="#000" stroke-width="1"/>
+                    <line x1="20" y1="100" x2="20" y2="10" stroke="#000" stroke-width="1"/>
+                    <text x="105" y="112" font-size="10" font-family="serif">x</text>
+                    <text x="10" y="15" font-size="10" font-family="serif">y</text>
+                    <!-- Triangle -->
+                    <polygon points="20,100 20,20 100,20" fill="#e8e0f0" stroke="#4B0082" stroke-width="2"/>
+                    <text x="45" y="55" font-size="12" font-family="serif" fill="#4B0082">T</text>
+                    <!-- Labels -->
+                    <text x="95" y="35" font-size="9" font-family="serif" fill="#4B0082">y = x</text>
+                    <text x="5" y="22" font-size="9" font-family="serif">y = 1</text>
+                    <text x="100" y="15" font-size="9" font-family="serif">(1,1)</text>
+                </svg>
+            </div>
+
+            <div class="solution">
+                <p class="solution-label">Solution:</p>
+
+                <p><strong>Setup:</strong> The surface area formula is:</p>
+                <p>\[S = \iint_T \sqrt{1 + \left(\frac{\partial z}{\partial x}\right)^2 + \left(\frac{\partial z}{\partial y}\right)^2} \, dA\]</p>
+
+                <p><strong>Step 1:</strong> Compute the partial derivatives.</p>
+                <p>\[\frac{\partial z}{\partial x} = 1, \quad \frac{\partial z}{\partial y} = 2y\]</p>
+                <p>\[\sqrt{1 + 1 + 4y^2} = \sqrt{2 + 4y^2}\]</p>
+
+                <p><strong>Step 2:</strong> Set up with the easier order (integrate \(x\) first).</p>
+                <p>The triangle: \(0 \le y \le 1\), \(0 \le x \le y\).</p>
+                <p>\[S = \int_0^1 \int_0^y \sqrt{2 + 4y^2} \, dx \, dy = \int_0^1 \sqrt{2 + 4y^2} \cdot y \, dy\]</p>
+
+                <p><strong>Step 3:</strong> Use substitution \(u = 2 + 4y^2\), \(du = 8y \, dy\).</p>
+                <p>When \(y = 0\): \(u = 2\). When \(y = 1\): \(u = 6\).</p>
+                <p>\[S = \frac{1}{8} \int_2^6 \sqrt{u} \, du = \frac{1}{8} \cdot \frac{2}{3} u^{3/2} \Big|_2^6\]</p>
+                <p>\[= \frac{1}{12} \left(6^{3/2} - 2^{3/2}\right) = \frac{1}{12} \left(6\sqrt{6} - 2\sqrt{2}\right)\]</p>
+
+                <p><strong>Final Answer:</strong></p>
+                <p>\[= \boxed{\frac{2\sqrt{2}}{12}(3\sqrt{3} - 1) = \frac{\sqrt{2}}{6}(3\sqrt{3} - 1)}\]</p>
+            </div>
+        </article>
+
+        <!-- Problem 3 -->
+        <article class="problem" aria-labelledby="problem3-header">
+            <div class="problem-header" id="problem3-header">
+                Problem 3: Area in Polar Coordinates (Four-Leaved Rose)
+            </div>
+
+            <p>Find the total area inside the four loops of the quadrifolium or "four-leaved rose" \(r = 6\cos 2\theta\).</p>
+
+            <!-- Four-leaved rose diagram r = 6cos(2θ) -->
+            <div class="figure-container">
+                <svg viewBox="0 0 160 160" width="200" height="200" role="img" aria-labelledby="rose-title rose-desc">
+                    <title id="rose-title">Four-leaved rose r = 6 cos(2θ)</title>
+                    <desc id="rose-desc">A polar curve with four symmetric petals extending along the positive and negative x and y axes.</desc>
+                    <!-- Axes -->
+                    <line x1="10" y1="80" x2="150" y2="80" stroke="#000" stroke-width="1"/>
+                    <line x1="80" y1="150" x2="80" y2="10" stroke="#000" stroke-width="1"/>
+                    <!-- Four-leaved rose: r = 6cos(2θ), scaled by 6 pixels per unit, centered at (80,80) -->
+                    <!-- Right petal (θ from -π/4 to π/4) -->
+                    <path d="M 80,80 C 95,65 115,58 116,80 C 115,102 95,95 80,80" fill="none" stroke="#4B0082" stroke-width="2"/>
+                    <!-- Left petal (θ from 3π/4 to 5π/4) -->
+                    <path d="M 80,80 C 65,65 45,58 44,80 C 45,102 65,95 80,80" fill="none" stroke="#4B0082" stroke-width="2"/>
+                    <!-- Top petal (θ from π/4 to 3π/4) -->
+                    <path d="M 80,80 C 95,65 102,45 80,44 C 58,45 65,65 80,80" fill="none" stroke="#4B0082" stroke-width="2"/>
+                    <!-- Bottom petal (θ from 5π/4 to 7π/4) -->
+                    <path d="M 80,80 C 95,95 102,115 80,116 C 58,115 65,95 80,80" fill="none" stroke="#4B0082" stroke-width="2"/>
+                    <!-- Labels -->
+                    <text x="120" y="75" font-size="9" font-family="serif" fill="#4B0082">θ = 0</text>
+                    <text x="85" y="38" font-size="9" font-family="serif" fill="#4B0082">θ = π/4</text>
+                </svg>
+            </div>
+
+            <div class="solution">
+                <p class="solution-label">Solution:</p>
+
+                <p><strong>Setup:</strong> One petal is traced for \(0 \le \theta \le \frac{\pi}{4}\). By symmetry, multiply by 8 (or use 4 petals times 2 halves each).</p>
+
+                <p>\[A = 8 \int_0^{\pi/4} \int_0^{6\cos 2\theta} r \, dr \, d\theta\]</p>
+
+                <p><strong>Step 1:</strong> Evaluate the inner integral.</p>
+                <p>\[A = 8 \int_0^{\pi/4} \frac{1}{2} r^2 \Big|_0^{6\cos 2\theta} d\theta = 4 \int_0^{\pi/4} 36\cos^2 2\theta \, d\theta\]</p>
+                <p>\[= 144 \int_0^{\pi/4} \cos^2 2\theta \, d\theta\]</p>
+
+                <p><strong>Step 2:</strong> Use the identity \(\cos^2 u = \frac{1 + \cos 2u}{2}\).</p>
+                <p>\[= 144 \int_0^{\pi/4} \frac{1 + \cos 4\theta}{2} \, d\theta = 72 \int_0^{\pi/4} (1 + \cos 4\theta) \, d\theta\]</p>
+
+                <p><strong>Step 3:</strong> Evaluate.</p>
+                <p>\[= 72 \left[\theta + \frac{\sin 4\theta}{4}\right]_0^{\pi/4} = 72 \left(\frac{\pi}{4} + \frac{\sin \pi}{4} - 0\right)\]</p>
+                <p>\[= 72 \cdot \frac{\pi}{4} = \boxed{18\pi}\]</p>
+            </div>
+        </article>
+
+    </main>
+
+    <footer>
+        <p>MTH 310: Calculus III | University of Wisconsin - La Crosse</p>
+        <p>Quiz 7 Solutions</p>
+    </footer>
+</body>
+</html>

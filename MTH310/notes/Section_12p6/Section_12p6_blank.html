@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 12.6: Cylinders and Quadric Surfaces &mdash; Handout</title>
+<style>
+@page { size: letter; margin: 0.4in 0.5in; }
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #b5850e;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    max-width: 7.5in; margin: 0 auto; padding: 0.3em;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.35; }
+.handout-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left h1 { font-size: 1.3em; color: var(--accent-cyan); margin: 0; }
+.header-left p { margin: 0.05em 0; color: #666; font-size: 0.85em; }
+.header-right { text-align: right; font-size: 0.85em; color: #333; }
+hr { border: none; border-top: 2px solid var(--accent-cyan); margin: 0.3em 0; }
+h2 { font-size: 1.1em; color: var(--accent-cyan); margin: 0.4em 0 0.15em 0;
+    border-bottom: 1px solid #ccc; padding-bottom: 0.05em; }
+h3, h4 { font-size: 0.95em; margin: 0.15em 0; }
+p { margin: 0.15em 0; }
+.defn-box { background: #f0f7ff; border-left: 3px solid var(--accent-cyan);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 3px solid var(--accent-green);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
+    padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
+.blank-space { margin: 0.2em 0; position: relative;
+    border: 1px dashed #ccc; border-radius: 3px; box-sizing: border-box; }
+.blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
+    color: #767676; font-style: italic; }
+.hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
+    padding: 0.3em 0.8em; text-align: center; margin: 0.5em 0; }
+.desmos-link { background: #f0f7ff; border-radius: 3px; padding: 0.2em 0.5em;
+    margin: 0.3em 0; font-size: 0.8em; }
+.desmos-link a { color: var(--accent-cyan); word-break: break-all; }
+.two-col-print { display: flex; gap: 0.6em; align-items: flex-start; }
+.two-col-print > * { flex: 1; }
+figure { margin: 0.1em 0; text-align: center; }
+figure img { max-width: 100%; max-height: 3.0in; }
+figcaption { font-size: 0.7em; color: #666; margin-top: 0.05em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 2px; border: 1px solid #ddd; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.image-grid { display: flex; gap: 0.4em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.2em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.8em; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 1.5in; max-width: 100%; }
+.image-grid .grid-cell.textbook-fig img { padding: 2px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+table { border-collapse: collapse; font-size: 0.85em; margin: 0.15em auto; }
+th, td { padding: 0.1em 0.4em; border: 1px solid #ccc; text-align: center; }
+th { background: #f0f7ff; }
+.small { font-size: 0.8em; }
+ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
+li { margin-bottom: 0.05em; }
+.pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
+.homework-section { page-break-before: auto; }
+.defn-box, .example-box, .key-point { page-break-inside: avoid; break-inside: avoid; }
+.example-group { page-break-inside: avoid; break-inside: avoid; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media print {
+    body { padding: 0; max-width: none; }
+    .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    a::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    figure img { max-height: 2.8in; }
+    .skip-link { display: none; }
+}
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <div class="handout-header">
+    <div class="header-left">
+      <h1>Section 12.6: Cylinders and Quadric Surfaces</h1>
+      <p>Vectors and the Geometry of Space</p>
+    </div>
+    <div class="header-right">
+      <p>MTH 310<br>Calculus III</p>
+    </div>
+  </div>
+</header>
+<hr aria-hidden="true">
+
+<section aria-label="Conic Sections Are Everywhere">
+  <h2>Conic Sections Are Everywhere</h2>
+  <div><p>A <strong>conic section</strong> is the curve you get by slicing a double cone with a plane.</p>
+<p>Depending on the angle of the cut, you get one of four shapes:</p></div>
+<div><ul>
+<li><strong>Circle</strong> &mdash; cut straight across (e.g. the rim of a coffee cup)</li>
+<li><strong>Ellipse</strong> &mdash; cut at a slight tilt (e.g. planetary orbits)</li>
+<li><strong>Parabola</strong> &mdash; cut parallel to the side of the cone (e.g. satellite dishes, headlight reflectors)</li>
+<li><strong>Hyperbola</strong> &mdash; cut steep enough to hit both halves (e.g. cooling towers, sonic booms)</li>
+</ul></div>
+</section>
+
+<section aria-label="Classifying Conics by Their Equation">
+  <h2>Classifying Conics by Their Equation</h2>
+  <div><p>The <strong>general second-degree equation</strong> in two variables is:</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\[ax^2 + by^2 + cx + dy + e = 0\]</p></aside>
+<div><p>If \(a\) and \(b\) are not <strong>both</strong> zero, this equation describes a <strong>conic section</strong> (possibly degenerate). We classify by comparing the squared terms:</p></div>
+
+<table>
+<thead><tr><th scope="col">Squared terms</th><th scope="col">Shape</th></tr></thead>
+<tbody>
+<tr><td>Only \(x^2\) or only \(y^2\)</td><td>Parabola</td></tr>
+<tr><td>Both, <strong>same sign</strong> (\(ab > 0\))</td><td>Circle (\(a = b\)) or Ellipse (\(a \neq b\))</td></tr>
+<tr><td>Both, <strong>opposite signs</strong> (\(ab < 0\))</td><td>Hyperbola</td></tr>
+</tbody>
+</table>
+</section>
+
+<section aria-label="Standard Forms of Conics">
+  <h2>Standard Forms of Conics</h2>
+  <section class="defn-box" role="region" aria-label="Definition 1: Standard Forms">
+  <h3 class="defn-title">Definition 1: Standard Forms</h3>
+  <ul>
+<li><strong>Circle:</strong> \((x-h)^2 + (y-k)^2 = r^2\)</li>
+<li><strong>Ellipse:</strong> \(\frac{(x-h)^2}{a^2} + \frac{(y-k)^2}{b^2} = 1\)</li>
+<li><strong>Hyperbola (horizontal):</strong> \(\frac{(x-h)^2}{a^2} - \frac{(y-k)^2}{b^2} = 1\)</li>
+<li><strong>Hyperbola (vertical):</strong> \(-\frac{(x-h)^2}{a^2} + \frac{(y-k)^2}{b^2} = 1\)</li>
+</ul>
+</section>
+<div><p>We get these by <strong>completing the square</strong> on the general equation. The center is at \((h, k)\).</p></div>
+</section>
+
+<section aria-label="Example 1: Sketch $y^2 - 9x^2 = 1$">
+  <h2>Example 1: Sketch \(y^2 - 9x^2 = 1\)</h2>
+  <div><p><strong>Step 1 &mdash; Which way does it open?</strong> Compare signs of the squared terms: \(+y^2\) and \(-x^2\). The <strong>positive</strong> variable (\(y\)) wins &rarr; opens <strong>up and down</strong>.</p></div>
+<div><p><strong>Step 2 &mdash; Find intercepts.</strong> Zero out one variable at a time:</p>
+<ul>
+<li>Set \(x = 0\): \(y^2 = 1\) &rarr; \(y = \pm 1\) &check;</li>
+<li>Set \(y = 0\): \(-9x^2 = 1\) &rarr; no real solution &cross;</li>
+</ul></div>
+<div><p><strong>Step 3 &mdash; Find asymptotes.</strong> For large values, the constant \(1\) is negligible: \(y^2 \approx 9x^2\) &rarr; \(y \approx \pm 3x\)</p></div>
+</section>
+
+<section aria-label="Example 2: Sketch $x^2 - 4y^2 = 1$">
+  <h2>Example 2: Sketch \(x^2 - 4y^2 = 1\)</h2>
+  <div><p><strong>Step 1 &mdash; Which way does it open?</strong> Compare signs: \(+x^2\) and \(-y^2\). The <strong>positive</strong> variable (\(x\)) wins &rarr; opens <strong>left and right</strong>.</p></div>
+<div><p><strong>Step 2 &mdash; Find intercepts.</strong> Zero out one variable at a time:</p>
+<ul>
+<li>Set \(y = 0\): \(x^2 = 1\) &rarr; \(x = \pm 1\) &check;</li>
+<li>Set \(x = 0\): \(-4y^2 = 1\) &rarr; no real solution &cross;</li>
+</ul></div>
+<div><p><strong>Step 3 &mdash; Find asymptotes.</strong> For large values, the constant \(1\) is negligible: \(x^2 \approx 4y^2\) &rarr; \(y \approx \pm \tfrac{1}{2}x\)</p></div>
+</section>
+
+<section aria-label="Example 3: Identify $x^2 - 4y^2 + 4x + 24y = 33$">
+  <h2>Example 3: Identify \(x^2 - 4y^2 + 4x + 24y = 33\)</h2>
+  <div><p><strong>Step 1 &mdash; Group by variable and factor.</strong> \((x^2 + 4x) - 4(y^2 - 6y) = 33\)</p></div>
+<div><p><strong>Step 2 &mdash; Complete the square.</strong> \((x^2 + 4x + 4) - 4(y^2 - 6y + 9) = 33 + 4 - 36\)</p></div>
+<div><p><strong>Step 3 &mdash; Simplify.</strong> \((x + 2)^2 - 4(y - 3)^2 = 1\)</p></div>
+<div><p><strong>Step 4 &mdash; Standard form.</strong> \(\frac{(x+2)^2}{1} - \frac{(y-3)^2}{(1/2)^2} = 1\) &mdash; <strong>Hyperbola</strong> centered at \((-2, 3)\), opening left and right.</p></div>
+</section>
+
+<section aria-label="Cylinders in 3D">
+  <h2>Cylinders in 3D</h2>
+  <section class="defn-box" role="region" aria-label="Definition 2: Cylinder">
+  <h3 class="defn-title">Definition 2: Cylinder</h3>
+  <p>A <strong>cylinder</strong> is a surface formed by taking a 2D curve and extending it along the missing coordinate axis.</p>
+<p>If one variable is absent from the equation, the graph is a cylinder that extends infinitely along that axis.</p>
+</section>
+<div><p>\(z = x^2\) &mdash; missing \(y\), so it extends along the \(y\)-axis: <strong>parabolic cylinder</strong></p></div>
+<figure>
+  <img src="figures/parabolic_cylinder.png" alt="A parabolic cylinder z = x² extending along the y-axis. The 2D parabola z = x² is highlighted in amber in the xz-plane (y = 0). The surface extends infinitely in the y-direction.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+<div><p>\(x^2 + z^2 = 4\) &mdash; missing \(y\), so it extends along the \(y\)-axis: <strong>circular cylinder</strong></p></div>
+<figure>
+  <img src="figures/circular_cylinder.png" alt="A circular cylinder x² + z² = 4 extending along the y-axis. The cross-section in the xz-plane is a circle of radius 2, highlighted in amber. The surface extends infinitely in the y-direction.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+<div><p>\(y = \sin(x)\) &mdash; missing \(z\), so it extends along the \(z\)-axis: <strong>wave cylinder</strong></p></div>
+<figure>
+  <img src="figures/wave_cylinder.png" alt="A wave-shaped cylinder y = sin(x) extending along the z-axis. The sine curve is highlighted in amber in the xy-plane (z = 0). The surface extends infinitely in the z-direction.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Key idea:</strong> the missing variable is <em>free</em> &mdash; it can be anything.</p></aside>
+</section>
+
+<section aria-label="Quadric Surfaces and Traces">
+  <h2>Quadric Surfaces and Traces</h2>
+  <section class="defn-box" role="region" aria-label="Definition 3: Quadric Surface">
+  <h3 class="defn-title">Definition 3: Quadric Surface</h3>
+  <p>A <strong>quadric surface</strong> is the 3D graph of a second-degree equation in \(x\), \(y\), and \(z\).</p>
+</section>
+<section class="defn-box" role="region" aria-label="Definition 4: Trace">
+  <h3 class="defn-title">Definition 4: Trace</h3>
+  <p>A <strong>trace</strong> is the cross-section you get by setting one variable equal to a constant.</p>
+<ul>
+<li><strong>Horizontal trace</strong> (\(z = k\)): slice parallel to the \(xy\)-plane</li>
+<li><strong>Vertical trace</strong> (\(x = k\) or \(y = k\)): slice parallel to a coordinate wall</li>
+</ul>
+</section>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Strategy:</strong> Find traces in all three directions, then assemble the 3D shape.</p></aside>
+</section>
+
+<section aria-label="Example 4: Identify $x^2 + y^2 - z = 0$">
+  <h2>Example 4: Identify \(x^2 + y^2 - z = 0\)</h2>
+  <div><p>Rewrite as \(z = x^2 + y^2\). Now find traces:</p></div>
+<div><p><strong>Horizontal traces</strong> (\(z = k\)): \(x^2 + y^2 = k\)</p>
+<ul>
+<li>\(k > 0\): <strong>circle</strong> of radius \(\sqrt{k}\) &mdash; circles get larger as \(z\) increases</li>
+<li>\(k = 0\): just the origin</li>
+<li>\(k < 0\): empty (no surface below \(z = 0\))</li>
+</ul></div>
+<div><p><strong>Vertical traces</strong> (\(y = k\) or \(x = k\)): upward <strong>parabolas</strong> shifted up by \(k^2\)</p></div>
+<div><p>We don't need every trace to sketch the surface. Pick the direction with the simplest shape &mdash; here the <strong>circles</strong> (\(z = k\)) &mdash; and imagine stacking them. Then one parabola in each vertical direction serves as a guide.</p></div>
+<figure>
+  <img src="figures/paraboloid.png" alt="A semi-transparent bowl-shaped surface representing the elliptic paraboloid z = x² + y². The surface opens upward from the origin with circular cross-sections highlighted at z = 1, 2, and 4.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Elliptic paraboloid</strong> (bowl shape) &mdash; opens upward along the \(z\)-axis</p></aside>
+</section>
+
+<section aria-label="Example 5: Identify $z = y^2 - x^2$">
+  <h2>Example 5: Identify \(z = y^2 - x^2\)</h2>
+  <div><p>Rewrite as \(-x^2 + y^2 - z = 0\). Now find traces:</p></div>
+<div><p><strong>Horizontal traces</strong> (\(z = k\)): \(-x^2 + y^2 = k\)</p>
+<ul>
+<li>\(k > 0\): hyperbola opening along \(y\)</li>
+<li>\(k = 0\): lines \(y = \pm x\) (degenerate)</li>
+<li>\(k < 0\): hyperbola opening along \(x\)</li>
+</ul></div>
+<div><p><strong>Vertical traces:</strong></p>
+<ul>
+<li>\(x = 0\): \(z = y^2\) &mdash; upward parabola</li>
+<li>\(y = 0\): \(z = -x^2\) &mdash; downward parabola</li>
+</ul></div>
+<div><p>Stack the hyperbolas (which rotate 90&deg; as \(z\) crosses 0), then use the two parabolas as vertical guides &mdash; the surface curves <strong>up</strong> in \(y\) and <strong>down</strong> in \(x\).</p></div>
+<figure>
+  <img src="figures/saddle.png" alt="A semi-transparent saddle-shaped surface (hyperbolic paraboloid) for z = y² − x². The surface curves upward along the y-axis (green) and downward along the x-axis (red), with a saddle point at the origin.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Hyperbolic paraboloid</strong> (saddle / "Pringle" shape)</p></aside>
+<figure>
+  <img src="figures/pringle.png" alt="A Pringle-shaped hyperbolic paraboloid z = y² − x² plotted in cylindrical coordinates, giving it a smooth round boundary. The surface curves up along the y-axis and down along the x-axis, with guide parabolas shown in both directions. The amber rim highlights the circular edge.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+</section>
+
+<section aria-label="Example 6: Identify $-x^2 + y^2 + z^2 = 1$">
+  <h2>Example 6: Identify \(-x^2 + y^2 + z^2 = 1\)</h2>
+  <div><p>Find traces:</p></div>
+<div><p><strong>Simplest trace</strong> (\(x = k\)): \(y^2 + z^2 = 1 + k^2\) &mdash; <strong>circles</strong> of radius \(\sqrt{1 + k^2}\)</p>
+<ul>
+<li>Always \(\geq 1\), so circles exist for <strong>all</strong> \(k\) (no gaps!)</li>
+<li>Minimum radius \(1\) at \(x = 0\) (the "waist")</li>
+</ul></div>
+<div><p><strong>Vertical traces</strong> (\(z = 0\)): \(-x^2 + y^2 = 1\) &mdash; <strong>hyperbola</strong> opening along \(y\)</p></div>
+<div><p>Stack the circles along the \(x\)-axis &mdash; they shrink to a minimum at \(x = 0\) and expand outward in both directions. The hyperbola in the \(xy\)-plane confirms the waist shape.</p></div>
+<figure>
+  <img src="figures/hyperboloid.png" alt="A semi-transparent hyperboloid of one sheet for −x² + y² + z² = 1. The surface wraps continuously around the x-axis like a waisted cylinder, with minimum radius 1 at x = 0 and expanding outward in both directions. Circular cross-sections are highlighted at x = −2, 0, and 2. A purple guide hyperbola is shown in the xy-plane.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Hyperboloid of one sheet</strong> &mdash; wraps continuously around the \(x\)-axis</p></aside>
+</section>
+
+<section aria-label="Example 7: Identify $-x^2 - y^2 + z^2 = 1$">
+  <h2>Example 7: Identify \(-x^2 - y^2 + z^2 = 1\)</h2>
+  <div><p>Find traces:</p></div>
+<div><p><strong>Horizontal traces</strong> (\(z = k\)): \(x^2 + y^2 = k^2 - 1\)</p>
+<ul>
+<li>\(|k| > 1\): <strong>circle</strong> of radius \(\sqrt{k^2 - 1}\)</li>
+<li>\(|k| = 1\): just a point (the vertex of each sheet)</li>
+<li>\(|k| < 1\): <strong>empty</strong> &mdash; no surface in the gap!</li>
+</ul></div>
+<div><p><strong>Vertical trace</strong> (\(y = 0\)): \(-x^2 + z^2 = 1\) &mdash; <strong>hyperbola</strong> opening along \(z\)</p></div>
+<div><p>Stack circles above \(z = 1\) and below \(z = -1\), expanding outward. The gap \(|z| < 1\) means we get <strong>two separate sheets</strong>. The hyperbola in the \(xz\)-plane serves as a vertical guide.</p></div>
+<figure>
+  <img src="figures/hyperboloid2.png" alt="A hyperboloid of two sheets for −x² − y² + z² = 1. Two separate bowl-shaped sheets open upward (z ≥ 1) and downward (z ≤ −1) with a gap between them where |z| < 1. Circular cross-sections are highlighted at z = ±1.5 and ±2.5. A red guide hyperbola is shown in the xz-plane.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Hyperboloid of two sheets</strong> &mdash; two separate pieces with a gap between them</p></aside>
+</section>
+
+<section aria-label="Example 8: Identify $z^2 = x^2 + y^2$">
+  <h2>Example 8: Identify \(z^2 = x^2 + y^2\)</h2>
+  <div><p>Find traces:</p></div>
+<div><p><strong>Horizontal traces</strong> (\(z = k\)): \(x^2 + y^2 = k^2\)</p>
+<ul>
+<li>\(k \neq 0\): <strong>circle</strong> of radius \(|k|\)</li>
+<li>\(k = 0\): just the origin (the vertex)</li>
+</ul></div>
+<div><p><strong>Vertical trace</strong> (\(y = 0\)): \(z^2 = x^2\) &rarr; \(z = \pm x\) &mdash; two <strong>lines</strong> through the origin</p></div>
+<div><p>Stack circles that grow linearly with \(|z|\). Unlike the paraboloid (circles grow like \(\sqrt{z}\)), these grow at a constant rate &mdash; straight sides. The two lines confirm it: no curvature, just a cone.</p></div>
+<figure>
+  <img src="figures/cone.png" alt="A double cone z² = x² + y² with vertex at the origin. The upper cone opens upward and the lower cone opens downward, meeting at the vertex. Circular cross-sections are highlighted at z = ±1 and ±2. Red guide lines z = ±x are shown in the xz-plane.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Cone</strong> &mdash; the boundary case between hyperboloids of one and two sheets</p></aside>
+</section>
+
+<section class="homework-section" aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 12.6:</strong> 1, 3, 6, 8, 13, 17, 21, 23&ndash;30, 47, 49</div>
+</section>
+</main>
+</body>
+</html>

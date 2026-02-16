@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam 3 Solutions (Fall 2024) | MTH 310 Calculus III</title>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']]
+            },
+            options: {
+                enableMenu: true,
+                menuOptions: {
+                    settings: {
+                        assistiveMml: true
+                    }
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #000;
+            color: #fff;
+            padding: 8px;
+            z-index: 100;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .course-info {
+            font-size: 1.1em;
+            margin: 5px 0;
+        }
+
+        .instructions {
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .reference-box {
+            background-color: #f0f8ff;
+            border: 1px solid #4682b4;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .reference-box h2 {
+            margin-top: 0;
+            font-size: 1.1em;
+            color: #4682b4;
+        }
+
+        .problem {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .problem-header {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .points {
+            background-color: #333;
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            margin-right: 10px;
+        }
+
+        .solution {
+            color: #4B0082;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed #4B0082;
+        }
+
+        .solution-label {
+            font-weight: bold;
+            color: #4B0082;
+        }
+
+        .figure-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .figure-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+        }
+
+        .figure-container figcaption {
+            font-style: italic;
+            margin-top: 8px;
+            color: #555;
+        }
+
+        .sr-description {
+            position: absolute;
+            left: -10000px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        .part-label {
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #000;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header>
+        <h1>Exam 3 Solutions</h1>
+        <p class="course-info">MTH 310: Calculus III</p>
+        <p class="course-info">Fall 2024 | Dr. B.</p>
+        <p class="course-info">University of Wisconsin - La Crosse</p>
+    </header>
+
+    <main id="main-content">
+        <section class="instructions" aria-label="Exam Instructions">
+            <strong>Instructions.</strong> (100 points) Sections 15.3-16.6. You may use a calculator. Show relevant work for credit. Most of the integrals need only be set up and not evaluated unless otherwise stated. You should use coordinates in your integrals which give the easiest possible integrals to evaluate. For instance, rectangular coordinates probably shouldn't be used for round things. Answers that are right, but more difficult than need be will not get full credit.
+        </section>
+
+        <section class="reference-box" aria-label="Spherical Coordinates Reference">
+            <h2>Spherical Coordinates:</h2>
+            <p>\[ x = \rho \cos\theta \sin\phi, \quad y = \rho \sin\theta \sin\phi, \quad z = \rho \cos\phi \]</p>
+            <p>\[ dV = \rho^2 \sin\phi \, d\rho \, d\phi \, d\theta \]</p>
+            <p>\[ \rho^2 = x^2 + y^2 + z^2, \quad (\text{also } r = \rho \sin\phi) \]</p>
+        </section>
+
+        <!-- Problem 1 -->
+        <article class="problem" aria-labelledby="problem1-header">
+            <div class="problem-header" id="problem1-header">
+                <span class="points">10 pts</span>
+                Problem 1: Triple Integral Setup (Rectangular)
+            </div>
+
+            <p><strong>Do not evaluate.</strong> Setup the integral of \(f(x,y,z) = 4xy\) over the volume \(E\) that lies under the plane \(-x - y + z = 5\) and above the region in the \(xy\)-plane bounded by the curves \(y = \sqrt{x}\), \(y = 0\), and \(x = 4\).</p>
+
+            <div class="solution">
+                <p class="solution-label">Solution:</p>
+                <p>The region in the \(xy\)-plane is bounded by \(y = \sqrt{x}\), \(y = 0\), and \(x = 4\).</p>
+                <p>From the plane equation: \(z = 5 + x + y\)</p>
+                <p>The bounds are:</p>
+                <ul>
+                    <li>\(x\): from \(0\) to \(4\)</li>
+                    <li>\(y\): from \(0\) to \(\sqrt{x}\)</li>
+                    <li>\(z\): from \(0\) to \(5 + x + y\)</li>
+                </ul>
+                <p>\[\boxed{\int_0^4 \int_0^{\sqrt{x}} \int_0^{5+x+y} 4xy \, dz \, dy \, dx}\]</p>
+            </div>
+        </article>
+
+        <!-- Problem 2 -->
+        <article class="problem" aria-labelledby="problem2-header">
+            <div class="problem-header" id="problem2-header">
+                <span class="points">14 pts</span>
+                Problem 2: Triple Integral (Cylindrical Coordinates)
+            </div>
+
+            <p><strong>Do not evaluate.</strong> Setup the integral of \(f(x,y,z) = x - z\) where \(E\) is the solid in the first octant bounded by \(x^2 + z^2 = 4\), \(x^2 + z^2 = 16\), and \(y = z + 1\).</p>
+
+            <figure class="figure-container" role="figure" aria-labelledby="volume1-caption">
+                <!-- For Canvas: Update src to your Canvas Files URL -->
+                <img src="images/volume1.png"
+                     alt="3D solid in the first octant between two cylinders with axes along the y-direction"
+                     aria-describedby="volume1-description">
+                <figcaption id="volume1-caption">The solid E bounded by two cylinders and a plane</figcaption>
+            </figure>
+            <div id="volume1-description" class="sr-description">
+                The figure shows a 3D coordinate system with x, y, and z axes. The solid region E is in the first octant (where x, y, and z are all non-negative). The region is bounded by two quarter-cylinders centered on the y-axis with radii 2 and 4 (from equations x squared plus z squared equals 4 and x squared plus z squared equals 16), and capped by the plane y equals z plus 1. The solid appears as a curved wedge shape.
+            </div>
+
+            <div class="solution">
+                <p class="solution-label">Solution:</p>
+                <p>Use cylindrical coordinates with axis along the \(y\)-direction (sideways cylindrical):</p>
+                <p>\[x = r\cos\theta, \quad z = r\sin\theta, \quad y = y\]</p>
+                <p>The bounds become:</p>
+                <ul>
+                    <li>\(\theta\): from \(0\) to \(\frac{\pi}{2}\) (first octant in \(xz\)-plane)</li>
+                    <li>\(r\): from \(2\) to \(4\)</li>
+                    <li>\(y\): from \(0\) to \(r\sin\theta + 1\)</li>
+                </ul>
+                <p>The integrand: \(f = x - z = r\cos\theta - r\sin\theta\)</p>
+                <p>The volume element: \(dV = r \, dy \, dr \, d\theta\)</p>
+                <p>\[\boxed{\int_0^{\pi/2} \int_2^4 \int_0^{r\sin\theta + 1} (r\cos\theta - r\sin\theta) \cdot r \, dy \, dr \, d\theta}\]</p>
+            </div>
+        </article>
+
+        <!-- Problem 3 -->
+        <article class="problem" aria-labelledby="problem3-header">
+            <div class="problem-header" id="problem3-header">
+                <span class="points">14 pts</span>
+                Problem 3: Triple Integral (Spherical Coordinates)
+            </div>
+
+            <p><strong>Do not evaluate.</strong> Set up a triple integral to find the volume of the solid that is above the cone \(z = \sqrt{x^2 + y^2}\) and below the sphere \(x^2 + y^2 + z^2 = 36z\).</p>
+
+            <figure class="figure-container" role="figure" aria-labelledby="volume2-caption">
+                <!-- For Canvas: Update src to your Canvas Files URL -->
+                <img src="images/volume2.png"
+                     alt="3D solid showing an ice cream cone shape: a cone below and a sphere above"
+                     aria-describedby="volume2-description">
+                <figcaption id="volume2-caption">The solid above the cone and below the sphere</figcaption>
+            </figure>
+            <div id="volume2-description" class="sr-description">
+                The figure shows a 3D solid that resembles an ice cream cone. The lower boundary is the cone z equals the square root of x squared plus y squared, which makes a 45-degree angle with the z-axis. The upper boundary is a sphere that has been shifted upward. The sphere x squared plus y squared plus z squared equals 36z can be rewritten as x squared plus y squared plus (z minus 18) squared equals 324, showing it is centered at (0, 0, 18) with radius 18. The solid is the region inside this "ice cream cone" shape.
+            </div>
+
+            <div class="solution">
+                <p class="solution-label">Solution:</p>
+                <p>Convert the sphere equation to spherical coordinates:</p>
+                <p>\[x^2 + y^2 + z^2 = 36z\]</p>
+                <p>\[\rho^2 = 36\rho\cos\phi \implies \rho = 36\cos\phi\]</p>
+
+                <p>The cone \(z = \sqrt{x^2 + y^2}\) in spherical coordinates:</p>
+                <p>\[\rho\cos\phi = \rho\sin\phi \implies \tan\phi = 1 \implies \phi = \frac{\pi}{4}\]</p>
+
+                <p>The bounds are:</p>
+                <ul>
+                    <li>\(\theta\): from \(0\) to \(2\pi\) (full rotation)</li>
+                    <li>\(\phi\): from \(0\) to \(\frac{\pi}{4}\) (from z-axis to cone)</li>
+                    <li>\(\rho\): from \(0\) to \(36\cos\phi\)</li>
+                </ul>
+
+                <p>\[\boxed{V = \int_0^{2\pi} \int_0^{\pi/4} \int_0^{36\cos\phi} \rho^2 \sin\phi \, d\rho \, d\phi \, d\theta}\]</p>
+            </div>
+        </article>
+
+        <!-- Problem 4 -->
+        <article class="problem" aria-labelledby="problem4-header">
+            <div class="problem-header" id="problem4-header">
+                <span class="points">14 pts</span>
+                Problem 4: Line Integral (Scalar Function)
+            </div>
+
+            <p><strong>Do not evaluate.</strong> If \(C\) is the part of the circle \(\displaystyle\left(\frac{x}{3}\right)^2 + \left(\frac{y}{3}\right)^2 = 1\) in the right half-plane, find \(\displaystyle\int_C (9x - 2y) \, ds\). Set up and simplify the integral.</p>
+
+            <div class="solution">
+                <p class="solution-label">Solution:</p>
+                <p>The circle equation simplifies to \(x^2 + y^2 = 9\), a circle of radius 3.</p>
+                <p>Parametrize the right half (where \(x \geq 0\)):</p>
+                <p>\[x = 3\cos t, \quad y = 3\sin t, \quad -\frac{\pi}{2} \leq t \leq \frac{\pi}{2}\]</p>
+
+                <p>Compute \(ds\):</p>
+                <p>\[\frac{dx}{dt} = -3\sin t, \quad \frac{dy}{dt} = 3\cos t\]</p>
+                <p>\[ds = \sqrt{(-3\sin t)^2 + (3\cos t)^2} \, dt = \sqrt{9\sin^2 t + 9\cos^2 t} \, dt = 3 \, dt\]</p>
+
+                <p>Substitute into the integral:</p>
+                <p>\[\int_C (9x - 2y) \, ds = \int_{-\pi/2}^{\pi/2} (9 \cdot 3\cos t - 2 \cdot 3\sin t) \cdot 3 \, dt\]</p>
+
+                <p>\[\boxed{\int_{-\pi/2}^{\pi/2} (27\cos t - 6\sin t) \cdot 3 \, dt = \int_{-\pi/2}^{\pi/2} (81\cos t - 18\sin t) \, dt}\]</p>
+            </div>
+        </article>
+
+        <!-- Problem 5 -->
+        <article class="problem" aria-labelledby="problem5-header">
+            <div class="problem-header" id="problem5-header">
+                <span class="points">20 pts</span>
+                Problem 5: Green's Theorem
+            </div>
+
+            <p>Consider \(\displaystyle\oint_C (1-y)x \, dx + xy \, dy\) where \(C\) is the triangle from \((0,0)\) to \((1,1)\), to \((0,1)\) to \((0,0)\).</p>
+
+            <div class="part-label">(a) (10 pts) Evaluate the integral by using Green's Theorem.</div>
+
+            <div class="solution">
+                <p class="solution-label">Solution (a):</p>
+                <p>By Green's Theorem: \(\displaystyle\oint_C P \, dx + Q \, dy = \iint_R \left(\frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right) dA\)</p>
+                <p>Here \(P = (1-y)x\) and \(Q = xy\).</p>
+                <p>\[\frac{\partial Q}{\partial x} = y, \quad \frac{\partial P}{\partial y} = -x\]</p>
+                <p>\[\frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y} = y - (-x) = y + x\]</p>
+
+                <p>The region \(R\) is the triangle with vertices \((0,0)\), \((1,1)\), \((0,1)\).</p>
+                <p>For the region: \(0 \leq y \leq 1\) and \(0 \leq x \leq y\)</p>
+
+                <p>\[\iint_R (y + x) \, dA = \int_0^1 \int_0^y (y + x) \, dx \, dy\]</p>
+                <p>\[= \int_0^1 \left[yx + \frac{x^2}{2}\right]_0^y dy = \int_0^1 \left(y^2 + \frac{y^2}{2}\right) dy = \int_0^1 \frac{3y^2}{2} \, dy\]</p>
+                <p>\[= \frac{3}{2} \cdot \frac{y^3}{3} \Big|_0^1 = \frac{1}{2} \cdot 1 = \boxed{\frac{1}{2}}\]</p>
+            </div>
+
+            <div class="part-label">(b) (10 pts) Evaluate the integral directly.</div>
+
+            <div class="solution">
+                <p class="solution-label">Solution (b):</p>
+                <p>Break \(C\) into three segments:</p>
+
+                <p><strong>\(C_1\):</strong> From \((0,0)\) to \((1,1)\), where \(y = x\), \(dy = dx\), \(0 \leq x \leq 1\)</p>
+                <p>\[\int_{C_1} (1-y)x \, dx + xy \, dy = \int_0^1 (1-x)x \, dx + x \cdot x \, dx = \int_0^1 x \, dx = \frac{x^2}{2}\Big|_0^1 = \frac{1}{2}\]</p>
+
+                <p><strong>\(C_2\):</strong> From \((1,1)\) to \((0,1)\), where \(y = 1\), \(dy = 0\), \(x\) goes from \(1\) to \(0\)</p>
+                <p>\[\int_{C_2} (1-y)x \, dx + xy \, dy = \int_1^0 (1-1)x \, dx + x(1)(0) = \int_1^0 0 \, dx = 0\]</p>
+
+                <p><strong>\(C_3\):</strong> From \((0,1)\) to \((0,0)\), where \(x = 0\), \(dx = 0\), \(y\) goes from \(1\) to \(0\)</p>
+                <p>\[\int_{C_3} (1-y)x \, dx + xy \, dy = \int_1^0 (1-y)(0)(0) + (0)(y) \, dy = 0\]</p>
+
+                <p>Total: \(\displaystyle\oint_C = \frac{1}{2} + 0 + 0 = \boxed{\frac{1}{2}}\)</p>
+            </div>
+        </article>
+
+        <!-- Problem 6 -->
+        <article class="problem" aria-labelledby="problem6-header">
+            <div class="problem-header" id="problem6-header">
+                <span class="points">14 pts</span>
+                Problem 6: Conservative Vector Field (FTOLI)
+            </div>
+
+            <p>Let \(\vec{F}(x,y,z) = (3x^2yz - 3y)\vec{i} + (x^3z - 3x)\vec{j} + (x^3y + 2z)\vec{k}\).</p>
+            <p>Evaluate \(\displaystyle\int_C \vec{F} \cdot d\vec{r}\) where \(C\) is the curve from \((0,0,2)\) to \((0,3,0)\) shown in the figure:</p>
+
+            <figure class="figure-container" role="figure" aria-labelledby="crazypath-caption">
+                <!-- For Canvas: Update src to your Canvas Files URL -->
+                <img src="images/CrazyPath.png"
+                     alt="A complex curved path in 3D space from point (0,0,2) to point (0,3,0)"
+                     aria-describedby="crazypath-description">
+                <figcaption id="crazypath-caption">The curve C from (0,0,2) to (0,3,0)</figcaption>
+            </figure>
+            <div id="crazypath-description" class="sr-description">
+                The figure shows a 3D coordinate system with a complicated, winding path connecting the point (0, 0, 2) on the z-axis to the point (0, 3, 0) on the y-axis. The path curves through several intermediate points including approximately (3, 0, 0), (1, 1, 0), and (0, 3, 0), making several turns and loops. The complexity of the path suggests this problem is about using the Fundamental Theorem of Line Integrals to avoid parameterizing the curve.
+            </div>
+
+            <div class="solution">
+                <p class="solution-label">Solution:</p>
+                <p><strong>Step 1:</strong> Check if \(\vec{F}\) is conservative by computing \(\text{curl } \vec{F}\):</p>
+                <p>\[\text{curl } \vec{F} = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \\ \frac{\partial}{\partial x} & \frac{\partial}{\partial y} & \frac{\partial}{\partial z} \\ 3x^2yz - 3y & x^3z - 3x & x^3y + 2z \end{vmatrix}\]</p>
+                <p>\[= \vec{i}(x^3 - x^3) - \vec{j}(3x^2y - 3x^2y) + \vec{k}(3x^2z - 3 - (3x^2z - 3))\]</p>
+                <p>\[= \langle 0, 0, 0 \rangle\]</p>
+                <p>Since \(\text{curl } \vec{F} = \vec{0}\), \(\vec{F}\) is conservative.</p>
+
+                <p><strong>Step 2:</strong> Find the potential function \(f\) where \(\nabla f = \vec{F}\):</p>
+                <p>From \(f_x = 3x^2yz - 3y\): \(f = x^3yz - 3xy + g(y,z)\)</p>
+                <p>From \(f_y = x^3z - 3x\): Compare with \(\frac{\partial}{\partial y}(x^3yz - 3xy + g) = x^3z - 3x + g_y\)</p>
+                <p>So \(g_y = 0\), meaning \(g = h(z)\)</p>
+                <p>From \(f_z = x^3y + 2z\): Compare with \(\frac{\partial}{\partial z}(x^3yz - 3xy + h(z)) = x^3y + h'(z)\)</p>
+                <p>So \(h'(z) = 2z\), giving \(h(z) = z^2 + K\)</p>
+
+                <p>Therefore: \(f(x,y,z) = x^3yz - 3xy + z^2 + K\)</p>
+
+                <p><strong>Step 3:</strong> Apply the Fundamental Theorem of Line Integrals:</p>
+                <p>\[\int_C \vec{F} \cdot d\vec{r} = f(0,3,0) - f(0,0,2)\]</p>
+                <p>\[= (0^3 \cdot 3 \cdot 0 - 3(0)(3) + 0^2 + K) - (0^3 \cdot 0 \cdot 2 - 3(0)(0) + 2^2 + K)\]</p>
+                <p>\[= (0 - 0 + 0 + K) - (0 - 0 + 4 + K) = K - (4 + K) = \boxed{-8}\]</p>
+            </div>
+        </article>
+
+        <!-- Problem 7 -->
+        <article class="problem" aria-labelledby="problem7-header">
+            <div class="problem-header" id="problem7-header">
+                <span class="points">14 pts</span>
+                Problem 7: Surface Area (Parametric Surface)
+            </div>
+
+            <p>Find the surface area of the surface with parametric equations \(x = u^2\), \(y = uv\), \(z = \frac{1}{2}v^2\), where \(0 \leq u \leq 1\), \(0 \leq v \leq 2\).</p>
+            <p>Possibly useful: \(v^4 + 4u^2v^2 + 4u^4 = (v^2 + 2u^2)^2\)</p>
+
+            <figure class="figure-container" role="figure" aria-labelledby="twisty-caption">
+                <!-- For Canvas: Update src to your Canvas Files URL -->
+                <img src="images/Twisty.png"
+                     alt="A twisted surface in 3D space resembling a curved sheet"
+                     aria-describedby="twisty-description">
+                <figcaption id="twisty-caption">The parametric surface with x = u², y = uv, z = v²/2</figcaption>
+            </figure>
+            <div id="twisty-description" class="sr-description">
+                The figure shows a 3D surface that appears twisted or warped, like a curved sheet. The surface is defined by the parametric equations x equals u squared, y equals u times v, and z equals one-half v squared, where u ranges from 0 to 1 and v ranges from 0 to 2. The surface has a distinctive curved shape that twists as it extends in the coordinate space.
+            </div>
+
+            <div class="solution">
+                <p class="solution-label">Solution:</p>
+                <p>For a parametric surface \(\vec{r}(u,v) = \langle u^2, uv, \frac{1}{2}v^2 \rangle\), the surface area is:</p>
+                <p>\[S = \iint_D |\vec{r}_u \times \vec{r}_v| \, dA\]</p>
+
+                <p><strong>Step 1:</strong> Find the partial derivatives:</p>
+                <p>\[\vec{r}_u = \langle 2u, v, 0 \rangle, \quad \vec{r}_v = \langle 0, u, v \rangle\]</p>
+
+                <p><strong>Step 2:</strong> Compute the cross product:</p>
+                <p>\[\vec{r}_u \times \vec{r}_v = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \\ 2u & v & 0 \\ 0 & u & v \end{vmatrix} = \langle v^2 - 0, -(2uv - 0), 2u \cdot u - 0 \rangle = \langle v^2, -2uv, 2u^2 \rangle\]</p>
+
+                <p><strong>Step 3:</strong> Find the magnitude:</p>
+                <p>\[|\vec{r}_u \times \vec{r}_v| = \sqrt{(v^2)^2 + (-2uv)^2 + (2u^2)^2} = \sqrt{v^4 + 4u^2v^2 + 4u^4}\]</p>
+                <p>Using the given identity: \(\sqrt{v^4 + 4u^2v^2 + 4u^4} = \sqrt{(v^2 + 2u^2)^2} = v^2 + 2u^2\)</p>
+
+                <p><strong>Step 4:</strong> Evaluate the integral:</p>
+                <p>\[S = \int_0^2 \int_0^1 (v^2 + 2u^2) \, du \, dv\]</p>
+                <p>\[= \int_0^2 \left[v^2 u + \frac{2u^3}{3}\right]_0^1 dv = \int_0^2 \left(v^2 + \frac{2}{3}\right) dv\]</p>
+                <p>\[= \left[\frac{v^3}{3} + \frac{2v}{3}\right]_0^2 = \frac{8}{3} + \frac{4}{3} = \frac{12}{3} = \boxed{4}\]</p>
+            </div>
+        </article>
+    </main>
+
+    <footer>
+        <p>MTH 310: Calculus III | University of Wisconsin - La Crosse</p>
+        <p>Fall 2024 Exam 3 Solutions</p>
+    </footer>
+</body>
+</html>

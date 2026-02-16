@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 12.2: Vectors &mdash; Handout</title>
+<style>
+@page { size: letter; margin: 0.4in 0.5in; }
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #b5850e;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    max-width: 7.5in; margin: 0 auto; padding: 0.3em;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.35; }
+.handout-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left h1 { font-size: 1.3em; color: var(--accent-cyan); margin: 0; }
+.header-left p { margin: 0.05em 0; color: #666; font-size: 0.85em; }
+.header-right { text-align: right; font-size: 0.85em; color: #333; }
+hr { border: none; border-top: 2px solid var(--accent-cyan); margin: 0.3em 0; }
+h2 { font-size: 1.1em; color: var(--accent-cyan); margin: 0.4em 0 0.15em 0;
+    border-bottom: 1px solid #ccc; padding-bottom: 0.05em; }
+h3, h4 { font-size: 0.95em; margin: 0.15em 0; }
+p { margin: 0.15em 0; }
+.defn-box { background: #f0f7ff; border-left: 3px solid var(--accent-cyan);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 3px solid var(--accent-green);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
+    padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
+.blank-space { margin: 0.2em 0; position: relative;
+    border: 1px dashed #ccc; border-radius: 3px; box-sizing: border-box; }
+.blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
+    color: #767676; font-style: italic; }
+.hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
+    padding: 0.3em 0.8em; text-align: center; margin: 0.5em 0; }
+.desmos-link { background: #f0f7ff; border-radius: 3px; padding: 0.2em 0.5em;
+    margin: 0.3em 0; font-size: 0.8em; }
+.desmos-link a { color: var(--accent-cyan); word-break: break-all; }
+.two-col-print { display: flex; gap: 0.6em; align-items: flex-start; }
+.two-col-print > * { flex: 1; }
+figure { margin: 0.1em 0; text-align: center; }
+figure img { max-width: 100%; max-height: 3.0in; }
+figcaption { font-size: 0.7em; color: #666; margin-top: 0.05em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 2px; border: 1px solid #ddd; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.image-grid { display: flex; gap: 0.4em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.2em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.8em; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 1.5in; max-width: 100%; }
+.image-grid .grid-cell.textbook-fig img { padding: 2px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+table { border-collapse: collapse; font-size: 0.85em; margin: 0.15em auto; }
+th, td { padding: 0.1em 0.4em; border: 1px solid #ccc; text-align: center; }
+th { background: #f0f7ff; }
+.small { font-size: 0.8em; }
+ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
+li { margin-bottom: 0.05em; }
+.pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
+.homework-section { page-break-before: auto; }
+.defn-box, .example-box, .key-point { page-break-inside: avoid; break-inside: avoid; }
+.example-group { page-break-inside: avoid; break-inside: avoid; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media print {
+    body { padding: 0; max-width: none; }
+    .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    a::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    figure img { max-height: 2.8in; }
+    .skip-link { display: none; }
+}
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <div class="handout-header">
+    <div class="header-left">
+      <h1>Section 12.2: Vectors</h1>
+      <p>Vectors and the Geometry of Space</p>
+    </div>
+    <div class="header-right">
+      <p>MTH 310<br>Calculus III</p>
+    </div>
+  </div>
+</header>
+<hr aria-hidden="true">
+
+<section aria-label="Scalars vs. Vectors">
+  <h2>Scalars vs. Vectors</h2>
+  <div><p>In Calculus I and II, every quantity was a <strong>number</strong> &mdash; a single value on the number line.</p>
+<p>Now we need quantities that carry both <strong>size</strong> and <strong>direction</strong>.</p></div>
+<table>
+<thead><tr><th scope="col">Scalars (magnitude only)</th><th scope="col">Vectors (magnitude AND direction)</th></tr></thead>
+<tbody>
+<tr><td>Speed</td><td>Velocity</td></tr>
+<tr><td>Distance</td><td>Displacement</td></tr>
+<tr><td>Mass</td><td>Force</td></tr>
+<tr><td>Length</td><td>Acceleration</td></tr>
+<tr><td>Area</td><td>Weight (gravitational force)</td></tr>
+<tr><td>Pressure</td><td>Work</td></tr>
+</tbody>
+</table>
+<aside class="key-point" role="note" aria-label="Key point"><p>A <strong>scalar</strong> has magnitude only. A <strong>vector</strong> has both magnitude AND direction.</p></aside>
+</section>
+
+<section aria-label="Displacement Vectors and Equal Vectors">
+  <h2>Displacement Vectors and Equal Vectors</h2>
+  <div class="two-col-print">
+  <div><div><p>A <strong>displacement vector</strong> \(\vec{AB}\) represents moving from point \(A\) (initial point) to point \(B\) (terminal point).</p></div>
+<section class="defn-box" role="region" aria-label="Definition 1: Equal Vectors">
+  <h3 class="defn-title">Definition 1: Equal Vectors</h3>
+  <p>Two vectors are <strong>equal</strong> if they have the same magnitude and the same direction &mdash; even if they start at different points.</p>
+<p>Equal vectors can be <strong>translated</strong> (slid) anywhere in space without changing the vector.</p>
+</section></div>
+  <div><figure>
+  <img src="figures/displacement_vector.png" alt="A vector arrow from point A to point B, labeled AB with an arrow on top">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+<figure class="textbook-fig">
+  <img src="../figures/12_2_2.png" alt="Six identical red arrows representing the same vector (3, 2) placed at different positions in the plane, showing that equal vectors can be translated anywhere without changing the vector.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+</div>
+<div><p>The <strong>zero vector</strong> \(\vec{0}\) has magnitude zero and no specific direction. It is the only vector with this property.</p></div>
+</section>
+
+<section aria-label="Vector Addition">
+  <h2>Vector Addition</h2>
+  <div><p>Two ways to add vectors geometrically:</p></div>
+<div class="two-col-print">
+  <div><div><p><strong>Triangle Law:</strong> Place the tail of \(\vec{v}\) at the tip of \(\vec{u}\). The sum \(\vec{u} + \vec{v}\) goes from the tail of \(\vec{u}\) to the tip of \(\vec{v}\).</p></div>
+<figure>
+  <img src="figures/triangle_law.png" alt="Triangle law of vector addition: vectors u and v arranged tip-to-tail, with the sum u+v as the third side">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+  <div><div><p><strong>Parallelogram Law:</strong> Place the tails of \(\vec{u}\) and \(\vec{v}\) together. Complete the parallelogram. The diagonal is \(\vec{u} + \vec{v}\).</p></div>
+<figure>
+  <img src="figures/parallelogram_law.png" alt="Parallelogram law of vector addition: vectors u and v placed tail-to-tail forming a parallelogram, with the diagonal as u+v">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+</div>
+
+<div><p><strong>Chaining displacements:</strong> \(\vec{AB} + \vec{BC} = \vec{AC}\)</p>
+<p>Walk from \(A\) to \(B\), then from \(B\) to \(C\). The net displacement is \(A\) to \(C\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Vector addition is <strong>commutative</strong>: \(\vec{u} + \vec{v} = \vec{v} + \vec{u}\). Both the triangle and parallelogram laws give the same result.</p></aside>
+</section>
+
+<section aria-label="Scalar Multiplication and Vector Difference">
+  <h2>Scalar Multiplication and Vector Difference</h2>
+  <div class="two-col-print">
+  <div><div><p><strong>Scalar multiplication:</strong> \(c\vec{u}\) stretches or shrinks \(\vec{u}\) by a factor of \(|c|\).</p>
+<ul>
+<li>If \(c > 0\): same direction as \(\vec{u}\)</li>
+<li>If \(c < 0\): opposite direction</li>
+<li>If \(c = 0\): the zero vector</li>
+</ul></div>
+<div><p><strong>Parallel vectors:</strong> \(\vec{u}\) and \(\vec{v}\) are parallel if \(\vec{v} = c\vec{u}\) for some scalar \(c\).</p></div></div>
+  <div><figure>
+  <img src="figures/scalar_multiplication.png" alt="A vector u shown alongside 2u (twice as long, same direction), 0.5u (half as long), and -u (same length, opposite direction)">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+</div>
+
+<div class="two-col-print">
+  <div><div><p><strong>Negative vector:</strong> \(-\vec{u} = (-1)\vec{u}\) &mdash; same magnitude, opposite direction.</p>
+<p><strong>Vector difference:</strong> \(\vec{u} - \vec{v} = \vec{u} + (-\vec{v})\)</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Think of \(\vec{u} - \vec{v}\) as <strong>"what you add to \(\vec{v}\) to get \(\vec{u}\)"</strong> &mdash; like how \(10 - 7.36 = 2.64\) answers "what do I add to \(7.36\) to get \(10\)?"</p></aside></div>
+  <div><figure>
+  <img src="figures/vector_difference.png" alt="Vector subtraction diagram. Vectors u (blue) and v (red) start at the origin. The difference u minus v (green) is drawn from the tip of v to the tip of u, illustrating that u minus v is what you add to v to get u.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+</div>
+</section>
+
+<section aria-label="Components">
+  <h2>Components</h2>
+  <div class="two-col-print">
+  <div><div><p>If we place a vector with its initial point at the <strong>origin</strong>, it becomes a <strong>position vector</strong>. Its components are just its terminal coordinates.</p></div>
+<div><p>In 2D: \(\vec{a} = \langle a_1, a_2 \rangle\)</p>
+<p>In 3D: \(\vec{a} = \langle a_1, a_2, a_3 \rangle\)</p></div>
+<div><p>We use <strong>angle brackets</strong> \(\langle \cdot \rangle\) for vector components and <strong>parentheses</strong> \(( \cdot )\) for points.</p></div></div>
+  <div><figure>
+  <img src="figures/position_vector.png" alt="A position vector from the origin to a point (a1, a2, a3), with components labeled">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+</div>
+<div><p>Translating a vector to a different starting point gives an <strong>equal</strong> vector &mdash; same components, different location.</p></div>
+</section>
+
+<section class="example-group" aria-label="Displacement Vector Formula">
+  <h2>Displacement Vector Formula</h2>
+  <section class="defn-box" role="region" aria-label="Definition 2: Displacement Vector Formula">
+  <h3 class="defn-title">Definition 2: Displacement Vector Formula</h3>
+  <p>Given points \(A(x_1, y_1, z_1)\) and \(B(x_2, y_2, z_2)\), the displacement vector from \(A\) to \(B\) is:</p>
+<p>\[\vec{AB} = \langle x_2 - x_1,\; y_2 - y_1,\; z_2 - z_1 \rangle\]</p>
+<p><strong>Terminal minus initial.</strong></p>
+</section>
+<section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Find the displacement vector \(\vec{AB}\) for \(A(2, -3, 4)\) and \(B(-2, 1, 1)\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Subtract: terminal minus initial, component by component." style="min-height:1.5in;">
+  <div class="blank-prompt">Subtract: terminal minus initial, component by component.</div>
+</div>
+</section>
+
+<section aria-label="Magnitude">
+  <h2>Magnitude</h2>
+  <section class="defn-box" role="region" aria-label="Definition 3: Magnitude of a Vector">
+  <h3 class="defn-title">Definition 3: Magnitude of a Vector</h3>
+  <p>The <strong>magnitude</strong> (or length) of a vector \(\vec{a} = \langle a_1, a_2, a_3 \rangle\) is:</p>
+<p>\[|\vec{a}| = \sqrt{a_1^2 + a_2^2 + a_3^2}\]</p>
+<p>In 2D: \(|\vec{a}| = \sqrt{a_1^2 + a_2^2}\)</p>
+</section>
+<div><p>This is the <strong>distance formula</strong> from Section 12.1! The magnitude of a position vector equals the distance from the origin to its terminal point.</p></div>
+</section>
+
+<section class="example-group" aria-label="Example: Vector Arithmetic">
+  <h2>Example: Vector Arithmetic</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>For \(\vec{a} = \langle 2, -1, 3 \rangle\) and \(\vec{b} = \langle 0, 4, -3 \rangle\), compute:</p>
+<ol>
+<li>\(-3\vec{b}\)</li>
+<li>\(|-3\vec{b}|\)</li>
+<li>\(2\vec{a} + 5\vec{b}\)</li>
+</ol>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Compute each quantity step by step." style="min-height:3in;">
+  <div class="blank-prompt">Compute each quantity step by step.</div>
+</div>
+</section>
+
+<section class="example-group" aria-label="Your Turn: Vector Arithmetic Practice">
+  <h2>Your Turn: Vector Arithmetic Practice</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p><strong>Your turn!</strong> For \(\vec{u} = \langle 3, -1, 2 \rangle\) and \(\vec{v} = \langle -1, 4, 1 \rangle\), find:</p>
+<ol>
+<li>\(2\vec{u} - 3\vec{v}\)</li>
+<li>\(|2\vec{u} - 3\vec{v}|\)</li>
+</ol>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Work through the scalar multiplications first, then subtract, then find the magnitude." style="min-height:2.5in;">
+  <div class="blank-prompt">Work through the scalar multiplications first, then subtract, then find the magnitude.</div>
+</div>
+</section>
+
+<section aria-label="Standard Basis Vectors">
+  <h2>Standard Basis Vectors</h2>
+  <div class="two-col-print">
+  <div><div><p>The <strong>standard basis vectors</strong> are unit vectors along each axis:</p>
+<p>\[\vec{i} = \langle 1, 0, 0 \rangle, \quad \vec{j} = \langle 0, 1, 0 \rangle, \quad \vec{k} = \langle 0, 0, 1 \rangle\]</p>
+<p>In 2D: \(\vec{i} = \langle 1, 0 \rangle\), \(\vec{j} = \langle 0, 1 \rangle\)</p></div>
+<div><p><strong>Any vector</strong> can be written as a combination of basis vectors:</p>
+<p>\[\vec{a} = \langle a_1, a_2, a_3 \rangle = a_1\vec{i} + a_2\vec{j} + a_3\vec{k}\]</p></div></div>
+  <div><figure>
+  <img src="figures/standard_basis.png" alt="The three standard basis vectors i, j, k along the x, y, and z axes respectively">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+</div>
+<div class="two-col-print">
+  <div><figure class="textbook-fig">
+  <img src="../figures/12_2_7.png" alt="2D decomposition: vector a from the origin to (a1, a2), shown as the sum of a horizontal component a1 i along the x-axis and a vertical component a2 j, forming a right triangle.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+  <div><figure class="textbook-fig">
+  <img src="../figures/12_2_8.png" alt="3D decomposition: vector a from the origin to (a1, a2, a3), shown as the sum of components a1 i along the x-axis, a2 j along the y-axis, and a3 k along the z-axis.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+</div>
+<div><p><strong>Example:</strong> \(\langle 3, 4 \rangle = 3\langle 1, 0 \rangle + 4\langle 0, 1 \rangle = 3\vec{i} + 4\vec{j}\)</p></div>
+</section>
+
+<section class="example-group" aria-label="Unit Vectors">
+  <h2>Unit Vectors</h2>
+  <section class="defn-box" role="region" aria-label="Definition 4: Unit Vector">
+  <h3 class="defn-title">Definition 4: Unit Vector</h3>
+  <p>A <strong>unit vector</strong> is a vector with magnitude 1.</p>
+<p>To find the unit vector in the direction of \(\vec{a}\):</p>
+<p>\[\hat{a} = \frac{\vec{a}}{|\vec{a}|}\]</p>
+<p>This process is called <strong>normalizing</strong> the vector.</p>
+</section>
+<section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>Find the unit vector in the direction of \(\vec{a} = \langle 3, 4 \rangle\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Find |a|, then divide each component by it." style="min-height:1.5in;">
+  <div class="blank-prompt">Find |a|, then divide each component by it.</div>
+</div>
+</section>
+
+<section aria-label="Application: Forces in Equilibrium">
+  <h2>Application: Forces in Equilibrium</h2>
+  <section class="example-box" role="region" aria-label="Example 5">
+  <h3 class="example-title">Example 5</h3>
+  <p>A 100-lb weight hangs from two wires as shown. Find the tensions \(\vec{T}_1\) and \(\vec{T}_2\) in the wires and the magnitudes of these tensions.</p>
+</section>
+<figure>
+  <img src="figures/forces_equilibrium.png" alt="A 100-lb weight suspended by two wires making angles of 50 degrees and 32 degrees with the horizontal">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure>
+
+<div><p><strong>Setting up the problem:</strong></p>
+<p>The system is in <strong>equilibrium</strong>, so the forces sum to zero:</p>
+<p>\[\vec{T}_1 + \vec{T}_2 + \vec{w} = \vec{0}\]</p></div>
+<div><p>Write each force in component form:</p>
+<ul>
+<li>\(\vec{T}_1 = \langle -t_1 \cos 50°,\; t_1 \sin 50° \rangle\) &emsp; (pulls up-left)</li>
+<li>\(\vec{T}_2 = \langle t_2 \cos 32°,\; t_2 \sin 32° \rangle\) &emsp; (pulls up-right)</li>
+<li>\(\vec{w} = \langle 0, -100 \rangle\) &emsp; (gravity, straight down)</li>
+</ul></div>
+
+<div><p><strong>Solving the system:</strong></p>
+<p>Setting the \(x\)-components equal to zero:</p>
+<p>\[-t_1 \cos 50° + t_2 \cos 32° = 0\]</p>
+<p>Setting the \(y\)-components equal to zero:</p>
+<p>\[t_1 \sin 50° + t_2 \sin 32° - 100 = 0\]</p></div>
+<div><p>From the \(x\)-equation:</p>
+<p>\[t_1 = \frac{t_2 \cos 32°}{\cos 50°}\]</p></div>
+<div><p>Substitute into the \(y\)-equation:</p>
+<p>\[\frac{t_2 \cos 32°}{\cos 50°} \sin 50° + t_2 \sin 32° = 100\]</p>
+<p>\[t_2(\cos 32° \tan 50° + \sin 32°) = 100\]</p></div>
+<div><p>\[t_2 = \frac{100}{\cos 32° \tan 50° + \sin 32°} \approx 66.07 \text{ lb}\]</p>
+<p>\[t_1 = \frac{66.07 \cos 32°}{\cos 50°} \approx 85.64 \text{ lb}\]</p></div>
+</section>
+
+<section class="homework-section" aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 12.2:</strong> 1, 2, 3, 4, 8, 9, 11, 13, 15, 17, 19, 21, 23, 25</div>
+</section>
+</main>
+</body>
+</html>

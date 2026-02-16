@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 14.7: Maximum and Minimum Values &mdash; Handout</title>
+<style>
+@page { size: letter; margin: 0.4in 0.5in; }
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #b5850e;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    max-width: 7.5in; margin: 0 auto; padding: 0.3em;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.35; }
+.handout-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left h1 { font-size: 1.3em; color: var(--accent-cyan); margin: 0; }
+.header-left p { margin: 0.05em 0; color: #666; font-size: 0.85em; }
+.header-right { text-align: right; font-size: 0.85em; color: #333; }
+hr { border: none; border-top: 2px solid var(--accent-cyan); margin: 0.3em 0; }
+h2 { font-size: 1.1em; color: var(--accent-cyan); margin: 0.4em 0 0.15em 0;
+    border-bottom: 1px solid #ccc; padding-bottom: 0.05em; }
+h3, h4 { font-size: 0.95em; margin: 0.15em 0; }
+p { margin: 0.15em 0; }
+.defn-box { background: #f0f7ff; border-left: 3px solid var(--accent-cyan);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 3px solid var(--accent-green);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
+    padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
+.blank-space { margin: 0.2em 0; position: relative;
+    border: 1px dashed #ccc; border-radius: 3px; box-sizing: border-box; }
+.blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
+    color: #767676; font-style: italic; }
+.hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
+    padding: 0.3em 0.8em; text-align: center; margin: 0.5em 0; }
+.desmos-link { background: #f0f7ff; border-radius: 3px; padding: 0.2em 0.5em;
+    margin: 0.3em 0; font-size: 0.8em; }
+.desmos-link a { color: var(--accent-cyan); word-break: break-all; }
+.two-col-print { display: flex; gap: 0.6em; align-items: flex-start; }
+.two-col-print > * { flex: 1; }
+figure { margin: 0.1em 0; text-align: center; }
+figure img { max-width: 100%; max-height: 3.0in; }
+figcaption { font-size: 0.7em; color: #666; margin-top: 0.05em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 2px; border: 1px solid #ddd; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.image-grid { display: flex; gap: 0.4em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.2em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.8em; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 1.5in; max-width: 100%; }
+.image-grid .grid-cell.textbook-fig img { padding: 2px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+table { border-collapse: collapse; font-size: 0.85em; margin: 0.15em auto; }
+th, td { padding: 0.1em 0.4em; border: 1px solid #ccc; text-align: center; }
+th { background: #f0f7ff; }
+.small { font-size: 0.8em; }
+ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
+li { margin-bottom: 0.05em; }
+.pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
+.homework-section { page-break-before: auto; }
+.defn-box, .example-box, .key-point { page-break-inside: avoid; break-inside: avoid; }
+.example-group { page-break-inside: avoid; break-inside: avoid; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media print {
+    body { padding: 0; max-width: none; }
+    .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    a::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    figure img { max-height: 2.8in; }
+    .skip-link { display: none; }
+}
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <div class="handout-header">
+    <div class="header-left">
+      <h1>Section 14.7: Maximum and Minimum Values</h1>
+      <p>Partial Derivatives</p>
+    </div>
+    <div class="header-right">
+      <p>MTH 310<br>Calculus III</p>
+    </div>
+  </div>
+</header>
+<hr aria-hidden="true">
+
+<section aria-label="Optimization: From Calc I to Calc III">
+  <h2>Optimization: From Calc I to Calc III</h2>
+  <div><p>In Calculus I you learned a systematic optimization procedure. Let's see what changes in Calculus III.</p></div>
+<table>
+<thead><tr><th scope="col"></th><th scope="col">Calculus I (\(y = f(x)\))</th><th scope="col">Calculus III (\(z = f(x,y)\))</th></tr></thead>
+<tbody>
+<tr><td><strong>Critical points</strong></td><td>\(f'(x) = 0\) or DNE</td><td>\(f_x = 0\) and \(f_y = 0\) (or DNE)</td></tr>
+<tr><td><strong>Classify</strong></td><td>2nd Derivative Test</td><td>2nd Derivative Test (with \(D\))</td></tr>
+<tr><td><strong>New phenomenon</strong></td><td>&mdash;</td><td>Saddle points!</td></tr>
+<tr><td><strong>Absolute extrema</strong></td><td>Check critical pts + endpoints</td><td>Check critical pts + boundary</td></tr>
+</tbody>
+</table>
+<aside class="key-point" role="note" aria-label="Key point"><p>The big ideas carry over &mdash; but the <strong>boundary</strong> is now a curve instead of two endpoints, and <strong>saddle points</strong> are genuinely new.</p></aside>
+</section>
+
+<section aria-label="Local Extrema and Critical Points">
+  <h2>Local Extrema and Critical Points</h2>
+  <div><p><em>Can a differentiable function \(f\) have a local maximum at \((a,b)\) with \(f_x(a,b) = 3\)?</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Think: what does f_x(a,b) = 3 mean geometrically?" style="min-height:1in;">
+  <div class="blank-prompt">Think: what does f_x(a,b) = 3 mean geometrically?</div>
+</div>
+<div><p><em>Can \(f_x(a,b) = 0\) and \(f_y(a,b) = 0\) without \(f\) having a local max or min at \((a,b)\)?</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Think of a surface that levels off but isn't a peak or valley." style="min-height:1in;">
+  <div class="blank-prompt">Think of a surface that levels off but isn't a peak or valley.</div>
+</div>
+<section class="defn-box" role="region" aria-label="Definition 1: Local Maximum and Minimum">
+  <h3 class="defn-title">Definition 1: Local Maximum and Minimum</h3>
+  <p>A function \(f(x,y)\) has a <strong>local maximum</strong> at \((a,b)\) if \(f(x,y) \leq f(a,b)\) for all \((x,y)\) near \((a,b)\).</p>
+<p>A <strong>local minimum</strong> at \((a,b)\) means \(f(x,y) \geq f(a,b)\) for all \((x,y)\) near \((a,b)\).</p>
+</section>
+
+<section class="defn-box" role="region" aria-label="Definition 2: Theorem: Necessary Condition for Extrema">
+  <h3 class="defn-title">Definition 2: Theorem: Necessary Condition for Extrema</h3>
+  <p>If \(f\) has a local extremum at \((a,b)\) and the first-order partial derivatives exist there, then</p>
+<p>\[f_x(a,b) = 0 \quad \text{and} \quad f_y(a,b) = 0\]</p>
+</section>
+<div><p>Just like Calc I: if a tangent plane exists at a local extremum, it must be <strong>horizontal</strong>.</p></div>
+</section>
+
+<section aria-label="Finding Critical Points">
+  <h2>Finding Critical Points</h2>
+  <section class="defn-box" role="region" aria-label="Definition 3: Critical Point">
+  <h3 class="defn-title">Definition 3: Critical Point</h3>
+  <p>A point \((a,b)\) is a <strong>critical point</strong> of \(f\) if:</p>
+<ul>
+<li>\(f_x(a,b) = 0\) and \(f_y(a,b) = 0\), <strong>or</strong></li>
+<li>one (or both) partial derivatives do not exist there</li>
+</ul>
+</section>
+<aside class="key-point" role="note" aria-label="Key point"><p>Every local extremum occurs at a critical point &mdash; but not every critical point is an extremum!</p></aside>
+<div><p><strong>Procedure for finding critical points:</strong></p>
+<ol>
+<li>Compute \(f_x\) and \(f_y\)</li>
+<li>Set \(f_x = 0\) and \(f_y = 0\) simultaneously</li>
+<li>Solve the system of equations for \(x\) and \(y\)</li>
+</ol></div>
+</section>
+
+<section aria-label="Example: Find the Critical Points">
+  <h2>Example: Find the Critical Points</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Find the critical points of \(f(x,y) = 2x^3 + xy^2 + 5x^2 + y^2\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Compute f_x and f_y, set both equal to zero, and solve the system." style="min-height:3in;">
+  <div class="blank-prompt">Compute f_x and f_y, set both equal to zero, and solve the system.</div>
+</div>
+</section>
+
+<section aria-label="The Second Derivative Test">
+  <h2>The Second Derivative Test</h2>
+  <div><p>Now that we can <em>find</em> critical points, how do we <em>classify</em> them?</p></div>
+<section class="defn-box" role="region" aria-label="Definition 4: Second Derivative Test">
+  <h3 class="defn-title">Definition 4: Second Derivative Test</h3>
+  <p>Suppose the second partial derivatives of \(f\) are continuous near \((a,b)\) and \(f_x(a,b) = f_y(a,b) = 0\). Define:</p>
+<p>\[D = D(a,b) = f_{xx}(a,b) \cdot f_{yy}(a,b) - \left[f_{xy}(a,b)\right]^2\]</p>
+</section>
+<table>
+<thead><tr><th scope="col">Condition</th><th scope="col">Conclusion</th></tr></thead>
+<tbody>
+<tr><td>\(D > 0\) and \(f_{xx} > 0\)</td><td><strong>Local minimum</strong></td></tr>
+<tr><td>\(D > 0\) and \(f_{xx} < 0\)</td><td><strong>Local maximum</strong></td></tr>
+<tr><td>\(D < 0\)</td><td><strong>Saddle point</strong></td></tr>
+<tr><td>\(D = 0\)</td><td><strong>Inconclusive</strong> (test fails)</td></tr>
+</tbody>
+</table>
+<aside class="key-point" role="note" aria-label="Key point"><p>Think of \(D\) as a measure of <strong>curvature agreement</strong>: when \(D > 0\) the surface curves the same way in all directions. When \(D < 0\) it curves <strong>up</strong> in one direction and <strong>down</strong> in another &mdash; a saddle!</p></aside>
+</section>
+
+<section aria-label="Saddle Points: The New Phenomenon">
+  <h2>Saddle Points: The New Phenomenon</h2>
+  <div><p>A <strong>saddle point</strong> has no analog in single-variable calculus. At a saddle point:</p>
+<ul>
+<li>\(f_x = 0\) and \(f_y = 0\) (the tangent plane is horizontal)</li>
+<li>The surface curves <strong>up</strong> in one direction and <strong>down</strong> in another</li>
+<li>The point is neither a local max nor a local min</li>
+</ul></div>
+<div><p>Think of a mountain pass (or the shape of a Pringles chip): it's the <em>highest</em> point on the trail going one direction, but the <em>lowest</em> point going the other direction.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(D < 0\) means the <strong>mixed partial</strong> \(f_{xy}\) is large relative to \(f_{xx}\) and \(f_{yy}\) &mdash; the surface is twisting.</p></aside>
+</section>
+
+<section aria-label="Caution: When $D = 0$">
+  <h2>Caution: When \(D = 0\)</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Show that \(D = 0\) at the origin for \(f(x,y) = x^4 + y^4\). Is \((0,0)\) actually an extremum?</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Compute all second partials at (0,0) and find D. Then argue from the formula for f." style="min-height:2.5in;">
+  <div class="blank-prompt">Compute all second partials at (0,0) and find D. Then argue from the formula for f.</div>
+</div>
+<aside class="key-point" role="note" aria-label="Key point"><p>When \(D = 0\), you need a <strong>different argument</strong> &mdash; the test simply gives no information.</p></aside>
+</section>
+
+<section aria-label="Example: Classify the Critical Points">
+  <h2>Example: Classify the Critical Points</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Classify all critical points of \(f(x,y) = 2x^3 + xy^2 + 5x^2 + y^2\).</p>
+<p>(We already found them: \((0,0)\), \((-\tfrac{5}{3}, 0)\), \((-1, 2)\), \((-1, -2)\).)</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Compute f_xx, f_yy, f_xy, then evaluate D at each critical point." style="min-height:3.5in;">
+  <div class="blank-prompt">Compute f_xx, f_yy, f_xy, then evaluate D at each critical point.</div>
+</div>
+
+<div class="two-col-print">
+  <div><figure class="textbook-fig">
+  <img src="../figures/14_7_2.png" alt="3D surface plot of f(x,y) = 2x^3 + xy^2 + 5x^2 + y^2 showing a local minimum near the origin, a local maximum near (-5/3, 0), and saddle points at (-1, 2) and (-1, -2).">
+  <figcaption>Surface plot of \(f\) | <a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+  <div><figure class="textbook-fig">
+  <img src="../figures/14_7_3.png" alt="Contour plot of f(x,y) = 2x^3 + xy^2 + 5x^2 + y^2. Closed contours indicate the local max and min, while saddle points appear where contours form an X-shaped pattern.">
+  <figcaption>Contour plot of \(f\) | <a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+</div>
+</section>
+
+<section aria-label="Your Turn: Find and Classify Critical Points">
+  <h2>Your Turn: Find and Classify Critical Points</h2>
+  <section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>Find and classify the critical points of \(f(x,y) = x^2 + y^2 - 2x - 6y + 14\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Set f_x = 0 and f_y = 0, then compute D." style="min-height:3in;">
+  <div class="blank-prompt">Set f_x = 0 and f_y = 0, then compute D.</div>
+</div>
+
+<section class="example-box" role="region" aria-label="Example 5">
+  <h3 class="example-title">Example 5</h3>
+  <p>Find and classify the critical points of \(g(x,y) = x^2 - y^2\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: This is a classic saddle surface &mdash; verify it!" style="min-height:2.5in;">
+  <div class="blank-prompt">This is a classic saddle surface &mdash; verify it!</div>
+</div>
+</section>
+
+<section aria-label="The Extreme Value Theorem">
+  <h2>The Extreme Value Theorem</h2>
+  <div><p>Recall from Calc I: if \(f\) is continuous on \([a,b]\), then \(f\) attains an absolute max and an absolute min on \([a,b]\).</p></div>
+<section class="defn-box" role="region" aria-label="Definition 5: Extreme Value Theorem (Two Variables)">
+  <h3 class="defn-title">Definition 5: Extreme Value Theorem (Two Variables)</h3>
+  <p>If \(f\) is continuous on a <strong>closed, bounded</strong> set \(D\) in \(\mathbb{R}^2\), then \(f\) attains an absolute maximum and an absolute minimum on \(D\).</p>
+</section>
+<div><p><strong>Closed set:</strong> includes all its boundary points (like \(\leq\) vs. \(<\))</p>
+<p><strong>Bounded set:</strong> fits inside some large disk (not stretching to infinity)</p></div>
+
+<div><p><strong>Cautionary notes:</strong></p>
+<ul>
+<li>Absolute extrema may occur where \(f\) is <strong>not differentiable</strong></li>
+<li>Absolute extrema may occur <strong>on the boundary</strong> (not just interior critical points)</li>
+<li>There can be infinitely many absolute extrema</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Procedure for finding absolute extrema on a closed, bounded set \(D\):</strong></p>
+<ol>
+<li>Find all <strong>critical points</strong> of \(f\) inside \(D\)</li>
+<li>Find the extreme values of \(f\) <strong>on the boundary</strong> of \(D\)</li>
+<li>The largest value from steps 1 and 2 is the absolute max; the smallest is the absolute min</li>
+</ol></aside>
+</section>
+
+<section aria-label="Example: Absolute Extrema on a Rectangle">
+  <h2>Example: Absolute Extrema on a Rectangle</h2>
+  <section class="example-box" role="region" aria-label="Example 6">
+  <h3 class="example-title">Example 6</h3>
+  <p>Find the absolute maximum and minimum values of</p>
+<p>\[f(x,y) = x^4 + y^4 - 4xy + 2\]</p>
+<p>on the set \(D = \{(x,y) \mid 0 \leq x \leq 3,\; 0 \leq y \leq 2\}\).</p>
+</section>
+<div><p><strong>Step 1: Interior critical points.</strong> Set \(f_x = 0\) and \(f_y = 0\):</p>
+<p>\[f_x = 4x^3 - 4y = 0 \;\Rightarrow\; y = x^3\]</p>
+<p>\[f_y = 4y^3 - 4x = 0 \;\Rightarrow\; x = y^3\]</p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Substitute y = x^3 into x = y^3 to find the interior critical points in D." style="min-height:2.5in;">
+  <div class="blank-prompt">Substitute y = x^3 into x = y^3 to find the interior critical points in D.</div>
+</div>
+</section>
+
+<section aria-label="Checking the Boundary (Continued)">
+  <h2>Checking the Boundary (Continued)</h2>
+  <div><p><strong>Step 2:</strong> Check \(f\) on each edge of the rectangle \([0,3] \times [0,2]\).</p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Evaluate f on all four edges. On each edge, one variable is fixed." style="min-height:4in;">
+  <div class="blank-prompt">Evaluate f on all four edges. On each edge, one variable is fixed.</div>
+</div>
+
+<div><p><strong>Step 3:</strong> Compare all values:</p></div>
+<table>
+<thead><tr><th scope="col">Point</th><th scope="col">\(f\)-value</th></tr></thead>
+<tbody>
+<tr><td>\((1, 1)\)</td><td>\(0\) &larr; <strong>absolute min</strong></td></tr>
+<tr><td>\((0, 0)\)</td><td>\(2\)</td></tr>
+<tr><td>\((3, 0)\)</td><td>\(83\) &larr; <strong>absolute max</strong></td></tr>
+<tr><td>\((3, 2)\)</td><td>\(75\)</td></tr>
+<tr><td>\((3, \sqrt[3]{3})\)</td><td>\(\approx 74.0\)</td></tr>
+</tbody>
+</table>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Absolute minimum</strong> is \(f(1,1) = 0\) and <strong>absolute maximum</strong> is \(f(3,0) = 83\).</p></aside>
+</section>
+
+<section aria-label="Application: Minimum Surface Area Box">
+  <h2>Application: Minimum Surface Area Box</h2>
+  <section class="example-box" role="region" aria-label="Example 7">
+  <h3 class="example-title">Example 7</h3>
+  <p>Find the dimensions of a rectangular box with volume \(1000 \text{ cm}^3\) that has the smallest possible surface area.</p>
+</section>
+<div><p><strong>Setup:</strong> Let the box have dimensions \(x\), \(y\), \(z\) (in cm).</p>
+<ul>
+<li><strong>Constraint:</strong> \(xyz = 1000\) &rArr; \(z = \frac{1000}{xy}\)</li>
+<li><strong>Minimize:</strong> \(S = 2xy + 2xz + 2yz\)</li>
+</ul></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Substitute z = 1000/(xy) into S, then find critical points." style="min-height:3.5in;">
+  <div class="blank-prompt">Substitute z = 1000/(xy) into S, then find critical points.</div>
+</div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Among all boxes of fixed volume, the <strong>cube</strong> has the least surface area. This is a beautiful result that generalizes to higher dimensions!</p></aside>
+</section>
+
+<section class="homework-section" aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 14.7:</strong> 1, 3, 5-21 odd, 25, 33, 37, 41, 43, 45, 47, 49, 51, 55</div>
+</section>
+</main>
+</body>
+</html>

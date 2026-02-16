@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 14.2: Limits and Continuity &mdash; Handout</title>
+<style>
+@page { size: letter; margin: 0.4in 0.5in; }
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #b5850e;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    max-width: 7.5in; margin: 0 auto; padding: 0.3em;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.35; }
+.handout-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left h1 { font-size: 1.3em; color: var(--accent-cyan); margin: 0; }
+.header-left p { margin: 0.05em 0; color: #666; font-size: 0.85em; }
+.header-right { text-align: right; font-size: 0.85em; color: #333; }
+hr { border: none; border-top: 2px solid var(--accent-cyan); margin: 0.3em 0; }
+h2 { font-size: 1.1em; color: var(--accent-cyan); margin: 0.4em 0 0.15em 0;
+    border-bottom: 1px solid #ccc; padding-bottom: 0.05em; }
+h3, h4 { font-size: 0.95em; margin: 0.15em 0; }
+p { margin: 0.15em 0; }
+.defn-box { background: #f0f7ff; border-left: 3px solid var(--accent-cyan);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 3px solid var(--accent-green);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
+    padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
+.blank-space { margin: 0.2em 0; position: relative;
+    border: 1px dashed #ccc; border-radius: 3px; box-sizing: border-box; }
+.blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
+    color: #767676; font-style: italic; }
+.hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
+    padding: 0.3em 0.8em; text-align: center; margin: 0.5em 0; }
+.desmos-link { background: #f0f7ff; border-radius: 3px; padding: 0.2em 0.5em;
+    margin: 0.3em 0; font-size: 0.8em; }
+.desmos-link a { color: var(--accent-cyan); word-break: break-all; }
+.two-col-print { display: flex; gap: 0.6em; align-items: flex-start; }
+.two-col-print > * { flex: 1; }
+figure { margin: 0.1em 0; text-align: center; }
+figure img { max-width: 100%; max-height: 3.0in; }
+figcaption { font-size: 0.7em; color: #666; margin-top: 0.05em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 2px; border: 1px solid #ddd; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.image-grid { display: flex; gap: 0.4em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.2em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.8em; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 1.5in; max-width: 100%; }
+.image-grid .grid-cell.textbook-fig img { padding: 2px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+table { border-collapse: collapse; font-size: 0.85em; margin: 0.15em auto; }
+th, td { padding: 0.1em 0.4em; border: 1px solid #ccc; text-align: center; }
+th { background: #f0f7ff; }
+.small { font-size: 0.8em; }
+ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
+li { margin-bottom: 0.05em; }
+.pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
+.homework-section { page-break-before: auto; }
+.defn-box, .example-box, .key-point { page-break-inside: avoid; break-inside: avoid; }
+.example-group { page-break-inside: avoid; break-inside: avoid; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media print {
+    body { padding: 0; max-width: none; }
+    .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    a::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    figure img { max-height: 2.8in; }
+    .skip-link { display: none; }
+}
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <div class="handout-header">
+    <div class="header-left">
+      <h1>Section 14.2: Limits and Continuity</h1>
+      <p>Partial Derivatives</p>
+    </div>
+    <div class="header-right">
+      <p>MTH 310<br>Calculus III</p>
+    </div>
+  </div>
+</header>
+<hr aria-hidden="true">
+
+<section aria-label="Limits in Multiple Variables">
+  <h2>Limits in Multiple Variables</h2>
+  <div><p>In Calc I, we asked: what happens to \(f(x)\) as \(x \to a\)?</p>
+<p>There were only <strong>two directions</strong> to approach from &mdash; left and right.</p></div>
+<div><p>In Calc III, we ask: what happens to \(f(x, y)\) as \((x, y) \to (a, b)\)?</p>
+<p>Now there are <strong>infinitely many paths</strong> to approach from &mdash; along lines, curves, spirals, any path you can imagine.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>This is the key difference: in 1D you check two directions. In 2D you must worry about <strong>every possible path</strong> to the point.</p></aside>
+</section>
+
+<section aria-label="Two Functions, Two Very Different Behaviors">
+  <h2>Two Functions, Two Very Different Behaviors</h2>
+  <div><p>Let's compare what happens at the origin for two functions that both have the form \(\frac{0}{0}\) there.</p></div>
+<div class="two-col-print">
+  <div><div><p>\[f(x,y) = \frac{\sin(x^2 + y^2)}{x^2 + y^2}\]</p></div>
+<figure>
+  <img src="figures/sinc_clean.png" alt="3D surface of sin(x-squared + y-squared) over (x-squared + y-squared), a smooth bowl approaching height 1 at the origin.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+  <div><div><p>\[g(x,y) = \frac{x^2 - y^2}{x^2 + y^2}\]</p></div>
+<figure>
+  <img src="figures/saddle_clean.png" alt="3D surface of (x-squared minus y-squared) over (x-squared plus y-squared), a saddle that twists between 1 and negative 1 at the origin.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+</div>
+<div class="two-col-print">
+  <div><figure>
+  <img src="figures/sinc_contour.png" alt="Contour plot of sin(x-squared + y-squared) over (x-squared + y-squared) showing concentric circular contours converging to the same value at the origin.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+  <div><figure>
+  <img src="figures/saddle_contour.png" alt="Contour plot of (x-squared minus y-squared) over (x-squared + y-squared) showing hyperbolic contours with value 1 along the x-axis and negative 1 along the y-axis.">
+  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+</figure></div>
+</div>
+<div><p>\(f\) settles down to a single value (\(1\)) no matter how you approach the origin.</p>
+<p>\(g\) gives <strong>different values</strong> depending on your path &mdash; the limit <strong>does not exist</strong>.</p></div>
+</section>
+
+<section aria-label="The Formal Definition of a Multivariable Limit">
+  <h2>The Formal Definition of a Multivariable Limit</h2>
+  <section class="defn-box" role="region" aria-label="Definition 1: Limit of a Function of Two Variables">
+  <h3 class="defn-title">Definition 1: Limit of a Function of Two Variables</h3>
+  <p>Let \(f\) be a function of two variables whose domain \(D\) includes points arbitrarily close to \((a, b)\). We say that the <strong>limit of \(f(x,y)\) as \((x,y)\) approaches \((a,b)\)</strong> is \(L\), and write</p>
+<p>\[\lim_{(x,y) \to (a,b)} f(x,y) = L\]</p>
+<p>if for every \(\varepsilon > 0\) there is a corresponding \(\delta > 0\) such that</p>
+<p>\[\text{if } (x,y) \in D \text{ and } 0 < \sqrt{(x-a)^2 + (y-b)^2} < \delta \text{ then } |f(x,y) - L| < \varepsilon\]</p>
+</section>
+<div><p><strong>What does this mean in plain language?</strong></p>
+<p>If the limit is going to be \(L\), then you must be able to make \(f(x,y)\) as close to \(L\) as you want, just by squeezing \((x,y)\) close enough to \((a,b)\) &mdash; from <strong>any direction</strong>.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The crucial phrase: <strong>from any direction</strong>. In Calc I, "closeness" meant \(|x - a| < \delta\) (an interval). Here, closeness means \(\sqrt{(x-a)^2 + (y-b)^2} < \delta\) (a disk).</p></aside>
+<div><p>In practice, we rarely use the \(\varepsilon\)-\(\delta\) definition directly. Instead, we develop <strong>strategies</strong> for showing limits exist or don't exist.</p></div>
+</section>
+
+<section aria-label="Strategy: Showing a Limit Does NOT Exist">
+  <h2>Strategy: Showing a Limit Does NOT Exist</h2>
+  <div><p>If a limit exists, it must be the <strong>same value</strong> no matter which path you take to the point. So to show a limit <strong>does not</strong> exist, we just need to find trouble:</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>The Two-Path Test</strong></p>
+<p>Find two paths to \((a, b)\) that give <strong>different limiting values</strong>. Then the limit does not exist.</p></aside>
+<div><p><strong>Common paths to try:</strong></p>
+<ul>
+<li>Along the \(x\)-axis: set \(y = 0\)</li>
+<li>Along the \(y\)-axis: set \(x = 0\)</li>
+<li>Along \(y = x\) (diagonal)</li>
+<li>Along \(y = mx\) (any line through the origin)</li>
+<li>Along curves: \(y = x^2\), \(y = x^3\), etc.</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Warning:</strong> If two paths give the <strong>same</strong> value, that does <strong>not</strong> prove the limit exists. It just means those two paths agree. You would need to check <strong>all</strong> paths.</p></aside>
+</section>
+
+<section class="example-group" aria-label="Example 1: The Two-Path Test in Action">
+  <h2>Example 1: The Two-Path Test in Action</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Show that \(\displaystyle\lim_{(x,y) \to (0,0)} \frac{x^2 - y^2}{x^2 + y^2}\) does not exist.</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Try the paths y = 0 and x = 0. What value does the function approach along each?" style="min-height:2in;">
+  <div class="blank-prompt">Try the paths y = 0 and x = 0. What value does the function approach along each?</div>
+</div>
+</section>
+
+<section class="example-group" aria-label="Example 2: When Simple Paths Aren't Enough">
+  <h2>Example 2: When Simple Paths Aren't Enough</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Show that \(\displaystyle\lim_{(x,y) \to (0,0)} \frac{8x^3 y}{x^6 + y^2}\) does not exist.</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Try the obvious paths (axes, y = mx) first, then try a curved path like y = x-cubed." style="min-height:2.5in;">
+  <div class="blank-prompt">Try the obvious paths (axes, y = mx) first, then try a curved path like y = x-cubed.</div>
+</div>
+</section>
+
+<section class="example-group" aria-label="Your Turn: Test This Limit">
+  <h2>Your Turn: Test This Limit</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Does \(\displaystyle\lim_{(x,y) \to (0,0)} \frac{xy}{x^2 + y^2}\) exist?</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Try a path that will obviously give a limit of zero, then see if you can think of path that could do something else." style="min-height:2in;">
+  <div class="blank-prompt">Try a path that will obviously give a limit of zero, then see if you can think of path that could do something else.</div>
+</div>
+</section>
+
+<section aria-label="Continuity of Multivariable Functions">
+  <h2>Continuity of Multivariable Functions</h2>
+  <div><p>Continuity works just like Calc I &mdash; the limit equals the function value at the point.</p></div>
+<section class="defn-box" role="region" aria-label="Definition 1: Continuity at a Point">
+  <h3 class="defn-title">Definition 1: Continuity at a Point</h3>
+  <p>A function \(f\) of two variables is <strong>continuous at</strong> \((a, b)\) if:</p>
+<p>\[\lim_{(x,y) \to (a,b)} f(x,y) = f(a,b)\]</p>
+<p>This requires three things (same as Calc I):</p>
+<ol>
+<li>\(f(a,b)\) is defined</li>
+<li>The limit exists</li>
+<li>They are equal</li>
+</ol>
+</section>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Good news:</strong> Polynomials, rational functions (where defined), trig functions, exponentials, logarithms, and compositions of continuous functions are all continuous on their domains. Most functions you encounter are continuous wherever they're defined.</p></aside>
+</section>
+
+<section aria-label="Strategy: Showing a Limit DOES Exist">
+  <h2>Strategy: Showing a Limit DOES Exist</h2>
+  <div><p>The two-path test can <strong>disprove</strong> a limit, but it can never <strong>prove</strong> one.</p>
+<p>To prove a limit exists, we need tools that handle <strong>all paths at once</strong>.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Tool 1: Squeeze Theorem</strong></p>
+<p>If \(|f(x,y) - L| \leq g(x,y)\) and \(g(x,y) \to 0\) as \((x,y) \to (a,b)\), then \(f(x,y) \to L\).</p>
+<p>Trap the function between bounds that both go to the same value.</p></aside>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Tool 2: Polar Coordinates</strong></p>
+<p>Substitute \(x = r\cos\theta\), \(y = r\sin\theta\). Then \((x,y) \to (0,0)\) becomes \(r \to 0^+\).</p>
+<p>Apply the Squeeze Theorem to bound the \(\theta\)-dependent factor and show the expression goes to zero.</p></aside>
+<div><p>Both tools convert the multivariable problem into something we can handle with Calc I techniques.</p></div>
+</section>
+
+<section class="example-group" aria-label="Example 4: Proving a Limit Exists">
+  <h2>Example 4: Proving a Limit Exists</h2>
+  <section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>Show that \(\displaystyle\lim_{(x,y) \to (0,0)} \frac{5xy^2}{x^2 + y^2} = 0\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Try the Squeeze Theorem using $y^2 \leq x^2 + y^2$. Then try polar coordinates and apply the Squeeze Theorem to the result." style="min-height:3.5in;">
+  <div class="blank-prompt">Try the Squeeze Theorem using \(y^2 \leq x^2 + y^2\). Then try polar coordinates and apply the Squeeze Theorem to the result.</div>
+</div>
+</section>
+
+<section class="example-group" aria-label="Your Turn: Prove or Disprove">
+  <h2>Your Turn: Prove or Disprove</h2>
+  <section class="example-box" role="region" aria-label="Example 5">
+  <h3 class="example-title">Example 5</h3>
+  <p>Does \(\displaystyle\lim_{(x,y) \to (0,0)} \frac{x^2 y}{x^2 + y^2}\) exist? If so, find its value.</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Use either the squeeze theorem or polar coordinates." style="min-height:2in;">
+  <div class="blank-prompt">Use either the squeeze theorem or polar coordinates.</div>
+</div>
+</section>
+
+<section class="homework-section" aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 14.2:</strong> 5, 7, 9, 15, 17, 21, 22, 23, 25, 29, 41, 43, 47, 49, 51</div>
+</section>
+</main>
+</body>
+</html>
