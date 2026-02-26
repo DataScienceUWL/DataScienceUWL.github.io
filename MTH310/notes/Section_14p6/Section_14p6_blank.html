@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 14.6: Directional Derivatives and the Gradient Vector &mdash; Handout</title>
+<style>
+@page { size: letter; margin: 0.4in 0.5in; }
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #b5850e;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    max-width: 7.5in; margin: 0 auto; padding: 0.3em;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.35; }
+.handout-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left h1 { font-size: 1.3em; color: var(--accent-cyan); margin: 0; }
+.header-left p { margin: 0.05em 0; color: #666; font-size: 0.85em; }
+.header-right { text-align: right; font-size: 0.85em; color: #333; }
+hr { border: none; border-top: 2px solid var(--accent-cyan); margin: 0.3em 0; }
+h2 { font-size: 1.1em; color: var(--accent-cyan); margin: 0.4em 0 0.15em 0;
+    border-bottom: 1px solid #ccc; padding-bottom: 0.05em; }
+h3, h4 { font-size: 0.95em; margin: 0.15em 0; }
+p { margin: 0.15em 0; }
+.defn-box { background: #f0f7ff; border-left: 3px solid var(--accent-cyan);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 3px solid var(--accent-green);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
+    padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
+.blank-space { margin: 0.2em 0; position: relative;
+    border: 1px dashed #ccc; border-radius: 3px; box-sizing: border-box; }
+.blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
+    color: #767676; font-style: italic; }
+.hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
+    padding: 0.3em 0.8em; text-align: center; margin: 0.5em 0; }
+.desmos-link { background: #f0f7ff; border-radius: 3px; padding: 0.2em 0.5em;
+    margin: 0.3em 0; font-size: 0.8em; }
+.desmos-link a { color: var(--accent-cyan); word-break: break-all; }
+.two-col-print { display: flex; gap: 0.6em; align-items: flex-start; }
+.two-col-print > * { flex: 1; }
+figure { margin: 0.1em 0; text-align: center; }
+figure img { max-width: 100%; max-height: 3.0in; }
+figcaption { font-size: 0.7em; color: #666; margin-top: 0.05em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 2px; border: 1px solid #ddd; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.image-grid { display: flex; gap: 0.4em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.2em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.8em; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 1.5in; max-width: 100%; }
+.image-grid .grid-cell.textbook-fig img { padding: 2px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+table { border-collapse: collapse; font-size: 0.85em; margin: 0.15em auto; }
+th, td { padding: 0.1em 0.4em; border: 1px solid #ccc; text-align: center; }
+th { background: #f0f7ff; }
+.small { font-size: 0.8em; }
+ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
+li { margin-bottom: 0.05em; }
+.pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
+.homework-section { page-break-before: auto; }
+.defn-box, .example-box, .key-point { page-break-inside: avoid; break-inside: avoid; }
+.example-group { page-break-inside: avoid; break-inside: avoid; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media print {
+    body { padding: 0; max-width: none; }
+    .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    a[href^="http"]::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="#"]::after { content: none; }
+    figure img { max-height: 2.8in; }
+    .skip-link { display: none; }
+}
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <div class="handout-header">
+    <div class="header-left">
+      <h1>Section 14.6: Directional Derivatives and the Gradient Vector</h1>
+      <p>Partial Derivatives</p>
+    </div>
+    <div class="header-right">
+      <p>MTH 310<br>Calculus III</p>
+    </div>
+  </div>
+</header>
+<hr aria-hidden="true">
+
+<section id="directional-derivatives-motivation" aria-label="Directional Derivatives &mdash; Motivation">
+  <h2>Directional Derivatives &mdash; Motivation</h2>
+  <div><p>Partial derivatives give the rate of change along the <strong>axes</strong>. But what if we walk in some other direction?</p></div>
+<div><p>Consider \(f(x,y) = x^2 + 4y^2\) at the point \(P(2,1)\). Pick a direction \(\vec{u}\) at \(45°\) and slice the surface with a vertical plane along that direction:</p></div>
+<figure>
+  <img src="figures/dd_3d_surface.png" alt="Interactive 3D plot of the elliptic paraboloid z = x-squared + 4y-squared.
+A semi-transparent amber vertical plane slices through the point P(2,1,8)
+in the direction of the unit vector u at 45 degrees. The blue trace curve
+shows where the plane intersects the surface. A red dashed tangent line
+at P shows the slope of the trace curve, which is the directional derivative.
+Two sample points are marked on the trace in green and purple.
+">
+  <figcaption><a href="figures/dd_3d_surface.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
+<div><p>The vertical plane cuts a <strong>trace curve</strong> out of the surface. The slope of that trace at \(P\) is the rate of change in the \(\vec{u}\) direction &mdash; the <strong>directional derivative</strong>.</p></div>
+
+<div><p>From the side, this is just a single-variable function \(g(t) = f(P + t\vec{u})\). Its derivative at \(t = 0\) is the slope we want.</p></div>
+<figure>
+  <img src="figures/dd_domain_profile.png" alt="Two-panel figure. Left panel: contour plot of f(x,y) = x-squared + 4y-squared
+with elliptical level curves, the point P(2,1), a red unit vector u at 45
+degrees, and two sample points along u at t = 1/2 (green) and t = 1 (purple).
+Right panel: the cross-section g(t) = f(P + tu) plotted as a function of t,
+showing a parabolic curve with a red dashed tangent line at t = 0 whose slope
+equals the directional derivative. The same green and purple sample points
+appear at their corresponding t values.
+">
+</figure>
+<aside class="key-point" role="note" aria-label="Key point"><p>The directional derivative is just a <strong>Calc I derivative in disguise</strong>: pick a direction, slice the surface, and find the slope.</p></aside>
+</section>
+
+<section id="definition-of-the-directional-derivative" aria-label="Definition of the Directional Derivative">
+  <h2>Definition of the Directional Derivative</h2>
+  <div><p>\(f_x\) and \(f_y\) are just special cases of the directional derivative:</p>
+<ul>
+<li>\(f_x = D_{\vec{i}}\, f\) &mdash; rate of change in the \(\vec{i}\) direction</li>
+<li>\(f_y = D_{\vec{j}}\, f\) &mdash; rate of change in the \(\vec{j}\) direction</li>
+</ul></div>
+<section class="defn-box" role="region" aria-label="Directional Derivative">
+  <h3 class="defn-title">Directional Derivative</h3>
+  <p>Let \(\vec{u} = \langle a, b \rangle\) be a <strong>unit vector</strong> (\(|\vec{u}| = 1\)). The <strong>directional derivative</strong> of \(f\) at \((x,y)\) in the direction of \(\vec{u}\) is:</p>
+<p>\[D_{\vec{u}} f(x,y) = \lim_{t \to 0} \frac{f(x + ta,\; y + tb) - f(x,y)}{t}\]</p>
+<p>provided this limit exists.</p>
+</section>
+<div><p><strong>Reading the formula:</strong></p>
+<ul>
+<li>Start at \((x, y)\)</li>
+<li>Move a tiny step \(t\) in the direction \(\vec{u} = \langle a, b \rangle\), arriving at \((x + ta,\; y + tb)\)</li>
+<li>Measure the change in \(f\), divide by \(t\), take the limit</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>This is the same <strong>rise-over-run</strong> idea from Calc I, but now we walk in the direction \(\vec{u}\) instead of along the \(x\)-axis.</p></aside>
+</section>
+
+<section id="example-1-from-the-definition" class="example-group" aria-label="Example 1: $D_{\vec{u}} f$ from the Definition">
+  <h2>Example 1: \(D_{\vec{u}} f\) from the Definition</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Let \(f(x,y) = x^2 + 4y^2\) and \(\vec{u} = \left\langle \frac{\sqrt{2}}{2},\; \frac{\sqrt{2}}{2} \right\rangle\).</p>
+<p>Find \(D_{\vec{u}} f(2, 1)\) using the <strong>limit definition</strong>.</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace" style="min-height:3in;">
+</div>
+</section>
+
+<section id="the-gradient-vector" class="example-group" aria-label="The Gradient Vector">
+  <h2>The Gradient Vector</h2>
+  <div><p>Before we find the shortcut, we need a new object.</p></div>
+<section class="defn-box" role="region" aria-label="Gradient Vector">
+  <h3 class="defn-title">Gradient Vector</h3>
+  <p>If \(f\) has partial derivatives \(f_x\) and \(f_y\), the <strong>gradient</strong> of \(f\) is the vector:</p>
+<p>\[\nabla f(x,y) = \langle f_x(x,y),\; f_y(x,y) \rangle = f_x\,\vec{i} + f_y\,\vec{j}\]</p>
+<p>The symbol \(\nabla\) is called <strong>nabla</strong> or <strong>del</strong>.</p>
+</section>
+<div><p>The gradient packages <strong>both partial derivatives</strong> into a single vector. It lives in the <strong>domain</strong> (the \(xy\)-plane), not on the surface.</p></div>
+
+<section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Find \(\nabla f\) for \(f(x,y) = x^2 + 4y^2\). Then evaluate \(\nabla f(2,1)\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace" style="min-height:1.5in;">
+</div>
+</section>
+
+<section id="the-big-theorem" aria-label="The Big Theorem: $D_{\vec{u}} f = \nabla f \cdot \vec{u}$">
+  <h2>The Big Theorem: \(D_{\vec{u}} f = \nabla f \cdot \vec{u}\)</h2>
+  <section class="defn-box theorem-box" role="region" aria-label="Theorem: Directional Derivative via the Gradient">
+  <h3 class="defn-title">Theorem: Directional Derivative via the Gradient</h3>
+  <p>If \(f\) is a differentiable function of \(x\) and \(y\), then:</p>
+<p>\[D_{\vec{u}} f(x,y) = \nabla f(x,y) \cdot \vec{u}\]</p>
+<p>for any unit vector \(\vec{u}\).</p>
+</section>
+<div><p><strong>Translation:</strong> To find the rate of change in any direction, just take the <strong>dot product</strong> of the gradient with the direction vector.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>This is the <strong>central formula</strong> of Section 14.6. It connects direction, rate of change, and gradient in one equation.</p></aside>
+<div><p><strong>Why is this so much better than the definition?</strong></p>
+<ul>
+<li>Limit definition: expand, simplify, take a limit (messy algebra)</li>
+<li>Gradient formula: compute two partial derivatives, take a dot product (fast!)</li>
+</ul></div>
+
+<div><p><strong>Why does it work?</strong> Recall the <a href="#directional-derivatives-motivation">cross-section from our motivation</a>: define \(g(t) = f(x + ta,\; y + tb)\). Then by the Calc I derivative definition:</p>
+<p>\[g'(0) = \lim_{t \to 0} \frac{g(t) - g(0)}{t} = \lim_{t \to 0} \frac{f(x + ta,\; y + tb) - f(x,y)}{t} = D_{\vec{u}} f(x,y)\]</p>
+<p>So the directional derivative is just \(g'(0)\). Now use the <strong>chain rule</strong> to find \(g'(0)\) without limits.</p></div>
+<div><p>Apply the <strong>chain rule</strong> (Section 14.5):</p>
+<p>\[g'(t) = f_x(x + ta,\; y + tb) \cdot a \;+\; f_y(x + ta,\; y + tb) \cdot b\]</p></div>
+<div><p>Evaluate at \(t = 0\):</p>
+<p>\[g'(0) = f_x(x,y) \cdot a + f_y(x,y) \cdot b = \langle f_x,\; f_y \rangle \cdot \langle a,\; b \rangle = \nabla f \cdot \vec{u}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The dot product appears <strong>because of the chain rule</strong>. Each partial derivative gets multiplied by the corresponding component of \(\vec{u}\), which is exactly what a dot product does.</p></aside>
+</section>
+
+<section id="example-3-via-the-gradient" class="example-group" aria-label="Example 3: $D_{\vec{u}} f$ via the Gradient">
+  <h2>Example 3: \(D_{\vec{u}} f\) via the Gradient</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p><strong>Same problem as Example 1:</strong> \(f(x,y) = x^2 + 4y^2\), \(\vec{u} = \left\langle \frac{\sqrt{2}}{2},\; \frac{\sqrt{2}}{2} \right\rangle\).</p>
+<p>Find \(D_{\vec{u}} f(2,1)\) using the gradient.</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace" style="min-height:1.5in;">
+</div>
+</section>
+
+<section id="maximizing-the-directional-derivative" aria-label="Maximizing the Directional Derivative">
+  <h2>Maximizing the Directional Derivative</h2>
+  <div><p><strong>Question:</strong> You're at \(P(2,1)\) on the surface \(f(x,y) = x^2 + 4y^2\). Which direction increases \(f\) the fastest?</p></div>
+<div><p>Use the slider to sweep \(\vec{u}\) around and watch \(D_{\vec{u}} f\) change:</p></div>
+<figure>
+  <img src="figures/directional_derivative_explorer.png" alt="Interactive contour plot of f(x,y) = x-squared + 4y-squared with
+elliptical level curves. A fixed blue gradient vector nabla-f = (4,8)
+is shown at the point P(2,1). A green/red unit vector u rotates as
+the slider sweeps theta from 0 to 360 degrees. The directional
+derivative value is displayed and color-coded: green when positive
+(f increasing), red when negative (f decreasing), gray near zero
+(moving along a level curve). The maximum occurs when u aligns with
+the gradient, the minimum when u opposes it, and zero when u is
+perpendicular to the gradient.
+">
+  <figcaption><a href="figures/directional_derivative_explorer.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
+<aside class="key-point" role="note" aria-label="Key point"><p>Notice: \(D_{\vec{u}} f\) is <strong>largest</strong> when \(\vec{u}\) aligns with \(\nabla f\), <strong>most negative</strong> when opposing, and <strong>zero</strong> when perpendicular. Why?</p></aside>
+
+<div><p><strong>Why?</strong> Rewrite \(D_{\vec{u}} f\) using the dot product identity:</p>
+<p>\[D_{\vec{u}} f = \nabla f \cdot \vec{u} = |\nabla f|\;|\vec{u}|\;\cos\theta = |\nabla f|\;\cos\theta\]</p>
+<p>where \(\theta\) is the angle between \(\nabla f\) and \(\vec{u}\).</p></div>
+<div><p>\(|\nabla f|\) is fixed at each point. The <strong>only thing we control</strong> is \(\theta\), and \(\cos\theta\) ranges from \(-1\) to \(1\):</p></div>
+<table>
+<thead><tr><th scope="col">\(\theta\)</th><th scope="col">\(\cos\theta\)</th><th scope="col">\(D_{\vec{u}} f\)</th><th scope="col">Meaning</th></tr></thead>
+<tbody>
+<tr><td>\(0\)</td><td>\(1\)</td><td>\(|\nabla f|\) (max)</td><td>\(\vec{u}\) <strong>with</strong> \(\nabla f\) &rarr; steepest increase</td></tr>
+<tr><td>\(\pi/2\)</td><td>\(0\)</td><td>\(0\)</td><td>\(\vec{u} \perp \nabla f\) &rarr; along level curve</td></tr>
+<tr><td>\(\pi\)</td><td>\(-1\)</td><td>\(-|\nabla f|\) (min)</td><td>\(\vec{u}\) <strong>against</strong> \(\nabla f\) &rarr; steepest decrease</td></tr>
+</tbody>
+</table>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>The gradient tells you everything:</strong></p>
+<ul>
+<li>Its <strong>direction</strong> = steepest ascent</li>
+<li>Its <strong>magnitude</strong> \(|\nabla f|\) = the maximum rate of change</li>
+<li><strong>Perpendicular</strong> to it = no change (along the level curve)</li>
+</ul></aside>
+<div><p><strong>Important:</strong> \(\nabla f\) lives in the <strong>domain</strong> (the \(xy\)-plane), not on the surface. It points toward larger \(f\)-values in the input space.</p></div>
+</section>
+
+<section id="example-4-fastest-increase-and-decrease" class="example-group" aria-label="Example 4: Fastest Increase and Decrease">
+  <h2>Example 4: Fastest Increase and Decrease</h2>
+  <section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>For \(f(x,y) = x^2 + 4y^2\) at the point \((2,1)\):</p>
+<p>(a) What direction gives the <strong>fastest increase</strong> in \(f\)? How fast?</p>
+<p>(b) What direction gives the <strong>fastest decrease</strong>?</p>
+<p>(c) In what directions is \(D_{\vec{u}} f = 0\)?</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace" style="min-height:2.5in;">
+</div>
+</section>
+
+<section id="example-5-which-way-should-i-walk" class="example-group" aria-label="Example 5: Which Way Should I Walk?">
+  <h2>Example 5: Which Way Should I Walk?</h2>
+  <section class="example-box" role="region" aria-label="Example 5">
+  <h3 class="example-title">Example 5</h3>
+  <p>A hiker is at position \((2, 1)\) on a mountain whose elevation is modeled by \(f(x,y) = x^2 + 4y^2\) (hundreds of feet).</p>
+<p>(a) She wants to <strong>descend as steeply as possible</strong>. What direction should she walk?</p>
+<p>(b) She wants to <strong>stay at the same elevation</strong> (walk along a contour line). What direction(s) should she walk?</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace" style="min-height:3in;">
+</div>
+</section>
+
+<section id="your-turn-directional-derivative-practice" class="example-group" aria-label="Your Turn: Directional Derivative Practice">
+  <h2>Your Turn: Directional Derivative Practice</h2>
+  <section class="example-box" role="region" aria-label="Example 6">
+  <h3 class="example-title">Example 6</h3>
+  <p>Let \(f(x,y) = xe^{-y}\) and let \(\vec{u}\) be the unit vector in the direction of \(\langle 2, -1 \rangle\).</p>
+<p>(a) Find \(\nabla f(2, 0)\).</p>
+<p>(b) Find \(D_{\vec{u}} f(2, 0)\).</p>
+<p>(c) What is the maximum rate of change of \(f\) at \((2, 0)\)?</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace" style="min-height:3in;">
+</div>
+</section>
+
+<section id="gradient-is-perpendicular-to-level-curves" aria-label="Gradient Is Perpendicular to Level Curves">
+  <h2>Gradient Is Perpendicular to Level Curves</h2>
+  <section class="defn-box theorem-box" role="region" aria-label="Theorem: Gradient Perpendicular to Level Curves">
+  <h3 class="defn-title">Theorem: Gradient Perpendicular to Level Curves</h3>
+  <p>The gradient vector \(\nabla f(a,b)\) is <strong>perpendicular</strong> to the level curve \(f(x,y) = k\) at the point \((a,b)\).</p>
+</section>
+<div><p><strong>Why does this make sense?</strong></p>
+<p>Along a level curve, \(f\) is constant, so the rate of change is <strong>zero</strong>. We saw that \(D_{\vec{u}} f = 0\) when \(\vec{u} \perp \nabla f\).</p>
+<p>The tangent direction to a level curve is a direction of zero change &mdash; so it must be perpendicular to \(\nabla f\).</p></div>
+<div><p>Look back at our <a href="#maximizing-the-directional-derivative">explorer figure</a>: \(\nabla f(2,1) = \langle 4, 8 \rangle\) visibly points <strong>straight away from the ellipse</strong> \(f = 8\). Sweep the slider to \(\theta \approx 153°\) or \(333°\) to see \(D_{\vec{u}} f = 0\) &mdash; those are the tangent directions to the level curve.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The gradient always points <strong>perpendicular to level curves</strong>, aiming toward higher values of \(f\). This is why contour maps and gradients are deeply connected.</p></aside>
+</section>
+
+<section id="example-7-tangent-line-to-a-level-curve" class="example-group" aria-label="Example 7: Tangent Line to a Level Curve">
+  <h2>Example 7: Tangent Line to a Level Curve</h2>
+  <section class="example-box" role="region" aria-label="Example 7">
+  <h3 class="example-title">Example 7</h3>
+  <p>Consider \(f(x,y) = x^2 + 4y^2\) with level curves that are ellipses.</p>
+<p>At the point \((2, 1)\), find the equation of the <strong>tangent line</strong> to the level curve \(f(x,y) = 8\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace" style="min-height:2.5in;">
+</div>
+</section>
+
+<section id="extending-to-three-variables" aria-label="Extending to Three Variables">
+  <h2>Extending to Three Variables</h2>
+  <div><p>Everything generalizes naturally to functions of three variables \(f(x, y, z)\):</p></div>
+<section class="defn-box" role="region" aria-label="Gradient in Three Variables">
+  <h3 class="defn-title">Gradient in Three Variables</h3>
+  <p>\[\nabla f(x,y,z) = \langle f_x,\; f_y,\; f_z \rangle\]</p>
+</section>
+<div><p>The directional derivative formula is exactly the same:</p>
+<p>\[D_{\vec{u}} f(x,y,z) = \nabla f(x,y,z) \cdot \vec{u}\]</p>
+<p>where \(\vec{u} = \langle a, b, c \rangle\) is a unit vector in \(\mathbb{R}^3\).</p></div>
+
+<div><p><strong>Level surfaces replace level curves:</strong></p>
+<p>For \(F(x,y,z) = k\), the gradient \(\nabla F\) is perpendicular to the <strong>level surface</strong> at each point.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Since \(\nabla F\) is perpendicular to the level surface, it serves as the <strong>normal vector</strong> for the tangent plane!</p>
+<p><strong>Tangent plane to</strong> \(F(x,y,z) = k\) <strong>at</strong> \((a,b,c)\):</p>
+<p>\[F_x(a,b,c)(x - a) + F_y(a,b,c)(y - b) + F_z(a,b,c)(z - c) = 0\]</p></aside>
+</section>
+
+<section id="example-8-tangent-plane-to-a-level-surface" class="example-group" aria-label="Example 8: Tangent Plane to a Level Surface">
+  <h2>Example 8: Tangent Plane to a Level Surface</h2>
+  <section class="example-box" role="region" aria-label="Example 8">
+  <h3 class="example-title">Example 8</h3>
+  <p>Let \(F(x,y,z) = zx^2 - yz^2\).</p>
+<p>(a) Compute \(\nabla F(1, 2, 3)\).</p>
+<p>(b) Find the equation of the tangent plane to the level surface \(F(x,y,z) = -15\) at the point \((1, 2, 3)\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace" style="min-height:3in;">
+</div>
+</section>
+
+<section class="homework-section" aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 14.6:</strong> 1, 5, 9, 11, 13, 19, 21, 29, 31, 35, 39, 44, 49, 51, 55, 61, 65, 73</div>
+</section>
+</main>
+</body>
+</html>
