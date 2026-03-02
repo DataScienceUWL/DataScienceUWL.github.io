@@ -94,6 +94,88 @@ window.MathJax = {
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        pb.remove();  // no longer needed — workspace expansion handles the break
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -113,47 +195,40 @@ window.MathJax = {
 
 <section id="local-extrema-on-surfaces" aria-label="Local Extrema on Surfaces">
   <h2>Local Extrema on Surfaces</h2>
-  <div><p>In Calc I, a local max of \(y = f(x)\) is a ``peak'' and a local min is a ``valley.'' What does this look like for a <strong>surface</strong> \(z = f(x,y)\)?</p>
-<p><em>Can a differentiable function \(f\) have a local maximum at \((a,b)\) with \(f_x(a,b) = 3\)?</em></p></div>
-<div class="blank-space" role="region" aria-label="Student workspace: Think: what does $f_x(a,b) = 3$ mean geometrically? Could the surface be at its highest nearby point if it's still rising in the $x$-direction?" style="min-height:1.2in;">
-  <div class="blank-prompt">Think: what does \(f_x(a,b) = 3\) mean geometrically? Could the surface be at its highest nearby point if it's still rising in the \(x\)-direction?</div>
-</div>
+  <section class="defn-box" role="region" aria-label="Local Maximum and Minimum">
+  <h3 class="defn-title">Local Maximum and Minimum</h3>
+  <p>A function \(f(x,y)\) has a <strong>local maximum</strong> at \((a,b)\) if \(f(x,y) \leq f(a,b)\) for all \((x,y)\) near \((a,b)\).</p>
+<p>A <strong>local minimum</strong> at \((a,b)\) means \(f(x,y) \geq f(a,b)\) for all \((x,y)\) near \((a,b)\).</p>
+</section>
+<div><p><em>Can a differentiable function \(f\) have a local maximum at \((a,b)\) with \(f_x(a,b) = 3\)?</em></p></div>
+<section class="defn-box theorem-box" role="region" aria-label="Theorem: Necessary Condition for Local Extrema">
+  <h3 class="defn-title">Theorem: Necessary Condition for Local Extrema</h3>
+  <p>If \(f\) has a local extremum at \((a,b)\) and the first-order partial derivatives exist there, then</p>
+<p>\[f_x(a,b) = 0 \quad \text{and} \quad f_y(a,b) = 0\]</p>
+</section>
+<aside class="key-point" role="note" aria-label="Key point"><p>At a differentiable extremum, both partial derivatives must be zero &mdash; but zero partials alone aren't enough to guarantee an extremum.</p></aside>
 </section>
 
 <section id="optimization-from-calc-i-to-calc-iii" aria-label="Optimization: From Calc I to Calc III">
   <h2>Optimization: From Calc I to Calc III</h2>
-  <div><p>In Calculus I you learned a systematic optimization procedure. Let's see what changes in Calculus III.</p>
-<table>
-<tr><th></th><th><strong>Calculus I (\(y = f(x)\))</strong></th><th><strong>Calculus III (\(z = f(x,y)\))</strong></th></tr>
-<tr><td><strong>Critical points</strong></td><td>\(f'(x) = 0\) or DNE</td><td>\(f_x = 0\) and \(f_y = 0\) (or DNE)</td></tr>
-<tr><td><strong>Classify</strong></td><td>2nd Derivative Test</td><td>2nd Derivative Test (with \(D\))</td></tr>
-<tr><td><strong>New phenomenon</strong></td><td>&mdash;</td><td>Saddle points!</td></tr>
-<tr><td><strong>Absolute extrema</strong></td><td>Check critical pts + endpoints</td><td>Check critical pts + boundary</td></tr>
-</table></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>The big ideas carry over &mdash; but the <strong>boundary</strong> is now a curve instead of two endpoints, and <strong>saddle points</strong> are genuinely new.</p></aside>
-
+  <aside class="key-point" role="note" aria-label="Key point"><p>The big ideas carry over &mdash; but the <strong>boundary</strong> is now a curve instead of two endpoints, and <strong>saddle points</strong> are genuinely new.</p></aside>
 <div class="two-col-print">
   <div><figure>
   <img src="figures/14_7_calc1_opt.png" alt="Graph of a cubic function f(x) = x cubed minus 3x showing a local maximum at x = -1 with a horizontal dashed tangent line and a local minimum at x = 1 with a horizontal dashed tangent line. Annotations show f prime equals zero and the sign of f double prime at each critical point.">
-</figure>
-<div><p><strong>Familiar:</strong> Horizontal tangent (\(f'=0\)) at each local extremum. Classify with the sign of \(f''\).</p></div></div>
+</figure></div>
   <div><figure>
   <img src="figures/14_7_saddle_intro.png" alt="3D surface plot of z = x squared minus y squared showing a saddle point at the origin. A green curve along the x-axis shows the surface curving upward like a bowl, while a red curve along the y-axis shows the surface curving downward. The surface resembles a Pringles chip or a mountain pass.">
   <figcaption><a href="figures/14_7_saddle_intro.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure>
-<div><p><strong>New in Calc III:</strong> At a <strong>saddle point</strong> the tangent plane is horizontal, but the surface curves <em>up</em> in one direction and <em>down</em> in another.</p></div></div>
+</figure></div>
 </div>
-
 <div class="two-col-print">
   <div><figure>
   <img src="figures/14_7_calc1_boundary.png" alt="Graph of f(x) = x cubed minus 3x plus 1 on the closed interval from -1.5 to 2.5. An interior local max is marked at (-1, 3) and an interior absolute min at (1, -1). The absolute max occurs at the right endpoint (2.5, 9.125), which is highlighted with a star marker and labeled abs max endpoint.">
-</figure>
-<div><p><strong>Calc I:</strong> The absolute max is at an <strong>endpoint</strong>, not the interior local max. Must check both!</p></div></div>
+</figure></div>
   <div><figure>
   <img src="figures/14_7_calc3_boundary.png" alt="3D surface plot of f(x,y) = x squared plus y squared minus 2x on the disk x squared plus y squared at most 4. An off-center paraboloid bowl with interior absolute minimum at (1, 0) labeled in green and absolute maximum at (-2, 0) on the boundary rim labeled in red. The black boundary curve traces the edge of the disk on the surface.">
   <figcaption><a href="figures/14_7_calc3_boundary.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure>
-<div><p><strong>Calc III:</strong> Same idea &mdash; but now the ``boundary'' is a <strong>curve</strong>, not just two points.</p></div></div>
+</figure></div>
 </div>
 </section>
 
@@ -189,43 +264,39 @@ window.MathJax = {
 
 <section id="the-second-derivative-test" aria-label="The Second Derivative Test">
   <h2>The Second Derivative Test</h2>
-  <div><p>Now that we can <em>find</em> critical points, how do we <em>classify</em> them?</p></div>
-<section class="defn-box" role="region" aria-label="Second Derivative Test">
+  <section class="defn-box" role="region" aria-label="Second Derivative Test">
   <h3 class="defn-title">Second Derivative Test</h3>
   <p>Suppose the second partial derivatives of \(f\) are continuous near \((a,b)\) and \(f_x(a,b) = f_y(a,b) = 0\). Define:</p>
 <p>\[D = D(a,b) = f_{xx}(a,b) \cdot f_{yy}(a,b) - \left[f_{xy}(a,b)\right]^2\]</p>
 </section>
-<div><table>
-<tr><th><strong>Condition</strong></th><th><strong>Conclusion</strong></th></tr>
-<tr><td>\(D > 0\) and \(f_{xx} > 0\)</td><td><strong>Local minimum</strong></td></tr>
-<tr><td>\(D > 0\) and \(f_{xx} < 0\)</td><td><strong>Local maximum</strong></td></tr>
-<tr><td>\(D < 0\)</td><td><strong>Saddle point</strong></td></tr>
-<tr><td>\(D = 0\)</td><td><strong>Inconclusive</strong> (test fails)</td></tr>
-</table></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>Think of \(D\) as a measure of <strong>curvature agreement</strong>: when \(D > 0\) the surface curves the same way in all directions. When \(D < 0\) it curves <strong>up</strong> in one direction and <strong>down</strong> in another &mdash; a saddle!</p></aside>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(D\) measures <strong>curvature agreement</strong>: \(D > 0\) means the surface</p>
+<p>curves the same way in all directions. \(D < 0\) means \(f_{xy}\) dominates &mdash;</p>
+<p>the surface is <strong>twisting</strong>, curving up in one direction and down in another.</p></aside>
 
-<div><p>Here are zoomed views of the surface \(f(x,y) = 2x^3 + xy^2 + 5x^2 + y^2\) near each type of critical point:</p></div>
+<div class="two-col-print">
+  <div><figure>
+  <img src="figures/14_7_sdt_min.png" alt="3D surface zoomed near (0,0) showing a bowl-shaped local minimum. D greater than 0 and f\_xx greater than 0.">
+  <figcaption><a href="figures/14_7_sdt_min.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure></div>
+  <div><figure>
+  <img src="figures/14_7_sdt_max.png" alt="3D surface zoomed near (-5/3, 0) showing a dome-shaped local maximum. D greater than 0 and f\_xx less than 0.">
+  <figcaption><a href="figures/14_7_sdt_max.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure></div>
+</div>
 <figure>
-  <img src="figures/14_7_sdt_triptych.png" alt="Three 3D surface plots showing zoomed views of f near each critical point type. Left: bowl-shaped local minimum at (0,0) with D greater than 0 and f\_xx greater than 0. Center: dome-shaped local maximum at (-5/3, 0) with D greater than 0 and f\_xx less than 0. Right: saddle point at (-1, 2) with D less than 0, the surface curving up in one direction and down in another.">
+  <img src="figures/14_7_sdt_saddle.png" alt="3D surface zoomed near (-1, 2) showing a saddle point where the surface curves up in one direction and down in another. D less than 0.">
+  <figcaption><a href="figures/14_7_sdt_saddle.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
 </section>
 
-<section id="saddle-points-the-new-phenomenon" aria-label="Saddle Points: The New Phenomenon">
-  <h2>Saddle Points: The New Phenomenon</h2>
-  <div class="two-col-print">
-  <div><div><p>A <strong>saddle point</strong> has no analog in single-variable calculus. At a saddle point:</p>
-<ul>
-<li>\(f_x = 0\) and \(f_y = 0\) (the tangent plane is horizontal)</li>
-<li>The surface curves <strong>up</strong> in one direction and <strong>down</strong> in another</li>
-<li>The point is neither a local max nor a local min</li>
-</ul>
-<p>Think of a mountain pass (or a Pringles chip): the <em>highest</em> point going one direction, the <em>lowest</em> going the other.</p></div></div>
-  <div><figure>
-  <img src="figures/14_7_saddle_intro.png" alt="3D surface of z = x squared minus y squared showing a saddle point at the origin. Green curve along x-axis curves up, red curve along y-axis curves down.">
-  <figcaption><a href="figures/14_7_saddle_intro.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure></div>
+<section id="quick-check-use-the-second-derivative-test" aria-label="Quick Check: Use the Second Derivative Test">
+  <h2>Quick Check: Use the Second Derivative Test</h2>
+  <div><p>You've found a critical point and computed:</p>
+<p>\[f_{xx} = -6, \quad f_{yy} = -4, \quad f_{xy} = 1\]</p>
+<p><em>Compute \(D\) and classify. Local max, local min, or saddle?</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Use $D = f_{xx} f_{yy} - (f_{xy})^2$. Check sign of $D$ first, then $f_{xx}$." style="min-height:2.5in;">
+  <div class="blank-prompt">Use \(D = f_{xx} f_{yy} - (f_{xy})^2\). Check sign of \(D\) first, then \(f_{xx}\).</div>
 </div>
-<aside class="key-point" role="note" aria-label="Key point"><p>\(D < 0\) means the <strong>mixed partial</strong> \(f_{xy}\) is large relative to \(f_{xx}\) and \(f_{yy}\) &mdash; the surface is twisting.</p></aside>
 </section>
 
 <section id="caution-when" class="example-group" aria-label="Caution: When $D = 0$">
@@ -251,21 +322,33 @@ window.MathJax = {
 </div>
 </section>
 
-<section id="your-turn-find-and-classify-critical-points" class="example-group" aria-label="Your Turn: Find and Classify Critical Points">
-  <h2>Your Turn: Find and Classify Critical Points</h2>
+<section id="example-4-a-classic-saddle" class="example-group" aria-label="Example 4: A Classic Saddle">
+  <h2>Example 4: A Classic Saddle</h2>
   <section class="example-box" role="region" aria-label="Example 4">
   <h3 class="example-title">Example 4</h3>
-  <p>Find and classify the critical points of \(f(x,y) = x^2 + y^2 - 2x - 6y + 14\).</p>
+  <p>Find and classify the critical points of \(g(x,y) = x^2 - y^2\).</p>
 </section>
-<div class="blank-space" role="region" aria-label="Student workspace: Set $f_x = 0$ and $f_y = 0$, then compute $D$." style="min-height:3in;">
-  <div class="blank-prompt">Set \(f_x = 0\) and \(f_y = 0\), then compute \(D\).</div>
+<div class="blank-space" role="region" aria-label="Student workspace: Find the critical point, then apply the Second Derivative Test." style="min-height:2.5in;">
+  <div class="blank-prompt">Find the critical point, then apply the Second Derivative Test.</div>
+</div>
+</section>
+
+<section id="your-turn-find-and-classify-critical-points" class="example-group" aria-label="Your Turn: Find and Classify Critical Points">
+  <h2>Your Turn: Find and Classify Critical Points</h2>
+  <section class="example-box" role="region" aria-label="Example 5">
+  <h3 class="example-title">Example 5</h3>
+  <p>Find and classify the critical points of \(f(x,y) = x^3 - 3xy + y^3\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Set $f_x = 0$ and $f_y = 0$. Express one variable in terms of the
+other and substitute." style="min-height:3.5in;">
+  <div class="blank-prompt">Set \(f_x = 0\) and \(f_y = 0\). Express one variable in terms of the
+other and substitute.</div>
 </div>
 </section>
 
 <section id="the-extreme-value-theorem" aria-label="The Extreme Value Theorem">
   <h2>The Extreme Value Theorem</h2>
-  <div><p>Recall from Calc I: if \(f\) is continuous on \([a,b]\), then \(f\) attains an absolute max and an absolute min on \([a,b]\).</p></div>
-<section class="defn-box" role="region" aria-label="Extreme Value Theorem (Two Variables)">
+  <section class="defn-box" role="region" aria-label="Extreme Value Theorem (Two Variables)">
   <h3 class="defn-title">Extreme Value Theorem (Two Variables)</h3>
   <p>If \(f\) is continuous on a <strong>closed, bounded</strong> set \(D\) in \(\mathbb{R}^2\), then \(f\) attains an absolute maximum and an absolute minimum on \(D\).</p>
 </section>
@@ -288,22 +371,9 @@ window.MathJax = {
 
 <section id="example-absolute-extrema-on-a-rectangle" class="example-group" aria-label="Example: Absolute Extrema on a Rectangle">
   <h2>Example: Absolute Extrema on a Rectangle</h2>
-  <section class="example-box" role="region" aria-label="Example 6">
-  <h3 class="example-title">Example 6</h3>
-  <p>Find the absolute maximum and minimum values of</p>
-<p>\[f(x,y) = x^4 + y^4 - 4xy + 2\]</p>
-<p>on the set \(D = \{(x,y) \mid 0 \leq x \leq 3,\; 0 \leq y \leq 2\}\).</p>
-</section>
-<div class="two-col-print">
-  <div><div><p><strong>Step 1: Interior critical points.</strong> Set \(f_x = 0\) and \(f_y = 0\):</p></div></div>
-  <div><figure>
-  <img src="figures/14_7_rect_domain.png" alt="Labeled rectangle with corners (0,0), (3,0), (3,2), (0,2). Edge 1 is the bottom (y=0), Edge 2 is the right (x=3), Edge 3 is the top (y=2), Edge 4 is the left (x=0). The interior is shaded and labeled D.">
-</figure></div>
-</div>
-<div><p>\[f_x = 4x^3 - 4y = 0 \;\Rightarrow\; y = x^3\]</p>
-<p>\[f_y = 4y^3 - 4x = 0 \;\Rightarrow\; x = y^3\]</p></div>
-<div class="blank-space" role="region" aria-label="Student workspace: Substitute $y = x^3$ into $x = y^3$ to find the interior critical points in $D$." style="min-height:2.5in;">
-  <div class="blank-prompt">Substitute \(y = x^3\) into \(x = y^3\) to find the interior critical points in \(D\).</div>
+  <div><p><em>Why can't we just find interior critical points and pick the largest value?</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Think of a Calc I example where the absolute max was at an endpoint." style="min-height:1.5in;">
+  <div class="blank-prompt">Think of a Calc I example where the absolute max was at an endpoint.</div>
 </div>
 </section>
 
