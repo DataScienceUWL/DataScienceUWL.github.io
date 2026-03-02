@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SB+ Diagnostics</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .ok { color: green; }
+        .fail { color: red; }
+        .warn { color: orange; }
+        #log { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>SB+ GitHub Pages Diagnostics</h1>
+    <div id="log"></div>
+    <script>
+        const log = document.getElementById('log');
+        function ok(msg) { log.innerHTML += '<span class="ok">[OK]</span> ' + msg + '\n'; }
+        function fail(msg) { log.innerHTML += '<span class="fail">[FAIL]</span> ' + msg + '\n'; }
+        function warn(msg) { log.innerHTML += '<span class="warn">[WARN]</span> ' + msg + '\n'; }
+        function info(msg) { log.innerHTML += '[INFO] ' + msg + '\n'; }
+
+        async function runTests() {
+            info('Starting diagnostics...\n');
+
+            // Test 1: Can we fetch manifest.json?
+            try {
+                const resp = await fetch('app/sources/manifest.json');
+                if (resp.ok) {
+                    const data = await resp.json();
+                    ok('manifest.json loaded (' + resp.status + ')');
+                    info('  sbplus_root_directory: ' + data.sbplus_root_directory);
+                    info('  sbplus_kaltura.id: ' + (data.sbplus_kaltura ? data.sbplus_kaltura.id : 'not set'));
+                } else {
+                    fail('manifest.json returned ' + resp.status);
+                }
+            } catch(e) {
+                fail('manifest.json fetch error: ' + e.message);
+            }
+
+            // Test 2: Can we fetch sbplus.xml?
+            try {
+                const resp = await fetch('assets/sbplus.xml');
+                if (resp.ok) {
+                    const text = await resp.text();
+                    ok('sbplus.xml loaded (' + text.length + ' bytes)');
+                    const parser = new DOMParser();
+                    const xml = parser.parseFromString(text, 'text/xml');
+                    const pages = xml.querySelectorAll('page');
+                    info('  Pages found: ' + pages.length);
+                    pages.forEach(p => {
+                        info('    type=' + p.getAttribute('type') + ' src=' + (p.getAttribute('src')||'(none)') + ' title=' + p.getAttribute('title'));
+                    });
+                } else {
+                    fail('sbplus.xml returned ' + resp.status);
+                }
+            } catch(e) {
+                fail('sbplus.xml fetch error: ' + e.message);
+            }
+
+            // Test 3: Can we fetch the template?
+            try {
+                const resp = await fetch('app/sources/scripts/templates/sbplus.tpl');
+                if (resp.ok) {
+                    const text = await resp.text();
+                    ok('sbplus.tpl loaded (' + text.length + ' bytes)');
+                    info('  First 80 chars: ' + text.substring(0, 80));
+                    if (text.includes('sbplus_loading_screen')) {
+                        ok('  Template contains expected sbplus_loading_screen element');
+                    } else {
+                        fail('  Template does NOT contain sbplus_loading_screen — wrong file!');
+                    }
+                } else {
+                    fail('sbplus.tpl returned ' + resp.status);
+                }
+            } catch(e) {
+                fail('sbplus.tpl fetch error: ' + e.message);
+            }
+
+            // Test 4: Can we fetch the CSS?
+            try {
+                const resp = await fetch('app/sources/css/sbplus.css');
+                ok('sbplus.css loaded (' + resp.status + ', ' + (await resp.text()).length + ' bytes)');
+            } catch(e) {
+                fail('sbplus.css fetch error: ' + e.message);
+            }
+
+            // Test 5: Can we fetch sbplus.js?
+            try {
+                const resp = await fetch('app/sources/scripts/sbplus.js');
+                ok('sbplus.js loaded (' + resp.status + ', ' + (await resp.text()).length + ' bytes)');
+            } catch(e) {
+                fail('sbplus.js fetch error: ' + e.message);
+            }
+
+            // Test 6: Can we fetch jQuery?
+            try {
+                const resp = await fetch('app/sources/scripts/libs/jquery.js');
+                ok('jquery.js loaded (' + resp.status + ', ' + (await resp.text()).length + ' bytes)');
+            } catch(e) {
+                fail('jquery.js fetch error: ' + e.message);
+            }
+
+            // Test 7: Can we fetch preload.js?
+            try {
+                const resp = await fetch('app/sources/scripts/preload.js');
+                if (resp.ok) {
+                    ok('preload.js loaded (' + resp.status + ')');
+                } else {
+                    warn('preload.js returned ' + resp.status + ' (may be optional)');
+                }
+            } catch(e) {
+                warn('preload.js fetch error: ' + e.message);
+            }
+
+            // Test 8: Can we fetch the fonts?
+            try {
+                const resp = await fetch('app/sources/fonts/sbplus_fonts.css');
+                ok('sbplus_fonts.css loaded (' + resp.status + ')');
+            } catch(e) {
+                fail('sbplus_fonts.css fetch error: ' + e.message);
+            }
+
+            // Test 9: Cross-origin — Can we reach Kaltura?
+            try {
+                const resp = await fetch('https://cdnapisec.kaltura.com/p/2370711/embedPlaykitJs/uiconf_id/54949472?iframeembed=true&entry_id=1_ovbji423', { method: 'HEAD' });
+                ok('Kaltura CDN reachable (' + resp.status + ')');
+            } catch(e) {
+                warn('Kaltura CDN check failed: ' + e.message + ' (may be CORS on HEAD)');
+            }
+
+            // Test 10: Cross-origin — themes.json (our local copy)
+            try {
+                const resp = await fetch('app/sources/data/themes.json');
+                if (resp.ok) {
+                    ok('themes.json (local) loaded (' + resp.status + ')');
+                } else {
+                    fail('themes.json returned ' + resp.status);
+                }
+            } catch(e) {
+                fail('themes.json fetch error: ' + e.message);
+            }
+
+            // Test 11: Cross-origin — UWEX splash/logo/author directories
+            info('\nCross-origin resource checks (these may fail due to no CORS on UWEX):');
+            const crossOriginUrls = [
+                'https://media.uwex.edu/content/media/player_support/splash/uwex/default.svg',
+                'https://media.uwex.edu/content/media/player_support/logo/uwex.svg',
+                'https://media.uwex.edu/content/media/player_support/author/_starter.jpg'
+            ];
+            for (const url of crossOriginUrls) {
+                try {
+                    const resp = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+                    warn(url.split('/').pop() + ': no-cors fetch returned (opaque response, cannot verify)');
+                } catch(e) {
+                    fail(url.split('/').pop() + ': ' + e.message);
+                }
+            }
+
+            info('\n--- Diagnostics complete ---');
+            info('If all tests pass but the storybook page is still blank,');
+            info('open the storybook page (index.html) and check the browser');
+            info('console (F12 → Console) for JavaScript errors.');
+        }
+
+        runTests();
+    </script>
+</body>
+</html>
