@@ -23,7 +23,7 @@ h1 {
 }
 h2 {
     color: var(--accent-cyan); font-size: 1.3em;
-    margin-top: 1.5em; border-bottom: 1px solid #ddd; padding-bottom: 0.15em;
+    margin-top: 2em; border-bottom: 1px solid #ddd; padding-bottom: 0.15em;
 }
 
 /* Links */
@@ -42,17 +42,10 @@ a:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
     position: fixed; left: 0; top: 0; width: auto; height: auto;
 }
 
-/* Screen-reader only */
-.sr-only {
-    position: absolute; width: 1px; height: 1px;
-    padding: 0; margin: -1px; overflow: hidden;
-    clip: rect(0, 0, 0, 0); border: 0;
-}
-
 /* Course info */
 .course-info { color: #595959; font-size: 0.9em; margin-bottom: 1.5em; }
 
-/* ── Index: Card Grid ─────────────────────────────────────── */
+/* ── Card Grid ────────────────────────────────────────────── */
 .card-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -73,18 +66,24 @@ a:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
 .card h3 { color: var(--accent-cyan); margin: 0 0 0.3em; font-size: 1.15em; }
 .card p { margin: 0; color: #595959; font-size: 0.92em; }
 
-/* ── Index: Table ─────────────────────────────────────────── */
-table { border-collapse: collapse; width: 100%; margin: 0.8em 0; }
-th, td { padding: 0.5em 0.8em; border: 1px solid #ddd; text-align: left; }
-th { background: #f0f7ff; color: var(--accent-cyan); font-weight: 600; }
-tr:hover { background: #f8fbff; }
-
 /* ── Breadcrumb ───────────────────────────────────────────── */
 .breadcrumb {
     font-size: 0.9em; color: #595959; margin-bottom: 0.5em;
     display: flex; flex-wrap: wrap; align-items: center; gap: 0.3em;
 }
 .breadcrumb .sep { color: #999; }
+
+/* ── Section Table of Contents ────────────────────────────── */
+.section-toc {
+    background: #f8f9fa; border: 1px solid #e0e0e0;
+    border-radius: 8px; padding: 1em 1.5em; margin: 1em 0 2em;
+}
+.section-toc ol {
+    margin: 0; padding-left: 1.5em;
+    columns: 2; column-gap: 2em;
+}
+.section-toc li { margin-bottom: 0.3em; break-inside: avoid; }
+.toc-type { color: #888; }
 
 /* ── Video Container (16:9) ───────────────────────────────── */
 .video-container {
@@ -106,78 +105,34 @@ tr:hover { background: #f8fbff; }
     background: #fffbf0; border: 2px solid #e0c97f;
     border-radius: 8px; padding: 1.5em; margin: 1em 0;
 }
-.quiz-question {
-    margin-bottom: 1.2em; font-size: 1.05em; line-height: 1.6;
-}
+.quiz-question { margin-bottom: 1em; line-height: 1.6; }
 
-/* MC Choices */
-.quiz-choices {
-    display: flex; flex-direction: column; gap: 0.5em;
-    margin-bottom: 1em;
+/* Quiz <details> choices */
+.quiz-choice, .quiz-reveal { margin-bottom: 0.4em; }
+.quiz-choice summary, .quiz-reveal summary {
+    cursor: pointer; padding: 0.6em 1em;
+    border: 2px solid #ddd; border-radius: 6px;
+    background: #fff; font-size: 1em;
+    transition: border-color 0.2s, background 0.2s;
 }
-.mc-choice {
-    display: block; width: 100%; text-align: left;
-    padding: 0.8em 1.2em; font-size: 1em;
-    background: #fff; border: 2px solid #ddd; border-radius: 6px;
-    cursor: pointer; transition: border-color 0.2s, background 0.2s;
-    font-family: inherit; color: var(--fg);
-}
-.mc-choice:hover:not(:disabled) {
+.quiz-choice summary:hover, .quiz-reveal summary:hover {
     border-color: var(--accent-cyan); background: #f0f7ff;
 }
-.mc-choice:focus-visible {
-    outline: 2px solid var(--accent-cyan); outline-offset: 2px;
+.quiz-choice[open] summary, .quiz-reveal[open] summary {
+    border-color: var(--accent-cyan); background: #f0f7ff;
 }
-.mc-choice:disabled { cursor: default; opacity: 0.85; }
-.mc-choice.correct {
-    border-color: var(--accent-green); background: #edf7f0;
-    font-weight: 600;
-}
-.mc-choice.incorrect {
-    border-color: var(--accent-red); background: #fdf0f0;
-}
-
-/* Quiz Feedback */
 .quiz-feedback {
-    padding: 1em 1.2em; border-radius: 6px; margin-top: 0.8em;
-    border-left: 4px solid var(--accent-cyan); background: #f0f7ff;
-    line-height: 1.6;
+    padding: 0.8em 1em; margin: 0.4em 0 0.2em;
+    border-left: 3px solid var(--accent-cyan); background: #f0f7ff;
+    border-radius: 0 6px 6px 0; line-height: 1.6;
 }
 
-/* SA Input */
-.sa-input-area { margin-bottom: 1em; }
-.sa-input {
-    width: 100%; padding: 0.8em; font-size: 1em; font-family: inherit;
-    border: 2px solid #ddd; border-radius: 6px; resize: vertical;
-    min-height: 3em;
-}
-.sa-input:focus {
-    border-color: var(--accent-cyan); outline: none;
-    box-shadow: 0 0 0 3px rgba(0,119,182,0.15);
-}
-.sa-toggle {
-    display: inline-block; padding: 0.6em 1.4em;
-    font-size: 1em; font-family: inherit;
-    background: var(--accent-cyan); color: #fff; border: none;
-    border-radius: 6px; cursor: pointer;
-    transition: background 0.2s;
-}
-.sa-toggle:hover { background: #005f8f; }
-.sa-toggle:focus-visible {
-    outline: 2px solid var(--accent-cyan); outline-offset: 2px;
-}
-.sa-feedback {
-    padding: 1em 1.2em; border-radius: 6px; margin-top: 1em;
-    border-left: 4px solid var(--accent-cyan); background: #f0f7ff;
-    line-height: 1.6;
-}
-
-/* ── Page Navigation ──────────────────────────────────────── */
-.page-nav {
+/* ── Section Navigation ───────────────────────────────────── */
+.section-nav {
     display: flex; justify-content: space-between; align-items: center;
-    margin-top: 2em; padding-top: 1em; border-top: 1px solid #ddd;
+    margin-top: 2.5em; padding-top: 1em; border-top: 1px solid #ddd;
 }
-.page-counter { color: #595959; font-size: 0.9em; }
+.section-counter { color: #595959; font-size: 0.9em; }
 .nav-prev, .nav-next {
     padding: 0.5em 1em; border: 2px solid var(--accent-cyan);
     border-radius: 6px; font-weight: 600; transition: background 0.2s;
@@ -189,8 +144,8 @@ tr:hover { background: #f8fbff; }
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 600px) {
     body { padding: 0.5em 1em; }
-    th, td { padding: 0.3em 0.5em; font-size: 0.95em; }
     .card-grid { grid-template-columns: 1fr; }
+    .section-toc ol { columns: 1; }
     .breadcrumb { font-size: 0.82em; }
-    .page-nav { flex-wrap: wrap; gap: 0.5em; justify-content: center; }
+    .section-nav { flex-wrap: wrap; gap: 0.5em; justify-content: center; }
 }
