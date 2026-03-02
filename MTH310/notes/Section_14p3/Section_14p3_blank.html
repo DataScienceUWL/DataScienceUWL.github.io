@@ -75,7 +75,8 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
     body { padding: 0; max-width: none; }
     .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     a { color: var(--accent-cyan); text-decoration: none; }
-    a::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="http"]::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="#"]::after { content: none; }
     figure img { max-height: 2.8in; }
     .skip-link { display: none; }
 }
@@ -110,7 +111,7 @@ window.MathJax = {
 </header>
 <hr aria-hidden="true">
 
-<section aria-label="Partial Derivatives &mdash; Motivation and Definition">
+<section id="partial-derivatives-motivation-and-definition" aria-label="Partial Derivatives &mdash; Motivation and Definition">
   <h2>Partial Derivatives &mdash; Motivation and Definition</h2>
   <div><p>In Calc I, \(f'(x)\) measures how \(f\) changes as \(x\) changes.</p>
 <p>For \(f(x,y)\), we have <strong>two</strong> input variables. How do we measure the rate of change?</p>
@@ -125,14 +126,14 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p>These are just Calc I derivatives in disguise. The only new idea: <strong>hold the other variable constant</strong>.</p></aside>
 </section>
 
-<section aria-label="Computing Partial Derivatives">
+<section id="computing-partial-derivatives" aria-label="Computing Partial Derivatives">
   <h2>Computing Partial Derivatives</h2>
   <div><p><strong>The Rule:</strong> To find \(f_x\), treat \(y\) as a constant and differentiate with respect to \(x\) using all your Calc I rules.</p>
 <p>For \(f_y\), treat \(x\) as a constant and differentiate with respect to \(y\).</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>You already know how to do this! Every derivative rule from Calc I (power, product, quotient, chain) still applies &mdash; you're just ignoring one variable.</p></aside>
 </section>
 
-<section class="example-group" aria-label="Example 1: Polynomial Partials">
+<section id="example-1-polynomial-partials" class="example-group" aria-label="Example 1: Polynomial Partials">
   <h2>Example 1: Polynomial Partials</h2>
   <section class="example-box" role="region" aria-label="Example 1">
   <h3 class="example-title">Example 1</h3>
@@ -143,7 +144,7 @@ window.MathJax = {
 </div>
 </section>
 
-<section class="example-group" aria-label="Your Turn: Compute Partials">
+<section id="your-turn-compute-partials" class="example-group" aria-label="Your Turn: Compute Partials">
   <h2>Your Turn: Compute Partials</h2>
   <section class="example-box" role="region" aria-label="Example 2">
   <h3 class="example-title">Example 2</h3>
@@ -154,22 +155,22 @@ window.MathJax = {
 </div>
 </section>
 
-<section aria-label="Geometric Interpretation of Partial Derivatives">
+<section id="geometric-interpretation-of-partial-derivatives" aria-label="Geometric Interpretation of Partial Derivatives">
   <h2>Geometric Interpretation of Partial Derivatives</h2>
   <div class="two-col-print">
   <div><div><p>Slice the surface \(z = f(x,y)\) with the plane \(y = b\).</p>
 <p>This gives a <strong>trace curve</strong> \(C_1\) in the \(xz\)-plane.</p>
-<p>\(f_x(a,b)\) = <strong>slope of the tangent</strong> to \(C_1\) at the point \((a,\, b,\, f(a,b))\).</p></div>
-<div><p>Similarly, slicing with \(x = a\) gives a trace \(C_2\), and \(f_y(a,b)\) is the slope of the tangent to \(C_2\).</p></div></div>
+<p>\(f_x(a,b)\) = <strong>slope of the tangent</strong> to \(C_1\) at the point \((a,\, b,\, f(a,b))\).</p>
+<p>Similarly, slicing with \(x = a\) gives a trace \(C_2\), and \(f_y(a,b)\) is the slope of the tangent to \(C_2\).</p></div></div>
   <div><figure>
   <img src="figures/partial_deriv_geometry.png" alt="A 3D surface with two trace curves: C1 (red) is the intersection of the surface with the plane y=b, and C2 (green) is the intersection with the plane x=a. Dashed tangent lines show the slopes f_x and f_y at the point P(a,b,f(a,b)).">
-  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+  <figcaption><a href="figures/partial_deriv_geometry.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure></div>
 </div>
 <aside class="key-point" role="note" aria-label="Key point"><p>\(f_x(a,b)\) = slope in the <strong>\(x\)-direction</strong>. \(f_y(a,b)\) = slope in the <strong>\(y\)-direction</strong>. Each partial derivative captures only <strong>one direction</strong> of change.</p></aside>
 </section>
 
-<section class="example-group" aria-label="Example 3: Different Rules for Different Variables">
+<section id="example-3-different-rules-for-different-variables" class="example-group" aria-label="Example 3: Different Rules for Different Variables">
   <h2>Example 3: Different Rules for Different Variables</h2>
   <section class="example-box" role="region" aria-label="Example 3">
   <h3 class="example-title">Example 3</h3>
@@ -181,34 +182,33 @@ window.MathJax = {
 </div>
 </section>
 
-<section class="example-group" aria-label="Example 4: Rates of Change &mdash; Heat Index">
+<section id="example-4-rates-of-change-heat-index" class="example-group" aria-label="Example 4: Rates of Change &mdash; Heat Index">
   <h2>Example 4: Rates of Change &mdash; Heat Index</h2>
   <section class="example-box" role="region" aria-label="Example 4">
   <h3 class="example-title">Example 4</h3>
   <p>The heat index \(I\) is the perceived temperature as a function of actual temperature \(T\) and relative humidity \(H\).</p>
 <p>Use the table to estimate \(f_T(96, 70)\) and \(f_H(96, 70)\), and interpret each.</p>
 </section>
-<table>
-<thead><tr><th scope="col">\(T\) \\ \(H\)</th><th scope="col">50</th><th scope="col">55</th><th scope="col">60</th><th scope="col">65</th><th scope="col">70</th><th scope="col">75</th><th scope="col">80</th><th scope="col">85</th><th scope="col">90</th></tr></thead>
-<tbody>
+<div><table>
+<tr><th>\(T\)</th></tr>
+<tr><td>\(H\)</td><td>50</td><td>55</td><td>60</td><td>65</td><td>70</td><td>75</td><td>80</td><td>85</td><td>90</td></tr>
 <tr><td>90</td><td>96</td><td>98</td><td>100</td><td>103</td><td>106</td><td>109</td><td>112</td><td>115</td><td>119</td></tr>
 <tr><td>92</td><td>100</td><td>103</td><td>105</td><td>108</td><td>112</td><td>115</td><td>119</td><td>123</td><td>128</td></tr>
 <tr><td>94</td><td>104</td><td>107</td><td>111</td><td>114</td><td>118</td><td>122</td><td>127</td><td>132</td><td>137</td></tr>
 <tr><td><strong>96</strong></td><td>109</td><td>113</td><td>116</td><td>121</td><td><strong>125</strong></td><td>130</td><td>135</td><td>141</td><td>146</td></tr>
 <tr><td>98</td><td>114</td><td>118</td><td>123</td><td>127</td><td>133</td><td>138</td><td>144</td><td>150</td><td>157</td></tr>
 <tr><td>100</td><td>119</td><td>124</td><td>129</td><td>135</td><td>141</td><td>147</td><td>154</td><td>161</td><td>168</td></tr>
-<tr><td colspan="10" style="color:#595959;">Heat index values for temperature T (°F) and relative humidity H (%)</td></tr>
-</tbody>
 </table>
+<p>\\[2pt]\small Heat index values for temperature T (\(^\circ\)F) and relative humidity H (\%)</p></div>
 <div class="blank-space" role="region" aria-label="Student workspace: Use the difference quotient with nearby table values. Hold one variable constant while varying the other." style="min-height:2.5in;">
   <div class="blank-prompt">Use the difference quotient with nearby table values. Hold one variable constant while varying the other.</div>
 </div>
 </section>
 
-<section aria-label="Higher-Order Partial Derivatives">
+<section id="higher-order-partial-derivatives" aria-label="Higher-Order Partial Derivatives">
   <h2>Higher-Order Partial Derivatives</h2>
-  <div><p>Just like in Calc I, we can differentiate <strong>again</strong> to get second (and higher) derivatives.</p></div>
-<div><p>For \(f(x,y)\), there are <strong>four</strong> second-order partial derivatives:</p>
+  <div><p>Just like in Calc I, we can differentiate <strong>again</strong> to get second (and higher) derivatives.</p>
+<p>For \(f(x,y)\), there are <strong>four</strong> second-order partial derivatives:</p>
 <ul>
 <li>\(f_{xx} = \dfrac{\partial^2 f}{\partial x^2}\) &mdash; differentiate twice with respect to \(x\)</li>
 <li>\(f_{yy} = \dfrac{\partial^2 f}{\partial y^2}\) &mdash; differentiate twice with respect to \(y\)</li>
@@ -222,10 +222,9 @@ window.MathJax = {
 <li>\(f_{xy}\) = how the \(x\)-slope changes as you move in \(y\) (a <strong>mixed</strong> partial)</li>
 </ul></aside>
 <div><p><strong>Notation warning:</strong> \(f_{xy}\) means differentiate with respect to \(x\) <strong>first</strong>, then \(y\). Read the subscripts left to right.</p></div>
-<div class="pagebreak" aria-hidden="true"></div>
 </section>
 
-<section aria-label="Clairaut's Theorem">
+<section id="clairaut-s-theorem" aria-label="Clairaut's Theorem">
   <h2>Clairaut's Theorem</h2>
   <div><p>Are \(f_{xy}\) and \(f_{yx}\) always equal? That is, does the <strong>order of differentiation</strong> matter?</p></div>
 <section class="defn-box theorem-box" role="region" aria-label="Theorem: Clairaut's Theorem">
@@ -239,7 +238,7 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p>For any function built from standard Calc I functions, the <strong>order of differentiation doesn't matter</strong>. Differentiate in whichever order is easiest!</p></aside>
 </section>
 
-<section class="example-group" aria-label="The Clairaut Puzzle">
+<section id="the-clairaut-puzzle" class="example-group" aria-label="The Clairaut Puzzle">
   <h2>The Clairaut Puzzle</h2>
   <section class="example-box" role="region" aria-label="Example 5">
   <h3 class="example-title">Example 5</h3>
@@ -252,7 +251,7 @@ window.MathJax = {
 </div>
 </section>
 
-<section class="example-group" aria-label="Example 6: Laplace's Equation">
+<section id="example-6-laplace-s-equation" class="example-group" aria-label="Example 6: Laplace's Equation">
   <h2>Example 6: Laplace's Equation</h2>
   <section class="example-box" role="region" aria-label="Example 6">
   <h3 class="example-title">Example 6</h3>
@@ -265,7 +264,7 @@ window.MathJax = {
 </div>
 </section>
 
-<section class="example-group" aria-label="Example 7: Implicit Partial Differentiation">
+<section id="example-7-implicit-partial-differentiation" class="example-group" aria-label="Example 7: Implicit Partial Differentiation">
   <h2>Example 7: Implicit Partial Differentiation</h2>
   <section class="example-box" role="region" aria-label="Example 7">
   <h3 class="example-title">Example 7</h3>

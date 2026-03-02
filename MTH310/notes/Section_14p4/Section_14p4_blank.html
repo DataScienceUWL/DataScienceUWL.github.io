@@ -75,7 +75,8 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
     body { padding: 0; max-width: none; }
     .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     a { color: var(--accent-cyan); text-decoration: none; }
-    a::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="http"]::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="#"]::after { content: none; }
     figure img { max-height: 2.8in; }
     .skip-link { display: none; }
 }
@@ -110,21 +111,31 @@ window.MathJax = {
 </header>
 <hr aria-hidden="true">
 
-<section aria-label="From Tangent Lines to Tangent Planes">
+<section id="your-turn-derivatives-warm-up" aria-label="Your Turn: Derivatives Warm-Up">
+  <h2>Your Turn: Derivatives Warm-Up</h2>
+  <div><p>We'll need the partial derivatives of the <strong>hemi-ellipsoid</strong></p>
+<p>\[f(x,y) = \sqrt{25 - 4x^2 - y^2} = (25 - 4x^2 - y^2)^{1/2}\]</p>
+<p>Compute the partial derivatives \(f_x\) and \(f_y\), then evaluate each at \((2, 1)\).</p>
+<p><strong>Hint:</strong> Rewrite as a \(\frac{1}{2}\)-power so you can use the <strong>chain rule</strong>.</p></div>
+<div class="blank-space" role="region" aria-label="Student workspace" style="min-height:3in;">
+</div>
+</section>
+
+<section id="from-tangent-lines-to-tangent-planes" aria-label="From Tangent Lines to Tangent Planes">
   <h2>From Tangent Lines to Tangent Planes</h2>
   <div><p><strong>Recall from Calc I:</strong> If \(f(x)\) is differentiable, then when you zoom in near a point the graph looks like a straight line &mdash; the <strong>tangent line</strong>.</p>
 <p>The tangent line at \(x_0\) is the best <strong>linear approximation</strong>:</p>
-<p>\[y - y_0 = f'(x_0)(x - x_0)\]</p></div>
-<div><p><strong>Now in Calc III:</strong> For a function of two variables \(z = f(x, y)\), zooming in near a point makes the surface look like a <strong>flat plane</strong> &mdash; the <strong>tangent plane</strong>.</p>
+<p>\[y - y_0 = f'(x_0)(x - x_0)\]</p>
+<p><strong>Now in Calc III:</strong> For a function of two variables \(z = f(x, y)\), zooming in near a point makes the surface look like a <strong>flat plane</strong> &mdash; the <strong>tangent plane</strong>.</p>
 <p>The tangent plane is the best linear approximation to the surface near that point.</p></div>
 <figure>
   <img src="figures/tangent_plane.png" alt="A hemi-ellipsoid surface with a tangent plane (amber) touching at point P(2,1,2sqrt2). Red and green tangent lines show the slopes in the x- and y-directions.">
-  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+  <figcaption><a href="figures/tangent_plane.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
-<aside class="key-point" role="note" aria-label="Key point"><p>Calc I: zoom in &rarr; tangent <strong>line</strong>. Calc III: zoom in &rarr; tangent <strong>plane</strong>.</p></aside>
+<aside class="key-point" role="note" aria-label="Key point"><p>Calc I: zoom in \(\rightarrow\) tangent <strong>line</strong>. Calc III: zoom in \(\rightarrow\) tangent <strong>plane</strong>.</p></aside>
 </section>
 
-<section aria-label="The Tangent Plane Equation">
+<section id="the-tangent-plane-equation" aria-label="The Tangent Plane Equation">
   <h2>The Tangent Plane Equation</h2>
   <div><p>In Calc I we needed one slope \(f'(x_0)\). Now we have <strong>two</strong> independent directions to tilt &mdash; one for \(x\) and one for \(y\) &mdash; so we need <strong>both partial derivatives</strong>.</p></div>
 <section class="defn-box" role="region" aria-label="Equation of the Tangent Plane">
@@ -133,35 +144,43 @@ window.MathJax = {
 <p>\[z - z_0 = f_x(x_0, y_0)(x - x_0) + f_y(x_0, y_0)(y - y_0)\]</p>
 <p>where \(z_0 = f(x_0, y_0)\).</p>
 </section>
-<table>
-<thead><tr><th scope="col"></th><th scope="col">Calc I (Tangent Line)</th><th scope="col">Calc III (Tangent Plane)</th></tr></thead>
-<tbody>
+<div><table>
+<tr><th></th><th>Calc I (Tangent Line)</th><th>Calc III (Tangent Plane)</th></tr>
 <tr><td>Function</td><td>\(y = f(x)\)</td><td>\(z = f(x, y)\)</td></tr>
 <tr><td>Slopes needed</td><td>\(f'(x_0)\)</td><td>\(f_x(x_0, y_0)\) and \(f_y(x_0, y_0)\)</td></tr>
 <tr><td>Equation</td><td>\(y - y_0 = f'(x_0)(x - x_0)\)</td><td>\(z - z_0 = f_x(x_0, y_0)(x - x_0) + f_y(x_0, y_0)(y - y_0)\)</td></tr>
-</tbody>
-</table>
+</table></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Same structure as the tangent line equation, but with <strong>two slope terms</strong> instead of one.</p></aside>
 <div><p><strong>Common mistake:</strong> Students write the tangent plane formula but forget to <strong>evaluate everything at the point</strong>. The function value \(f(x_0, y_0)\) and the partial derivatives \(f_x(x_0, y_0)\), \(f_y(x_0, y_0)\) must all be computed as <strong>numbers</strong>. Your final answer should be the equation of a line (Calc I) or a plane (Calc III) &mdash; no derivatives or function values left!</p></div>
 </section>
 
-<section aria-label="When Does the Tangent Plane Exist?">
+<section id="when-does-the-tangent-plane-exist" aria-label="When Does the Tangent Plane Exist?">
   <h2>When Does the Tangent Plane Exist?</h2>
   <div><p><strong>Warning:</strong> For the tangent plane to exist, we need the function to be <strong>differentiable</strong>. In Calc I, if \(f'(x_0)\) exists, then \(f\) is differentiable at \(x_0\). For two variables, it is <strong>not enough</strong> for the partial derivatives to merely exist at the point.</p></div>
 <section class="defn-box theorem-box" role="region" aria-label="Theorem: Differentiability (Sufficient Condition)">
   <h3 class="defn-title">Theorem: Differentiability (Sufficient Condition)</h3>
   <p>If the partial derivatives \(f_x\) and \(f_y\) are <strong>continuous</strong> on an open region containing \((x_0, y_0)\), then \(f\) is differentiable at \((x_0, y_0)\).</p>
-<p>In other words: continuous partials &rArr; differentiable &rArr; tangent plane exists.</p>
+<p>In other words: continuous partials \(\Rightarrow\) differentiable \(\Rightarrow\) tangent plane exists.</p>
 </section>
 <div><p><strong>Why is "partials exist" not enough?</strong></p>
 <p>A function can have partial derivatives at a point yet still have a sharp crease or corner there. Continuous partials <strong>near</strong> the point guarantee the surface is truly smooth.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p><strong>Rule of thumb:</strong> If \(f_x\) and \(f_y\) are built from standard functions (polynomials, trig, exponentials, etc.) and the point is in the domain, you're safe.</p></aside>
 </section>
 
-<section class="example-group" aria-label="Example 1: Tangent Plane to a Hemi-Ellipsoid">
-  <h2>Example 1: Tangent Plane to a Hemi-Ellipsoid</h2>
+<section id="example-1-does-the-tangent-plane-exist" class="example-group" aria-label="Example 1: Does the Tangent Plane Exist?">
+  <h2>Example 1: Does the Tangent Plane Exist?</h2>
   <section class="example-box" role="region" aria-label="Example 1">
   <h3 class="example-title">Example 1</h3>
+  <p>Does the hemi-ellipsoid \(f(x,y) = \sqrt{25 - 4x^2 - y^2}\) have a tangent plane at \((2, 1)\)?  Why?</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace" style="min-height:2.5in;">
+</div>
+</section>
+
+<section id="example-2-tangent-plane-to-a-hemi-ellipsoid" class="example-group" aria-label="Example 2: Tangent Plane to a Hemi-Ellipsoid">
+  <h2>Example 2: Tangent Plane to a Hemi-Ellipsoid</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
   <p>Find the equation of the tangent plane to the surface</p>
 <p>\[z = f(x,y) = \sqrt{25 - 4x^2 - y^2}\]</p>
 <p>at the point \((2, 1)\).</p>
@@ -171,10 +190,10 @@ window.MathJax = {
 </div>
 </section>
 
-<section class="example-group" aria-label="Your Turn: Find a Tangent Plane">
+<section id="your-turn-find-a-tangent-plane" class="example-group" aria-label="Your Turn: Find a Tangent Plane">
   <h2>Your Turn: Find a Tangent Plane</h2>
-  <section class="example-box" role="region" aria-label="Example 2">
-  <h3 class="example-title">Example 2</h3>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
   <p>Find the equation of the tangent plane to</p>
 <p>\[z = x^2 + y^2\]</p>
 <p>at the point \((1, 2, 5)\).</p>
@@ -184,7 +203,7 @@ window.MathJax = {
 </div>
 </section>
 
-<section aria-label="Linear Approximation">
+<section id="linear-approximation" aria-label="Linear Approximation">
   <h2>Linear Approximation</h2>
   <div><p>Once we have the tangent plane, we can use it to <strong>estimate</strong> the value of \(f\) at nearby points &mdash; exactly as we used the tangent line in Calc I.</p></div>
 <section class="defn-box" role="region" aria-label="Linearization">
@@ -197,11 +216,11 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p>The tangent plane gives us a simple formula to <strong>approximate</strong> a complicated function near a known point.</p></aside>
 </section>
 
-<section class="example-group" aria-label="Example 3: Approximate $f(2.05,\, 0.92)$">
-  <h2>Example 3: Approximate \(f(2.05,\, 0.92)\)</h2>
-  <section class="example-box" role="region" aria-label="Example 3">
-  <h3 class="example-title">Example 3</h3>
-  <p>Using the tangent plane from Example 1, approximate the value of</p>
+<section id="example-4-approximate" class="example-group" aria-label="Example 4: Approximate $f(2.05,\, 0.92)$">
+  <h2>Example 4: Approximate \(f(2.05,\, 0.92)\)</h2>
+  <section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>Using the tangent plane from Example 2, approximate the value of</p>
 <p>\[f(2.05,\, 0.92) = \sqrt{25 - 4(2.05)^2 - (0.92)^2}\]</p>
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace: Use L(x,y) = f(2,1) + f_x(2,1)(x-2) + f_y(2,1)(y-1) with x = 2.05, y = 0.92." style="min-height:2in;">
@@ -209,7 +228,7 @@ window.MathJax = {
 </div>
 </section>
 
-<section aria-label="Differentials">
+<section id="differentials" aria-label="Differentials">
   <h2>Differentials</h2>
   <div><p>There is an equivalent way to think about linear approximation using <strong>differentials</strong> &mdash; the same idea from Calc I, extended to two variables.</p></div>
 <section class="defn-box" role="region" aria-label="Total Differential">
@@ -223,34 +242,32 @@ window.MathJax = {
 <li>\(dz\) is the change predicted by the tangent plane (the approximation)</li>
 <li>\(\Delta z = f(x_0 + \Delta x,\, y_0 + \Delta y) - f(x_0, y_0)\) is the actual change</li>
 <li>For small \(dx\) and \(dy\): \(\Delta z \approx dz\)</li>
-</ul></div>
+</ul>
 <table>
-<thead><tr><th scope="col"></th><th scope="col">Calc I</th><th scope="col">Calc III</th></tr></thead>
-<tbody>
+<tr><th></th><th>Calc I</th><th>Calc III</th></tr>
 <tr><td>Differential</td><td>\(dy = f'(x)\, dx\)</td><td>\(dz = f_x\, dx + f_y\, dy\)</td></tr>
 <tr><td>Meaning</td><td>Change in \(y\) along tangent <strong>line</strong></td><td>Change in \(z\) along tangent <strong>plane</strong></td></tr>
 <tr><td>Approximation</td><td>\(\Delta y \approx dy\)</td><td>\(\Delta z \approx dz\)</td></tr>
-</tbody>
-</table>
+</table></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Differentials give you the <strong>change</strong> in the output. Linear approximation gives you the <strong>new value</strong>. They're two sides of the same coin: \(L = f + dz\).</p></aside>
 </section>
 
-<section class="example-group" aria-label="Example 4: Differentials Approach">
-  <h2>Example 4: Differentials Approach</h2>
-  <section class="example-box" role="region" aria-label="Example 4">
-  <h3 class="example-title">Example 4</h3>
+<section id="example-5-differentials-approach" class="example-group" aria-label="Example 5: Differentials Approach">
+  <h2>Example 5: Differentials Approach</h2>
+  <section class="example-box" role="region" aria-label="Example 5">
+  <h3 class="example-title">Example 5</h3>
   <p>Use differentials to approximate \(f(2.05, 0.92)\) where \(f(x,y) = \sqrt{25 - 4x^2 - y^2}\).</p>
-<p>(Same problem as Example 3 &mdash; different method.)</p>
+<p>(Same problem as Example 4 &mdash; different method.)</p>
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace: Set dx = 0.05, dy = -0.08. Compute dz = f_x dx + f_y dy. Then f(2.05, 0.92) ≈ f(2,1) + dz." style="min-height:2in;">
   <div class="blank-prompt">Set dx = 0.05, dy = -0.08. Compute dz = f_x dx + f_y dy. Then f(2.05, 0.92) ≈ f(2,1) + dz.</div>
 </div>
 </section>
 
-<section class="example-group" aria-label="Your Turn: Differentials Practice">
+<section id="your-turn-differentials-practice" class="example-group" aria-label="Your Turn: Differentials Practice">
   <h2>Your Turn: Differentials Practice</h2>
-  <section class="example-box" role="region" aria-label="Example 5">
-  <h3 class="example-title">Example 5</h3>
+  <section class="example-box" role="region" aria-label="Example 6">
+  <h3 class="example-title">Example 6</h3>
   <p>The volume of a right circular cone is \(V = \frac{1}{3}\pi r^2 h\).</p>
 <p>If the radius is measured as \(r = 5\) cm and the height as \(h = 12\) cm, each with a possible error of \(\pm 0.1\) cm, use differentials to estimate the maximum error in the calculated volume.</p>
 </section>

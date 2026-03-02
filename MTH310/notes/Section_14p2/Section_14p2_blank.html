@@ -75,7 +75,8 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
     body { padding: 0; max-width: none; }
     .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     a { color: var(--accent-cyan); text-decoration: none; }
-    a::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="http"]::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="#"]::after { content: none; }
     figure img { max-height: 2.8in; }
     .skip-link { display: none; }
 }
@@ -110,48 +111,46 @@ window.MathJax = {
 </header>
 <hr aria-hidden="true">
 
-<section aria-label="Limits in Multiple Variables">
+<section id="limits-in-multiple-variables" aria-label="Limits in Multiple Variables">
   <h2>Limits in Multiple Variables</h2>
   <div><p>In Calc I, we asked: what happens to \(f(x)\) as \(x \to a\)?</p>
-<p>There were only <strong>two directions</strong> to approach from &mdash; left and right.</p></div>
-<div><p>In Calc III, we ask: what happens to \(f(x, y)\) as \((x, y) \to (a, b)\)?</p>
+<p>There were only <strong>two directions</strong> to approach from &mdash; left and right.</p>
+<p>In Calc III, we ask: what happens to \(f(x, y)\) as \((x, y) \to (a, b)\)?</p>
 <p>Now there are <strong>infinitely many paths</strong> to approach from &mdash; along lines, curves, spirals, any path you can imagine.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>This is the key difference: in 1D you check two directions. In 2D you must worry about <strong>every possible path</strong> to the point.</p></aside>
 </section>
 
-<section aria-label="Two Functions, Two Very Different Behaviors">
+<section id="two-functions-two-very-different-behaviors" aria-label="Two Functions, Two Very Different Behaviors">
   <h2>Two Functions, Two Very Different Behaviors</h2>
   <div><p>Let's compare what happens at the origin for two functions that both have the form \(\frac{0}{0}\) there.</p></div>
 <div class="two-col-print">
   <div><div><p>\[f(x,y) = \frac{\sin(x^2 + y^2)}{x^2 + y^2}\]</p></div>
 <figure>
   <img src="figures/sinc_clean.png" alt="3D surface of sin(x-squared + y-squared) over (x-squared + y-squared), a smooth bowl approaching height 1 at the origin.">
-  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+  <figcaption><a href="figures/sinc_clean.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure></div>
   <div><div><p>\[g(x,y) = \frac{x^2 - y^2}{x^2 + y^2}\]</p></div>
 <figure>
   <img src="figures/saddle_clean.png" alt="3D surface of (x-squared minus y-squared) over (x-squared plus y-squared), a saddle that twists between 1 and negative 1 at the origin.">
-  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+  <figcaption><a href="figures/saddle_clean.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure></div>
 </div>
 <div class="two-col-print">
   <div><figure>
   <img src="figures/sinc_contour.png" alt="Contour plot of sin(x-squared + y-squared) over (x-squared + y-squared) showing concentric circular contours converging to the same value at the origin.">
-  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
 </figure></div>
   <div><figure>
   <img src="figures/saddle_contour.png" alt="Contour plot of (x-squared minus y-squared) over (x-squared + y-squared) showing hyperbolic contours with value 1 along the x-axis and negative 1 along the y-axis.">
-  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
 </figure></div>
 </div>
 <div><p>\(f\) settles down to a single value (\(1\)) no matter how you approach the origin.</p>
 <p>\(g\) gives <strong>different values</strong> depending on your path &mdash; the limit <strong>does not exist</strong>.</p></div>
 </section>
 
-<section aria-label="The Formal Definition of a Multivariable Limit">
+<section id="the-formal-definition-of-a-multivariable-limit" aria-label="The Formal Definition of a Multivariable Limit">
   <h2>The Formal Definition of a Multivariable Limit</h2>
-  <section class="defn-box" role="region" aria-label="Definition 1: Limit of a Function of Two Variables">
-  <h3 class="defn-title">Definition 1: Limit of a Function of Two Variables</h3>
+  <section class="defn-box" role="region" aria-label="Limit of a Function of Two Variables">
+  <h3 class="defn-title">Limit of a Function of Two Variables</h3>
   <p>Let \(f\) be a function of two variables whose domain \(D\) includes points arbitrarily close to \((a, b)\). We say that the <strong>limit of \(f(x,y)\) as \((x,y)\) approaches \((a,b)\)</strong> is \(L\), and write</p>
 <p>\[\lim_{(x,y) \to (a,b)} f(x,y) = L\]</p>
 <p>if for every \(\varepsilon > 0\) there is a corresponding \(\delta > 0\) such that</p>
@@ -163,7 +162,7 @@ window.MathJax = {
 <div><p>In practice, we rarely use the \(\varepsilon\)-\(\delta\) definition directly. Instead, we develop <strong>strategies</strong> for showing limits exist or don't exist.</p></div>
 </section>
 
-<section aria-label="Strategy: Showing a Limit Does NOT Exist">
+<section id="strategy-showing-a-limit-does-not-exist" aria-label="Strategy: Showing a Limit Does NOT Exist">
   <h2>Strategy: Showing a Limit Does NOT Exist</h2>
   <div><p>If a limit exists, it must be the <strong>same value</strong> no matter which path you take to the point. So to show a limit <strong>does not</strong> exist, we just need to find trouble:</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p><strong>The Two-Path Test</strong></p>
@@ -179,7 +178,7 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p><strong>Warning:</strong> If two paths give the <strong>same</strong> value, that does <strong>not</strong> prove the limit exists. It just means those two paths agree. You would need to check <strong>all</strong> paths.</p></aside>
 </section>
 
-<section class="example-group" aria-label="Example 1: The Two-Path Test in Action">
+<section id="example-1-the-two-path-test-in-action" class="example-group" aria-label="Example 1: The Two-Path Test in Action">
   <h2>Example 1: The Two-Path Test in Action</h2>
   <section class="example-box" role="region" aria-label="Example 1">
   <h3 class="example-title">Example 1</h3>
@@ -190,7 +189,7 @@ window.MathJax = {
 </div>
 </section>
 
-<section class="example-group" aria-label="Example 2: When Simple Paths Aren't Enough">
+<section id="example-2-when-simple-paths-aren-t-enough" class="example-group" aria-label="Example 2: When Simple Paths Aren't Enough">
   <h2>Example 2: When Simple Paths Aren't Enough</h2>
   <section class="example-box" role="region" aria-label="Example 2">
   <h3 class="example-title">Example 2</h3>
@@ -201,7 +200,7 @@ window.MathJax = {
 </div>
 </section>
 
-<section class="example-group" aria-label="Your Turn: Test This Limit">
+<section id="your-turn-test-this-limit" class="example-group" aria-label="Your Turn: Test This Limit">
   <h2>Your Turn: Test This Limit</h2>
   <section class="example-box" role="region" aria-label="Example 3">
   <h3 class="example-title">Example 3</h3>
@@ -212,11 +211,11 @@ window.MathJax = {
 </div>
 </section>
 
-<section aria-label="Continuity of Multivariable Functions">
+<section id="continuity-of-multivariable-functions" aria-label="Continuity of Multivariable Functions">
   <h2>Continuity of Multivariable Functions</h2>
   <div><p>Continuity works just like Calc I &mdash; the limit equals the function value at the point.</p></div>
-<section class="defn-box" role="region" aria-label="Definition 1: Continuity at a Point">
-  <h3 class="defn-title">Definition 1: Continuity at a Point</h3>
+<section class="defn-box" role="region" aria-label="Continuity at a Point">
+  <h3 class="defn-title">Continuity at a Point</h3>
   <p>A function \(f\) of two variables is <strong>continuous at</strong> \((a, b)\) if:</p>
 <p>\[\lim_{(x,y) \to (a,b)} f(x,y) = f(a,b)\]</p>
 <p>This requires three things (same as Calc I):</p>
@@ -229,7 +228,7 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p><strong>Good news:</strong> Polynomials, rational functions (where defined), trig functions, exponentials, logarithms, and compositions of continuous functions are all continuous on their domains. Most functions you encounter are continuous wherever they're defined.</p></aside>
 </section>
 
-<section aria-label="Strategy: Showing a Limit DOES Exist">
+<section id="strategy-showing-a-limit-does-exist" aria-label="Strategy: Showing a Limit DOES Exist">
   <h2>Strategy: Showing a Limit DOES Exist</h2>
   <div><p>The two-path test can <strong>disprove</strong> a limit, but it can never <strong>prove</strong> one.</p>
 <p>To prove a limit exists, we need tools that handle <strong>all paths at once</strong>.</p></div>
@@ -242,7 +241,7 @@ window.MathJax = {
 <div><p>Both tools convert the multivariable problem into something we can handle with Calc I techniques.</p></div>
 </section>
 
-<section class="example-group" aria-label="Example 4: Proving a Limit Exists">
+<section id="example-4-proving-a-limit-exists" class="example-group" aria-label="Example 4: Proving a Limit Exists">
   <h2>Example 4: Proving a Limit Exists</h2>
   <section class="example-box" role="region" aria-label="Example 4">
   <h3 class="example-title">Example 4</h3>
@@ -253,7 +252,7 @@ window.MathJax = {
 </div>
 </section>
 
-<section class="example-group" aria-label="Your Turn: Prove or Disprove">
+<section id="your-turn-prove-or-disprove" class="example-group" aria-label="Your Turn: Prove or Disprove">
   <h2>Your Turn: Prove or Disprove</h2>
   <section class="example-box" role="region" aria-label="Example 5">
   <h3 class="example-title">Example 5</h3>

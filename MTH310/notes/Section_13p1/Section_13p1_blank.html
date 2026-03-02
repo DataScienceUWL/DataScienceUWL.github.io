@@ -75,7 +75,8 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
     body { padding: 0; max-width: none; }
     .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     a { color: var(--accent-cyan); text-decoration: none; }
-    a::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="http"]::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="#"]::after { content: none; }
     figure img { max-height: 2.8in; }
     .skip-link { display: none; }
 }
@@ -110,28 +111,27 @@ window.MathJax = {
 </header>
 <hr aria-hidden="true">
 
-<section aria-label="Vector Functions">
+<section id="vector-functions" aria-label="Vector Functions">
   <h2>Vector Functions</h2>
   <div><p>In Calc I/II, functions take a number in and give a number back: \(f(t) = t^2\).</p>
 <p>Now we let the output be a <strong>vector</strong> instead of a scalar.</p></div>
-<section class="defn-box" role="region" aria-label="Definition 1: Vector Function">
-  <h3 class="defn-title">Definition 1: Vector Function</h3>
+<section class="defn-box" role="region" aria-label="Vector Function">
+  <h3 class="defn-title">Vector Function</h3>
   <p>A <strong>vector function</strong> (or <strong>vector-valued function</strong>) is a function whose input is a scalar \(t\) and whose output is a vector:</p>
 <p>\[\vec{r}(t) = \langle f(t),\, g(t),\, h(t) \rangle = f(t)\,\mathbf{i} + g(t)\,\mathbf{j} + h(t)\,\mathbf{k}\]</p>
 <p>The functions \(f\), \(g\), \(h\) are called the <strong>component functions</strong>.</p>
 </section>
 <div><p>As \(t\) varies, the tip of \(\vec{r}(t)\) traces out a <strong>space curve</strong> \(C\).</p></div>
-<div class="desmos-link"><a href="https://www.desmos.com/3d/2afd86drie" target="_blank" rel="noopener">Animated Space Curve</a> &mdash; <span style="color:#666">An animated figure showing the space curve \(\vec{r}(t) = \langle \sin t,\, \cos t,\, \sin 2t \rangle\) with a position vector from the origin to the moving point.</span></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>A vector function is just a way of packaging <strong>parametric equations</strong> into a single object.</p></aside>
 </section>
 
-<section aria-label="Why Vector Functions?">
+<section id="why-vector-functions" aria-label="Why Vector Functions?">
   <h2>Why Vector Functions?</h2>
   <div><p>Think of \(t\) as <strong>time</strong>. Then \(\vec{r}(t)\) gives the <strong>position</strong> of a moving object at time \(t\).</p>
 <ul>
 <li>The path it traces is the <strong>trajectory</strong> (a space curve).</li>
-</ul></div>
-<div><p><strong>Applications everywhere:</strong></p>
+</ul>
+<p><strong>Applications everywhere:</strong></p>
 <ul>
 <li>Roller coasters, planetary orbits, particle physics</li>
 <li>Robot arm paths, drone flight plans</li>
@@ -140,36 +140,33 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p>Chapter 13 is about <strong>calculus on curves</strong> &mdash; the same derivative and integral ideas from Calc I, but now applied to vector functions.</p></aside>
 </section>
 
-<section aria-label="Example 1: Sketch $\vec{r}(t) = \langle t^3,\, t^2 \rangle$">
+<section id="example-1-sketch" aria-label="Example 1: Sketch $\vec{r}(t) = \langle t^3,\, t^2 \rangle$">
   <h2>Example 1: Sketch \(\vec{r}(t) = \langle t^3,\, t^2 \rangle\)</h2>
   <div><p><strong>Strategy for sketching a vector function:</strong></p>
 <ol>
 <li>Make a table of values</li>
 <li>Try to eliminate \(t\) to recognize the Cartesian curve</li>
 <li>Mark the direction of travel (increasing \(t\))</li>
-</ol></div>
-<div><p><strong>Step 1 &mdash; Make a table.</strong> Plug in a few values of \(t\):</p></div>
+</ol>
+<p><strong>Step 1 &mdash; Make a table.</strong> Plug in a few values of \(t\):</p>
 <table>
-<thead><tr><th scope="col">\(t\)</th><th scope="col">\(x = t^3\)</th><th scope="col">\(y = t^2\)</th></tr></thead>
-<tbody>
+<tr><th>\(t\)</th><th>\(x = t^3\)</th><th>\(y = t^2\)</th></tr>
 <tr><td>\(-2\)</td><td>\(-8\)</td><td>\(4\)</td></tr>
 <tr><td>\(-1\)</td><td>\(-1\)</td><td>\(1\)</td></tr>
 <tr><td>\(0\)</td><td>\(0\)</td><td>\(0\)</td></tr>
 <tr><td>\(1\)</td><td>\(1\)</td><td>\(1\)</td></tr>
 <tr><td>\(2\)</td><td>\(8\)</td><td>\(4\)</td></tr>
-</tbody>
 </table>
-<div><p><strong>Step 2 &mdash; Eliminate the parameter.</strong> From \(x = t^3\) we get \(t = x^{1/3}\), so \(y = (x^{1/3})^2 = x^{2/3}\).</p></div>
-<div><p><strong>Step 3 &mdash; Direction of travel.</strong> As \(t\) goes from \(-2\) to \(2\), the point moves left-to-right through the origin.</p></div>
+<p><strong>Step 2 &mdash; Eliminate the parameter.</strong> From \(x = t^3\) we get \(t = x^{1/3}\), so \(y = (x^{1/3})^2 = x^{2/3}\).</p>
+<p><strong>Step 3 &mdash; Direction of travel.</strong> As \(t\) goes from \(-2\) to \(2\), the point moves left-to-right through the origin.</p></div>
 <figure>
-  <img src="figures/parametric_2d.png" alt="A 2D parametric curve for r(t) = <t³, t²>. The curve has a cusp at the origin and extends to (-8, 4) on the left and (8, 4) on the right. The equation y = x^(2/3) is shown. Direction arrows indicate travel from left to right as t increases. Key points are marked at t = -2, -1, 0, 1, 2.
-">
-  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+  <img src="figures/parametric_2d.png" alt="A 2D parametric curve for r(t) = <t³, t²>. The curve has a cusp at the origin and extends to (-8, 4) on the left and (8, 4) on the right. The equation y = x^(2/3) is shown. Direction arrows indicate travel from left to right as t increases. Key points are marked at t = -2, -1, 0, 1, 2.">
+  <figcaption><a href="figures/parametric_2d.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
 <aside class="key-point" role="note" aria-label="Key point"><p>The curve \(y = x^{2/3}\) has a <strong>cusp</strong> at the origin. The parametrization tells us <em>which way</em> to travel along the curve.</p></aside>
 </section>
 
-<section aria-label="Your Turn: Sketch $\vec{r}(t) = \langle 2\cos t,\, 2\sin t \rangle$">
+<section id="your-turn-sketch" aria-label="Your Turn: Sketch $\vec{r}(t) = \langle 2\cos t,\, 2\sin t \rangle$">
   <h2>Your Turn: Sketch \(\vec{r}(t) = \langle 2\cos t,\, 2\sin t \rangle\)</h2>
   <div><p>Use the same strategy: make a table, eliminate \(t\), identify the curve.</p></div>
 <div class="blank-space" role="region" aria-label="Student workspace: Try it before looking at the solution." style="min-height:2.5in;">
@@ -177,11 +174,11 @@ window.MathJax = {
 </div>
 </section>
 
-<section aria-label="Space Curves in 3D">
+<section id="space-curves-in-3d" aria-label="Space Curves in 3D">
   <h2>Space Curves in 3D</h2>
   <div><p>In 3D, a vector function \(\vec{r}(t) = \langle f(t), g(t), h(t) \rangle\) traces out a <strong>space curve</strong>.</p>
-<p>We can still make tables, but now we plot in \(xyz\)-space.</p></div>
-<div><p><strong>Common strategy:</strong> Look at what the components tell you.</p>
+<p>We can still make tables, but now we plot in \(xyz\)-space.</p>
+<p><strong>Common strategy:</strong> Look at what the components tell you.</p>
 <ul>
 <li>Do any components involve trig? That hints at circular motion.</li>
 <li>Is one component linear (like \(y = t\))? That means steady motion in one direction.</li>
@@ -190,36 +187,33 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p>The component functions are the clues &mdash; they tell you what surface the curve lives on and how it moves.</p></aside>
 </section>
 
-<section aria-label="Example 2: Sketch $\vec{r}(t) = \langle \sin \pi t,\, t,\, \cos \pi t \rangle$">
+<section id="example-2-sketch" aria-label="Example 2: Sketch $\vec{r}(t) = \langle \sin \pi t,\, t,\, \cos \pi t \rangle$">
   <h2>Example 2: Sketch \(\vec{r}(t) = \langle \sin \pi t,\, t,\, \cos \pi t \rangle\)</h2>
-  <div><p><strong>Step 1 &mdash; Identify the cylinder.</strong> Look at which components involve trig:</p></div>
-<div><p>\(x^2 + z^2 = \sin^2(\pi t) + \cos^2(\pi t) = 1\)</p></div>
-<div><p>The curve lives on the cylinder \(x^2 + z^2 = 1\) (radius 1, centered on the \(y\)-axis).</p></div>
-<div><p><strong>Step 2 &mdash; What does \(y\) do?</strong> \(y = t\) increases steadily &rarr; the curve spirals <strong>upward</strong> along the \(y\)-axis.</p></div>
-<div><p><strong>Step 3 &mdash; How fast does it wind?</strong> The argument \(\pi t\) completes one full cycle when \(\pi t\) goes from \(0\) to \(2\pi\), i.e., when \(t\) goes from \(0\) to \(2\). So <strong>one full turn every 2 units</strong> along the \(y\)-axis.</p></div>
+  <div><p><strong>Step 1 &mdash; Identify the cylinder.</strong> Look at which components involve trig:</p>
+<p>\(x^2 + z^2 = \sin^2(\pi t) + \cos^2(\pi t) = 1\)</p>
+<p>The curve lives on the cylinder \(x^2 + z^2 = 1\) (radius 1, centered on the \(y\)-axis).</p>
+<p><strong>Step 2 &mdash; What does \(y\) do?</strong> \(y = t\) increases steadily \(\rightarrow\) the curve spirals <strong>upward</strong> along the \(y\)-axis.</p>
+<p><strong>Step 3 &mdash; How fast does it wind?</strong> The argument \(\pi t\) completes one full cycle when \(\pi t\) goes from \(0\) to \(2\pi\), i.e., when \(t\) goes from \(0\) to \(2\). So <strong>one full turn every 2 units</strong> along the \(y\)-axis.</p>
 <table>
-<thead><tr><th scope="col">\(t\)</th><th scope="col">\(x = \sin\pi t\)</th><th scope="col">\(y = t\)</th><th scope="col">\(z = \cos\pi t\)</th></tr></thead>
-<tbody>
+<tr><th>\(t\)</th><th>\(x = \sin\pi t\)</th><th>\(y = t\)</th><th>\(z = \cos\pi t\)</th></tr>
 <tr><td>\(0\)</td><td>\(0\)</td><td>\(0\)</td><td>\(1\)</td></tr>
 <tr><td>\(\tfrac{1}{2}\)</td><td>\(1\)</td><td>\(\tfrac{1}{2}\)</td><td>\(0\)</td></tr>
 <tr><td>\(1\)</td><td>\(0\)</td><td>\(1\)</td><td>\(-1\)</td></tr>
 <tr><td>\(\tfrac{3}{2}\)</td><td>\(-1\)</td><td>\(\tfrac{3}{2}\)</td><td>\(0\)</td></tr>
 <tr><td>\(2\)</td><td>\(0\)</td><td>\(2\)</td><td>\(1\)</td></tr>
-</tbody>
-</table>
+</table></div>
 <figure>
-  <img src="figures/helix.png" alt="A 3D helix r(t) = <sin(πt), t, cos(πt)> spiraling along the y-axis on a translucent cylinder x² + z² = 1. The helix completes one full turn every 2 units in the y-direction. Key points are marked at t = 0, 0.5, 1, 1.5, and 2.
-">
-  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+  <img src="figures/helix.png" alt="A 3D helix r(t) = <sin(πt), t, cos(πt)> spiraling along the y-axis on a translucent cylinder x² + z² = 1. The helix completes one full turn every 2 units in the y-direction. Key points are marked at t = 0, 0.5, 1, 1.5, and 2.">
+  <figcaption><a href="figures/helix.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
 <aside class="key-point" role="note" aria-label="Key point"><p>This is a <strong>helix</strong> &mdash; trig + trig + linear = spiral. Think of wrapping a string around a paper towel tube.</p></aside>
 </section>
 
-<section aria-label="Where Does a Curve Meet a Surface?">
+<section id="where-does-a-curve-meet-a-surface" aria-label="Where Does a Curve Meet a Surface?">
   <h2>Where Does a Curve Meet a Surface?</h2>
   <div><p>A common question: <strong>where does a space curve intersect a surface?</strong></p>
-<p>The strategy is straightforward:</p></div>
-<div><ol>
+<p>The strategy is straightforward:</p>
+<ol>
 <li><strong>Substitute</strong> the components \(x = f(t)\), \(y = g(t)\), \(z = h(t)\) into the surface equation.</li>
 <li><strong>Solve</strong> the resulting equation for \(t\).</li>
 <li><strong>Plug back</strong> into \(\vec{r}(t)\) to get the point(s).</li>
@@ -227,26 +221,25 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p>This reduces a 3D geometry problem to <strong>solving an equation in one variable</strong> \(t\).</p></aside>
 </section>
 
-<section aria-label="Example 3: Where does $\vec{r}(t) = \langle \sin t,\, \cos t,\, t \rangle$ meet $x^2 + y^2 + z^2 = 5$?">
+<section id="example-3-where-does-meet" aria-label="Example 3: Where does $\vec{r}(t) = \langle \sin t,\, \cos t,\, t \rangle$ meet $x^2 + y^2 + z^2 = 5$?">
   <h2>Example 3: Where does \(\vec{r}(t) = \langle \sin t,\, \cos t,\, t \rangle\) meet \(x^2 + y^2 + z^2 = 5\)?</h2>
-  <div><p><strong>Step 1 &mdash; Substitute</strong> the components into the sphere equation:</p></div>
-<div><p>\(\sin^2 t + \cos^2 t + t^2 = 5\)</p></div>
-<div><p><strong>Step 2 &mdash; Simplify.</strong> The Pythagorean identity \(\sin^2 t + \cos^2 t = 1\) collapses two terms:</p></div>
-<div><p>\(1 + t^2 = 5 \quad\Rightarrow\quad t^2 = 4 \quad\Rightarrow\quad t = \pm 2\)</p></div>
-<div><p><strong>Step 3 &mdash; Find the points.</strong> Plug \(t = 2\) and \(t = -2\) back into \(\vec{r}(t)\):</p>
+  <div><p><strong>Step 1 &mdash; Substitute</strong> the components into the sphere equation:</p>
+<p>\(\sin^2 t + \cos^2 t + t^2 = 5\)</p>
+<p><strong>Step 2 &mdash; Simplify.</strong> The Pythagorean identity \(\sin^2 t + \cos^2 t = 1\) collapses two terms:</p>
+<p>\(1 + t^2 = 5 \quad\Rightarrow\quad t^2 = 4 \quad\Rightarrow\quad t = \pm 2\)</p>
+<p><strong>Step 3 &mdash; Find the points.</strong> Plug \(t = 2\) and \(t = -2\) back into \(\vec{r}(t)\):</p>
 <ul>
 <li>\(\vec{r}(2) = \langle \sin 2,\, \cos 2,\, 2 \rangle \approx \langle 0.909,\, {-0.416},\, 2 \rangle\)</li>
 <li>\(\vec{r}(-2) = \langle \sin(-2),\, \cos(-2),\, -2 \rangle \approx \langle {-0.909},\, {-0.416},\, -2 \rangle\)</li>
 </ul></div>
 <figure>
-  <img src="figures/helix_sphere.png" alt="A 3D helix r(t) = <sin(t), cos(t), t> spiraling upward through a translucent sphere x² + y² + z² = 5 (radius √5). The helix intersects the sphere at exactly two points: t = 2 (upper) and t = -2 (lower), marked with red diamond markers.
-">
-  <figcaption><a href="https://www.desmos.com/3d" target="_blank" class="interactive-link">Desmos 3D</a></figcaption>
+  <img src="figures/helix_sphere.png" alt="A 3D helix r(t) = <sin(t), cos(t), t> spiraling upward through a translucent sphere x² + y² + z² = 5 (radius √5). The helix intersects the sphere at exactly two points: t = 2 (upper) and t = -2 (lower), marked with red diamond markers.">
+  <figcaption><a href="figures/helix_sphere.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
 <aside class="key-point" role="note" aria-label="Key point"><p>The helix pierces the sphere at exactly <strong>two points</strong>, at \(t = \pm 2\). The Pythagorean identity did the heavy lifting!</p></aside>
 </section>
 
-<section aria-label="Your Turn: Where does $\vec{r}(t) = \langle t,\, 2t,\, 3t \rangle$ meet $x^2 + y^2 + z^2 = 14$?">
+<section id="your-turn-where-does-meet" aria-label="Your Turn: Where does $\vec{r}(t) = \langle t,\, 2t,\, 3t \rangle$ meet $x^2 + y^2 + z^2 = 14$?">
   <h2>Your Turn: Where does \(\vec{r}(t) = \langle t,\, 2t,\, 3t \rangle\) meet \(x^2 + y^2 + z^2 = 14\)?</h2>
   <div><p>Use the same three steps: substitute, solve for \(t\), plug back in.</p></div>
 <div class="blank-space" role="region" aria-label="Student workspace: Try it before looking at the solution." style="min-height:2.5in;">
