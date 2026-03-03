@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6.2 Inference for Single Means | STAT 145 Coursepack</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/coursepack.css">
+<script>
+MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<header>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../index.html">STAT 145 Coursepack</a>
+    <span class="sep" aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">6.2 Inference for Single Means</span>
+  </nav>
+</header>
+<main id="main-content">
+<h1>6.2 Inference for Single Means</h1>
+
+<div class="key-concepts">
+<h2>Key Concepts</h2>
+<ul>
+<li><p>Find the mean and standard error for a distribution of sample means</p></li>
+<li><p>Recognize when a <span class="math inline">\(t\)</span>-distribution is an appropriate model for a distribution of sample means</p></li>
+<li><p>Find endpoints and probabilities for a <span class="math inline">\(t\)</span>-distribution</p></li>
+<li><p>Use a <span class="math inline">\(t\)</span>-distribution, when appropriate, to compute a confidence interval for a population mean</p></li>
+<li><p>Use a <span class="math inline">\(t\)</span>-distribution, when appropriate, to test a hypothesis about a population mean</p></li>
+</ul>
+</div>
+<h2 class="unnumbered" id="distribution-of-a-single-mean">Distribution of a single mean</h2>
+<p>For quantitative data, the goal is often to learn about a population mean from a sample mean. First, the distribution of all sample means (<span class="math inline">\(\overline{x}\)</span>) is centered at the population mean (<span class="math inline">\(\mu\)</span>). In chapter 3, we discussed estimating the standard error of a statistic using a bootstrap distribution, but we can also estimate the standard error for a sample mean by <span class="math display">\[\begin{aligned}
+    SE(\overline{x}) = \frac{ \sigma }{ \sqrt { n }}
+\end{aligned}\]</span> where <span class="math inline">\(\sigma\)</span> is the population standard deviation, and <span class="math inline">\(n\)</span> is the sample size. Finally, if the sample size is large enough, the CLT says that the distribution of the sample mean will follow a normal distribution.</p>
+<aside class="margin-note" role="note">
+<p>We estimate the standard error of <span class="math inline">\(\overline{x}\)</span> with <span class="math inline">\(\frac{s}{\sqrt{n}}\)</span></p>
+</aside>
+<p>For means, we almost never know the population standard deviation (<span class="math inline">\(\sigma\)</span>), so we estimate it by using the sample standard deviation (<span class="math inline">\(s\)</span>). For small samples, <span class="math inline">\(s\)</span> tends to underestimate <span class="math inline">\(\sigma\)</span> (i.e. <span class="math inline">\(s&lt;\sigma\)</span> more often than not). Because of this, when we use <span class="math inline">\(s\)</span> instead of <span class="math inline">\(\sigma\)</span>, <span class="math inline">\(\overline{x}\)</span> no longer follows a normal distribution but has a <span class="math inline">\(t\)</span>-distribution instead.</p>
+<h3 class="unnumbered" id="the-t-distribution">The <span class="math inline">\(t\)</span>-distribution</h3>
+<p>Back in the early 1900s, a man named William Sealy Gosset was working for the Guinness brewery. During his career at Guinness, he was using statistics to select the best yielding varieties of barley for brewing. At the time Guinness had forbidden any of its employees from publishing in scientific journals. So, Gosset published his findings, a new statistical distribution called the <span class="math inline">\(t\)</span>-distribution under the name Student. The <span class="math inline">\(t\)</span>-distribution is based on a new parameter called the degrees of freedom (d.f.).</p>
+<aside class="margin-note" role="note">
+<p><span class="math inline">\(t_{n - 1}\)</span> means a <span class="math inline">\(t\)</span> distribution with <span class="math inline">\(n - 1\)</span> degrees of freedom</p>
+</aside>
+<p>What he found is that provided we have met one of two conditions, then <span class="math display">\[\begin{aligned}
+    t = \frac{ \overline{x} - \mu }{ s / \sqrt{n} } \sim t_{n - 1},
+\end{aligned}\]</span> or <span class="math inline">\(t\)</span> follows a <span class="math inline">\(t\)</span>-distribution with <span class="math inline">\(n - 1\)</span> degrees of freedom. There are two possible ways you can justify using the <span class="math inline">\(t\)</span>-distribution for means.</p>
+<ol>
+<li><p>For a large enough sample size (<span class="math inline">\(n \ge 30\)</span>), you can use the <span class="math inline">\(t\)</span>-distribution</p>
+<aside class="margin-note" role="note">
+<p>To use the <span class="math inline">\(t\)</span>-distribution, you need either</p>
+<ul>
+<li><p><span class="math inline">\(n \ge 30\)</span> or</p></li>
+<li><p>a population that is approximately normal</p></li>
+</ul>
+</aside></li>
+<li><p>If <span class="math inline">\(n &lt; 30\)</span>, then the <span class="math inline">\(t\)</span>-distribution only is a good approximation if the population is approximately normal. We can check this by plotting the sample and making sure it appears normal.</p></li>
+</ol>
+<p>Although the <span class="math inline">\(t\)</span>-distribution looks a lot like the normal distribution in that it is symmetric and bell-shaped, the <span class="math inline">\(t\)</span>-distribution has heavier tails (and shorter peak) than the normal distribution. This means that <span class="math inline">\(t\)</span> quantiles will be a bit larger than normal quantiles. This helps offset using <span class="math inline">\(s\)</span> in place of <span class="math inline">\(\sigma\)</span>. As <span class="math inline">\(n \rightarrow \infty\)</span>, the <span class="math inline">\(t\)</span>-distribution becomes closer and closer to the standard normal distribution. For example, the quantiles that place 95% in the middle of the distribution for <span class="math inline">\(t_5\)</span> are <span class="math inline">\(\pm2.571\)</span>, but for <span class="math inline">\(t_{100}\)</span> they are <span class="math inline">\(\pm1.984\)</span> which is much closer to the normal values of <span class="math inline">\(\pm1.96\)</span>.</p>
+<section class="example-box">
+<h3>Example 6.2.1: Describe the sampling distribution</h3>
+<p>For each of the following questions, identify whether or not a <span class="math inline">\(t\)</span>-distribution would be appropriate. If so, identify the number of degrees of freedom that you would use for the <span class="math inline">\(t\)</span>-distribution.</p>
+<ol>
+<li><p>Samples of size <span class="math inline">\(n = 10\)</span>, from a population that is approximately normal.</p></li>
+<li><p>Samples of size <span class="math inline">\(n = 15\)</span>, from a population that is heavily skewed to the right.</p></li>
+<li><p>Samples of size <span class="math inline">\(n = 50\)</span>, from a population that is heavily skewed to the left.</p></li>
+</ol>
+
+</section>
+<h2 class="unnumbered" id="ci-for-a-single-mean">CI for a single mean</h2>
+<aside class="margin-note" role="note">
+<p>We can only use the <span class="math inline">\(t\)</span>-distribution for confidence intervals if</p>
+<ul>
+<li><p><span class="math inline">\(n \ge 30\)</span> or</p></li>
+<li><p>the population is approximately normal</p></li>
+</ul>
+</aside>
+<p>Provided that the sample size is large enough (<span class="math inline">\(n \ge 30\)</span>) or the population is approximately normal, a confidence interval for a population average <span class="math inline">\(\mu\)</span> can be constructed using <span class="math display">\[\begin{aligned}
+    \overline{x} \pm t^* \frac{ s }{ \sqrt{ n }}
+\end{aligned}\]</span> where <span class="math inline">\(\overline{x}\)</span> is the sample average and <span class="math inline">\(t^*\)</span> is the appropriate confidence multiplier from a <span class="math inline">\(t_{n-1}\)</span> distribution. To find the appropriate <span class="math inline">\(t^*\)</span> for the confidence interval for a population average, we need to use technology (StatKey, applet, calculator) to find the corresponding endpoints for the confidence interval.</p>
+<section class="example-box">
+<h3>Example 6.2.2: Triathlon Heart Rates</h3>
+<p>The article “Cardiovascular and Thermal Response of Triathlon Performance" reports on a research study involving nine male triathletes. Maximum heart rate (beats/min) was recorded during performance of each of the three events. For swimming, the recorded values were <span class="math inline">\(178, 182, 184, 184, 188, 190, 192, 196, 198\)</span>.</p>
+<ol>
+<li><p>What is the variable in this study? Is it categorical or quantitative?</p>
+<div class="answer-space" aria-label="Space for your answer"></div></li>
+<li><p>What requirement is needed to make it appropriate to use the <span class="math inline">\(t\)</span> confidence interval for this data?</p>
+<div class="answer-space" aria-label="Space for your answer"></div></li>
+<li><p>Compute a 99% confidence interval for the mean heart rate of triathletes when swimming.</p>
+<div class="answer-space" aria-label="Space for your answer"></div></li>
+<li><p>Provide an interpretation for your interval in c).</p>
+<div class="answer-space" aria-label="Space for your answer"></div></li>
+<li><p>If we had calculated a 90% confidence interval instead of a 99% confidence interval, would it have been larger or smaller than the 99% confidence interval? Explain.</p>
+<div class="answer-space" aria-label="Space for your answer"></div></li>
+</ol>
+
+</section>
+<section class="example-box">
+<h3>Example 6.2.3: Dairy cows</h3>
+<p>A study of 66 dairy cows found that the mean milk yield was 12.5 kg per milking with a standard deviation of 4.3 kg per milking.</p>
+<ol>
+<li><p>Compute a 95% confidence interval for the average milk yield in the population.</p>
+<div class="answer-space" aria-label="Space for your answer"></div></li>
+<li><p>Is it plausible that the population mean milk yield is 11 kg per milking?</p></li>
+<li><p>If the mean and standard deviation were based off a sample of 660 cows instead of 66, how would the 95% interval change?</p></li>
+</ol>
+
+</section>
+<h2 class="unnumbered" id="hypothesis-test-for-a-single-mean">Hypothesis test for a single mean</h2>
+<aside class="margin-note" role="note">
+<p>Remember, <span class="math inline">\(t_{n - 1}\)</span> means a <span class="math inline">\(t\)</span> distribution with <span class="math inline">\(n - 1\)</span> degrees of freedom</p>
+</aside>
+<p>Provided that the sample size is large enough (<span class="math inline">\(n \ge 30\)</span>) or the population is approximately normal, then according to the CLT <span class="math display">\[\begin{aligned}
+    t = \frac{ \overline{x} - \mu }{ s / \sqrt{n}} \sim t_{n - 1}.
+\end{aligned}\]</span></p>
+<p>We can use this fact to conduct a hypothesis test:</p>
+<h3 class="unnumbered" id="step-1-check-conditions-for-the-test">Step 1: Check conditions for the test</h3>
+<aside class="margin-note" role="note">
+<p>We can only use the <span class="math inline">\(t\)</span>-distribution for confidence intervals if</p>
+<ul>
+<li><p><span class="math inline">\(n \ge 30\)</span> or</p></li>
+<li><p>the population is approximately normal.</p></li>
+</ul>
+</aside>
+<p>Check whether either <span class="math inline">\(n \ge 30\)</span> or the population is approximately normal (via graph).</p>
+<h3 class="unnumbered" id="step-2-state-the-hypotheses">Step 2: State the hypotheses</h3>
+<p>For a single mean, the null hypothesis always has the form<br />
+<span class="math inline">\(H_0: \mu = \mu_0\)</span> where <span class="math inline">\(\mu_0\)</span> is a number that represents the averages claimed or <em>status quo</em> value. The alternative hypothesis has one of the following three forms: <span class="math inline">\(H_a: \mu &lt; \mu_0\)</span>, <span class="math inline">\(H_a: \mu &gt; \mu_0\)</span>, or <span class="math inline">\(H_a: \mu \neq \mu_0\)</span>.</p>
+<h3 class="unnumbered" id="step-3-calculate-the-test-statistic">Step 3: Calculate the test statistic</h3>
+<p>To conduct the hypothesis test using the CLT, we use a standardized test statistic of <span class="math display">\[\begin{aligned}
+    t = \frac{ \overline{x} - \mu_0 }{s / \sqrt{n}}
+\end{aligned}\]</span> which follows a <span class="math inline">\(t_{n-1}\)</span> distribution.</p>
+<h3 class="unnumbered" id="step-4-find-the-p-value">Step 4: Find the <span class="math inline">\(p\)</span>-value</h3>
+<p>To find the <span class="math inline">\(p\)</span>-value, you must use technology to find what proportion of the <span class="math inline">\(t\)</span>-distribution is more extreme than the test statistic (in the direction of the alternative hypothesis). If your alternative is two-sided, then you multiply the one-sided <span class="math inline">\(p\)</span>-value by 2.</p>
+<h3 class="unnumbered" id="step-5-state-decision-and-interpret-in-the-context-of-the-problem">Step 5: State decision and interpret in the context of the problem</h3>
+<ul>
+<li><p>If <span class="math inline">\(p\)</span>-value <span class="math inline">\(&lt; \alpha\)</span>, we <em>reject</em> <span class="math inline">\(H_0\)</span> and have significant evidence to suggest that <span class="math inline">\(H_a\)</span> is correct.</p></li>
+<li><p>If <span class="math inline">\(p\)</span>-value <span class="math inline">\(\ge \alpha\)</span>, we <em>fail to reject</em> <span class="math inline">\(H_0\)</span> and do not have significant evidence to suggest that <span class="math inline">\(H_a\)</span> is correct.</p></li>
+</ul>
+<p>You should <em>always</em> write your interpretation in the context of the original hypothesis. Sketches to illustrate the <span class="math inline">\(p\)</span>-value are similar to what we saw for the previous case of the test for a proportion.</p>
+<section class="example-box">
+<h3>Example 6.2.4: How much is left!?</h3>
+<p>Have you ever been frustrated because you could not get a container of some sort to release the last bit of its contents? The article “Shake, Rattle, and Squeeze: How Much is Left in That Container?" (<em>Consumer Reports,</em> May 2009: 8) reported on an investigation of this issue for various consumer products. In a random sample of five 6.0 ounce tubes of toothpaste from a particular brand and squeeze them until no more toothpaste will come out. Then each tube is cut open and the amount remaining is weighed. For this sample, the mean and standard deviation of the amount of toothpaste remaining (in ounces) was 0.502 and 0.102, respectively. Suppose the toothpaste manufacturer claims that it’s packaging allows at least 90% of its contents to be released. Conduct a hypothesis test (using <span class="math inline">\(\alpha=0.05\)</span>) to test the manufacturer’s claim. You may assume that the remaining amounts of toothpaste are approximately normally distributed.</p>
+
+</section>
+<section class="example-box">
+<h3>Example 6.2.5: Ski Patrol: Avalanches</h3>
+<p>Snow avalanches can be a real problem for travelers in the western United States and Canada. A very common type of avalanche is called the slab avalanche. These have been studied extensively by David McClung, a professor of civil engineering at the University of British Columbia. Slab avalanches studied in Canada had an average thickness of 67 (in cm) (<em>Avalanche Handbook</em>, by David McClung and P. Schaerer.) The ski patrol at Vail, Colorado, is studying slab avalanches in their region. A random sample of avalanches in spring gave the following thicknesses (in cm).</p>
+<table>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">59</td>
+<td style="text-align: center;">51</td>
+<td style="text-align: center;">76</td>
+<td style="text-align: center;">38</td>
+<td style="text-align: center;">65</td>
+<td style="text-align: center;">54</td>
+<td style="text-align: center;">49</td>
+<td style="text-align: center;">62</td>
+<td style="text-align: center;">68</td>
+<td style="text-align: center;">55</td>
+<td style="text-align: center;">64</td>
+<td style="text-align: center;">67</td>
+<td style="text-align: center;">63</td>
+<td style="text-align: center;">74</td>
+<td style="text-align: center;">65</td>
+<td style="text-align: center;">79</td>
+</tr>
+</tbody>
+</table>
+<p>Assuming that slab thickness has an approximately normal distribution, is there evidence that the slab thickness in the Vail region differs from that in Canada?</p>
+
+</section>
+<h2 class="unnumbered" id="assessing-model-conditions">Assessing model conditions</h2>
+<aside class="margin-note" role="note">
+<p>The <span class="math inline">\(t\)</span>-test is <em>robust</em> to lack of normality, but we still need to see if normality is a reasonable assumption.</p>
+</aside>
+<p>In the examples above, we’ve either assumed that the population values were normally distributed or had large enough sample sizes to assume normality. These assumptions aren’t always apparent (or known) in research studies. It is important to investigate whether normality is reasonable before performing a statistical test. The <span class="math inline">\(t\)</span>-test is <em>robust</em> to lack of normality, so when we check this condition we are looking for clear evidence that the distribution is non-normal. If normality is reasonable, we can proceed with a <span class="math inline">\(t\)</span>-test.</p>
+<aside class="margin-note" role="note">
+<p>Create a histogram/dot plot or a normal probability plot to assess the normality condition for a <span class="math inline">\(t\)</span>-test.</p>
+</aside>
+<p>There are two primary ways that we can check for normality: histograms/dot plots or normal probability plots. For histograms/dot plots, simply create a histogram/dot plot of the sample data and determine whether normality is reasonable (if the sample data is approximately normal, then normality is reasonable). Normal probability plots are commonly seen when using statistical software (such as SPSS). They are created by first ordering the sample data from smallest to largest then comparing these ordered sample data to percentiles of the normal distribution. This information is plotted on an scatterplot as points. If the resulting graph follows a straight line (that goes through the origin), we can say that the normality assumption is reasonable. The figures below provide some examples of normal probability plots and their corresponding histograms.</p>
+<figure class="coursepack-figure">
+<img src="../images/sec6-0406qqplot_hists.png" alt="Normal probability plots and corresponding histograms showing different distributional shapes">
+<figcaption>Normal probability plots (left) and their corresponding histograms (right)</figcaption>
+</figure>
+<section class="example-box">
+<h3>Example 6.2.6: STAT 145 student data</h3>
+<ol>
+<li><p>Pick a quantitative variable to compute a 95% confidence interval for using SPSS. Redo using 90%. To use the <span class="math inline">\(t\)</span>-distribution for inference for our data set, do we need to check for normality? Regardless of your answer, produce a normal probability plot for the variable and comment on the distributional shape that is suggested by the plot.</p>
+<div class="answer-space" aria-label="Space for your answer"></div></li>
+<li><p>Pick a quantitative variable to do a hypothesis test for. For this variable take a guess as to what the population value might be to decide on the null value.</p></li>
+</ol>
+
+</section>
+<p><strong>Memorization group activity part 1</strong></p>
+<div class="exercises-box">
+<h3>Suggested Exercises</h3>
+<p>(6.2): 6.63, 6.65, 6.67, 6.69, 6.75, 6.77, 6.79, 6.91, 6.93, 6.95, 6.121, 6.123</p>
+</div>
+
+
+</main>
+</body>
+</html>
