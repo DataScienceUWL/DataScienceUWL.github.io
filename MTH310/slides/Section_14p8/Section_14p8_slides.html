@@ -537,14 +537,19 @@ Reveal.on('ready', () => {
     var plbClose = plb.querySelector('.plb-close');
     var plbContent = plb.querySelector('.plb-content');
     var triggerImg = null;
+    var currentBlobUrl = null;
 
-    function openPlotlyLightbox(src) {
+    function openPlotlyLightbox(blobUrl) {
+        // Revoke any previous blob URL
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); }
+        currentBlobUrl = blobUrl;
         var iframe = plbContent.querySelector('iframe');
         if (!iframe) {
             iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:80vh;border:none;background:#fff;';
             plbContent.appendChild(iframe);
         }
-        iframe.src = src;
+        iframe.src = blobUrl;
         plb.classList.add('active');
         plbClose.focus();
     }
@@ -553,6 +558,7 @@ Reveal.on('ready', () => {
         var iframe = plbContent.querySelector('iframe');
         if (iframe) iframe.src = '';   // Unloads WebGL context immediately
         plb.classList.remove('active');
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
         if (triggerImg) { triggerImg.focus(); triggerImg = null; }
     }
 
@@ -561,8 +567,23 @@ Reveal.on('ready', () => {
         if (!img) return;
         e.stopPropagation();
         triggerImg = img;
-        // Use the relative path directly — works on GitHub Pages and local opens
-        openPlotlyLightbox(img.dataset.plotlySrc);
+        // The companion .html is a bare Plotly div fragment (no CDN script).
+        // Fetch it and wrap in a complete page so it renders in the iframe.
+        fetch(img.dataset.plotlySrc)
+            .then(function(r) { return r.text(); })
+            .then(function(fragment) {
+                var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+                    '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"><\/script>' +
+                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;}' +
+                    '.plotly-graph-div{width:100vw!important;height:100vh!important;}</style>' +
+                    '</head><body>' + fragment + '</body></html>';
+                var blob = new Blob([html], {type: 'text/html'});
+                openPlotlyLightbox(URL.createObjectURL(blob));
+            })
+            .catch(function() {
+                // Fallback: open in new tab
+                window.open(img.dataset.plotlySrc, '_blank');
+            });
     });
 
     plbClose.addEventListener('click', closePlotlyLightbox);
