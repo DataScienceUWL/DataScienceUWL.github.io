@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz 4 - Differentials, Chain Rule (Spring 2026)</title>
+
+  <!-- MathJax 3 Configuration with custom macros -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['\\(','\\)']],
+        displayMath: [['\\[','\\]']],
+        processEscapes: true,
+        packages: {'[+]': ['ams', 'boldsymbol']},
+        macros: {
+          vec: ['{\\mathbf{#1}}', 1],
+          avec: ['{\\overrightarrow{#1}}', 1],
+          myvec: ['{\\overset{\\rightharpoonup}{#1}}', 1],
+          ds: '{\\displaystyle}',
+          ra: '{\\rightarrow}',
+          R: '{\\mathbb{R}}',
+          C: '{\\mathbb{C}}',
+          threevecl: ['{\\langle #1, #2, #3 \\rangle}', 3],
+          twovecl: ['{\\langle #1, #2 \\rangle}', 2],
+          pp: ['{\\frac{\\partial #1}{\\partial #2}}', 2],
+          threevec: ['{\\begin{bmatrix} #1 \\\\ #2 \\\\ #3 \\end{bmatrix}}', 3],
+          twovec: ['{\\begin{bmatrix} #1 \\\\ #2 \\end{bmatrix}}', 2],
+          fourvec: ['{\\begin{bmatrix} #1 \\\\ #2 \\\\ #3 \\\\ #4 \\end{bmatrix}}', 4]
+        }
+      },
+      options: {
+        renderActions: {
+          addMenu: []
+        }
+      },
+      startup: {
+        ready: function() {
+          MathJax.startup.defaultReady();
+        }
+      }
+    };
+  </script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+
+  <link rel="stylesheet" href="accessible.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-nav">Skip to main content</a>
+  <main id="main-content" role="main">
+<header class="quiz-header" role="banner">
+  <h1 class="doc-header">
+    <span class="quiz-title">Quiz 4</span>
+    <span class="course-info">MTH 310</span>
+  </h1>
+  <p class="quiz-instructions"><strong>Instructions.</strong> (15 points) Sections 14.4--14.5. Show relevant work for full credit.</p>
+</header>
+<section class="question" role="region" aria-label="Question 1">
+  <div class="question-header">
+    <span class="question-number">Question 1</span>
+    <span class="points-badge">[8 pts]</span>
+  </div>
+<p>A grain silo consists of a cylinder of radius <span
+class="math inline">\(r = 3\)</span> m and height <span
+class="math inline">\(h = 8\)</span> m topped by a hemisphere of radius
+<span class="math inline">\(r = 3\)</span> m. The silo is built from
+wooden planks that are <span class="math inline">\(0.05\)</span> m
+thick.</p>
+<ol type="a">
+<li><p><span class="sub-points">(4 pts)</span> The volume of the silo is <span
+class="math inline">\(V = \pi r^2 h + \dfrac{2}{3}\pi r^3\)</span>. Find
+the total differential <span class="math inline">\(dV\)</span>.</p>
+<div class="solution handwritten">
+<p><span class="math display">\[dV = \frac{\partial V}{\partial r}\, dr
++ \frac{\partial V}{\partial h}\, dh = (2\pi r h + 2\pi r^2)\, dr + \pi
+r^2\, dh\]</span></p>
+</div></li>
+<li><p><span class="sub-points">(4 pts)</span> Determine the appropriate values of <span
+class="math inline">\(dr\)</span> and <span
+class="math inline">\(dh\)</span> for this problem, then use
+differentials to estimate the total volume of wood in the silo walls,
+roof, and floor.</p>
+<div class="solution handwritten">
+<p>The planks add one layer outward on the cylindrical walls and the
+dome, so <span class="math inline">\(dr = 0.05\)</span>.</p>
+<p>The silo has a flat wooden floor (bottom) but <strong>no flat
+top</strong> — the hemisphere replaces the lid. So only the floor adds
+to the height: <span class="math inline">\(dh = 0.05\)</span>.</p>
+<p><span class="math display">\[\begin{aligned}
+dV &amp;= (2\pi(3)(8) + 2\pi(9))(0.05) + \pi(9)(0.05) \\
+   &amp;= (48\pi + 18\pi)(0.05) + 0.45\pi \\
+   &amp;= 3.3\pi + 0.45\pi \\
+   &amp;= \boxed{3.75\pi \approx 11.78 \text{ m}^3}
+\end{aligned}\]</span></p>
+</div></li>
+</ol>
+</section>
+<div class="page-break" role="separator"></div>
+<section class="question" role="region" aria-label="Question 2">
+  <div class="question-header">
+    <span class="question-number">Question 2</span>
+    <span class="points-badge">[7 pts]</span>
+  </div>
+<p>Let <span class="math inline">\(w = xy + yz + xz\)</span>, where
+<span class="math inline">\(x = s^2 + t\)</span>, <span
+class="math inline">\(y = st\)</span>, and <span class="math inline">\(z
+= t^2\)</span>.</p>
+<ol type="a">
+<li><p><span class="sub-points">(3 pts)</span> Draw the tree diagram and write the chain rule
+expression for <span class="math inline">\(\dfrac{\partial w}{\partial
+t}\)</span>.</p>
+<div class="solution handwritten">
+<p>Tree diagram: <span class="math inline">\(w\)</span> depends on <span
+class="math inline">\(x, y, z\)</span>, each of which depends on <span
+class="math inline">\(s\)</span> and <span
+class="math inline">\(t\)</span>.</p>
+<p><span class="math display">\[\frac{\partial w}{\partial t} =
+\frac{\partial w}{\partial x}\frac{\partial x}{\partial t} +
+\frac{\partial w}{\partial y}\frac{\partial y}{\partial t} +
+\frac{\partial w}{\partial z}\frac{\partial z}{\partial t}\]</span></p>
+</div></li>
+<li><p><span class="sub-points">(4 pts)</span> Evaluate <span
+class="math inline">\(\dfrac{\partial w}{\partial t}\)</span> at <span
+class="math inline">\((s, t) = (1, 2)\)</span>.</p>
+<div class="solution handwritten">
+<p>At <span class="math inline">\((s, t) = (1, 2)\)</span>: <span
+class="math inline">\(x = 1 + 2 = 3\)</span>, <span
+class="math inline">\(y = 2\)</span>, <span class="math inline">\(z =
+4\)</span>.</p>
+<p>Partials of <span class="math inline">\(w\)</span>: <span
+class="math display">\[\frac{\partial w}{\partial x} = y + z = 6, \qquad
+\frac{\partial w}{\partial y} = x + z = 7, \qquad
+\frac{\partial w}{\partial z} = x + y = 5\]</span></p>
+<p>Partials of <span class="math inline">\(x, y, z\)</span> with respect
+to <span class="math inline">\(t\)</span>: <span
+class="math display">\[\frac{\partial x}{\partial t} = 1, \qquad
+\frac{\partial y}{\partial t} = s = 1, \qquad
+\frac{\partial z}{\partial t} = 2t = 4\]</span></p>
+<p>Therefore: <span class="math display">\[\frac{\partial w}{\partial t}
+= 6(1) + 7(1) + 5(4) = 6 + 7 + 20 = \boxed{33}\]</span></p>
+</div></li>
+</ol>
+</section>
+
+  </main>
+</body>
+</html>
