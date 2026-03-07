@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 15.2: Iterated Integrals and Double Integrals over General Regions | MTH 310</title>
+<style>
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #e09f3e;
+    --bg: #ffffff; --fg: #1a1a1a;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; max-width: 900px;
+    margin: 0 auto; padding: 1em 2em; color: var(--fg); background: var(--bg);
+    font-size: 1.05rem; line-height: 1.6; }
+h1 { font-size: 1.8em; color: var(--accent-cyan); border-bottom: 3px solid var(--accent-cyan);
+    padding-bottom: 0.2em; }
+h2 { font-size: 1.4em; color: var(--accent-cyan); margin-top: 1.5em;
+    border-bottom: 1px solid #ddd; padding-bottom: 0.15em; }
+h3 { font-size: 1.1em; margin: 0.5em 0 0.2em 0; }
+h4 { font-size: 1em; color: var(--accent-cyan); margin: 0.3em 0; }
+p { margin: 0.5em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 1em 0; }
+.course-info { color: #666; font-size: 0.9em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-cyan);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.defn-box h3, .defn-box .defn-title { color: var(--accent-red); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box h3, .theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.example-box h3, .example-box .example-title { color: var(--accent-green); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.solution { border: 1px solid #ddd; border-radius: 4px; margin: 0.5em 0; }
+.solution summary { padding: 0.5em 0.8em; cursor: pointer; font-weight: 600;
+    color: #8a6200; background: #fffdf5; border-radius: 4px; }
+.solution > div, .solution > p, .solution > ul, .solution > ol {
+    padding: 0.5em 1em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 4px;
+    padding: 0.8em 1em; margin: 0.8em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #595959; margin: 0.5em 0; font-size: 0.9em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red); border-radius: 6px;
+    padding: 0.8em 1.2em; text-align: center; margin: 1em 0; font-size: 1.1em; }
+.desmos-container { text-align: center; margin: 1em 0; }
+.desmos-container figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.desmos-container iframe { border: 1px solid #ddd; border-radius: 6px; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.2em;
+    color: var(--accent-cyan); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+figure { margin: 0.8em 0; text-align: center; }
+figure img { max-width: 100%; height: auto; max-height: 500px; border-radius: 4px; }
+figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 4px; border: 1px solid #ddd; }
+.plotly-figure { border-radius: 4px; overflow: hidden; margin: 0.5em 0; }
+.plotly-figure .js-plotly-plot { width: 100% !important; height: 100% !important; }
+.plotly-alt { margin-top: 0.3em; font-size: 0.85em; color: #666; }
+.plotly-alt summary { cursor: pointer; color: var(--accent-cyan); }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 1em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.5em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 200px; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.8em; color: #666; }
+table { border-collapse: collapse; margin: 0.5em 0; }
+th, td { padding: 0.3em 0.8em; border: 1px solid #ddd; text-align: center; }
+th { background: #f0f7ff; color: var(--accent-cyan); }
+.small { font-size: 0.85em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+a { color: var(--accent-cyan); }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media (max-width: 600px) {
+    body { padding: 0.5em 1em; }
+    .summary-grid { grid-template-columns: 1fr; }
+}
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <h1>Section 15.2: Iterated Integrals and Double Integrals over General Regions</h1>
+  <p class="course-info">MTH 310 &mdash; Calculus III | Multiple Integrals</p>
+</header>
+<hr aria-hidden="true">
+
+<section id="from-cross-sections-to-iterated-integrals" aria-label="From Cross-Sections to Iterated Integrals">
+  <h2>From Cross-Sections to Iterated Integrals</h2>
+  <div><p>In Calc I you computed volumes by integrating cross-sectional areas:</p>
+<p>\[V = \int_a^b A(x)\,dx\]</p>
+<p>The key was knowing the shape of each cross-section. Let's revisit this idea with a concrete example.</p></div>
+<section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>A solid \(S\) has its base in the \(xy\)-plane, bounded by \(f(x) = x(x-2)\) and \(g(x) = x\). Cross-sections perpendicular to the \(x\)-axis are <strong>squares</strong>. Find the volume.</p>
+</section>
+<p class="work-prompt">Find where the curves intersect, then compute the side length of each square cross-section as \(g(x) - f(x)\).</p>
+<div><p><strong>Find intersections:</strong> \(x(x-2) = x\) \(\Rightarrow\) \(x^2 - 3x = 0\) \(\Rightarrow\) \(x = 0\) or \(x = 3\).</p></div>
+<div><p><strong>Side length:</strong> \(s(x) = g(x) - f(x) = x - x(x-2) = x - x^2 + 2x = 3x - x^2\)</p>
+<p><strong>Cross-sectional area:</strong> \(A(x) = s(x)^2 = (3x - x^2)^2\)</p></div>
+<div><p><strong>Volume:</strong></p>
+<p>\[V = \int_0^3 (3x - x^2)^2\,dx = \int_0^3 (9x^2 - 6x^3 + x^4)\,dx\]</p>
+<p>\[= \left[3x^3 - \frac{3x^4}{2} + \frac{x^5}{5}\right]_0^3 = 81 - \frac{243}{2} + \frac{243}{5} = \frac{81}{10}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Volume = \(\int\) (cross-sectional area). This is the same idea we'll use for double integrals &mdash; but instead of knowing the cross-section's shape, we'll <strong>compute</strong> it by integrating in the other variable.</p></aside>
+</section>
+
+<section id="the-cross-section-idea-for-surfaces" aria-label="The Cross-Section Idea for Surfaces">
+  <h2>The Cross-Section Idea for Surfaces</h2>
+  <div><p>Now instead of a solid with known cross-sections, suppose we want the volume under a <strong>surface</strong> \(z = f(x,y)\) over a rectangle \(R = [a,b] \times [c,d]\).</p>
+<p><strong>Fix a value of \(x\).</strong> Slicing the surface at that \(x\) gives a curve \(z = f(x,y)\) in the \(yz\)-plane. The area under that curve is:</p>
+<p>\[A(x) = \int_c^d f(x,y)\,dy\]</p></div>
+<div><p>Then the total volume is:</p>
+<p>\[V = \int_a^b A(x)\,dx = \int_a^b \left[\int_c^d f(x,y)\,dy\right]dx\]</p>
+<p>This is an <strong>iterated integral</strong>: we integrate in \(y\) first (treating \(x\) as a constant), then integrate the result in \(x\).</p></div>
+<div><p>We write this more compactly as:</p>
+<p>\[\int_a^b \int_c^d f(x,y)\,dy\,dx\]</p>
+<p>The <strong>inner integral</strong> is computed first, then the <strong>outer integral</strong>.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>An iterated integral is just two single-variable integrals done one at a time. The inner integral produces a function of the outer variable, and then we integrate that.</p></aside>
+</section>
+
+<section id="example-volume-under" aria-label="Example: Volume Under $f(x,y) = 1 + x^2 + y^2$">
+  <h2>Example: Volume Under \(f(x,y) = 1 + x^2 + y^2\)</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Find the volume under \(f(x,y) = 1 + x^2 + y^2\) above the unit square \(R = [0,1] \times [0,1]\).</p>
+</section>
+<p class="work-prompt">Fix \(x\) and integrate in \(y\) first to get \(A(x)\). Then integrate \(A(x)\) from \(0\) to \(1\).</p>
+<div><p><strong>Step 1: Inner integral</strong> (integrate in \(y\), treat \(x\) as constant):</p>
+<p>\[A(x) = \int_0^1 (1 + x^2 + y^2)\,dy = \left[y + x^2 y + \frac{y^3}{3}\right]_0^1 = 1 + x^2 + \frac{1}{3} = \frac{4}{3} + x^2\]</p></div>
+<div><p><strong>Step 2: Outer integral</strong> (integrate \(A(x)\) in \(x\)):</p>
+<p>\[V = \int_0^1 \left(\frac{4}{3} + x^2\right)\,dx = \left[\frac{4}{3}x + \frac{x^3}{3}\right]_0^1 = \frac{4}{3} + \frac{1}{3} = \frac{5}{3}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The volume under \(f(x,y) = 1 + x^2 + y^2\) over the unit square is \(\dfrac{5}{3}\).</p></aside>
+</section>
+
+<section id="fubini-s-theorem" aria-label="Fubini's Theorem">
+  <h2>Fubini's Theorem</h2>
+  <div><p>Does the order of integration matter? Can we integrate in \(x\) first, then \(y\)?</p></div>
+<section class="defn-box theorem-box" role="region" aria-label="Theorem: Fubini's Theorem">
+  <h3 class="defn-title">Theorem: Fubini's Theorem</h3>
+  <p>If \(f\) is continuous on the rectangle \(R = [a,b] \times [c,d]\), then</p>
+<p>\[\iint_R f(x,y)\,dA = \int_a^b \int_c^d f(x,y)\,dy\,dx = \int_c^d \int_a^b f(x,y)\,dx\,dy\]</p>
+<p>Both orders of integration give the <strong>same answer</strong>.</p>
+</section>
+<div><p>Let's verify with our previous example. Integrate in \(x\) first:</p>
+<p>\[\int_0^1 \int_0^1 (1 + x^2 + y^2)\,dx\,dy = \int_0^1 \left[x + \frac{x^3}{3} + y^2 x\right]_0^1 dy = \int_0^1 \left(\frac{4}{3} + y^2\right)dy = \frac{4}{3} + \frac{1}{3} = \frac{5}{3} \;\checkmark\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Fubini's Theorem says we can choose whichever order is more convenient. Sometimes one order is much easier than the other!</p></aside>
+</section>
+
+<section id="quick-check-set-up-an-iterated-integral" aria-label="Quick Check: Set Up an Iterated Integral">
+  <h2>Quick Check: Set Up an Iterated Integral</h2>
+  <div><p>Suppose \(R = [0,2] \times [1,3]\).</p>
+<p><em>Write \(\displaystyle\iint_R xy\,dA\) as an iterated integral in both orders. Then evaluate one of them.</em></p></div>
+<p class="work-prompt">Identify \(a\), \(b\), \(c\), \(d\) from \(R\). Then write the integral both ways: \(dy\,dx\) and \(dx\,dy\).</p>
+<div><p><strong>Order 1</strong> (\(dy\,dx\)): \(\displaystyle\int_0^2 \int_1^3 xy\,dy\,dx\)</p>
+<p><strong>Order 2</strong> (\(dx\,dy\)): \(\displaystyle\int_1^3 \int_0^2 xy\,dx\,dy\)</p></div>
+<div><p><strong>Evaluate Order 1:</strong></p>
+<p>\[\int_0^2 \int_1^3 xy\,dy\,dx = \int_0^2 \left[\frac{xy^2}{2}\right]_1^3 dx = \int_0^2 \frac{x(9 - 1)}{2}\,dx = \int_0^2 4x\,dx = \left[2x^2\right]_0^2 = 8\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>On rectangles, setting up iterated integrals is mechanical: the limits are just the edges of the rectangle. The real skill is choosing the order that makes the inner integral simplest.</p></aside>
+</section>
+
+<section id="example-a-trig-integral" aria-label="Example: A Trig Integral">
+  <h2>Example: A Trig Integral</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Evaluate \(\displaystyle\iint_R \cos(x + 2y)\,dA\), where \(R = [0, \pi] \times [0, \pi/2]\).</p>
+</section>
+<p class="work-prompt">Integrate in \(y\) first using substitution \(u = x + 2y\).</p>
+<div><p><strong>Inner integral</strong> (in \(y\), with \(x\) fixed):</p>
+<p>\[\int_0^{\pi/2} \cos(x + 2y)\,dy\]</p>
+<p>Let \(u = x + 2y\), so \(du = 2\,dy\). When \(y = 0\): \(u = x\). When \(y = \pi/2\): \(u = x + \pi\).</p></div>
+<div><p>\[= \frac{1}{2}\int_x^{x+\pi} \cos u\,du = \frac{1}{2}[\sin u]_x^{x+\pi} = \frac{1}{2}\big[\sin(x + \pi) - \sin x\big]\]</p></div>
+<div><p>Since \(\sin(x + \pi) = -\sin x\):</p>
+<p>\[= \frac{1}{2}(-\sin x - \sin x) = -\sin x\]</p></div>
+<div><p><strong>Outer integral:</strong></p>
+<p>\[\int_0^{\pi} (-\sin x)\,dx = [\cos x]_0^{\pi} = \cos\pi - \cos 0 = -1 - 1 = -2\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\displaystyle\iint_R \cos(x + 2y)\,dA = -2\).</p></aside>
+</section>
+
+<section id="beyond-rectangles-general-regions" aria-label="Beyond Rectangles: General Regions">
+  <h2>Beyond Rectangles: General Regions</h2>
+  <div><p>So far we've integrated over <strong>rectangles</strong> \([a,b] \times [c,d]\), where the limits of integration are all constants.</p>
+<p>But most real-world regions aren't rectangles!</p></div>
+<div><p><strong>What changes?</strong> When the region is not a rectangle, the limits of the <strong>inner integral</strong> depend on the <strong>outer variable</strong>.</p>
+<ul>
+<li>On a rectangle: \(\displaystyle\int_a^b \int_c^d f(x,y)\,dy\,dx\) &mdash; all limits are constants</li>
+<li>On a general region: \(\displaystyle\int_a^b \int_{g_1(x)}^{g_2(x)} f(x,y)\,dy\,dx\) &mdash; inner limits are <strong>functions</strong></li>
+</ul></div>
+<div><p>To set up these integrals correctly, we need to describe the region in a systematic way. That's where <strong>Type 1</strong> and <strong>Type 2</strong> regions come in.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The outer limits are always constants (numbers). The inner limits can be functions of the outer variable. Getting these limits right is the central skill of this section.</p></aside>
+</section>
+
+<section id="type-1-and-type-2-regions" aria-label="Type 1 and Type 2 Regions">
+  <h2>Type 1 and Type 2 Regions</h2>
+  <section class="defn-box" role="region" aria-label="Type 1 Region (Integrate $dy\,dx$)">
+  <h3 class="defn-title">Type 1 Region (Integrate $dy\,dx$)</h3>
+  <p>A region \(D\) is <strong>Type 1</strong> if it lies between two curves \(y = g_1(x)\) and \(y = g_2(x)\):</p>
+<p>\[D = \{(x,y) \mid a \leq x \leq b, \;\; g_1(x) \leq y \leq g_2(x)\}\]</p>
+<p>\[\iint_D f(x,y)\,dA = \int_a^b \int_{g_1(x)}^{g_2(x)} f(x,y)\,dy\,dx\]</p>
+</section>
+<section class="defn-box" role="region" aria-label="Type 2 Region (Integrate $dx\,dy$)">
+  <h3 class="defn-title">Type 2 Region (Integrate $dx\,dy$)</h3>
+  <p>A region \(D\) is <strong>Type 2</strong> if it lies between two curves \(x = h_1(y)\) and \(x = h_2(y)\):</p>
+<p>\[D = \{(x,y) \mid c \leq y \leq d, \;\; h_1(y) \leq x \leq h_2(y)\}\]</p>
+<p>\[\iint_D f(x,y)\,dA = \int_c^d \int_{h_1(y)}^{h_2(y)} f(x,y)\,dx\,dy\]</p>
+</section>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Type 1:</strong> Outer variable is \(x\), inner limits are functions of \(x\). Integrate \(dy\) first.</p>
+<p><strong>Type 2:</strong> Outer variable is \(y\), inner limits are functions of \(y\). Integrate \(dx\) first.</p>
+<p>Many regions are <strong>both</strong> types &mdash; you get to choose!</p></aside>
+</section>
+
+<section id="quick-check-identify-the-limits" aria-label="Quick Check: Identify the Limits">
+  <h2>Quick Check: Identify the Limits</h2>
+  <div><p>Consider the triangular region with vertices \((0,0)\), \((1,0)\), and \((0,1)\).</p>
+<p><em>Describe this region as both Type 1 and Type 2, and write the limits of integration for each.</em></p></div>
+<p class="work-prompt">Sketch the triangle. Find the equation of the hypotenuse. Then describe using ``for a fixed \(x\), \(y\) goes from \ldots{} to \ldots''</p>
+<div><p>The hypotenuse connects \((1,0)\) to \((0,1)\): the equation is \(y = 1 - x\) (equivalently, \(x = 1 - y\)).</p></div>
+<div><p><strong>Type 1</strong> (\(dy\,dx\)): For a fixed \(x \in [0,1]\), \(y\) goes from \(0\) up to \(1 - x\):</p>
+<p>\[\int_0^1 \int_0^{1-x} f(x,y)\,dy\,dx\]</p></div>
+<div><p><strong>Type 2</strong> (\(dx\,dy\)): For a fixed \(y \in [0,1]\), \(x\) goes from \(0\) to \(1 - y\):</p>
+<p>\[\int_0^1 \int_0^{1-y} f(x,y)\,dx\,dy\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Always think: ``For a fixed value of the outer variable, where does the inner variable start and stop?'' Sketch the region and draw a vertical line (Type 1) or horizontal line (Type 2) to read off the limits.</p></aside>
+</section>
+
+<section id="example-integral-over-a-triangular-region" aria-label="Example: Integral over a Triangular Region">
+  <h2>Example: Integral over a Triangular Region</h2>
+  <section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>Evaluate \(\displaystyle\iint_D x\sqrt{y^2 - x^2}\,dA\), where \(D = \{(x,y) \mid 0 \leq y \leq 1,\; 0 \leq x \leq y\}\).</p>
+</section>
+<div><p><strong>First, sketch the region.</strong> \(D\) is the triangle below \(y = x\) (equivalently, to the right of \(x = 0\)) with \(0 \leq y \leq 1\).</p></div>
+<p class="work-prompt">This is a Type 2 region: for fixed \(y\), \(x\) goes from \(0\) to \(y\). Set up the integral as \(dx\,dy\).</p>
+<div><p><strong>Set up the iterated integral</strong> (Type 2, integrate in \(x\) first):</p>
+<p>\[\int_0^1 \int_0^y x\sqrt{y^2 - x^2}\,dx\,dy\]</p></div>
+<div><p><strong>Inner integral</strong> (in \(x\), with \(y\) fixed): Let \(u = y^2 - x^2\), so \(du = -2x\,dx\).</p>
+<p>When \(x = 0\): \(u = y^2\). When \(x = y\): \(u = 0\).</p>
+<p>\[\int_0^y x\sqrt{y^2 - x^2}\,dx = -\frac{1}{2}\int_{y^2}^0 u^{1/2}\,du = \frac{1}{2}\int_0^{y^2} u^{1/2}\,du = \frac{1}{2} \cdot \frac{2}{3} u^{3/2}\Big|_0^{y^2} = \frac{1}{3}(y^2)^{3/2} = \frac{y^3}{3}\]</p></div>
+<div><p><strong>Outer integral:</strong></p>
+<p>\[\int_0^1 \frac{y^3}{3}\,dy = \frac{1}{3} \cdot \frac{y^4}{4}\Big|_0^1 = \frac{1}{12}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\displaystyle\iint_D x\sqrt{y^2 - x^2}\,dA = \dfrac{1}{12}\).</p></aside>
+</section>
+
+<section id="describing-a-region-both-ways" aria-label="Describing a Region Both Ways">
+  <h2>Describing a Region Both Ways</h2>
+  <section class="example-box" role="region" aria-label="Example 5">
+  <h3 class="example-title">Example 5</h3>
+  <p>Consider the region \(D\) between \(y = x^2\) and \(y = \sqrt{x}\).</p>
+<p>(a) Describe \(D\) as both a Type 1 and a Type 2 region.</p>
+<p>(b) Evaluate \(\displaystyle\iint_D (2x - 3y^2)\,dA\).</p>
+</section>
+<div><p><strong>First, find the intersections:</strong> \(x^2 = \sqrt{x}\) \(\Rightarrow\) \(x^4 = x\) \(\Rightarrow\) \(x(x^3 - 1) = 0\) \(\Rightarrow\) \(x = 0\) or \(x = 1\).</p></div>
+<p class="work-prompt">Sketch the region. For Type 1: fix \(x\), find \(y\)-bounds. For Type 2: fix \(y\), find \(x\)-bounds. Then choose the easier order to integrate.</p>
+<div><p><strong>Type 1</strong> (\(dy\,dx\)): For \(x \in [0,1]\), \(y\) goes from \(x^2\) (lower) up to \(\sqrt{x}\) (upper):</p>
+<p>\[D = \{(x,y) \mid 0 \leq x \leq 1,\; x^2 \leq y \leq \sqrt{x}\}\]</p>
+<p>\[\iint_D (2x - 3y^2)\,dA = \int_0^1 \int_{x^2}^{\sqrt{x}} (2x - 3y^2)\,dy\,dx\]</p></div>
+<div><p><strong>Type 2</strong> (\(dx\,dy\)): For \(y \in [0,1]\), \(x\) goes from \(y^2\) (left curve: \(x = y^2\)) to \(\sqrt{y}\) (right curve: \(x = \sqrt{y}\)):</p>
+<p>\[D = \{(x,y) \mid 0 \leq y \leq 1,\; y^2 \leq x \leq \sqrt{y}\}\]</p></div>
+
+<div><p><strong>Part (b):</strong> Let's use the Type 1 description.</p></div>
+<div><p><strong>Inner integral</strong> (in \(y\)):</p>
+<p>\[\int_{x^2}^{\sqrt{x}} (2x - 3y^2)\,dy = \left[2xy - y^3\right]_{x^2}^{\sqrt{x}}\]</p></div>
+<div><p><strong>Evaluate at the bounds:</strong></p>
+<p>At \(y = \sqrt{x}\): \(\;2x \cdot \sqrt{x} - (\sqrt{x})^3 = 2x^{3/2} - x^{3/2} = x^{3/2}\)</p>
+<p>At \(y = x^2\): \(\;2x \cdot x^2 - (x^2)^3 = 2x^3 - x^6\)</p></div>
+<div><p><strong>Subtract:</strong></p>
+<p>\[\int_{x^2}^{\sqrt{x}} (2x - 3y^2)\,dy = x^{3/2} - 2x^3 + x^6\]</p></div>
+<div><p><strong>Outer integral:</strong></p>
+<p>\[\int_0^1 \left(x^{3/2} - 2x^3 + x^6\right)dx = \left[\frac{2}{5}x^{5/2} - \frac{x^4}{2} + \frac{x^7}{7}\right]_0^1 = \frac{2}{5} - \frac{1}{2} + \frac{1}{7}\]</p></div>
+<div><p>\[= \frac{28 - 35 + 10}{70} = \frac{3}{70}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\displaystyle\iint_D (2x - 3y^2)\,dA = \dfrac{3}{70}\).</p></aside>
+</section>
+
+<section id="changing-the-order-of-integration" aria-label="Changing the Order of Integration">
+  <h2>Changing the Order of Integration</h2>
+  <div><p>Sometimes you <strong>must</strong> change the order of integration because the inner integral is impossible to evaluate directly.</p>
+<p><strong>Strategy:</strong></p>
+<ol>
+<li><strong>Sketch the region</strong> described by the original limits</li>
+<li>Re-describe it using the <strong>other type</strong></li>
+<li>Write the integral with the new limits</li>
+</ol></div>
+<div><p>\begin{ex}{6}</p>
+<p>Evaluate \(\displaystyle\int_0^1 \int_x^1 e^{y^2}\,dy\,dx\).</p>
+<p>\end{ex}</p></div>
+<p class="work-prompt">We can't integrate \(e^{y^2}\) in \(y\) &mdash; there's no elementary antiderivative! Sketch the region, then swap the order.</p>
+<div><p><strong>Original region:</strong> \(0 \leq x \leq 1\), \(x \leq y \leq 1\).</p>
+<p>This is the triangle above \(y = x\) and below \(y = 1\), for \(0 \leq x \leq 1\).</p></div>
+<div><p><strong>Reverse the description</strong> (Type 2): For fixed \(y \in [0,1]\), \(x\) goes from \(0\) to \(y\):</p>
+<p>\[\int_0^1 \int_0^y e^{y^2}\,dx\,dy\]</p></div>
+<div><p><strong>Inner integral:</strong> \(\displaystyle\int_0^y e^{y^2}\,dx = y\,e^{y^2}\) (since \(e^{y^2}\) is constant in \(x\)!)</p></div>
+<div><p><strong>Outer integral:</strong> Let \(u = y^2\), \(du = 2y\,dy\):</p>
+<p>\[\int_0^1 y\,e^{y^2}\,dy = \frac{1}{2}e^{y^2}\Big|_0^1 = \frac{1}{2}(e - 1)\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>When you can't evaluate the inner integral, try <strong>reversing the order</strong>. The integral \(\int e^{y^2}\,dy\) has no closed form, but \(\int y\,e^{y^2}\,dy\) does!</p></aside>
+</section>
+
+<section id="section-15-2-summary" aria-label="Section 15.2 Summary">
+  <h2>Section 15.2 Summary</h2>
+  <div class="summary-grid">
+<section class="defn-box" role="region" aria-label="Iterated Integrals"><h3 class="defn-title">Iterated Integrals</h3><p>Evaluate double integrals by doing two single-variable integrals, one at a time. Inner integral first, then outer.</p></section>
+<section class="defn-box" role="region" aria-label="Fubini's Theorem"><h3 class="defn-title">Fubini's Theorem</h3><p>For continuous \(f\) on a rectangle: \(\int\int f\,dy\,dx = \int\int f\,dx\,dy\). Both orders give the same answer.</p></section>
+<section class="defn-box" role="region" aria-label="Type 1 Regions"><h3 class="defn-title">Type 1 Regions</h3><p>\(a \leq x \leq b\), \(g_1(x) \leq y \leq g_2(x)\). Integrate \(dy\,dx\). Inner limits are functions of \(x\).</p></section>
+<section class="defn-box" role="region" aria-label="Type 2 Regions"><h3 class="defn-title">Type 2 Regions</h3><p>\(c \leq y \leq d\), \(h_1(y) \leq x \leq h_2(y)\). Integrate \(dx\,dy\). Inner limits are functions of \(y\).</p></section>
+<section class="defn-box" role="region" aria-label="Changing Order"><h3 class="defn-title">Changing Order</h3><p>Sketch the region, re-describe with the other variable as outer. Essential when one order leads to an impossible integral.</p></section>
+</div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>The big skill:</strong> Given a region, describe it with the right limits. Sketch first, then ask ``for a fixed value of the outer variable, where does the inner variable go?''</p></aside>
+</section>
+
+<section aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 15.2:</strong> 3, 5, 7, 9, 11, 15, 16, 17, 19, 23, 25, 27, 31, 33, 35, 37, 43, 55, 57, 59, 61, 63, 65, 75, 77</div>
+</section>
+</main>
+</body>
+</html>

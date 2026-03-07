@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 15.3: Double Integrals in Polar Coordinates &mdash; Handout</title>
+<style>
+@page { size: letter; margin: 0.4in 0.5in; }
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #b5850e;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    max-width: 7.5in; margin: 0 auto; padding: 0.3em;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.35; }
+.handout-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left h1 { font-size: 1.3em; color: var(--accent-cyan); margin: 0; }
+.header-left p { margin: 0.05em 0; color: #666; font-size: 0.85em; }
+.header-right { text-align: right; font-size: 0.85em; color: #333; }
+hr { border: none; border-top: 2px solid var(--accent-cyan); margin: 0.3em 0; }
+h2 { font-size: 1.1em; color: var(--accent-cyan); margin: 0.4em 0 0.15em 0;
+    border-bottom: 1px solid #ccc; padding-bottom: 0.05em; }
+h3, h4 { font-size: 0.95em; margin: 0.15em 0; }
+p { margin: 0.15em 0; }
+.defn-box { background: #f0f7ff; border-left: 3px solid var(--accent-cyan);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 3px solid var(--accent-green);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
+    padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
+.blank-space { margin: 0.2em 0; position: relative;
+    border: 1px dashed #ccc; border-radius: 3px; box-sizing: border-box; }
+.blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
+    color: #767676; font-style: italic; }
+.hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
+    padding: 0.3em 0.8em; text-align: center; margin: 0.5em 0; }
+.desmos-link { background: #f0f7ff; border-radius: 3px; padding: 0.2em 0.5em;
+    margin: 0.3em 0; font-size: 0.8em; }
+.desmos-link a { color: var(--accent-cyan); word-break: break-all; }
+.two-col-print { display: flex; gap: 0.6em; align-items: flex-start; }
+.two-col-print > * { flex: 1; }
+figure { margin: 0.1em 0; text-align: center; }
+figure img { max-width: 100%; max-height: 3.0in; }
+figcaption { font-size: 0.7em; color: #666; margin-top: 0.05em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 2px; border: 1px solid #ddd; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.image-grid { display: flex; gap: 0.4em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.2em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.8em; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 1.5in; max-width: 100%; }
+.image-grid .grid-cell.textbook-fig img { padding: 2px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+table { border-collapse: collapse; font-size: 0.85em; margin: 0.15em auto; }
+th, td { padding: 0.1em 0.4em; border: 1px solid #ccc; text-align: center; }
+th { background: #f0f7ff; }
+.small { font-size: 0.8em; }
+ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
+li { margin-bottom: 0.05em; }
+.pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
+.homework-section { page-break-before: auto; }
+.defn-box, .example-box, .key-point { page-break-inside: avoid; break-inside: avoid; }
+.example-group { page-break-inside: avoid; break-inside: avoid; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media print {
+    body { padding: 0; max-width: none; }
+    .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    a[href^="http"]::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="#"]::after { content: none; }
+    figure img { max-height: 2.8in; }
+    .skip-link { display: none; }
+}
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        pb.remove();  // no longer needed — workspace expansion handles the break
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <div class="handout-header">
+    <div class="header-left">
+      <h1>Section 15.3: Double Integrals in Polar Coordinates</h1>
+      <p>Multiple Integrals</p>
+    </div>
+    <div class="header-right">
+      <p>MTH 310<br>Calculus III</p>
+    </div>
+  </div>
+</header>
+<hr aria-hidden="true">
+
+<section id="why-polar" aria-label="Why Polar?">
+  <h2>Why Polar?</h2>
+  <aside class="key-point" role="note" aria-label="Key point"><p>Regions described by circles, sectors, and cardioids are natural in polar. When the region has circular symmetry, polar coordinates will simplify the integral dramatically.</p></aside>
+</section>
+
+<section id="polar-rectangles-and-the-area-element" aria-label="Polar Rectangles and the Area Element">
+  <h2>Polar Rectangles and the Area Element</h2>
+  <figure>
+  <img src="figures/polar_rectangle.png" alt="A polar coordinate grid showing concentric circles at different radii and radial lines at different angles, forming polar rectangles. One polar rectangle is highlighted and labeled, showing it is bounded by r = r1 and r = r2 on the sides and theta = theta1 and theta = theta2 on the arcs. The highlighted rectangle is wider at larger r than at smaller r.">
+</figure>
+<aside class="key-point" role="note" aria-label="Key point"><p>In polar coordinates, \(dA = r \, dr \, d\theta\) &mdash; <strong>not</strong> just \(dr \, d\theta\). The extra \(r\) is essential.</p></aside>
+</section>
+
+<section id="the-polar-double-integral" aria-label="The Polar Double Integral">
+  <h2>The Polar Double Integral</h2>
+  <section class="defn-box" role="region" aria-label="Double Integral in Polar Coordinates">
+  <h3 class="defn-title">Double Integral in Polar Coordinates</h3>
+  <p>If \(f\) is continuous on a polar region \(R\) described by \(\alpha \leq \theta \leq \beta\) and \(h_1(\theta) \leq r \leq h_2(\theta)\), then:</p>
+<p>\[\iint_R f(x,y) \, dA = \int_\alpha^\beta \int_{h_1(\theta)}^{h_2(\theta)} f(r\cos\theta, \, r\sin\theta) \; r \, dr \, d\theta\]</p>
+</section>
+<aside class="key-point" role="note" aria-label="Key point"><p>The most common mistake is forgetting the extra \(r\) in \(dA = r \, dr \, d\theta\). Write it down every time.</p></aside>
+</section>
+
+<section id="quick-check-convert-to-polar" aria-label="Quick Check: Convert to Polar">
+  <h2>Quick Check: Convert to Polar</h2>
+  <div class="blank-space" role="region" aria-label="Student workspace: Use $x^2 + y^2 = r^2$ and $dA = r\,dr\,d\theta$. The unit disk is $0 \leq r \leq 1$, $0 \leq \theta \leq 2\pi$." style="min-height:2in;">
+  <div class="blank-prompt">Use \(x^2 + y^2 = r^2\) and \(dA = r\,dr\,d\theta\). The unit disk is \(0 \leq r \leq 1\), \(0 \leq \theta \leq 2\pi\).</div>
+</div>
+</section>
+
+<section id="example-1-area-of-in-qi" class="example-group" aria-label="Example 1: Area of $r = 4\cos\theta$ in QI">
+  <h2>Example 1: Area of \(r = 4\cos\theta\) in QI</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Find the area in Quadrant I enclosed by the graph of \(r = 4\cos\theta\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Area = $\iint_R 1 \, dA$ in polar. The curve starts at $\theta = 0$ (where $r = 4$) and returns to the origin at $\theta = \pi/2$ (where $r = 0$). Inner bounds: $0 \leq r \leq 4\cos\theta$." style="min-height:3in;">
+  <div class="blank-prompt">Area = \(\iint_R 1 \, dA\) in polar. The curve starts at \(\theta = 0\) (where \(r = 4\)) and returns to the origin at \(\theta = \pi/2\) (where \(r = 0\)). Inner bounds: \(0 \leq r \leq 4\cos\theta\).</div>
+</div>
+</section>
+
+<section id="example-2-volume-of-a-hemisphere" class="example-group" aria-label="Example 2: Volume of a Hemisphere">
+  <h2>Example 2: Volume of a Hemisphere</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Evaluate \(\displaystyle\iint_R \sqrt{4 - x^2 - y^2} \, dA\) where \(R = \{(x,y) \mid x^2 + y^2 \leq 4, \; x \geq 0\}\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Convert to polar: $\sqrt{4 - x^2 - y^2} = \sqrt{4 - r^2}$. The semicircle where $x \geq 0$ has $-\pi/2 \leq \theta \leq \pi/2$ and $0 \leq r \leq 2$." style="min-height:3in;">
+  <div class="blank-prompt">Convert to polar: \(\sqrt{4 - x^2 - y^2} = \sqrt{4 - r^2}\). The semicircle where \(x \geq 0\) has \(-\pi/2 \leq \theta \leq \pi/2\) and \(0 \leq r \leq 2\).</div>
+</div>
+</section>
+
+<section id="quick-check-sketch-a-polar-region" aria-label="Quick Check: Sketch a Polar Region">
+  <h2>Quick Check: Sketch a Polar Region</h2>
+  <div class="blank-space" role="region" aria-label="Student workspace: Mark the radii $r = 1$ and $r = 2$ and the angles $\theta = 0$ and $\theta = \pi/4$. Shade the region between them." style="min-height:2in;">
+  <div class="blank-prompt">Mark the radii \(r = 1\) and \(r = 2\) and the angles \(\theta = 0\) and \(\theta = \pi/4\). Shade the region between them.</div>
+</div>
+</section>
+
+<section id="example-3-area-of-the-lima-c-c-on" class="example-group" aria-label="Example 3: Area of the Lima\c{c}on $r = 4 + 3\cos\theta$">
+  <h2>Example 3: Area of the Lima\c{c}on \(r = 4 + 3\cos\theta\)</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Find the area enclosed by \(r = 4 + 3\cos\theta\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Area = $\int_0^{2\pi} \int_0^{4 + 3\cos\theta} r \, dr \, d\theta$. Evaluate the inner integral first, then use the identity $\cos^2\theta = \frac{1 + \cos 2\theta}{2}$." style="min-height:3.5in;">
+  <div class="blank-prompt">Area = \(\int_0^{2\pi} \int_0^{4 + 3\cos\theta} r \, dr \, d\theta\). Evaluate the inner integral first, then use the identity \(\cos^2\theta = \frac{1 + \cos 2\theta}{2}\).</div>
+</div>
+</section>
+
+<section id="example-4-volume-inside-a-sphere-and-outside-a-cylinder" class="example-group" aria-label="Example 4: Volume Inside a Sphere and Outside a Cylinder">
+  <h2>Example 4: Volume Inside a Sphere and Outside a Cylinder</h2>
+  <section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>Find the volume of the solid inside the sphere \(x^2 + y^2 + z^2 = 16\) and outside the cylinder \(x^2 + y^2 = 4\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Use $V = 2\int_0^{2\pi}\int_2^4 \sqrt{16 - r^2} \; r \, dr \, d\theta$. The inner integral uses $u = 16 - r^2$." style="min-height:3.5in;">
+  <div class="blank-prompt">Use \(V = 2\int_0^{2\pi}\int_2^4 \sqrt{16 - r^2} \; r \, dr \, d\theta\). The inner integral uses \(u = 16 - r^2\).</div>
+</div>
+</section>
+
+<section id="when-to-use-polar-coordinates" aria-label="When to Use Polar Coordinates">
+  <h2>When to Use Polar Coordinates</h2>
+  <aside class="key-point" role="note" aria-label="Key point"><p>Not every integral is easier in polar. If the region is a rectangle or the integrand involves \(x\) and \(y\) separately (not in \(x^2+y^2\) combinations), Cartesian may be simpler.</p></aside>
+</section>
+
+<section class="homework-section" aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 15.3:</strong> 1-7, 9, 11, 13, 17, 19, 21, 23, 25, 27, 29, 31, 50a</div>
+</section>
+</main>
+</body>
+</html>

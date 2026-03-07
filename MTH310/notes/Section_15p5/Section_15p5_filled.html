@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 15.5: Surface Area | MTH 310</title>
+<style>
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #e09f3e;
+    --bg: #ffffff; --fg: #1a1a1a;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; max-width: 900px;
+    margin: 0 auto; padding: 1em 2em; color: var(--fg); background: var(--bg);
+    font-size: 1.05rem; line-height: 1.6; }
+h1 { font-size: 1.8em; color: var(--accent-cyan); border-bottom: 3px solid var(--accent-cyan);
+    padding-bottom: 0.2em; }
+h2 { font-size: 1.4em; color: var(--accent-cyan); margin-top: 1.5em;
+    border-bottom: 1px solid #ddd; padding-bottom: 0.15em; }
+h3 { font-size: 1.1em; margin: 0.5em 0 0.2em 0; }
+h4 { font-size: 1em; color: var(--accent-cyan); margin: 0.3em 0; }
+p { margin: 0.5em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 1em 0; }
+.course-info { color: #666; font-size: 0.9em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-cyan);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.defn-box h3, .defn-box .defn-title { color: var(--accent-red); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box h3, .theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.example-box h3, .example-box .example-title { color: var(--accent-green); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.solution { border: 1px solid #ddd; border-radius: 4px; margin: 0.5em 0; }
+.solution summary { padding: 0.5em 0.8em; cursor: pointer; font-weight: 600;
+    color: #8a6200; background: #fffdf5; border-radius: 4px; }
+.solution > div, .solution > p, .solution > ul, .solution > ol {
+    padding: 0.5em 1em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 4px;
+    padding: 0.8em 1em; margin: 0.8em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #595959; margin: 0.5em 0; font-size: 0.9em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red); border-radius: 6px;
+    padding: 0.8em 1.2em; text-align: center; margin: 1em 0; font-size: 1.1em; }
+.desmos-container { text-align: center; margin: 1em 0; }
+.desmos-container figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.desmos-container iframe { border: 1px solid #ddd; border-radius: 6px; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.2em;
+    color: var(--accent-cyan); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+figure { margin: 0.8em 0; text-align: center; }
+figure img { max-width: 100%; height: auto; max-height: 500px; border-radius: 4px; }
+figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 4px; border: 1px solid #ddd; }
+.plotly-figure { border-radius: 4px; overflow: hidden; margin: 0.5em 0; }
+.plotly-figure .js-plotly-plot { width: 100% !important; height: 100% !important; }
+.plotly-alt { margin-top: 0.3em; font-size: 0.85em; color: #666; }
+.plotly-alt summary { cursor: pointer; color: var(--accent-cyan); }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 1em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.5em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 200px; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.8em; color: #666; }
+table { border-collapse: collapse; margin: 0.5em 0; }
+th, td { padding: 0.3em 0.8em; border: 1px solid #ddd; text-align: center; }
+th { background: #f0f7ff; color: var(--accent-cyan); }
+.small { font-size: 0.85em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+a { color: var(--accent-cyan); }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media (max-width: 600px) {
+    body { padding: 0.5em 1em; }
+    .summary-grid { grid-template-columns: 1fr; }
+}
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <h1>Section 15.5: Surface Area</h1>
+  <p class="course-info">MTH 310 &mdash; Calculus III | Multiple Integrals</p>
+</header>
+<hr aria-hidden="true">
+
+<section id="why-surface-area-isn-t-just" aria-label="Why Surface Area Isn't Just $\iint 1\, dA$">
+  <h2>Why Surface Area Isn't Just \(\iint 1\, dA\)</h2>
+  <div><p>In Section 15.4, we computed the area of a flat region \(D\) in the \(xy\)-plane using \(\iint_D 1\, dA\). Can we use the same formula for a <strong>curved</strong> surface?</p></div>
+<div><p><strong>No!</strong> Think of draping a bedsheet over a tent pole. The sheet covers more area than its shadow on the floor. A tilted or curved surface has <strong>more area</strong> than its projection onto the \(xy\)-plane.</p></div>
+<div><p><em>How much more area?</em> That depends on how <strong>steep</strong> the surface is. The steeper the tilt, the more surface area is packed above each little patch of the \(xy\)-plane.</p></div>
+<div><p>The idea is the same as arc length in Calc I: a tilted line segment is longer than its horizontal projection by a factor of \(\sqrt{1 + (f')^2}\). In Calc III, a tilted surface patch is bigger than its shadow by a factor of \(\sqrt{f_x^2 + f_y^2 + 1}\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Surface area = \(\iint_D (\text{correction factor})\, dA\), where the correction factor accounts for the tilt of the surface above each point.</p></aside>
+</section>
+
+<section id="approximating-surface-area-with-tangent-plane-patches" aria-label="Approximating Surface Area with Tangent Plane Patches">
+  <h2>Approximating Surface Area with Tangent Plane Patches</h2>
+  <div><p>How do we find the correction factor? The same way we derive most integral formulas &mdash; <strong>approximate and add up</strong>.</p></div>
+<div><p><strong>Step 1:</strong> Divide the domain \(D\) into small rectangles of area \(\Delta A = \Delta x \cdot \Delta y\).</p></div>
+<div><p><strong>Step 2:</strong> Above each rectangle, the surface \(z = f(x,y)\) is approximately a <strong>tilted parallelogram</strong> &mdash; a piece of the tangent plane.</p></div>
+<div><p><strong>Step 3:</strong> The tangent plane at a point has two direction vectors:</p>
+<p>\[\vec{a} = \langle 1, 0, f_x \rangle \Delta x \qquad \vec{b} = \langle 0, 1, f_y \rangle \Delta y\]</p></div>
+<div><p><strong>Step 4:</strong> The area of the parallelogram is \(|\vec{a} \times \vec{b}|\):</p>
+<p>\[\vec{a} \times \vec{b} = \langle -f_x, -f_y, 1 \rangle \Delta x \, \Delta y\]</p>
+<p>\[|\vec{a} \times \vec{b}| = \sqrt{f_x^2 + f_y^2 + 1} \, \Delta x \, \Delta y\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\sqrt{f_x^2 + f_y^2 + 1}\) is the magnitude of the <strong>normal vector</strong> \(\langle -f_x, -f_y, 1 \rangle\) to the surface. Steeper surface \(\to\) bigger normal vector \(\to\) bigger correction factor.</p></aside>
+</section>
+
+<section id="the-surface-area-formula" aria-label="The Surface Area Formula">
+  <h2>The Surface Area Formula</h2>
+  <div><p>Summing up the parallelogram areas and taking the limit gives us the integral formula.</p></div>
+<section class="defn-box" role="region" aria-label="Surface Area">
+  <h3 class="defn-title">Surface Area</h3>
+  <p>The area of the surface \(z = f(x,y)\) over a region \(D\), where \(f_x\) and \(f_y\) are continuous, is</p>
+<p>\[A(S) = \iint_D \sqrt{\left[f_x(x,y)\right]^2 + \left[f_y(x,y)\right]^2 + 1} \, dA\]</p>
+</section>
+<div><p><strong>Sanity check:</strong> If \(f\) is <strong>constant</strong> (a flat horizontal surface), then \(f_x = 0\) and \(f_y = 0\), so the integrand is \(\sqrt{0 + 0 + 1} = 1\), and we get \(A(S) = \iint_D 1\, dA = \) area of \(D\). That's exactly right &mdash; a flat surface has the same area as its shadow!</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The formula \(\sqrt{f_x^2 + f_y^2 + 1}\) always gives a value \(\geq 1\), so the surface area is always at least as large as the area of \(D\). Equality only when the surface is perfectly flat.</p></aside>
+</section>
+
+<section id="quick-check-surface-area-of-a-flat-surface" aria-label="Quick Check: Surface Area of a Flat Surface">
+  <h2>Quick Check: Surface Area of a Flat Surface</h2>
+  <div><p>You have the surface \(z = 3\) (a horizontal plane) over the unit disk \(x^2 + y^2 \leq 1\).</p>
+<p><em>What is the surface area?</em></p></div>
+<p class="work-prompt">Compute \(f_x\) and \(f_y\) for \(f(x,y) = 3\). Plug into the surface area formula. What does the integral simplify to?</p>
+<div><p>\(f(x,y) = 3\), so \(f_x = 0\) and \(f_y = 0\).</p></div>
+<div><p>\[A(S) = \iint_D \sqrt{0 + 0 + 1}\, dA = \iint_D 1\, dA = \text{area of the unit disk} = \pi\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>For a flat surface, the surface area formula just gives the area of the domain. The formula only gets interesting when the surface is tilted or curved.</p></aside>
+</section>
+
+<section id="example-1-plane-inside-a-cylinder" aria-label="Example 1: Plane Inside a Cylinder">
+  <h2>Example 1: Plane Inside a Cylinder</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Find the surface area of the part of the plane \(2x + 5y + z = 10\) that lies inside the cylinder \(x^2 + y^2 = 9\).</p>
+</section>
+<p class="work-prompt">Solve for \(z = f(x,y)\), compute the partials, and set up the integral over the disk.</p>
+<div><p><strong>Solve for \(z\):</strong> \(z = f(x,y) = 10 - 2x - 5y\)</p></div>
+<div><p><strong>Partial derivatives:</strong> \(f_x = -2\), \(\quad f_y = -5\)</p></div>
+<div><p><strong>The integrand is constant!</strong></p>
+<p>\[\sqrt{f_x^2 + f_y^2 + 1} = \sqrt{4 + 25 + 1} = \sqrt{30}\]</p></div>
+<div><p><strong>The domain</strong> \(D\) is the disk \(x^2 + y^2 \leq 9\).</p>
+<p>\[A(S) = \iint_D \sqrt{30}\, dA = \sqrt{30} \cdot (\text{area of } D) = \sqrt{30} \cdot \pi(3)^2 = 9\pi\sqrt{30}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>When the surface is a <strong>plane</strong>, the integrand is constant, so the surface area is just (correction factor) \(\times\) (area of domain). No integration needed!</p></aside>
+</section>
+
+<section id="example-2-area-of-a-spherical-cap" aria-label="Example 2: Area of a Spherical Cap">
+  <h2>Example 2: Area of a Spherical Cap</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Find the surface area of the part of the sphere \(x^2 + y^2 + z^2 = 4\) that lies above the plane \(z = 1\).</p>
+</section>
+<p class="work-prompt">Solve for \(z\), find \(f_x\) and \(f_y\), simplify the integrand, then switch to polar.</p>
+<div><p><strong>Solve for the upper hemisphere:</strong> \(z = f(x,y) = \sqrt{4 - x^2 - y^2}\)</p></div>
+<div><p><strong>Partial derivatives:</strong></p>
+<p>\[f_x = \frac{-x}{\sqrt{4 - x^2 - y^2}}, \qquad f_y = \frac{-y}{\sqrt{4 - x^2 - y^2}}\]</p></div>
+<div><p><strong>Simplify the integrand:</strong></p>
+<p>\[f_x^2 + f_y^2 + 1 = \frac{x^2 + y^2}{4 - x^2 - y^2} + 1 = \frac{4}{4 - x^2 - y^2}\]</p>
+<p>So \(\sqrt{f_x^2 + f_y^2 + 1} = \dfrac{2}{\sqrt{4 - x^2 - y^2}}\)</p></div>
+
+<div><p><strong>Find the domain:</strong> \(z \geq 1\) means \(\sqrt{4 - x^2 - y^2} \geq 1\), so \(x^2 + y^2 \leq 3\).</p></div>
+<div><p><strong>Switch to polar:</strong></p>
+<p>\[A(S) = \int_0^{2\pi} \int_0^{\sqrt{3}} \frac{2}{\sqrt{4 - r^2}} \cdot r \, dr \, d\theta\]</p></div>
+<div><p><strong>Inner integral:</strong> Let \(u = 4 - r^2\), \(\;du = -2r\, dr\):</p>
+<p>\[\int_0^{\sqrt{3}} \frac{2r}{\sqrt{4 - r^2}}\, dr = \left[-2\sqrt{4 - r^2}\right]_0^{\sqrt{3}} = -2(1) + 2(2) = 2\]</p></div>
+<div><p>\[A(S) = \int_0^{2\pi} 2 \, d\theta = 4\pi\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The sphere's integrand \(\frac{2}{\sqrt{4-r^2}}\) blows up as \(r \to 2\) (the equator), but our domain stops at \(r = \sqrt{3}\), so the integral is perfectly well-behaved. We'll deal with that boundary singularity in Example 3.</p></aside>
+</section>
+
+<section id="quick-check-set-up-a-surface-area-integral" aria-label="Quick Check: Set Up a Surface Area Integral">
+  <h2>Quick Check: Set Up a Surface Area Integral</h2>
+  <div><p>Consider the paraboloid \(z = x^2 + y^2\) over the unit disk \(x^2 + y^2 \leq 1\).</p>
+<p><em>Set up (but don't evaluate) the surface area integral in polar coordinates.</em></p></div>
+<p class="work-prompt">Compute \(f_x\) and \(f_y\), form the integrand, then convert to polar.</p>
+<div><p>\(f(x,y) = x^2 + y^2\), so \(f_x = 2x\) and \(f_y = 2y\).</p></div>
+<div><p>\[\sqrt{f_x^2 + f_y^2 + 1} = \sqrt{4x^2 + 4y^2 + 1} = \sqrt{4r^2 + 1}\]</p></div>
+<div><p>\[A(S) = \int_0^{2\pi} \int_0^1 \sqrt{4r^2 + 1} \cdot r \, dr \, d\theta\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The integrand \(\sqrt{4r^2 + 1}\) is largest near \(r = 1\) (the rim), where the paraboloid is steepest. The surface area is concentrated where the surface tilts the most.</p></aside>
+</section>
+
+<section id="example-3-why" aria-label="Example 3: Why $A(\text{sphere}) = 4\pi a^2$">
+  <h2>Example 3: Why \(A(\text{sphere}) = 4\pi a^2\)</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Prove that the surface area of a sphere of radius \(a\) is \(4\pi a^2\).</p>
+</section>
+<div><p><strong>Strategy:</strong> Find the area of the upper hemisphere \(z = \sqrt{a^2 - x^2 - y^2}\) and double it. But there's a catch &mdash; the integrand blows up at the equator!</p></div>
+<p class="work-prompt">Set up the integrand for \(z = \sqrt{a^2 - x^2 - y^2}\) over the disk \(x^2 + y^2 \leq a^2\). Where does the integrand have trouble?</p>
+<div><p><strong>From Example 2's pattern:</strong> For the sphere \(x^2 + y^2 + z^2 = a^2\):</p>
+<p>\[\sqrt{f_x^2 + f_y^2 + 1} = \frac{a}{\sqrt{a^2 - x^2 - y^2}}\]</p></div>
+<div><p><strong>The problem:</strong> At the equator (\(x^2 + y^2 = a^2\)), the denominator is <strong>zero</strong>. The sphere is vertical there, so the surface is infinitely steep &mdash; the integrand blows up!</p></div>
+<div><p><strong>Solution:</strong> Treat this as an <strong>improper integral</strong>. Integrate over \(x^2 + y^2 \leq t^2\) (where \(t < a\)) and take \(\lim_{t \to a^-}\).</p></div>
+
+<div><p><strong>Step 1:</strong> Area of the spherical cap inside \(x^2 + y^2 = t^2\) (with \(t < a\)):</p></div>
+<div><p>\[A_{\text{cap}} = \int_0^{2\pi} \int_0^{t} \frac{a}{\sqrt{a^2 - r^2}} \cdot r \, dr \, d\theta\]</p></div>
+<div><p><strong>Inner integral:</strong> Let \(u = a^2 - r^2\), \(\;du = -2r\, dr\):</p>
+<p>\[\int_0^{t} \frac{ar}{\sqrt{a^2 - r^2}} \, dr = \left[-a\sqrt{a^2 - r^2}\right]_0^{t} = -a\sqrt{a^2 - t^2} + a \cdot a = a^2 - a\sqrt{a^2 - t^2}\]</p></div>
+<div><p>\[A_{\text{cap}} = 2\pi\left(a^2 - a\sqrt{a^2 - t^2}\right)\]</p></div>
+<div><p><strong>Step 2:</strong> Take the limit for the full hemisphere:</p>
+<p>\[A_{\text{hemisphere}} = \lim_{t \to a^-} 2\pi\left(a^2 - a\sqrt{a^2 - t^2}\right) = 2\pi\left(a^2 - 0\right) = 2\pi a^2\]</p></div>
+<div><p><strong>Step 3:</strong> The full sphere has twice this area:</p>
+<p>\[A_{\text{sphere}} = 2 \cdot 2\pi a^2 = 4\pi a^2 \qquad \checkmark\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The improper integral is essential here. The surface area of a sphere is <strong>finite</strong> even though the integrand is infinite at the equator &mdash; the singularity is ``integrable.'' This is the same phenomenon as \(\int_0^1 x^{-1/2}\, dx = 2\) being finite.</p></aside>
+</section>
+
+<section id="section-15-5-summary" aria-label="Section 15.5 Summary">
+  <h2>Section 15.5 Summary</h2>
+  <div class="summary-grid">
+<section class="defn-box" role="region" aria-label="The Key Idea"><h3 class="defn-title">The Key Idea</h3><p>A tilted surface has more area than its shadow on the \(xy\)-plane. The correction factor \(\sqrt{f_x^2 + f_y^2 + 1}\) accounts for the tilt.</p></section>
+<section class="defn-box" role="region" aria-label="The Formula"><h3 class="defn-title">The Formula</h3><p>\(A(S) = \displaystyle\iint_D \sqrt{f_x^2 + f_y^2 + 1}\, dA\). The integrand is the magnitude of the normal vector \(\langle -f_x, -f_y, 1 \rangle\).</p></section>
+<section class="defn-box" role="region" aria-label="Plane Shortcut"><h3 class="defn-title">Plane Shortcut</h3><p>For a plane, the integrand is <strong>constant</strong>, so \(A = \sqrt{f_x^2 + f_y^2 + 1} \cdot (\text{area of } D)\). No integration needed!</p></section>
+<section class="defn-box" role="region" aria-label="Polar Coordinates"><h3 class="defn-title">Polar Coordinates</h3><p>When \(D\) is a disk (or part of one), switch to polar: \(dA = r\, dr\, d\theta\).</p></section>
+<section class="defn-box" role="region" aria-label="Sphere Area"><h3 class="defn-title">Sphere Area</h3><p>\(A = 4\pi a^2\), proved via improper integral. The integrand blows up at the equator but the integral converges.</p></section>
+</div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Coming up next:</strong> Section 15.6 &mdash; Triple Integrals. We move from integrating over 2D regions to integrating over 3D solids!</p></aside>
+</section>
+
+<section aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 15.5:</strong> 1, 3, 9, 11, 13, 23</div>
+</section>
+</main>
+</body>
+</html>

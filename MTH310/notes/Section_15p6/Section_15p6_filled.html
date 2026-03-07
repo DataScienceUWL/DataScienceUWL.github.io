@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 15.6: Triple Integrals | MTH 310</title>
+<style>
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #e09f3e;
+    --bg: #ffffff; --fg: #1a1a1a;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; max-width: 900px;
+    margin: 0 auto; padding: 1em 2em; color: var(--fg); background: var(--bg);
+    font-size: 1.05rem; line-height: 1.6; }
+h1 { font-size: 1.8em; color: var(--accent-cyan); border-bottom: 3px solid var(--accent-cyan);
+    padding-bottom: 0.2em; }
+h2 { font-size: 1.4em; color: var(--accent-cyan); margin-top: 1.5em;
+    border-bottom: 1px solid #ddd; padding-bottom: 0.15em; }
+h3 { font-size: 1.1em; margin: 0.5em 0 0.2em 0; }
+h4 { font-size: 1em; color: var(--accent-cyan); margin: 0.3em 0; }
+p { margin: 0.5em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 1em 0; }
+.course-info { color: #666; font-size: 0.9em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-cyan);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.defn-box h3, .defn-box .defn-title { color: var(--accent-red); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box h3, .theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.example-box h3, .example-box .example-title { color: var(--accent-green); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.solution { border: 1px solid #ddd; border-radius: 4px; margin: 0.5em 0; }
+.solution summary { padding: 0.5em 0.8em; cursor: pointer; font-weight: 600;
+    color: #8a6200; background: #fffdf5; border-radius: 4px; }
+.solution > div, .solution > p, .solution > ul, .solution > ol {
+    padding: 0.5em 1em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 4px;
+    padding: 0.8em 1em; margin: 0.8em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #595959; margin: 0.5em 0; font-size: 0.9em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red); border-radius: 6px;
+    padding: 0.8em 1.2em; text-align: center; margin: 1em 0; font-size: 1.1em; }
+.desmos-container { text-align: center; margin: 1em 0; }
+.desmos-container figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.desmos-container iframe { border: 1px solid #ddd; border-radius: 6px; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.2em;
+    color: var(--accent-cyan); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+figure { margin: 0.8em 0; text-align: center; }
+figure img { max-width: 100%; height: auto; max-height: 500px; border-radius: 4px; }
+figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 4px; border: 1px solid #ddd; }
+.plotly-figure { border-radius: 4px; overflow: hidden; margin: 0.5em 0; }
+.plotly-figure .js-plotly-plot { width: 100% !important; height: 100% !important; }
+.plotly-alt { margin-top: 0.3em; font-size: 0.85em; color: #666; }
+.plotly-alt summary { cursor: pointer; color: var(--accent-cyan); }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 1em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.5em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 200px; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.8em; color: #666; }
+table { border-collapse: collapse; margin: 0.5em 0; }
+th, td { padding: 0.3em 0.8em; border: 1px solid #ddd; text-align: center; }
+th { background: #f0f7ff; color: var(--accent-cyan); }
+.small { font-size: 0.85em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+a { color: var(--accent-cyan); }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media (max-width: 600px) {
+    body { padding: 0.5em 1em; }
+    .summary-grid { grid-template-columns: 1fr; }
+}
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <h1>Section 15.6: Triple Integrals</h1>
+  <p class="course-info">MTH 310 &mdash; Calculus III | Multiple Integrals</p>
+</header>
+<hr aria-hidden="true">
+
+<section id="from-double-to-triple" aria-label="From Double to Triple">
+  <h2>From Double to Triple</h2>
+  <div><p>In Sections 15.1&ndash;15.5 we integrated \(f(x,y)\) over a 2D region in \(\mathbb{R}^2\). Now we go one dimension higher: integrating \(f(x,y,z)\) over a 3D solid in \(\mathbb{R}^3\).</p></div>
+<div><p>Recall the progression:</p>
+<ul>
+<li><strong>Calc I:</strong> \(\displaystyle\int_a^b f(x)\,dx\) &mdash; integrate over an interval (1D)</li>
+<li><strong>Calc III (Ch 15.1&ndash;15.5):</strong> \(\displaystyle\iint_D f(x,y)\,dA\) &mdash; integrate over a region (2D)</li>
+<li><strong>Now:</strong> \(\displaystyle\iiint_E f(x,y,z)\,dV\) &mdash; integrate over a solid (3D)</li>
+</ul></div>
+<div><p>The construction is the same: partition the solid \(E\) into tiny boxes, multiply each \(f\)-value by the volume of the box \(\Delta V = \Delta x\,\Delta y\,\Delta z\), add them all up, and take the limit:</p>
+<p>\[\iiint_E f(x,y,z)\,dV = \lim_{l,m,n \to \infty} \sum_{i=1}^{l}\sum_{j=1}^{m}\sum_{k=1}^{n} f(x_{ijk}^*, y_{ijk}^*, z_{ijk}^*)\,\Delta V\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Same idea, one more dimension. Chop, multiply, add, take the limit.</p></aside>
+</section>
+
+<section id="interpretation-density-and-mass" aria-label="Interpretation: Density and Mass">
+  <h2>Interpretation: Density and Mass</h2>
+  <div><p>What does \(\iiint_E f(x,y,z)\,dV\) <em>mean</em> physically?</p></div>
+<div><p>If \(f(x,y,z) = 1\) for all points, then:</p>
+<p>\[\iiint_E 1\,dV = \text{volume of } E\]</p>
+<p>This is the 3D version of ``area \(= \iint_D 1\,dA\).''</p></div>
+<div><p>The most common physical interpretation: if \(f(x,y,z) = \rho(x,y,z)\) is a <strong>density function</strong> (mass per unit volume, like \(\text{g/cm}^3\) or \(\text{kg/m}^3\)), then</p>
+<p>\[\iiint_E \rho(x,y,z)\,dV = \text{total mass of } E\]</p></div>
+<div><p>More generally, if \(f\) gives ``amount per unit volume,'' then \(\iiint_E f\,dV\) gives the total amount in \(E\):</p>
+<ul>
+<li>Charge density (\(\text{C/m}^3\)) \(\to\) total charge</li>
+<li>Bacteria concentration (\(\text{cells/cm}^3\)) \(\to\) total bacteria count</li>
+<li>Probability density \(\to\) total probability</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Triple integrals accumulate a quantity spread throughout a 3D solid &mdash; density times volume gives mass.</p></aside>
+</section>
+
+<section id="quick-check-interpret-a-triple-integral" aria-label="Quick Check: Interpret a Triple Integral">
+  <h2>Quick Check: Interpret a Triple Integral</h2>
+  <div><p>Suppose \(\rho(x,y,z) = 3z\) gives the density (in g/cm\(^3\)) of a solid \(E\).</p>
+<p><em>What does \(\displaystyle\iiint_E 3z\,dV\) compute? What are the units?</em></p></div>
+<p class="work-prompt">Think about what density \(\times\) volume gives you. What role does \(z\) play in the density?</p>
+<div><p>\(\displaystyle\iiint_E 3z\,dV\) computes the <strong>total mass</strong> of the solid \(E\).</p></div>
+<div><p>Units: \(\left(\frac{\text{g}}{\text{cm}^3}\right) \times \text{cm}^3 = \text{g}\) (grams).</p>
+<p>The density \(\rho = 3z\) increases with height &mdash; the solid is denser at the top than at the bottom.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>To interpret a triple integral, ask: ``What does the integrand measure per unit volume?'' The integral gives the total amount.</p></aside>
+</section>
+
+<section id="setting-up-the-limits-of-integration" aria-label="Setting Up the Limits of Integration">
+  <h2>Setting Up the Limits of Integration</h2>
+  <div><p>Just like double integrals, we evaluate triple integrals as <strong>iterated integrals</strong>. In the order \(dz\,dy\,dx\):</p>
+<p>\[\iiint_E f(x,y,z)\,dV = \int_a^b \int_{g_1(x)}^{g_2(x)} \int_{u_1(x,y)}^{u_2(x,y)} f(x,y,z)\,dz\,dy\,dx\]</p></div>
+<div><p><strong>How to find the limits</strong> (working from outside in):</p>
+<ol>
+<li><strong>Outer integral (\(dx\)):</strong> What range of \(x\)-values does the solid span? These are constants.</li>
+<li><strong>Middle integral (\(dy\)):</strong> For a fixed \(x\), what range of \(y\)-values? These may depend on \(x\).</li>
+<li><strong>Inner integral (\(dz\)):</strong> For fixed \(x\) and \(y\), what range of \(z\)-values? These may depend on both \(x\) and \(y\).</li>
+</ol></div>
+<div><p><strong>Alternatively</strong> (working from inside out):</p>
+<ol>
+<li>Identify the <strong>top</strong> and <strong>bottom</strong> surfaces \(\to\) limits on \(z\)</li>
+<li><strong>Project</strong> the solid onto the \(xy\)-plane \(\to\) a 2D region</li>
+<li>Set up the double integral over that 2D region as in Sections 15.2&ndash;15.3</li>
+</ol></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The hardest part of triple integrals is <strong>finding the limits</strong>. The actual integration is just three rounds of Calc I antiderivatives.</p></aside>
+</section>
+
+<section id="example-1-triple-integral-over-a-tetrahedron" aria-label="Example 1: Triple Integral Over a Tetrahedron">
+  <h2>Example 1: Triple Integral Over a Tetrahedron</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Evaluate \(\displaystyle\iiint_E 2xyz\,dV\), where \(E\) is the solid in the first octant bounded by the plane \(3x + 2y + z = 1\).</p>
+</section>
+<div><p><strong>Describe the solid:</strong> \(E\) is a <strong>tetrahedron</strong> (triangular pyramid) with vertices at \((0,0,0)\), \((\frac{1}{3},0,0)\), \((0,\frac{1}{2},0)\), and \((0,0,1)\).</p></div>
+<p class="work-prompt">Find the limits for \(dz\,dy\,dx\). Start with: for fixed \(x,y\), \(z\) goes from \(0\) up to \(z = 1 - 3x - 2y\).</p>
+<div><p><strong>Limits on \(z\):</strong> The bottom is \(z = 0\) and the top is \(z = 1 - 3x - 2y\).</p></div>
+<div><p><strong>Project onto the \(xy\)-plane:</strong> Set \(z = 0\) in the plane equation to get \(3x + 2y = 1\), or \(y = \frac{1-3x}{2}\). So \(y\) ranges from \(0\) to \(\frac{1-3x}{2}\).</p></div>
+<div><p><strong>Limits on \(x\):</strong> \(x\) ranges from \(0\) to \(\frac{1}{3}\) (where \(y = 0\)).</p></div>
+<div><p>\[\iiint_E 2xyz\,dV = \int_0^{1/3} \int_0^{(1-3x)/2} \int_0^{1-3x-2y} 2xyz\,dz\,dy\,dx\]</p></div>
+
+<div><p><strong>Now evaluate</strong> &mdash; three rounds of Calc I integration:</p></div>
+<div><p><strong>Inner integral</strong> (integrate with respect to \(z\)):</p>
+<p>\[\int_0^{1-3x-2y} 2xyz\,dz = 2xy \cdot \frac{z^2}{2}\Big|_0^{1-3x-2y} = xy(1-3x-2y)^2\]</p></div>
+<div><p><strong>Middle integral</strong> (integrate with respect to \(y\)):</p>
+<p>\[\int_0^{(1-3x)/2} xy(1-3x-2y)^2\,dy\]</p>
+<p>Let \(u = 1 - 3x - 2y\), \(du = -2\,dy\). When \(y = 0\): \(u = 1-3x\). When \(y = \frac{1-3x}{2}\): \(u = 0\).</p>
+<p>\[= x \int_{1-3x}^{0} \frac{1-3x-u}{2} \cdot u^2 \cdot \left(-\frac{du}{2}\right) = \frac{x}{4}\int_0^{1-3x} u^2(1-3x-u)\,du\]</p></div>
+<div><p>\[= \frac{x}{4}\left[\frac{(1-3x)u^3}{3} - \frac{u^4}{4}\right]_0^{1-3x} = \frac{x}{4}\left[\frac{(1-3x)^4}{3} - \frac{(1-3x)^4}{4}\right] = \frac{x(1-3x)^4}{48}\]</p></div>
+<div><p><strong>Outer integral:</strong></p>
+<p>\[\int_0^{1/3} \frac{x(1-3x)^4}{48}\,dx\]</p>
+<p>Let \(w = 1-3x\), \(dw = -3\,dx\), \(x = \frac{1-w}{3}\). Limits: \(w = 1\) to \(w = 0\).</p>
+<p>\[= \frac{1}{48}\int_1^0 \frac{(1-w)}{3} w^4 \left(-\frac{dw}{3}\right) = \frac{1}{432}\int_0^1 w^4(1-w)\,dw = \frac{1}{432}\left[\frac{1}{5} - \frac{1}{6}\right] = \frac{1}{432}\cdot\frac{1}{30} = \frac{1}{12960}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\displaystyle\iiint_E 2xyz\,dV = \frac{1}{12960}\). The hardest part was the limits &mdash; the integration itself was just repeated substitutions.</p></aside>
+</section>
+
+<section id="quick-check-describe-the-solid" aria-label="Quick Check: Describe the Solid">
+  <h2>Quick Check: Describe the Solid</h2>
+  <div><p><em>Describe the solid \(E\) whose volume is given by:</em></p>
+<p>\[\int_0^1 \int_0^{1-x} \int_0^{2-2x-2y} dz\,dy\,dx\]</p></div>
+<p class="work-prompt">Read the limits from outside in. What shape has these boundary surfaces?</p>
+<div><p><strong>Bottom:</strong> \(z = 0\) (the \(xy\)-plane). <strong>Top:</strong> \(z = 2 - 2x - 2y\), i.e., the plane \(2x + 2y + z = 2\).</p></div>
+<div><p><strong>Projection onto \(xy\)-plane:</strong> \(y\) from \(0\) to \(1-x\), \(x\) from \(0\) to \(1\) &mdash; a triangle with vertices \((0,0)\), \((1,0)\), \((0,1)\).</p></div>
+<div><p>\(E\) is a <strong>tetrahedron</strong> with vertices at \((0,0,0)\), \((1,0,0)\), \((0,1,0)\), and \((0,0,2)\).</p>
+<p>Its volume is \(\frac{1}{3} \cdot \text{base area} \cdot \text{height} = \frac{1}{3} \cdot \frac{1}{2} \cdot 2 = \frac{1}{3}\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Reading limits tells you the solid's boundaries. Projecting onto a coordinate plane gives you the 2D shadow.</p></aside>
+</section>
+
+<section id="six-orders-of-integration" aria-label="Six Orders of Integration">
+  <h2>Six Orders of Integration</h2>
+  <div><p>A triple integral can be written in <strong>six</strong> different orders:</p>
+<p>\[dz\,dy\,dx \qquad dz\,dx\,dy \qquad dy\,dz\,dx \qquad dy\,dx\,dz \qquad dx\,dz\,dy \qquad dx\,dy\,dz\]</p></div>
+<div><p>All six give the same answer (assuming the function is continuous), but some orders may be <strong>much easier</strong> to evaluate than others!</p></div>
+<div><p><strong>Strategy for choosing the best order:</strong></p>
+<ul>
+<li>Look for limits that are <strong>constants</strong> &mdash; those variables should go on the outside</li>
+<li>Look for an integrand that simplifies when you integrate a particular variable first</li>
+<li>Sketch the solid and look for natural ``top/bottom,'' ``left/right,'' or ``front/back'' descriptions</li>
+</ul></div>
+<div><p>For the tetrahedron below \(3x + 2y + z = 1\) (Example 1), here's the \(dy\,dz\,dx\) version:</p>
+<p><strong>Fix \(x\) and \(z\):</strong> \(y\) goes from \(0\) to \(\frac{1-3x-z}{2}\). <strong>Fix \(x\):</strong> \(z\) goes from \(0\) to \(1-3x\). <strong>Then:</strong> \(x\) goes from \(0\) to \(\frac{1}{3}\).</p>
+<p>\[\int_0^{1/3}\int_0^{1-3x}\int_0^{(1-3x-z)/2} 2xyz\,dy\,dz\,dx\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Switching the order of integration changes the <strong>limits</strong>, not the <strong>integrand</strong>. Always re-derive the limits from scratch by thinking about the geometry.</p></aside>
+</section>
+
+<section id="example-2-another-tetrahedron" aria-label="Example 2: Another Tetrahedron">
+  <h2>Example 2: Another Tetrahedron</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Evaluate \(\displaystyle\iiint_E y\,dV\), where \(E\) is bounded by the coordinate planes \(x = 0\), \(y = 0\), \(z = 0\), and the plane \(2x + 2y + z = 4\).</p>
+</section>
+<p class="work-prompt">Set up the integral in order \(dz\,dy\,dx\). What is the top surface? What is the projection onto the \(xy\)-plane?</p>
+<div><p><strong>Top surface:</strong> \(z = 4 - 2x - 2y\). <strong>Bottom:</strong> \(z = 0\).</p></div>
+<div><p><strong>Project onto \(xy\)-plane</strong> (set \(z = 0\)): \(2x + 2y = 4 \Rightarrow y = 2 - x\). So \(y\) ranges from \(0\) to \(2 - x\), and \(x\) from \(0\) to \(2\).</p>
+<p>\[\iiint_E y\,dV = \int_0^2 \int_0^{2-x} \int_0^{4-2x-2y} y\,dz\,dy\,dx\]</p></div>
+<div><p><strong>Inner integral:</strong> \(\displaystyle\int_0^{4-2x-2y} y\,dz = y(4-2x-2y)\)</p></div>
+<div><p><strong>Middle integral:</strong></p>
+<p>\[\int_0^{2-x} y(4-2x-2y)\,dy = \int_0^{2-x} \left[(4-2x)y - 2y^2\right]\,dy\]</p>
+<p>\[= \left[\frac{(4-2x)y^2}{2} - \frac{2y^3}{3}\right]_0^{2-x} = \frac{(4-2x)(2-x)^2}{2} - \frac{2(2-x)^3}{3}\]</p></div>
+<div><p>Let \(u = 2-x\): \(\;= \frac{2u \cdot u^2}{2} - \frac{2u^3}{3} = u^3 - \frac{2u^3}{3} = \frac{u^3}{3} = \frac{(2-x)^3}{3}\)</p></div>
+<div><p><strong>Outer integral:</strong></p>
+<p>\[\int_0^2 \frac{(2-x)^3}{3}\,dx = \frac{1}{3}\left[-\frac{(2-x)^4}{4}\right]_0^2 = \frac{1}{3}\left[0 + \frac{16}{4}\right] = \frac{4}{3}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\displaystyle\iiint_E y\,dV = \frac{4}{3}\). The substitution \(u = 2-x\) cleaned up the algebra nicely.</p></aside>
+</section>
+
+<section id="example-3-volume-using-a-triple-integral" aria-label="Example 3: Volume Using a Triple Integral">
+  <h2>Example 3: Volume Using a Triple Integral</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Find the volume of the solid bounded by the parabolic cylinder \(y = x^2\), and the planes \(z = 0\), \(z = 4\), and \(y = 9\).</p>
+</section>
+<div><p><strong>Describe the solid:</strong> The solid sits between \(z = 0\) and \(z = 4\) (constant height), behind \(y = 9\), and in front of \(y = x^2\) (a parabolic wall).</p></div>
+<p class="work-prompt">Set up \(\iiint_E 1\,dV\) in order \(dz\,dy\,dx\). Where does \(y = x^2\) intersect \(y = 9\)?</p>
+<div><p><strong>Limits on \(z\):</strong> \(0 \leq z \leq 4\) (constant &mdash; nice!).</p></div>
+<div><p><strong>Limits on \(y\):</strong> From the parabolic wall \(y = x^2\) to the flat wall \(y = 9\).</p></div>
+<div><p><strong>Limits on \(x\):</strong> \(y = x^2 = 9 \Rightarrow x = \pm 3\), so \(-3 \leq x \leq 3\).</p>
+<p>\[V = \int_{-3}^{3}\int_{x^2}^{9}\int_0^4 dz\,dy\,dx\]</p></div>
+<div><p><strong>Inner:</strong> \(\displaystyle\int_0^4 dz = 4\)</p>
+<p><strong>Middle:</strong> \(\displaystyle\int_{x^2}^{9} 4\,dy = 4(9 - x^2)\)</p>
+<p><strong>Outer:</strong> \(\displaystyle\int_{-3}^{3} 4(9-x^2)\,dx = 4\left[9x - \frac{x^3}{3}\right]_{-3}^{3} = 4\left[\left(27 - 9\right) - \left(-27+9\right)\right] = 4 \cdot 36 = 144\)</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(V = 144\) cubic units. When the \(z\)-limits are constants, the inner integral is trivial and the problem reduces to a double integral.</p></aside>
+</section>
+
+<section id="section-15-6-summary" aria-label="Section 15.6 Summary">
+  <h2>Section 15.6 Summary</h2>
+  <div class="summary-grid">
+<section class="defn-box" role="region" aria-label="Triple Integral"><h3 class="defn-title">Triple Integral</h3><p>\(\displaystyle\iiint_E f(x,y,z)\,dV\) &mdash; limit of triple Riemann sums over tiny boxes.</p></section>
+<section class="defn-box" role="region" aria-label="Interpretation"><h3 class="defn-title">Interpretation</h3><p>\(f = 1\): volume. \(f = \rho\) (density): total mass. \(f = \) amount per volume: total amount.</p></section>
+<section class="defn-box" role="region" aria-label="Setting Up Limits"><h3 class="defn-title">Setting Up Limits</h3><p>Identify top/bottom surfaces for \(z\), project onto \(xy\)-plane, then set up the 2D region as in 15.2&ndash;15.3.</p></section>
+<section class="defn-box" role="region" aria-label="Six Orders"><h3 class="defn-title">Six Orders</h3><p>\(dz\,dy\,dx\), \(dz\,dx\,dy\), \(dy\,dz\,dx\), \(dy\,dx\,dz\), \(dx\,dz\,dy\), \(dx\,dy\,dz\). All give the same answer; some are easier.</p></section>
+<section class="defn-box" role="region" aria-label="Evaluation"><h3 class="defn-title">Evaluation</h3><p>Three nested Calc I integrals. Work from the inside out.</p></section>
+</div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Coming up next:</strong> Some solids have circular symmetry that makes Cartesian limits messy. In Section 15.7 we'll switch to <strong>cylindrical coordinates</strong> &mdash; polar coordinates plus a \(z\)-axis &mdash; to handle cylinders, cones, and paraboloids.</p></aside>
+</section>
+
+<section aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 15.6:</strong> 1, 3, 5, 6, 7, 9, 11, 13, 15, 17, 19, 25, 31, 33</div>
+</section>
+</main>
+</body>
+</html>

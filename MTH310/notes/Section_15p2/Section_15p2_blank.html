@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 15.2: Iterated Integrals and Double Integrals over General Regions &mdash; Handout</title>
+<style>
+@page { size: letter; margin: 0.4in 0.5in; }
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #b5850e;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    max-width: 7.5in; margin: 0 auto; padding: 0.3em;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.35; }
+.handout-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left h1 { font-size: 1.3em; color: var(--accent-cyan); margin: 0; }
+.header-left p { margin: 0.05em 0; color: #666; font-size: 0.85em; }
+.header-right { text-align: right; font-size: 0.85em; color: #333; }
+hr { border: none; border-top: 2px solid var(--accent-cyan); margin: 0.3em 0; }
+h2 { font-size: 1.1em; color: var(--accent-cyan); margin: 0.4em 0 0.15em 0;
+    border-bottom: 1px solid #ccc; padding-bottom: 0.05em; }
+h3, h4 { font-size: 0.95em; margin: 0.15em 0; }
+p { margin: 0.15em 0; }
+.defn-box { background: #f0f7ff; border-left: 3px solid var(--accent-cyan);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 3px solid var(--accent-green);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
+    padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
+.blank-space { margin: 0.2em 0; position: relative;
+    border: 1px dashed #ccc; border-radius: 3px; box-sizing: border-box; }
+.blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
+    color: #767676; font-style: italic; }
+.hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
+    padding: 0.3em 0.8em; text-align: center; margin: 0.5em 0; }
+.desmos-link { background: #f0f7ff; border-radius: 3px; padding: 0.2em 0.5em;
+    margin: 0.3em 0; font-size: 0.8em; }
+.desmos-link a { color: var(--accent-cyan); word-break: break-all; }
+.two-col-print { display: flex; gap: 0.6em; align-items: flex-start; }
+.two-col-print > * { flex: 1; }
+figure { margin: 0.1em 0; text-align: center; }
+figure img { max-width: 100%; max-height: 3.0in; }
+figcaption { font-size: 0.7em; color: #666; margin-top: 0.05em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 2px; border: 1px solid #ddd; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.image-grid { display: flex; gap: 0.4em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.2em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.8em; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 1.5in; max-width: 100%; }
+.image-grid .grid-cell.textbook-fig img { padding: 2px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+table { border-collapse: collapse; font-size: 0.85em; margin: 0.15em auto; }
+th, td { padding: 0.1em 0.4em; border: 1px solid #ccc; text-align: center; }
+th { background: #f0f7ff; }
+.small { font-size: 0.8em; }
+ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
+li { margin-bottom: 0.05em; }
+.pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
+.homework-section { page-break-before: auto; }
+.defn-box, .example-box, .key-point { page-break-inside: avoid; break-inside: avoid; }
+.example-group { page-break-inside: avoid; break-inside: avoid; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media print {
+    body { padding: 0; max-width: none; }
+    .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    a[href^="http"]::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="#"]::after { content: none; }
+    figure img { max-height: 2.8in; }
+    .skip-link { display: none; }
+}
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        pb.remove();  // no longer needed — workspace expansion handles the break
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <div class="handout-header">
+    <div class="header-left">
+      <h1>Section 15.2: Iterated Integrals and Double Integrals over General Regions</h1>
+      <p>Multiple Integrals</p>
+    </div>
+    <div class="header-right">
+      <p>MTH 310<br>Calculus III</p>
+    </div>
+  </div>
+</header>
+<hr aria-hidden="true">
+
+<section id="from-cross-sections-to-iterated-integrals" class="example-group" aria-label="From Cross-Sections to Iterated Integrals">
+  <h2>From Cross-Sections to Iterated Integrals</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>A solid \(S\) has its base in the \(xy\)-plane, bounded by \(f(x) = x(x-2)\) and \(g(x) = x\). Cross-sections perpendicular to the \(x\)-axis are <strong>squares</strong>. Find the volume.</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Find where the curves intersect, then compute the side length of each square cross-section as $g(x) - f(x)$." style="min-height:2.5in;">
+  <div class="blank-prompt">Find where the curves intersect, then compute the side length of each square cross-section as \(g(x) - f(x)\).</div>
+</div>
+</section>
+
+<section id="the-cross-section-idea-for-surfaces" aria-label="The Cross-Section Idea for Surfaces">
+  <h2>The Cross-Section Idea for Surfaces</h2>
+  <aside class="key-point" role="note" aria-label="Key point"><p>An iterated integral is just two single-variable integrals done one at a time. The inner integral produces a function of the outer variable, and then we integrate that.</p></aside>
+</section>
+
+<section id="example-volume-under" class="example-group" aria-label="Example: Volume Under $f(x,y) = 1 + x^2 + y^2$">
+  <h2>Example: Volume Under \(f(x,y) = 1 + x^2 + y^2\)</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Find the volume under \(f(x,y) = 1 + x^2 + y^2\) above the unit square \(R = [0,1] \times [0,1]\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Fix $x$ and integrate in $y$ first to get $A(x)$. Then integrate $A(x)$ from $0$ to $1$." style="min-height:3in;">
+  <div class="blank-prompt">Fix \(x\) and integrate in \(y\) first to get \(A(x)\). Then integrate \(A(x)\) from \(0\) to \(1\).</div>
+</div>
+</section>
+
+<section id="fubini-s-theorem" aria-label="Fubini's Theorem">
+  <h2>Fubini's Theorem</h2>
+  <section class="defn-box theorem-box" role="region" aria-label="Theorem: Fubini's Theorem">
+  <h3 class="defn-title">Theorem: Fubini's Theorem</h3>
+  <p>If \(f\) is continuous on the rectangle \(R = [a,b] \times [c,d]\), then</p>
+<p>\[\iint_R f(x,y)\,dA = \int_a^b \int_c^d f(x,y)\,dy\,dx = \int_c^d \int_a^b f(x,y)\,dx\,dy\]</p>
+<p>Both orders of integration give the <strong>same answer</strong>.</p>
+</section>
+<aside class="key-point" role="note" aria-label="Key point"><p>Fubini's Theorem says we can choose whichever order is more convenient. Sometimes one order is much easier than the other!</p></aside>
+</section>
+
+<section id="quick-check-set-up-an-iterated-integral" aria-label="Quick Check: Set Up an Iterated Integral">
+  <h2>Quick Check: Set Up an Iterated Integral</h2>
+  <div class="blank-space" role="region" aria-label="Student workspace: Identify $a$, $b$, $c$, $d$ from $R$. Then write the integral both ways: $dy\,dx$ and $dx\,dy$." style="min-height:2.5in;">
+  <div class="blank-prompt">Identify \(a\), \(b\), \(c\), \(d\) from \(R\). Then write the integral both ways: \(dy\,dx\) and \(dx\,dy\).</div>
+</div>
+</section>
+
+<section id="example-a-trig-integral" class="example-group" aria-label="Example: A Trig Integral">
+  <h2>Example: A Trig Integral</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Evaluate \(\displaystyle\iint_R \cos(x + 2y)\,dA\), where \(R = [0, \pi] \times [0, \pi/2]\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Integrate in $y$ first using substitution $u = x + 2y$." style="min-height:3in;">
+  <div class="blank-prompt">Integrate in \(y\) first using substitution \(u = x + 2y\).</div>
+</div>
+</section>
+
+<section id="beyond-rectangles-general-regions" aria-label="Beyond Rectangles: General Regions">
+  <h2>Beyond Rectangles: General Regions</h2>
+  <aside class="key-point" role="note" aria-label="Key point"><p>The outer limits are always constants (numbers). The inner limits can be functions of the outer variable. Getting these limits right is the central skill of this section.</p></aside>
+</section>
+
+<section id="type-1-and-type-2-regions" aria-label="Type 1 and Type 2 Regions">
+  <h2>Type 1 and Type 2 Regions</h2>
+  <section class="defn-box" role="region" aria-label="Type 1 Region (Integrate $dy\,dx$)">
+  <h3 class="defn-title">Type 1 Region (Integrate $dy\,dx$)</h3>
+  <p>A region \(D\) is <strong>Type 1</strong> if it lies between two curves \(y = g_1(x)\) and \(y = g_2(x)\):</p>
+<p>\[D = \{(x,y) \mid a \leq x \leq b, \;\; g_1(x) \leq y \leq g_2(x)\}\]</p>
+<p>\[\iint_D f(x,y)\,dA = \int_a^b \int_{g_1(x)}^{g_2(x)} f(x,y)\,dy\,dx\]</p>
+</section>
+<section class="defn-box" role="region" aria-label="Type 2 Region (Integrate $dx\,dy$)">
+  <h3 class="defn-title">Type 2 Region (Integrate $dx\,dy$)</h3>
+  <p>A region \(D\) is <strong>Type 2</strong> if it lies between two curves \(x = h_1(y)\) and \(x = h_2(y)\):</p>
+<p>\[D = \{(x,y) \mid c \leq y \leq d, \;\; h_1(y) \leq x \leq h_2(y)\}\]</p>
+<p>\[\iint_D f(x,y)\,dA = \int_c^d \int_{h_1(y)}^{h_2(y)} f(x,y)\,dx\,dy\]</p>
+</section>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Type 1:</strong> Outer variable is \(x\), inner limits are functions of \(x\). Integrate \(dy\) first.</p>
+<p><strong>Type 2:</strong> Outer variable is \(y\), inner limits are functions of \(y\). Integrate \(dx\) first.</p>
+<p>Many regions are <strong>both</strong> types &mdash; you get to choose!</p></aside>
+</section>
+
+<section id="quick-check-identify-the-limits" aria-label="Quick Check: Identify the Limits">
+  <h2>Quick Check: Identify the Limits</h2>
+  <div class="blank-space" role="region" aria-label="Student workspace: Sketch the triangle. Find the equation of the hypotenuse. Then describe using ``for a fixed $x$, $y$ goes from \ldots{} to \ldots''" style="min-height:2.5in;">
+  <div class="blank-prompt">Sketch the triangle. Find the equation of the hypotenuse. Then describe using ``for a fixed \(x\), \(y\) goes from \ldots{} to \ldots''</div>
+</div>
+</section>
+
+<section id="example-integral-over-a-triangular-region" class="example-group" aria-label="Example: Integral over a Triangular Region">
+  <h2>Example: Integral over a Triangular Region</h2>
+  <section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>Evaluate \(\displaystyle\iint_D x\sqrt{y^2 - x^2}\,dA\), where \(D = \{(x,y) \mid 0 \leq y \leq 1,\; 0 \leq x \leq y\}\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: This is a Type 2 region: for fixed $y$, $x$ goes from $0$ to $y$. Set up the integral as $dx\,dy$." style="min-height:3in;">
+  <div class="blank-prompt">This is a Type 2 region: for fixed \(y\), \(x\) goes from \(0\) to \(y\). Set up the integral as \(dx\,dy\).</div>
+</div>
+</section>
+
+<section id="describing-a-region-both-ways" class="example-group" aria-label="Describing a Region Both Ways">
+  <h2>Describing a Region Both Ways</h2>
+  <section class="example-box" role="region" aria-label="Example 5">
+  <h3 class="example-title">Example 5</h3>
+  <p>Consider the region \(D\) between \(y = x^2\) and \(y = \sqrt{x}\).</p>
+<p>(a) Describe \(D\) as both a Type 1 and a Type 2 region.</p>
+<p>(b) Evaluate \(\displaystyle\iint_D (2x - 3y^2)\,dA\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Sketch the region. For Type 1: fix $x$, find $y$-bounds. For Type 2: fix $y$, find $x$-bounds. Then choose the easier order to integrate." style="min-height:3.5in;">
+  <div class="blank-prompt">Sketch the region. For Type 1: fix \(x\), find \(y\)-bounds. For Type 2: fix \(y\), find \(x\)-bounds. Then choose the easier order to integrate.</div>
+</div>
+</section>
+
+<section id="changing-the-order-of-integration" aria-label="Changing the Order of Integration">
+  <h2>Changing the Order of Integration</h2>
+  <div class="blank-space" role="region" aria-label="Student workspace: We can't integrate $e^{y^2}$ in $y$ &mdash; there's no elementary antiderivative! Sketch the region, then swap the order." style="min-height:2.5in;">
+  <div class="blank-prompt">We can't integrate \(e^{y^2}\) in \(y\) &mdash; there's no elementary antiderivative! Sketch the region, then swap the order.</div>
+</div>
+</section>
+
+<section class="homework-section" aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 15.2:</strong> 3, 5, 7, 9, 11, 15, 16, 17, 19, 23, 25, 27, 31, 33, 35, 37, 43, 55, 57, 59, 61, 63, 65, 75, 77</div>
+</section>
+</main>
+</body>
+</html>

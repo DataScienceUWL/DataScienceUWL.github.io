@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 15.5: Surface Area &mdash; Handout</title>
+<style>
+@page { size: letter; margin: 0.4in 0.5in; }
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #b5850e;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    max-width: 7.5in; margin: 0 auto; padding: 0.3em;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.35; }
+.handout-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left h1 { font-size: 1.3em; color: var(--accent-cyan); margin: 0; }
+.header-left p { margin: 0.05em 0; color: #666; font-size: 0.85em; }
+.header-right { text-align: right; font-size: 0.85em; color: #333; }
+hr { border: none; border-top: 2px solid var(--accent-cyan); margin: 0.3em 0; }
+h2 { font-size: 1.1em; color: var(--accent-cyan); margin: 0.4em 0 0.15em 0;
+    border-bottom: 1px solid #ccc; padding-bottom: 0.05em; }
+h3, h4 { font-size: 0.95em; margin: 0.15em 0; }
+p { margin: 0.15em 0; }
+.defn-box { background: #f0f7ff; border-left: 3px solid var(--accent-cyan);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 3px solid var(--accent-green);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
+    padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
+.blank-space { margin: 0.2em 0; position: relative;
+    border: 1px dashed #ccc; border-radius: 3px; box-sizing: border-box; }
+.blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
+    color: #767676; font-style: italic; }
+.hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
+    padding: 0.3em 0.8em; text-align: center; margin: 0.5em 0; }
+.desmos-link { background: #f0f7ff; border-radius: 3px; padding: 0.2em 0.5em;
+    margin: 0.3em 0; font-size: 0.8em; }
+.desmos-link a { color: var(--accent-cyan); word-break: break-all; }
+.two-col-print { display: flex; gap: 0.6em; align-items: flex-start; }
+.two-col-print > * { flex: 1; }
+figure { margin: 0.1em 0; text-align: center; }
+figure img { max-width: 100%; max-height: 3.0in; }
+figcaption { font-size: 0.7em; color: #666; margin-top: 0.05em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 2px; border: 1px solid #ddd; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.image-grid { display: flex; gap: 0.4em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.2em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.8em; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 1.5in; max-width: 100%; }
+.image-grid .grid-cell.textbook-fig img { padding: 2px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+table { border-collapse: collapse; font-size: 0.85em; margin: 0.15em auto; }
+th, td { padding: 0.1em 0.4em; border: 1px solid #ccc; text-align: center; }
+th { background: #f0f7ff; }
+.small { font-size: 0.8em; }
+ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
+li { margin-bottom: 0.05em; }
+.pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
+.homework-section { page-break-before: auto; }
+.defn-box, .example-box, .key-point { page-break-inside: avoid; break-inside: avoid; }
+.example-group { page-break-inside: avoid; break-inside: avoid; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media print {
+    body { padding: 0; max-width: none; }
+    .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    a[href^="http"]::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="#"]::after { content: none; }
+    figure img { max-height: 2.8in; }
+    .skip-link { display: none; }
+}
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        pb.remove();  // no longer needed — workspace expansion handles the break
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <div class="handout-header">
+    <div class="header-left">
+      <h1>Section 15.5: Surface Area</h1>
+      <p>Multiple Integrals</p>
+    </div>
+    <div class="header-right">
+      <p>MTH 310<br>Calculus III</p>
+    </div>
+  </div>
+</header>
+<hr aria-hidden="true">
+
+<section id="why-surface-area-isn-t-just" aria-label="Why Surface Area Isn't Just $\iint 1\, dA$">
+  <h2>Why Surface Area Isn't Just \(\iint 1\, dA\)</h2>
+  <aside class="key-point" role="note" aria-label="Key point"><p>Surface area = \(\iint_D (\text{correction factor})\, dA\), where the correction factor accounts for the tilt of the surface above each point.</p></aside>
+</section>
+
+<section id="approximating-surface-area-with-tangent-plane-patches" aria-label="Approximating Surface Area with Tangent Plane Patches">
+  <h2>Approximating Surface Area with Tangent Plane Patches</h2>
+  <aside class="key-point" role="note" aria-label="Key point"><p>\(\sqrt{f_x^2 + f_y^2 + 1}\) is the magnitude of the <strong>normal vector</strong> \(\langle -f_x, -f_y, 1 \rangle\) to the surface. Steeper surface \(\to\) bigger normal vector \(\to\) bigger correction factor.</p></aside>
+</section>
+
+<section id="the-surface-area-formula" aria-label="The Surface Area Formula">
+  <h2>The Surface Area Formula</h2>
+  <section class="defn-box" role="region" aria-label="Surface Area">
+  <h3 class="defn-title">Surface Area</h3>
+  <p>The area of the surface \(z = f(x,y)\) over a region \(D\), where \(f_x\) and \(f_y\) are continuous, is</p>
+<p>\[A(S) = \iint_D \sqrt{\left[f_x(x,y)\right]^2 + \left[f_y(x,y)\right]^2 + 1} \, dA\]</p>
+</section>
+<aside class="key-point" role="note" aria-label="Key point"><p>The formula \(\sqrt{f_x^2 + f_y^2 + 1}\) always gives a value \(\geq 1\), so the surface area is always at least as large as the area of \(D\). Equality only when the surface is perfectly flat.</p></aside>
+</section>
+
+<section id="quick-check-surface-area-of-a-flat-surface" aria-label="Quick Check: Surface Area of a Flat Surface">
+  <h2>Quick Check: Surface Area of a Flat Surface</h2>
+  <div class="blank-space" role="region" aria-label="Student workspace: Compute $f_x$ and $f_y$ for $f(x,y) = 3$. Plug into the surface area formula. What does the integral simplify to?" style="min-height:2in;">
+  <div class="blank-prompt">Compute \(f_x\) and \(f_y\) for \(f(x,y) = 3\). Plug into the surface area formula. What does the integral simplify to?</div>
+</div>
+</section>
+
+<section id="example-1-plane-inside-a-cylinder" class="example-group" aria-label="Example 1: Plane Inside a Cylinder">
+  <h2>Example 1: Plane Inside a Cylinder</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Find the surface area of the part of the plane \(2x + 5y + z = 10\) that lies inside the cylinder \(x^2 + y^2 = 9\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Solve for $z = f(x,y)$, compute the partials, and set up the integral over the disk." style="min-height:3in;">
+  <div class="blank-prompt">Solve for \(z = f(x,y)\), compute the partials, and set up the integral over the disk.</div>
+</div>
+</section>
+
+<section id="example-2-area-of-a-spherical-cap" class="example-group" aria-label="Example 2: Area of a Spherical Cap">
+  <h2>Example 2: Area of a Spherical Cap</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Find the surface area of the part of the sphere \(x^2 + y^2 + z^2 = 4\) that lies above the plane \(z = 1\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Solve for $z$, find $f_x$ and $f_y$, simplify the integrand, then switch to polar." style="min-height:3.5in;">
+  <div class="blank-prompt">Solve for \(z\), find \(f_x\) and \(f_y\), simplify the integrand, then switch to polar.</div>
+</div>
+</section>
+
+<section id="quick-check-set-up-a-surface-area-integral" aria-label="Quick Check: Set Up a Surface Area Integral">
+  <h2>Quick Check: Set Up a Surface Area Integral</h2>
+  <div class="blank-space" role="region" aria-label="Student workspace: Compute $f_x$ and $f_y$, form the integrand, then convert to polar." style="min-height:2.5in;">
+  <div class="blank-prompt">Compute \(f_x\) and \(f_y\), form the integrand, then convert to polar.</div>
+</div>
+</section>
+
+<section id="example-3-why" class="example-group" aria-label="Example 3: Why $A(\text{sphere}) = 4\pi a^2$">
+  <h2>Example 3: Why \(A(\text{sphere}) = 4\pi a^2\)</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Prove that the surface area of a sphere of radius \(a\) is \(4\pi a^2\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Set up the integrand for $z = \sqrt{a^2 - x^2 - y^2}$ over the disk $x^2 + y^2 \leq a^2$. Where does the integrand have trouble?" style="min-height:3in;">
+  <div class="blank-prompt">Set up the integrand for \(z = \sqrt{a^2 - x^2 - y^2}\) over the disk \(x^2 + y^2 \leq a^2\). Where does the integrand have trouble?</div>
+</div>
+</section>
+
+<section class="homework-section" aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 15.5:</strong> 1, 3, 9, 11, 13, 23</div>
+</section>
+</main>
+</body>
+</html>
