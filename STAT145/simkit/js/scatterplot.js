@@ -1,0 +1,187 @@
+// @ts-check
+/**
+ * Scatterplot chart module for SimKit.
+ * Used by explore/two-variable and simulation pages (bootstrap/randomization slope).
+ *
+ * @import { ChartFrame } from './types.js'
+ */
+
+import * as d3Array from 'd3-array';
+import * as d3Scale from 'd3-scale';
+import * as d3Selection from 'd3-selection';
+import * as d3Axis from 'd3-axis';
+import { createChart, addAxes, formatTick } from './chart-utils.js';
+
+/** IMS blue. */
+const IMS_BLUE = '#569BBD';
+
+/** IMS blue at 60% opacity for point fill. */
+const POINT_FILL = '#569BBD99';
+
+/** IMS red for highlighted point. */
+const IMS_RED = '#F05133';
+
+/** IMS gray for regression line. */
+const IMS_GRAY = '#808080';
+
+/** Bootstrap line color (IMS blue at 8% opacity). */
+const BOOTSTRAP_LINE_OPACITY = 0.08;
+
+/**
+ * Compute point radius based on sample size.
+ * @param {number} n - Number of data points
+ * @returns {number}
+ */
+export function pointRadius(n) {
+  if (n <= 200) return 4;
+  return Math.max(2, 4 - n / 200);
+}
+
+/**
+ * Draw a scatterplot into a container element.
+ *
+ * @param {string|Element} container - CSS selector or DOM element
+ * @param {number[]} xValues - X data
+ * @param {number[]} yValues - Y data
+ * @param {object} [options]
+ * @param {string} [options.xLabel] - X-axis label
+ * @param {string} [options.yLabel] - Y-axis label
+ * @param {string} [options.titleText] - Chart title for accessibility
+ * @param {string} [options.descText] - Chart description for accessibility
+ * @param {string} [options.id] - Unique ID prefix
+ * @param {{slope: number, intercept: number}} [options.regression] - Regression line to overlay
+ * @param {Array<{slope: number, intercept: number}>} [options.bootstrapLines] - Bootstrap regression lines (draws first 100)
+ * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
+ * @returns {{ frame: ChartFrame, xScale: d3Scale.ScaleLinear<number,number>, yScale: d3Scale.ScaleLinear<number,number> }}
+ */
+export function drawScatterplot(container, xValues, yValues, options = {}) {
+  const {
+    xLabel,
+    yLabel,
+    titleText = 'Scatterplot',
+    descText = '',
+    id,
+    regression,
+    bootstrapLines,
+    margin,
+  } = options;
+
+  const n = xValues.length;
+  const frame = createChart(container, { titleText, descText, id, margin });
+
+  // Compute domains with 5% padding
+  const xExtent = d3Array.extent(xValues);
+  const yExtent = d3Array.extent(yValues);
+  const xPad = (xExtent[1] - xExtent[0]) * 0.05 || 0.5;
+  const yPad = (yExtent[1] - yExtent[0]) * 0.05 || 0.5;
+
+  const xScale = d3Scale.scaleLinear()
+    .domain([xExtent[0] - xPad, xExtent[1] + xPad])
+    .range([0, frame.width]);
+
+  const yScale = d3Scale.scaleLinear()
+    .domain([yExtent[0] - yPad, yExtent[1] + yPad])
+    .nice()
+    .range([frame.height, 0]);
+
+  const xAxis = d3Axis.axisBottom(xScale).tickFormat(formatTick);
+  const yAxis = d3Axis.axisLeft(yScale).tickFormat(formatTick);
+  addAxes(frame, xAxis, yAxis, xLabel, yLabel);
+
+  const overlays = d3Selection.select(frame.inner).select('.overlays');
+
+  // Bootstrap regression lines (draw first, behind everything)
+  if (bootstrapLines && bootstrapLines.length > 0) {
+    const [xMin, xMax] = xScale.domain();
+    const lines = bootstrapLines.slice(0, 100);
+    for (const { slope, intercept } of lines) {
+      overlays.append('line')
+        .attr('class', 'bootstrap-line')
+        .attr('x1', xScale(xMin))
+        .attr('y1', yScale(intercept + slope * xMin))
+        .attr('x2', xScale(xMax))
+        .attr('y2', yScale(intercept + slope * xMax))
+        .attr('stroke', IMS_BLUE)
+        .attr('stroke-opacity', BOOTSTRAP_LINE_OPACITY)
+        .attr('stroke-width', 1);
+    }
+  }
+
+  // Regression line
+  if (regression) {
+    const [xMin, xMax] = xScale.domain();
+    const { slope, intercept } = regression;
+    overlays.append('line')
+      .attr('class', 'regression-line')
+      .attr('x1', xScale(xMin))
+      .attr('y1', yScale(intercept + slope * xMin))
+      .attr('x2', xScale(xMax))
+      .attr('y2', yScale(intercept + slope * xMax))
+      .attr('stroke', IMS_GRAY)
+      .attr('stroke-width', 2);
+  }
+
+  // Data points
+  const r = pointRadius(n);
+  const points = xValues.map((x, i) => ({ x, y: yValues[i], i }));
+
+  const dataGroup = d3Selection.select(frame.inner).select('.data');
+  dataGroup.selectAll('circle')
+    .data(points)
+    .join('circle')
+    .attr('cx', d => xScale(d.x))
+    .attr('cy', d => yScale(d.y))
+    .attr('r', r)
+    .attr('fill', POINT_FILL)
+    .attr('stroke', IMS_BLUE)
+    .attr('stroke-width', 1)
+    .attr('role', 'listitem')
+    .attr('aria-label', d => `(${d.x}, ${d.y})`);
+
+  return { frame, xScale, yScale };
+}
+
+/**
+ * Draw a residual plot into a container element.
+ * X-axis = fitted values (y-hat), Y-axis = residuals (y - y-hat).
+ *
+ * @param {string|Element} container
+ * @param {number[]} fitted - Fitted/predicted values
+ * @param {number[]} residuals - Residual values
+ * @param {object} [options]
+ * @param {string} [options.xLabel] - X-axis label (default: "Fitted values")
+ * @param {string} [options.yLabel] - Y-axis label (default: "Residuals")
+ * @param {string} [options.titleText]
+ * @param {string} [options.descText]
+ * @param {string} [options.id]
+ * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
+ * @returns {{ frame: ChartFrame }}
+ */
+export function drawResidualPlot(container, fitted, residuals, options = {}) {
+  const {
+    xLabel = 'Fitted values',
+    yLabel = 'Residuals',
+    titleText = 'Residual plot',
+    descText = '',
+    id,
+    margin,
+  } = options;
+
+  const result = drawScatterplot(container, fitted, residuals, {
+    xLabel, yLabel, titleText, descText, id, margin,
+  });
+
+  // Add horizontal reference line at y = 0
+  const overlays = d3Selection.select(result.frame.inner).select('.overlays');
+  overlays.append('line')
+    .attr('class', 'zero-line')
+    .attr('x1', 0)
+    .attr('x2', result.frame.width)
+    .attr('y1', result.yScale(0))
+    .attr('y2', result.yScale(0))
+    .attr('stroke', IMS_GRAY)
+    .attr('stroke-width', 1)
+    .attr('stroke-dasharray', '4,3');
+
+  return { frame: result.frame };
+}

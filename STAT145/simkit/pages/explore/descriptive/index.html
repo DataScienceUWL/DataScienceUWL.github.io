@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Descriptive Statistics | SimKit</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../../favicon.svg" type="image/svg+xml">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+
+    <style>
+        /* Descriptive stats page layout */
+        .stats-table {
+            width: auto;
+            min-width: 280px;
+            margin: 0.75rem 0;
+        }
+        .stats-table td:last-child {
+            text-align: right;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        .chart-panel {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem;
+        }
+        .chart-panel h3 {
+            font-size: 0.9rem;
+            margin: 0 0 0.25rem;
+            color: var(--ims-gray);
+        }
+        .chart-panel svg {
+            font-family: var(--font-body);
+            font-size: var(--font-size-chart);
+        }
+        #variable-selector {
+            margin-bottom: 0.75rem;
+        }
+        #variable-selector label {
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        #variable-selector select {
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#data-panel">Skip to Data</a>
+        <a href="#stats-section">Skip to Statistics</a>
+        <a href="#charts-section">Skip to Charts</a>
+    </nav>
+
+    <header>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <ol>
+                <li><a href="../../../">SimKit</a></li>
+                <li><a href="../">Explore</a></li>
+                <li aria-current="page">Descriptive Statistics</li>
+            </ol>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Descriptive Statistics</h1>
+
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-dataset" aria-selected="true"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Paste Data</button>
+                <button role="tab" id="tab-url" aria-selected="false"
+                        aria-controls="panel-url">From URL</button>
+            </div>
+
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset">
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </label>
+                <p id="dataset-desc" class="hint"></p>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <label for="paste-area">Paste your data (one value per line, or CSV with headers):
+                    <textarea id="paste-area" rows="6"
+                              placeholder="23.1&#10;19.4&#10;27.8&#10;22.0"></textarea>
+                </label>
+                <div class="btn-row">
+                    <button type="button" id="load-pasted">Load Data</button>
+                    <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+
+            <div role="tabpanel" id="panel-url" aria-labelledby="tab-url" hidden>
+                <p class="hint">Data loaded from URL parameters.</p>
+                <output id="url-data-info">No URL data detected.</output>
+            </div>
+
+            <div id="data-preview" hidden>
+                <p><strong>Loaded:</strong> <output id="data-summary">&mdash;</output></p>
+            </div>
+        </section>
+
+        <div id="variable-selector" hidden>
+            <label for="var-select">Variable:
+                <select id="var-select"></select>
+            </label>
+        </div>
+
+        <section id="stats-section" aria-label="Summary statistics" hidden>
+            <h2>Summary Statistics</h2>
+            <table class="stats-table" aria-label="Descriptive statistics">
+                <tbody>
+                    <tr><th scope="row">n</th><td id="stat-n">&mdash;</td></tr>
+                    <tr><th scope="row">Mean</th><td id="stat-mean">&mdash;</td></tr>
+                    <tr><th scope="row">Median</th><td id="stat-median">&mdash;</td></tr>
+                    <tr><th scope="row">Std Dev</th><td id="stat-sd">&mdash;</td></tr>
+                    <tr><th scope="row">Min</th><td id="stat-min">&mdash;</td></tr>
+                    <tr><th scope="row">Q1</th><td id="stat-q1">&mdash;</td></tr>
+                    <tr><th scope="row">Q3</th><td id="stat-q3">&mdash;</td></tr>
+                    <tr><th scope="row">Max</th><td id="stat-max">&mdash;</td></tr>
+                    <tr><th scope="row">IQR</th><td id="stat-iqr">&mdash;</td></tr>
+                    <tr><th scope="row">Range</th><td id="stat-range">&mdash;</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="charts-section" aria-label="Charts" hidden>
+            <h2>Charts</h2>
+            <div class="chart-grid">
+                <div class="chart-panel">
+                    <h3>Histogram</h3>
+                    <div id="histogram-container"></div>
+                </div>
+                <div class="chart-panel">
+                    <h3>Dotplot</h3>
+                    <div id="dotplot-container"></div>
+                </div>
+                <div class="chart-panel">
+                    <h3>Boxplot</h3>
+                    <div id="boxplot-container"></div>
+                </div>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
