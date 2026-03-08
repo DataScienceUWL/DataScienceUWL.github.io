@@ -167,7 +167,20 @@ function generateSimulations(count) {
   }
 
   const direction = getDirection();
-  renderChart(allStats, observedPHat, direction, count === 1 ? allStats.length - 1 : -1);
+  let hlIndex = -1;
+  /** @type {Set<number>|undefined} */
+  let hlIndices;
+  if (allStats.length <= 200) {
+    if (count === 1) {
+      hlIndex = allStats.length - 1;
+    } else {
+      hlIndices = new Set();
+      for (let j = allStats.length - count; j < allStats.length; j++) {
+        hlIndices.add(j);
+      }
+    }
+  }
+  renderChart(allStats, observedPHat, direction, hlIndex, hlIndices);
   const { pValue, extremeCount } = computePValue(allStats, observedPHat, direction);
   displayResults(allStats, observedPHat, pValue, extremeCount, direction);
   if (resetBtn) resetBtn.hidden = false;
@@ -181,8 +194,9 @@ function generateSimulations(count) {
  * @param {number} observed
  * @param {'left'|'right'|'both'} direction
  * @param {number} [highlightIndex]
+ * @param {Set<number>} [highlightIndices]
  */
-function renderChart(stats, observed, direction, highlightIndex = -1) {
+function renderChart(stats, observed, direction, highlightIndex = -1, highlightIndices) {
   chartContainer.innerHTML = '';
   const n = stats.length;
 
@@ -203,6 +217,7 @@ function renderChart(stats, observed, direction, highlightIndex = -1) {
       animate: false,
       domain,
       highlightIndex,
+      highlightIndices,
     });
   } else {
     drawHistogram(chartContainer, stats, {

@@ -565,8 +565,17 @@ export function initSimPage(config) {
         resultDiv.innerHTML = `<p><strong>Bootstrap Distribution</strong> (${allStats.length} resamples)</p>
           <p>Need at least 10 resamples for CI estimate.</p>`;
       }
-      // Track newest dot for +1 highlight
-      if (count === 1) lastStatIndex = allStats.length - 1;
+      // Track new dots for highlight (only in dotplot range)
+      if (allStats.length <= 200) {
+        if (count === 1) {
+          lastStatIndex = allStats.length - 1;
+        } else {
+          batchHighlightIndices = new Set();
+          for (let j = allStats.length - count; j < allStats.length; j++) {
+            batchHighlightIndices.add(j);
+          }
+        }
+      }
       // Only show CI lines once we have enough resamples for stability
       renderChart(allStats, allStats.length >= CI_MIN ? ci : null);
 
@@ -592,7 +601,16 @@ export function initSimPage(config) {
       }
 
       showTwoGroupMechanism(lastG1, lastG2, count === 1);
-      if (count === 1) lastStatIndex = allStats.length - 1;
+      if (allStats.length <= 200) {
+        if (count === 1) {
+          lastStatIndex = allStats.length - 1;
+        } else {
+          batchHighlightIndices = new Set();
+          for (let j = allStats.length - count; j < allStats.length; j++) {
+            batchHighlightIndices.add(j);
+          }
+        }
+      }
       renderChart(allStats, null, observedStat, direction);
       const { pValue, extremeCount } = permutationPValue(allStats, observedStat, direction);
       displayRandomizationResults(allStats, observedStat, pValue, extremeCount, direction);
@@ -914,8 +932,11 @@ export function initSimPage(config) {
 
   // ─── Chart rendering ───
 
-  /** Index of the last statistic added (for highlight). */
+  /** Index of single newest dot for +1 highlight, or -1. */
   let lastStatIndex = -1;
+  /** Indices of batch-added dots for +10 highlight, or null. */
+  /** @type {Set<number>|null} */
+  let batchHighlightIndices = null;
 
   /**
    * @param {number[]} stats
@@ -945,8 +966,9 @@ export function initSimPage(config) {
       domain = [lo - pad, hi + pad];
     }
 
-    // Highlight the newest dot when exactly one was added
+    // Highlight new dots in dotplot mode
     const highlightIndex = lastStatIndex >= 0 ? lastStatIndex : -1;
+    const highlightIndices = batchHighlightIndices ?? undefined;
 
     if (n <= 200) {
       drawDotplot(chartContainer, stats, {
@@ -961,6 +983,7 @@ export function initSimPage(config) {
         animate: false,
         domain,
         highlightIndex,
+        highlightIndices,
       });
     } else {
       drawHistogram(chartContainer, stats, {
@@ -977,6 +1000,7 @@ export function initSimPage(config) {
       });
     }
     lastStatIndex = -1; // Reset after rendering
+    batchHighlightIndices = null;
   }
 
   /**

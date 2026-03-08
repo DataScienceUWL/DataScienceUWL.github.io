@@ -109,7 +109,8 @@ export function computeDotRadius(innerWidth, innerHeight, maxStack, numBins) {
  * @param {boolean} [options.animate] - Whether to animate (default: true)
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
  * @param {[number,number]} [options.domain] - Override x-axis domain
- * @param {number} [options.highlightIndex] - Index of dot to highlight (newest stat)
+ * @param {number} [options.highlightIndex] - Index of single newest dot to highlight (yellow pulse)
+ * @param {Set<number>} [options.highlightIndices] - Indices of batch-added dots to highlight (accent pulse)
  * @returns {{ frame: ChartFrame, dots: Array<{value: number, binCenter: number, stackIndex: number}>, xScale: d3Scale.ScaleLinear<number,number>, update: (values: number[], opts?: object) => void }}
  */
 export function drawDotplot(container, values, options = {}) {
@@ -126,6 +127,7 @@ export function drawDotplot(container, values, options = {}) {
     numBins,
     domain,
     highlightIndex = -1,
+    highlightIndices,
   } = options;
 
   const frame = createChart(container, { titleText, descText, id, margin });
@@ -157,7 +159,7 @@ export function drawDotplot(container, values, options = {}) {
   }
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
-  renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex);
+  renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex, highlightIndices);
 
   // Observed statistic line
   const overlaysGroup = d3Selection.select(frame.inner).select('.overlays');
@@ -203,7 +205,7 @@ export function drawDotplot(container, values, options = {}) {
   };
 }
 
-/** Highlight color for newest dot. */
+/** Highlight color for single newest dot (+1). */
 const HIGHLIGHT_FILL = '#F4DC00';
 
 /**
@@ -215,14 +217,15 @@ const HIGHLIGHT_FILL = '#F4DC00';
  * @param {number} radius
  * @param {((value: number) => boolean)} [isExtreme]
  * @param {boolean} animate
- * @param {number} [highlightIndex] - Index of dot to highlight as newest
+ * @param {number} [highlightIndex] - Single newest dot (+1): yellow pulse
+ * @param {Set<number>} [highlightIndices] - Batch new dots (+10): accent pulse
  */
-function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate, highlightIndex = -1) {
+function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate, highlightIndex = -1, highlightIndices) {
   const shouldAnimate = animate && !prefersReducedMotion();
+  const reducedMotion = prefersReducedMotion();
 
-  /** @param {{value: number}} d @param {number} i */
-  function dotFill(d, i) {
-    if (i === highlightIndex) return HIGHLIGHT_FILL;
+  /** Normal fill for a dot at index i. */
+  function normalFill(d) {
     if (!isExtreme) return DOT_FILL;
     return isExtreme(d.value) ? EXTREME_FILL : DOT_FILL;
   }
@@ -231,10 +234,11 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
     .data(dots)
     .join('circle')
     .attr('cx', d => xScale(d.binCenter))
-    .attr('r', (d, i) => i === highlightIndex ? radius * 1.4 : radius)
-    .attr('fill', dotFill)
-    .attr('stroke', (d, i) => i === highlightIndex ? '#000' : dotFill(d, i))
-    .attr('stroke-width', (d, i) => i === highlightIndex ? 1.5 : 1)
+    .attr('cy', d => innerHeight - (d.stackIndex + 0.5) * radius * 2)
+    .attr('r', radius)
+    .attr('fill', normalFill)
+    .attr('stroke', normalFill)
+    .attr('stroke-width', 1)
     .attr('role', 'listitem')
     .attr('aria-label', d => String(d.value));
 
@@ -244,24 +248,48 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
       .transition()
       .duration(TRANSITION_MS)
       .attr('cy', d => innerHeight - (d.stackIndex + 0.5) * radius * 2);
-  } else {
-    circles
-      .attr('cy', d => innerHeight - (d.stackIndex + 0.5) * radius * 2);
   }
 
-  // Fade highlighted dot back to normal after 600ms
-  if (highlightIndex >= 0 && !prefersReducedMotion()) {
-    const highlighted = circles.filter((d, i) => i === highlightIndex);
-    const normalFill = isExtreme
-      ? (isExtreme(dots[highlightIndex]?.value) ? EXTREME_FILL : DOT_FILL)
-      : DOT_FILL;
-    setTimeout(() => {
-      highlighted.transition().duration(400)
-        .attr('fill', normalFill)
-        .attr('stroke', normalFill)
-        .attr('stroke-width', 1)
-        .attr('r', radius);
-    }, 600);
+  // Highlight new dots, then revert after delay (no d3-transition needed)
+  if (!reducedMotion) {
+    if (highlightIndex >= 0) {
+      // Single dot (+1): yellow, larger, dark stroke → revert after 800ms
+      const single = circles.filter((d, i) => i === highlightIndex);
+      single
+        .attr('fill', HIGHLIGHT_FILL)
+        .attr('stroke', '#000')
+        .attr('stroke-width', 2)
+        .attr('r', radius * 1.5);
+      setTimeout(() => {
+        single.each(function(d) {
+          const el = d3Selection.select(this);
+          el.style('transition', 'fill 0.4s, stroke 0.4s, r 0.3s, stroke-width 0.3s');
+          el.attr('fill', normalFill(d))
+            .attr('stroke', normalFill(d))
+            .attr('stroke-width', 1)
+            .attr('r', radius);
+          // Clean up inline transition after animation
+          setTimeout(() => el.style('transition', null), 500);
+        });
+      }, 800);
+    } else if (highlightIndices && highlightIndices.size > 0) {
+      // Batch dots (+10): accent color → revert after 600ms
+      const batch = circles.filter((d, i) => highlightIndices.has(i));
+      batch
+        .attr('fill', EXTREME_FILL)
+        .attr('stroke', '#114B5F')
+        .attr('stroke-width', 1.5);
+      setTimeout(() => {
+        batch.each(function(d) {
+          const el = d3Selection.select(this);
+          el.style('transition', 'fill 0.4s, stroke 0.4s, stroke-width 0.3s');
+          el.attr('fill', normalFill(d))
+            .attr('stroke', normalFill(d))
+            .attr('stroke-width', 1);
+          setTimeout(() => el.style('transition', null), 500);
+        });
+      }, 600);
+    }
   }
 }
 
