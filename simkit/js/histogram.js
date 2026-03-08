@@ -90,6 +90,7 @@ export function computeBins(values, options = {}) {
  * @param {boolean} [options.animate] - Whether to animate bars (default: true)
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
  * @param {[number,number]} [options.domain] - Override x-axis domain
+ * @param {number[]} [options.prevBinCounts] - Previous bin counts for stacked delta highlight
  * @returns {{ frame: ChartFrame, bins: d3Array.Bin<number, number>[], xScale: d3Scale.ScaleLinear<number,number>, update: (values: number[], opts?: object) => void }}
  */
 export function drawHistogram(container, values, options = {}) {
@@ -106,6 +107,7 @@ export function drawHistogram(container, values, options = {}) {
     margin,
     numBins,
     domain,
+    prevBinCounts,
   } = options;
 
   const frame = createChart(container, { titleText, descText, id, margin });
@@ -126,6 +128,11 @@ export function drawHistogram(container, values, options = {}) {
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
   renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate);
+
+  // Stacked delta highlight: show new portions of bars in orange
+  if (prevBinCounts && !prefersReducedMotion()) {
+    renderDeltaBars(dataGroup, bins, xScale, yScale, frame.height, prevBinCounts);
+  }
 
   // Overlay lines
   const overlays = d3Selection.select(frame.inner).select('.overlays');
@@ -176,6 +183,54 @@ export function drawHistogram(container, values, options = {}) {
       }
     },
   };
+}
+
+/** Highlight color for new data (accessible warm orange). */
+const HIGHLIGHT_FILL = '#E07020';
+
+/**
+ * Render delta overlay bars showing newly added data in each bin.
+ * Only the growth portion (from prevCount to currentCount) is highlighted.
+ * @param {d3Selection.Selection} group
+ * @param {d3Array.Bin<number, number>[]} bins
+ * @param {d3Scale.ScaleLinear<number, number>} xScale
+ * @param {d3Scale.ScaleLinear<number, number>} yScale
+ * @param {number} innerHeight
+ * @param {number[]} prevCounts - Count per bin before the new batch
+ */
+function renderDeltaBars(group, bins, xScale, yScale, innerHeight, prevCounts) {
+  const deltas = bins
+    .map((bin, i) => {
+      const prev = prevCounts[i] ?? 0;
+      const delta = bin.length - prev;
+      return { bin, prev, delta };
+    })
+    .filter(d => d.delta > 0);
+
+  if (deltas.length === 0) return;
+
+  const deltaRects = group.selectAll('.delta-bar')
+    .data(deltas)
+    .join('rect')
+    .attr('class', 'delta-bar')
+    .attr('x', d => xScale(d.bin.x0) + 0.5)
+    .attr('width', d => Math.max(0, xScale(d.bin.x1) - xScale(d.bin.x0) - 1))
+    .attr('y', d => yScale(d.prev + d.delta))
+    .attr('height', d => yScale(d.prev) - yScale(d.prev + d.delta))
+    .attr('fill', HIGHLIGHT_FILL)
+    .attr('stroke', BAR_STROKE)
+    .attr('stroke-width', 1)
+    .style('pointer-events', 'none');
+
+  // Fade out delta bars after 800ms
+  setTimeout(() => {
+    deltaRects.each(function() {
+      const el = d3Selection.select(this);
+      el.style('transition', 'opacity 0.5s');
+      el.style('opacity', '0');
+      setTimeout(() => el.remove(), 600);
+    });
+  }, 800);
 }
 
 /**

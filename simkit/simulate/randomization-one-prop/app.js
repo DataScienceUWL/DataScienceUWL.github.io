@@ -6,7 +6,7 @@
 
 import { createRng } from '../../js/prng.js';
 import { mean } from '../../js/stats.js';
-import { drawHistogram } from '../../js/histogram.js';
+import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 
 // DOM elements
@@ -33,6 +33,7 @@ const mechanismStrip = document.getElementById('mechanism-strip');
 const mechObservedStat = document.getElementById('mech-observed-stat');
 const mechSimStat = document.getElementById('mech-sim-stat');
 const mechanismDescEl = document.getElementById('mechanism-description');
+const simTitleEl = document.getElementById('sim-title');
 
 /** @type {number[]} */
 let allStats = [];
@@ -139,6 +140,12 @@ function generateSimulations(count) {
   if (!rng) rng = createRng(seed);
   const p0 = getNullProp();
   const n = sampleN;
+  const prevLength = allStats.length;
+
+  // Update mechanism title
+  if (simTitleEl) {
+    simTitleEl.textContent = count === 1 ? 'This Simulation' : 'Last Simulation';
+  }
 
   let lastSimSuccesses = 0;
   for (let i = 0; i < count; i++) {
@@ -170,17 +177,27 @@ function generateSimulations(count) {
   let hlIndex = -1;
   /** @type {Set<number>|undefined} */
   let hlIndices;
+  /** @type {number[]|undefined} */
+  let prevBinCounts;
+
   if (allStats.length <= 200) {
+    // Dotplot mode: highlight individual dots
     if (count === 1) {
       hlIndex = allStats.length - 1;
     } else {
       hlIndices = new Set();
-      for (let j = allStats.length - count; j < allStats.length; j++) {
+      for (let j = prevLength; j < allStats.length; j++) {
         hlIndices.add(j);
       }
     }
+  } else if (prevLength > 0) {
+    // Histogram mode: compute previous bin counts for stacked delta
+    const prevStats = allStats.slice(0, prevLength);
+    const { bins: prevBins } = computeBins(prevStats, { numBins: undefined });
+    prevBinCounts = prevBins.map(b => b.length);
   }
-  renderChart(allStats, observedPHat, direction, hlIndex, hlIndices);
+
+  renderChart(allStats, observedPHat, direction, hlIndex, hlIndices, prevBinCounts);
   const { pValue, extremeCount } = computePValue(allStats, observedPHat, direction);
   displayResults(allStats, observedPHat, pValue, extremeCount, direction);
   if (resetBtn) resetBtn.hidden = false;
@@ -195,8 +212,9 @@ function generateSimulations(count) {
  * @param {'left'|'right'|'both'} direction
  * @param {number} [highlightIndex]
  * @param {Set<number>} [highlightIndices]
+ * @param {number[]} [prevBinCounts]
  */
-function renderChart(stats, observed, direction, highlightIndex = -1, highlightIndices) {
+function renderChart(stats, observed, direction, highlightIndex = -1, highlightIndices, prevBinCounts) {
   chartContainer.innerHTML = '';
   const n = stats.length;
 
@@ -228,6 +246,7 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
       observedStat: observed,
       animate: false,
       domain,
+      prevBinCounts,
     });
   }
 }

@@ -205,8 +205,8 @@ export function drawDotplot(container, values, options = {}) {
   };
 }
 
-/** Highlight color for single newest dot (+1). */
-const HIGHLIGHT_FILL = '#F4DC00';
+/** Highlight color for new dots (accessible warm orange, 3.4:1 on white). */
+const HIGHLIGHT_FILL = '#E07020';
 
 /**
  * Render dots into a D3 selection.
@@ -273,22 +273,24 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
         });
       }, 800);
     } else if (highlightIndices && highlightIndices.size > 0) {
-      // Batch dots (+10): accent color → revert after 600ms
+      // Batch dots (+10): same orange as +1, slightly larger → revert after 800ms
       const batch = circles.filter((d, i) => highlightIndices.has(i));
       batch
-        .attr('fill', EXTREME_FILL)
-        .attr('stroke', '#114B5F')
-        .attr('stroke-width', 1.5);
+        .attr('fill', HIGHLIGHT_FILL)
+        .attr('stroke', '#000')
+        .attr('stroke-width', 1.5)
+        .attr('r', radius * 1.2);
       setTimeout(() => {
         batch.each(function(d) {
           const el = d3Selection.select(this);
-          el.style('transition', 'fill 0.4s, stroke 0.4s, stroke-width 0.3s');
+          el.style('transition', 'fill 0.4s, stroke 0.4s, stroke-width 0.3s, r 0.3s');
           el.attr('fill', normalFill(d))
             .attr('stroke', normalFill(d))
-            .attr('stroke-width', 1);
+            .attr('stroke-width', 1)
+            .attr('r', radius);
           setTimeout(() => el.style('transition', null), 500);
         });
-      }, 600);
+      }, 800);
     }
   }
 }

@@ -9,7 +9,7 @@ import { parseCSV } from './csv-parser.js';
 import { createRng } from './prng.js';
 import { mean, median, sd, quantile, resample, permute } from './stats.js';
 import { bootstrapCI, permutationPValue } from './sim-engine.js';
-import { drawHistogram } from './histogram.js';
+import { drawHistogram, computeBins } from './histogram.js';
 import { drawDotplot } from './dotplot.js';
 /**
  * @typedef {object} SimConfig
@@ -527,6 +527,14 @@ export function initSimPage(config) {
   function generateSamples(count) {
     if (!rng) rng = createRng(seed);
 
+    // Capture previous state for histogram delta highlight
+    const prevLength = allStats.length;
+
+    // Update resample panel title
+    if (resampleTitleEl) {
+      resampleTitleEl.textContent = count === 1 ? 'This Resample' : 'Last Resample';
+    }
+
     if (config.mode === 'bootstrap') {
       const statFn = getBootstrapStat().fn;
       /** @type {number[]} */
@@ -565,16 +573,22 @@ export function initSimPage(config) {
         resultDiv.innerHTML = `<p><strong>Bootstrap Distribution</strong> (${allStats.length} resamples)</p>
           <p>Need at least 10 resamples for CI estimate.</p>`;
       }
-      // Track new dots for highlight (only in dotplot range)
+      // Track new data for highlight
       if (allStats.length <= 200) {
+        // Dotplot mode: highlight individual dots
         if (count === 1) {
           lastStatIndex = allStats.length - 1;
         } else {
           batchHighlightIndices = new Set();
-          for (let j = allStats.length - count; j < allStats.length; j++) {
+          for (let j = prevLength; j < allStats.length; j++) {
             batchHighlightIndices.add(j);
           }
         }
+      } else if (prevLength > 0) {
+        // Histogram mode: compute previous bin counts for stacked delta
+        const prevStats = allStats.slice(0, prevLength);
+        const { bins: prevBins } = computeBins(prevStats, { numBins: undefined });
+        prevBinCounts = prevBins.map(b => b.length);
       }
       // Only show CI lines once we have enough resamples for stability
       renderChart(allStats, allStats.length >= CI_MIN ? ci : null);
@@ -606,10 +620,14 @@ export function initSimPage(config) {
           lastStatIndex = allStats.length - 1;
         } else {
           batchHighlightIndices = new Set();
-          for (let j = allStats.length - count; j < allStats.length; j++) {
+          for (let j = prevLength; j < allStats.length; j++) {
             batchHighlightIndices.add(j);
           }
         }
+      } else if (prevLength > 0) {
+        const prevStats = allStats.slice(0, prevLength);
+        const { bins: prevBins } = computeBins(prevStats, { numBins: undefined });
+        prevBinCounts = prevBins.map(b => b.length);
       }
       renderChart(allStats, null, observedStat, direction);
       const { pValue, extremeCount } = permutationPValue(allStats, observedStat, direction);
@@ -937,6 +955,12 @@ export function initSimPage(config) {
   /** Indices of batch-added dots for +10 highlight, or null. */
   /** @type {Set<number>|null} */
   let batchHighlightIndices = null;
+  /** Previous histogram bin counts for stacked delta highlight. */
+  /** @type {number[]|null} */
+  let prevBinCounts = null;
+
+  // Resample panel title element (dynamic: "This Resample" vs "Last Resample")
+  const resampleTitleEl = document.getElementById('resample-title');
 
   /**
    * @param {number[]} stats
@@ -997,10 +1021,12 @@ export function initSimPage(config) {
         ciLines: ci ?? undefined,
         animate: false,
         domain,
+        prevBinCounts: prevBinCounts ?? undefined,
       });
     }
     lastStatIndex = -1; // Reset after rendering
     batchHighlightIndices = null;
+    prevBinCounts = null;
   }
 
   /**
