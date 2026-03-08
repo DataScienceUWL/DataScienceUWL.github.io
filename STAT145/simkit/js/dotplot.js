@@ -109,6 +109,7 @@ export function computeDotRadius(innerWidth, innerHeight, maxStack, numBins) {
  * @param {boolean} [options.animate] - Whether to animate (default: true)
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
  * @param {[number,number]} [options.domain] - Override x-axis domain
+ * @param {number} [options.highlightIndex] - Index of dot to highlight (newest stat)
  * @returns {{ frame: ChartFrame, dots: Array<{value: number, binCenter: number, stackIndex: number}>, xScale: d3Scale.ScaleLinear<number,number>, update: (values: number[], opts?: object) => void }}
  */
 export function drawDotplot(container, values, options = {}) {
@@ -124,6 +125,7 @@ export function drawDotplot(container, values, options = {}) {
     margin,
     numBins,
     domain,
+    highlightIndex = -1,
   } = options;
 
   const frame = createChart(container, { titleText, descText, id, margin });
@@ -155,7 +157,7 @@ export function drawDotplot(container, values, options = {}) {
   }
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
-  renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate);
+  renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex);
 
   // Observed statistic line
   const overlaysGroup = d3Selection.select(frame.inner).select('.overlays');
@@ -201,6 +203,9 @@ export function drawDotplot(container, values, options = {}) {
   };
 }
 
+/** Highlight color for newest dot. */
+const HIGHLIGHT_FILL = '#F4DC00';
+
 /**
  * Render dots into a D3 selection.
  * @param {d3Selection.Selection} group
@@ -210,24 +215,26 @@ export function drawDotplot(container, values, options = {}) {
  * @param {number} radius
  * @param {((value: number) => boolean)} [isExtreme]
  * @param {boolean} animate
+ * @param {number} [highlightIndex] - Index of dot to highlight as newest
  */
-function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate) {
+function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate, highlightIndex = -1) {
   const shouldAnimate = animate && !prefersReducedMotion();
+
+  /** @param {{value: number}} d @param {number} i */
+  function dotFill(d, i) {
+    if (i === highlightIndex) return HIGHLIGHT_FILL;
+    if (!isExtreme) return DOT_FILL;
+    return isExtreme(d.value) ? EXTREME_FILL : DOT_FILL;
+  }
 
   const circles = group.selectAll('circle')
     .data(dots)
     .join('circle')
     .attr('cx', d => xScale(d.binCenter))
-    .attr('r', radius)
-    .attr('fill', d => {
-      if (!isExtreme) return DOT_FILL;
-      return isExtreme(d.value) ? EXTREME_FILL : DOT_FILL;
-    })
-    .attr('stroke', d => {
-      if (!isExtreme) return DOT_FILL;
-      return isExtreme(d.value) ? EXTREME_FILL : DOT_FILL;
-    })
-    .attr('stroke-width', 1)
+    .attr('r', (d, i) => i === highlightIndex ? radius * 1.4 : radius)
+    .attr('fill', dotFill)
+    .attr('stroke', (d, i) => i === highlightIndex ? '#000' : dotFill(d, i))
+    .attr('stroke-width', (d, i) => i === highlightIndex ? 1.5 : 1)
     .attr('role', 'listitem')
     .attr('aria-label', d => String(d.value));
 
@@ -240,6 +247,21 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
   } else {
     circles
       .attr('cy', d => innerHeight - (d.stackIndex + 0.5) * radius * 2);
+  }
+
+  // Fade highlighted dot back to normal after 600ms
+  if (highlightIndex >= 0 && !prefersReducedMotion()) {
+    const highlighted = circles.filter((d, i) => i === highlightIndex);
+    const normalFill = isExtreme
+      ? (isExtreme(dots[highlightIndex]?.value) ? EXTREME_FILL : DOT_FILL)
+      : DOT_FILL;
+    setTimeout(() => {
+      highlighted.transition().duration(400)
+        .attr('fill', normalFill)
+        .attr('stroke', normalFill)
+        .attr('stroke-width', 1)
+        .attr('r', radius);
+    }, 600);
   }
 }
 

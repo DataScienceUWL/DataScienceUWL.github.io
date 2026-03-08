@@ -556,15 +556,19 @@ export function initSimPage(config) {
 
       const ciLevel = parseInt(ciSelect?.value ?? '95', 10);
       let ci = null;
+      const CI_MIN = 20; // Don't show CI lines until this many resamples
       if (allStats.length >= 10) {
         const result = bootstrapCI([...allStats], ciLevel);
         ci = result.ci;
         displayBootstrapResults(allStats, result.ci, result.se, ciLevel);
       } else {
-        resultDiv.innerHTML = `<p><strong>Bootstrap Distribution</strong> (${allStats.length} samples)</p>
-          <p>Need at least 10 samples for CI estimate.</p>`;
+        resultDiv.innerHTML = `<p><strong>Bootstrap Distribution</strong> (${allStats.length} resamples)</p>
+          <p>Need at least 10 resamples for CI estimate.</p>`;
       }
-      renderChart(allStats, ci);
+      // Track newest dot for +1 highlight
+      if (count === 1) lastStatIndex = allStats.length - 1;
+      // Only show CI lines once we have enough resamples for stability
+      renderChart(allStats, allStats.length >= CI_MIN ? ci : null);
 
       // Show last resample in mechanism strip (one-sample only)
       if (!config.twoGroup) {
@@ -572,7 +576,7 @@ export function initSimPage(config) {
         showResample(lastResampleValues, count === 1);
       }
 
-      announce(`Generated ${count} sample${count > 1 ? 's' : ''}. Total: ${allStats.length}`);
+      announce(`Generated ${count} resample${count > 1 ? 's' : ''}. Total: ${allStats.length}`);
     } else {
       const observedStat = config.testStat(data1, data2);
       const direction = getDirection();
@@ -588,6 +592,7 @@ export function initSimPage(config) {
       }
 
       showTwoGroupMechanism(lastG1, lastG2, count === 1);
+      if (count === 1) lastStatIndex = allStats.length - 1;
       renderChart(allStats, null, observedStat, direction);
       const { pValue, extremeCount } = permutationPValue(allStats, observedStat, direction);
       displayRandomizationResults(allStats, observedStat, pValue, extremeCount, direction);
@@ -709,7 +714,8 @@ export function initSimPage(config) {
       resampleMeanEl.textContent = stat.fn(resampleValues).toFixed(4);
       const statLabelEl = document.getElementById('resample-stat-label');
       if (statLabelEl) {
-        statLabelEl.textContent = stat.label.replace('Sample ', '').toLowerCase();
+        const shortName = stat.label.replace('Sample ', '').toLowerCase();
+        statLabelEl.textContent = `Resample ${shortName}`;
       }
     }
     if (resampleToggle) {
@@ -843,6 +849,19 @@ export function initSimPage(config) {
     });
   }
 
+  // Re-render when CI level changes
+  if (ciSelect) {
+    ciSelect.addEventListener('change', () => {
+      if (allStats.length >= 10) {
+        const ciLevel = parseInt(ciSelect.value, 10);
+        const result = bootstrapCI([...allStats], ciLevel);
+        displayBootstrapResults(allStats, result.ci, result.se, ciLevel);
+        const CI_MIN = 20;
+        renderChart(allStats, allStats.length >= CI_MIN ? result.ci : null);
+      }
+    });
+  }
+
   // Reset when bootstrap stat changes (mixing stats would be meaningless)
   if (bootStatSelect) {
     bootStatSelect.addEventListener('change', () => {
@@ -895,6 +914,9 @@ export function initSimPage(config) {
 
   // ─── Chart rendering ───
 
+  /** Index of the last statistic added (for highlight). */
+  let lastStatIndex = -1;
+
   /**
    * @param {number[]} stats
    * @param {[number,number]} [ci]
@@ -923,11 +945,11 @@ export function initSimPage(config) {
       domain = [lo - pad, hi + pad];
     }
 
-    /** @type {{ frame: import('./types.js').ChartFrame, xScale: import('d3-scale').ScaleLinear<number,number> }} */
-    let chart;
+    // Highlight the newest dot when exactly one was added
+    const highlightIndex = lastStatIndex >= 0 ? lastStatIndex : -1;
 
     if (n <= 200) {
-      chart = drawDotplot(chartContainer, stats, {
+      drawDotplot(chartContainer, stats, {
         id: 'sim-chart',
         xLabel,
         titleText,
@@ -938,9 +960,10 @@ export function initSimPage(config) {
         ciLines: ci ?? undefined,
         animate: false,
         domain,
+        highlightIndex,
       });
     } else {
-      chart = drawHistogram(chartContainer, stats, {
+      drawHistogram(chartContainer, stats, {
         id: 'sim-chart',
         xLabel,
         titleText,
@@ -953,7 +976,7 @@ export function initSimPage(config) {
         domain,
       });
     }
-
+    lastStatIndex = -1; // Reset after rendering
   }
 
   /**
@@ -984,6 +1007,7 @@ export function initSimPage(config) {
       <p>SE: ${se.toFixed(4)}</p>
       <p><strong>${ciLevel}% Confidence Interval:</strong> (${ci[0].toFixed(4)}, ${ci[1].toFixed(4)})</p>
       <p class="interpretation">The middle ${ciLevel}% of bootstrap statistics fall between ${ci[0].toFixed(2)} and ${ci[1].toFixed(2)}. We are ${ciLevel}% confident that the ${paramName} is in this interval.</p>
+      ${stats.length < 50 ? '<p class="hint">CI is approximate with few resamples. Generate more for stability.</p>' : ''}
     `;
   }
 

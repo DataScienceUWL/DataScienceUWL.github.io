@@ -167,7 +167,7 @@ function generateSimulations(count) {
   }
 
   const direction = getDirection();
-  renderChart(allStats, observedPHat, direction);
+  renderChart(allStats, observedPHat, direction, count === 1 ? allStats.length - 1 : -1);
   const { pValue, extremeCount } = computePValue(allStats, observedPHat, direction);
   displayResults(allStats, observedPHat, pValue, extremeCount, direction);
   if (resetBtn) resetBtn.hidden = false;
@@ -180,8 +180,9 @@ function generateSimulations(count) {
  * @param {number[]} stats
  * @param {number} observed
  * @param {'left'|'right'|'both'} direction
+ * @param {number} [highlightIndex]
  */
-function renderChart(stats, observed, direction) {
+function renderChart(stats, observed, direction, highlightIndex = -1) {
   chartContainer.innerHTML = '';
   const n = stats.length;
 
@@ -201,6 +202,7 @@ function renderChart(stats, observed, direction) {
       observedStat: observed,
       animate: false,
       domain,
+      highlightIndex,
     });
   } else {
     drawHistogram(chartContainer, stats, {
