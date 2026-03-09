@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap CI: Regression Slope | SimKit</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+    <style>
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        @media (max-width: 700px) {
+            .charts-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#data-panel">Skip to Data</a>
+        <a href="#controls">Skip to Controls</a>
+        <a href="#chart">Skip to Chart</a>
+        <a href="#results">Skip to Results</a>
+    </nav>
+
+    <header>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <ol>
+                <li><a href="../../">SimKit</a></li>
+                <li><a href="../">Simulate</a></li>
+                <li aria-current="page">Bootstrap CI: Regression Slope</li>
+            </ol>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Bootstrap CI: Regression Slope</h1>
+
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-dataset" aria-selected="true"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Paste Data</button>
+            </div>
+
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset">
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </label>
+                <p id="dataset-desc" class="hint"></p>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <label for="paste-area">Paste data (CSV with two numeric columns — x first, then y):
+                    <textarea id="paste-area" rows="6"
+                              placeholder="area,price&#10;1500,200000&#10;2200,310000&#10;1800,265000"></textarea>
+                </label>
+                <div class="btn-row">
+                    <button type="button" id="load-pasted">Load Data</button>
+                    <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+
+            <div id="data-preview" hidden>
+                <p><strong>Loaded:</strong> <output id="data-summary">&mdash;</output></p>
+            </div>
+        </section>
+
+        <section id="controls" aria-label="Simulation controls">
+            <div class="control-row">
+                <label for="ci-level">Confidence level:
+                    <select id="ci-level">
+                        <option value="90">90%</option>
+                        <option value="95" selected>95%</option>
+                        <option value="99">99%</option>
+                    </select>
+                </label>
+                <p id="seed-notice" class="seed-notice" hidden></p>
+            </div>
+            <div class="generate-bar" role="group" aria-label="Generate resamples">
+                <button type="button" class="gen-btn" data-count="1" disabled>+1</button>
+                <button type="button" class="gen-btn" data-count="10" disabled>+10</button>
+                <button type="button" class="gen-btn" data-count="100" disabled>+100</button>
+                <button type="button" class="gen-btn" data-count="1000" disabled>+1000</button>
+                <span class="gen-label">Resamples</span>
+                <button type="button" id="reset-btn" class="btn-secondary" hidden>Reset</button>
+            </div>
+        </section>
+
+        <section id="chart" aria-label="Bootstrap distribution">
+            <div class="charts-row">
+                <figure>
+                    <div id="scatter-container"></div>
+                </figure>
+                <figure>
+                    <div id="hist-container"></div>
+                </figure>
+            </div>
+        </section>
+
+        <section id="results" aria-label="Simulation results">
+            <div id="result-summary" tabindex="-1">
+                <p class="placeholder">Load data and run a simulation to see results.</p>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <dialog id="keyboard-help" aria-label="Keyboard shortcuts">
+        <h2>Keyboard Shortcuts</h2>
+        <dl>
+            <dt><kbd>1</kbd></dt><dd>+1 resample</dd>
+            <dt><kbd>2</kbd></dt><dd>+10 resamples</dd>
+            <dt><kbd>3</kbd></dt><dd>+100 resamples</dd>
+            <dt><kbd>4</kbd></dt><dd>+1000 resamples</dd>
+            <dt><kbd>0</kbd></dt><dd>Reset</dd>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

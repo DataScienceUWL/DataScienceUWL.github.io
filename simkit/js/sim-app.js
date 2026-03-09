@@ -18,6 +18,7 @@ import { drawDotplot } from './dotplot.js';
  * @property {(g1: number[], g2: number[]) => number} [testStat] - For randomization: compute observed stat
  * @property {boolean} [twoGroup] - Whether this is a two-group test
  * @property {boolean} [proportion] - Whether this is a proportion-based test (categorical outcome encoded as 0/1)
+ * @property {boolean} [paired] - Whether this is a paired differences test (compute diffs first, then bootstrap)
  */
 
 /**
@@ -164,8 +165,23 @@ export function initSimPage(config) {
           const numIdx = parsed.types.indexOf('numeric');
           const catIdx = parsed.types.indexOf('categorical');
 
-          if (config.proportion) {
-            // Proportion test: two categorical columns
+          if (config.proportion && !config.twoGroup) {
+            // One-sample bootstrap proportion: single categorical column
+            const catIndices = parsed.types
+              .map((t, i) => t === 'categorical' ? i : -1)
+              .filter(i => i >= 0);
+            if (catIndices.length >= 1) {
+              const outcomeCol = parsed.headers[catIndices[0]];
+              rawOutcomes1 = parsed.data.map(r => r[outcomeCol]);
+              rawOutcomes2 = [];
+              const outcomes = [...new Set(rawOutcomes1)];
+              populateSuccessSelector(outcomes);
+              encodeProportionData();
+              showDataLoaded();
+              return;
+            }
+          } else if (config.proportion) {
+            // Two-group proportion test: two categorical columns
             const catIndices = parsed.types
               .map((t, i) => t === 'categorical' ? i : -1)
               .filter(i => i >= 0);
@@ -188,6 +204,25 @@ export function initSimPage(config) {
                 showDataLoaded();
                 return;
               }
+            }
+          } else if (config.paired) {
+            // Paired data: two numeric columns
+            const numIndices = parsed.types
+              .map((t, i) => t === 'numeric' ? i : -1)
+              .filter(i => i >= 0);
+            if (numIndices.length >= 2) {
+              const col1 = parsed.headers[numIndices[0]];
+              const col2 = parsed.headers[numIndices[1]];
+              group1Name = col1;
+              group2Name = col2;
+              data1 = parsed.data.map(r => parseFloat(r[col1])).filter(v => isFinite(v));
+              data2 = parsed.data.map(r => parseFloat(r[col2])).filter(v => isFinite(v));
+              // Trim to equal length
+              const minLen = Math.min(data1.length, data2.length);
+              data1 = data1.slice(0, minLen);
+              data2 = data2.slice(0, minLen);
+              showDataLoaded();
+              return;
             }
           } else if (config.twoGroup && catIdx >= 0 && numIdx >= 0) {
             const groupCol = parsed.headers[catIdx];
@@ -256,7 +291,18 @@ export function initSimPage(config) {
   function showDataLoaded() {
     if (dataPreview) dataPreview.hidden = false;
     if (dataSummary) {
-      if (config.proportion && data2.length > 0) {
+      if (config.paired) {
+        const diffs = data2.map((v, i) => v - data1[i]);
+        const m = mean(diffs);
+        dataSummary.textContent =
+          `${data1.length} pairs | ${group1Name}: x̄ = ${mean(data1).toFixed(2)} | ` +
+          `${group2Name}: x̄ = ${mean(data2).toFixed(2)} | Mean diff = ${m.toFixed(4)}`;
+      } else if (config.proportion && !config.twoGroup) {
+        const p1 = mean(data1);
+        const s1 = data1.filter(v => v === 1).length;
+        dataSummary.textContent =
+          `n = ${data1.length}, successes = ${s1}, p̂ = ${p1.toFixed(4)}`;
+      } else if (config.proportion && data2.length > 0) {
         const p1 = mean(data1);
         const p2 = mean(data2);
         const s1 = data1.filter(v => v === 1).length;
@@ -280,7 +326,11 @@ export function initSimPage(config) {
     resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
     // Show mechanism strip
     if (mechanismStrip) {
-      if (config.mode === 'bootstrap' && !config.twoGroup && originalContentEl) {
+      if (config.paired && originalContentEl) {
+        // Paired bootstrap: show differences in one-sample mechanism strip
+        mechanismStrip.hidden = false;
+        renderOriginalSample();
+      } else if (config.mode === 'bootstrap' && !config.twoGroup && originalContentEl) {
         // One-sample bootstrap: original sample chips/histogram
         mechanismStrip.hidden = false;
         renderOriginalSample();
@@ -334,7 +384,9 @@ export function initSimPage(config) {
   /** Encode raw categorical outcomes as 1 (success) / 0 (not success). */
   function encodeProportionData() {
     data1 = rawOutcomes1.map(o => o === successOutcome ? 1 : 0);
-    data2 = rawOutcomes2.map(o => o === successOutcome ? 1 : 0);
+    if (rawOutcomes2.length > 0) {
+      data2 = rawOutcomes2.map(o => o === successOutcome ? 1 : 0);
+    }
   }
 
   // Success outcome change → re-encode and reset
@@ -377,6 +429,8 @@ export function initSimPage(config) {
       })
       .then((index) => {
         const relevant = index.filter(ds => {
+          if (config.paired) return ds.type === 'paired';
+          if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) return ds.type === 'bootstrap_prop';
           if (config.mode === 'bootstrap' && config.twoGroup) return ds.type === 'randomization';
           if (config.mode === 'bootstrap') return ds.type === 'bootstrap';
           if (config.proportion) return ds.type === 'randomization_prop';
@@ -423,7 +477,27 @@ export function initSimPage(config) {
       .then((ds) => {
         resetSimulation();
 
-        if (config.mode === 'bootstrap' && !config.twoGroup) {
+        if (config.paired) {
+          // Paired data: two numeric columns
+          const numVars = ds.variables.filter(v => v.type === 'numeric');
+          if (numVars.length < 2) return;
+          group1Name = numVars[0].name;
+          group2Name = numVars[1].name;
+          data1 = ds.rows.map(r => r[numVars[0].name]).filter(v => isFinite(v));
+          data2 = ds.rows.map(r => r[numVars[1].name]).filter(v => isFinite(v));
+          const minLen = Math.min(data1.length, data2.length);
+          data1 = data1.slice(0, minLen);
+          data2 = data2.slice(0, minLen);
+        } else if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) {
+          // One-sample bootstrap proportion: single categorical column → 0/1
+          const catVar = ds.variables.find(v => v.type === 'categorical');
+          if (!catVar) return;
+          rawOutcomes1 = ds.rows.map(r => r[catVar.name]);
+          rawOutcomes2 = [];
+          const outcomes = [...new Set(rawOutcomes1)];
+          populateSuccessSelector(outcomes);
+          encodeProportionData();
+        } else if (config.mode === 'bootstrap' && !config.twoGroup) {
           // Single numeric variable — extract first numeric column
           const numVar = ds.variables.find(v => v.type === 'numeric');
           if (!numVar) return;
@@ -540,7 +614,15 @@ export function initSimPage(config) {
       /** @type {number[]} */
       let lastResampleValues = [];
 
-      if (config.twoGroup && data2.length > 0) {
+      if (config.paired && data2.length > 0) {
+        // Paired bootstrap: resample the differences
+        const diffs = data2.map((v, i) => v - data1[i]);
+        for (let i = 0; i < count; i++) {
+          const rs = resample(diffs, rng);
+          lastResampleValues = rs;
+          allStats.push(statFn(rs));
+        }
+      } else if (config.twoGroup && data2.length > 0) {
         // Two-sample bootstrap: resample each group independently
         /** @type {number[]} */ let lastRs1 = [];
         /** @type {number[]} */ let lastRs2 = [];
@@ -552,7 +634,7 @@ export function initSimPage(config) {
           const stat = statFn(rs1) - statFn(rs2);
           allStats.push(stat);
         }
-        showTwoGroupMechanism(lastRs1, lastRs2, count === 1);
+        showTwoGroupMechanism(lastRs1, lastRs2, false);
       } else {
         // One-sample bootstrap
         for (let i = 0; i < count; i++) {
@@ -591,12 +673,29 @@ export function initSimPage(config) {
         prevBinCounts = prevBins.map(b => b.length);
       }
       // Only show CI lines once we have enough resamples for stability
-      renderChart(allStats, allStats.length >= CI_MIN ? ci : null);
+      const ciForChart = allStats.length >= CI_MIN ? ci : null;
 
-      // Show last resample in mechanism strip (one-sample only)
-      if (!config.twoGroup) {
-        lastResample = lastResampleValues;
-        showResample(lastResampleValues, count === 1);
+      // Determine if this page uses one-sample mechanism strip
+      const showOneSampleMech = !config.twoGroup || config.paired;
+
+      if (count === 1) {
+        // Staggered animation: mechanism update → 120ms → flash → 120ms → dot appears
+        if (showOneSampleMech) {
+          lastResample = lastResampleValues;
+          showResample(lastResampleValues, false);
+        }
+        setTimeout(() => {
+          flashMechanism();
+          setTimeout(() => {
+            renderChart(allStats, ciForChart);
+          }, 120);
+        }, 120);
+      } else {
+        renderChart(allStats, ciForChart);
+        if (showOneSampleMech) {
+          lastResample = lastResampleValues;
+          showResample(lastResampleValues, false);
+        }
       }
 
       announce(`Generated ${count} resample${count > 1 ? 's' : ''}. Total: ${allStats.length}`);
@@ -614,7 +713,7 @@ export function initSimPage(config) {
         allStats.push(stat);
       }
 
-      showTwoGroupMechanism(lastG1, lastG2, count === 1);
+      showTwoGroupMechanism(lastG1, lastG2, false);
       if (allStats.length <= 200) {
         if (count === 1) {
           lastStatIndex = allStats.length - 1;
@@ -629,9 +728,20 @@ export function initSimPage(config) {
         const { bins: prevBins } = computeBins(prevStats, { numBins: undefined });
         prevBinCounts = prevBins.map(b => b.length);
       }
-      renderChart(allStats, null, observedStat, direction);
       const { pValue, extremeCount } = permutationPValue(allStats, observedStat, direction);
       displayRandomizationResults(allStats, observedStat, pValue, extremeCount, direction);
+
+      if (count === 1) {
+        // Staggered: mechanism update → 120ms → flash → 120ms → dot appears
+        setTimeout(() => {
+          flashMechanism();
+          setTimeout(() => {
+            renderChart(allStats, null, observedStat, direction);
+          }, 120);
+        }, 120);
+      } else {
+        renderChart(allStats, null, observedStat, direction);
+      }
       announce(`Generated ${count} shuffle${count > 1 ? 's' : ''}. Total: ${allStats.length}`);
     }
 
@@ -644,7 +754,56 @@ export function initSimPage(config) {
     if (!originalContentEl) return;
     originalContentEl.innerHTML = '';
 
-    if (data1.length <= CHIP_THRESHOLD) {
+    if (config.paired && data2.length > 0) {
+      // Paired data: show the differences
+      const diffs = data2.map((v, i) => v - data1[i]);
+      const container = document.createElement('div');
+      container.className = 'sample-dots';
+      container.setAttribute('role', 'img');
+      container.setAttribute('aria-label', `Paired differences (${group2Name} − ${group1Name})`);
+
+      if (diffs.length <= CHIP_THRESHOLD) {
+        for (const d of diffs) {
+          const dot = document.createElement('span');
+          dot.className = 'sample-dot';
+          dot.textContent = formatChipValue(d);
+          dot.title = String(d);
+          container.appendChild(dot);
+        }
+      } else {
+        container.className = 'mini-chart';
+        drawHistogram(container, diffs, {
+          id: 'orig-hist',
+          xLabel: '',
+          titleText: `Differences (${group2Name} − ${group1Name})`,
+          numBins: Math.min(Math.ceil(Math.sqrt(diffs.length)), 40),
+          animate: false,
+          margin: { top: 5, right: 10, bottom: 25, left: 35 },
+        });
+      }
+      originalContentEl.appendChild(container);
+
+      if (origNEl) origNEl.textContent = `${diffs.length} pairs`;
+      if (origMeanEl) origMeanEl.textContent = mean(diffs).toFixed(4);
+      return;
+    }
+
+    if (config.proportion && !config.twoGroup) {
+      // One-sample proportion: text counts
+      const successes = data1.filter(v => v === 1).length;
+      const failures = data1.length - successes;
+      const pHat = mean(data1);
+      const container = document.createElement('div');
+      container.className = 'prop-summary';
+      container.setAttribute('role', 'img');
+      container.setAttribute('aria-label', `Original sample: ${successes} successes, ${failures} failures, p-hat = ${pHat.toFixed(4)}`);
+      container.innerHTML = `
+        <span class="prop-count"><strong>${successes}</strong> S</span>
+        <span class="prop-count"><strong>${failures}</strong> F</span>
+        <span class="prop-count">p̂ = ${pHat.toFixed(4)}</span>
+      `;
+      originalContentEl.appendChild(container);
+    } else if (data1.length <= CHIP_THRESHOLD) {
       // Small dataset: show individual value chips
       const container = document.createElement('div');
       container.className = 'sample-dots';
@@ -675,7 +834,13 @@ export function initSimPage(config) {
     }
 
     if (origNEl) origNEl.textContent = String(data1.length);
-    if (origMeanEl) origMeanEl.textContent = mean(data1).toFixed(2);
+    if (origMeanEl) {
+      if (config.proportion) {
+        origMeanEl.textContent = mean(data1).toFixed(4);
+      } else {
+        origMeanEl.textContent = mean(data1).toFixed(2);
+      }
+    }
   }
 
   // ─── Two-group mechanism strip ───
@@ -750,8 +915,12 @@ export function initSimPage(config) {
       resampleMeanEl.textContent = stat.fn(resampleValues).toFixed(4);
       const statLabelEl = document.getElementById('resample-stat-label');
       if (statLabelEl) {
-        const shortName = stat.label.replace('Sample ', '').toLowerCase();
-        statLabelEl.textContent = `Resample ${shortName}`;
+        if (config.proportion) {
+          statLabelEl.textContent = 'Resample proportion';
+        } else {
+          const shortName = stat.label.replace('Sample ', '').toLowerCase();
+          statLabelEl.textContent = `Resample ${shortName}`;
+        }
       }
     }
     if (resampleToggle) {
@@ -760,31 +929,45 @@ export function initSimPage(config) {
 
     // Mechanism description: summarize what "with replacement" did
     if (mechanismDescEl) {
-      /** @type {Map<number, number>} */
-      const counts = new Map();
-      for (const v of resampleValues) {
-        counts.set(v, (counts.get(v) ?? 0) + 1);
+      if (config.proportion && !config.twoGroup) {
+        const origS = data1.filter(v => v === 1).length;
+        const resampS = resampleValues.filter(v => v === 1).length;
+        const diff = resampS - origS;
+        const sign = diff > 0 ? '+' : '';
+        mechanismDescEl.textContent =
+          `Resample with replacement · successes changed by ${sign}${diff}`;
+      } else {
+        /** @type {Map<number, number>} */
+        const counts = new Map();
+        for (const v of resampleValues) {
+          counts.set(v, (counts.get(v) ?? 0) + 1);
+        }
+        const uniqueOriginal = new Set(data1);
+        let notSelected = 0;
+        let repeated = 0;
+        for (const v of uniqueOriginal) {
+          const c = counts.get(v) ?? 0;
+          if (c === 0) notSelected++;
+          if (c > 1) repeated++;
+        }
+        mechanismDescEl.textContent =
+          `Resample with replacement · ${repeated} value${repeated !== 1 ? 's' : ''} repeated · ${notSelected} not selected`;
       }
-      const uniqueOriginal = new Set(data1);
-      let notSelected = 0;
-      let repeated = 0;
-      for (const v of uniqueOriginal) {
-        const c = counts.get(v) ?? 0;
-        if (c === 0) notSelected++;
-        if (c > 1) repeated++;
-      }
-      mechanismDescEl.textContent =
-        `Resample with replacement · ${repeated} value${repeated !== 1 ? 's' : ''} repeated · ${notSelected} not selected`;
       mechanismDescEl.hidden = false;
     }
 
     // Flash animation for +1 to emphasize statistic → dot connection
     if (flash && mechanismStrip) {
-      mechanismStrip.classList.remove('mechanism-flash');
-      // Force reflow to restart animation
-      void mechanismStrip.offsetWidth;
-      mechanismStrip.classList.add('mechanism-flash');
+      flashMechanism();
     }
+  }
+
+  /** Trigger the CSS flash animation on the mechanism strip. */
+  function flashMechanism() {
+    if (!mechanismStrip) return;
+    mechanismStrip.classList.remove('mechanism-flash');
+    void mechanismStrip.offsetWidth; // force reflow to restart animation
+    mechanismStrip.classList.add('mechanism-flash');
   }
 
   /**
@@ -793,6 +976,22 @@ export function initSimPage(config) {
    */
   function showResampleSummary(resampleValues) {
     resampleContentEl.innerHTML = '';
+
+    // Proportion mode: just show counts and p̂
+    if (config.proportion && !config.twoGroup) {
+      const successes = resampleValues.filter(v => v === 1).length;
+      const failures = resampleValues.length - successes;
+      const pHat = mean(resampleValues);
+      const container = document.createElement('div');
+      container.className = 'prop-summary';
+      container.innerHTML = `
+        <span class="prop-count"><strong>${successes}</strong> S</span>
+        <span class="prop-count"><strong>${failures}</strong> F</span>
+        <span class="prop-count">p̂ = ${pHat.toFixed(4)}</span>
+      `;
+      resampleContentEl.appendChild(container);
+      return;
+    }
 
     /** @type {Map<number, number>} */
     const counts = new Map();
@@ -811,12 +1010,15 @@ export function initSimPage(config) {
         const timesDrawn = remaining.get(v) ?? 0;
         const dot = document.createElement('span');
         dot.className = 'sample-dot';
+        if (config.proportion) {
+          dot.classList.add(v === 1 ? 'sample-dot--success' : 'sample-dot--failure');
+        }
         if (timesDrawn === 0) {
           dot.classList.add('not-drawn');
         } else if (timesDrawn > 1) {
           dot.classList.add('multi-drawn');
         }
-        dot.textContent = formatChipValue(v);
+        dot.textContent = config.proportion ? (v === 1 ? 'S' : 'F') : formatChipValue(v);
         dot.title = timesDrawn === 0 ? 'Not selected'
           : timesDrawn === 1 ? 'Selected once'
           : `Selected ${timesDrawn} times`;
@@ -974,8 +1176,14 @@ export function initSimPage(config) {
     const titleText = `${config.mode === 'bootstrap' ? 'Bootstrap' : 'Randomization'} Distribution`;
     let xLabel;
     if (config.mode === 'bootstrap') {
-      const sl = getBootstrapStat().label;
-      xLabel = config.twoGroup ? `Diff in ${sl}s` : sl;
+      if (config.proportion) {
+        xLabel = config.twoGroup ? 'Diff in Proportions' : 'Sample Proportion (p̂)';
+      } else if (config.paired) {
+        xLabel = 'Mean Difference';
+      } else {
+        const sl = getBootstrapStat().label;
+        xLabel = config.twoGroup ? `Diff in ${sl}s` : sl;
+      }
     } else {
       xLabel = config.statLabel ?? '';
     }
@@ -1042,15 +1250,29 @@ export function initSimPage(config) {
 
   function displayBootstrapResults(stats, ci, se, ciLevel) {
     const m = mean(stats);
-    const statLabel = getBootstrapStat().label;
-    const paramLabel = config.twoGroup
-      ? `Difference in ${statLabel}s (${group1Name} − ${group2Name})`
-      : statLabel;
-    // Plain-language interpretation
-    const shortLabel = statLabel.replace(/^Sample\s+/i, '').toLowerCase();
-    const paramName = config.twoGroup
-      ? `difference in population ${shortLabel}s`
-      : `true population ${shortLabel}`;
+    let statLabel, paramLabel, paramName;
+    if (config.paired) {
+      statLabel = 'Mean Difference';
+      paramLabel = `Mean Difference (${group2Name} − ${group1Name})`;
+      paramName = `true mean difference (${group2Name} − ${group1Name})`;
+    } else if (config.proportion) {
+      statLabel = 'Sample Proportion';
+      paramLabel = config.twoGroup
+        ? `Difference in ${statLabel}s (${group1Name} − ${group2Name})`
+        : statLabel;
+      paramName = config.twoGroup
+        ? 'difference in population proportions'
+        : 'true population proportion';
+    } else {
+      statLabel = getBootstrapStat().label;
+      paramLabel = config.twoGroup
+        ? `Difference in ${statLabel}s (${group1Name} − ${group2Name})`
+        : statLabel;
+      const shortLabel = statLabel.replace(/^Sample\s+/i, '').toLowerCase();
+      paramName = config.twoGroup
+        ? `difference in population ${shortLabel}s`
+        : `true population ${shortLabel}`;
+    }
     resultDiv.innerHTML = `
       <p><strong>Bootstrap Distribution</strong> (${stats.length} resamples)</p>
       <p>${paramLabel}: ${m.toFixed(4)}</p>

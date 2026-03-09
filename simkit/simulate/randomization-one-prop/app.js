@@ -8,16 +8,15 @@ import { createRng } from '../../js/prng.js';
 import { mean } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
+import { announce, initKeyboardShortcuts, flashMechanism, computeHighlights } from '../../js/page-utils.js';
 
 // DOM elements
 const chartContainer = document.getElementById('chart-container');
 const resultDiv = document.getElementById('result-summary');
-const announceDiv = document.getElementById('sr-announce');
 const resetBtn = /** @type {HTMLButtonElement} */ (document.getElementById('reset-btn'));
 const dataSummary = document.getElementById('data-summary');
 const dataPreview = document.getElementById('data-preview');
 const hypothesisDisplay = document.getElementById('hypothesis-display');
-const seedNotice = document.getElementById('seed-notice');
 
 const inputN = /** @type {HTMLInputElement} */ (document.getElementById('input-n'));
 const inputSuccesses = /** @type {HTMLInputElement} */ (document.getElementById('input-successes'));
@@ -34,6 +33,8 @@ const mechObservedStat = document.getElementById('mech-observed-stat');
 const mechSimStat = document.getElementById('mech-sim-stat');
 const mechanismDescEl = document.getElementById('mechanism-description');
 const simTitleEl = document.getElementById('sim-title');
+
+initKeyboardShortcuts(genBtns, resetBtn);
 
 /** @type {number[]} */
 let allStats = [];
@@ -63,7 +64,6 @@ function loadData() {
   sampleSuccesses = k;
   observedPHat = k / n;
 
-  // Reset any existing simulation
   resetSimulation();
 
   if (dataPreview) dataPreview.hidden = false;
@@ -74,7 +74,6 @@ function loadData() {
   for (const btn of genBtns) btn.disabled = false;
   resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
 
-  // Show mechanism strip with observed data
   if (mechanismStrip && mechObservedStat) {
     mechanismStrip.hidden = false;
     mechObservedStat.textContent = `${k} of ${n} (p̂ = ${observedPHat.toFixed(4)})`;
@@ -97,11 +96,9 @@ function getDirection() {
   return /** @type {const} */ ('both');
 }
 
-// Re-render on null prop or direction change
 if (nullPropInput) {
   nullPropInput.addEventListener('change', () => {
     if (allStats.length > 0) {
-      // Null changed — must re-simulate (old stats are from a different null)
       resetSimulation();
       resultDiv.innerHTML = '<p class="hint">Null proportion changed. Run simulation again.</p>';
       announce('Null proportion changed. Simulation reset.');
@@ -133,23 +130,19 @@ for (const btn of genBtns) {
   });
 }
 
-/**
- * @param {number} count
- */
+/** @param {number} count */
 function generateSimulations(count) {
   if (!rng) rng = createRng(seed);
   const p0 = getNullProp();
   const n = sampleN;
   const prevLength = allStats.length;
 
-  // Update mechanism title
   if (simTitleEl) {
     simTitleEl.textContent = count === 1 ? 'This Simulation' : 'Last Simulation';
   }
 
   let lastSimSuccesses = 0;
   for (let i = 0; i < count; i++) {
-    // Simulate n Bernoulli(p0) trials
     let successes = 0;
     for (let j = 0; j < n; j++) {
       if (rng() < p0) successes++;
@@ -158,49 +151,30 @@ function generateSimulations(count) {
     allStats.push(successes / n);
   }
 
-  // Update mechanism strip
   if (mechSimStat && mechanismDescEl) {
     const lastPHat = lastSimSuccesses / n;
     mechSimStat.textContent = `${lastSimSuccesses} of ${n} (p̂ = ${lastPHat.toFixed(4)})`;
     mechanismDescEl.textContent = `Simulate ${n} trials, each with P(success) = ${p0}`;
     mechanismDescEl.hidden = false;
-
-    // Flash on +1
-    if (count === 1 && mechanismStrip) {
-      mechanismStrip.classList.remove('mechanism-flash');
-      void mechanismStrip.offsetWidth;
-      mechanismStrip.classList.add('mechanism-flash');
-    }
   }
 
   const direction = getDirection();
-  let hlIndex = -1;
-  /** @type {Set<number>|undefined} */
-  let hlIndices;
-  /** @type {number[]|undefined} */
-  let prevBinCounts;
+  const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(allStats, prevLength, count, computeBins);
 
-  if (allStats.length <= 200) {
-    // Dotplot mode: highlight individual dots
-    if (count === 1) {
-      hlIndex = allStats.length - 1;
-    } else {
-      hlIndices = new Set();
-      for (let j = prevLength; j < allStats.length; j++) {
-        hlIndices.add(j);
-      }
-    }
-  } else if (prevLength > 0) {
-    // Histogram mode: compute previous bin counts for stacked delta
-    const prevStats = allStats.slice(0, prevLength);
-    const { bins: prevBins } = computeBins(prevStats, { numBins: undefined });
-    prevBinCounts = prevBins.map(b => b.length);
-  }
-
-  renderChart(allStats, observedPHat, direction, hlIndex, hlIndices, prevBinCounts);
   const { pValue, extremeCount } = computePValue(allStats, observedPHat, direction);
   displayResults(allStats, observedPHat, pValue, extremeCount, direction);
   if (resetBtn) resetBtn.hidden = false;
+
+  if (count === 1) {
+    setTimeout(() => {
+      flashMechanism(mechanismStrip);
+      setTimeout(() => {
+        renderChart(allStats, observedPHat, direction, hlIndex, hlIndices, prevBinCounts);
+      }, 120);
+    }, 120);
+  } else {
+    renderChart(allStats, observedPHat, direction, hlIndex, hlIndices, prevBinCounts);
+  }
   announce(`Generated ${count} simulation${count > 1 ? 's' : ''}. Total: ${allStats.length}`);
 }
 
@@ -218,7 +192,6 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
   chartContainer.innerHTML = '';
   const n = stats.length;
 
-  // Expand domain to include observed stat
   const lo = Math.min(...stats, observed);
   const hi = Math.max(...stats, observed);
   const pad = (hi - lo) * 0.05 || 0.05;
@@ -318,26 +291,4 @@ function resetSimulation() {
   chartContainer.innerHTML = '';
   resultDiv.innerHTML = '<p class="placeholder">Enter sample data and run a simulation to see results.</p>';
   if (resetBtn) resetBtn.hidden = true;
-}
-
-function announce(msg) {
-  if (announceDiv) announceDiv.textContent = msg;
-}
-
-// ─── Keyboard shortcuts ───
-
-const helpDialog = /** @type {HTMLDialogElement} */ (document.getElementById('keyboard-help'));
-if (helpDialog) {
-  document.addEventListener('keydown', (e) => {
-    if (e.target !== document.body) return;
-    if (e.ctrlKey || e.metaKey) return;
-    if (e.key === '?') helpDialog.showModal();
-    if (e.key === '1') genBtns[0]?.click();
-    if (e.key === '2') genBtns[1]?.click();
-    if (e.key === '3') genBtns[2]?.click();
-    if (e.key === '4') genBtns[3]?.click();
-    if (e.key === '0' && resetBtn && !resetBtn.hidden) resetBtn.click();
-  });
-  const closeBtn = helpDialog.querySelector('button');
-  if (closeBtn) closeBtn.addEventListener('click', () => helpDialog.close());
 }

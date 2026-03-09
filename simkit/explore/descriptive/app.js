@@ -9,6 +9,7 @@ import { mean, median, sd, quantile, iqr, range } from '../../js/stats.js';
 import { drawHistogram } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
+import { announce, initTabs, loadDatasetIndex, fetchDataset } from '../../js/page-utils.js';
 
 // ── DOM elements ──────────────────────────────────────────────────────
 
@@ -23,7 +24,6 @@ const variableSelector = document.getElementById('variable-selector');
 const varSelect = /** @type {HTMLSelectElement} */ (document.getElementById('var-select'));
 const statsSection = document.getElementById('stats-section');
 const chartsSection = document.getElementById('charts-section');
-const announceDiv = document.getElementById('sr-announce');
 
 const histogramContainer = document.getElementById('histogram-container');
 const dotplotContainer = document.getElementById('dotplot-container');
@@ -41,38 +41,7 @@ const statMax = document.getElementById('stat-max');
 const statIqr = document.getElementById('stat-iqr');
 const statRange = document.getElementById('stat-range');
 
-// ── Tab switching ─────────────────────────────────────────────────────
-
-const tabs = /** @type {NodeListOf<HTMLButtonElement>} */ (
-  document.querySelectorAll('[role="tab"]'));
-const panels = /** @type {NodeListOf<HTMLElement>} */ (
-  document.querySelectorAll('[role="tabpanel"]'));
-
-tabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
-    panels.forEach(p => p.hidden = true);
-    tab.setAttribute('aria-selected', 'true');
-    const panelId = tab.getAttribute('aria-controls');
-    if (panelId) {
-      const panel = document.getElementById(panelId);
-      if (panel) panel.hidden = false;
-    }
-  });
-
-  tab.addEventListener('keydown', (e) => {
-    const tabArr = Array.from(tabs);
-    const idx = tabArr.indexOf(tab);
-    let next = -1;
-    if (e.key === 'ArrowRight') next = (idx + 1) % tabArr.length;
-    else if (e.key === 'ArrowLeft') next = (idx - 1 + tabArr.length) % tabArr.length;
-    if (next >= 0) {
-      e.preventDefault();
-      tabArr[next].focus();
-      tabArr[next].click();
-    }
-  });
-});
+initTabs();
 
 // ── State ─────────────────────────────────────────────────────────────
 
@@ -85,105 +54,54 @@ let currentValues = [];
  */
 let loadedDataset = null;
 
-// ── Data path helper ──────────────────────────────────────────────────
-
-/**
- * Resolve the path to the data/ directory from this page.
- * @param {string} file
- * @returns {string}
- */
-function dataPath(file) {
-  const link = document.querySelector('link[rel="stylesheet"][href*="style.css"]');
-  if (link) {
-    const href = link.getAttribute('href');
-    const prefix = href.replace(/css\/style\.css$/, '');
-    return `${prefix}data/${file}`;
-  }
-  return `/data/${file}`;
-}
-
 // ── Dataset loading ───────────────────────────────────────────────────
 
-/** @type {Array<{id:string, name:string, description:string, type:string, n:number, variables:string[]}>} */
+/** @type {Array<{id:string, name:string, description:string, type:string, n:number}>} */
 let datasetIndex = [];
 
-fetch(dataPath('datasets.json'))
-  .then(r => {
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
-  })
-  .then((index) => {
-    // Filter to dataset types that have numeric variables usable for descriptive stats
-    const relevant = index.filter(ds =>
-      ds.type === 'bootstrap' || ds.type === 'explore');
-    datasetIndex = relevant;
+if (datasetSelect) {
+  loadDatasetIndex(datasetSelect, ds => ds.type === 'bootstrap' || ds.type === 'explore', datasetDesc)
+    .then(index => { datasetIndex = index; });
 
-    for (const ds of relevant) {
-      const opt = document.createElement('option');
-      opt.value = ds.id;
-      opt.textContent = `${ds.name} (n = ${ds.n})`;
-      datasetSelect.appendChild(opt);
+  datasetSelect.addEventListener('change', () => {
+    const id = datasetSelect.value;
+    if (!id) {
+      if (datasetDesc) datasetDesc.textContent = '';
+      return;
     }
-  })
-  .catch(() => {
-    if (datasetDesc) datasetDesc.textContent = 'Could not load datasets.';
-  });
+    const meta = datasetIndex.find(d => d.id === id);
+    if (meta && datasetDesc) datasetDesc.textContent = meta.description;
 
-datasetSelect.addEventListener('change', () => {
-  const id = datasetSelect.value;
-  if (!id) {
-    if (datasetDesc) datasetDesc.textContent = '';
-    return;
-  }
-  const meta = datasetIndex.find(d => d.id === id);
-  if (meta && datasetDesc) {
-    datasetDesc.textContent = meta.description;
-  }
-  loadDatasetById(id);
-});
+    fetchDataset(id)
+      .then(ds => {
+        loadedDataset = ds;
+        const numericVars = ds.variables.filter(v => v.type === 'numeric');
 
-/**
- * Fetch and load a bundled dataset by ID.
- * @param {string} id
- */
-function loadDatasetById(id) {
-  fetch(dataPath(`${id}.json`))
-    .then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json();
-    })
-    .then((ds) => {
-      loadedDataset = ds;
-      const numericVars = ds.variables.filter(v => v.type === 'numeric');
-
-      if (numericVars.length === 0) {
-        announce('No numeric variables found in this dataset.');
-        return;
-      }
-
-      // Show variable selector if multiple numeric columns
-      if (numericVars.length > 1) {
-        varSelect.innerHTML = '';
-        for (const v of numericVars) {
-          const opt = document.createElement('option');
-          opt.value = v.name;
-          opt.textContent = v.label || v.name;
-          varSelect.appendChild(opt);
+        if (numericVars.length === 0) {
+          announce('No numeric variables found in this dataset.');
+          return;
         }
-        variableSelector.hidden = false;
-      } else {
-        variableSelector.hidden = true;
-      }
 
-      // Extract values for the first numeric variable
-      const varName = numericVars[0].name;
-      const varLabel = numericVars[0].label || varName;
-      const values = ds.rows.map(r => r[varName]).filter(v => isFinite(v));
-      setData(values, varLabel, ds.name);
-    })
-    .catch(() => {
-      announce('Could not load dataset.');
-    });
+        if (numericVars.length > 1) {
+          varSelect.innerHTML = '';
+          for (const v of numericVars) {
+            const opt = document.createElement('option');
+            opt.value = v.name;
+            opt.textContent = v.label || v.name;
+            varSelect.appendChild(opt);
+          }
+          variableSelector.hidden = false;
+        } else {
+          variableSelector.hidden = true;
+        }
+
+        const varName = numericVars[0].name;
+        const varLabel = numericVars[0].label || varName;
+        const values = ds.rows.map(r => r[varName]).filter(v => isFinite(v));
+        setData(values, varLabel, ds.name);
+      })
+      .catch(() => announce('Could not load dataset.'));
+  });
 }
 
 // Variable selector change
@@ -285,8 +203,8 @@ clearBtn?.addEventListener('click', () => {
   if (values.length > 0) {
     if (urlInfo) urlInfo.textContent = `Loaded ${values.length} values from URL.`;
     // Switch to URL tab
-    tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
-    panels.forEach(p => p.hidden = true);
+    for (const t of document.querySelectorAll('[role="tab"]')) t.setAttribute('aria-selected', 'false');
+    for (const p of document.querySelectorAll('[role="tabpanel"]')) /** @type {HTMLElement} */ (p).hidden = true;
     document.getElementById('tab-url')?.setAttribute('aria-selected', 'true');
     document.getElementById('panel-url')?.removeAttribute('hidden');
 
@@ -398,17 +316,6 @@ function fmt(x) {
   if (!isFinite(x)) return '\u2014';
   // Use up to 4 decimals, strip trailing zeros
   return parseFloat(x.toFixed(4)).toString();
-}
-
-/**
- * Announce a message to screen readers.
- * @param {string} msg
- */
-function announce(msg) {
-  if (announceDiv) {
-    announceDiv.textContent = '';
-    requestAnimationFrame(() => { announceDiv.textContent = msg; });
-  }
 }
 
 /** Clear all displayed stats and charts. */

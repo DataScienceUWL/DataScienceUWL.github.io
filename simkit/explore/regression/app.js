@@ -7,6 +7,7 @@
 import { drawScatterplot, drawResidualPlot } from '../../js/scatterplot.js';
 import { linreg } from '../../js/stats.js';
 import { parseCSV } from '../../js/csv-parser.js';
+import { announce, initTabs, loadDatasetIndex, fetchDataset } from '../../js/page-utils.js';
 
 // ── State ──────────────────────────────────────────────────────────────────
 
@@ -41,49 +42,26 @@ const showLineCheckbox = /** @type {HTMLInputElement} */ (document.getElementByI
 const showResidualsCheckbox = /** @type {HTMLInputElement} */ (document.getElementById('show-residuals'));
 const equationDisplay = /** @type {HTMLDivElement} */ (document.getElementById('equation-display'));
 const statsDisplay = /** @type {HTMLDivElement} */ (document.getElementById('stats-display'));
-const srAnnounce = /** @type {HTMLDivElement} */ (document.getElementById('sr-announce'));
-
-// Tab elements
-const tabDataset = /** @type {HTMLButtonElement} */ (document.getElementById('tab-dataset'));
-const tabPaste = /** @type {HTMLButtonElement} */ (document.getElementById('tab-paste'));
-const panelDataset = /** @type {HTMLDivElement} */ (document.getElementById('panel-dataset'));
-const panelPaste = /** @type {HTMLDivElement} */ (document.getElementById('panel-paste'));
 
 // ── Datasets index ─────────────────────────────────────────────────────────
 
-/** @type {Array<{id:string, name:string, description:string, type:string, variables:string[]}>} */
+/** @type {Array<{id:string, name:string, description:string, type:string}>} */
 let datasetsIndex = [];
-
-async function loadDatasetsIndex() {
-    const resp = await fetch('../../data/datasets.json');
-    datasetsIndex = await resp.json();
-    const regressionSets = datasetsIndex.filter(d => d.type === 'regression');
-
-    for (const ds of regressionSets) {
-        const opt = document.createElement('option');
-        opt.value = ds.id;
-        opt.textContent = ds.name;
-        datasetSelect.appendChild(opt);
-    }
-}
 
 /**
  * Load a dataset by ID.
  * @param {string} id
  */
 async function loadDataset(id) {
-    const resp = await fetch(`../../data/${id}.json`);
-    const data = await resp.json();
+    const data = await fetchDataset(id);
 
     currentRows = data.rows;
 
-    // Find numeric variable names from the dataset metadata
     const varInfo = data.variables || [];
     numericColumns = varInfo
         .filter(/** @param {any} v */ v => v.type === 'numeric')
         .map(/** @param {any} v */ v => v.name);
 
-    // If fewer than 2 numeric columns, try to infer from data
     if (numericColumns.length < 2 && currentRows.length > 0) {
         numericColumns = Object.keys(currentRows[0]).filter(k => {
             return typeof currentRows[0][k] === 'number';
@@ -304,69 +282,37 @@ function formatNum(val) {
     return val.toFixed(4);
 }
 
-/**
- * Announce a message to screen readers.
- * @param {string} msg
- */
-function announce(msg) {
-    srAnnounce.textContent = msg;
-}
-
-// ── Tab switching ──────────────────────────────────────────────────────────
-
-function setupTabs() {
-    const tabs = [tabDataset, tabPaste];
-    const panels = [panelDataset, panelPaste];
-
-    for (let i = 0; i < tabs.length; i++) {
-        tabs[i].addEventListener('click', () => {
-            tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
-            panels.forEach(p => p.hidden = true);
-            tabs[i].setAttribute('aria-selected', 'true');
-            panels[i].hidden = false;
-        });
-    }
-}
-
 // ── Event listeners ────────────────────────────────────────────────────────
 
-function init() {
-    setupTabs();
+initTabs();
 
-    loadDatasetsIndex().catch(err => {
-        console.error('Failed to load datasets index:', err);
-    });
+loadDatasetIndex(datasetSelect, ds => ds.type === 'regression', datasetDesc)
+    .then(index => { datasetsIndex = index; });
 
-    datasetSelect.addEventListener('change', () => {
-        const id = datasetSelect.value;
-        if (id) {
-            loadDataset(id).catch(err => {
-                console.error('Failed to load dataset:', err);
-                announce('Failed to load dataset.');
-            });
-        }
-    });
+datasetSelect.addEventListener('change', () => {
+    const id = datasetSelect.value;
+    if (id) {
+        loadDataset(id).catch(() => announce('Failed to load dataset.'));
+    }
+});
 
-    loadPastedBtn.addEventListener('click', loadPastedData);
+loadPastedBtn.addEventListener('click', loadPastedData);
 
-    clearBtn.addEventListener('click', () => {
-        pasteArea.value = '';
-        currentRows = [];
-        numericColumns = [];
-        chartContainer.innerHTML = '';
-        equationDisplay.hidden = true;
-        statsDisplay.hidden = true;
-        residualContainer.hidden = true;
-        varPanel.hidden = true;
-        dataPreview.hidden = true;
-        datasetSelect.value = '';
-        datasetDesc.textContent = '';
-    });
+clearBtn.addEventListener('click', () => {
+    pasteArea.value = '';
+    currentRows = [];
+    numericColumns = [];
+    chartContainer.innerHTML = '';
+    equationDisplay.hidden = true;
+    statsDisplay.hidden = true;
+    residualContainer.hidden = true;
+    varPanel.hidden = true;
+    dataPreview.hidden = true;
+    datasetSelect.value = '';
+    datasetDesc.textContent = '';
+});
 
-    xVarSelect.addEventListener('change', updateChart);
-    yVarSelect.addEventListener('change', updateChart);
-    showLineCheckbox.addEventListener('change', updateChart);
-    showResidualsCheckbox.addEventListener('change', updateChart);
-}
-
-init();
+xVarSelect.addEventListener('change', updateChart);
+yVarSelect.addEventListener('change', updateChart);
+showLineCheckbox.addEventListener('change', updateChart);
+showResidualsCheckbox.addEventListener('change', updateChart);
