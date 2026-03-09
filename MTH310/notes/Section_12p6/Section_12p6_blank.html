@@ -94,6 +94,88 @@ window.MathJax = {
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        pb.remove();  // no longer needed — workspace expansion handles the break
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -113,28 +195,13 @@ window.MathJax = {
 
 <section id="conic-sections-are-everywhere" aria-label="Conic Sections Are Everywhere">
   <h2>Conic Sections Are Everywhere</h2>
-  <div><p>A <strong>conic section</strong> is the curve you get by slicing a double cone with a plane.</p>
-<p>Depending on the angle of the cut, you get one of four shapes:</p>
-<ul>
-<li><strong>Circle</strong> &mdash; cut straight across (e.g. the rim of a coffee cup)</li>
-<li><strong>Ellipse</strong> &mdash; cut at a slight tilt (e.g. planetary orbits)</li>
-<li><strong>Parabola</strong> &mdash; cut parallel to the side of the cone (e.g. satellite dishes, headlight reflectors)</li>
-<li><strong>Hyperbola</strong> &mdash; cut steep enough to hit both halves (e.g. cooling towers, sonic booms)</li>
-</ul></div>
+  
 </section>
 
 <section id="classifying-conics-by-their-equation" aria-label="Classifying Conics by Their Equation">
   <h2>Classifying Conics by Their Equation</h2>
-  <div><p>The <strong>general second-degree equation</strong> in two variables is:</p></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>\[ax^2 + by^2 + cx + dy + e = 0\]</p></aside>
-<div><p>If \(a\) and \(b\) are not <strong>both</strong> zero, this equation describes a <strong>conic section</strong> (possibly degenerate). We classify by comparing the squared terms:</p></div>
+  <aside class="key-point" role="note" aria-label="Key point"><p>\[ax^2 + by^2 + cx + dy + e = 0\]</p></aside>
 
-<div><table>
-<tr><th>Squared terms</th><th>Shape</th></tr>
-<tr><td>Only \(x^2\) or only \(y^2\)</td><td>Parabola</td></tr>
-<tr><td>Both, <strong>same sign</strong> (\(ab > 0\))</td><td>Circle (\(a = b\)) or Ellipse (\(a \neq b\))</td></tr>
-<tr><td>Both, <strong>opposite signs</strong> (\(ab < 0\))</td><td>Hyperbola</td></tr>
-</table></div>
 </section>
 
 <section id="standard-forms-of-conics" aria-label="Standard Forms of Conics">
@@ -148,37 +215,21 @@ window.MathJax = {
 <li><strong>Hyperbola (vertical):</strong> \(-\frac{(x-h)^2}{a^2} + \frac{(y-k)^2}{b^2} = 1\)</li>
 </ul>
 </section>
-<div><p>We get these by <strong>completing the square</strong> on the general equation. The center is at \((h, k)\).</p></div>
 </section>
 
 <section id="example-1-sketch" aria-label="Example 1: Sketch $y^2 - 9x^2 = 1$">
   <h2>Example 1: Sketch \(y^2 - 9x^2 = 1\)</h2>
-  <div><p><strong>Step 1 &mdash; Which way does it open?</strong> Compare signs of the squared terms: \(+y^2\) and \(-x^2\). The <strong>positive</strong> variable (\(y\)) wins \(\rightarrow\) opens <strong>up and down</strong>.</p>
-<p><strong>Step 2 &mdash; Find intercepts.</strong> Zero out one variable at a time:</p>
-<ul>
-<li>Set \(x = 0\): \(y^2 = 1\) \(\rightarrow\) \(y = \pm 1\) \(\checkmark\)</li>
-<li>Set \(y = 0\): \(-9x^2 = 1\) \(\rightarrow\) no real solution \(\times\)</li>
-</ul>
-<p><strong>Step 3 &mdash; Find asymptotes.</strong> For large values, the constant \(1\) is negligible: \(y^2 \approx 9x^2\) \(\rightarrow\) \(y \approx \pm 3x\)</p></div>
+  
 </section>
 
 <section id="example-2-sketch" aria-label="Example 2: Sketch $x^2 - 4y^2 = 1$">
   <h2>Example 2: Sketch \(x^2 - 4y^2 = 1\)</h2>
-  <div><p><strong>Step 1 &mdash; Which way does it open?</strong> Compare signs: \(+x^2\) and \(-y^2\). The <strong>positive</strong> variable (\(x\)) wins \(\rightarrow\) opens <strong>left and right</strong>.</p>
-<p><strong>Step 2 &mdash; Find intercepts.</strong> Zero out one variable at a time:</p>
-<ul>
-<li>Set \(y = 0\): \(x^2 = 1\) \(\rightarrow\) \(x = \pm 1\) \(\checkmark\)</li>
-<li>Set \(x = 0\): \(-4y^2 = 1\) \(\rightarrow\) no real solution \(\times\)</li>
-</ul>
-<p><strong>Step 3 &mdash; Find asymptotes.</strong> For large values, the constant \(1\) is negligible: \(x^2 \approx 4y^2\) \(\rightarrow\) \(y \approx \pm \tfrac{1}{2}x\)</p></div>
+  
 </section>
 
 <section id="example-3-identify" aria-label="Example 3: Identify $x^2 - 4y^2 + 4x + 24y = 33$">
   <h2>Example 3: Identify \(x^2 - 4y^2 + 4x + 24y = 33\)</h2>
-  <div><p><strong>Step 1 &mdash; Group by variable and factor.</strong> \((x^2 + 4x) - 4(y^2 - 6y) = 33\)</p>
-<p><strong>Step 2 &mdash; Complete the square.</strong> \((x^2 + 4x + 4) - 4(y^2 - 6y + 9) = 33 + 4 - 36\)</p>
-<p><strong>Step 3 &mdash; Simplify.</strong> \((x + 2)^2 - 4(y - 3)^2 = 1\)</p>
-<p><strong>Step 4 &mdash; Standard form.</strong> \(\frac{(x+2)^2}{1} - \frac{(y-3)^2}{(1/2)^2} = 1\) &mdash; <strong>Hyperbola</strong> centered at \((-2, 3)\), opening left and right.</p></div>
+  
 </section>
 
 <section id="cylinders-in-3d" aria-label="Cylinders in 3D">
@@ -188,17 +239,14 @@ window.MathJax = {
   <p>A <strong>cylinder</strong> is a surface formed by taking a 2D curve and extending it along the missing coordinate axis.</p>
 <p>If one variable is absent from the equation, the graph is a cylinder that extends infinitely along that axis.</p>
 </section>
-<div><p>\(z = x^2\) &mdash; missing \(y\), so it extends along the \(y\)-axis: <strong>parabolic cylinder</strong></p></div>
 <figure>
   <img src="figures/parabolic_cylinder.png" alt="A parabolic cylinder z = x² extending along the y-axis. The 2D parabola z = x² is highlighted in amber in the xz-plane (y = 0). The surface extends infinitely in the y-direction.">
   <figcaption><a href="figures/parabolic_cylinder.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
-<div><p>\(x^2 + z^2 = 4\) &mdash; missing \(y\), so it extends along the \(y\)-axis: <strong>circular cylinder</strong></p></div>
 <figure>
   <img src="figures/circular_cylinder.png" alt="A circular cylinder x² + z² = 4 extending along the y-axis. The cross-section in the xz-plane is a circle of radius 2, highlighted in amber. The surface extends infinitely in the y-direction.">
   <figcaption><a href="figures/circular_cylinder.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
-<div><p>\(y = \sin(x)\) &mdash; missing \(z\), so it extends along the \(z\)-axis: <strong>wave cylinder</strong></p></div>
 <figure>
   <img src="figures/wave_cylinder.png" alt="A wave-shaped cylinder y = sin(x) extending along the z-axis. The sine curve is highlighted in amber in the xy-plane (z = 0). The surface extends infinitely in the z-direction.">
   <figcaption><a href="figures/wave_cylinder.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
@@ -225,16 +273,7 @@ window.MathJax = {
 
 <section id="example-4-identify" aria-label="Example 4: Identify $x^2 + y^2 - z = 0$">
   <h2>Example 4: Identify \(x^2 + y^2 - z = 0\)</h2>
-  <div><p>Rewrite as \(z = x^2 + y^2\). Now find traces:</p>
-<p><strong>Horizontal traces</strong> (\(z = k\)): \(x^2 + y^2 = k\)</p>
-<ul>
-<li>\(k > 0\): <strong>circle</strong> of radius \(\sqrt{k}\) &mdash; circles get larger as \(z\) increases</li>
-<li>\(k = 0\): just the origin</li>
-<li>\(k < 0\): empty (no surface below \(z = 0\))</li>
-</ul>
-<p><strong>Vertical traces</strong> (\(y = k\) or \(x = k\)): upward <strong>parabolas</strong> shifted up by \(k^2\)</p>
-<p>We don't need every trace to sketch the surface. Pick the direction with the simplest shape &mdash; here the <strong>circles</strong> (\(z = k\)) &mdash; and imagine stacking them. Then one parabola in each vertical direction serves as a guide.</p></div>
-<figure>
+  <figure>
   <img src="figures/paraboloid.png" alt="A semi-transparent bowl-shaped surface representing the elliptic paraboloid z = x² + y². The surface opens upward from the origin with circular cross-sections highlighted at z = 1, 2, and 4.">
   <figcaption><a href="figures/paraboloid.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
@@ -243,20 +282,7 @@ window.MathJax = {
 
 <section id="example-5-identify" aria-label="Example 5: Identify $z = y^2 - x^2$">
   <h2>Example 5: Identify \(z = y^2 - x^2\)</h2>
-  <div><p>Rewrite as \(-x^2 + y^2 - z = 0\). Now find traces:</p>
-<p><strong>Horizontal traces</strong> (\(z = k\)): \(-x^2 + y^2 = k\)</p>
-<ul>
-<li>\(k > 0\): hyperbola opening along \(y\)</li>
-<li>\(k = 0\): lines \(y = \pm x\) (degenerate)</li>
-<li>\(k < 0\): hyperbola opening along \(x\)</li>
-</ul>
-<p><strong>Vertical traces:</strong></p>
-<ul>
-<li>\(x = 0\): \(z = y^2\) &mdash; upward parabola</li>
-<li>\(y = 0\): \(z = -x^2\) &mdash; downward parabola</li>
-</ul>
-<p>Stack the hyperbolas (which rotate 90\(^\circ\) as \(z\) crosses 0), then use the two parabolas as vertical guides &mdash; the surface curves <strong>up</strong> in \(y\) and <strong>down</strong> in \(x\).</p></div>
-<figure>
+  <figure>
   <img src="figures/saddle.png" alt="A semi-transparent saddle-shaped surface (hyperbolic paraboloid) for z = y² − x². The surface curves upward along the y-axis (green) and downward along the x-axis (red), with a saddle point at the origin.">
   <figcaption><a href="figures/saddle.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
@@ -269,15 +295,7 @@ window.MathJax = {
 
 <section id="example-6-identify" aria-label="Example 6: Identify $-x^2 + y^2 + z^2 = 1$">
   <h2>Example 6: Identify \(-x^2 + y^2 + z^2 = 1\)</h2>
-  <div><p>Find traces:</p>
-<p><strong>Simplest trace</strong> (\(x = k\)): \(y^2 + z^2 = 1 + k^2\) &mdash; <strong>circles</strong> of radius \(\sqrt{1 + k^2}\)</p>
-<ul>
-<li>Always \(\geq 1\), so circles exist for <strong>all</strong> \(k\) (no gaps!)</li>
-<li>Minimum radius \(1\) at \(x = 0\) (the "waist")</li>
-</ul>
-<p><strong>Vertical traces</strong> (\(z = 0\)): \(-x^2 + y^2 = 1\) &mdash; <strong>hyperbola</strong> opening along \(y\)</p>
-<p>Stack the circles along the \(x\)-axis &mdash; they shrink to a minimum at \(x = 0\) and expand outward in both directions. The hyperbola in the \(xy\)-plane confirms the waist shape.</p></div>
-<figure>
+  <figure>
   <img src="figures/hyperboloid.png" alt="A semi-transparent hyperboloid of one sheet for −x² + y² + z² = 1. The surface wraps continuously around the x-axis like a waisted cylinder, with minimum radius 1 at x = 0 and expanding outward in both directions. Circular cross-sections are highlighted at x = −2, 0, and 2. A purple guide hyperbola is shown in the xy-plane.">
   <figcaption><a href="figures/hyperboloid.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
@@ -286,16 +304,7 @@ window.MathJax = {
 
 <section id="example-7-identify" aria-label="Example 7: Identify $-x^2 - y^2 + z^2 = 1$">
   <h2>Example 7: Identify \(-x^2 - y^2 + z^2 = 1\)</h2>
-  <div><p>Find traces:</p>
-<p><strong>Horizontal traces</strong> (\(z = k\)): \(x^2 + y^2 = k^2 - 1\)</p>
-<ul>
-<li>\(|k| > 1\): <strong>circle</strong> of radius \(\sqrt{k^2 - 1}\)</li>
-<li>\(|k| = 1\): just a point (the vertex of each sheet)</li>
-<li>\(|k| < 1\): <strong>empty</strong> &mdash; no surface in the gap!</li>
-</ul>
-<p><strong>Vertical trace</strong> (\(y = 0\)): \(-x^2 + z^2 = 1\) &mdash; <strong>hyperbola</strong> opening along \(z\)</p>
-<p>Stack circles above \(z = 1\) and below \(z = -1\), expanding outward. The gap \(|z| < 1\) means we get <strong>two separate sheets</strong>. The hyperbola in the \(xz\)-plane serves as a vertical guide.</p></div>
-<figure>
+  <figure>
   <img src="figures/hyperboloid2.png" alt="A hyperboloid of two sheets for −x² − y² + z² = 1. Two separate bowl-shaped sheets open upward (z ≥ 1) and downward (z ≤ −1) with a gap between them where |z| < 1. Circular cross-sections are highlighted at z = ±1.5 and ±2.5. A red guide hyperbola is shown in the xz-plane.">
   <figcaption><a href="figures/hyperboloid2.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
@@ -304,15 +313,7 @@ window.MathJax = {
 
 <section id="example-8-identify" aria-label="Example 8: Identify $z^2 = x^2 + y^2$">
   <h2>Example 8: Identify \(z^2 = x^2 + y^2\)</h2>
-  <div><p>Find traces:</p>
-<p><strong>Horizontal traces</strong> (\(z = k\)): \(x^2 + y^2 = k^2\)</p>
-<ul>
-<li>\(k \neq 0\): <strong>circle</strong> of radius \(|k|\)</li>
-<li>\(k = 0\): just the origin (the vertex)</li>
-</ul>
-<p><strong>Vertical trace</strong> (\(y = 0\)): \(z^2 = x^2\) \(\rightarrow\) \(z = \pm x\) &mdash; two <strong>lines</strong> through the origin</p>
-<p>Stack circles that grow linearly with \(|z|\). Unlike the paraboloid (circles grow like \(\sqrt{z}\)), these grow at a constant rate &mdash; straight sides. The two lines confirm it: no curvature, just a cone.</p></div>
-<figure>
+  <figure>
   <img src="figures/cone.png" alt="A double cone z² = x² + y² with vertex at the origin. The upper cone opens upward and the lower cone opens downward, meeting at the vertex. Circular cross-sections are highlighted at z = ±1 and ±2. Red guide lines z = ±x are shown in the xz-plane.">
   <figcaption><a href="figures/cone.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>

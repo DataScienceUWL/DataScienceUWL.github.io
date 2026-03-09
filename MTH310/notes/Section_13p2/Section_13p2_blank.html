@@ -94,6 +94,88 @@ window.MathJax = {
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        pb.remove();  // no longer needed — workspace expansion handles the break
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -113,62 +195,38 @@ window.MathJax = {
 
 <section id="derivatives-of-vector-functions" aria-label="Derivatives of Vector Functions">
   <h2>Derivatives of Vector Functions</h2>
-  <div><p>In Calc I, the derivative measured <strong>rate of change</strong> of a scalar function.</p>
-<p>For a vector function, the same limit definition applies &mdash; but the output is now a <strong>vector</strong>.</p></div>
-<section class="defn-box" role="region" aria-label="Derivative of a Vector Function">
+  <section class="defn-box" role="region" aria-label="Derivative of a Vector Function">
   <h3 class="defn-title">Derivative of a Vector Function</h3>
   <p>\[\frac{d\vec{r}}{dt} = \vec{r}\,'(t) = \lim_{h \to 0} \frac{\vec{r}(t+h) - \vec{r}(t)}{h}\]</p>
 <p>If \(\vec{r}(t) = \langle f(t),\, g(t),\, h(t) \rangle\), then:</p>
 <p>\[\vec{r}\,'(t) = \langle f'(t),\, g'(t),\, h'(t) \rangle\]</p>
 <p>Just <strong>differentiate each component</strong> separately.</p>
 </section>
-<div><p><strong>Physical interpretation:</strong> If \(t\) is time and \(\vec{r}(t)\) is position, then \(\vec{r}\,'(t)\) is the <strong>velocity vector</strong> &mdash; it tells you how fast and in which direction you're moving.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Derivative = velocity. The computation is simple: differentiate component by component, just like Calc I.</p></aside>
 </section>
 
 <section id="what-does-mean-geometrically" aria-label="What Does $\vec{r}\,'(t)$ Mean Geometrically?">
   <h2>What Does \(\vec{r}\,'(t)\) Mean Geometrically?</h2>
-  <div><p>In Calc I, the derivative was the slope of the <strong>tangent line</strong>. Here:</p>
-<p>The difference \(\vec{r}(t+h) - \vec{r}(t)\) points from the current position to a nearby position on the curve.</p>
-<p>Dividing by \(h\) gives a <strong>secant vector</strong> along the curve.</p>
-<p>As \(h \to 0\), the secant vector approaches the <strong>tangent vector</strong> \(\vec{r}\,'(t)\).</p></div>
-<figure>
+  <figure>
   <img src="figures/secant_vectors.png" alt="A 2D curve r(t) = <t³, t²> with the point P at t=1 marked. Three dashed secant vectors are drawn from P to points on the curve at h=0.8, 0.5, and 0.2, progressively approaching the red tangent vector r'(1). As h decreases, the secant vectors converge to the tangent direction.">
   <figcaption><a href="figures/secant_vectors.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
-<div><p>So \(\vec{r}\,'(t)\) is a vector that:</p>
-<ul>
-<li><strong>Points in the direction</strong> the curve is heading at time \(t\)</li>
-<li>Has <strong>magnitude</strong> equal to the speed: \(|\vec{r}\,'(t)| = \) speed</li>
-</ul></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>\(\vec{r}\,'(t)\) is the <strong>velocity vector</strong> &mdash; direction of travel + speed, all in one package.</p></aside>
 </section>
 
 <section id="the-unit-tangent-vector" aria-label="The Unit Tangent Vector">
   <h2>The Unit Tangent Vector</h2>
-  <div><p>Sometimes we only care about the <strong>direction</strong> of travel, not the speed. We normalize:</p></div>
-<section class="defn-box" role="region" aria-label="Unit Tangent Vector">
+  <section class="defn-box" role="region" aria-label="Unit Tangent Vector">
   <h3 class="defn-title">Unit Tangent Vector</h3>
   <p>\[\vec{T}(t) = \frac{\vec{r}\,'(t)}{|\vec{r}\,'(t)|}\]</p>
 <p>This is a unit vector (\(|\vec{T}| = 1\)) that points in the direction of motion.</p>
 </section>
-<div><p><strong>Think of it this way:</strong></p>
-<ul>
-<li>\(\vec{r}\,'(t)\) = velocity (direction <strong>and</strong> speed)</li>
-<li>\(|\vec{r}\,'(t)|\) = speed (magnitude only)</li>
-<li>\(\vec{T}(t)\) = direction only (no speed information)</li>
-</ul></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Dividing by the magnitude strips away speed and isolates pure <strong>direction</strong>.</p></aside>
 </section>
 
 <section id="example-1-find-and-for-at" aria-label="Example 1: Find $\vec{r}\,'(t)$ and $\vec{T}(t)$ for $\vec{r}(t) = \langle t^3,\, t^2 \rangle$ at $t = 1$">
   <h2>Example 1: Find \(\vec{r}\,'(t)\) and \(\vec{T}(t)\) for \(\vec{r}(t) = \langle t^3,\, t^2 \rangle\) at \(t = 1\)</h2>
-  <div><p>This is the same curve from Section 13.1 &mdash; now we're finding its velocity and direction at \(t = 1\).</p>
-<p><strong>Step 1 &mdash; Differentiate component by component:</strong></p>
-<p>\(\vec{r}\,'(t) = \langle 3t^2,\, 2t \rangle \quad\Rightarrow\quad \vec{r}\,'(1) = \langle 3,\, 2 \rangle\)</p>
-<p><strong>Step 2 &mdash; Find the speed:</strong> \(|\vec{r}\,'(1)| = \sqrt{3^2 + 2^2} = \sqrt{13}\)</p>
-<p><strong>Step 3 &mdash; Normalize:</strong> \(\vec{T}(1) = \dfrac{\langle 3, 2 \rangle}{\sqrt{13}} = \left\langle \dfrac{3}{\sqrt{13}},\, \dfrac{2}{\sqrt{13}} \right\rangle\)</p></div>
-<figure>
+  <figure>
   <img src="figures/tangent_vector_2d.png" alt="A 2D curve y = x^(2/3) with three vectors drawn at the point (1,1): a green position vector r(1) from the origin to (1,1), a red tangent vector r'(1) = <3,2> showing the direction of travel, and a shorter purple unit tangent vector T(1) in the same direction with magnitude 1.">
   <figcaption><a href="figures/tangent_vector_2d.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
@@ -177,14 +235,7 @@ window.MathJax = {
 
 <section id="the-velocity-vector-as-a-prediction" aria-label="The Velocity Vector as a Prediction">
   <h2>The Velocity Vector as a Prediction</h2>
-  <div><p>In Calc I, the tangent line was the best linear approximation to \(f(x)\) near a point.</p>
-<p>Here, the velocity vector predicts where you'll be after a short time step.</p>
-<p>Starting at \(\vec{r}(1) = \langle 1, 1 \rangle\) with velocity \(\vec{r}\,'(1) = \langle 3, 2 \rangle\):</p>
-<p><strong>Actual position</strong> at \(t = 1.1\) &mdash; follow the curve:</p>
-<p>\[\vec{r}(1.1) = \langle 1.1^3,\; 1.1^2 \rangle = \langle 1.331,\; 1.21 \rangle\]</p>
-<p><strong>Predicted position</strong> &mdash; follow the velocity for \(\Delta t = 0.1\):</p>
-<p>\[\vec{r}(1) + 0.1\,\vec{r}\,'(1) = \langle 1, 1 \rangle + 0.1\langle 3, 2 \rangle = \langle 1.3,\; 1.2 \rangle\]</p></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>\(\langle 1.331,\, 1.21 \rangle\) vs. \(\langle 1.3,\, 1.2 \rangle\) &mdash; almost identical! The velocity vector is the <strong>linear approximation</strong> of motion along the curve.</p></aside>
+  <aside class="key-point" role="note" aria-label="Key point"><p>\(\langle 1.331,\, 1.21 \rangle\) vs. \(\langle 1.3,\, 1.2 \rangle\) &mdash; almost identical! The velocity vector is the <strong>linear approximation</strong> of motion along the curve.</p></aside>
 <figure>
   <img src="figures/linear_approx.png" alt="A zoomed view of the curve r(t) = <t³, t²> near t=1. The starting point r(1) = (1,1) is marked in amber. A dashed red tangent line extends from this point in the direction of r'(1) = <3,2>. Two points are highlighted: the actual position r(1.1) = (1.331, 1.21) on the curve (blue circle) and the predicted position (1.3, 1.2) on the tangent line (red diamond). A dotted line connects them showing the small error of about 0.03.">
   <figcaption><a href="figures/linear_approx.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
@@ -193,25 +244,18 @@ window.MathJax = {
 
 <section id="your-turn-find-and-for-at" aria-label="Your Turn: Find $\vec{r}\,'(t)$ and $\vec{T}(t)$ for $\vec{r}(t) = \langle \cos t,\, \sin t,\, t \rangle$ at $t = 0$">
   <h2>Your Turn: Find \(\vec{r}\,'(t)\) and \(\vec{T}(t)\) for \(\vec{r}(t) = \langle \cos t,\, \sin t,\, t \rangle\) at \(t = 0\)</h2>
-  <div><p>This is the helix from Section 13.1. Differentiate, evaluate, normalize.</p></div>
-<div class="blank-space" role="region" aria-label="Student workspace: Try it before looking at the solution." style="min-height:2.5in;">
+  <div class="blank-space" role="region" aria-label="Student workspace: Try it before looking at the solution." style="min-height:2.5in;">
   <div class="blank-prompt">Try it before looking at the solution.</div>
 </div>
 </section>
 
 <section id="theorem-constant-distance-orthogonality" aria-label="Theorem: Constant Distance $\Rightarrow$ Orthogonality">
   <h2>Theorem: Constant Distance \(\Rightarrow\) Orthogonality</h2>
-  <div><p><strong>Question:</strong> If a particle moves on a sphere (constant distance from the origin), what can we say about its velocity?</p>
-<p>Think about it: a ball swinging on a string always moves <strong>sideways</strong>, never toward or away from the center.</p></div>
-<section class="defn-box" role="region" aria-label="Orthogonality Theorem">
+  <section class="defn-box" role="region" aria-label="Orthogonality Theorem">
   <h3 class="defn-title">Orthogonality Theorem</h3>
   <p>If \(|\vec{r}(t)| = c\) (constant), then \(\vec{r}(t) \cdot \vec{r}\,'(t) = 0\).</p>
 <p>In other words: <strong>position \(\perp\) velocity</strong>.</p>
 </section>
-<div><p><strong>Proof:</strong> Start with \(|\vec{r}(t)|^2 = c^2\), i.e., \(\vec{r}(t) \cdot \vec{r}(t) = c^2\).</p>
-<p>Differentiate both sides using the product rule for dot products:</p>
-<p>\(\vec{r}\,'(t) \cdot \vec{r}(t) + \vec{r}(t) \cdot \vec{r}\,'(t) = 0\)</p>
-<p>\(2\,\vec{r}(t) \cdot \vec{r}\,'(t) = 0 \quad\Rightarrow\quad \vec{r}(t) \cdot \vec{r}\,'(t) = 0 \quad\square\)</p></div>
 <figure>
   <img src="figures/orthogonal_circle.png" alt="A circle of radius 2 centered at the origin. At two points on the circle, green position vectors point from the origin to the point, and red velocity vectors are drawn tangent to the circle. Right-angle markers show that position and velocity are perpendicular at each point.">
   <figcaption><a href="figures/orthogonal_circle.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
@@ -221,32 +265,21 @@ window.MathJax = {
 
 <section id="integrals-of-vector-functions" aria-label="Integrals of Vector Functions">
   <h2>Integrals of Vector Functions</h2>
-  <div><p><strong>Motivation:</strong> If \(\vec{r}\,'(t)\) is velocity, what is \(\int_a^b \vec{r}\,'(t)\,dt\)?</p>
-<p>Just like in Calc I: integrating velocity gives <strong>displacement</strong> (change in position).</p>
-<p>The rule is the same as for derivatives &mdash; <strong>component by component</strong>.</p></div>
-<section class="defn-box" role="region" aria-label="Definite Integral of a Vector Function">
+  <section class="defn-box" role="region" aria-label="Definite Integral of a Vector Function">
   <h3 class="defn-title">Definite Integral of a Vector Function</h3>
   <p>\[\int_a^b \vec{r}(t)\, dt = \left\langle \int_a^b f(t)\, dt,\; \int_a^b g(t)\, dt,\; \int_a^b h(t)\, dt \right\rangle\]</p>
 </section>
-<div><p>For <strong>antiderivatives</strong>, don't forget the constant is now a <strong>vector</strong>:</p>
-<p>\[\int \vec{r}(t)\, dt = \left\langle \int f(t)\, dt,\; \int g(t)\, dt,\; \int h(t)\, dt \right\rangle + \vec{C}\]</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>No new techniques &mdash; just Calc I integration applied to each component. The only wrinkle: \(\vec{C}\) is a constant <strong>vector</strong>, not a number.</p></aside>
 </section>
 
 <section id="example-2-evaluate" aria-label="Example 2: Evaluate $\displaystyle\int_1^4 \left( 2t^{3/2}\,\mathbf{i} + \frac{1}{1+t^2}\,\mathbf{j} + (t+1)\sqrt{t}\,\mathbf{k} \right) dt$">
   <h2>Example 2: Evaluate \(\displaystyle\int_1^4 \left( 2t^{3/2}\,\mathbf{i} + \frac{1}{1+t^2}\,\mathbf{j} + (t+1)\sqrt{t}\,\mathbf{k} \right) dt\)</h2>
-  <div><p>Integrate each component separately. Each one is a standard Calc I integral.</p>
-<p><strong>\(\mathbf{i}\)-component</strong> (power rule): \(\displaystyle\int_1^4 2t^{3/2}\, dt = \frac{4}{5}\, t^{5/2}\Big|_1^4 = \frac{4}{5}(32 - 1) = \frac{124}{5}\)</p>
-<p><strong>\(\mathbf{j}\)-component</strong> (arctan): \(\displaystyle\int_1^4 \frac{1}{1+t^2}\, dt = \arctan t\Big|_1^4 = \arctan 4 - \frac{\pi}{4}\)</p>
-<p><strong>\(\mathbf{k}\)-component</strong> (expand first, then power rule):</p>
-<p>\(\displaystyle\int_1^4 (t+1)\sqrt{t}\, dt = \int_1^4 (t^{3/2} + t^{1/2})\, dt = \frac{2}{5}\,t^{5/2} + \frac{2}{3}\,t^{3/2}\Big|_1^4 = \frac{256}{15}\)</p></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>Result: \(\displaystyle\frac{124}{5}\,\mathbf{i} + \left(\arctan 4 - \frac{\pi}{4}\right)\mathbf{j} + \frac{256}{15}\,\mathbf{k}\)</p></aside>
+  <aside class="key-point" role="note" aria-label="Key point"><p>Result: \(\displaystyle\frac{124}{5}\,\mathbf{i} + \left(\arctan 4 - \frac{\pi}{4}\right)\mathbf{j} + \frac{256}{15}\,\mathbf{k}\)</p></aside>
 </section>
 
 <section id="your-turn-evaluate" aria-label="Your Turn: Evaluate $\displaystyle\int_0^{\pi/2} \langle \cos t,\, \sin t,\, 1 \rangle\, dt$">
   <h2>Your Turn: Evaluate \(\displaystyle\int_0^{\pi/2} \langle \cos t,\, \sin t,\, 1 \rangle\, dt\)</h2>
-  <div><p>Integrate each component from \(0\) to \(\pi/2\).</p></div>
-<div class="blank-space" role="region" aria-label="Student workspace: Try it before looking at the solution." style="min-height:2.5in;">
+  <div class="blank-space" role="region" aria-label="Student workspace: Try it before looking at the solution." style="min-height:2.5in;">
   <div class="blank-prompt">Try it before looking at the solution.</div>
 </div>
 </section>

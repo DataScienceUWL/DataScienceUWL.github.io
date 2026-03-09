@@ -94,6 +94,88 @@ window.MathJax = {
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        pb.remove();  // no longer needed — workspace expansion handles the break
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -113,24 +195,17 @@ window.MathJax = {
 
 <section id="limits-in-multiple-variables" aria-label="Limits in Multiple Variables">
   <h2>Limits in Multiple Variables</h2>
-  <div><p>In Calc I, we asked: what happens to \(f(x)\) as \(x \to a\)?</p>
-<p>There were only <strong>two directions</strong> to approach from &mdash; left and right.</p>
-<p>In Calc III, we ask: what happens to \(f(x, y)\) as \((x, y) \to (a, b)\)?</p>
-<p>Now there are <strong>infinitely many paths</strong> to approach from &mdash; along lines, curves, spirals, any path you can imagine.</p></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>This is the key difference: in 1D you check two directions. In 2D you must worry about <strong>every possible path</strong> to the point.</p></aside>
+  <aside class="key-point" role="note" aria-label="Key point"><p>This is the key difference: in 1D you check two directions. In 2D you must worry about <strong>every possible path</strong> to the point.</p></aside>
 </section>
 
 <section id="two-functions-two-very-different-behaviors" aria-label="Two Functions, Two Very Different Behaviors">
   <h2>Two Functions, Two Very Different Behaviors</h2>
-  <div><p>Let's compare what happens at the origin for two functions that both have the form \(\frac{0}{0}\) there.</p></div>
-<div class="two-col-print">
-  <div><div><p>\[f(x,y) = \frac{\sin(x^2 + y^2)}{x^2 + y^2}\]</p></div>
-<figure>
+  <div class="two-col-print">
+  <div><figure>
   <img src="figures/sinc_clean.png" alt="3D surface of sin(x-squared + y-squared) over (x-squared + y-squared), a smooth bowl approaching height 1 at the origin.">
   <figcaption><a href="figures/sinc_clean.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure></div>
-  <div><div><p>\[g(x,y) = \frac{x^2 - y^2}{x^2 + y^2}\]</p></div>
-<figure>
+  <div><figure>
   <img src="figures/saddle_clean.png" alt="3D surface of (x-squared minus y-squared) over (x-squared plus y-squared), a saddle that twists between 1 and negative 1 at the origin.">
   <figcaption><a href="figures/saddle_clean.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure></div>
@@ -143,8 +218,6 @@ window.MathJax = {
   <img src="figures/saddle_contour.png" alt="Contour plot of (x-squared minus y-squared) over (x-squared + y-squared) showing hyperbolic contours with value 1 along the x-axis and negative 1 along the y-axis.">
 </figure></div>
 </div>
-<div><p>\(f\) settles down to a single value (\(1\)) no matter how you approach the origin.</p>
-<p>\(g\) gives <strong>different values</strong> depending on your path &mdash; the limit <strong>does not exist</strong>.</p></div>
 </section>
 
 <section id="the-formal-definition-of-a-multivariable-limit" aria-label="The Formal Definition of a Multivariable Limit">
@@ -156,25 +229,13 @@ window.MathJax = {
 <p>if for every \(\varepsilon > 0\) there is a corresponding \(\delta > 0\) such that</p>
 <p>\[\text{if } (x,y) \in D \text{ and } 0 < \sqrt{(x-a)^2 + (y-b)^2} < \delta \text{ then } |f(x,y) - L| < \varepsilon\]</p>
 </section>
-<div><p><strong>What does this mean in plain language?</strong></p>
-<p>If the limit is going to be \(L\), then you must be able to make \(f(x,y)\) as close to \(L\) as you want, just by squeezing \((x,y)\) close enough to \((a,b)\) &mdash; from <strong>any direction</strong>.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>The crucial phrase: <strong>from any direction</strong>. In Calc I, "closeness" meant \(|x - a| < \delta\) (an interval). Here, closeness means \(\sqrt{(x-a)^2 + (y-b)^2} < \delta\) (a disk).</p></aside>
-<div><p>In practice, we rarely use the \(\varepsilon\)-\(\delta\) definition directly. Instead, we develop <strong>strategies</strong> for showing limits exist or don't exist.</p></div>
 </section>
 
 <section id="strategy-showing-a-limit-does-not-exist" aria-label="Strategy: Showing a Limit Does NOT Exist">
   <h2>Strategy: Showing a Limit Does NOT Exist</h2>
-  <div><p>If a limit exists, it must be the <strong>same value</strong> no matter which path you take to the point. So to show a limit <strong>does not</strong> exist, we just need to find trouble:</p></div>
-<aside class="key-point" role="note" aria-label="Key point"><p><strong>The Two-Path Test</strong></p>
+  <aside class="key-point" role="note" aria-label="Key point"><p><strong>The Two-Path Test</strong></p>
 <p>Find two paths to \((a, b)\) that give <strong>different limiting values</strong>. Then the limit does not exist.</p></aside>
-<div><p><strong>Common paths to try:</strong></p>
-<ul>
-<li>Along the \(x\)-axis: set \(y = 0\)</li>
-<li>Along the \(y\)-axis: set \(x = 0\)</li>
-<li>Along \(y = x\) (diagonal)</li>
-<li>Along \(y = mx\) (any line through the origin)</li>
-<li>Along curves: \(y = x^2\), \(y = x^3\), etc.</li>
-</ul></div>
 <aside class="key-point" role="note" aria-label="Key point"><p><strong>Warning:</strong> If two paths give the <strong>same</strong> value, that does <strong>not</strong> prove the limit exists. It just means those two paths agree. You would need to check <strong>all</strong> paths.</p></aside>
 </section>
 
@@ -213,8 +274,7 @@ window.MathJax = {
 
 <section id="continuity-of-multivariable-functions" aria-label="Continuity of Multivariable Functions">
   <h2>Continuity of Multivariable Functions</h2>
-  <div><p>Continuity works just like Calc I &mdash; the limit equals the function value at the point.</p></div>
-<section class="defn-box" role="region" aria-label="Continuity at a Point">
+  <section class="defn-box" role="region" aria-label="Continuity at a Point">
   <h3 class="defn-title">Continuity at a Point</h3>
   <p>A function \(f\) of two variables is <strong>continuous at</strong> \((a, b)\) if:</p>
 <p>\[\lim_{(x,y) \to (a,b)} f(x,y) = f(a,b)\]</p>
@@ -230,15 +290,12 @@ window.MathJax = {
 
 <section id="strategy-showing-a-limit-does-exist" aria-label="Strategy: Showing a Limit DOES Exist">
   <h2>Strategy: Showing a Limit DOES Exist</h2>
-  <div><p>The two-path test can <strong>disprove</strong> a limit, but it can never <strong>prove</strong> one.</p>
-<p>To prove a limit exists, we need tools that handle <strong>all paths at once</strong>.</p></div>
-<aside class="key-point" role="note" aria-label="Key point"><p><strong>Tool 1: Squeeze Theorem</strong></p>
+  <aside class="key-point" role="note" aria-label="Key point"><p><strong>Tool 1: Squeeze Theorem</strong></p>
 <p>If \(|f(x,y) - L| \leq g(x,y)\) and \(g(x,y) \to 0\) as \((x,y) \to (a,b)\), then \(f(x,y) \to L\).</p>
 <p>Trap the function between bounds that both go to the same value.</p></aside>
 <aside class="key-point" role="note" aria-label="Key point"><p><strong>Tool 2: Polar Coordinates</strong></p>
 <p>Substitute \(x = r\cos\theta\), \(y = r\sin\theta\). Then \((x,y) \to (0,0)\) becomes \(r \to 0^+\).</p>
 <p>Apply the Squeeze Theorem to bound the \(\theta\)-dependent factor and show the expression goes to zero.</p></aside>
-<div><p>Both tools convert the multivariable problem into something we can handle with Calc I techniques.</p></div>
 </section>
 
 <section id="example-4-proving-a-limit-exists" class="example-group" aria-label="Example 4: Proving a Limit Exists">

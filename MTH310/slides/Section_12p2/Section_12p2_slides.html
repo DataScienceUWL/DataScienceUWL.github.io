@@ -60,9 +60,20 @@
 .fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
 .fig-link { display: inline-block; }
 .textbook-fig img { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; }
-.plotly-figure { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); overflow: hidden; }
-.plotly-figure .js-plotly-plot { width: 100% !important; height: 100% !important; }
-.two-col .plotly-figure { max-width: 90%; margin: 0 auto; }
+.plotly-lazy-thumb { cursor: pointer; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+.plotly-lazy-thumb:hover { opacity: 0.92; outline: 2px solid #0077b6; outline-offset: 2px; }
+#plotly-lightbox { display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+    justify-content:center; align-items:center; cursor:default; }
+#plotly-lightbox.active { display:flex; }
+#plotly-lightbox .plb-close { position:fixed; top:14px; left:20px;
+    font-size:2.2em; color:#fff; background:rgba(0,0,0,0.55);
+    border:1px solid rgba(255,255,255,0.4); border-radius:6px;
+    padding:2px 14px; cursor:pointer; z-index:10001; line-height:1; }
+#plotly-lightbox .plb-close:hover { color:#e09f3e; background:rgba(0,0,0,0.75); }
+#plotly-lightbox .plb-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+#plotly-lightbox .plb-content { width:92vw; height:85vh; }
+#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; }
 /* Lightbox overlay */
 #lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
     background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
@@ -112,7 +123,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
     outline: 2px solid var(--accent-blue); outline-offset: 2px; }
 </style>
 </head>
-<body>
+<body data-section="Section_12p2">
 <a href="#" class="skip-link" onclick="Reveal.next();return false;">Skip to first slide</a>
 <div class="reveal">
 <div class="slides">
@@ -125,7 +136,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 
 <section id="scalars-vs-vectors">
 <h2>Scalars vs. Vectors</h2>
-<div class="fragment"><p>In Calculus I and II, every quantity was a <strong>number</strong> &mdash; a single value on the number line.</p>
+<div class="fragment" data-editor-line="17"><p>In Calculus I and II, every quantity was a <strong>number</strong> &mdash; a single value on the number line.</p>
 <p>Now we need quantities that carry both <strong>size</strong> and <strong>direction</strong>.</p>
 <table>
 <tr><th>Scalars (magnitude only)</th><th>Vectors (magnitude AND direction)</th></tr>
@@ -136,13 +147,13 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <tr><td>Area</td><td>Weight (gravitational force)</td></tr>
 <tr><td>Pressure</td><td>Work</td></tr>
 </table></div>
-<div class="key-point fragment"><p>A <strong>scalar</strong> has magnitude only. A <strong>vector</strong> has both magnitude AND direction.</p></div>
+<div class="key-point fragment" data-editor-line="34"><p>A <strong>scalar</strong> has magnitude only. A <strong>vector</strong> has both magnitude AND direction.</p></div>
 <aside class="notes">Ask students for real-world examples of each. Why does a pilot care about velocity vs. speed?</aside>
 </section>
 
 <section id="displacement-vectors-and-equal-vectors">
 <h2>Displacement Vectors and Equal Vectors</h2>
-<div class="fragment"><div class="two-col">
+<div class="fragment" data-editor-line="43"><div class="two-col">
   <div><div><p>A <strong>displacement vector</strong> \(\vec{AB}\) represents moving from point \(A\) (initial point) to point \(B\) (terminal point).</p></div>
 <div class="defn-box">
   <div class="defn-title">Equal Vectors</div>
@@ -150,49 +161,41 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <p>Equal vectors can be <strong>translated</strong> (slid) anywhere in space without changing the vector.</p>
 </div></div>
   <div><div class="fig-container">
-  <div class="plotly-figure" role="img" aria-label="A vector arrow from point A to point B, labeled AB with an arrow on top" style="height:400px;width:100%;">
-    <div>                            <div id="plotly-displacement_vector" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("plotly-displacement_vector")) {                    Plotly.newPlot(                        "plotly-displacement_vector",                        [{"hoverinfo":"skip","marker":{"color":"#e09f3e","size":10},"mode":"markers","x":[1,4],"y":[1,3],"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"annotations":[{"arrowcolor":"#0077b6","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":1,"axref":"x","ay":1,"ayref":"y","showarrow":true,"x":4,"xref":"x","y":3,"yref":"y"},{"font":{"color":"#e09f3e","family":"serif","size":28},"showarrow":false,"text":"A(1, 1)","x":1,"xanchor":"right","xshift":-8,"y":1,"yanchor":"top","yshift":-4},{"font":{"color":"#e09f3e","family":"serif","size":28},"showarrow":false,"text":"B(4, 3)","x":4,"xanchor":"left","xshift":8,"y":3,"yanchor":"bottom","yshift":4},{"font":{"color":"#0077b6","family":"serif","size":30},"showarrow":false,"text":"\u003cb\u003eAB\u003c\u002fb\u003e = ⟨3, 2⟩","x":2.5,"xanchor":"right","xshift":-8,"y":2.0,"yanchor":"bottom","yshift":6}],"xaxis":{"title":{"font":{"size":28,"color":"#333"},"text":"x"},"tickfont":{"size":24,"color":"#555"},"range":[-0.5,5.5],"gridcolor":"#eee","zeroline":true,"zerolinecolor":"#999","zerolinewidth":1.5},"yaxis":{"title":{"font":{"size":28,"color":"#333"},"text":"y"},"tickfont":{"size":24,"color":"#555"},"range":[-0.5,4.5],"gridcolor":"#eee","zeroline":true,"zerolinecolor":"#999","zerolinewidth":1.5,"scaleanchor":"x","scaleratio":1},"margin":{"l":50,"r":30,"t":30,"b":50},"paper_bgcolor":"#ffffff","plot_bgcolor":"#ffffff","showlegend":false},                        {"displayModeBar": true, "modeBarButtonsToRemove": ["toImage", "sendDataToCloud"], "displaylogo": false, "scrollZoom": true, "responsive": true}                    )                };            </script>        </div>
-  </div>
+  <img src="figures/displacement_vector.png" alt="A vector arrow from point A to point B, labeled AB with an arrow on top" class="plotly-lazy-thumb" data-plotly-src="figures/displacement_vector.html" style="max-height:60vh;" title="Click to interact">
 </div>
 <div class="fig-container">
   <a href="figures/12_2_2.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/12_2_2.png"><img src="figures/12_2_2.png" alt="Six identical red arrows representing the same vector (3, 2) placed at different positions in the plane, showing that equal vectors can be translated anywhere without changing the vector." style="max-height:60vh;"></a>
 </div></div>
 </div></div>
-<div class="fragment"><p>The <strong>zero vector</strong> \(\vec{0}\) has magnitude zero and no specific direction. It is the only vector with this property.</p></div>
+<div class="fragment" data-editor-line="56"><p>The <strong>zero vector</strong> \(\vec{0}\) has magnitude zero and no specific direction. It is the only vector with this property.</p></div>
 <aside class="notes">Draw two copies of the same vector at different starting points. Emphasize they are equal because same length and direction.</aside>
 </section>
 
-<section>
 <section id="vector-addition">
 <h2>Vector Addition</h2>
-<div class="fragment"><p>Two ways to add vectors geometrically:</p></div>
-<div class="fragment"><div class="two-col">
+<div class="fragment" data-editor-line="65"><p>Two ways to add vectors geometrically:</p></div>
+<div class="fragment" data-editor-line="67"><div class="two-col">
   <div><div><p><strong>Triangle Law:</strong> Place the tail of \(\vec{v}\) at the tip of \(\vec{u}\). The sum \(\vec{u} + \vec{v}\) goes from the tail of \(\vec{u}\) to the tip of \(\vec{v}\).</p></div>
 <div class="fig-container">
-  <div class="plotly-figure" role="img" aria-label="Triangle law of vector addition: vectors u and v arranged tip-to-tail, with the sum u+v as the third side" style="height:400px;width:100%;">
-    <div>                            <div id="plotly-triangle_law" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("plotly-triangle_law")) {                    Plotly.newPlot(                        "plotly-triangle_law",                        [{"hoverinfo":"skip","marker":{"color":"#333","size":7},"mode":"markers","x":[0,3,4],"y":[0,1,3],"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"annotations":[{"arrowcolor":"#0077b6","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":0,"axref":"x","ay":0,"ayref":"y","showarrow":true,"x":3,"xref":"x","y":1,"yref":"y"},{"font":{"color":"#0077b6","family":"serif","size":28},"showarrow":false,"text":"\u003cb\u003eu\u003c\u002fb\u003e = ⟨3, 1⟩","x":1.5,"y":0.25,"yanchor":"top","yshift":-6},{"arrowcolor":"#c1121f","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":3,"axref":"x","ay":1,"ayref":"y","showarrow":true,"x":4,"xref":"x","y":3,"yref":"y"},{"font":{"color":"#c1121f","family":"serif","size":28},"showarrow":false,"text":"\u003cb\u003ev\u003c\u002fb\u003e = ⟨1, 2⟩","x":3.65,"xanchor":"left","xshift":8,"y":2.0},{"arrowcolor":"#2d6a4f","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":0,"axref":"x","ay":0,"ayref":"y","showarrow":true,"x":4,"xref":"x","y":3,"yref":"y"},{"font":{"color":"#2d6a4f","family":"serif","size":28},"showarrow":false,"text":"\u003cb\u003eu + v\u003c\u002fb\u003e = ⟨4, 3⟩","x":1.7,"xanchor":"right","xshift":-6,"y":1.7}],"xaxis":{"title":{"font":{"size":28,"color":"#333"},"text":"x"},"tickfont":{"size":24,"color":"#555"},"range":[-0.8,5.5],"gridcolor":"#eee","zeroline":true,"zerolinecolor":"#999","zerolinewidth":1.5},"yaxis":{"title":{"font":{"size":28,"color":"#333"},"text":"y"},"tickfont":{"size":24,"color":"#555"},"range":[-0.8,4.0],"gridcolor":"#eee","zeroline":true,"zerolinecolor":"#999","zerolinewidth":1.5,"scaleanchor":"x","scaleratio":1},"margin":{"l":50,"r":30,"t":30,"b":50},"paper_bgcolor":"#ffffff","plot_bgcolor":"#ffffff","showlegend":false},                        {"displayModeBar": true, "modeBarButtonsToRemove": ["toImage", "sendDataToCloud"], "displaylogo": false, "scrollZoom": true, "responsive": true}                    )                };            </script>        </div>
-  </div>
+  <img src="figures/triangle_law.png" alt="Triangle law of vector addition: vectors u and v arranged tip-to-tail, with the sum u+v as the third side" class="plotly-lazy-thumb" data-plotly-src="figures/triangle_law.html" style="max-height:60vh;" title="Click to interact">
 </div></div>
   <div><div><p><strong>Parallelogram Law:</strong> Place the tails of \(\vec{u}\) and \(\vec{v}\) together. Complete the parallelogram. The diagonal is \(\vec{u} + \vec{v}\).</p></div>
 <div class="fig-container">
-  <div class="plotly-figure" role="img" aria-label="Parallelogram law of vector addition: vectors u and v placed tail-to-tail forming a parallelogram, with the diagonal as u+v" style="height:400px;width:100%;">
-    <div>                            <div id="plotly-parallelogram_law" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("plotly-parallelogram_law")) {                    Plotly.newPlot(                        "plotly-parallelogram_law",                        [{"hoverinfo":"skip","line":{"color":"#999","dash":"dash","width":1.5},"mode":"lines","x":[3,4],"y":[1,3],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"#999","dash":"dash","width":1.5},"mode":"lines","x":[1,4],"y":[2,3],"type":"scatter"},{"hoverinfo":"skip","marker":{"color":"#333","size":7},"mode":"markers","x":[0,3,1,4],"y":[0,1,2,3],"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"annotations":[{"arrowcolor":"#0077b6","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":0,"axref":"x","ay":0,"ayref":"y","showarrow":true,"x":3,"xref":"x","y":1,"yref":"y"},{"font":{"color":"#0077b6","family":"serif","size":30},"showarrow":false,"text":"\u003cb\u003eu\u003c\u002fb\u003e","x":1.5,"y":0.25,"yanchor":"top","yshift":-6},{"arrowcolor":"#c1121f","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":0,"axref":"x","ay":0,"ayref":"y","showarrow":true,"x":1,"xref":"x","y":2,"yref":"y"},{"font":{"color":"#c1121f","family":"serif","size":30},"showarrow":false,"text":"\u003cb\u003ev\u003c\u002fb\u003e","x":0.3,"xanchor":"right","xshift":-6,"y":1.1},{"arrowcolor":"#2d6a4f","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":0,"axref":"x","ay":0,"ayref":"y","showarrow":true,"x":4,"xref":"x","y":3,"yref":"y"},{"font":{"color":"#2d6a4f","family":"serif","size":30},"showarrow":false,"text":"\u003cb\u003eu + v\u003c\u002fb\u003e","x":1.7,"xanchor":"right","xshift":-10,"y":1.8}],"xaxis":{"title":{"font":{"size":28,"color":"#333"},"text":"x"},"tickfont":{"size":24,"color":"#555"},"range":[-0.8,5.5],"gridcolor":"#eee","zeroline":true,"zerolinecolor":"#999","zerolinewidth":1.5},"yaxis":{"title":{"font":{"size":28,"color":"#333"},"text":"y"},"tickfont":{"size":24,"color":"#555"},"range":[-0.8,4.0],"gridcolor":"#eee","zeroline":true,"zerolinecolor":"#999","zerolinewidth":1.5,"scaleanchor":"x","scaleratio":1},"margin":{"l":50,"r":30,"t":30,"b":50},"paper_bgcolor":"#ffffff","plot_bgcolor":"#ffffff","showlegend":false},                        {"displayModeBar": true, "modeBarButtonsToRemove": ["toImage", "sendDataToCloud"], "displaylogo": false, "scrollZoom": true, "responsive": true}                    )                };            </script>        </div>
-  </div>
+  <img src="figures/parallelogram_law.png" alt="Parallelogram law of vector addition: vectors u and v placed tail-to-tail forming a parallelogram, with the diagonal as u+v" class="plotly-lazy-thumb" data-plotly-src="figures/parallelogram_law.html" style="max-height:60vh;" title="Click to interact">
 </div></div>
 </div></div>
-</section>
-<section>
-<h2>Vector Addition</h2>
-<div class="fragment"><p><strong>Chaining displacements:</strong> \(\vec{AB} + \vec{BC} = \vec{AC}\)</p>
-<p>Walk from \(A\) to \(B\), then from \(B\) to \(C\). The net displacement is \(A\) to \(C\).</p></div>
-<div class="key-point fragment"><p>Vector addition is <strong>commutative</strong>: \(\vec{u} + \vec{v} = \vec{v} + \vec{u}\). Both the triangle and parallelogram laws give the same result.</p></div>
-</section>
 </section>
 
 <section>
+<h2>Vector Addition</h2>
+<div class="fragment" data-editor-line="78"><p><strong>Chaining displacements:</strong> \(\vec{AB} + \vec{BC} = \vec{AC}\)</p>
+<p>Walk from \(A\) to \(B\), then from \(B\) to \(C\). The net displacement is \(A\) to \(C\).</p></div>
+<div class="key-point fragment" data-editor-line="82"><p>Vector addition is <strong>commutative</strong>: \(\vec{u} + \vec{v} = \vec{v} + \vec{u}\). Both the triangle and parallelogram laws give the same result.</p></div>
+</section>
+
 <section id="scalar-multiplication-and-vector-difference">
 <h2>Scalar Multiplication and Vector Difference</h2>
-<div class="fragment"><div class="two-col">
+<div class="fragment" data-editor-line="89"><div class="two-col">
   <div><div><p><strong>Scalar multiplication:</strong> \(c\vec{u}\) stretches or shrinks \(\vec{u}\) by a factor of \(|c|\).</p>
 <ul>
 <li>If \(c > 0\): same direction as \(\vec{u}\)</li>
@@ -201,74 +204,70 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 </ul>
 <p><strong>Parallel vectors:</strong> \(\vec{u}\) and \(\vec{v}\) are parallel if \(\vec{v} = c\vec{u}\) for some scalar \(c\).</p></div></div>
   <div><div class="fig-container">
-  <div class="plotly-figure" role="img" aria-label="A vector u shown alongside 2u (twice as long, same direction), 0.5u (half as long), and -u (same length, opposite direction)" style="height:400px;width:100%;">
-    <div>                            <div id="plotly-scalar_multiplication" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("plotly-scalar_multiplication")) {                    Plotly.newPlot(                        "plotly-scalar_multiplication",                        [{"hoverinfo":"skip","marker":{"color":"#999","size":5},"mode":"markers","x":[0],"y":[3.0],"type":"scatter"},{"hoverinfo":"skip","marker":{"color":"#999","size":5},"mode":"markers","x":[0],"y":[1.5],"type":"scatter"},{"hoverinfo":"skip","marker":{"color":"#999","size":5},"mode":"markers","x":[0],"y":[0.0],"type":"scatter"},{"hoverinfo":"skip","marker":{"color":"#999","size":5},"mode":"markers","x":[0],"y":[-1.5],"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"annotations":[{"arrowcolor":"#0077b6","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":0,"axref":"x","ay":3.0,"ayref":"y","showarrow":true,"x":4.0,"xref":"x","y":5.0,"yref":"y"},{"font":{"color":"#0077b6","family":"serif","size":28},"showarrow":false,"text":"\u003cb\u003e2u\u003c\u002fb\u003e = ⟨4, 2⟩","x":4.0,"xanchor":"left","xshift":10,"y":5.0,"yanchor":"bottom","yshift":6},{"arrowcolor":"#2d6a4f","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":0,"axref":"x","ay":1.5,"ayref":"y","showarrow":true,"x":2.0,"xref":"x","y":2.5,"yref":"y"},{"font":{"color":"#2d6a4f","family":"serif","size":28},"showarrow":false,"text":"\u003cb\u003eu\u003c\u002fb\u003e = ⟨2, 1⟩","x":2.0,"xanchor":"left","xshift":10,"y":2.5,"yanchor":"bottom","yshift":6},{"arrowcolor":"#e09f3e","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":0,"axref":"x","ay":0.0,"ayref":"y","showarrow":true,"x":1.0,"xref":"x","y":0.5,"yref":"y"},{"font":{"color":"#e09f3e","family":"serif","size":28},"showarrow":false,"text":"\u003cb\u003e½u\u003c\u002fb\u003e = ⟨1, 0.5⟩","x":1.0,"xanchor":"left","xshift":10,"y":0.5,"yanchor":"bottom","yshift":6},{"arrowcolor":"#c1121f","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":0,"axref":"x","ay":-1.5,"ayref":"y","showarrow":true,"x":-2.0,"xref":"x","y":-2.5,"yref":"y"},{"font":{"color":"#c1121f","family":"serif","size":28},"showarrow":false,"text":"\u003cb\u003e−u\u003c\u002fb\u003e = ⟨−2, −1⟩","x":-2.0,"xanchor":"right","xshift":-10,"y":-2.5,"yanchor":"top","yshift":-6}],"xaxis":{"title":{"font":{"size":28,"color":"#333"},"text":"x"},"tickfont":{"size":24,"color":"#555"},"range":[-3.5,5.5],"gridcolor":"#eee","zeroline":true,"zerolinecolor":"#999","zerolinewidth":1.5},"yaxis":{"title":{"font":{"size":28,"color":"#333"},"text":"y"},"tickfont":{"size":24,"color":"#555"},"range":[-3.5,6.0],"gridcolor":"#eee","zeroline":true,"zerolinecolor":"#999","zerolinewidth":1.5,"scaleanchor":"x","scaleratio":1},"margin":{"l":50,"r":30,"t":30,"b":50},"paper_bgcolor":"#ffffff","plot_bgcolor":"#ffffff","showlegend":false},                        {"displayModeBar": true, "modeBarButtonsToRemove": ["toImage", "sendDataToCloud"], "displaylogo": false, "scrollZoom": true, "responsive": true}                    )                };            </script>        </div>
-  </div>
+  <img src="figures/scalar_multiplication.png" alt="A vector u shown alongside 2u (twice as long, same direction), 0.5u (half as long), and -u (same length, opposite direction)" class="plotly-lazy-thumb" data-plotly-src="figures/scalar_multiplication.html" style="max-height:60vh;" title="Click to interact">
 </div></div>
 </div></div>
 </section>
+
 <section>
 <h2>Scalar Multiplication and Vector Difference</h2>
-<div class="fragment"><div class="two-col">
+<div class="fragment" data-editor-line="104"><div class="two-col">
   <div><div><p><strong>Negative vector:</strong> \(-\vec{u} = (-1)\vec{u}\) &mdash; same magnitude, opposite direction.</p>
 <p><strong>Vector difference:</strong> \(\vec{u} - \vec{v} = \vec{u} + (-\vec{v})\)</p></div>
-<div class="key-point fragment"><p>Think of \(\vec{u} - \vec{v}\) as <strong>"what you add to \(\vec{v}\) to get \(\vec{u}\)"</strong> &mdash; like how \(10 - 7.36 = 2.64\) answers "what do I add to \(7.36\) to get \(10\)?"</p></div></div>
+<div class="key-point fragment" data-editor-line="3"><p>Think of \(\vec{u} - \vec{v}\) as <strong>"what you add to \(\vec{v}\) to get \(\vec{u}\)"</strong> &mdash; like how \(10 - 7.36 = 2.64\) answers "what do I add to \(7.36\) to get \(10\)?"</p></div></div>
   <div><div class="fig-container">
   <a href="figures/vector_difference.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/vector_difference.png"><img src="figures/vector_difference.png" alt="Vector subtraction diagram. Vectors u (blue) and v (red) start at the origin. The difference u minus v (green) is drawn from the tip of v to the tip of u, illustrating that u minus v is what you add to v to get u." style="max-height:60vh;"></a>
 </div></div>
 </div></div>
 <aside class="notes">Draw u - v using the "second tip to first tip" method from the parallelogram. This interpretation comes up again with displacement vectors.</aside>
 </section>
-</section>
 
 <section id="components">
 <h2>Components</h2>
-<div class="fragment"><div class="two-col">
+<div class="fragment" data-editor-line="121"><div class="two-col">
   <div><div><p>If we place a vector with its initial point at the <strong>origin</strong>, it becomes a <strong>position vector</strong>. Its components are just its terminal coordinates.</p>
 <p>In 2D: \(\vec{a} = \langle a_1, a_2 \rangle\)</p>
 <p>In 3D: \(\vec{a} = \langle a_1, a_2, a_3 \rangle\)</p>
 <p>We use <strong>angle brackets</strong> \(\langle \cdot \rangle\) for vector components and <strong>parentheses</strong> \(( \cdot )\) for points.</p></div></div>
   <div><div class="fig-container">
-  <div class="plotly-figure" role="img" aria-label="A position vector from the origin to a point (a1, a2, a3), with components labeled" style="height:400px;width:100%;">
-    <div>                            <div id="plotly-position_vector" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("plotly-position_vector")) {                    Plotly.newPlot(                        "plotly-position_vector",                        [{"hoverinfo":"skip","line":{"color":"#999","dash":"dash","width":1.5},"mode":"lines","x":[3,3],"y":[2,0],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"#999","dash":"dash","width":1.5},"mode":"lines","x":[3,0],"y":[2,2],"type":"scatter"},{"hoverinfo":"skip","marker":{"color":"#333","size":8},"mode":"markers","x":[0],"y":[0],"type":"scatter"},{"hoverinfo":"skip","marker":{"color":"#e09f3e","size":10},"mode":"markers","x":[3],"y":[2],"type":"scatter"},{"hoverinfo":"skip","marker":{"color":"#999","size":6,"symbol":"square-open"},"mode":"markers","x":[3,0],"y":[0,2],"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"annotations":[{"arrowcolor":"#0077b6","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":0,"axref":"x","ay":0,"ayref":"y","showarrow":true,"x":3,"xref":"x","y":2,"yref":"y"},{"font":{"color":"#0077b6","family":"serif","size":30},"showarrow":false,"text":"\u003cb\u003ea\u003c\u002fb\u003e = ⟨3, 2⟩","x":1.3,"xanchor":"right","xshift":-6,"y":1.2},{"font":{"color":"#c1121f","family":"serif","size":26},"showarrow":false,"text":"a₁ = 3","x":1.5,"y":0,"yanchor":"top","yshift":-10},{"font":{"color":"#c1121f","family":"serif","size":26},"showarrow":false,"text":"a₂ = 2","x":0,"xanchor":"right","xshift":-10,"y":1.0},{"font":{"color":"#333","family":"serif","size":28},"showarrow":false,"text":"O","x":0,"xanchor":"right","xshift":-8,"y":0,"yanchor":"top","yshift":-4},{"font":{"color":"#e09f3e","family":"serif","size":28},"showarrow":false,"text":"P(3, 2)","x":3,"xanchor":"left","xshift":8,"y":2,"yanchor":"bottom","yshift":6}],"xaxis":{"title":{"font":{"size":28,"color":"#333"},"text":"x"},"tickfont":{"size":24,"color":"#555"},"range":[-0.8,4.5],"gridcolor":"#eee","zeroline":true,"zerolinecolor":"#999","zerolinewidth":1.5},"yaxis":{"title":{"font":{"size":28,"color":"#333"},"text":"y"},"tickfont":{"size":24,"color":"#555"},"range":[-0.8,3.2],"gridcolor":"#eee","zeroline":true,"zerolinecolor":"#999","zerolinewidth":1.5,"scaleanchor":"x","scaleratio":1},"margin":{"l":50,"r":30,"t":30,"b":50},"paper_bgcolor":"#ffffff","plot_bgcolor":"#ffffff","showlegend":false},                        {"displayModeBar": true, "modeBarButtonsToRemove": ["toImage", "sendDataToCloud"], "displaylogo": false, "scrollZoom": true, "responsive": true}                    )                };            </script>        </div>
-  </div>
+  <img src="figures/position_vector.png" alt="A position vector from the origin to a point (a1, a2, a3), with components labeled" class="plotly-lazy-thumb" data-plotly-src="figures/position_vector.html" style="max-height:60vh;" title="Click to interact">
 </div></div>
 </div></div>
-<div class="fragment"><p>Translating a vector to a different starting point gives an <strong>equal</strong> vector &mdash; same components, different location.</p></div>
+<div class="fragment" data-editor-line="132"><p>Translating a vector to a different starting point gives an <strong>equal</strong> vector &mdash; same components, different location.</p></div>
 </section>
 
 <section id="displacement-vector-formula">
 <h2>Displacement Vector Formula</h2>
-<div class="defn-box fragment">
+<div class="defn-box fragment" data-editor-line="139">
   <div class="defn-title">Displacement Vector Formula</div>
   <p>Given points \(A(x_1, y_1, z_1)\) and \(B(x_2, y_2, z_2)\), the displacement vector from \(A\) to \(B\) is:</p>
 <p>\[\vec{AB} = \langle x_2 - x_1,\; y_2 - y_1,\; z_2 - z_1 \rangle\]</p>
 <p><strong>Terminal minus initial.</strong></p>
 </div>
-<div class="example-box">
+<div class="example-box fragment" data-editor-line="147">
   <div class="example-title">Example 1</div>
   <p>Find the displacement vector \(\vec{AB}\) for \(A(2, -3, 4)\) and \(B(-2, 1, 1)\).</p>
 </div>
-<div class="fragment"><p class="work-prompt">Subtract: terminal minus initial, component by component.</p></div>
-<div class="fragment"><p>\[\vec{AB} = \langle -2 - 2,\; 1 - (-3),\; 1 - 4 \rangle = \langle -4, 4, -3 \rangle\]</p></div>
-<div class="key-point fragment"><p><strong>Terminal minus initial.</strong> Always subtract in the order \(B - A\) to get \(\vec{AB}\).</p></div>
+<div class="fragment" data-editor-line="151"><p class="work-prompt">Subtract: terminal minus initial, component by component.</p></div>
+<div class="fragment" data-editor-line="153"><p>\[\vec{AB} = \langle -2 - 2,\; 1 - (-3),\; 1 - 4 \rangle = \langle -4, 4, -3 \rangle\]</p></div>
+<div class="key-point fragment" data-editor-line="157"><p><strong>Terminal minus initial.</strong> Always subtract in the order \(B - A\) to get \(\vec{AB}\).</p></div>
 </section>
 
 <section id="magnitude">
 <h2>Magnitude</h2>
-<div class="defn-box fragment">
+<div class="defn-box fragment" data-editor-line="164">
   <div class="defn-title">Magnitude of a Vector</div>
   <p>The <strong>magnitude</strong> (or length) of a vector \(\vec{a} = \langle a_1, a_2, a_3 \rangle\) is:</p>
 <p>\[|\vec{a}| = \sqrt{a_1^2 + a_2^2 + a_3^2}\]</p>
 <p>In 2D: \(|\vec{a}| = \sqrt{a_1^2 + a_2^2}\)</p>
 </div>
-<div class="fragment"><p>This is the <strong>distance formula</strong> from Section 12.1! The magnitude of a position vector equals the distance from the origin to its terminal point.</p></div>
+<div class="fragment" data-editor-line="172"><p>This is the <strong>distance formula</strong> from Section 12.1! The magnitude of a position vector equals the distance from the origin to its terminal point.</p></div>
 <aside class="notes">Remind students this is just the Pythagorean theorem generalized to 3D. Same idea they saw last time.</aside>
 </section>
 
 <section id="example-vector-arithmetic">
 <h2>Example: Vector Arithmetic</h2>
-<div class="example-box">
+<div class="example-box fragment" data-editor-line="181">
   <div class="example-title">Example 2</div>
   <p>For \(\vec{a} = \langle 2, -1, 3 \rangle\) and \(\vec{b} = \langle 0, 4, -3 \rangle\), compute:</p>
 <ol>
@@ -277,17 +276,17 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <li>\(2\vec{a} + 5\vec{b}\)</li>
 </ol>
 </div>
-<div class="fragment"><p class="work-prompt">Compute each quantity step by step.</p></div>
-<div class="fragment"><p><strong>1.</strong> \(-3\vec{b} = -3\langle 0, 4, -3 \rangle = \langle 0, -12, 9 \rangle\)</p></div>
-<div class="fragment"><p><strong>2.</strong> \(|-3\vec{b}| = \sqrt{0^2 + (-12)^2 + 9^2} = \sqrt{0 + 144 + 81} = \sqrt{225} = 15\)</p>
+<div class="fragment" data-editor-line="191"><p class="work-prompt">Compute each quantity step by step.</p></div>
+<div class="fragment" data-editor-line="193"><p><strong>1.</strong> \(-3\vec{b} = -3\langle 0, 4, -3 \rangle = \langle 0, -12, 9 \rangle\)</p></div>
+<div class="fragment" data-editor-line="197"><p><strong>2.</strong> \(|-3\vec{b}| = \sqrt{0^2 + (-12)^2 + 9^2} = \sqrt{0 + 144 + 81} = \sqrt{225} = 15\)</p>
 <p>Check: \(|-3||\vec{b}| = 3\sqrt{0 + 16 + 9} = 3\sqrt{25} = 3 \cdot 5 = 15\) \(\checkmark\)</p></div>
-<div class="fragment"><p><strong>3.</strong> \(2\vec{a} + 5\vec{b} = 2\langle 2, -1, 3 \rangle + 5\langle 0, 4, -3 \rangle = \langle 4, -2, 6 \rangle + \langle 0, 20, -15 \rangle = \langle 4, 18, -9 \rangle\)</p></div>
-<div class="key-point fragment"><p>Property: \(|c\vec{a}| = |c|\,|\vec{a}|\) &mdash; the magnitude of a scalar multiple equals the absolute value of the scalar times the magnitude.</p></div>
+<div class="fragment" data-editor-line="203"><p><strong>3.</strong> \(2\vec{a} + 5\vec{b} = 2\langle 2, -1, 3 \rangle + 5\langle 0, 4, -3 \rangle = \langle 4, -2, 6 \rangle + \langle 0, 20, -15 \rangle = \langle 4, 18, -9 \rangle\)</p></div>
+<div class="key-point fragment" data-editor-line="207"><p>Property: \(|c\vec{a}| = |c|\,|\vec{a}|\) &mdash; the magnitude of a scalar multiple equals the absolute value of the scalar times the magnitude.</p></div>
 </section>
 
 <section id="your-turn-vector-arithmetic-practice">
 <h2>Your Turn: Vector Arithmetic Practice</h2>
-<div class="example-box">
+<div class="example-box fragment" data-editor-line="214">
   <div class="example-title">Example 3</div>
   <p><strong>Your turn!</strong> For \(\vec{u} = \langle 3, -1, 2 \rangle\) and \(\vec{v} = \langle -1, 4, 1 \rangle\), find:</p>
 <ol>
@@ -295,26 +294,24 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <li>\(|2\vec{u} - 3\vec{v}|\)</li>
 </ol>
 </div>
-<div class="fragment"><p class="work-prompt">Work through the scalar multiplications first, then subtract, then find the magnitude.</p></div>
-<div class="fragment"><p><strong>1.</strong> \(2\vec{u} - 3\vec{v} = 2\langle 3, -1, 2 \rangle - 3\langle -1, 4, 1 \rangle = \langle 6, -2, 4 \rangle - \langle -3, 12, 3 \rangle = \langle 9, -14, 1 \rangle\)</p></div>
-<div class="fragment"><p><strong>2.</strong> \(|2\vec{u} - 3\vec{v}| = \sqrt{9^2 + (-14)^2 + 1^2} = \sqrt{81 + 196 + 1} = \sqrt{278}\)</p></div>
+<div class="fragment" data-editor-line="223"><p class="work-prompt">Work through the scalar multiplications first, then subtract, then find the magnitude.</p></div>
+<div class="fragment" data-editor-line="225"><p><strong>1.</strong> \(2\vec{u} - 3\vec{v} = 2\langle 3, -1, 2 \rangle - 3\langle -1, 4, 1 \rangle = \langle 6, -2, 4 \rangle - \langle -3, 12, 3 \rangle = \langle 9, -14, 1 \rangle\)</p></div>
+<div class="fragment" data-editor-line="229"><p><strong>2.</strong> \(|2\vec{u} - 3\vec{v}| = \sqrt{9^2 + (-14)^2 + 1^2} = \sqrt{81 + 196 + 1} = \sqrt{278}\)</p></div>
 </section>
 
 <section id="standard-basis-vectors">
 <h2>Standard Basis Vectors</h2>
-<div class="fragment"><div class="two-col">
+<div class="fragment" data-editor-line="238"><div class="two-col">
   <div><div><p>The <strong>standard basis vectors</strong> are unit vectors along each axis:</p>
 <p>\[\vec{i} = \langle 1, 0, 0 \rangle, \quad \vec{j} = \langle 0, 1, 0 \rangle, \quad \vec{k} = \langle 0, 0, 1 \rangle\]</p>
 <p>In 2D: \(\vec{i} = \langle 1, 0 \rangle\), \(\vec{j} = \langle 0, 1 \rangle\)</p>
 <p><strong>Any vector</strong> can be written as a combination of basis vectors:</p>
 <p>\[\vec{a} = \langle a_1, a_2, a_3 \rangle = a_1\vec{i} + a_2\vec{j} + a_3\vec{k}\]</p></div></div>
   <div><div class="fig-container">
-  <div class="plotly-figure" role="img" aria-label="The three standard basis vectors i, j, k along the x, y, and z axes respectively" style="height:400px;width:100%;">
-    <div>                            <div id="plotly-standard_basis" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("plotly-standard_basis")) {                    Plotly.newPlot(                        "plotly-standard_basis",                        [{"hoverinfo":"skip","line":{"color":"#c1121f","width":8},"mode":"lines","x":[0,0.85],"y":[0,0.0],"z":[0,0.0],"type":"scatter3d"},{"anchor":"tip","colorscale":[[0,"#c1121f"],[1,"#c1121f"]],"hoverinfo":"skip","showscale":false,"sizemode":"absolute","sizeref":0.12,"u":[0.3],"v":[0.0],"w":[0.0],"x":[1],"y":[0],"z":[0],"type":"cone"},{"hoverinfo":"skip","mode":"text","text":["\u003cb\u003ei\u003c\u002fb\u003e"],"textfont":{"color":"#c1121f","family":"serif","size":32},"x":[1.18],"y":[0],"z":[0],"type":"scatter3d"},{"hoverinfo":"skip","line":{"color":"#2d6a4f","width":8},"mode":"lines","x":[0,0.0],"y":[0,0.85],"z":[0,0.0],"type":"scatter3d"},{"anchor":"tip","colorscale":[[0,"#2d6a4f"],[1,"#2d6a4f"]],"hoverinfo":"skip","showscale":false,"sizemode":"absolute","sizeref":0.12,"u":[0.0],"v":[0.3],"w":[0.0],"x":[0],"y":[1],"z":[0],"type":"cone"},{"hoverinfo":"skip","mode":"text","text":["\u003cb\u003ej\u003c\u002fb\u003e"],"textfont":{"color":"#2d6a4f","family":"serif","size":32},"x":[0],"y":[1.18],"z":[0],"type":"scatter3d"},{"hoverinfo":"skip","line":{"color":"#0077b6","width":8},"mode":"lines","x":[0,0.0],"y":[0,0.0],"z":[0,0.85],"type":"scatter3d"},{"anchor":"tip","colorscale":[[0,"#0077b6"],[1,"#0077b6"]],"hoverinfo":"skip","showscale":false,"sizemode":"absolute","sizeref":0.12,"u":[0.0],"v":[0.0],"w":[0.3],"x":[0],"y":[0],"z":[1],"type":"cone"},{"hoverinfo":"skip","mode":"text","text":["\u003cb\u003ek\u003c\u002fb\u003e"],"textfont":{"color":"#0077b6","family":"serif","size":32},"x":[0],"y":[0],"z":[1.18],"type":"scatter3d"},{"hoverinfo":"skip","marker":{"color":"#333","size":5},"mode":"markers","x":[0],"y":[0],"z":[0],"type":"scatter3d"},{"hoverinfo":"skip","mode":"text","text":["O"],"textfont":{"color":"#555","family":"serif","size":26},"x":[-0.12],"y":[-0.12],"z":[-0.12],"type":"scatter3d"}],                        {"margin":{"b":0,"l":0,"r":0,"t":0},"paper_bgcolor":"#ffffff","plot_bgcolor":"#ffffff","scene":{"aspectmode":"cube","bgcolor":"#ffffff","camera":{"eye":{"x":1.6,"y":-1.8,"z":1.0}},"xaxis":{"backgroundcolor":"#f5f5f5","gridcolor":"#dddddd","range":[-0.3,1.5],"showbackground":true,"tickfont":{"color":"#555","size":16},"title":{"font":{"color":"#c1121f","size":32},"text":"x"}},"yaxis":{"backgroundcolor":"#eeeeee","gridcolor":"#dddddd","range":[-0.3,1.5],"showbackground":true,"tickfont":{"color":"#555","size":16},"title":{"font":{"color":"#2d6a4f","size":32},"text":"y"}},"zaxis":{"backgroundcolor":"#f0f0f0","gridcolor":"#dddddd","range":[-0.3,1.5],"showbackground":true,"tickfont":{"color":"#555","size":16},"title":{"font":{"color":"#0077b6","size":32},"text":"z"}}},"showlegend":false,"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}}},                        {"displayModeBar": true, "modeBarButtonsToRemove": ["toImage", "sendDataToCloud"], "displaylogo": false, "scrollZoom": true, "responsive": true}                    )                };            </script>        </div>
-  </div>
+  <img src="figures/standard_basis.png" alt="The three standard basis vectors i, j, k along the x, y, and z axes respectively" class="plotly-lazy-thumb" data-plotly-src="figures/standard_basis.html" style="max-height:60vh;" title="Click to interact">
 </div></div>
 </div></div>
-<div class="fragment"><div class="two-col">
+<div class="fragment" data-editor-line="252"><div class="two-col">
   <div><div class="fig-container">
   <a href="figures/12_2_7.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/12_2_7.png"><img src="figures/12_2_7.png" alt="2D decomposition: vector a from the origin to (a1, a2), shown as the sum of a horizontal component a1 i along the x-axis and a vertical component a2 j, forming a right triangle." style="max-height:60vh;"></a>
 </div></div>
@@ -322,46 +319,44 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
   <a href="figures/12_2_8.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/12_2_8.png"><img src="figures/12_2_8.png" alt="3D decomposition: vector a from the origin to (a1, a2, a3), shown as the sum of components a1 i along the x-axis, a2 j along the y-axis, and a3 k along the z-axis." style="max-height:60vh;"></a>
 </div></div>
 </div></div>
-<div class="fragment"><p><strong>Example:</strong> \(\langle 3, 4 \rangle = 3\langle 1, 0 \rangle + 4\langle 0, 1 \rangle = 3\vec{i} + 4\vec{j}\)</p></div>
+<div class="fragment" data-editor-line="259"><p><strong>Example:</strong> \(\langle 3, 4 \rangle = 3\langle 1, 0 \rangle + 4\langle 0, 1 \rangle = 3\vec{i} + 4\vec{j}\)</p></div>
 <aside class="notes">Mention that some textbooks use bold i, j, k and others use hats. We will use arrow notation to be consistent with other vectors.</aside>
 </section>
 
 <section id="unit-vectors">
 <h2>Unit Vectors</h2>
-<div class="defn-box fragment">
+<div class="defn-box fragment" data-editor-line="268">
   <div class="defn-title">Unit Vector</div>
   <p>A <strong>unit vector</strong> is a vector with magnitude 1.</p>
 <p>To find the unit vector in the direction of \(\vec{a}\):</p>
 <p>\[\hat{a} = \frac{\vec{a}}{|\vec{a}|}\]</p>
 <p>This process is called <strong>normalizing</strong> the vector.</p>
 </div>
-<div class="example-box">
+<div class="example-box fragment" data-editor-line="278">
   <div class="example-title">Example 4</div>
   <p>Find the unit vector in the direction of \(\vec{a} = \langle 3, 4 \rangle\).</p>
 </div>
-<div class="fragment"><p class="work-prompt">Find |a|, then divide each component by it.</p></div>
-<div class="fragment"><p>\(|\vec{a}| = \sqrt{3^2 + 4^2} = \sqrt{9 + 16} = \sqrt{25} = 5\)</p></div>
-<div class="fragment"><p>\(\hat{a} = \dfrac{1}{5}\langle 3, 4 \rangle = \left\langle \dfrac{3}{5}, \dfrac{4}{5} \right\rangle\)</p></div>
-<div class="fragment"><p>Check: \(\left|\left\langle \frac{3}{5}, \frac{4}{5} \right\rangle\right| = \sqrt{\frac{9}{25} + \frac{16}{25}} = \sqrt{\frac{25}{25}} = 1\) \(\checkmark\)</p></div>
-<div class="key-point fragment"><p><strong>Divide by the magnitude to normalize.</strong> The unit vector \(\hat{a}\) keeps the direction of \(\vec{a}\) but has length 1.</p></div>
+<div class="fragment" data-editor-line="282"><p class="work-prompt">Find |a|, then divide each component by it.</p></div>
+<div class="fragment" data-editor-line="284"><p>\(|\vec{a}| = \sqrt{3^2 + 4^2} = \sqrt{9 + 16} = \sqrt{25} = 5\)</p></div>
+<div class="fragment" data-editor-line="288"><p>\(\hat{a} = \dfrac{1}{5}\langle 3, 4 \rangle = \left\langle \dfrac{3}{5}, \dfrac{4}{5} \right\rangle\)</p></div>
+<div class="fragment" data-editor-line="292"><p>Check: \(\left|\left\langle \frac{3}{5}, \frac{4}{5} \right\rangle\right| = \sqrt{\frac{9}{25} + \frac{16}{25}} = \sqrt{\frac{25}{25}} = 1\) \(\checkmark\)</p></div>
+<div class="key-point fragment" data-editor-line="296"><p><strong>Divide by the magnitude to normalize.</strong> The unit vector \(\hat{a}\) keeps the direction of \(\vec{a}\) but has length 1.</p></div>
 </section>
 
-<section>
 <section id="application-forces-in-equilibrium">
 <h2>Application: Forces in Equilibrium</h2>
-<div class="example-box">
+<div class="example-box fragment" data-editor-line="303">
   <div class="example-title">Example 5</div>
   <p>A 100-lb weight hangs from two wires as shown. Find the tensions \(\vec{T}_1\) and \(\vec{T}_2\) in the wires and the magnitudes of these tensions.</p>
 </div>
-<div class="fig-container fragment">
-  <div class="plotly-figure" role="img" aria-label="A 100-lb weight suspended by two wires making angles of 50 degrees and 32 degrees with the horizontal" style="height:400px;width:100%;">
-    <div>                            <div id="plotly-forces_equilibrium" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("plotly-forces_equilibrium")) {                    Plotly.newPlot(                        "plotly-forces_equilibrium",                        [{"hoverinfo":"skip","line":{"color":"#bbb","dash":"dot","width":1},"mode":"lines","x":[-3.5,3.5],"y":[0,0],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"#0077b6","width":1.5},"mode":"lines","x":{"dtype":"f8","bdata":"zczMzMzM7L831KVOdsnsv5tTQppzv+y\u002fHZ2oAceu7L+UOkpidJfsvy+UHiSBeey\u002fMiRiOPRU7L8ogvoX1insvwmlf8Ew+Ou\u002f3tDqtg\u002fA679Puev6f4Hrv3Z35A2QPOu\u002f6AWN6k\u002fx6r9YCj8C0Z\u002fqv7nI6jgmSOq\u002fty+24GPq6b9yAke1n4bpv9Y2udbwHOm\u002fs7NCxG+t6L91rIVWNjjov6Prkrlfvee\u002fb2+dZgg9579PzmAdTrfmvxTrO91PLOa\u002fzZEB3i2c5b\u002fNp4CICQflv+epxW4FbeS\u002fh0QXREXO478h4a\u002fU7Srjv+cTNv0kg+K\u002f"},"y":{"dtype":"f8","bdata":"QD++KKvEnzx2UqmhfrqbP5k+Hu5Ht6s\u002fQkuC8XHFtD84k\u002fRbb6q7PxlXJYyBRME\u002fvyB5wsqvxD9KT69tSBbIP0WyC8cwd8s\u002f0ZwhU7vRzj\u002f8OiaIkBLRP+xbaFJOuNI\u002f3lVNRrVZ1D\u002fDJEijZPbVP\u002f7btcD8jdc\u002fqgQKJB8g2T\u002fk9bSWbqzaP\u002f4TvzuPMtw\u002f\u002fPMTpSay3T8qdHjo2yrfP+B2E9orTuA\u002falyGMSID4T+YKFIIJ7ThPzDBM1YRYeI\u002fZoxqBrkJ4z+U1wIB963jP++k5TOlTeQ\u002fQ8arm57o5D8\u002fOTJMv37lPzPI7XjkD+Y\u002f"},"type":"scatter"},{"hoverinfo":"skip","line":{"color":"#2d6a4f","width":1.5},"mode":"lines","x":{"dtype":"f8","bdata":"zczMzMzM7D8j5b7IbsvsPwDl0N1Ux+w\u002fNsmyb3\u002fA7D91XX8k77bsP9p2rOSkquw\u002fm+H02qGb7D\u002fnAzx054nsP7I4a193dew\u002frOVIjVNe7D9WUEkwfkTsP5w2Wbz5J+w\u002fFjCi5sgI7D+U3Uil7ubrPzDtJC9uwus\u002fwvly+0qb6z8dTYDBiHHrPxqNUHgrRes\u002f+ls9VjcW6z9U9Y\u002fQsOTqPzrRFJucsOo\u002f51epp\u002f956j\u002fOsMMl30DqP3m49IFABeo\u002fGClkZSnH6T9yAke1n4bpPxQ+UJKpQ+k\u002fgt0bWE3+6D95YJSckbboP\u002fGxUi99bOg\u002f"},"y":{"dtype":"f8","bdata":"AAAAAAAAAADJJ3sAcb+RPxF9jE6ZvqE\u002fDeR4zcqbqj8MU0HEOruxP5UpSSThJrY\u002ftSs0FG2Quj+cL4JUc\u002fe+P37BgHHErcE\u002fH\u002fh7giHewz9YfaKomwzGP5EtPt39OMg\u002fzuN7TBNjyj+iiG9ap4rMP1DSEqiFr84\u002fXh4fDL1o0D8e4E1qKHjRP45nSSnrhdI\u002fD5EWrOuR0z997nmAEJzUP2lKYmFApNU\u002feOFOOWKq1j+oF7EkXa7XP4tvSXQYsNg\u002fEIp\u002fr3uv2T\u002fi9bSWbqzaP9mVkiXZpts\u002fkWZQlaOe3D+xa\u002fdetpPdPxmOnT36hd4\u002f"},"type":"scatter"},{"hoverinfo":"skip","marker":{"color":"#666","size":8,"symbol":"square"},"mode":"markers","x":[-1.9283628290596182,2.544144288469278],"y":[2.298133329356934,1.5897577926996147],"type":"scatter"},{"hoverinfo":"skip","marker":{"color":"#e09f3e","size":10},"mode":"markers","x":[0],"y":[0],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"#aaa","width":1},"mode":"lines","x":[-1.9283628290596182,0],"y":[2.298133329356934,0],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"#aaa","width":1},"mode":"lines","x":[2.544144288469278,0],"y":[1.5897577926996147,0],"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"annotations":[{"arrowcolor":"#0077b6","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":0,"axref":"x","ay":0,"ayref":"y","showarrow":true,"x":-1.9283628290596182,"xref":"x","y":2.298133329356934,"yref":"y"},{"font":{"color":"#0077b6","family":"serif","size":32},"showarrow":false,"text":"\u003cb\u003eT₁\u003c\u002fb\u003e","x":-1.114181414529809,"xanchor":"right","xshift":-6,"y":1.299066664678467},{"arrowcolor":"#2d6a4f","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":0,"axref":"x","ay":0,"ayref":"y","showarrow":true,"x":2.544144288469278,"xref":"x","y":1.5897577926996147,"yref":"y"},{"font":{"color":"#2d6a4f","family":"serif","size":32},"showarrow":false,"text":"\u003cb\u003eT₂\u003c\u002fb\u003e","x":1.422072144234639,"xanchor":"left","xshift":6,"y":0.9448788963498074},{"arrowcolor":"#c1121f","arrowhead":3,"arrowsize":1.8,"arrowwidth":3,"ax":0,"axref":"x","ay":0,"ayref":"y","showarrow":true,"x":0,"xref":"x","y":-2.5,"yref":"y"},{"font":{"color":"#c1121f","family":"serif","size":28},"showarrow":false,"text":"\u003cb\u003eW\u003c\u002fb\u003e = 100 lb","x":0,"xanchor":"left","xshift":12,"y":-1.25},{"font":{"color":"#0077b6","size":24},"showarrow":false,"text":"50°","x":-0.6933254570830372,"xanchor":"right","xshift":-2,"y":0.3233029702316351},{"font":{"color":"#2d6a4f","size":24},"showarrow":false,"text":"32°","x":0.7353651973928139,"xanchor":"left","xshift":2,"y":0.21086257720000437}],"xaxis":{"title":{"text":""},"range":[-4,4],"gridcolor":"#eee","zeroline":false,"showticklabels":false},"yaxis":{"title":{"text":""},"range":[-3.5,3.5],"gridcolor":"#eee","zeroline":false,"showticklabels":false,"scaleanchor":"x","scaleratio":1},"margin":{"l":20,"r":20,"t":20,"b":20},"paper_bgcolor":"#ffffff","plot_bgcolor":"#ffffff","showlegend":false},                        {"displayModeBar": true, "modeBarButtonsToRemove": ["toImage", "sendDataToCloud"], "displaylogo": false, "scrollZoom": true, "responsive": true}                    )                };            </script>        </div>
-  </div>
+<div class="fig-container fragment" data-editor-line="307">
+  <img src="figures/forces_equilibrium.png" alt="A 100-lb weight suspended by two wires making angles of 50 degrees and 32 degrees with the horizontal" class="plotly-lazy-thumb" data-plotly-src="figures/forces_equilibrium.html" style="max-height:60vh;" title="Click to interact">
 </div>
 </section>
+
 <section>
 <h2>Application: Forces in Equilibrium</h2>
-<div class="fragment"><p><strong>Setting up the problem:</strong></p>
+<div class="fragment" data-editor-line="311"><p><strong>Setting up the problem:</strong></p>
 <p>The system is in <strong>equilibrium</strong>, so the forces sum to zero:</p>
 <p>\[\vec{T}_1 + \vec{T}_2 + \vec{w} = \vec{0}\]</p>
 <p>Write each force in component form:</p>
@@ -371,22 +366,22 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <li>\(\vec{w} = \langle 0, -100 \rangle\) \quad  (gravity, straight down)</li>
 </ul></div>
 </section>
+
 <section>
 <h2>Application: Forces in Equilibrium</h2>
-<div class="fragment"><p><strong>Solving the system:</strong></p>
+<div class="fragment" data-editor-line="326"><p><strong>Solving the system:</strong></p>
 <p>Setting the \(x\)-components equal to zero:</p>
 <p>\[-t_1 \cos 50{^\circ} + t_2 \cos 32{^\circ} = 0\]</p>
 <p>Setting the \(y\)-components equal to zero:</p>
 <p>\[t_1 \sin 50{^\circ} + t_2 \sin 32{^\circ} - 100 = 0\]</p></div>
-<div class="fragment"><p>From the \(x\)-equation:</p>
+<div class="fragment" data-editor-line="334"><p>From the \(x\)-equation:</p>
 <p>\[t_1 = \frac{t_2 \cos 32{^\circ}}{\cos 50{^\circ}}\]</p></div>
-<div class="fragment"><p>Substitute into the \(y\)-equation:</p>
+<div class="fragment" data-editor-line="339"><p>Substitute into the \(y\)-equation:</p>
 <p>\[\frac{t_2 \cos 32{^\circ}}{\cos 50{^\circ}} \sin 50{^\circ} + t_2 \sin 32{^\circ} = 100\]</p>
 <p>\[t_2(\cos 32{^\circ} \tan 50{^\circ} + \sin 32{^\circ}) = 100\]</p></div>
-<div class="fragment"><p>\[t_2 = \frac{100}{\cos 32{^\circ} \tan 50{^\circ} + \sin 32{^\circ}} \approx 66.07 \text{ lb}\]</p>
+<div class="fragment" data-editor-line="346"><p>\[t_2 = \frac{100}{\cos 32{^\circ} \tan 50{^\circ} + \sin 32{^\circ}} \approx 66.07 \text{ lb}\]</p>
 <p>\[t_1 = \frac{66.07 \cos 32{^\circ}}{\cos 50{^\circ}} \approx 85.64 \text{ lb}\]</p></div>
 <aside class="notes">This is a classic statics problem. Emphasize writing the angle correctly (from horizontal). Ask which wire has more tension and why (steeper angle supports more weight).</aside>
-</section>
 </section>
 
 <section id="section-12-2-summary">
@@ -399,7 +394,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <div class="defn-box"><div class="defn-title">Unit Vector</div><p class="small">\(\hat{a} = \vec{a}\,/\,|\vec{a}|\) &mdash; divide by magnitude to normalize</p></div>
 <div class="defn-box"><div class="defn-title">Standard Basis</div><p class="small">\(\vec{i} = \langle 1,0,0 \rangle\), \(\vec{j} = \langle 0,1,0 \rangle\), \(\vec{k} = \langle 0,0,1 \rangle\)</p></div>
 </div>
-<div class="key-point fragment"><p><strong>Big idea:</strong> Vectors let us work with quantities that have direction &mdash; we can add, subtract, and scale them using their components.</p></div>
+<div class="key-point fragment" data-editor-line="368"><p><strong>Big idea:</strong> Vectors let us work with quantities that have direction &mdash; we can add, subtract, and scale them using their components.</p></div>
 </section>
 
 <section>
@@ -416,6 +411,11 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
   <button class="lb-close" aria-label="Close lightbox">&times;</button>
   <img src="" alt="">
   <div class="lb-caption"></div>
+</div>
+<!-- Plotly fullscreen overlay -->
+<div id="plotly-lightbox" role="dialog" aria-modal="true" aria-label="Expanded interactive figure">
+  <button class="plb-close" aria-label="Close">&times;</button>
+  <div class="plb-content"></div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
@@ -436,7 +436,14 @@ Reveal.initialize({
     mouseWheel: false,
     plugins: [RevealNotes]
 });
-Reveal.on('slidechanged', () => { MathJax?.typesetPromise?.(); });
+Reveal.on('slidechanged', (event) => {
+    MathJax?.typesetPromise?.();
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealSlideChanged', indexh: event.indexh, indexv: event.indexv }, '*');
+        }
+    } catch (e) {}
+});
 // Fragment auto-scroll: configurable via meta.fragment_scroll in content.yaml
 // Value is the max fraction down the slide viewport (0.0=top, 1.0=bottom)
 var FRAG_SCROLL_TARGET = 0.67;
@@ -490,10 +497,33 @@ Reveal.on('ready', () => {
         }
     });
 });
+function _notifyParentFragment() {
+    // Read data-editor-line from the last visible fragment in the current slide.
+    // Works for both fragmentshown and fragmenthidden events.
+    try {
+        if (!window.parent || window.parent === window) return;
+        var s = Reveal.getState();
+        var slideEl = Reveal.getCurrentSlide();
+        var editorLine = null;
+        if (slideEl) {
+            var visibleFrags = slideEl.querySelectorAll('.fragment.visible[data-editor-line]');
+            if (visibleFrags.length > 0) {
+                var ln = parseInt(visibleFrags[visibleFrags.length - 1].dataset.editorLine, 10);
+                if (!isNaN(ln)) editorLine = ln;
+            }
+        }
+        window.parent.postMessage({
+            type: 'revealFragmentChanged',
+            indexh: s.indexh, indexv: s.indexv, indexf: s.indexf,
+            editorLine: editorLine
+        }, '*');
+    } catch(e) {}
+}
 Reveal.on('fragmentshown', (event) => {
     MathJax?.typesetPromise?.();
     if (!event.fragment) return;
     setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
+    _notifyParentFragment();
 });
 Reveal.on('fragmenthidden', (event) => {
     MathJax?.typesetPromise?.();
@@ -505,25 +535,85 @@ Reveal.on('fragmenthidden', (event) => {
     }
     var target = prev || event.fragment.closest('section')?.querySelector('h2') || event.fragment;
     setTimeout(function() { scrollToFragment(target, 'backward'); }, 80);
+    _notifyParentFragment();
 });
-Reveal.on('ready', () => { MathJax?.typesetPromise?.(); });
+Reveal.on('ready', () => {
+    MathJax?.typesetPromise?.();
+    // Tell the CourseKit editor that Reveal is initialized so it can sync the fragment
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealReady' }, '*');
+        }
+    } catch(e) {}
+});
 
-// ── Resize Plotly figures when slides become visible ──
-function resizePlotlyInSlide(event) {
-    var slide = event?.currentSlide || document.querySelector('.reveal .present');
-    if (!slide) return;
-    slide.querySelectorAll('.js-plotly-plot').forEach(function(gd) {
-        Plotly.Plots.resize(gd);
+// ── Plotly lightbox (iframe approach — zero WebGL until opened) ──
+(function() {
+    var plb = document.getElementById('plotly-lightbox');
+    if (!plb) return;
+    var plbClose = plb.querySelector('.plb-close');
+    var plbContent = plb.querySelector('.plb-content');
+    var triggerImg = null;
+    var currentBlobUrl = null;
+
+    function openPlotlyLightbox(blobUrl) {
+        // Revoke any previous blob URL
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); }
+        currentBlobUrl = blobUrl;
+        var iframe = plbContent.querySelector('iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:80vh;border:none;background:#fff;';
+            plbContent.appendChild(iframe);
+        }
+        iframe.src = blobUrl;
+        plb.classList.add('active');
+        plbClose.focus();
+    }
+
+    function closePlotlyLightbox() {
+        var iframe = plbContent.querySelector('iframe');
+        if (iframe) iframe.src = '';   // Unloads WebGL context immediately
+        plb.classList.remove('active');
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+        if (triggerImg) { triggerImg.focus(); triggerImg = null; }
+    }
+
+    document.addEventListener('click', function(e) {
+        var img = e.target.closest('img[data-plotly-src]');
+        if (!img) return;
+        e.stopPropagation();
+        triggerImg = img;
+        // The companion .html is a bare Plotly div fragment (no CDN script).
+        // Fetch it and wrap in a complete page so it renders in the iframe.
+        fetch(img.dataset.plotlySrc)
+            .then(function(r) { return r.text(); })
+            .then(function(fragment) {
+                var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+                    '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"><\/script>' +
+                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;}' +
+                    '.plotly-graph-div{width:100vw!important;height:100vh!important;}</style>' +
+                    '</head><body>' + fragment + '</body></html>';
+                var blob = new Blob([html], {type: 'text/html'});
+                openPlotlyLightbox(URL.createObjectURL(blob));
+            })
+            .catch(function() {
+                // Fallback: open in new tab
+                window.open(img.dataset.plotlySrc, '_blank');
+            });
     });
-}
-Reveal.on('slidechanged', resizePlotlyInSlide);
-Reveal.on('ready', resizePlotlyInSlide);
-Reveal.on('fragmentshown', function(event) {
-    var frag = event.fragment;
-    frag.querySelectorAll('.js-plotly-plot').forEach(function(gd) {
-        Plotly.Plots.resize(gd);
-    });
-});
+
+    plbClose.addEventListener('click', closePlotlyLightbox);
+    plb.addEventListener('click', function(e) { if (e.target === plb) closePlotlyLightbox(); });
+
+    // Capture-phase Escape so Reveal.js doesn't grab it first
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape' || !plb.classList.contains('active')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closePlotlyLightbox();
+    }, true);
+})();
 
 // ── Lightbox for figures (accessible: focus trap, focus return) ──
 (function() {

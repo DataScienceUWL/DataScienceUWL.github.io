@@ -94,6 +94,88 @@ window.MathJax = {
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        pb.remove();  // no longer needed — workspace expansion handles the break
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -113,15 +195,11 @@ window.MathJax = {
 
 <section id="directional-derivatives-motivation" aria-label="Directional Derivatives &mdash; Motivation">
   <h2>Directional Derivatives &mdash; Motivation</h2>
-  <div><p>Partial derivatives give the rate of change along the <strong>axes</strong>. But what if we walk in some other direction?</p>
-<p>Consider \(f(x,y) = x^2 + 4y^2\) at the point \(P(2,1)\). Pick a direction \(\vec{u}\) at \(45{^\circ}\) and slice the surface with a vertical plane along that direction:</p></div>
-<figure>
+  <figure>
   <img src="figures/dd_3d_surface.png" alt="Interactive 3D plot of the elliptic paraboloid z = x-squared + 4y-squared. A semi-transparent amber vertical plane slices through the point P(2,1,8) in the direction of the unit vector u at 45 degrees. The blue trace curve shows where the plane intersects the surface. A red dashed tangent line at P shows the slope of the trace curve, which is the directional derivative. Two sample points are marked on the trace in green and purple.">
   <figcaption><a href="figures/dd_3d_surface.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
-<div><p>The vertical plane cuts a <strong>trace curve</strong> out of the surface. The slope of that trace at \(P\) is the rate of change in the \(\vec{u}\) direction &mdash; the <strong>directional derivative</strong>.</p></div>
 
-<div><p>From the side, this is just a single-variable function \(g(t) = f(P + t\vec{u})\). Its derivative at \(t = 0\) is the slope we want.</p></div>
 <figure>
   <img src="figures/dd_domain_profile.png" alt="Two-panel figure. Left panel: contour plot of f(x,y) = x-squared + 4y-squared with elliptical level curves, the point P(2,1), a red unit vector u at 45 degrees, and two sample points along u at t = 1/2 (green) and t = 1 (purple). Right panel: the cross-section g(t) = f(P + tu) plotted as a function of t, showing a parabolic curve with a red dashed tangent line at t = 0 whose slope equals the directional derivative. The same green and purple sample points appear at their corresponding t values.">
 </figure>
@@ -130,23 +208,12 @@ window.MathJax = {
 
 <section id="definition-of-the-directional-derivative" aria-label="Definition of the Directional Derivative">
   <h2>Definition of the Directional Derivative</h2>
-  <div><p>\(f_x\) and \(f_y\) are just special cases of the directional derivative:</p>
-<ul>
-<li>\(f_x = D_{\vec{i}}\, f\) &mdash; rate of change in the \(\vec{i}\) direction</li>
-<li>\(f_y = D_{\vec{j}}\, f\) &mdash; rate of change in the \(\vec{j}\) direction</li>
-</ul></div>
-<section class="defn-box" role="region" aria-label="Directional Derivative">
+  <section class="defn-box" role="region" aria-label="Directional Derivative">
   <h3 class="defn-title">Directional Derivative</h3>
   <p>Let \(\vec{u} = \langle a, b \rangle\) be a <strong>unit vector</strong> (\(|\vec{u}| = 1\)). The <strong>directional derivative</strong> of \(f\) at \((x,y)\) in the direction of \(\vec{u}\) is:</p>
 <p>\[D_{\vec{u}} f(x,y) = \lim_{t \to 0} \frac{f(x + ta,\; y + tb) - f(x,y)}{t}\]</p>
 <p>provided this limit exists.</p>
 </section>
-<div><p><strong>Reading the formula:</strong></p>
-<ul>
-<li>Start at \((x, y)\)</li>
-<li>Move a tiny step \(t\) in the direction \(\vec{u} = \langle a, b \rangle\), arriving at \((x + ta,\; y + tb)\)</li>
-<li>Measure the change in \(f\), divide by \(t\), take the limit</li>
-</ul></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>This is the same <strong>rise-over-run</strong> idea from Calc I, but now we walk in the direction \(\vec{u}\) instead of along the \(x\)-axis.</p></aside>
 </section>
 
@@ -163,14 +230,12 @@ window.MathJax = {
 
 <section id="the-gradient-vector" class="example-group" aria-label="The Gradient Vector">
   <h2>The Gradient Vector</h2>
-  <div><p>Before we find the shortcut, we need a new object.</p></div>
-<section class="defn-box" role="region" aria-label="Gradient Vector">
+  <section class="defn-box" role="region" aria-label="Gradient Vector">
   <h3 class="defn-title">Gradient Vector</h3>
   <p>If \(f\) has partial derivatives \(f_x\) and \(f_y\), the <strong>gradient</strong> of \(f\) is the vector:</p>
 <p>\[\nabla f(x,y) = \langle f_x(x,y),\; f_y(x,y) \rangle = f_x\,\vec{i} + f_y\,\vec{j}\]</p>
 <p>The symbol \(\nabla\) is called <strong>nabla</strong> or <strong>del</strong>.</p>
 </section>
-<div><p>The gradient packages <strong>both partial derivatives</strong> into a single vector. It lives in the <strong>domain</strong> (the \(xy\)-plane), not on the surface.</p></div>
 
 <section class="example-box" role="region" aria-label="Example 2">
   <h3 class="example-title">Example 2</h3>
@@ -188,21 +253,8 @@ window.MathJax = {
 <p>\[D_{\vec{u}} f(x,y) = \nabla f(x,y) \cdot \vec{u}\]</p>
 <p>for any unit vector \(\vec{u}\).</p>
 </section>
-<div><p><strong>Translation:</strong> To find the rate of change in any direction, just take the <strong>dot product</strong> of the gradient with the direction vector.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>This is the <strong>central formula</strong> of Section 14.6. It connects direction, rate of change, and gradient in one equation.</p></aside>
-<div><p><strong>Why is this so much better than the definition?</strong></p>
-<ul>
-<li>Limit definition: expand, simplify, take a limit (messy algebra)</li>
-<li>Gradient formula: compute two partial derivatives, take a dot product (fast!)</li>
-</ul></div>
 
-<div><p><strong>Why does it work?</strong> Recall the cross-section from our motivation: define \(g(t) = f(x + ta,\; y + tb)\). Then by the Calc I derivative definition:</p>
-<p>\[g'(0) = \lim_{t \to 0} \frac{g(t) - g(0)}{t} = \lim_{t \to 0} \frac{f(x + ta,\; y + tb) - f(x,y)}{t} = D_{\vec{u}} f(x,y)\]</p>
-<p>So the directional derivative is just \(g'(0)\). Now use the <strong>chain rule</strong> to find \(g'(0)\) without limits.</p></div>
-<div><p>Apply the <strong>chain rule</strong> (Section 14.5):</p>
-<p>\[g'(t) = f_x(x + ta,\; y + tb) \cdot a \;+\; f_y(x + ta,\; y + tb) \cdot b\]</p></div>
-<div><p>Evaluate at \(t = 0\):</p>
-<p>\[g'(0) = f_x(x,y) \cdot a + f_y(x,y) \cdot b = \langle f_x,\; f_y \rangle \cdot \langle a,\; b \rangle = \nabla f \cdot \vec{u}\]</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>The dot product appears <strong>because of the chain rule</strong>. Each partial derivative gets multiplied by the corresponding component of \(\vec{u}\), which is exactly what a dot product does.</p></aside>
 </section>
 
@@ -219,31 +271,18 @@ window.MathJax = {
 
 <section id="maximizing-the-directional-derivative" aria-label="Maximizing the Directional Derivative">
   <h2>Maximizing the Directional Derivative</h2>
-  <div><p><strong>Question:</strong> You're at \(P(2,1)\) on the surface \(f(x,y) = x^2 + 4y^2\). Which direction increases \(f\) the fastest?</p>
-<p>Use the slider to sweep \(\vec{u}\) around and watch \(D_{\vec{u}} f\) change:</p></div>
-<figure>
+  <figure>
   <img src="figures/directional_derivative_explorer.png" alt="Interactive contour plot of f(x,y) = x-squared + 4y-squared with elliptical level curves. A fixed blue gradient vector nabla-f = (4,8) is shown at the point P(2,1). A green/red unit vector u rotates as the slider sweeps theta from 0 to 360 degrees. The directional derivative value is displayed and color-coded: green when positive (f increasing), red when negative (f decreasing), gray near zero (moving along a level curve). The maximum occurs when u aligns with the gradient, the minimum when u opposes it, and zero when u is perpendicular to the gradient.">
   <figcaption><a href="figures/directional_derivative_explorer.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
 <aside class="key-point" role="note" aria-label="Key point"><p>Notice: \(D_{\vec{u}} f\) is <strong>largest</strong> when \(\vec{u}\) aligns with \(\nabla f\), <strong>most negative</strong> when opposing, and <strong>zero</strong> when perpendicular. Why?</p></aside>
 
-<div><p><strong>Why?</strong> Rewrite \(D_{\vec{u}} f\) using the dot product identity:</p>
-<p>\[D_{\vec{u}} f = \nabla f \cdot \vec{u} = |\nabla f|\;|\vec{u}|\;\cos\theta = |\nabla f|\;\cos\theta\]</p>
-<p>where \(\theta\) is the angle between \(\nabla f\) and \(\vec{u}\).</p></div>
-<div><p>\(|\nabla f|\) is fixed at each point. The <strong>only thing we control</strong> is \(\theta\), and \(\cos\theta\) ranges from \(-1\) to \(1\):</p></div>
-<div><table>
-<tr><th>\(\theta\)</th><th>\(\cos\theta\)</th><th>\(D_{\vec{u}} f\)</th><th>Meaning</th></tr>
-<tr><td>\(0\)</td><td>\(1\)</td><td>\(|\nabla f|\) (max)</td><td>\(\vec{u}\) <strong>with</strong> \(\nabla f\) \(\rightarrow\) steepest increase</td></tr>
-<tr><td>\(\pi/2\)</td><td>\(0\)</td><td>\(0\)</td><td>\(\vec{u} \perp \nabla f\) \(\rightarrow\) along level curve</td></tr>
-<tr><td>\(\pi\)</td><td>\(-1\)</td><td>\(-|\nabla f|\) (min)</td><td>\(\vec{u}\) <strong>against</strong> \(\nabla f\) \(\rightarrow\) steepest decrease</td></tr>
-</table></div>
 <aside class="key-point" role="note" aria-label="Key point"><p><strong>The gradient tells you everything:</strong></p>
 <ul>
 <li>Its <strong>direction</strong> = steepest ascent</li>
 <li>Its <strong>magnitude</strong> \(|\nabla f|\) = the maximum rate of change</li>
 <li><strong>Perpendicular</strong> to it = no change (along the level curve)</li>
 </ul></aside>
-<div><p><strong>Important:</strong> \(\nabla f\) lives in the <strong>domain</strong> (the \(xy\)-plane), not on the surface. It points toward larger \(f\)-values in the input space.</p></div>
 </section>
 
 <section id="example-4-fastest-increase-and-decrease" class="example-group" aria-label="Example 4: Fastest Increase and Decrease">
@@ -290,10 +329,6 @@ window.MathJax = {
   <h3 class="defn-title">Theorem: Gradient Perpendicular to Level Curves</h3>
   <p>The gradient vector \(\nabla f(a,b)\) is <strong>perpendicular</strong> to the level curve \(f(x,y) = k\) at the point \((a,b)\).</p>
 </section>
-<div><p><strong>Why does this make sense?</strong></p>
-<p>Along a level curve, \(f\) is constant, so the rate of change is <strong>zero</strong>. We saw that \(D_{\vec{u}} f = 0\) when \(\vec{u} \perp \nabla f\).</p>
-<p>The tangent direction to a level curve is a direction of zero change &mdash; so it must be perpendicular to \(\nabla f\).</p>
-<p>Look back at our explorer figure: \(\nabla f(2,1) = \langle 4, 8 \rangle\) visibly points <strong>straight away from the ellipse</strong> \(f = 8\). Sweep the slider to \(\theta \approx 153{^\circ}\) or \(333{^\circ}\) to see \(D_{\vec{u}} f = 0\) &mdash; those are the tangent directions to the level curve.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>The gradient always points <strong>perpendicular to level curves</strong>, aiming toward higher values of \(f\). This is why contour maps and gradients are deeply connected.</p></aside>
 </section>
 
@@ -310,17 +345,11 @@ window.MathJax = {
 
 <section id="extending-to-three-variables" aria-label="Extending to Three Variables">
   <h2>Extending to Three Variables</h2>
-  <div><p>Everything generalizes naturally to functions of three variables \(f(x, y, z)\):</p></div>
-<section class="defn-box" role="region" aria-label="Gradient in Three Variables">
+  <section class="defn-box" role="region" aria-label="Gradient in Three Variables">
   <h3 class="defn-title">Gradient in Three Variables</h3>
   <p>\[\nabla f(x,y,z) = \langle f_x,\; f_y,\; f_z \rangle\]</p>
 </section>
-<div><p>The directional derivative formula is exactly the same:</p>
-<p>\[D_{\vec{u}} f(x,y,z) = \nabla f(x,y,z) \cdot \vec{u}\]</p>
-<p>where \(\vec{u} = \langle a, b, c \rangle\) is a unit vector in \(\mathbb{R}^3\).</p></div>
 
-<div><p><strong>Level surfaces replace level curves:</strong></p>
-<p>For \(F(x,y,z) = k\), the gradient \(\nabla F\) is perpendicular to the <strong>level surface</strong> at each point.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Since \(\nabla F\) is perpendicular to the level surface, it serves as the <strong>normal vector</strong> for the tangent plane!</p>
 <p><strong>Tangent plane to</strong> \(F(x,y,z) = k\) <strong>at</strong> \((a,b,c)\):</p>
 <p>\[F_x(a,b,c)(x - a) + F_y(a,b,c)(y - b) + F_z(a,b,c)(z - c) = 0\]</p></aside>

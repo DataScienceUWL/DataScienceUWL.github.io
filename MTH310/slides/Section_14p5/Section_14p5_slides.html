@@ -60,9 +60,20 @@
 .fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
 .fig-link { display: inline-block; }
 .textbook-fig img { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; }
-.plotly-figure { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); overflow: hidden; }
-.plotly-figure .js-plotly-plot { width: 100% !important; height: 100% !important; }
-.two-col .plotly-figure { max-width: 90%; margin: 0 auto; }
+.plotly-lazy-thumb { cursor: pointer; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+.plotly-lazy-thumb:hover { opacity: 0.92; outline: 2px solid #0077b6; outline-offset: 2px; }
+#plotly-lightbox { display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+    justify-content:center; align-items:center; cursor:default; }
+#plotly-lightbox.active { display:flex; }
+#plotly-lightbox .plb-close { position:fixed; top:14px; left:20px;
+    font-size:2.2em; color:#fff; background:rgba(0,0,0,0.55);
+    border:1px solid rgba(255,255,255,0.4); border-radius:6px;
+    padding:2px 14px; cursor:pointer; z-index:10001; line-height:1; }
+#plotly-lightbox .plb-close:hover { color:#e09f3e; background:rgba(0,0,0,0.75); }
+#plotly-lightbox .plb-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+#plotly-lightbox .plb-content { width:92vw; height:85vh; }
+#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; }
 /* Lightbox overlay */
 #lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
     background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
@@ -112,7 +123,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
     outline: 2px solid var(--accent-blue); outline-offset: 2px; }
 </style>
 </head>
-<body>
+<body data-section="Section_14p5">
 <a href="#" class="skip-link" onclick="Reveal.next();return false;">Skip to first slide</a>
 <div class="reveal">
 <div class="slides">
@@ -125,36 +136,36 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 
 <section id="the-chain-rule-from-calc-i-to-calc-iii">
 <h2>The Chain Rule &mdash; From Calc I to Calc III</h2>
-<div class="fragment"><p>In Calc I, the chain rule handled <strong>compositions</strong> of single-variable functions:</p>
+<div class="fragment" data-editor-line="17"><p>In Calc I, the chain rule handled <strong>compositions</strong> of single-variable functions:</p>
 <p>\[\frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx}\]</p>
 <p><strong>Example:</strong> If \(y = \sin(x^2)\), let \(u = x^2\). Then \(y = \sin u\), so:</p>
 <p>\[\frac{dy}{dx} = \cos(u) \cdot 2x = 2x\cos(x^2)\]</p>
 <p><strong>Now in Calc III:</strong> What if \(z\) depends on \(x\) and \(y\), and \(x\) and \(y\) each depend on other variables?</p>
 <p>There are <strong>multiple paths</strong> from the independent variable to \(z\) &mdash; we need to account for <strong>all of them</strong>.</p></div>
-<div class="key-point fragment"><p>Calc I chain rule: one path, one product. Calc III chain rule: <strong>multiply along each branch, add across branches</strong>.</p></div>
+<div class="key-point fragment" data-editor-line="29"><p>Calc I chain rule: one path, one product. Calc III chain rule: <strong>multiply along each branch, add across branches</strong>.</p></div>
 <aside class="notes">Remind students that the Calc I chain rule is a special case of what we're about to see. The pattern generalizes naturally.</aside>
 </section>
 
-<section>
 <section id="case-1-one-independent-variable">
 <h2>Case 1: One Independent Variable</h2>
-<div class="fragment"><p>Suppose \(z = f(x, y)\) where \(x = g(t)\) and \(y = h(t)\). Then \(z\) is ultimately a function of \(t\) alone.</p></div>
-<div class="defn-box fragment">
+<div class="fragment" data-editor-line="38"><p>Suppose \(z = f(x, y)\) where \(x = g(t)\) and \(y = h(t)\). Then \(z\) is ultimately a function of \(t\) alone.</p></div>
+<div class="defn-box fragment" data-editor-line="40">
   <div class="defn-title">Chain Rule (Case 1)</div>
   <p>If \(z = f(x, y)\) is differentiable, and \(x = g(t)\), \(y = h(t)\) are differentiable functions of \(t\), then:</p>
 <p>\[\frac{dz}{dt} = \frac{\partial z}{\partial x}\frac{dx}{dt} + \frac{\partial z}{\partial y}\frac{dy}{dt}\]</p>
 </div>
-<div class="fragment"><p>Notice the pattern:</p>
+<div class="fragment" data-editor-line="46"><p>Notice the pattern:</p>
 <ul>
 <li>One term for <strong>each intermediate variable</strong> (\(x\) and \(y\))</li>
 <li>Each term is a product: (partial of \(z\)) \(\times\) (derivative of that variable)</li>
 <li>The terms are <strong>added</strong> together</li>
 </ul></div>
 </section>
+
 <section>
 <h2>Case 1: One Independent Variable</h2>
-<div class="fragment"><p>A <strong>variable tree</strong> makes the pattern visual. Draw the dependencies, then read off the formula:</p></div>
-<div class="fragment"><div class="two-col">
+<div class="fragment" data-editor-line="55"><p>A <strong>variable tree</strong> makes the pattern visual. Draw the dependencies, then read off the formula:</p></div>
+<div class="fragment" data-editor-line="57"><div class="two-col">
   <div><div class="fig-container">
   <a href="figures/tree_case1.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/tree_case1.png"><img src="figures/tree_case1.png" alt="Variable tree for Case 1: z at top branches to x (red) and y (green), each branching down to t. Branches are labeled with partial derivatives." style="max-height:60vh;"></a>
 </div></div>
@@ -168,55 +179,54 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <p><strong>Right branch:</strong> \(\dfrac{\partial z}{\partial y} \cdot \dfrac{dy}{dt}\)</p>
 <p><strong>Total:</strong> \(\dfrac{dz}{dt} = \dfrac{\partial z}{\partial x}\dfrac{dx}{dt} + \dfrac{\partial z}{\partial y}\dfrac{dy}{dt}\)</p></div></div>
 </div></div>
-<div class="key-point fragment"><p>Draw the tree <strong>first</strong>, then read off the formula. <strong>Multiply along each path, add across paths.</strong></p></div>
+<div class="key-point fragment" data-editor-line="74"><p>Draw the tree <strong>first</strong>, then read off the formula. <strong>Multiply along each path, add across paths.</strong></p></div>
 <aside class="notes">Spend time on the tree. Students who master the tree diagram rarely make errors on chain rule problems. Have them draw trees for the upcoming examples.</aside>
-</section>
 </section>
 
 <section id="example-1-one-independent-variable">
 <h2>Example 1: One Independent Variable</h2>
-<div class="example-box">
+<div class="example-box fragment" data-editor-line="83">
   <div class="example-title">Example 1</div>
   <p>Let \(z = x^2 + y^2 + xy\), where \(x = \sin t\) and \(y = e^t\).</p>
 <p>Find \(\dfrac{dz}{dt}\) at \(t = \dfrac{\pi}{4}\).</p>
 </div>
-<div class="fragment"><p class="work-prompt">Draw the variable tree, write the chain rule formula, compute each piece, then evaluate at t = π/4.</p></div>
-<div class="fragment"><p><strong>Chain rule formula:</strong></p>
+<div class="fragment" data-editor-line="89"><p class="work-prompt">Draw the variable tree, write the chain rule formula, compute each piece, then evaluate at t = π/4.</p></div>
+<div class="fragment" data-editor-line="91"><p><strong>Chain rule formula:</strong></p>
 <p>\[\frac{dz}{dt} = \frac{\partial z}{\partial x}\frac{dx}{dt} + \frac{\partial z}{\partial y}\frac{dy}{dt}\]</p></div>
-<div class="fragment"><p><strong>Compute the pieces:</strong></p>
+<div class="fragment" data-editor-line="97"><p><strong>Compute the pieces:</strong></p>
 <p>\(\dfrac{\partial z}{\partial x} = 2x + y\), \(\;\dfrac{dx}{dt} = \cos t\), \(\quad \dfrac{\partial z}{\partial y} = 2y + x\), \(\;\dfrac{dy}{dt} = e^t\)</p></div>
-<div class="fragment"><p><strong>Assemble:</strong></p>
+<div class="fragment" data-editor-line="103"><p><strong>Assemble:</strong></p>
 <p>\[\frac{dz}{dt} = (2x + y)\cos t + (2y + x)e^t\]</p></div>
-<div class="fragment"><p><strong>Evaluate at \(t = \pi/4\):</strong> \(\;x = \frac{\sqrt{2}}{2}\), \(\;y = e^{\pi/4}\)</p>
+<div class="fragment" data-editor-line="109"><p><strong>Evaluate at \(t = \pi/4\):</strong> \(\;x = \frac{\sqrt{2}}{2}\), \(\;y = e^{\pi/4}\)</p>
 <p>\[\frac{dz}{dt}\bigg|_{t=\pi/4} = \left(\sqrt{2} + e^{\pi/4}\right)\frac{\sqrt{2}}{2} + \left(2e^{\pi/4} + \frac{\sqrt{2}}{2}\right)e^{\pi/4} = 1 + \sqrt{2}\,e^{\pi/4} + 2e^{\pi/2}\]</p></div>
 </section>
 
 <section id="your-turn-one-variable-chain-rule">
 <h2>Your Turn: One Variable Chain Rule</h2>
-<div class="example-box">
+<div class="example-box fragment" data-editor-line="120">
   <div class="example-title">Example 2</div>
   <p>Let \(z = e^x \sin y\), where \(x = t^2\) and \(y = 3t\).</p>
 <p>Find \(\dfrac{dz}{dt}\).</p>
 </div>
-<div class="fragment"><p class="work-prompt">Draw the variable tree, compute the partials and derivatives, then combine.</p></div>
-<div class="fragment"><p><strong>Chain rule:</strong></p>
+<div class="fragment" data-editor-line="126"><p class="work-prompt">Draw the variable tree, compute the partials and derivatives, then combine.</p></div>
+<div class="fragment" data-editor-line="128"><p><strong>Chain rule:</strong></p>
 <p>\[\frac{dz}{dt} = \frac{\partial z}{\partial x}\frac{dx}{dt} + \frac{\partial z}{\partial y}\frac{dy}{dt}\]</p></div>
-<div class="fragment"><p><strong>Compute:</strong></p>
+<div class="fragment" data-editor-line="134"><p><strong>Compute:</strong></p>
 <p>\(\dfrac{\partial z}{\partial x} = e^x \sin y\), \(\;\dfrac{dx}{dt} = 2t\), \(\quad \dfrac{\partial z}{\partial y} = e^x \cos y\), \(\;\dfrac{dy}{dt} = 3\)</p></div>
-<div class="fragment"><p><strong>Assemble:</strong></p>
+<div class="fragment" data-editor-line="140"><p><strong>Assemble:</strong></p>
 <p>\[\frac{dz}{dt} = 2t\,e^{t^2}\sin(3t) + 3e^{t^2}\cos(3t) = e^{t^2}\bigl[2t\sin(3t) + 3\cos(3t)\bigr]\]</p></div>
 </section>
 
 <section id="case-2-two-independent-variables">
 <h2>Case 2: Two Independent Variables</h2>
-<div class="fragment"><p>Now suppose \(z = f(x,y)\) where \(x = g(s,t)\) and \(y = h(s,t)\). Then \(z\) depends on <strong>two</strong> independent variables \(s\) and \(t\).</p></div>
-<div class="defn-box fragment">
+<div class="fragment" data-editor-line="151"><p>Now suppose \(z = f(x,y)\) where \(x = g(s,t)\) and \(y = h(s,t)\). Then \(z\) depends on <strong>two</strong> independent variables \(s\) and \(t\).</p></div>
+<div class="defn-box fragment" data-editor-line="153">
   <div class="defn-title">Chain Rule (Case 2)</div>
   <p>If \(z = f(x, y)\), \(x = g(s,t)\), \(y = h(s,t)\), all differentiable, then:</p>
 <p>\[\frac{\partial z}{\partial s} = \frac{\partial z}{\partial x}\frac{\partial x}{\partial s} + \frac{\partial z}{\partial y}\frac{\partial y}{\partial s}\]</p>
 <p>\[\frac{\partial z}{\partial t} = \frac{\partial z}{\partial x}\frac{\partial x}{\partial t} + \frac{\partial z}{\partial y}\frac{\partial y}{\partial t}\]</p>
 </div>
-<div class="fragment"><div class="two-col">
+<div class="fragment" data-editor-line="161"><div class="two-col">
   <div><div class="fig-container">
   <a href="figures/tree_case2.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/tree_case2.png"><img src="figures/tree_case2.png" alt="Variable tree for Case 2: z at top branches to x (red) and y (green). Each of x and y branches to both s and t, giving four leaf nodes." style="max-height:60vh;"></a>
 </div></div>
@@ -224,68 +234,68 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <p>For \(\partial z / \partial s\): follow only the branches that end at \(s\), multiply along each, and add.</p>
 <p>Same idea &mdash; but now each intermediate variable (\(x\), \(y\)) depends on <strong>both</strong> \(s\) and \(t\).</p></div></div>
 </div></div>
-<div class="key-point fragment"><p>With two independent variables, we get <strong>two formulas</strong> &mdash; one for \(\partial z / \partial s\) and one for \(\partial z / \partial t\). Each follows the same tree pattern.</p></div>
+<div class="key-point fragment" data-editor-line="172"><p>With two independent variables, we get <strong>two formulas</strong> &mdash; one for \(\partial z / \partial s\) and one for \(\partial z / \partial t\). Each follows the same tree pattern.</p></div>
 </section>
 
 <section id="example-3-two-independent-variables">
 <h2>Example 3: Two Independent Variables</h2>
-<div class="example-box">
+<div class="example-box fragment" data-editor-line="179">
   <div class="example-title">Example 3</div>
   <p>Let \(z = x^2 y^3\), where \(x = s\cos t\) and \(y = s\sin t\).</p>
 <p>Find \(\dfrac{\partial z}{\partial s}\) when \((s, t) = (2\sqrt{2},\; \pi/4)\).</p>
 </div>
-<div class="fragment"><p class="work-prompt">Draw the variable tree for ∂z/∂s. Compute partials, then evaluate at the given point.</p></div>
-<div class="fragment"><p><strong>Chain rule for \(\partial z / \partial s\):</strong></p>
+<div class="fragment" data-editor-line="185"><p class="work-prompt">Draw the variable tree for ∂z/∂s. Compute partials, then evaluate at the given point.</p></div>
+<div class="fragment" data-editor-line="187"><p><strong>Chain rule for \(\partial z / \partial s\):</strong></p>
 <p>\[\frac{\partial z}{\partial s} = \frac{\partial z}{\partial x}\frac{\partial x}{\partial s} + \frac{\partial z}{\partial y}\frac{\partial y}{\partial s}\]</p></div>
-<div class="fragment"><p><strong>Compute the pieces:</strong></p>
+<div class="fragment" data-editor-line="193"><p><strong>Compute the pieces:</strong></p>
 <p>\(\dfrac{\partial z}{\partial x} = 2xy^3\), \(\;\dfrac{\partial x}{\partial s} = \cos t\), \(\quad \dfrac{\partial z}{\partial y} = 3x^2 y^2\), \(\;\dfrac{\partial y}{\partial s} = \sin t\)</p></div>
-<div class="fragment"><p><strong>Assemble:</strong> \(\;\dfrac{\partial z}{\partial s} = 2xy^3 \cos t + 3x^2 y^2 \sin t\)</p></div>
-<div class="fragment"><p><strong>Evaluate at \((s, t) = (2\sqrt{2}, \pi/4)\):</strong> \(\;x = 2\sqrt{2}\cdot\frac{\sqrt{2}}{2} = 2\), \(\;y = 2\sqrt{2}\cdot\frac{\sqrt{2}}{2} = 2\)</p>
+<div class="fragment" data-editor-line="199"><p><strong>Assemble:</strong> \(\;\dfrac{\partial z}{\partial s} = 2xy^3 \cos t + 3x^2 y^2 \sin t\)</p></div>
+<div class="fragment" data-editor-line="203"><p><strong>Evaluate at \((s, t) = (2\sqrt{2}, \pi/4)\):</strong> \(\;x = 2\sqrt{2}\cdot\frac{\sqrt{2}}{2} = 2\), \(\;y = 2\sqrt{2}\cdot\frac{\sqrt{2}}{2} = 2\)</p>
 <p>\[\frac{\partial z}{\partial s} = 2(2)(8)\frac{\sqrt{2}}{2} + 3(4)(4)\frac{\sqrt{2}}{2} = 16\sqrt{2} + 24\sqrt{2} = 40\sqrt{2}\]</p></div>
 <aside class="notes">Point out that we could also substitute x and y in terms of s and t first, then differentiate directly. The chain rule is often easier.</aside>
 </section>
 
 <section id="the-general-chain-rule">
 <h2>The General Chain Rule</h2>
-<div class="fragment"><p>The pattern extends to <strong>any</strong> number of intermediate and independent variables.</p></div>
-<div class="defn-box fragment">
+<div class="fragment" data-editor-line="216"><p>The pattern extends to <strong>any</strong> number of intermediate and independent variables.</p></div>
+<div class="defn-box fragment" data-editor-line="218">
   <div class="defn-title">General Chain Rule</div>
   <p>If \(u = f(x_1, x_2, \ldots, x_n)\) where each \(x_i = g_i(t_1, t_2, \ldots, t_m)\), then:</p>
 <p>\[\frac{\partial u}{\partial t_j} = \frac{\partial u}{\partial x_1}\frac{\partial x_1}{\partial t_j} + \frac{\partial u}{\partial x_2}\frac{\partial x_2}{\partial t_j} + \cdots + \frac{\partial u}{\partial x_n}\frac{\partial x_n}{\partial t_j}\]</p>
 <p>for each \(j = 1, 2, \ldots, m\).</p>
 </div>
-<div class="fragment"><p><strong>The recipe is always the same:</strong></p>
+<div class="fragment" data-editor-line="226"><p><strong>The recipe is always the same:</strong></p>
 <ol>
 <li>Draw the variable tree</li>
 <li>For each path from \(u\) down to \(t_j\): multiply the derivatives along the path</li>
 <li>Add all the path-products together</li>
 </ol></div>
-<div class="key-point fragment"><p>You don't need to memorize separate formulas for each case. Just <strong>draw the tree</strong> and read off the answer.</p></div>
+<div class="key-point fragment" data-editor-line="233"><p>You don't need to memorize separate formulas for each case. Just <strong>draw the tree</strong> and read off the answer.</p></div>
 <aside class="notes">Emphasize that Cases 1 and 2 are just special instances of this general formula. The tree makes it all systematic.</aside>
 </section>
 
 <section id="implicit-differentiation-revisited">
 <h2>Implicit Differentiation Revisited</h2>
-<div class="fragment"><p>In Calc I, we used implicit differentiation to find \(dy/dx\) when \(y\) was defined implicitly by an equation like \(x^2 + y^2 = 25\).</p>
+<div class="fragment" data-editor-line="242"><p>In Calc I, we used implicit differentiation to find \(dy/dx\) when \(y\) was defined implicitly by an equation like \(x^2 + y^2 = 25\).</p>
 <p>In Calc III, we often have an equation like \(F(x, y, z) = 0\) that defines \(z\) implicitly as a function of \(x\) and \(y\). How do we find \(\partial z / \partial x\)?</p></div>
-<div class="fragment"><p><strong>Method 1 &mdash; Direct differentiation:</strong></p>
+<div class="fragment" data-editor-line="246"><p><strong>Method 1 &mdash; Direct differentiation:</strong></p>
 <ul>
 <li>Treat \(y\) as a constant and \(z\) as a function of \(x\)</li>
 <li>Differentiate the equation with respect to \(x\)</li>
 <li>Solve for \(\partial z / \partial x\)</li>
 </ul></div>
-<div class="fragment"><p><strong>Method 2 &mdash; The shortcut formula:</strong></p>
+<div class="fragment" data-editor-line="255"><p><strong>Method 2 &mdash; The shortcut formula:</strong></p>
 <p>If \(F(x, y, z) = 0\) defines \(z\) implicitly as a function of \(x\) and \(y\), and \(F_z \neq 0\):</p></div>
-<div class="defn-box fragment">
+<div class="defn-box fragment" data-editor-line="261">
   <div class="defn-title">Implicit Differentiation Formulas</div>
   <p>\[\frac{\partial z}{\partial x} = -\frac{F_x}{F_z} \qquad \text{and} \qquad \frac{\partial z}{\partial y} = -\frac{F_y}{F_z}\]</p>
 </div>
-<div class="key-point fragment"><p>Method 2 is derived <strong>from</strong> the chain rule. It's a convenient shortcut &mdash; but you should understand why it works.</p></div>
+<div class="key-point fragment" data-editor-line="265"><p>Method 2 is derived <strong>from</strong> the chain rule. It's a convenient shortcut &mdash; but you should understand why it works.</p></div>
 </section>
 
 <section id="why-does-work">
 <h2>Why Does \(\partial z / \partial x = -F_x / F_z\) Work?</h2>
-<div class="fragment"><p>Start with \(F(x, y, z) = 0\), where \(z = z(x, y)\) is implicitly defined.</p>
+<div class="fragment" data-editor-line="272"><p>Start with \(F(x, y, z) = 0\), where \(z = z(x, y)\) is implicitly defined.</p>
 <p>Differentiate both sides with respect to \(x\) (holding \(y\) constant):</p>
 <p>By the chain rule:</p>
 <p>\[\frac{\partial F}{\partial x}\frac{\partial x}{\partial x} + \frac{\partial F}{\partial y}\frac{\partial y}{\partial x} + \frac{\partial F}{\partial z}\frac{\partial z}{\partial x} = 0\]</p>
@@ -293,39 +303,39 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <p>\[F_x \cdot 1 + F_y \cdot 0 + F_z \cdot \frac{\partial z}{\partial x} = 0\]</p>
 <p>Solve for \(\partial z / \partial x\):</p>
 <p>\[\frac{\partial z}{\partial x} = -\frac{F_x}{F_z} \qquad\square\]</p></div>
-<div class="key-point fragment"><p>The formula comes directly from the chain rule applied to \(F(x, y, z) = 0\). Same idea gives \(\partial z / \partial y = -F_y / F_z\).</p></div>
+<div class="key-point fragment" data-editor-line="288"><p>The formula comes directly from the chain rule applied to \(F(x, y, z) = 0\). Same idea gives \(\partial z / \partial y = -F_y / F_z\).</p></div>
 <aside class="notes">Students appreciate seeing WHY the formula works. It also reinforces the chain rule itself.</aside>
 </section>
 
 <section id="example-4-implicit-differentiation">
 <h2>Example 4: Implicit Differentiation</h2>
-<div class="example-box">
+<div class="example-box fragment" data-editor-line="297">
   <div class="example-title">Example 4</div>
   <p>The equation \(x^2 \sin(yz) + 3z = y^2\) defines \(z\) implicitly as a function of \(x\) and \(y\).</p>
 <p>Find \(\dfrac{\partial z}{\partial x}\) using both methods.</p>
 </div>
-<div class="fragment"><p class="work-prompt">Method 1: Differentiate directly w.r.t. x (y constant, z = z(x,y)). Method 2: Set F = 0, use \(\partial z/\partial x = -F_x/F_z\).</p></div>
-<div class="fragment"><p><strong>Method 1 &mdash; Direct differentiation.</strong> Differentiate w.r.t. \(x\) (\(y\) constant, \(z = z(x,y)\)):</p>
+<div class="fragment" data-editor-line="303"><p class="work-prompt">Method 1: Differentiate directly w.r.t. x (y constant, z = z(x,y)). Method 2: Set F = 0, use \(\partial z/\partial x = -F_x/F_z\).</p></div>
+<div class="fragment" data-editor-line="305"><p><strong>Method 1 &mdash; Direct differentiation.</strong> Differentiate w.r.t. \(x\) (\(y\) constant, \(z = z(x,y)\)):</p>
 <p>\[2x\sin(yz) + x^2 \cos(yz) \cdot y \frac{\partial z}{\partial x} + 3\frac{\partial z}{\partial x} = 0\]</p></div>
-<div class="fragment"><p>Solve for \(\partial z / \partial x\):</p>
+<div class="fragment" data-editor-line="311"><p>Solve for \(\partial z / \partial x\):</p>
 <p>\[\frac{\partial z}{\partial x}\bigl[x^2 y\cos(yz) + 3\bigr] = -2x\sin(yz) \quad\Rightarrow\quad \frac{\partial z}{\partial x} = \frac{-2x\sin(yz)}{x^2 y\cos(yz) + 3}\]</p></div>
-<div class="fragment"><p><strong>Method 2 &mdash; Formula.</strong> Set \(F(x,y,z) = x^2 \sin(yz) + 3z - y^2 = 0\).</p>
+<div class="fragment" data-editor-line="317"><p><strong>Method 2 &mdash; Formula.</strong> Set \(F(x,y,z) = x^2 \sin(yz) + 3z - y^2 = 0\).</p>
 <p>\(F_x = 2x\sin(yz)\), \(\quad F_z = x^2 y\cos(yz) + 3\)</p>
 <p>\[\frac{\partial z}{\partial x} = -\frac{F_x}{F_z} = \frac{-2x\sin(yz)}{x^2 y\cos(yz) + 3} \quad\checkmark\]</p></div>
-<div class="key-point fragment"><p>Both methods give the <strong>same answer</strong>. Method 2 is faster once you're comfortable with it.</p></div>
+<div class="key-point fragment" data-editor-line="325"><p>Both methods give the <strong>same answer</strong>. Method 2 is faster once you're comfortable with it.</p></div>
 </section>
 
 <section id="your-turn-implicit-differentiation">
 <h2>Your Turn: Implicit Differentiation</h2>
-<div class="example-box">
+<div class="example-box fragment" data-editor-line="332">
   <div class="example-title">Example 5</div>
   <p>The equation \(x^3 + y^3 + z^3 + 6xyz = 1\) defines \(z\) implicitly as a function of \(x\) and \(y\).</p>
 <p>Find \(\dfrac{\partial z}{\partial x}\) using the formula \(\partial z / \partial x = -F_x / F_z\).</p>
 </div>
-<div class="fragment"><p class="work-prompt">Set F(x,y,z) = 0, compute \(F_x\) and \(F_z\), then apply the formula.</p></div>
-<div class="fragment"><p><strong>Set up:</strong> \(F(x,y,z) = x^3 + y^3 + z^3 + 6xyz - 1 = 0\)</p></div>
-<div class="fragment"><p><strong>Partial derivatives:</strong> \(\;F_x = 3x^2 + 6yz\), \(\quad F_z = 3z^2 + 6xy\)</p></div>
-<div class="fragment"><p><strong>Apply the formula:</strong></p>
+<div class="fragment" data-editor-line="338"><p class="work-prompt">Set F(x,y,z) = 0, compute \(F_x\) and \(F_z\), then apply the formula.</p></div>
+<div class="fragment" data-editor-line="340"><p><strong>Set up:</strong> \(F(x,y,z) = x^3 + y^3 + z^3 + 6xyz - 1 = 0\)</p></div>
+<div class="fragment" data-editor-line="344"><p><strong>Partial derivatives:</strong> \(\;F_x = 3x^2 + 6yz\), \(\quad F_z = 3z^2 + 6xy\)</p></div>
+<div class="fragment" data-editor-line="348"><p><strong>Apply the formula:</strong></p>
 <p>\[\frac{\partial z}{\partial x} = -\frac{F_x}{F_z} = -\frac{3x^2 + 6yz}{3z^2 + 6xy} = -\frac{x^2 + 2yz}{z^2 + 2xy}\]</p></div>
 </section>
 
@@ -339,7 +349,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <div class="defn-box"><div class="defn-title">Implicit (Direct)</div><p class="small">Differentiate \(F = 0\) with respect to \(x\), solve for \(\partial z/\partial x\).</p></div>
 <div class="defn-box"><div class="defn-title">Implicit (Formula)</div><p class="small">\(\dfrac{\partial z}{\partial x} = -\dfrac{F_x}{F_z}\) &mdash; fast shortcut from \(F(x,y,z) = 0\).</p></div>
 </div>
-<div class="key-point fragment"><p><strong>Big idea:</strong> The chain rule always follows the same pattern &mdash; draw the variable tree, multiply along branches, add across branches. Implicit differentiation is just the chain rule applied to \(F(x,y,z) = 0\).</p></div>
+<div class="key-point fragment" data-editor-line="368"><p><strong>Big idea:</strong> The chain rule always follows the same pattern &mdash; draw the variable tree, multiply along branches, add across branches. Implicit differentiation is just the chain rule applied to \(F(x,y,z) = 0\).</p></div>
 </section>
 
 <section>
@@ -356,6 +366,11 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
   <button class="lb-close" aria-label="Close lightbox">&times;</button>
   <img src="" alt="">
   <div class="lb-caption"></div>
+</div>
+<!-- Plotly fullscreen overlay -->
+<div id="plotly-lightbox" role="dialog" aria-modal="true" aria-label="Expanded interactive figure">
+  <button class="plb-close" aria-label="Close">&times;</button>
+  <div class="plb-content"></div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
@@ -376,7 +391,14 @@ Reveal.initialize({
     mouseWheel: false,
     plugins: [RevealNotes]
 });
-Reveal.on('slidechanged', () => { MathJax?.typesetPromise?.(); });
+Reveal.on('slidechanged', (event) => {
+    MathJax?.typesetPromise?.();
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealSlideChanged', indexh: event.indexh, indexv: event.indexv }, '*');
+        }
+    } catch (e) {}
+});
 // Fragment auto-scroll: configurable via meta.fragment_scroll in content.yaml
 // Value is the max fraction down the slide viewport (0.0=top, 1.0=bottom)
 var FRAG_SCROLL_TARGET = 0.67;
@@ -430,10 +452,33 @@ Reveal.on('ready', () => {
         }
     });
 });
+function _notifyParentFragment() {
+    // Read data-editor-line from the last visible fragment in the current slide.
+    // Works for both fragmentshown and fragmenthidden events.
+    try {
+        if (!window.parent || window.parent === window) return;
+        var s = Reveal.getState();
+        var slideEl = Reveal.getCurrentSlide();
+        var editorLine = null;
+        if (slideEl) {
+            var visibleFrags = slideEl.querySelectorAll('.fragment.visible[data-editor-line]');
+            if (visibleFrags.length > 0) {
+                var ln = parseInt(visibleFrags[visibleFrags.length - 1].dataset.editorLine, 10);
+                if (!isNaN(ln)) editorLine = ln;
+            }
+        }
+        window.parent.postMessage({
+            type: 'revealFragmentChanged',
+            indexh: s.indexh, indexv: s.indexv, indexf: s.indexf,
+            editorLine: editorLine
+        }, '*');
+    } catch(e) {}
+}
 Reveal.on('fragmentshown', (event) => {
     MathJax?.typesetPromise?.();
     if (!event.fragment) return;
     setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
+    _notifyParentFragment();
 });
 Reveal.on('fragmenthidden', (event) => {
     MathJax?.typesetPromise?.();
@@ -445,25 +490,85 @@ Reveal.on('fragmenthidden', (event) => {
     }
     var target = prev || event.fragment.closest('section')?.querySelector('h2') || event.fragment;
     setTimeout(function() { scrollToFragment(target, 'backward'); }, 80);
+    _notifyParentFragment();
 });
-Reveal.on('ready', () => { MathJax?.typesetPromise?.(); });
+Reveal.on('ready', () => {
+    MathJax?.typesetPromise?.();
+    // Tell the CourseKit editor that Reveal is initialized so it can sync the fragment
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealReady' }, '*');
+        }
+    } catch(e) {}
+});
 
-// ── Resize Plotly figures when slides become visible ──
-function resizePlotlyInSlide(event) {
-    var slide = event?.currentSlide || document.querySelector('.reveal .present');
-    if (!slide) return;
-    slide.querySelectorAll('.js-plotly-plot').forEach(function(gd) {
-        Plotly.Plots.resize(gd);
+// ── Plotly lightbox (iframe approach — zero WebGL until opened) ──
+(function() {
+    var plb = document.getElementById('plotly-lightbox');
+    if (!plb) return;
+    var plbClose = plb.querySelector('.plb-close');
+    var plbContent = plb.querySelector('.plb-content');
+    var triggerImg = null;
+    var currentBlobUrl = null;
+
+    function openPlotlyLightbox(blobUrl) {
+        // Revoke any previous blob URL
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); }
+        currentBlobUrl = blobUrl;
+        var iframe = plbContent.querySelector('iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:80vh;border:none;background:#fff;';
+            plbContent.appendChild(iframe);
+        }
+        iframe.src = blobUrl;
+        plb.classList.add('active');
+        plbClose.focus();
+    }
+
+    function closePlotlyLightbox() {
+        var iframe = plbContent.querySelector('iframe');
+        if (iframe) iframe.src = '';   // Unloads WebGL context immediately
+        plb.classList.remove('active');
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+        if (triggerImg) { triggerImg.focus(); triggerImg = null; }
+    }
+
+    document.addEventListener('click', function(e) {
+        var img = e.target.closest('img[data-plotly-src]');
+        if (!img) return;
+        e.stopPropagation();
+        triggerImg = img;
+        // The companion .html is a bare Plotly div fragment (no CDN script).
+        // Fetch it and wrap in a complete page so it renders in the iframe.
+        fetch(img.dataset.plotlySrc)
+            .then(function(r) { return r.text(); })
+            .then(function(fragment) {
+                var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+                    '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"><\/script>' +
+                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;}' +
+                    '.plotly-graph-div{width:100vw!important;height:100vh!important;}</style>' +
+                    '</head><body>' + fragment + '</body></html>';
+                var blob = new Blob([html], {type: 'text/html'});
+                openPlotlyLightbox(URL.createObjectURL(blob));
+            })
+            .catch(function() {
+                // Fallback: open in new tab
+                window.open(img.dataset.plotlySrc, '_blank');
+            });
     });
-}
-Reveal.on('slidechanged', resizePlotlyInSlide);
-Reveal.on('ready', resizePlotlyInSlide);
-Reveal.on('fragmentshown', function(event) {
-    var frag = event.fragment;
-    frag.querySelectorAll('.js-plotly-plot').forEach(function(gd) {
-        Plotly.Plots.resize(gd);
-    });
-});
+
+    plbClose.addEventListener('click', closePlotlyLightbox);
+    plb.addEventListener('click', function(e) { if (e.target === plb) closePlotlyLightbox(); });
+
+    // Capture-phase Escape so Reveal.js doesn't grab it first
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape' || !plb.classList.contains('active')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closePlotlyLightbox();
+    }, true);
+})();
 
 // ── Lightbox for figures (accessible: focus trap, focus return) ──
 (function() {

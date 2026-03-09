@@ -94,6 +94,88 @@ window.MathJax = {
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        pb.remove();  // no longer needed — workspace expansion handles the break
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -113,22 +195,13 @@ window.MathJax = {
 
 <section id="your-turn-derivatives-warm-up" aria-label="Your Turn: Derivatives Warm-Up">
   <h2>Your Turn: Derivatives Warm-Up</h2>
-  <div><p>We'll need the partial derivatives of the <strong>hemi-ellipsoid</strong></p>
-<p>\[f(x,y) = \sqrt{25 - 4x^2 - y^2} = (25 - 4x^2 - y^2)^{1/2}\]</p>
-<p>Compute the partial derivatives \(f_x\) and \(f_y\), then evaluate each at \((2, 1)\).</p>
-<p><strong>Hint:</strong> Rewrite as a \(\frac{1}{2}\)-power so you can use the <strong>chain rule</strong>.</p></div>
-<div class="blank-space" role="region" aria-label="Student workspace" style="min-height:3in;">
+  <div class="blank-space" role="region" aria-label="Student workspace" style="min-height:3in;">
 </div>
 </section>
 
 <section id="from-tangent-lines-to-tangent-planes" aria-label="From Tangent Lines to Tangent Planes">
   <h2>From Tangent Lines to Tangent Planes</h2>
-  <div><p><strong>Recall from Calc I:</strong> If \(f(x)\) is differentiable, then when you zoom in near a point the graph looks like a straight line &mdash; the <strong>tangent line</strong>.</p>
-<p>The tangent line at \(x_0\) is the best <strong>linear approximation</strong>:</p>
-<p>\[y - y_0 = f'(x_0)(x - x_0)\]</p>
-<p><strong>Now in Calc III:</strong> For a function of two variables \(z = f(x, y)\), zooming in near a point makes the surface look like a <strong>flat plane</strong> &mdash; the <strong>tangent plane</strong>.</p>
-<p>The tangent plane is the best linear approximation to the surface near that point.</p></div>
-<figure>
+  <figure>
   <img src="figures/tangent_plane.png" alt="A hemi-ellipsoid surface with a tangent plane (amber) touching at point P(2,1,2sqrt2). Red and green tangent lines show the slopes in the x- and y-directions.">
   <figcaption><a href="figures/tangent_plane.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
@@ -137,33 +210,22 @@ window.MathJax = {
 
 <section id="the-tangent-plane-equation" aria-label="The Tangent Plane Equation">
   <h2>The Tangent Plane Equation</h2>
-  <div><p>In Calc I we needed one slope \(f'(x_0)\). Now we have <strong>two</strong> independent directions to tilt &mdash; one for \(x\) and one for \(y\) &mdash; so we need <strong>both partial derivatives</strong>.</p></div>
-<section class="defn-box" role="region" aria-label="Equation of the Tangent Plane">
+  <section class="defn-box" role="region" aria-label="Equation of the Tangent Plane">
   <h3 class="defn-title">Equation of the Tangent Plane</h3>
   <p>If \(f\) is differentiable at \((x_0, y_0)\), the tangent plane to \(z = f(x, y)\) at the point \((x_0, y_0, z_0)\) is:</p>
 <p>\[z - z_0 = f_x(x_0, y_0)(x - x_0) + f_y(x_0, y_0)(y - y_0)\]</p>
 <p>where \(z_0 = f(x_0, y_0)\).</p>
 </section>
-<div><table>
-<tr><th></th><th>Calc I (Tangent Line)</th><th>Calc III (Tangent Plane)</th></tr>
-<tr><td>Function</td><td>\(y = f(x)\)</td><td>\(z = f(x, y)\)</td></tr>
-<tr><td>Slopes needed</td><td>\(f'(x_0)\)</td><td>\(f_x(x_0, y_0)\) and \(f_y(x_0, y_0)\)</td></tr>
-<tr><td>Equation</td><td>\(y - y_0 = f'(x_0)(x - x_0)\)</td><td>\(z - z_0 = f_x(x_0, y_0)(x - x_0) + f_y(x_0, y_0)(y - y_0)\)</td></tr>
-</table></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Same structure as the tangent line equation, but with <strong>two slope terms</strong> instead of one.</p></aside>
-<div><p><strong>Common mistake:</strong> Students write the tangent plane formula but forget to <strong>evaluate everything at the point</strong>. The function value \(f(x_0, y_0)\) and the partial derivatives \(f_x(x_0, y_0)\), \(f_y(x_0, y_0)\) must all be computed as <strong>numbers</strong>. Your final answer should be the equation of a line (Calc I) or a plane (Calc III) &mdash; no derivatives or function values left!</p></div>
 </section>
 
 <section id="when-does-the-tangent-plane-exist" aria-label="When Does the Tangent Plane Exist?">
   <h2>When Does the Tangent Plane Exist?</h2>
-  <div><p><strong>Warning:</strong> For the tangent plane to exist, we need the function to be <strong>differentiable</strong>. In Calc I, if \(f'(x_0)\) exists, then \(f\) is differentiable at \(x_0\). For two variables, it is <strong>not enough</strong> for the partial derivatives to merely exist at the point.</p></div>
-<section class="defn-box theorem-box" role="region" aria-label="Theorem: Differentiability (Sufficient Condition)">
+  <section class="defn-box theorem-box" role="region" aria-label="Theorem: Differentiability (Sufficient Condition)">
   <h3 class="defn-title">Theorem: Differentiability (Sufficient Condition)</h3>
   <p>If the partial derivatives \(f_x\) and \(f_y\) are <strong>continuous</strong> on an open region containing \((x_0, y_0)\), then \(f\) is differentiable at \((x_0, y_0)\).</p>
 <p>In other words: continuous partials \(\Rightarrow\) differentiable \(\Rightarrow\) tangent plane exists.</p>
 </section>
-<div><p><strong>Why is "partials exist" not enough?</strong></p>
-<p>A function can have partial derivatives at a point yet still have a sharp crease or corner there. Continuous partials <strong>near</strong> the point guarantee the surface is truly smooth.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p><strong>Rule of thumb:</strong> If \(f_x\) and \(f_y\) are built from standard functions (polynomials, trig, exponentials, etc.) and the point is in the domain, you're safe.</p></aside>
 </section>
 
@@ -205,14 +267,12 @@ window.MathJax = {
 
 <section id="linear-approximation" aria-label="Linear Approximation">
   <h2>Linear Approximation</h2>
-  <div><p>Once we have the tangent plane, we can use it to <strong>estimate</strong> the value of \(f\) at nearby points &mdash; exactly as we used the tangent line in Calc I.</p></div>
-<section class="defn-box" role="region" aria-label="Linearization">
+  <section class="defn-box" role="region" aria-label="Linearization">
   <h3 class="defn-title">Linearization</h3>
   <p>The <strong>linearization</strong> (or <strong>linear approximation</strong>) of \(f\) at \((a, b)\) is:</p>
 <p>\[L(x, y) = f(a, b) + f_x(a, b)(x - a) + f_y(a, b)(y - b)\]</p>
 <p>For \((x, y)\) near \((a, b)\): \(f(x, y) \approx L(x, y)\).</p>
 </section>
-<div><p>Notice: \(L(x, y)\) is just the tangent plane equation solved for \(z\). The tangent plane <strong>is</strong> the linear approximation.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>The tangent plane gives us a simple formula to <strong>approximate</strong> a complicated function near a known point.</p></aside>
 </section>
 
@@ -230,25 +290,12 @@ window.MathJax = {
 
 <section id="differentials" aria-label="Differentials">
   <h2>Differentials</h2>
-  <div><p>There is an equivalent way to think about linear approximation using <strong>differentials</strong> &mdash; the same idea from Calc I, extended to two variables.</p></div>
-<section class="defn-box" role="region" aria-label="Total Differential">
+  <section class="defn-box" role="region" aria-label="Total Differential">
   <h3 class="defn-title">Total Differential</h3>
   <p>If \(z = f(x, y)\) and \(f\) is differentiable, the <strong>total differential</strong> is:</p>
 <p>\[dz = f_x(x, y)\, dx + f_y(x, y)\, dy\]</p>
 <p>where \(dx = \Delta x\) and \(dy = \Delta y\) are the changes in \(x\) and \(y\).</p>
 </section>
-<div><p><strong>Connection to linear approximation:</strong></p>
-<ul>
-<li>\(dz\) is the change predicted by the tangent plane (the approximation)</li>
-<li>\(\Delta z = f(x_0 + \Delta x,\, y_0 + \Delta y) - f(x_0, y_0)\) is the actual change</li>
-<li>For small \(dx\) and \(dy\): \(\Delta z \approx dz\)</li>
-</ul>
-<table>
-<tr><th></th><th>Calc I</th><th>Calc III</th></tr>
-<tr><td>Differential</td><td>\(dy = f'(x)\, dx\)</td><td>\(dz = f_x\, dx + f_y\, dy\)</td></tr>
-<tr><td>Meaning</td><td>Change in \(y\) along tangent <strong>line</strong></td><td>Change in \(z\) along tangent <strong>plane</strong></td></tr>
-<tr><td>Approximation</td><td>\(\Delta y \approx dy\)</td><td>\(\Delta z \approx dz\)</td></tr>
-</table></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Differentials give you the <strong>change</strong> in the output. Linear approximation gives you the <strong>new value</strong>. They're two sides of the same coin: \(L = f + dz\).</p></aside>
 </section>
 

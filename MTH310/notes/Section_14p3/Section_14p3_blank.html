@@ -94,6 +94,88 @@ window.MathJax = {
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        pb.remove();  // no longer needed — workspace expansion handles the break
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -113,24 +195,17 @@ window.MathJax = {
 
 <section id="partial-derivatives-motivation-and-definition" aria-label="Partial Derivatives &mdash; Motivation and Definition">
   <h2>Partial Derivatives &mdash; Motivation and Definition</h2>
-  <div><p>In Calc I, \(f'(x)\) measures how \(f\) changes as \(x\) changes.</p>
-<p>For \(f(x,y)\), we have <strong>two</strong> input variables. How do we measure the rate of change?</p>
-<p><strong>Idea:</strong> Change one variable at a time, holding the other constant.</p></div>
-<section class="defn-box" role="region" aria-label="Partial Derivatives">
+  <section class="defn-box" role="region" aria-label="Partial Derivatives">
   <h3 class="defn-title">Partial Derivatives</h3>
   <p>\[f_x(x,y) = \lim_{h \to 0} \frac{f(x+h,\, y) - f(x,y)}{h}\]</p>
 <p>\[f_y(x,y) = \lim_{k \to 0} \frac{f(x,\, y+k) - f(x,y)}{k}\]</p>
 </section>
-<div><p><strong>Notation:</strong> All of these mean the same thing:</p>
-<p>\[f_x = \frac{\partial f}{\partial x} = \frac{\partial}{\partial x} f(x,y) = D_x f\]</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>These are just Calc I derivatives in disguise. The only new idea: <strong>hold the other variable constant</strong>.</p></aside>
 </section>
 
 <section id="computing-partial-derivatives" aria-label="Computing Partial Derivatives">
   <h2>Computing Partial Derivatives</h2>
-  <div><p><strong>The Rule:</strong> To find \(f_x\), treat \(y\) as a constant and differentiate with respect to \(x\) using all your Calc I rules.</p>
-<p>For \(f_y\), treat \(x\) as a constant and differentiate with respect to \(y\).</p></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>You already know how to do this! Every derivative rule from Calc I (power, product, quotient, chain) still applies &mdash; you're just ignoring one variable.</p></aside>
+  <aside class="key-point" role="note" aria-label="Key point"><p>You already know how to do this! Every derivative rule from Calc I (power, product, quotient, chain) still applies &mdash; you're just ignoring one variable.</p></aside>
 </section>
 
 <section id="example-1-polynomial-partials" class="example-group" aria-label="Example 1: Polynomial Partials">
@@ -157,16 +232,10 @@ window.MathJax = {
 
 <section id="geometric-interpretation-of-partial-derivatives" aria-label="Geometric Interpretation of Partial Derivatives">
   <h2>Geometric Interpretation of Partial Derivatives</h2>
-  <div class="two-col-print">
-  <div><div><p>Slice the surface \(z = f(x,y)\) with the plane \(y = b\).</p>
-<p>This gives a <strong>trace curve</strong> \(C_1\) in the \(xz\)-plane.</p>
-<p>\(f_x(a,b)\) = <strong>slope of the tangent</strong> to \(C_1\) at the point \((a,\, b,\, f(a,b))\).</p>
-<p>Similarly, slicing with \(x = a\) gives a trace \(C_2\), and \(f_y(a,b)\) is the slope of the tangent to \(C_2\).</p></div></div>
-  <div><figure>
+  <figure>
   <img src="figures/partial_deriv_geometry.png" alt="A 3D surface with two trace curves: C1 (red) is the intersection of the surface with the plane y=b, and C2 (green) is the intersection with the plane x=a. Dashed tangent lines show the slopes f_x and f_y at the point P(a,b,f(a,b)).">
   <figcaption><a href="figures/partial_deriv_geometry.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure></div>
-</div>
+</figure>
 <aside class="key-point" role="note" aria-label="Key point"><p>\(f_x(a,b)\) = slope in the <strong>\(x\)-direction</strong>. \(f_y(a,b)\) = slope in the <strong>\(y\)-direction</strong>. Each partial derivative captures only <strong>one direction</strong> of change.</p></aside>
 </section>
 
@@ -189,17 +258,6 @@ window.MathJax = {
   <p>The heat index \(I\) is the perceived temperature as a function of actual temperature \(T\) and relative humidity \(H\).</p>
 <p>Use the table to estimate \(f_T(96, 70)\) and \(f_H(96, 70)\), and interpret each.</p>
 </section>
-<div><table>
-<tr><th>\(T\)</th></tr>
-<tr><td>\(H\)</td><td>50</td><td>55</td><td>60</td><td>65</td><td>70</td><td>75</td><td>80</td><td>85</td><td>90</td></tr>
-<tr><td>90</td><td>96</td><td>98</td><td>100</td><td>103</td><td>106</td><td>109</td><td>112</td><td>115</td><td>119</td></tr>
-<tr><td>92</td><td>100</td><td>103</td><td>105</td><td>108</td><td>112</td><td>115</td><td>119</td><td>123</td><td>128</td></tr>
-<tr><td>94</td><td>104</td><td>107</td><td>111</td><td>114</td><td>118</td><td>122</td><td>127</td><td>132</td><td>137</td></tr>
-<tr><td><strong>96</strong></td><td>109</td><td>113</td><td>116</td><td>121</td><td><strong>125</strong></td><td>130</td><td>135</td><td>141</td><td>146</td></tr>
-<tr><td>98</td><td>114</td><td>118</td><td>123</td><td>127</td><td>133</td><td>138</td><td>144</td><td>150</td><td>157</td></tr>
-<tr><td>100</td><td>119</td><td>124</td><td>129</td><td>135</td><td>141</td><td>147</td><td>154</td><td>161</td><td>168</td></tr>
-</table>
-<p>\\[2pt]\small Heat index values for temperature T (\(^\circ\)F) and relative humidity H (\%)</p></div>
 <div class="blank-space" role="region" aria-label="Student workspace: Use the difference quotient with nearby table values. Hold one variable constant while varying the other." style="min-height:2.5in;">
   <div class="blank-prompt">Use the difference quotient with nearby table values. Hold one variable constant while varying the other.</div>
 </div>
@@ -207,34 +265,22 @@ window.MathJax = {
 
 <section id="higher-order-partial-derivatives" aria-label="Higher-Order Partial Derivatives">
   <h2>Higher-Order Partial Derivatives</h2>
-  <div><p>Just like in Calc I, we can differentiate <strong>again</strong> to get second (and higher) derivatives.</p>
-<p>For \(f(x,y)\), there are <strong>four</strong> second-order partial derivatives:</p>
-<ul>
-<li>\(f_{xx} = \dfrac{\partial^2 f}{\partial x^2}\) &mdash; differentiate twice with respect to \(x\)</li>
-<li>\(f_{yy} = \dfrac{\partial^2 f}{\partial y^2}\) &mdash; differentiate twice with respect to \(y\)</li>
-<li>\(f_{xy} = \dfrac{\partial^2 f}{\partial y \,\partial x}\) &mdash; first \(x\), then \(y\)</li>
-<li>\(f_{yx} = \dfrac{\partial^2 f}{\partial x \,\partial y}\) &mdash; first \(y\), then \(x\)</li>
-</ul></div>
-<aside class="key-point" role="note" aria-label="Key point"><p><strong>Interpretation:</strong></p>
+  <aside class="key-point" role="note" aria-label="Key point"><p><strong>Interpretation:</strong></p>
 <ul>
 <li>\(f_{xx}\) = concavity in the \(x\)-direction (is the surface curving up or down as you walk in \(x\)?)</li>
 <li>\(f_{yy}\) = concavity in the \(y\)-direction</li>
 <li>\(f_{xy}\) = how the \(x\)-slope changes as you move in \(y\) (a <strong>mixed</strong> partial)</li>
 </ul></aside>
-<div><p><strong>Notation warning:</strong> \(f_{xy}\) means differentiate with respect to \(x\) <strong>first</strong>, then \(y\). Read the subscripts left to right.</p></div>
 </section>
 
 <section id="clairaut-s-theorem" aria-label="Clairaut's Theorem">
   <h2>Clairaut's Theorem</h2>
-  <div><p>Are \(f_{xy}\) and \(f_{yx}\) always equal? That is, does the <strong>order of differentiation</strong> matter?</p></div>
-<section class="defn-box theorem-box" role="region" aria-label="Theorem: Clairaut's Theorem">
+  <section class="defn-box theorem-box" role="region" aria-label="Theorem: Clairaut's Theorem">
   <h3 class="defn-title">Theorem: Clairaut's Theorem</h3>
   <p>Suppose \(f\) is defined on a disk \(D\) containing the point \((a,b)\).</p>
 <p>If \(f_{xy}\) and \(f_{yx}\) are both <strong>continuous</strong> on \(D\), then:</p>
 <p>\[f_{xy}(a,b) = f_{yx}(a,b)\]</p>
 </section>
-<div><p><strong>Practical use:</strong> For polynomials, trig functions, exponentials, and all the "nice" functions we encounter in this course, mixed partials are equal:</p>
-<p>\[f_{xy} = f_{yx}, \qquad f_{xxy} = f_{xyx} = f_{yxx}, \qquad \text{etc.}\]</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>For any function built from standard Calc I functions, the <strong>order of differentiation doesn't matter</strong>. Differentiate in whichever order is easiest!</p></aside>
 </section>
 

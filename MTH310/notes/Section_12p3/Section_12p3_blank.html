@@ -94,6 +94,88 @@ window.MathJax = {
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        pb.remove();  // no longer needed — workspace expansion handles the break
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -113,9 +195,7 @@ window.MathJax = {
 
 <section id="the-dot-product" aria-label="The Dot Product">
   <h2>The Dot Product</h2>
-  <div><p>We can <strong>add</strong> vectors and <strong>scale</strong> them. But can we "multiply" two vectors?</p>
-<p>The <strong>dot product</strong> takes two vectors and gives a <strong>scalar</strong> (a number).</p></div>
-<section class="defn-box" role="region" aria-label="Dot Product">
+  <section class="defn-box" role="region" aria-label="Dot Product">
   <h3 class="defn-title">Dot Product</h3>
   <p>If \(\vec{a} = \langle a_1, a_2, a_3 \rangle\) and \(\vec{b} = \langle b_1, b_2, b_3 \rangle\), then</p>
 <p>\[\vec{a} \cdot \vec{b} = a_1 b_1 + a_2 b_2 + a_3 b_3\]</p>
@@ -129,12 +209,6 @@ window.MathJax = {
   <h3 class="example-title">Example 1</h3>
   <p>Compute each dot product.</p>
 </section>
-<div><p>\(\langle 2, 4 \rangle \cdot \langle 3, -1 \rangle\)</p></div>
-<div><p>\(\langle 2, 4 \rangle \cdot \langle 3, -1 \rangle = 2(3) + 4(-1) = 6 - 4 = 2\)</p></div>
-<div><p>\(\langle -1, 7, 4 \rangle \cdot \langle 6, 2, -\tfrac{1}{2} \rangle\)</p></div>
-<div><p>\(\langle -1, 7, 4 \rangle \cdot \langle 6, 2, -\tfrac{1}{2} \rangle = -6 + 14 - 2 = 6\)</p></div>
-<div><p>\((\vec{i} + 2\vec{j} - 3\vec{k}) \cdot (2\vec{j} - \vec{k})\)</p></div>
-<div><p>\(\langle 1, 2, -3 \rangle \cdot \langle 0, 2, -1 \rangle = 0 + 4 + 3 = 7\)</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>\(\vec{a} \cdot \vec{a} = a_1^2 + a_2^2 + a_3^2 = |\vec{a}|^2\) &mdash; the dot product of a vector with itself gives the <strong>square of its magnitude</strong>.</p></aside>
 </section>
 
@@ -150,7 +224,6 @@ window.MathJax = {
 <li>\(\vec{0} \cdot \vec{a} = 0\)</li>
 </ol>
 </section>
-<div><p>These follow directly from the component definition. Property 1 is especially useful &mdash; it connects the dot product to length.</p></div>
 </section>
 
 <section id="the-geometric-meaning-angles" aria-label="The Geometric Meaning &mdash; Angles">
@@ -165,7 +238,6 @@ window.MathJax = {
   <img src="figures/12_3_4.png" alt="Triangle OAB in 3D with vectors a and b from the origin to points A and B, and the difference vector a minus b as the third side, used for the law of cosines proof.">
 </figure></div>
 </div>
-<div><p>This connects <strong>algebra</strong> (the component formula) with <strong>geometry</strong> (the angle between vectors)!</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>\[\cos\theta = \frac{\vec{a} \cdot \vec{b}}{|\vec{a}|\,|\vec{b}|}\]</p></aside>
 <figure>
   <img src="figures/law_of_cosines_triangle.png" alt="Triangle OAB with side a (blue) from O to A, side b (red) from O to B, and the third side a minus b (green) from A to B. The angle theta at vertex O is marked with an amber arc.">
@@ -190,18 +262,9 @@ window.MathJax = {
   <p>Two vectors \(\vec{a}\) and \(\vec{b}\) are <strong>orthogonal</strong> (perpendicular) if and only if</p>
 <p>\[\vec{a} \cdot \vec{b} = 0\]</p>
 </section>
-<div><p><strong>Why?</strong> Because \(\cos 90{^\circ} = 0\), so \(\vec{a} \cdot \vec{b} = |\vec{a}|\,|\vec{b}| \cdot 0 = 0\).</p></div>
-<div class="two-col-print">
-  <div><div><table>
-<tr><th>Sign of \(\vec{a} \cdot \vec{b}\)</th><th>Angle between vectors</th></tr>
-<tr><td>\(\vec{a} \cdot \vec{b} > 0\)</td><td>Acute (\(\theta < 90{^\circ}\))</td></tr>
-<tr><td>\(\vec{a} \cdot \vec{b} = 0\)</td><td>Right angle (\(\theta = 90{^\circ}\))</td></tr>
-<tr><td>\(\vec{a} \cdot \vec{b} < 0\)</td><td>Obtuse (\(\theta > 90{^\circ}\))</td></tr>
-</table></div></div>
-  <div><figure>
+<figure>
   <img src="figures/12_3_6.png" alt="Three pairs of vectors showing acute angle (dot product positive), right angle (dot product zero), and obtuse angle (dot product negative).">
-</figure></div>
-</div>
+</figure>
 <aside class="key-point" role="note" aria-label="Key point"><p>This is the <strong>most important</strong> use of the dot product &mdash; a quick test for perpendicularity!</p></aside>
 </section>
 
@@ -218,8 +281,7 @@ window.MathJax = {
 
 <section id="projections" aria-label="Projections">
   <h2>Projections</h2>
-  <div><p>How much of \(\vec{b}\) points in the direction of \(\vec{a}\)?</p></div>
-<figure>
+  <figure>
   <img src="figures/projection_shadow.png" alt="Projection diagram: vectors a (blue) and b (red) start from point P. A dashed perpendicular drops from the tip of b to the line of a at point S. The projection vector proj_a b (amber) goes from P to S. The scalar component comp_a b is labeled below.">
 </figure>
 <section class="defn-box" role="region" aria-label="Scalar and Vector Projections">
@@ -256,9 +318,7 @@ window.MathJax = {
 <section id="work-a-physical-application" aria-label="Work &mdash; A Physical Application">
   <h2>Work &mdash; A Physical Application</h2>
   <div class="two-col-print">
-  <div><div><p>When force is aligned with motion: \(W = |\vec{F}| \cdot |\vec{D}|\)</p>
-<p>When force is at an angle \(\theta\) to the motion:</p></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>\(W = \text{comp}_{\vec{D}}\,\vec{F} \cdot |\vec{D}| = \vec{F} \cdot \vec{D}\)</p></aside></div>
+  <div><aside class="key-point" role="note" aria-label="Key point"><p>\(W = \text{comp}_{\vec{D}}\,\vec{F} \cdot |\vec{D}| = \vec{F} \cdot \vec{D}\)</p></aside></div>
   <div><figure>
   <img src="figures/12_3_9.png" alt="Work diagram: force vector F at angle theta to horizontal displacement vector D from P to Q. The projection of F onto D gives the component of force in the direction of motion.">
 </figure></div>
@@ -275,7 +335,6 @@ window.MathJax = {
   <img src="figures/unit_circle_direction.png" alt="Unit circle with a radius drawn at angle theta, showing the endpoint (cos theta, sin theta). Dashed projections to the axes label cos theta and sin theta.">
 </figure></div>
 </div>
-<div><p>\(\vec{F} = 70\langle \cos 35{^\circ},\, \sin 35{^\circ} \rangle\), \enspace  \(\vec{D} = \langle 100, 0 \rangle\)</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>\(W = \vec{F} \cdot \vec{D} = 70\cos 35{^\circ} \cdot 100 + 70\sin 35{^\circ} \cdot 0 = 7000\cos 35{^\circ} \approx 5734 \text{N}\cdot \text{m}\)</p></aside>
 </section>
 

@@ -94,6 +94,88 @@ window.MathJax = {
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        pb.remove();  // no longer needed — workspace expansion handles the break
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -113,53 +195,23 @@ window.MathJax = {
 
 <section id="vector-functions" aria-label="Vector Functions">
   <h2>Vector Functions</h2>
-  <div><p>In Calc I/II, functions take a number in and give a number back: \(f(t) = t^2\).</p>
-<p>Now we let the output be a <strong>vector</strong> instead of a scalar.</p></div>
-<section class="defn-box" role="region" aria-label="Vector Function">
+  <section class="defn-box" role="region" aria-label="Vector Function">
   <h3 class="defn-title">Vector Function</h3>
   <p>A <strong>vector function</strong> (or <strong>vector-valued function</strong>) is a function whose input is a scalar \(t\) and whose output is a vector:</p>
 <p>\[\vec{r}(t) = \langle f(t),\, g(t),\, h(t) \rangle = f(t)\,\mathbf{i} + g(t)\,\mathbf{j} + h(t)\,\mathbf{k}\]</p>
 <p>The functions \(f\), \(g\), \(h\) are called the <strong>component functions</strong>.</p>
 </section>
-<div><p>As \(t\) varies, the tip of \(\vec{r}(t)\) traces out a <strong>space curve</strong> \(C\).</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>A vector function is just a way of packaging <strong>parametric equations</strong> into a single object.</p></aside>
 </section>
 
 <section id="why-vector-functions" aria-label="Why Vector Functions?">
   <h2>Why Vector Functions?</h2>
-  <div><p>Think of \(t\) as <strong>time</strong>. Then \(\vec{r}(t)\) gives the <strong>position</strong> of a moving object at time \(t\).</p>
-<ul>
-<li>The path it traces is the <strong>trajectory</strong> (a space curve).</li>
-</ul>
-<p><strong>Applications everywhere:</strong></p>
-<ul>
-<li>Roller coasters, planetary orbits, particle physics</li>
-<li>Robot arm paths, drone flight plans</li>
-<li>Blood flow through arteries</li>
-</ul></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>Chapter 13 is about <strong>calculus on curves</strong> &mdash; the same derivative and integral ideas from Calc I, but now applied to vector functions.</p></aside>
+  <aside class="key-point" role="note" aria-label="Key point"><p>Chapter 13 is about <strong>calculus on curves</strong> &mdash; the same derivative and integral ideas from Calc I, but now applied to vector functions.</p></aside>
 </section>
 
 <section id="example-1-sketch" aria-label="Example 1: Sketch $\vec{r}(t) = \langle t^3,\, t^2 \rangle$">
   <h2>Example 1: Sketch \(\vec{r}(t) = \langle t^3,\, t^2 \rangle\)</h2>
-  <div><p><strong>Strategy for sketching a vector function:</strong></p>
-<ol>
-<li>Make a table of values</li>
-<li>Try to eliminate \(t\) to recognize the Cartesian curve</li>
-<li>Mark the direction of travel (increasing \(t\))</li>
-</ol>
-<p><strong>Step 1 &mdash; Make a table.</strong> Plug in a few values of \(t\):</p>
-<table>
-<tr><th>\(t\)</th><th>\(x = t^3\)</th><th>\(y = t^2\)</th></tr>
-<tr><td>\(-2\)</td><td>\(-8\)</td><td>\(4\)</td></tr>
-<tr><td>\(-1\)</td><td>\(-1\)</td><td>\(1\)</td></tr>
-<tr><td>\(0\)</td><td>\(0\)</td><td>\(0\)</td></tr>
-<tr><td>\(1\)</td><td>\(1\)</td><td>\(1\)</td></tr>
-<tr><td>\(2\)</td><td>\(8\)</td><td>\(4\)</td></tr>
-</table>
-<p><strong>Step 2 &mdash; Eliminate the parameter.</strong> From \(x = t^3\) we get \(t = x^{1/3}\), so \(y = (x^{1/3})^2 = x^{2/3}\).</p>
-<p><strong>Step 3 &mdash; Direction of travel.</strong> As \(t\) goes from \(-2\) to \(2\), the point moves left-to-right through the origin.</p></div>
-<figure>
+  <figure>
   <img src="figures/parametric_2d.png" alt="A 2D parametric curve for r(t) = <t³, t²>. The curve has a cusp at the origin and extends to (-8, 4) on the left and (8, 4) on the right. The equation y = x^(2/3) is shown. Direction arrows indicate travel from left to right as t increases. Key points are marked at t = -2, -1, 0, 1, 2.">
   <figcaption><a href="figures/parametric_2d.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
@@ -168,41 +220,19 @@ window.MathJax = {
 
 <section id="your-turn-sketch" aria-label="Your Turn: Sketch $\vec{r}(t) = \langle 2\cos t,\, 2\sin t \rangle$">
   <h2>Your Turn: Sketch \(\vec{r}(t) = \langle 2\cos t,\, 2\sin t \rangle\)</h2>
-  <div><p>Use the same strategy: make a table, eliminate \(t\), identify the curve.</p></div>
-<div class="blank-space" role="region" aria-label="Student workspace: Try it before looking at the solution." style="min-height:2.5in;">
+  <div class="blank-space" role="region" aria-label="Student workspace: Try it before looking at the solution." style="min-height:2.5in;">
   <div class="blank-prompt">Try it before looking at the solution.</div>
 </div>
 </section>
 
 <section id="space-curves-in-3d" aria-label="Space Curves in 3D">
   <h2>Space Curves in 3D</h2>
-  <div><p>In 3D, a vector function \(\vec{r}(t) = \langle f(t), g(t), h(t) \rangle\) traces out a <strong>space curve</strong>.</p>
-<p>We can still make tables, but now we plot in \(xyz\)-space.</p>
-<p><strong>Common strategy:</strong> Look at what the components tell you.</p>
-<ul>
-<li>Do any components involve trig? That hints at circular motion.</li>
-<li>Is one component linear (like \(y = t\))? That means steady motion in one direction.</li>
-<li>Can you combine components to recognize a surface (like \(x^2 + z^2 = 1\))?</li>
-</ul></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>The component functions are the clues &mdash; they tell you what surface the curve lives on and how it moves.</p></aside>
+  <aside class="key-point" role="note" aria-label="Key point"><p>The component functions are the clues &mdash; they tell you what surface the curve lives on and how it moves.</p></aside>
 </section>
 
 <section id="example-2-sketch" aria-label="Example 2: Sketch $\vec{r}(t) = \langle \sin \pi t,\, t,\, \cos \pi t \rangle$">
   <h2>Example 2: Sketch \(\vec{r}(t) = \langle \sin \pi t,\, t,\, \cos \pi t \rangle\)</h2>
-  <div><p><strong>Step 1 &mdash; Identify the cylinder.</strong> Look at which components involve trig:</p>
-<p>\(x^2 + z^2 = \sin^2(\pi t) + \cos^2(\pi t) = 1\)</p>
-<p>The curve lives on the cylinder \(x^2 + z^2 = 1\) (radius 1, centered on the \(y\)-axis).</p>
-<p><strong>Step 2 &mdash; What does \(y\) do?</strong> \(y = t\) increases steadily \(\rightarrow\) the curve spirals <strong>upward</strong> along the \(y\)-axis.</p>
-<p><strong>Step 3 &mdash; How fast does it wind?</strong> The argument \(\pi t\) completes one full cycle when \(\pi t\) goes from \(0\) to \(2\pi\), i.e., when \(t\) goes from \(0\) to \(2\). So <strong>one full turn every 2 units</strong> along the \(y\)-axis.</p>
-<table>
-<tr><th>\(t\)</th><th>\(x = \sin\pi t\)</th><th>\(y = t\)</th><th>\(z = \cos\pi t\)</th></tr>
-<tr><td>\(0\)</td><td>\(0\)</td><td>\(0\)</td><td>\(1\)</td></tr>
-<tr><td>\(\tfrac{1}{2}\)</td><td>\(1\)</td><td>\(\tfrac{1}{2}\)</td><td>\(0\)</td></tr>
-<tr><td>\(1\)</td><td>\(0\)</td><td>\(1\)</td><td>\(-1\)</td></tr>
-<tr><td>\(\tfrac{3}{2}\)</td><td>\(-1\)</td><td>\(\tfrac{3}{2}\)</td><td>\(0\)</td></tr>
-<tr><td>\(2\)</td><td>\(0\)</td><td>\(2\)</td><td>\(1\)</td></tr>
-</table></div>
-<figure>
+  <figure>
   <img src="figures/helix.png" alt="A 3D helix r(t) = <sin(πt), t, cos(πt)> spiraling along the y-axis on a translucent cylinder x² + z² = 1. The helix completes one full turn every 2 units in the y-direction. Key points are marked at t = 0, 0.5, 1, 1.5, and 2.">
   <figcaption><a href="figures/helix.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
@@ -211,28 +241,12 @@ window.MathJax = {
 
 <section id="where-does-a-curve-meet-a-surface" aria-label="Where Does a Curve Meet a Surface?">
   <h2>Where Does a Curve Meet a Surface?</h2>
-  <div><p>A common question: <strong>where does a space curve intersect a surface?</strong></p>
-<p>The strategy is straightforward:</p>
-<ol>
-<li><strong>Substitute</strong> the components \(x = f(t)\), \(y = g(t)\), \(z = h(t)\) into the surface equation.</li>
-<li><strong>Solve</strong> the resulting equation for \(t\).</li>
-<li><strong>Plug back</strong> into \(\vec{r}(t)\) to get the point(s).</li>
-</ol></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>This reduces a 3D geometry problem to <strong>solving an equation in one variable</strong> \(t\).</p></aside>
+  <aside class="key-point" role="note" aria-label="Key point"><p>This reduces a 3D geometry problem to <strong>solving an equation in one variable</strong> \(t\).</p></aside>
 </section>
 
 <section id="example-3-where-does-meet" aria-label="Example 3: Where does $\vec{r}(t) = \langle \sin t,\, \cos t,\, t \rangle$ meet $x^2 + y^2 + z^2 = 5$?">
   <h2>Example 3: Where does \(\vec{r}(t) = \langle \sin t,\, \cos t,\, t \rangle\) meet \(x^2 + y^2 + z^2 = 5\)?</h2>
-  <div><p><strong>Step 1 &mdash; Substitute</strong> the components into the sphere equation:</p>
-<p>\(\sin^2 t + \cos^2 t + t^2 = 5\)</p>
-<p><strong>Step 2 &mdash; Simplify.</strong> The Pythagorean identity \(\sin^2 t + \cos^2 t = 1\) collapses two terms:</p>
-<p>\(1 + t^2 = 5 \quad\Rightarrow\quad t^2 = 4 \quad\Rightarrow\quad t = \pm 2\)</p>
-<p><strong>Step 3 &mdash; Find the points.</strong> Plug \(t = 2\) and \(t = -2\) back into \(\vec{r}(t)\):</p>
-<ul>
-<li>\(\vec{r}(2) = \langle \sin 2,\, \cos 2,\, 2 \rangle \approx \langle 0.909,\, {-0.416},\, 2 \rangle\)</li>
-<li>\(\vec{r}(-2) = \langle \sin(-2),\, \cos(-2),\, -2 \rangle \approx \langle {-0.909},\, {-0.416},\, -2 \rangle\)</li>
-</ul></div>
-<figure>
+  <figure>
   <img src="figures/helix_sphere.png" alt="A 3D helix r(t) = <sin(t), cos(t), t> spiraling upward through a translucent sphere x² + y² + z² = 5 (radius √5). The helix intersects the sphere at exactly two points: t = 2 (upper) and t = -2 (lower), marked with red diamond markers.">
   <figcaption><a href="figures/helix_sphere.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
@@ -241,8 +255,7 @@ window.MathJax = {
 
 <section id="your-turn-where-does-meet" aria-label="Your Turn: Where does $\vec{r}(t) = \langle t,\, 2t,\, 3t \rangle$ meet $x^2 + y^2 + z^2 = 14$?">
   <h2>Your Turn: Where does \(\vec{r}(t) = \langle t,\, 2t,\, 3t \rangle\) meet \(x^2 + y^2 + z^2 = 14\)?</h2>
-  <div><p>Use the same three steps: substitute, solve for \(t\), plug back in.</p></div>
-<div class="blank-space" role="region" aria-label="Student workspace: Try it before looking at the solution." style="min-height:2.5in;">
+  <div class="blank-space" role="region" aria-label="Student workspace: Try it before looking at the solution." style="min-height:2.5in;">
   <div class="blank-prompt">Try it before looking at the solution.</div>
 </div>
 </section>

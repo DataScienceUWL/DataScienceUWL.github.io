@@ -94,6 +94,88 @@ window.MathJax = {
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        pb.remove();  // no longer needed — workspace expansion handles the break
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -113,25 +195,13 @@ window.MathJax = {
 
 <section id="scalars-vs-vectors" aria-label="Scalars vs. Vectors">
   <h2>Scalars vs. Vectors</h2>
-  <div><p>In Calculus I and II, every quantity was a <strong>number</strong> &mdash; a single value on the number line.</p>
-<p>Now we need quantities that carry both <strong>size</strong> and <strong>direction</strong>.</p>
-<table>
-<tr><th>Scalars (magnitude only)</th><th>Vectors (magnitude AND direction)</th></tr>
-<tr><td>Speed</td><td>Velocity</td></tr>
-<tr><td>Distance</td><td>Displacement</td></tr>
-<tr><td>Mass</td><td>Force</td></tr>
-<tr><td>Length</td><td>Acceleration</td></tr>
-<tr><td>Area</td><td>Weight (gravitational force)</td></tr>
-<tr><td>Pressure</td><td>Work</td></tr>
-</table></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>A <strong>scalar</strong> has magnitude only. A <strong>vector</strong> has both magnitude AND direction.</p></aside>
+  <aside class="key-point" role="note" aria-label="Key point"><p>A <strong>scalar</strong> has magnitude only. A <strong>vector</strong> has both magnitude AND direction.</p></aside>
 </section>
 
 <section id="displacement-vectors-and-equal-vectors" aria-label="Displacement Vectors and Equal Vectors">
   <h2>Displacement Vectors and Equal Vectors</h2>
   <div class="two-col-print">
-  <div><div><p>A <strong>displacement vector</strong> \(\vec{AB}\) represents moving from point \(A\) (initial point) to point \(B\) (terminal point).</p></div>
-<section class="defn-box" role="region" aria-label="Equal Vectors">
+  <div><section class="defn-box" role="region" aria-label="Equal Vectors">
   <h3 class="defn-title">Equal Vectors</h3>
   <p>Two vectors are <strong>equal</strong> if they have the same magnitude and the same direction &mdash; even if they start at different points.</p>
 <p>Equal vectors can be <strong>translated</strong> (slid) anywhere in space without changing the vector.</p>
@@ -144,50 +214,33 @@ window.MathJax = {
   <img src="figures/12_2_2.png" alt="Six identical red arrows representing the same vector (3, 2) placed at different positions in the plane, showing that equal vectors can be translated anywhere without changing the vector.">
 </figure></div>
 </div>
-<div><p>The <strong>zero vector</strong> \(\vec{0}\) has magnitude zero and no specific direction. It is the only vector with this property.</p></div>
 </section>
 
 <section id="vector-addition" aria-label="Vector Addition">
   <h2>Vector Addition</h2>
-  <div><p>Two ways to add vectors geometrically:</p></div>
-<div class="two-col-print">
-  <div><div><p><strong>Triangle Law:</strong> Place the tail of \(\vec{v}\) at the tip of \(\vec{u}\). The sum \(\vec{u} + \vec{v}\) goes from the tail of \(\vec{u}\) to the tip of \(\vec{v}\).</p></div>
-<figure>
+  <div class="two-col-print">
+  <div><figure>
   <img src="figures/triangle_law.png" alt="Triangle law of vector addition: vectors u and v arranged tip-to-tail, with the sum u+v as the third side">
   <figcaption><a href="figures/triangle_law.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure></div>
-  <div><div><p><strong>Parallelogram Law:</strong> Place the tails of \(\vec{u}\) and \(\vec{v}\) together. Complete the parallelogram. The diagonal is \(\vec{u} + \vec{v}\).</p></div>
-<figure>
+  <div><figure>
   <img src="figures/parallelogram_law.png" alt="Parallelogram law of vector addition: vectors u and v placed tail-to-tail forming a parallelogram, with the diagonal as u+v">
   <figcaption><a href="figures/parallelogram_law.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure></div>
 </div>
 
-<div><p><strong>Chaining displacements:</strong> \(\vec{AB} + \vec{BC} = \vec{AC}\)</p>
-<p>Walk from \(A\) to \(B\), then from \(B\) to \(C\). The net displacement is \(A\) to \(C\).</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Vector addition is <strong>commutative</strong>: \(\vec{u} + \vec{v} = \vec{v} + \vec{u}\). Both the triangle and parallelogram laws give the same result.</p></aside>
 </section>
 
 <section id="scalar-multiplication-and-vector-difference" aria-label="Scalar Multiplication and Vector Difference">
   <h2>Scalar Multiplication and Vector Difference</h2>
-  <div class="two-col-print">
-  <div><div><p><strong>Scalar multiplication:</strong> \(c\vec{u}\) stretches or shrinks \(\vec{u}\) by a factor of \(|c|\).</p>
-<ul>
-<li>If \(c > 0\): same direction as \(\vec{u}\)</li>
-<li>If \(c < 0\): opposite direction</li>
-<li>If \(c = 0\): the zero vector</li>
-</ul>
-<p><strong>Parallel vectors:</strong> \(\vec{u}\) and \(\vec{v}\) are parallel if \(\vec{v} = c\vec{u}\) for some scalar \(c\).</p></div></div>
-  <div><figure>
+  <figure>
   <img src="figures/scalar_multiplication.png" alt="A vector u shown alongside 2u (twice as long, same direction), 0.5u (half as long), and -u (same length, opposite direction)">
   <figcaption><a href="figures/scalar_multiplication.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure></div>
-</div>
+</figure>
 
 <div class="two-col-print">
-  <div><div><p><strong>Negative vector:</strong> \(-\vec{u} = (-1)\vec{u}\) &mdash; same magnitude, opposite direction.</p>
-<p><strong>Vector difference:</strong> \(\vec{u} - \vec{v} = \vec{u} + (-\vec{v})\)</p></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>Think of \(\vec{u} - \vec{v}\) as <strong>"what you add to \(\vec{v}\) to get \(\vec{u}\)"</strong> &mdash; like how \(10 - 7.36 = 2.64\) answers "what do I add to \(7.36\) to get \(10\)?"</p></aside></div>
+  <div><aside class="key-point" role="note" aria-label="Key point"><p>Think of \(\vec{u} - \vec{v}\) as <strong>"what you add to \(\vec{v}\) to get \(\vec{u}\)"</strong> &mdash; like how \(10 - 7.36 = 2.64\) answers "what do I add to \(7.36\) to get \(10\)?"</p></aside></div>
   <div><figure>
   <img src="figures/vector_difference.png" alt="Vector subtraction diagram. Vectors u (blue) and v (red) start at the origin. The difference u minus v (green) is drawn from the tip of v to the tip of u, illustrating that u minus v is what you add to v to get u.">
 </figure></div>
@@ -196,17 +249,10 @@ window.MathJax = {
 
 <section id="components" aria-label="Components">
   <h2>Components</h2>
-  <div class="two-col-print">
-  <div><div><p>If we place a vector with its initial point at the <strong>origin</strong>, it becomes a <strong>position vector</strong>. Its components are just its terminal coordinates.</p>
-<p>In 2D: \(\vec{a} = \langle a_1, a_2 \rangle\)</p>
-<p>In 3D: \(\vec{a} = \langle a_1, a_2, a_3 \rangle\)</p>
-<p>We use <strong>angle brackets</strong> \(\langle \cdot \rangle\) for vector components and <strong>parentheses</strong> \(( \cdot )\) for points.</p></div></div>
-  <div><figure>
+  <figure>
   <img src="figures/position_vector.png" alt="A position vector from the origin to a point (a1, a2, a3), with components labeled">
   <figcaption><a href="figures/position_vector.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure></div>
-</div>
-<div><p>Translating a vector to a different starting point gives an <strong>equal</strong> vector &mdash; same components, different location.</p></div>
+</figure>
 </section>
 
 <section id="displacement-vector-formula" class="example-group" aria-label="Displacement Vector Formula">
@@ -234,7 +280,6 @@ window.MathJax = {
 <p>\[|\vec{a}| = \sqrt{a_1^2 + a_2^2 + a_3^2}\]</p>
 <p>In 2D: \(|\vec{a}| = \sqrt{a_1^2 + a_2^2}\)</p>
 </section>
-<div><p>This is the <strong>distance formula</strong> from Section 12.1! The magnitude of a position vector equals the distance from the origin to its terminal point.</p></div>
 </section>
 
 <section id="example-vector-arithmetic" class="example-group" aria-label="Example: Vector Arithmetic">
@@ -270,17 +315,10 @@ window.MathJax = {
 
 <section id="standard-basis-vectors" aria-label="Standard Basis Vectors">
   <h2>Standard Basis Vectors</h2>
-  <div class="two-col-print">
-  <div><div><p>The <strong>standard basis vectors</strong> are unit vectors along each axis:</p>
-<p>\[\vec{i} = \langle 1, 0, 0 \rangle, \quad \vec{j} = \langle 0, 1, 0 \rangle, \quad \vec{k} = \langle 0, 0, 1 \rangle\]</p>
-<p>In 2D: \(\vec{i} = \langle 1, 0 \rangle\), \(\vec{j} = \langle 0, 1 \rangle\)</p>
-<p><strong>Any vector</strong> can be written as a combination of basis vectors:</p>
-<p>\[\vec{a} = \langle a_1, a_2, a_3 \rangle = a_1\vec{i} + a_2\vec{j} + a_3\vec{k}\]</p></div></div>
-  <div><figure>
+  <figure>
   <img src="figures/standard_basis.png" alt="The three standard basis vectors i, j, k along the x, y, and z axes respectively">
   <figcaption><a href="figures/standard_basis.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure></div>
-</div>
+</figure>
 <div class="two-col-print">
   <div><figure>
   <img src="figures/12_2_7.png" alt="2D decomposition: vector a from the origin to (a1, a2), shown as the sum of a horizontal component a1 i along the x-axis and a vertical component a2 j, forming a right triangle.">
@@ -289,7 +327,6 @@ window.MathJax = {
   <img src="figures/12_2_8.png" alt="3D decomposition: vector a from the origin to (a1, a2, a3), shown as the sum of components a1 i along the x-axis, a2 j along the y-axis, and a3 k along the z-axis.">
 </figure></div>
 </div>
-<div><p><strong>Example:</strong> \(\langle 3, 4 \rangle = 3\langle 1, 0 \rangle + 4\langle 0, 1 \rangle = 3\vec{i} + 4\vec{j}\)</p></div>
 </section>
 
 <section id="unit-vectors" class="example-group" aria-label="Unit Vectors">
@@ -321,28 +358,7 @@ window.MathJax = {
   <figcaption><a href="figures/forces_equilibrium.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
 
-<div><p><strong>Setting up the problem:</strong></p>
-<p>The system is in <strong>equilibrium</strong>, so the forces sum to zero:</p>
-<p>\[\vec{T}_1 + \vec{T}_2 + \vec{w} = \vec{0}\]</p>
-<p>Write each force in component form:</p>
-<ul>
-<li>\(\vec{T}_1 = \langle -t_1 \cos 50{^\circ},\; t_1 \sin 50{^\circ} \rangle\) \quad  (pulls up-left)</li>
-<li>\(\vec{T}_2 = \langle t_2 \cos 32{^\circ},\; t_2 \sin 32{^\circ} \rangle\) \quad  (pulls up-right)</li>
-<li>\(\vec{w} = \langle 0, -100 \rangle\) \quad  (gravity, straight down)</li>
-</ul></div>
 
-<div><p><strong>Solving the system:</strong></p>
-<p>Setting the \(x\)-components equal to zero:</p>
-<p>\[-t_1 \cos 50{^\circ} + t_2 \cos 32{^\circ} = 0\]</p>
-<p>Setting the \(y\)-components equal to zero:</p>
-<p>\[t_1 \sin 50{^\circ} + t_2 \sin 32{^\circ} - 100 = 0\]</p></div>
-<div><p>From the \(x\)-equation:</p>
-<p>\[t_1 = \frac{t_2 \cos 32{^\circ}}{\cos 50{^\circ}}\]</p></div>
-<div><p>Substitute into the \(y\)-equation:</p>
-<p>\[\frac{t_2 \cos 32{^\circ}}{\cos 50{^\circ}} \sin 50{^\circ} + t_2 \sin 32{^\circ} = 100\]</p>
-<p>\[t_2(\cos 32{^\circ} \tan 50{^\circ} + \sin 32{^\circ}) = 100\]</p></div>
-<div><p>\[t_2 = \frac{100}{\cos 32{^\circ} \tan 50{^\circ} + \sin 32{^\circ}} \approx 66.07 \text{ lb}\]</p>
-<p>\[t_1 = \frac{66.07 \cos 32{^\circ}}{\cos 50{^\circ}} \approx 85.64 \text{ lb}\]</p></div>
 </section>
 
 <section class="homework-section" aria-label="Homework">

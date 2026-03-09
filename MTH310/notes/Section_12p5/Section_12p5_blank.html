@@ -94,6 +94,88 @@ window.MathJax = {
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        pb.remove();  // no longer needed — workspace expansion handles the break
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -113,9 +195,7 @@ window.MathJax = {
 
 <section id="lines-in-2d-review" class="example-group" aria-label="Lines in 2D &mdash; Review">
   <h2>Lines in 2D &mdash; Review</h2>
-  <div><p>In 2D, a line is determined by a <strong>point</strong> and a <strong>slope</strong> (direction):</p>
-<p>\[y = mx + b \qquad \text{or} \qquad y - y_0 = m(x - x_0)\]</p></div>
-<section class="example-box" role="region" aria-label="Example 1">
+  <section class="example-box" role="region" aria-label="Example 1">
   <h3 class="example-title">Example 1</h3>
   <p>Find the equation of the line through \(P(0,0)\) and \(Q(1,2)\).</p>
 </section>
@@ -126,10 +206,7 @@ window.MathJax = {
 
 <section id="parametric-equations-of-lines" class="example-group" aria-label="Parametric Equations of Lines">
   <h2>Parametric Equations of Lines</h2>
-  <div><p>Instead of \(y = mx + b\), we can describe a line <strong>parametrically</strong>:</p>
-<p>\[x = x_0 + at, \qquad y = y_0 + bt\]</p>
-<p>The parameter \(t\) sweeps out the line. The <strong>direction vector</strong> \(\vec{v} = \langle a, b \rangle\) tells which way the line goes.</p></div>
-<section class="example-box" role="region" aria-label="Example 2">
+  <section class="example-box" role="region" aria-label="Example 2">
   <h3 class="example-title">Example 2</h3>
   <p>Write parametric equations for the line through \(P(0,0)\) with direction \(\langle 1, 2 \rangle\).</p>
 </section>
@@ -140,8 +217,7 @@ window.MathJax = {
 
 <section id="vector-equation-of-a-line" aria-label="Vector Equation of a Line">
   <h2>Vector Equation of a Line</h2>
-  <div><p>Pack the parametric equations into one <strong>vector equation</strong>:</p></div>
-<section class="defn-box" role="region" aria-label="Vector Equation of a Line">
+  <section class="defn-box" role="region" aria-label="Vector Equation of a Line">
   <h3 class="defn-title">Vector Equation of a Line</h3>
   <p>\[\vec{r} = \vec{r}_0 + t\vec{v}\]</p>
 <ul>
@@ -159,9 +235,7 @@ window.MathJax = {
 
 <section id="lines-in-3d" class="example-group" aria-label="Lines in 3D">
   <h2>Lines in 3D</h2>
-  <div><p>The same formula works in 3D &mdash; no changes needed!</p>
-<p>\[\vec{r} = \vec{r}_0 + t\vec{v}\]</p></div>
-<section class="example-box" role="region" aria-label="Example 3">
+  <section class="example-box" role="region" aria-label="Example 3">
   <h3 class="example-title">Example 3</h3>
   <p>Find vector and parametric equations for the line through \(P(1,1,1)\) and \(Q(4,5,6)\).</p>
 </section>
@@ -172,18 +246,11 @@ window.MathJax = {
 
 <section id="symmetric-equations" aria-label="Symmetric Equations">
   <h2>Symmetric Equations</h2>
-  <div><p>From the parametric equations, <strong>solve each one for \(t\)</strong>:</p>
-<p>\[t = \frac{x - 1}{3} = \frac{y - 1}{4} = \frac{z - 1}{5}\]</p></div>
-<section class="defn-box" role="region" aria-label="Symmetric Equations">
+  <section class="defn-box" role="region" aria-label="Symmetric Equations">
   <h3 class="defn-title">Symmetric Equations</h3>
   <p>If \(\vec{v} = \langle a, b, c \rangle\) (all nonzero), the <strong>symmetric equations</strong> of the line through \((x_0, y_0, z_0)\) are:</p>
 <p>\[\frac{x - x_0}{a} = \frac{y - y_0}{b} = \frac{z - z_0}{c}\]</p>
 </section>
-<div><p><strong>Uses:</strong></p>
-<ul>
-<li>Quick way to check if a point is on the line (plug in and see if all three fractions are equal)</li>
-<li>Eliminates the parameter \(t\)</li>
-</ul></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>If one direction component is <strong>zero</strong>, that coordinate is constant &mdash; write it separately. For example, if \(a = 0\): \(x = x_0\) and \(\dfrac{y - y_0}{b} = \dfrac{z - z_0}{c}\).</p></aside>
 </section>
 
@@ -200,15 +267,10 @@ window.MathJax = {
 
 <section id="planes-in-3d" aria-label="Planes in 3D">
   <h2>Planes in 3D</h2>
-  <div class="two-col-print">
-  <div><div><p>A <strong>plane</strong> is determined by a point and a <strong>normal vector</strong> (perpendicular to the plane).</p>
-<p>If \(\vec{r}_0\) points to a known point \(P_0\) and \(\vec{n}\) is normal to the plane, then any point \(\vec{r}\) in the plane satisfies:</p>
-<p>\[\vec{n} \cdot (\vec{r} - \vec{r}_0) = 0\]</p></div></div>
-  <div><figure>
+  <figure>
   <img src="figures/plane_normal.png" alt="A plane in 3D with normal vector n perpendicular to the surface, showing point P0 and an arbitrary point P in the plane">
   <figcaption><a href="figures/plane_normal.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure></div>
-</div>
+</figure>
 <section class="defn-box" role="region" aria-label="Equations of a Plane">
   <h3 class="defn-title">Equations of a Plane</h3>
   <ul>
@@ -248,12 +310,9 @@ window.MathJax = {
   <h3 class="example-title">Example 7</h3>
   <p>Find the equation of the plane through \(P(1,1,2)\), \(Q(2,3,1)\), and \(R(-1,4,2)\).</p>
 </section>
-<div class="two-col-print">
-  <div><div><p><strong>Strategy:</strong> Find two vectors in the plane, then use the <strong>cross product</strong> to get the normal.</p></div></div>
-  <div><figure>
+<figure>
   <img src="figures/three_points_plane.png" alt="3D diagram showing points P(1,1,2), Q(2,3,1), and R(-1,4,2) forming a triangle with edge vectors PQ (red) and PR (green), and the normal vector n = PQ x PR (amber) rising from the centroid.">
-</figure></div>
-</div>
+</figure>
 <div class="blank-space" role="region" aria-label="Student workspace: Find PQ and PR, compute their cross product, then use the result as the normal vector." style="min-height:3in;">
   <div class="blank-prompt">Find PQ and PR, compute their cross product, then use the result as the normal vector.</div>
 </div>
@@ -261,12 +320,9 @@ window.MathJax = {
 
 <section id="angle-between-planes" class="example-group" aria-label="Angle Between Planes">
   <h2>Angle Between Planes</h2>
-  <div class="two-col-print">
-  <div><div><p>The <strong>angle between two planes</strong> equals the angle between their normal vectors.</p></div></div>
-  <div><figure>
+  <figure>
   <img src="figures/two_planes_angle.png" alt="Two intersecting planes (blue and red) with normal vectors n1 and n2, and the angle theta between them marked with an amber arc.">
-</figure></div>
-</div>
+</figure>
 <section class="defn-box" role="region" aria-label="Angle Between Planes">
   <h3 class="defn-title">Angle Between Planes</h3>
   <p>If two planes have normal vectors \(\vec{n}_1\) and \(\vec{n}_2\), the angle \(\theta\) between the planes satisfies:</p>
@@ -284,12 +340,9 @@ window.MathJax = {
 
 <section id="distance-from-a-point-to-a-plane" class="example-group" aria-label="Distance from a Point to a Plane">
   <h2>Distance from a Point to a Plane</h2>
-  <div class="two-col-print">
-  <div><div><p>To find the distance from a point to a plane, <strong>project</strong> a connecting vector onto the normal.</p></div></div>
-  <div><figure>
+  <figure>
   <img src="figures/point_to_plane_distance.png" alt="Point P(-6,3,5) above a plane, with dashed vector QP to point Q on the plane. A red perpendicular line from P to the plane shows the distance D. Formula box shows D = |n dot QP| / |n|.">
-</figure></div>
-</div>
+</figure>
 <section class="defn-box" role="region" aria-label="Distance from a Point to a Plane">
   <h3 class="defn-title">Distance from a Point to a Plane</h3>
   <p>The distance from point \(P_1(x_1, y_1, z_1)\) to the plane \(ax + by + cz = d\) is:</p>
@@ -306,18 +359,7 @@ window.MathJax = {
 
 <section id="geometry-true-false-lines-and-planes-in-3d" aria-label="Geometry True/False &mdash; Lines and Planes in 3D">
   <h2>Geometry True/False &mdash; Lines and Planes in 3D</h2>
-  <div><p>Let's test our spatial intuition! Decide whether each statement is <strong>True</strong> or <strong>False</strong>.</p>
-<table>
-<tr><th>Statement</th><th>T/F</th></tr>
-<tr><td>Two planes either intersect or are parallel.</td><td></td></tr>
-<tr><td>Two lines either intersect or are parallel.</td><td></td></tr>
-<tr><td>Two planes parallel to a third plane are parallel.</td><td></td></tr>
-<tr><td>Two planes orthogonal to a third plane are parallel.</td><td></td></tr>
-<tr><td>Two lines parallel to a plane are parallel.</td><td></td></tr>
-<tr><td>Two lines orthogonal to a plane are parallel.</td><td></td></tr>
-<tr><td>A plane and a line either intersect or are parallel.</td><td></td></tr>
-</table></div>
-<div class="blank-space" role="region" aria-label="Student workspace: Think carefully about each one. Sketch examples and counterexamples." style="min-height:2.5in;">
+  <div class="blank-space" role="region" aria-label="Student workspace: Think carefully about each one. Sketch examples and counterexamples." style="min-height:2.5in;">
   <div class="blank-prompt">Think carefully about each one. Sketch examples and counterexamples.</div>
 </div>
 </section>
