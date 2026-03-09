@@ -130,7 +130,7 @@ export function drawHistogram(container, values, options = {}) {
   renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate);
 
   // Stacked delta highlight: show new portions of bars in orange
-  if (prevBinCounts && !prefersReducedMotion()) {
+  if (prevBinCounts) {
     renderDeltaBars(dataGroup, bins, xScale, yScale, frame.height, prevBinCounts);
   }
 

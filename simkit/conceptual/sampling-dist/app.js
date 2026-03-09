@@ -9,7 +9,7 @@ import { createRng, randNormal } from '../../js/prng.js';
 import { mean, sd } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
-import { announce, initKeyboardShortcuts, computeHighlights } from '../../js/page-utils.js';
+import { announce, initKeyboardShortcuts, initPlayPause, computeHighlights } from '../../js/page-utils.js';
 
 // ─── DOM ───
 
@@ -261,6 +261,7 @@ function resetSimulation() {
 }
 
 initKeyboardShortcuts(genBtns, resetBtn);
+initPlayPause(genBtns, resetBtn);
 
 // ─── Init ───
 

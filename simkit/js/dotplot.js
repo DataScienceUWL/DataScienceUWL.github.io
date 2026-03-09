@@ -39,7 +39,8 @@ const MAX_RADIUS = 8;
 export function computeDots(values, options = {}) {
   const n = values.length;
   if (n === 0) {
-    return { dots: [], binWidth: 1, maxStack: 0, domain: [0, 1] };
+    const fallback = options.domain ?? /** @type {[number, number]} */ ([0, 1]);
+    return { dots: [], binWidth: 1, maxStack: 0, domain: fallback };
   }
 
   const xMin = d3Array.min(values);
@@ -47,7 +48,7 @@ export function computeDots(values, options = {}) {
 
   // Single-value edge case
   if (xMin === xMax) {
-    const domain = /** @type {[number, number]} */ ([xMin - 0.5, xMax + 0.5]);
+    const domain = options.domain ?? /** @type {[number, number]} */ ([xMin - 0.5, xMax + 0.5]);
     const dots = values.map((v, i) => ({ value: v, binCenter: v, stackIndex: i }));
     return { dots, binWidth: 1, maxStack: n, domain };
   }
@@ -130,10 +131,24 @@ export function drawDotplot(container, values, options = {}) {
     highlightIndices,
   } = options;
 
-  const frame = createChart(container, { titleText, descText, id, margin });
   const result = computeDots(values, { numBins, domain });
   const { dots, maxStack, domain: finalDomain } = result;
   const effectiveBins = numBins ?? Math.min(values.length, 40);
+
+  // Compute dot radius based on width, then determine needed height
+  // Default chart dimensions for width calculation
+  const defaultWidth = 600;
+  const defaultMarginLR = 80; // approximate left + right margin
+  const approxInnerWidth = defaultWidth - defaultMarginLR;
+  const widthRadius = Math.max(MIN_RADIUS, Math.min(approxInnerWidth / (effectiveBins * 2.2), MAX_RADIUS));
+  const neededInnerHeight = maxStack > 0 ? maxStack * widthRadius * 2.2 : 300;
+  // Use at least the default height (301 = 371 - 70 margin), grow if needed
+  const minInnerHeight = 301;
+  const viewHeight = maxStack > 0
+    ? Math.max(371, Math.ceil(neededInnerHeight) + 70)
+    : undefined;
+
+  const frame = createChart(container, { titleText, descText, id, margin, viewHeight });
 
   const xScale = d3Scale.scaleLinear()
     .domain(finalDomain)
@@ -222,7 +237,6 @@ const HIGHLIGHT_FILL = '#E07020';
  */
 function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate, highlightIndex = -1, highlightIndices) {
   const shouldAnimate = animate && !prefersReducedMotion();
-  const reducedMotion = prefersReducedMotion();
 
   /** Normal fill for a dot at index i. */
   function normalFill(d) {
@@ -250,48 +264,44 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
       .attr('cy', d => innerHeight - (d.stackIndex + 0.5) * radius * 2);
   }
 
-  // Highlight new dots, then revert after delay (no d3-transition needed)
-  if (!reducedMotion) {
-    if (highlightIndex >= 0) {
-      // Single dot (+1): yellow, larger, dark stroke → revert after 800ms
-      const single = circles.filter((d, i) => i === highlightIndex);
-      single
-        .attr('fill', HIGHLIGHT_FILL)
-        .attr('stroke', '#000')
-        .attr('stroke-width', 2)
-        .attr('r', radius * 1.5);
-      setTimeout(() => {
-        single.each(function(d) {
-          const el = d3Selection.select(this);
-          el.style('transition', 'fill 0.4s, stroke 0.4s, r 0.3s, stroke-width 0.3s');
-          el.attr('fill', normalFill(d))
-            .attr('stroke', normalFill(d))
-            .attr('stroke-width', 1)
-            .attr('r', radius);
-          // Clean up inline transition after animation
-          setTimeout(() => el.style('transition', null), 500);
-        });
-      }, 800);
-    } else if (highlightIndices && highlightIndices.size > 0) {
-      // Batch dots (+10): same orange as +1, slightly larger → revert after 800ms
-      const batch = circles.filter((d, i) => highlightIndices.has(i));
-      batch
-        .attr('fill', HIGHLIGHT_FILL)
-        .attr('stroke', '#000')
-        .attr('stroke-width', 1.5)
-        .attr('r', radius * 1.2);
-      setTimeout(() => {
-        batch.each(function(d) {
-          const el = d3Selection.select(this);
-          el.style('transition', 'fill 0.4s, stroke 0.4s, stroke-width 0.3s, r 0.3s');
-          el.attr('fill', normalFill(d))
-            .attr('stroke', normalFill(d))
-            .attr('stroke-width', 1)
-            .attr('r', radius);
-          setTimeout(() => el.style('transition', null), 500);
-        });
-      }, 800);
-    }
+  // Highlight new dots, then revert after delay.
+  // Color highlights always apply; only CSS transitions are skipped for reduced-motion.
+  if (highlightIndex >= 0) {
+    const single = circles.filter((d, i) => i === highlightIndex);
+    single
+      .attr('fill', HIGHLIGHT_FILL)
+      .attr('stroke', '#000')
+      .attr('stroke-width', 2)
+      .attr('r', radius * 1.5);
+    setTimeout(() => {
+      single.each(function(d) {
+        const el = d3Selection.select(this);
+        el.style('transition', 'fill 0.4s, stroke 0.4s, r 0.3s, stroke-width 0.3s');
+        el.attr('fill', normalFill(d))
+          .attr('stroke', normalFill(d))
+          .attr('stroke-width', 1)
+          .attr('r', radius);
+        setTimeout(() => el.style('transition', null), 500);
+      });
+    }, 800);
+  } else if (highlightIndices && highlightIndices.size > 0) {
+    const batch = circles.filter((d, i) => highlightIndices.has(i));
+    batch
+      .attr('fill', HIGHLIGHT_FILL)
+      .attr('stroke', '#000')
+      .attr('stroke-width', 1.5)
+      .attr('r', radius * 1.2);
+    setTimeout(() => {
+      batch.each(function(d) {
+        const el = d3Selection.select(this);
+        el.style('transition', 'fill 0.4s, stroke 0.4s, stroke-width 0.3s, r 0.3s');
+        el.attr('fill', normalFill(d))
+          .attr('stroke', normalFill(d))
+          .attr('stroke-width', 1)
+          .attr('r', radius);
+        setTimeout(() => el.style('transition', null), 500);
+      });
+    }, 800);
   }
 }
 

@@ -144,6 +144,100 @@ export async function fetchDataset(id) {
 }
 
 /**
+ * Create a play/pause button that auto-clicks the +1 generate button.
+ * Inserts the button into the .generate-bar, before the .gen-label.
+ * Stops automatically on reset or when the +1 button becomes disabled.
+ * @param {NodeListOf<HTMLButtonElement>} genBtns - Generate buttons
+ * @param {HTMLButtonElement|null} resetBtn - Reset button
+ * @param {{ delay?: number }} [options]
+ * @returns {{ stop: () => void } | null}
+ */
+export function initPlayPause(genBtns, resetBtn, options) {
+  const delay = options?.delay ?? 300;
+  const oneBtn = /** @type {HTMLButtonElement|undefined} */ (
+    Array.from(genBtns).find(b => b.dataset.count === '1'));
+  if (!oneBtn) return null;
+
+  const generateBar = oneBtn.closest('.generate-bar');
+  if (!generateBar) return null;
+
+  const playBtn = document.createElement('button');
+  playBtn.type = 'button';
+  playBtn.className = 'play-btn';
+  playBtn.textContent = '\u25B6';
+  playBtn.title = 'Auto-play: add one at a time';
+  playBtn.setAttribute('aria-label', 'Auto-play simulations');
+  playBtn.setAttribute('aria-pressed', 'false');
+  playBtn.disabled = oneBtn.disabled;
+
+  let playing = false;
+  /** @type {ReturnType<typeof setTimeout>|null} */
+  let timerId = null;
+
+  function stop() {
+    playing = false;
+    if (timerId !== null) clearTimeout(timerId);
+    timerId = null;
+    playBtn.textContent = '\u25B6';
+    playBtn.title = 'Auto-play: add one at a time';
+    playBtn.setAttribute('aria-pressed', 'false');
+    announce('Auto-play stopped.');
+  }
+
+  function step() {
+    if (!playing || oneBtn.disabled) { stop(); return; }
+    oneBtn.click();
+    timerId = setTimeout(step, delay);
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (oneBtn.disabled) return;
+    if (playing) {
+      stop();
+    } else {
+      playing = true;
+      playBtn.textContent = '\u23F8';
+      playBtn.title = 'Pause auto-play';
+      playBtn.setAttribute('aria-pressed', 'true');
+      announce('Auto-play started.');
+      step();
+    }
+  });
+
+  // Stop on reset
+  if (resetBtn) {
+    resetBtn.addEventListener('click', stop);
+  }
+
+  // Sync disabled state with +1 button
+  const observer = new MutationObserver(() => {
+    playBtn.disabled = oneBtn.disabled;
+    if (oneBtn.disabled && playing) stop();
+  });
+  observer.observe(oneBtn, { attributes: true, attributeFilter: ['disabled'] });
+
+  // Insert before gen-label (or append)
+  const label = generateBar.querySelector('.gen-label');
+  if (label) {
+    generateBar.insertBefore(playBtn, label);
+  } else {
+    generateBar.appendChild(playBtn);
+  }
+
+  // Space bar toggles play/pause (keyboard shortcut)
+  document.addEventListener('keydown', (e) => {
+    if (e.target !== document.body) return;
+    if (e.ctrlKey || e.metaKey) return;
+    if (e.key === ' ' && !oneBtn.disabled) {
+      e.preventDefault();
+      playBtn.click();
+    }
+  });
+
+  return { stop };
+}
+
+/**
  * Compute highlight indices for dotplot/histogram rendering.
  * For ≤200 values: tracks individual new indices.
  * For >200 values: computes previous bin counts for delta highlighting.

@@ -11,6 +11,7 @@ import { mean, median, sd, quantile, resample, permute } from './stats.js';
 import { bootstrapCI, permutationPValue } from './sim-engine.js';
 import { drawHistogram, computeBins } from './histogram.js';
 import { drawDotplot } from './dotplot.js';
+import { initPlayPause } from './page-utils.js';
 /**
  * @typedef {object} SimConfig
  * @property {'bootstrap'|'randomization'} mode
@@ -47,11 +48,11 @@ export function initSimPage(config) {
   // Bootstrap stat functions keyed by select value
   /** @type {Record<string, {fn: (d: number[]) => number, label: string}>} */
   const BOOT_STATS = {
-    mean:   { fn: (d) => mean(d),             label: 'Sample Mean' },
-    median: { fn: (d) => median(d),           label: 'Sample Median' },
-    sd:     { fn: (d) => sd(d),               label: 'Sample Std Dev' },
-    q1:     { fn: (d) => quantile(d, 0.25),   label: 'Q1 (25th %ile)' },
-    q3:     { fn: (d) => quantile(d, 0.75),   label: 'Q3 (75th %ile)' },
+    mean:   { fn: (d) => mean(d),             label: 'Sample Mean',     longLabel: 'mean' },
+    median: { fn: (d) => median(d),           label: 'Sample Median',   longLabel: 'median' },
+    sd:     { fn: (d) => sd(d),               label: 'Sample Std Dev',  longLabel: 'standard deviation' },
+    q1:     { fn: (d) => quantile(d, 0.25),   label: 'Q1 (25th %ile)', longLabel: 'first quartile' },
+    q3:     { fn: (d) => quantile(d, 0.75),   label: 'Q3 (75th %ile)', longLabel: 'third quartile' },
   };
 
   /** Get the current bootstrap stat function and label. */
@@ -87,6 +88,61 @@ export function initSimPage(config) {
   let resampleViewMode = 'summary';
   /** @type {number[]} */
   let lastResample = [];
+
+  /** Dataset context for natural-language interpretations. */
+  /** @type {{population?:string, parameter?:string, unit?:string, nullClaim?:string, successLabel?:string}} */
+  let datasetContext = {};
+
+  // Chart highlight state (declared early so renderChart can be called from showDataLoaded)
+  /** Index of single newest dot for +1 highlight, or -1. */
+  let lastStatIndex = -1;
+  /** Indices of batch-added dots for +10 highlight, or null. */
+  /** @type {Set<number>|null} */
+  let batchHighlightIndices = null;
+  /** Previous histogram bin counts for stacked delta highlight. */
+  /** @type {number[]|null} */
+  let prevBinCounts = null;
+  /** User's chart type preference: 'auto' (dotplot ≤200, histogram >200), 'dotplot', or 'histogram'. */
+  /** @type {'auto'|'dotplot'|'histogram'} */
+  let chartType = 'auto';
+  /** Cached render params for chart type toggle re-render. */
+  /** @type {[number,number]|null} */
+  let lastCI = null;
+  /** @type {number|undefined} */
+  let lastObserved;
+  /** @type {'left'|'right'|'both'|undefined} */
+  let lastDirection;
+  /** Pre-simulated domain for initial empty chart axis. */
+  /** @type {[number,number]|null} */
+  let preSimDomain = null;
+
+  // Chart type toggle (Dotplot / Histogram)
+  const chartFigure = chartContainer?.closest('figure');
+  if (chartFigure) {
+    const toggleDiv = document.createElement('div');
+    toggleDiv.className = 'chart-type-toggle';
+    toggleDiv.setAttribute('role', 'group');
+    toggleDiv.setAttribute('aria-label', 'Chart type');
+    toggleDiv.innerHTML = `
+      <button type="button" class="btn-sm" data-chart="dotplot" aria-pressed="true">Dotplot</button>
+      <button type="button" class="btn-sm" data-chart="histogram" aria-pressed="false">Histogram</button>`;
+    chartFigure.insertBefore(toggleDiv, chartContainer);
+    toggleDiv.addEventListener('click', (e) => {
+      const btn = /** @type {HTMLButtonElement} */ (e.target);
+      if (!btn.dataset.chart) return;
+      chartType = /** @type {'dotplot'|'histogram'} */ (btn.dataset.chart);
+      for (const b of toggleDiv.querySelectorAll('button')) {
+        b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+      }
+      // Re-render if we have data
+      if (allStats.length > 0) {
+        lastStatIndex = -1;
+        batchHighlightIndices = null;
+        prevBinCounts = null;
+        renderChart(allStats, lastCI, lastObserved, lastDirection);
+      }
+    });
+  }
 
   // Tab handling
   const tabs = document.querySelectorAll('[role="tab"]');
@@ -158,6 +214,7 @@ export function initSimPage(config) {
     loadPastedBtn.addEventListener('click', () => {
       const text = pasteArea.value.trim();
       if (!text) return;
+      datasetContext = {};
 
       try {
         const parsed = parseCSV(text);
@@ -353,6 +410,55 @@ export function initSimPage(config) {
       groupOrderLabel.textContent = `${group1Name} − ${group2Name}`;
     }
     announce(`Data loaded: n = ${data1.length}`);
+
+    // Render empty chart with sensible axis limits by running a silent pre-simulation
+    renderEmptyChart();
+
+    // Scroll chart into view after DOM settles
+    setTimeout(() => {
+      const target = document.getElementById('chart');
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 150);
+  }
+
+  /**
+   * Run a silent pre-simulation to establish sensible axis limits,
+   * then render an empty chart (0 dots, just axes, no observed line).
+   */
+  function renderEmptyChart() {
+    const PRE_SIM_N = 100;
+    const TRIM = 5;
+    const preRng = createRng('presim-' + Date.now());
+    const preStats = [];
+
+    if (config.mode === 'bootstrap') {
+      const statFn = getBootstrapStat().fn;
+      if (config.paired && data2.length > 0) {
+        const diffs = data2.map((v, i) => v - data1[i]);
+        for (let i = 0; i < PRE_SIM_N; i++) preStats.push(statFn(resample(diffs, preRng)));
+      } else if (config.twoGroup && data2.length > 0) {
+        for (let i = 0; i < PRE_SIM_N; i++) preStats.push(statFn(resample(data1, preRng)) - statFn(resample(data2, preRng)));
+      } else {
+        for (let i = 0; i < PRE_SIM_N; i++) preStats.push(statFn(resample(data1, preRng)));
+      }
+    } else if (config.testStat) {
+      for (let i = 0; i < PRE_SIM_N; i++) {
+        const [g1, g2] = permute(data1, data2, preRng);
+        preStats.push(config.testStat(g1, g2));
+      }
+    }
+
+    if (preStats.length === 0) return;
+
+    // Sort and trim extremes for a stable domain
+    preStats.sort((a, b) => a - b);
+    const lo = preStats[TRIM];
+    const hi = preStats[preStats.length - 1 - TRIM];
+    const pad = (hi - lo) * 0.1 || 0.5;
+    preSimDomain = [lo - pad, hi + pad];
+
+    // Render empty chart (no observed stat line — just axes)
+    renderChart([]);
   }
 
   function updateHypothesisDisplay() {
@@ -476,6 +582,7 @@ export function initSimPage(config) {
       })
       .then((ds) => {
         resetSimulation();
+        datasetContext = ds.context || {};
 
         if (config.paired) {
           // Paired data: two numeric columns
@@ -1152,15 +1259,6 @@ export function initSimPage(config) {
 
   // ─── Chart rendering ───
 
-  /** Index of single newest dot for +1 highlight, or -1. */
-  let lastStatIndex = -1;
-  /** Indices of batch-added dots for +10 highlight, or null. */
-  /** @type {Set<number>|null} */
-  let batchHighlightIndices = null;
-  /** Previous histogram bin counts for stacked delta highlight. */
-  /** @type {number[]|null} */
-  let prevBinCounts = null;
-
   // Resample panel title element (dynamic: "This Resample" vs "Last Resample")
   const resampleTitleEl = document.getElementById('resample-title');
 
@@ -1173,6 +1271,10 @@ export function initSimPage(config) {
   function renderChart(stats, ci, observedStat, direction) {
     chartContainer.innerHTML = '';
     const n = stats.length;
+    // Cache params for chart type toggle re-render
+    lastCI = ci;
+    lastObserved = observedStat;
+    lastDirection = direction;
     const titleText = `${config.mode === 'bootstrap' ? 'Bootstrap' : 'Randomization'} Distribution`;
     let xLabel;
     if (config.mode === 'bootstrap') {
@@ -1188,21 +1290,43 @@ export function initSimPage(config) {
       xLabel = config.statLabel ?? '';
     }
 
-    // Expand domain to include the observed stat so the line is always visible
+    // Compute domain: expand to include observed stat, never shrink below preSimDomain
     /** @type {[number,number]|undefined} */
     let domain;
-    if (observedStat != null && stats.length > 0) {
-      const lo = Math.min(...stats, observedStat);
-      const hi = Math.max(...stats, observedStat);
+    if (stats.length > 0) {
+      const vals = observedStat != null ? [...stats, observedStat] : stats;
+      let lo = Math.min(...vals);
+      let hi = Math.max(...vals);
       const pad = (hi - lo) * 0.05 || 0.5;
-      domain = [lo - pad, hi + pad];
+      lo -= pad;
+      hi += pad;
+      // Never shrink below the pre-simulated domain
+      if (preSimDomain) {
+        lo = Math.min(lo, preSimDomain[0]);
+        hi = Math.max(hi, preSimDomain[1]);
+      }
+      domain = [lo, hi];
+    } else if (preSimDomain) {
+      domain = preSimDomain;
     }
 
     // Highlight new dots in dotplot mode
     const highlightIndex = lastStatIndex >= 0 ? lastStatIndex : -1;
     const highlightIndices = batchHighlightIndices ?? undefined;
+    // For proportion data, use sample size as numBins so dots align to k/n grid
+    // Cap at 50 — beyond that the discrete structure is fine-grained enough for default binning
+    const dotNumBins = config.proportion && data1.length <= 50 ? data1.length : undefined;
 
-    if (n <= 200) {
+    const useDotplot = chartType === 'dotplot' || (chartType === 'auto' && n <= 200);
+    // Sync toggle buttons to reflect actual chart type
+    if (chartFigure) {
+      const toggleBtns = chartFigure.querySelectorAll('.chart-type-toggle button');
+      for (const b of toggleBtns) {
+        const pressed = b.dataset.chart === (useDotplot ? 'dotplot' : 'histogram');
+        b.setAttribute('aria-pressed', String(pressed));
+      }
+    }
+    if (useDotplot) {
       drawDotplot(chartContainer, stats, {
         id: 'sim-chart',
         xLabel,
@@ -1214,6 +1338,7 @@ export function initSimPage(config) {
         ciLines: ci ?? undefined,
         animate: false,
         domain,
+        numBins: dotNumBins,
         highlightIndex,
         highlightIndices,
       });
@@ -1229,6 +1354,7 @@ export function initSimPage(config) {
         ciLines: ci ?? undefined,
         animate: false,
         domain,
+        numBins: dotNumBins,
         prevBinCounts: prevBinCounts ?? undefined,
       });
     }
@@ -1268,17 +1394,35 @@ export function initSimPage(config) {
       paramLabel = config.twoGroup
         ? `Difference in ${statLabel}s (${group1Name} − ${group2Name})`
         : statLabel;
-      const shortLabel = statLabel.replace(/^Sample\s+/i, '').toLowerCase();
+      const longLabel = getBootstrapStat().longLabel;
       paramName = config.twoGroup
-        ? `difference in population ${shortLabel}s`
-        : `true population ${shortLabel}`;
+        ? `difference in population ${longLabel}s`
+        : `true population ${longLabel}`;
     }
+    // Contextual interpretation using dataset metadata
+    const ctx = datasetContext;
+    const bootLong = getBootstrapStat().longLabel;
+    // Adapt context parameter to current stat (e.g. "mean mercury level" → "standard deviation of mercury level")
+    let ctxParam;
+    if (ctx.parameter) {
+      // Replace leading "mean"/"median"/etc with current stat's long label
+      const adapted = ctx.parameter.replace(/^(mean|median|standard deviation|first quartile|third quartile)\b/i, bootLong);
+      // If no replacement happened (e.g. "difference in ..."), prepend the stat
+      ctxParam = adapted === ctx.parameter && !ctx.parameter.toLowerCase().startsWith(bootLong)
+        ? `population ${bootLong} of ${ctx.parameter}`
+        : `population ${adapted}`;
+    } else {
+      ctxParam = paramName;
+    }
+    const unitSuffix = ctx.unit ? ` ${ctx.unit}` : '';
+    const popPhrase = ctx.population ? ` for ${ctx.population}` : '';
     resultDiv.innerHTML = `
       <p><strong>Bootstrap Distribution</strong> (${stats.length} resamples)</p>
       <p>${paramLabel}: ${m.toFixed(4)}</p>
       <p>SE: ${se.toFixed(4)}</p>
       <p><strong>${ciLevel}% Confidence Interval:</strong> (${ci[0].toFixed(4)}, ${ci[1].toFixed(4)})</p>
-      <p class="interpretation">The middle ${ciLevel}% of bootstrap statistics fall between ${ci[0].toFixed(2)} and ${ci[1].toFixed(2)}. We are ${ciLevel}% confident that the ${paramName} is in this interval.</p>
+      <p class="interpretation">The middle ${ciLevel}% of bootstrap ${bootLong}s fall between ${ci[0].toFixed(2)}${unitSuffix} and ${ci[1].toFixed(2)}${unitSuffix}.</p>
+      <p class="interpretation">We are ${ciLevel}% confident that the ${ctxParam}${popPhrase} is between ${ci[0].toFixed(2)}${unitSuffix} and ${ci[1].toFixed(2)}${unitSuffix}.</p>
       ${stats.length < 50 ? '<p class="hint">CI is approximate with few resamples. Generate more for stability.</p>' : ''}
     `;
   }
@@ -1307,15 +1451,16 @@ export function initSimPage(config) {
     else if (pValue < 0.05) strength = 'strong';
     else if (pValue < 0.10) strength = 'moderate';
     else strength = 'little';
-    const nullDesc = config.proportion
+    const defaultNull = config.proportion
       ? 'no difference in population proportions'
       : 'no difference in population means';
+    const nullDesc = datasetContext.nullClaim || defaultNull;
     resultDiv.innerHTML = `
       <p><strong>Randomization Distribution</strong> (${stats.length} shuffles)</p>
       <p>Observed statistic: ${obsLabel}</p>
       <p>Extreme count: ${extremeCount} of ${stats.length} (${dirLabel})</p>
       <p><strong>p-value:</strong> ${pValue.toFixed(4)}</p>
-      <p class="interpretation">${extremeCount} of ${stats.length} shuffled statistics were at least as extreme as the observed value. This provides ${strength} evidence against H₀ (${nullDesc}).</p>
+      <p class="interpretation">${extremeCount} of ${stats.length} shuffled statistics were at least as extreme as the observed value. This provides ${strength} evidence against H₀: ${nullDesc}.</p>
     `;
   }
 
@@ -1340,4 +1485,6 @@ export function initSimPage(config) {
     const closeBtn = helpDialog.querySelector('button');
     if (closeBtn) closeBtn.addEventListener('click', () => helpDialog.close());
   }
+
+  initPlayPause(genBtns, resetBtn);
 }

@@ -8,7 +8,7 @@ import { createRng } from '../../js/prng.js';
 import { mean } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
-import { announce, initKeyboardShortcuts, flashMechanism, computeHighlights } from '../../js/page-utils.js';
+import { announce, initKeyboardShortcuts, initPlayPause, flashMechanism, computeHighlights } from '../../js/page-utils.js';
 
 // DOM elements
 const chartContainer = document.getElementById('chart-container');
@@ -35,6 +35,7 @@ const mechanismDescEl = document.getElementById('mechanism-description');
 const simTitleEl = document.getElementById('sim-title');
 
 initKeyboardShortcuts(genBtns, resetBtn);
+initPlayPause(genBtns, resetBtn);
 
 /** @type {number[]} */
 let allStats = [];
@@ -79,6 +80,12 @@ function loadData() {
     mechObservedStat.textContent = `${k} of ${n} (p̂ = ${observedPHat.toFixed(4)})`;
   }
   announce(`Data loaded: n = ${n}, successes = ${k}`);
+
+  // Scroll controls into view after DOM settles
+  setTimeout(() => {
+    const target = document.getElementById('controls') || genBtns[0]?.closest('.generate-bar');
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
 }
 
 // ─── Null proportion & direction ───

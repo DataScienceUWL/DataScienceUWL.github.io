@@ -12,7 +12,7 @@ import { drawScatterplot } from '../../js/scatterplot.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { parseCSV } from '../../js/csv-parser.js';
-import { announce, initTabs, initKeyboardShortcuts, loadDatasetIndex, fetchDataset, computeHighlights } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, loadDatasetIndex, fetchDataset, computeHighlights } from '../../js/page-utils.js';
 
 // ─── DOM ───
 
@@ -34,6 +34,7 @@ const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
 
 initTabs();
 initKeyboardShortcuts(genBtns, resetBtn);
+initPlayPause(genBtns, resetBtn);
 
 // ─── State ───
 
@@ -43,6 +44,8 @@ let xData = [];
 let yData = [];
 let xLabel = 'x';
 let yLabel = 'y';
+/** @type {{population?:string, parameter?:string, unit?:string}} */
+let datasetContext = {};
 
 /** @type {number[]} */
 let allSlopes = [];
@@ -73,6 +76,7 @@ if (datasetSelect) {
     fetchDataset(id)
       .then(ds => {
         resetSimulation();
+        datasetContext = ds.context || {};
         const numVars = ds.variables.filter(v => v.type === 'numeric');
         if (numVars.length < 2) return;
         xLabel = numVars[0].name;
@@ -93,6 +97,7 @@ if (loadPastedBtn && pasteArea) {
   loadPastedBtn.addEventListener('click', () => {
     const text = pasteArea.value.trim();
     if (!text) return;
+    datasetContext = {};
     try {
       const parsed = parseCSV(text);
       const numIndices = parsed.types
@@ -147,6 +152,12 @@ function showDataLoaded() {
 
   renderScatter();
   announce(`Data loaded: n = ${xData.length}`);
+
+  // Scroll controls into view after DOM settles
+  setTimeout(() => {
+    const target = document.getElementById('controls') || genBtns[0]?.closest('.generate-bar');
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
 }
 
 // ─── CI level change ───
@@ -276,7 +287,7 @@ function displayResults(slopes, ci, se, ciLevel) {
     <p>Bootstrap mean slope: ${mean(slopes).toFixed(4)}</p>
     <p>SE: ${se.toFixed(4)}</p>
     <p><strong>${ciLevel}% Confidence Interval:</strong> (${ci[0].toFixed(4)}, ${ci[1].toFixed(4)})</p>
-    <p class="interpretation">We are ${ciLevel}% confident that the true population slope is between ${ci[0].toFixed(4)} and ${ci[1].toFixed(4)}. The ${bootLines.length} semi-transparent lines on the scatterplot show the variability in the fitted regression across bootstrap resamples.</p>
+    <p class="interpretation">We are ${ciLevel}% confident that the ${datasetContext.parameter || 'true population slope'}${datasetContext.population ? ' for ' + datasetContext.population : ''} is between ${ci[0].toFixed(4)} and ${ci[1].toFixed(4)}. The ${bootLines.length} semi-transparent lines on the scatterplot show the variability in the fitted regression across bootstrap resamples.</p>
     ${slopes.length < 50 ? '<p class="hint">CI is approximate with few resamples. Generate more for stability.</p>' : ''}
   `;
 }

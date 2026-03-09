@@ -11,7 +11,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import * as d3Array from 'd3-array';
-import { announce, initKeyboardShortcuts } from '../../js/page-utils.js';
+import { announce, initKeyboardShortcuts, initPlayPause } from '../../js/page-utils.js';
 
 // ─── DOM ───
 
@@ -326,6 +326,7 @@ function resetSimulation() {
 }
 
 initKeyboardShortcuts(genBtns, resetBtn);
+initPlayPause(genBtns, resetBtn);
 
 // ─── Init ───
 

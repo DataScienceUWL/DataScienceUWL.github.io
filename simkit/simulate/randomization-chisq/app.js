@@ -9,7 +9,7 @@ import { createRng, shuffle } from '../../js/prng.js';
 import { chisqStat } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
-import { announce, initTabs, initKeyboardShortcuts, flashMechanism, loadDatasetIndex, fetchDataset, computeHighlights } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, loadDatasetIndex, fetchDataset, computeHighlights } from '../../js/page-utils.js';
 
 // ─── DOM elements ───
 
@@ -43,9 +43,12 @@ const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
 
 initTabs();
 initKeyboardShortcuts(genBtns, resetBtn);
+initPlayPause(genBtns, resetBtn);
 
 // ─── State ───
 
+/** @type {{population?:string, parameter?:string, nullClaim?:string}} */
+let datasetContext = {};
 /** @type {number[]} */
 let allStats = [];
 /** @type {(() => number)|null} */
@@ -70,6 +73,7 @@ if (loadPastedBtn && pasteArea) {
   loadPastedBtn.addEventListener('click', () => {
     const text = pasteArea.value.trim();
     if (!text) return;
+    datasetContext = {};
     loadFromCSV(text);
   });
 }
@@ -154,6 +158,7 @@ if (buildTableBtn && tableGrid) {
 
 if (loadTableBtn && tableGrid) {
   loadTableBtn.addEventListener('click', () => {
+    datasetContext = {};
     const rlInputs = tableGrid.querySelectorAll('.row-label');
     const clInputs = tableGrid.querySelectorAll('.col-label');
     const cellInputs = tableGrid.querySelectorAll('.cell-count');
@@ -210,6 +215,7 @@ if (datasetSelect) {
     fetchDataset(id)
       .then(ds => {
         resetSimulation();
+        datasetContext = ds.context || {};
         const catVars = ds.variables.filter(v => v.type === 'categorical');
         if (catVars.length < 2) return;
         rawData = ds.rows.map(r => ({
@@ -242,6 +248,12 @@ function showDataLoaded() {
     if (mechObservedChisq) mechObservedChisq.textContent = observedChisq.toFixed(4);
   }
   announce(`Data loaded: ${rowLabels.length} × ${colLabels.length} table, n = ${totalN}`);
+
+  // Scroll controls into view after DOM settles
+  setTimeout(() => {
+    const target = document.getElementById('controls') || genBtns[0]?.closest('.generate-bar');
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
 }
 
 /**
@@ -413,7 +425,7 @@ function displayResults(stats, observed, pValue, extremeCount) {
       <p>Observed χ² = ${observed.toFixed(4)}</p>
       <p>Extreme count: ${extremeCount} of ${stats.length} (right-tail)</p>
       <p><strong>p-value:</strong> ${pValue.toFixed(4)}</p>
-      <p class="interpretation">${extremeCount} of ${stats.length} shuffled tables had χ² ≥ ${observed.toFixed(2)}. This provides ${strength} evidence against the null hypothesis of independence between the row and column variables.</p>
+      <p class="interpretation">${extremeCount} of ${stats.length} shuffled tables had χ² ≥ ${observed.toFixed(2)}. This provides ${strength} evidence against H₀: ${datasetContext.nullClaim || 'the row and column variables are independent'}.</p>
     `;
   }
 }
