@@ -334,7 +334,7 @@ function renderCILine(overlays, value, xScale, innerHeight) {
     .attr('x', x).attr('y', -4)
     .attr('text-anchor', 'middle')
     .attr('fill', CI_COLOR)
-    .attr('font-size', '11px')
+    .attr('font-size', '14px')
     .attr('font-weight', '600')
     .text(value.toFixed(3));
 }

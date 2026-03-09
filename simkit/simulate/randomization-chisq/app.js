@@ -9,6 +9,7 @@ import { createRng, shuffle } from '../../js/prng.js';
 import { chisqStat } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
+import { renderPValueAnnotation } from '../../js/chart-utils.js';
 import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, loadDatasetIndex, fetchDataset, computeHighlights } from '../../js/page-utils.js';
 
 // ─── DOM elements ───
@@ -368,8 +369,12 @@ function renderChart(stats, observed, highlightIndex = -1, highlightIndices, pre
   /** @type {[number, number]} */
   const domain = [0, hi];
 
+  /** @type {import('../../js/chart-utils.js').ChartFrame} */
+  let frame;
+  /** @type {any} */
+  let xScale;
   if (stats.length <= 200) {
-    drawDotplot(chartContainer, stats, {
+    const r = drawDotplot(chartContainer, stats, {
       id: 'sim-chart',
       xLabel: 'Chi-Square Statistic (χ²)',
       titleText: 'Null Distribution',
@@ -380,8 +385,10 @@ function renderChart(stats, observed, highlightIndex = -1, highlightIndices, pre
       highlightIndex,
       highlightIndices,
     });
+    frame = r.frame;
+    xScale = r.xScale;
   } else {
-    drawHistogram(chartContainer, stats, {
+    const r = drawHistogram(chartContainer, stats, {
       id: 'sim-chart',
       xLabel: 'Chi-Square Statistic (χ²)',
       titleText: 'Null Distribution',
@@ -391,7 +398,13 @@ function renderChart(stats, observed, highlightIndex = -1, highlightIndices, pre
       domain,
       prevBinCounts,
     });
+    frame = r.frame;
+    xScale = r.xScale;
   }
+
+  // P-value annotation (always right-tailed)
+  const { pValue } = computePValue(stats, observed);
+  renderPValueAnnotation(frame, xScale, pValue, observed, 'right');
 }
 
 /**

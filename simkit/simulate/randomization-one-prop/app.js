@@ -8,6 +8,7 @@ import { createRng } from '../../js/prng.js';
 import { mean } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
+import { renderPValueAnnotation } from '../../js/chart-utils.js';
 import { announce, initKeyboardShortcuts, initPlayPause, flashMechanism, computeHighlights } from '../../js/page-utils.js';
 
 // DOM elements
@@ -205,8 +206,12 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
   /** @type {[number, number]} */
   const domain = [lo - pad, hi + pad];
 
+  /** @type {import('../../js/chart-utils.js').ChartFrame} */
+  let frame;
+  /** @type {any} */
+  let xScale;
   if (n <= 200) {
-    drawDotplot(chartContainer, stats, {
+    const r = drawDotplot(chartContainer, stats, {
       id: 'sim-chart',
       xLabel: 'Sample Proportion (p̂)',
       titleText: 'Null Distribution',
@@ -217,8 +222,10 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
       highlightIndex,
       highlightIndices,
     });
+    frame = r.frame;
+    xScale = r.xScale;
   } else {
-    drawHistogram(chartContainer, stats, {
+    const r = drawHistogram(chartContainer, stats, {
       id: 'sim-chart',
       xLabel: 'Sample Proportion (p̂)',
       titleText: 'Null Distribution',
@@ -228,6 +235,14 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
       domain,
       prevBinCounts,
     });
+    frame = r.frame;
+    xScale = r.xScale;
+  }
+
+  // P-value annotation
+  if (stats.length > 0) {
+    const { pValue } = computePValue(stats, observed, direction);
+    renderPValueAnnotation(frame, xScale, pValue, observed, direction);
   }
 }
 

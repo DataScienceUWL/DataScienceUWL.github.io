@@ -208,3 +208,81 @@ function detectPhoneMargin() {
   if (typeof globalThis.matchMedia !== 'function') return false;
   return globalThis.matchMedia('(max-width: 480px)').matches;
 }
+
+/**
+ * Render a p-value annotation on a hypothesis test chart.
+ * Positions the label in the tail area(s) with a white background for contrast.
+ *
+ * @param {ChartFrame} frame - Chart frame from createChart
+ * @param {d3Selection.Selection|any} xScale - D3 linear scale for x-axis
+ * @param {number} pValue - Computed p-value
+ * @param {number} observedStat - Observed test statistic
+ * @param {'left'|'right'|'both'} direction - Tail direction
+ */
+export function renderPValueAnnotation(frame, xScale, pValue, observedStat, direction) {
+  const annotations = d3Selection.select(frame.inner).select('.annotations');
+  annotations.selectAll('.p-value-group').remove();
+
+  // Format p-value text
+  let pText;
+  if (pValue === 0) pText = 'p ≈ 0';
+  else if (pValue < 0.0001) pText = 'p < 0.0001';
+  else if (pValue < 0.001) pText = `p = ${pValue.toFixed(4)}`;
+  else pText = `p = ${pValue.toFixed(4)}`;
+
+  const obsX = xScale(observedStat);
+  const h = frame.height;
+  const w = frame.width;
+
+  if (direction === 'both') {
+    // Two-sided: label near observed stat, slightly above mid-height
+    const labelX = Math.max(60, Math.min(w - 60, obsX));
+    _addPLabel(annotations, `${pText}  (two-tailed)`, labelX, h * 0.18);
+  } else if (direction === 'left') {
+    // Left tail: label between left edge and observed
+    const tailMidX = obsX / 2;
+    const labelX = Math.max(50, Math.min(obsX - 10, tailMidX));
+    _addPLabel(annotations, pText, labelX, h * 0.25);
+  } else {
+    // Right tail: label between observed and right edge
+    const tailMidX = (obsX + w) / 2;
+    const labelX = Math.min(w - 50, Math.max(obsX + 10, tailMidX));
+    _addPLabel(annotations, pText, labelX, h * 0.25);
+  }
+}
+
+/**
+ * Add a p-value text label with white background rect.
+ * @param {d3Selection.Selection} group
+ * @param {string} text
+ * @param {number} x
+ * @param {number} y
+ */
+function _addPLabel(group, text, x, y) {
+  const g = group.append('g').attr('class', 'p-value-group');
+
+  // Add text first to measure, then add background rect
+  const textEl = g.append('text')
+    .attr('class', 'p-value-label')
+    .attr('x', x)
+    .attr('y', y)
+    .attr('text-anchor', 'middle')
+    .attr('fill', '#B71C1C')
+    .text(text);
+
+  // Add background rect behind text for readability
+  try {
+    const bbox = /** @type {SVGTextElement} */ (textEl.node()).getBBox();
+    const pad = 4;
+    g.insert('rect', 'text')
+      .attr('x', bbox.x - pad)
+      .attr('y', bbox.y - pad)
+      .attr('width', bbox.width + pad * 2)
+      .attr('height', bbox.height + pad * 2)
+      .attr('fill', 'white')
+      .attr('fill-opacity', 0.85)
+      .attr('rx', 3);
+  } catch {
+    // getBBox may fail in test/JSDOM — skip background
+  }
+}

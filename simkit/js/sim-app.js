@@ -11,6 +11,7 @@ import { mean, median, sd, quantile, resample, permute } from './stats.js';
 import { bootstrapCI, permutationPValue } from './sim-engine.js';
 import { drawHistogram, computeBins } from './histogram.js';
 import { drawDotplot } from './dotplot.js';
+import { renderPValueAnnotation } from './chart-utils.js';
 import { initPlayPause } from './page-utils.js';
 /**
  * @typedef {object} SimConfig
@@ -1329,8 +1330,12 @@ export function initSimPage(config) {
         b.setAttribute('aria-pressed', String(pressed));
       }
     }
+    /** @type {import('./chart-utils.js').ChartFrame|undefined} */
+    let chartResult;
+    /** @type {any} */
+    let chartXScale;
     if (useDotplot) {
-      drawDotplot(chartContainer, stats, {
+      const r = drawDotplot(chartContainer, stats, {
         id: 'sim-chart',
         xLabel,
         titleText,
@@ -1345,8 +1350,10 @@ export function initSimPage(config) {
         highlightIndex,
         highlightIndices,
       });
+      chartResult = r.frame;
+      chartXScale = r.xScale;
     } else {
-      drawHistogram(chartContainer, stats, {
+      const r = drawHistogram(chartContainer, stats, {
         id: 'sim-chart',
         xLabel,
         titleText,
@@ -1360,7 +1367,16 @@ export function initSimPage(config) {
         numBins: dotNumBins,
         prevBinCounts: prevBinCounts ?? undefined,
       });
+      chartResult = r.frame;
+      chartXScale = r.xScale;
     }
+
+    // Add p-value annotation for randomization (hypothesis test) charts
+    if (config.mode === 'randomization' && observedStat != null && direction && stats.length > 0) {
+      const { pValue } = permutationPValue(stats, observedStat, direction);
+      renderPValueAnnotation(chartResult, chartXScale, pValue, observedStat, direction);
+    }
+
     lastStatIndex = -1; // Reset after rendering
     batchHighlightIndices = null;
     prevBinCounts = null;
