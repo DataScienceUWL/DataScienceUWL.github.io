@@ -2,14 +2,14 @@
 /**
  * Binomial Distribution Calculator.
  * PMF bar chart with shading, cumulative probabilities,
- * optional normal approximation overlay.
+ * optional normal approximation overlay, and draggable k boundary.
  */
 
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import * as d3Shape from 'd3-shape';
-import { createChart, formatTick } from '../../js/chart-utils.js';
+import { formatTick } from '../../js/chart-utils.js';
 
 // ─── DOM ───
 
@@ -71,6 +71,21 @@ function normalPDF(x, mu, sigma) {
   return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
 }
 
+// ─── Chart state (preserved across updates for drag interaction) ───
+
+/** @type {d3Selection.Selection|null} */
+let chartG = null;
+/** @type {d3Scale.ScaleLinear<number,number>|null} */
+let xLinear = null;
+/** @type {d3Scale.ScaleBand<string>|null} */
+let xBand = null;
+/** @type {number} */
+let chartInnerH = 0;
+/** @type {number} */
+let visibleLo = 0;
+/** @type {number} */
+let visibleHi = 0;
+
 // ─── Compute ───
 
 function update() {
@@ -99,14 +114,32 @@ function update() {
     data.push({ k: i, pmf, cdf: Math.min(cumulative, 1) });
   }
 
-  // Compute the requested probability
+  // Compute the requested probability and shaded set
+  const { prob, shadedKs } = computeShading(data, k, n, type);
+
+  // Display result
+  displayResult(k, type, prob);
+  renderChart(data, n, p, k, shadedKs, mu, sigma);
+  renderTable(data, shadedKs);
+  announce(`${typeLabel(k, type)} = ${prob.toFixed(6)}`);
+}
+
+/**
+ * Compute shading and probability for given k and type.
+ * @param {Array<{k: number, pmf: number}>} data
+ * @param {number} k
+ * @param {number} n
+ * @param {string} type
+ */
+function computeShading(data, k, n, type) {
   let prob = 0;
   /** @type {Set<number>} */
   const shadedKs = new Set();
 
   switch (type) {
     case 'exact':
-      prob = binomPMF(k, n, p);
+      prob = binomPMF(k, n, data.length > 0 ? 0 : 0); // handled below
+      prob = data[k]?.pmf ?? 0;
       shadedKs.add(k);
       break;
     case 'leq':
@@ -122,22 +155,34 @@ function update() {
       for (let i = k + 1; i <= n; i++) { prob += data[i].pmf; shadedKs.add(i); }
       break;
   }
+  return { prob, shadedKs };
+}
 
-  // Display result
-  const typeLabels = {
+/**
+ * @param {number} k
+ * @param {string} type
+ * @returns {string}
+ */
+function typeLabel(k, type) {
+  const labels = {
     exact: `P(X = ${k})`,
     leq: `P(X ≤ ${k})`,
     geq: `P(X ≥ ${k})`,
     lt: `P(X < ${k})`,
     gt: `P(X > ${k})`,
   };
-  if (resultBanner) {
-    resultBanner.innerHTML = `<span>${typeLabels[type]}</span> = <span class="prob-value">${prob.toFixed(6)}</span>`;
-  }
+  return labels[type] || '';
+}
 
-  renderChart(data, n, p, k, shadedKs, mu, sigma);
-  renderTable(data, shadedKs);
-  announce(`${typeLabels[type]} = ${prob.toFixed(6)}`);
+/**
+ * @param {number} k
+ * @param {string} type
+ * @param {number} prob
+ */
+function displayResult(k, type, prob) {
+  if (resultBanner) {
+    resultBanner.innerHTML = `<span>${typeLabel(k, type)}</span> = <span class="prob-value">${prob.toFixed(6)}</span>`;
+  }
 }
 
 // ─── Chart ───
@@ -162,6 +207,8 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma) {
     lo = Math.max(0, Math.floor(mu - 4 * sigma));
     hi = Math.min(n, Math.ceil(mu + 4 * sigma));
   }
+  visibleLo = lo;
+  visibleHi = hi;
   const visible = data.slice(lo, hi + 1);
 
   const margin = { top: 25, right: 20, bottom: 45, left: 55 };
@@ -169,6 +216,7 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma) {
   const height = 300;
   const innerW = width - margin.left - margin.right;
   const innerH = height - margin.top - margin.bottom;
+  chartInnerH = innerH;
 
   const svg = d3Selection.select(chartContainer).append('svg')
     .attr('role', 'img')
@@ -183,15 +231,15 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma) {
     .attr('y', 14)
     .attr('text-anchor', 'middle')
     .attr('font-weight', 700)
-    .attr('font-size', '12px')
     .text(`Binomial(n = ${n}, p = ${p})`);
 
   const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
+  chartG = g;
 
   const kValues = visible.map(d => d.k);
   const maxPMF = Math.max(...visible.map(d => d.pmf), 0.001);
 
-  const xScale = d3Scale.scaleBand()
+  xBand = d3Scale.scaleBand()
     .domain(kValues.map(String))
     .range([0, innerW])
     .paddingInner(n > 40 ? 0.05 : 0.15)
@@ -202,9 +250,13 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma) {
     .nice()
     .range([innerH, 0]);
 
+  // Linear scale for drag (maps pixel → continuous k)
+  xLinear = d3Scale.scaleLinear()
+    .domain([lo - 0.5, hi + 0.5])
+    .range([0, innerW]);
+
   // Axes
-  const xAxis = d3Axis.axisBottom(xScale);
-  // For large n, show fewer tick labels
+  const xAxis = d3Axis.axisBottom(xBand);
   if (kValues.length > 30) {
     const step = Math.ceil(kValues.length / 15);
     xAxis.tickValues(kValues.filter((_, i) => i % step === 0).map(String));
@@ -214,57 +266,49 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma) {
 
   // X label
   g.append('text')
+    .attr('class', 'x-label')
     .attr('x', innerW / 2)
     .attr('y', innerH + 35)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '11px')
     .text('k (number of successes)');
 
   // Y label
   g.append('text')
+    .attr('class', 'y-label')
     .attr('text-anchor', 'middle')
     .attr('transform', 'rotate(-90)')
     .attr('x', -innerH / 2)
     .attr('y', -40)
-    .attr('font-size', '11px')
     .text('P(X = k)');
 
   // Bars
-  for (const d of visible) {
-    const isShaded = shadedKs.has(d.k);
-    g.append('rect')
-      .attr('x', xScale(String(d.k)))
-      .attr('y', yScale(d.pmf))
-      .attr('width', xScale.bandwidth())
-      .attr('height', innerH - yScale(d.pmf))
-      .attr('fill', isShaded ? '#569BBD' : '#c0d6e4')
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 0.5);
-  }
+  g.selectAll('.pmf-bar')
+    .data(visible)
+    .join('rect')
+    .attr('class', 'pmf-bar')
+    .attr('x', d => xBand(String(d.k)))
+    .attr('y', d => yScale(d.pmf))
+    .attr('width', xBand.bandwidth())
+    .attr('height', d => innerH - yScale(d.pmf))
+    .attr('fill', d => shadedKs.has(d.k) ? '#569BBD' : '#c0d6e4')
+    .attr('stroke', '#fff')
+    .attr('stroke-width', 0.5);
 
   // Normal approximation overlay
   if (showNormal.checked && sigma > 0) {
     const nPts = 200;
     const xMin = lo - 0.5;
     const xMax = hi + 0.5;
-    const step = (xMax - xMin) / nPts;
+    const curveStep = (xMax - xMin) / nPts;
     /** @type {Array<{x: number, y: number}>} */
     const curve = [];
-
-    // Linear x scale for normal curve
-    const xLinear = d3Scale.scaleLinear()
-      .domain([lo - 0.5, hi + 0.5])
-      .range([0, innerW]);
-
     for (let i = 0; i <= nPts; i++) {
-      const x = xMin + i * step;
+      const x = xMin + i * curveStep;
       curve.push({ x, y: normalPDF(x, mu, sigma) });
     }
-
     const line = d3Shape.line()
       .x(d => xLinear(d.x))
       .y(d => yScale(d.y));
-
     g.append('path')
       .datum(curve)
       .attr('d', line)
@@ -276,10 +320,6 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma) {
   }
 
   // Mean line
-  const xLinear = d3Scale.scaleLinear()
-    .domain([lo - 0.5, hi + 0.5])
-    .range([0, innerW]);
-
   g.append('line')
     .attr('x1', xLinear(mu))
     .attr('x2', xLinear(mu))
@@ -288,6 +328,133 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma) {
     .attr('stroke', '#114B5F')
     .attr('stroke-width', 1.5)
     .attr('stroke-dasharray', '4,3');
+
+  // Draggable k boundary line
+  addDraggableKLine(g, svg, data, n, k, innerW, innerH, margin);
+}
+
+/**
+ * Add a draggable vertical line at X = k with snap-to-integer behavior.
+ * @param {d3Selection.Selection} g
+ * @param {d3Selection.Selection} svg
+ * @param {Array<{k: number, pmf: number, cdf: number}>} data
+ * @param {number} n
+ * @param {number} k
+ * @param {number} innerW
+ * @param {number} innerH
+ * @param {{top:number,right:number,bottom:number,left:number}} margin
+ */
+function addDraggableKLine(g, svg, data, n, k, innerW, innerH, margin) {
+  if (!xLinear) return;
+  const kPx = xLinear(k);
+
+  // Visible dashed line
+  const kLine = g.append('line')
+    .attr('class', 'k-boundary')
+    .attr('x1', kPx).attr('x2', kPx)
+    .attr('y1', 0).attr('y2', innerH)
+    .attr('stroke', '#333')
+    .attr('stroke-width', 1.5)
+    .attr('stroke-dasharray', '6,3');
+
+  // Invisible wide handle for easier dragging
+  const handleWidth = 24;
+  const handle = g.append('rect')
+    .attr('class', 'k-drag-handle')
+    .attr('x', kPx - handleWidth / 2)
+    .attr('y', 0)
+    .attr('width', handleWidth)
+    .attr('height', innerH)
+    .attr('fill', 'transparent')
+    .attr('cursor', 'ew-resize');
+
+  // k value label below the line
+  const labelG = g.append('g').attr('class', 'k-label-group');
+  const labelText = `k = ${k}`;
+  const tw = labelText.length * 8 + 12;
+  labelG.append('rect')
+    .attr('class', 'k-label-bg')
+    .attr('x', kPx - tw / 2)
+    .attr('y', innerH + 6)
+    .attr('width', tw)
+    .attr('height', 20)
+    .attr('rx', 3)
+    .attr('fill', '#fff')
+    .attr('stroke', '#569BBD')
+    .attr('stroke-width', 1);
+  const labelEl = labelG.append('text')
+    .attr('class', 'crit-label')
+    .attr('x', kPx)
+    .attr('y', innerH + 20)
+    .attr('text-anchor', 'middle')
+    .attr('fill', '#333')
+    .text(labelText);
+
+  // Drag state
+  let dragging = false;
+  const svgEl = /** @type {SVGSVGElement} */ (svg.node());
+  const type = probType.value;
+
+  handle.node().addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragging = true;
+    handle.node().setPointerCapture(e.pointerId);
+  });
+
+  handle.node().addEventListener('pointermove', (e) => {
+    if (!dragging || !xLinear) return;
+
+    // Convert pointer to data-space x
+    const pt = svgEl.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgPt = pt.matrixTransform(svgEl.getScreenCTM().inverse());
+    const rawX = xLinear.invert(svgPt.x - margin.left);
+
+    // Snap to nearest integer k within visible range
+    const newK = Math.max(visibleLo, Math.min(visibleHi, Math.round(rawX)));
+    const newPx = xLinear(newK);
+
+    // Move line + handle
+    kLine.attr('x1', newPx).attr('x2', newPx);
+    handle.attr('x', newPx - handleWidth / 2);
+
+    // Update label
+    const newLabel = `k = ${newK}`;
+    labelEl.text(newLabel);
+    const newTw = newLabel.length * 8 + 12;
+    labelG.select('.k-label-bg')
+      .attr('x', newPx - newTw / 2)
+      .attr('width', newTw);
+    labelEl.attr('x', newPx);
+
+    // Update bar shading in-place
+    const { prob, shadedKs } = computeShading(data, newK, n, type);
+    g.selectAll('.pmf-bar')
+      .attr('fill', (/** @type {{k:number}} */ d) => shadedKs.has(d.k) ? '#569BBD' : '#c0d6e4');
+
+    // Update result display
+    displayResult(newK, type, prob);
+
+    // Sync input (don't trigger full update)
+    paramK.value = String(newK);
+  });
+
+  handle.node().addEventListener('pointerup', () => {
+    if (dragging) {
+      dragging = false;
+      // Table update on drag end (heavier operation)
+      const currentK = parseInt(paramK.value, 10);
+      const { shadedKs } = computeShading(data, currentK, n, type);
+      renderTable(data, shadedKs);
+      announce(`${typeLabel(currentK, type)}`);
+    }
+  });
+
+  handle.node().addEventListener('lostpointercapture', () => {
+    dragging = false;
+  });
 }
 
 // ─── Probability table ───
