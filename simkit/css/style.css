@@ -774,25 +774,48 @@ input[aria-invalid="true"] {
   margin: 1rem 0;
 }
 
-#chart-container svg,
-#hist-container svg,
-#scatter-container svg,
-.chart-panel svg {
+/* ===== SVG Chart Text — all sizes in viewBox units (600×371) ===== */
+/* On phone (375px), viewBox scales 0.625×, so 16vb → 10px physical.  */
+
+svg[role="img"] {
   font-family: var(--font-body);
-  font-size: var(--font-size-chart);
+  font-size: var(--font-size-chart);       /* tick labels: 14px vb → 8.75px phone */
 }
 
-/* Axis labels slightly larger than tick labels */
 svg[role="img"] .x-label,
 svg[role="img"] .y-label {
-  font-size: 15px;
+  font-size: 15px;                         /* axis labels */
 }
 
-/* P-value annotation on hypothesis test charts */
-svg[role="img"] .p-value-label {
-  font-size: 15px;
+svg[role="img"] .overlay-value {
+  font-size: 14px;                         /* observed stat / CI bound numbers */
+  font-weight: 600;
+}
+
+svg[role="img"] .bar-count-label {
+  font-size: 14px;                         /* histogram bar click labels */
   font-weight: 700;
-  font-family: var(--font-body);
+}
+
+svg[role="img"] .p-value-label {
+  font-size: 15px;                         /* p-value on chart */
+  font-weight: 700;
+}
+
+svg[role="img"] .prob-label {
+  font-size: 14px;                         /* distribution probability labels */
+  font-weight: bold;
+  font-family: var(--font-mono);
+}
+
+svg[role="img"] .prob-complement {
+  font-size: 13px;
+  font-weight: normal;
+}
+
+svg[role="img"] .crit-label {
+  font-size: 14px;                         /* critical value labels */
+  font-family: var(--font-mono);
 }
 
 figure {
@@ -1093,20 +1116,37 @@ kbd {
     width: 100%;
   }
 
-  /* Bigger chart text on phone — 18px in viewBox space ≈ 11px at 375px */
-  #chart-container svg,
-  #hist-container svg,
-  #scatter-container svg,
-  .chart-panel svg {
-    font-size: 18px;
+  /* Bump all chart text for phone — need ~16px+ viewBox to get 10px+ physical */
+  svg[role="img"] {
+    font-size: 19px;                       /* tick labels: 19vb → 11.9px */
   }
 
   svg[role="img"] .x-label,
   svg[role="img"] .y-label {
-    font-size: 19px;
+    font-size: 20px;
+  }
+
+  svg[role="img"] .overlay-value {
+    font-size: 18px;
+  }
+
+  svg[role="img"] .bar-count-label {
+    font-size: 18px;
   }
 
   svg[role="img"] .p-value-label {
-    font-size: 19px;
+    font-size: 20px;
+  }
+
+  svg[role="img"] .prob-label {
+    font-size: 18px;
+  }
+
+  svg[role="img"] .prob-complement {
+    font-size: 16px;
+  }
+
+  svg[role="img"] .crit-label {
+    font-size: 18px;
   }
 }

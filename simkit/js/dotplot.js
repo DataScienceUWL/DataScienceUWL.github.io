@@ -331,10 +331,9 @@ function renderCILine(overlays, value, xScale, innerHeight) {
     .attr('stroke-dasharray', '6,3')
     .attr('aria-label', `CI bound: ${value}`);
   overlays.append('text')
+    .attr('class', 'overlay-value')
     .attr('x', x).attr('y', -4)
     .attr('text-anchor', 'middle')
     .attr('fill', CI_COLOR)
-    .attr('font-size', '14px')
-    .attr('font-weight', '600')
     .text(value.toFixed(3));
 }

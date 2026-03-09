@@ -397,9 +397,6 @@ export function initDistCalculator(config) {
       .attr('x', clampedX)
       .attr('y', Math.min(labelY, frame.height - 8))
       .attr('text-anchor', 'middle')
-      .attr('font-size', isComplement ? '13px' : '15px')
-      .attr('font-weight', isComplement ? 'normal' : 'bold')
-      .attr('font-family', '"Source Code Pro", monospace')
       .attr('fill', isComplement ? '#808080' : '#114B5F')
       .attr('cursor', 'pointer')
       .text(prob.toFixed(4));
@@ -472,8 +469,6 @@ export function initDistCalculator(config) {
       .attr('x', px)
       .attr('y', frame.height + 20)
       .attr('text-anchor', 'middle')
-      .attr('font-size', '14px')
-      .attr('font-family', '"Source Code Pro", monospace')
       .attr('fill', '#333')
       .attr('cursor', 'pointer')
       .text(labelText);
@@ -500,8 +495,6 @@ export function initDistCalculator(config) {
         .attr('x', negPx)
         .attr('y', frame.height + 20)
         .attr('text-anchor', 'middle')
-        .attr('font-size', '14px')
-        .attr('font-family', '"Source Code Pro", monospace')
         .attr('fill', '#333')
         .attr('cursor', 'pointer')
         .text(formatEditValue(-Math.abs(value)));

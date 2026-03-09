@@ -295,8 +295,6 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate) {
         .attr('x', barX)
         .attr('y', barY - 5)
         .attr('text-anchor', 'middle')
-        .attr('font-size', '14px')
-        .attr('font-weight', '700')
         .attr('fill', '#000')
         .text(d.length);
     });
@@ -321,10 +319,9 @@ function renderOverlayLine(overlays, value, xScale, innerHeight, color, label) {
     .attr('stroke-dasharray', '6,3')
     .attr('aria-label', `${label}: ${value}`);
   overlays.append('text')
+    .attr('class', 'overlay-value')
     .attr('x', x).attr('y', -4)
     .attr('text-anchor', 'middle')
     .attr('fill', color)
-    .attr('font-size', '14px')
-    .attr('font-weight', '600')
     .text(value.toFixed(3));
 }
