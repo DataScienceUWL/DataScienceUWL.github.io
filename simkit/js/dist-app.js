@@ -550,40 +550,58 @@ export function initDistCalculator(config) {
       : { tail, critValue: newX };
     curveState.update(shadeOpts);
 
-    // Update probability label text and pill widths in-place
-    const { frame } = curveState;
+    // Update probability labels: text, position, and pill width
+    const { frame, xScale } = curveState;
     const annotations = d3Selection.select(frame.inner).select('.annotations');
     const probLabels = annotations.selectAll('.prob-label');
     const probBgs = annotations.selectAll('.prob-label-bg');
+    const domLo = xScale.domain()[0];
+    const domHi = xScale.domain()[1];
+
+    /** Clamp pill center to chart area. */
+    const clampX = (px) => Math.max(45, Math.min(frame.width - 45, px));
 
     if (tail === 'both') {
       const absX = Math.abs(newX);
       const tailProb = currentCdf(-absX);
       const centerProb = 1 - 2 * tailProb;
+
+      // Region midpoints: left tail, right tail, center
+      const centers = [
+        clampX(xScale((domLo + -absX) / 2)),   // left-of-both
+        clampX(xScale((absX + domHi) / 2)),     // right-of-both
+        clampX(xScale(0)),                       // center
+      ];
+      const probs = [tailProb, tailProb, centerProb];
+
       probLabels.each(function(_, i) {
         const el = d3Selection.select(this);
-        const p = (i < 2) ? tailProb : centerProb;
-        el.text(p.toFixed(4));
+        el.text(probs[i].toFixed(4)).attr('x', centers[i]);
       });
       probBgs.each(function(_, i) {
         const el = d3Selection.select(this);
-        const p = (i < 2) ? tailProb : centerProb;
-        const tw = p.toFixed(4).length * 8.5 + 16;
-        const cx = parseFloat(el.attr('x')) + parseFloat(el.attr('width')) / 2;
-        el.attr('x', cx - tw / 2).attr('width', tw);
+        const tw = probs[i].toFixed(4).length * 8.5 + 16;
+        el.attr('x', centers[i] - tw / 2).attr('width', tw);
       });
     } else {
       const leftProb = currentCdf(newX);
+      const critPx = xScale(newX);
+
+      // Region midpoints: left of crit, right of crit
+      const centers = [
+        clampX((xScale(domLo) + critPx) / 2),
+        clampX((critPx + xScale(domHi)) / 2),
+      ];
+      const probs = [leftProb, 1 - leftProb];
+
       probLabels.each(function(_, i) {
         const el = d3Selection.select(this);
-        el.text(i === 0 ? leftProb.toFixed(4) : (1 - leftProb).toFixed(4));
+        el.text(probs[i].toFixed(4)).attr('x', centers[i]);
       });
       probBgs.each(function(_, i) {
         const el = d3Selection.select(this);
-        const p = i === 0 ? leftProb : (1 - leftProb);
-        const tw = p.toFixed(4).length * 8.5 + 16;
-        const cx = parseFloat(el.attr('x')) + parseFloat(el.attr('width')) / 2;
-        el.attr('x', cx - tw / 2).attr('width', tw);
+        const tw = probs[i].toFixed(4).length * 8.5 + 16;
+        el.attr('x', centers[i] - tw / 2).attr('width', tw);
       });
     }
 
