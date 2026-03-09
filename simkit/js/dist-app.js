@@ -226,12 +226,12 @@ export function initDistCalculator(config) {
       // Probability labels in each tail
       const absX = Math.abs(x);
       const tailProb = currentCdf(-absX);
-      addProbLabel(annotations, frame, xScale, yScale, curveData,
+      addProbLabel(annotations, frame, xScale,
         xScale.domain()[0], -absX, tailProb, false, 'left-of-both');
-      addProbLabel(annotations, frame, xScale, yScale, curveData,
+      addProbLabel(annotations, frame, xScale,
         absX, xScale.domain()[1], tailProb, false, 'right-of-both');
       // Center label for complement
-      addProbLabel(annotations, frame, xScale, yScale, curveData,
+      addProbLabel(annotations, frame, xScale,
         -absX, absX, 1 - 2 * tailProb, true, 'center');
     } else {
       const critX = x;
@@ -242,14 +242,14 @@ export function initDistCalculator(config) {
       // Probability labels
       const leftProb = currentCdf(critX);
       if (tail === 'left') {
-        addProbLabel(annotations, frame, xScale, yScale, curveData,
+        addProbLabel(annotations, frame, xScale,
           xScale.domain()[0], critX, leftProb, false, 'left');
-        addProbLabel(annotations, frame, xScale, yScale, curveData,
+        addProbLabel(annotations, frame, xScale,
           critX, xScale.domain()[1], 1 - leftProb, true, 'right');
       } else {
-        addProbLabel(annotations, frame, xScale, yScale, curveData,
+        addProbLabel(annotations, frame, xScale,
           xScale.domain()[0], critX, leftProb, true, 'left');
-        addProbLabel(annotations, frame, xScale, yScale, curveData,
+        addProbLabel(annotations, frame, xScale,
           critX, xScale.domain()[1], 1 - leftProb, false, 'right');
       }
     }
@@ -353,56 +353,53 @@ export function initDistCalculator(config) {
   }
 
   /**
-   * Add a probability label inside a region of the chart.
+   * Add a probability label (in a pill/box) inside a region of the chart.
+   * Uses a fixed vertical position for consistent placement across distributions.
    * @param {*} group
    * @param {import('./types.js').ChartFrame} frame
    * @param {*} xScale
-   * @param {*} yScale
-   * @param {Array<{x: number, y: number}>} curveData
    * @param {number} xLo - Left edge of region (data space)
    * @param {number} xHi - Right edge of region (data space)
    * @param {number} prob - Probability value to display
    * @param {boolean} [isComplement=false] - If true, render as lighter complement text
+   * @param {'left'|'right'|'left-of-both'|'right-of-both'|'center'} [region]
    */
-  /**
-   * @param {*} group
-   * @param {import('./types.js').ChartFrame} frame
-   * @param {*} xScale
-   * @param {*} yScale
-   * @param {Array<{x: number, y: number}>} curveData
-   * @param {number} xLo
-   * @param {number} xHi
-   * @param {number} prob
-   * @param {boolean} [isComplement=false]
-   * @param {'left'|'right'|'left-of-both'|'right-of-both'|'center'} [region] - Which region this label represents
-   */
-  function addProbLabel(group, frame, xScale, yScale, curveData, xLo, xHi, prob, isComplement = false, region) {
-    // Position at midpoint of region
+  function addProbLabel(group, frame, xScale, xLo, xHi, prob, isComplement = false, region) {
+    // Fixed vertical position: 60% down the chart (consistent across all distributions)
+    const labelY = frame.height * 0.6;
+
+    // Horizontal: midpoint of region, clamped to stay in chart
     const midX = (xLo + xHi) / 2;
     const midPx = xScale(midX);
+    const clampedX = Math.max(45, Math.min(frame.width - 45, midPx));
 
-    // Find curve height at midpoint for vertical positioning
-    const nearest = curveData.reduce((best, d) =>
-      Math.abs(d.x - midX) < Math.abs(best.x - midX) ? d : best
-    );
-    const curveY = yScale(nearest.y);
-    // Place label between curve and baseline, biased toward bottom
-    const labelY = curveY + (frame.height - curveY) * 0.6;
-
-    // Clamp horizontal position to stay within chart area
-    const clampedX = Math.max(30, Math.min(frame.width - 30, midPx));
+    // Background pill
+    const labelText = prob.toFixed(4);
+    const textWidth = labelText.length * 8.5 + 16;
+    const pillH = 22;
+    group.append('rect')
+      .attr('class', isComplement ? 'prob-label-bg prob-complement-bg' : 'prob-label-bg')
+      .attr('x', clampedX - textWidth / 2)
+      .attr('y', labelY - pillH / 2 - 2)
+      .attr('width', textWidth)
+      .attr('height', pillH)
+      .attr('rx', 4)
+      .attr('fill', isComplement ? '#f5f5f5' : '#e8f4f8')
+      .attr('stroke', isComplement ? '#ccc' : '#569BBD')
+      .attr('stroke-width', 1)
+      .attr('cursor', 'pointer');
 
     const textEl = group.append('text')
       .attr('class', isComplement ? 'prob-label prob-complement' : 'prob-label')
       .attr('x', clampedX)
-      .attr('y', Math.min(labelY, frame.height - 8))
+      .attr('y', labelY + 4)
       .attr('text-anchor', 'middle')
       .attr('fill', isComplement ? '#808080' : '#114B5F')
       .attr('cursor', 'pointer')
-      .text(prob.toFixed(4));
+      .text(labelText);
 
-    // Click to edit probability → compute inverse critical value
-    textEl.on('click', async () => {
+    // Click handler for both pill and text
+    const clickHandler = async () => {
       if (!currentInv) return;
       const newProb = await showInlineEdit(
         chartContainer,
@@ -412,16 +409,12 @@ export function initDistCalculator(config) {
       );
       if (newProb == null || newProb <= 0 || newProb >= 1) return;
 
-      // Convert edited probability to a critical value
       let newX;
       if (region === 'left' || region === 'left-of-both') {
-        // Shaded area = P(X ≤ x), so x = inv(p)
         newX = currentInv(newProb);
       } else if (region === 'right' || region === 'right-of-both') {
-        // Shaded area = P(X ≥ x) = 1 - CDF(x), so x = inv(1 - p)
         newX = currentInv(1 - newProb);
       } else if (region === 'center') {
-        // Center complement: area = 1 - 2*tail, so tail = (1 - p)/2, x = inv(1 - (1-p)/2)
         const tailProb = (1 - newProb) / 2;
         newX = currentInv(1 - tailProb);
       } else {
@@ -432,7 +425,10 @@ export function initDistCalculator(config) {
       const tail = getTail();
       inputX.value = formatForInput(tail === 'both' ? Math.abs(newX) : newX);
       onValueChange(tail === 'both' ? Math.abs(newX) : newX, tail);
-    });
+    };
+
+    textEl.on('click', clickHandler);
+    group.selectAll('.prob-label-bg').on('click', clickHandler);
   }
 
   /**
@@ -554,10 +550,11 @@ export function initDistCalculator(config) {
       : { tail, critValue: newX };
     curveState.update(shadeOpts);
 
-    // Update probability label text in-place
+    // Update probability label text and pill widths in-place
     const { frame } = curveState;
     const annotations = d3Selection.select(frame.inner).select('.annotations');
     const probLabels = annotations.selectAll('.prob-label');
+    const probBgs = annotations.selectAll('.prob-label-bg');
 
     if (tail === 'both') {
       const absX = Math.abs(newX);
@@ -565,15 +562,28 @@ export function initDistCalculator(config) {
       const centerProb = 1 - 2 * tailProb;
       probLabels.each(function(_, i) {
         const el = d3Selection.select(this);
-        if (i === 0) el.text(tailProb.toFixed(4));
-        else if (i === 1) el.text(tailProb.toFixed(4));
-        else el.text(centerProb.toFixed(4));
+        const p = (i < 2) ? tailProb : centerProb;
+        el.text(p.toFixed(4));
+      });
+      probBgs.each(function(_, i) {
+        const el = d3Selection.select(this);
+        const p = (i < 2) ? tailProb : centerProb;
+        const tw = p.toFixed(4).length * 8.5 + 16;
+        const cx = parseFloat(el.attr('x')) + parseFloat(el.attr('width')) / 2;
+        el.attr('x', cx - tw / 2).attr('width', tw);
       });
     } else {
       const leftProb = currentCdf(newX);
       probLabels.each(function(_, i) {
         const el = d3Selection.select(this);
         el.text(i === 0 ? leftProb.toFixed(4) : (1 - leftProb).toFixed(4));
+      });
+      probBgs.each(function(_, i) {
+        const el = d3Selection.select(this);
+        const p = i === 0 ? leftProb : (1 - leftProb);
+        const tw = p.toFixed(4).length * 8.5 + 16;
+        const cx = parseFloat(el.attr('x')) + parseFloat(el.attr('width')) / 2;
+        el.attr('x', cx - tw / 2).attr('width', tw);
       });
     }
 
