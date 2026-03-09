@@ -135,20 +135,7 @@ export function drawDotplot(container, values, options = {}) {
   const { dots, maxStack, domain: finalDomain } = result;
   const effectiveBins = numBins ?? Math.min(values.length, 40);
 
-  // Compute dot radius based on width, then determine needed height
-  // Default chart dimensions for width calculation
-  const defaultWidth = 600;
-  const defaultMarginLR = 80; // approximate left + right margin
-  const approxInnerWidth = defaultWidth - defaultMarginLR;
-  const widthRadius = Math.max(MIN_RADIUS, Math.min(approxInnerWidth / (effectiveBins * 2.2), MAX_RADIUS));
-  const neededInnerHeight = maxStack > 0 ? maxStack * widthRadius * 2.2 : 300;
-  // Use at least the default height (301 = 371 - 70 margin), grow if needed
-  const minInnerHeight = 301;
-  const viewHeight = maxStack > 0
-    ? Math.max(371, Math.ceil(neededInnerHeight) + 70)
-    : undefined;
-
-  const frame = createChart(container, { titleText, descText, id, margin, viewHeight });
+  const frame = createChart(container, { titleText, descText, id, margin });
 
   const xScale = d3Scale.scaleLinear()
     .domain(finalDomain)

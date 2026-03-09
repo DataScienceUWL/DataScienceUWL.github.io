@@ -775,8 +775,10 @@ export function initSimPage(config) {
         }
       } else if (prevLength > 0) {
         // Histogram mode: compute previous bin counts for stacked delta
+        // Use same numBins as renderChart for consistent bin edges
+        const histNumBins = config.proportion && data1.length <= 50 ? data1.length : undefined;
         const prevStats = allStats.slice(0, prevLength);
-        const { bins: prevBins } = computeBins(prevStats, { numBins: undefined });
+        const { bins: prevBins } = computeBins(prevStats, { numBins: histNumBins });
         prevBinCounts = prevBins.map(b => b.length);
       }
       // Only show CI lines once we have enough resamples for stability
@@ -831,8 +833,9 @@ export function initSimPage(config) {
           }
         }
       } else if (prevLength > 0) {
+        const histNumBins = config.proportion && data1.length <= 50 ? data1.length : undefined;
         const prevStats = allStats.slice(0, prevLength);
-        const { bins: prevBins } = computeBins(prevStats, { numBins: undefined });
+        const { bins: prevBins } = computeBins(prevStats, { numBins: histNumBins });
         prevBinCounts = prevBins.map(b => b.length);
       }
       const { pValue, extremeCount } = permutationPValue(allStats, observedStat, direction);
@@ -1290,7 +1293,7 @@ export function initSimPage(config) {
       xLabel = config.statLabel ?? '';
     }
 
-    // Compute domain: expand to include observed stat, never shrink below preSimDomain
+    // Compute domain
     /** @type {[number,number]|undefined} */
     let domain;
     if (stats.length > 0) {
