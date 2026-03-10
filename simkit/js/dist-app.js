@@ -219,6 +219,29 @@ export function initDistCalculator(config) {
     const x = parseFloat(inputX.value);
     if (!isFinite(x)) return;
 
+    // Tap-to-place: click anywhere on the chart to move the boundary
+    annotations.append('rect')
+      .attr('class', 'tap-target')
+      .attr('x', 0).attr('y', 0)
+      .attr('width', frame.width).attr('height', frame.height)
+      .attr('fill', 'transparent')
+      .attr('cursor', 'crosshair')
+      .on('click', function (event) {
+        // Convert click position to data-space x
+        const svgEl = /** @type {SVGSVGElement} */ (frame.svg);
+        const pt = svgEl.createSVGPoint();
+        pt.x = event.clientX;
+        pt.y = event.clientY;
+        const svgPt = pt.matrixTransform(svgEl.getScreenCTM().inverse());
+        const rawX = xScale.invert(svgPt.x - frame.margin.left);
+        const [lo, hi] = xScale.domain();
+        const clampedX = Math.max(lo, Math.min(hi, rawX));
+        const newX = snapValue(clampedX, xScale);
+
+        inputX.value = formatForInput(tail === 'both' ? Math.abs(newX) : newX);
+        onValueChange(tail === 'both' ? Math.abs(newX) : newX, tail);
+      });
+
     if (tail === 'both') {
       addBoundaryLine(annotations, frame, xScale, -Math.abs(x), tail);
       addBoundaryLine(annotations, frame, xScale, Math.abs(x), tail);
@@ -268,7 +291,7 @@ export function initDistCalculator(config) {
    */
   function addBoundaryLine(group, frame, xScale, value, tail) {
     const px = xScale(value);
-    const handleWidth = 24;
+    const handleWidth = 44;
 
     // Visible dashed line
     const line = group.append('line')
@@ -731,6 +754,48 @@ export function initDistCalculator(config) {
           slider.value = String(Math.min(parseFloat(slider.max), Math.max(parseFloat(slider.min), v)));
         }
       });
+    }
+
+    // Stepper buttons for integer parameters (df)
+    // Add stepper buttons for integer-step parameters (df), not continuous (mu, sigma)
+    const rawStep = numInput.step;
+    const stepVal = parseFloat(rawStep);
+    if (rawStep !== 'any' && isFinite(stepVal) && stepVal >= 1) {
+      const minVal = parseFloat(numInput.min);
+      const maxVal = parseFloat(numInput.max);
+      const wrapper = document.createElement('span');
+      wrapper.className = 'stepper-group';
+      const minusBtn = document.createElement('button');
+      minusBtn.type = 'button';
+      minusBtn.className = 'stepper-btn';
+      minusBtn.textContent = '−';
+      minusBtn.setAttribute('aria-label', `Decrease ${p.label}`);
+      const plusBtn = document.createElement('button');
+      plusBtn.type = 'button';
+      plusBtn.className = 'stepper-btn';
+      plusBtn.textContent = '+';
+      plusBtn.setAttribute('aria-label', `Increase ${p.label}`);
+
+      /** @param {number} delta */
+      const step = (delta) => {
+        const cur = parseFloat(numInput.value) || 0;
+        let next = cur + delta;
+        if (isFinite(minVal)) next = Math.max(minVal, next);
+        if (isFinite(maxVal)) next = Math.min(maxVal, next);
+        numInput.value = String(next);
+        if (slider) slider.value = String(Math.min(parseFloat(slider.max), Math.max(parseFloat(slider.min), next)));
+        if (paramDisplay) paramDisplay.textContent = String(next);
+        fullRender();
+      };
+
+      minusBtn.addEventListener('click', () => step(-stepVal));
+      plusBtn.addEventListener('click', () => step(stepVal));
+
+      // Insert: [−] [input] [+]
+      numInput.parentNode.insertBefore(wrapper, numInput);
+      wrapper.appendChild(minusBtn);
+      wrapper.appendChild(numInput);
+      wrapper.appendChild(plusBtn);
     }
   }
 

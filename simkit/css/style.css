@@ -758,6 +758,23 @@ input[aria-invalid="true"] {
   width: 4.5rem;
 }
 
+.df-inline-row .stepper-group {
+  display: inline-flex;
+}
+
+.df-inline-row .stepper-group input[type="number"] {
+  width: 3.5rem;
+  min-height: 2rem;
+}
+
+.df-inline-row .stepper-btn {
+  min-width: 2rem;
+  min-height: 2rem;
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.9rem;
+}
+
 .df-inline-row input[type="range"] {
   flex: 1;
   min-width: 80px;
@@ -785,9 +802,12 @@ input[aria-invalid="true"] {
   border-radius: 4px 0 0 4px;
 }
 
+.chart-type-toggle button:not(:first-child) {
+  border-left: none;
+}
+
 .chart-type-toggle button:last-child {
   border-radius: 0 4px 4px 0;
-  border-left: none;
 }
 
 .chart-type-toggle button[aria-pressed="true"] {
@@ -954,10 +974,69 @@ kbd {
   background: var(--surface);
 }
 
+/* ===== Stepper Buttons ===== */
+
+.stepper-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+.stepper-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  padding: 0;
+  line-height: 1;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.stepper-btn:first-child {
+  border-radius: 4px 0 0 4px;
+  border-right: none;
+}
+
+.stepper-btn:last-child {
+  border-radius: 0 4px 4px 0;
+  border-left: none;
+}
+
+.stepper-btn:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.stepper-btn:active {
+  background: var(--ims-dark);
+  color: #fff;
+}
+
+.stepper-group input[type="number"] {
+  border-radius: 0;
+  text-align: center;
+  width: 3.5rem;
+  min-height: 44px;
+}
+
 /* ===== Interactive Chart ===== */
 
 .drag-handle {
   touch-action: none;
+}
+
+.tap-target {
+  touch-action: auto;
 }
 
 .drag-handle:hover ~ .crit-line,
@@ -1201,6 +1280,11 @@ kbd {
     width: 100%;
   }
 
+  /* Don't stretch stepper-wrapped inputs to full width */
+  .stepper-group input[type="number"] {
+    width: 3.5rem;
+  }
+
   /* Bump all chart text for phone — need ~16px+ viewBox to get 10px+ physical */
   svg[role="img"] {
     font-size: 19px;                       /* tick labels: 19vb → 11.9px */
@@ -1233,5 +1317,27 @@ kbd {
 
   svg[role="img"] .crit-label {
     font-size: 18px;
+  }
+
+  /* On phone: df row stacks, stepper buttons get full 44px targets */
+  .df-inline-row {
+    flex-wrap: wrap;
+  }
+
+  .df-inline-row .stepper-btn {
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+  }
+
+  .df-inline-row .stepper-group input[type="number"] {
+    min-height: 44px;
+  }
+
+  /* Tail buttons: 44px min touch targets */
+  .tail-btn {
+    min-height: 44px;
   }
 }

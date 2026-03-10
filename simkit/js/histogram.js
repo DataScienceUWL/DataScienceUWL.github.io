@@ -33,12 +33,46 @@ export function sturgesBins(n) {
 }
 
 /**
+ * Generate snapped bin thresholds for proportion data.
+ * Uses Sturges' rule to pick a reasonable bin count, then rounds
+ * bin edges to the nearest k/n boundary so bars don't split
+ * discrete values across bins. Result: touching bars, clean display.
+ *
+ * @param {number} sampleSize - The denominator n in k/n proportions
+ * @param {[number, number]} domain - [min, max] domain
+ * @param {number} dataLength - Number of data values (for Sturges' rule)
+ * @returns {number[]} Threshold values snapped to k/n grid
+ */
+export function snappedPropThresholds(sampleSize, domain, dataLength) {
+  const step = 1 / sampleSize;
+  const range = domain[1] - domain[0];
+  // How many discrete values fit in the domain?
+  const discreteCount = Math.ceil(range / step);
+  // Target bin count from Sturges' rule
+  const targetBins = sturgesBins(dataLength);
+  // How many discrete values per bin? Round up so we get ≤ targetBins bins
+  const stepsPerBin = Math.max(1, Math.ceil(discreteCount / targetBins));
+  const binWidth = stepsPerBin * step;
+
+  const thresholds = [];
+  // Start from the nearest k/n value at or below domain[0]
+  const startK = Math.floor(domain[0] * sampleSize);
+  let edge = (startK + stepsPerBin) * step;
+  while (edge < domain[1]) {
+    thresholds.push(edge);
+    edge += binWidth;
+  }
+  return thresholds;
+}
+
+/**
  * Bin numeric data for a histogram.
  *
  * @param {number[]} values - Numeric data array
  * @param {object} [options]
  * @param {number} [options.numBins] - Number of bins (default: Sturges' rule)
  * @param {[number, number]} [options.domain] - [min, max] domain override
+ * @param {number[]} [options.thresholds] - Explicit threshold values (overrides numBins)
  * @returns {{ bins: d3Array.Bin<number, number>[], binWidth: number, domain: [number, number] }}
  */
 export function computeBins(values, options = {}) {
@@ -59,12 +93,14 @@ export function computeBins(values, options = {}) {
     return { bins: [bin], binWidth: 1, domain };
   }
 
-  const k = options.numBins ?? sturgesBins(n);
   const domain = options.domain ?? /** @type {[number, number]} */ ([xMin, xMax]);
 
-  const binGenerator = d3Array.bin()
-    .domain(domain)
-    .thresholds(k);
+  const binGenerator = d3Array.bin().domain(domain);
+  if (options.thresholds) {
+    binGenerator.thresholds(options.thresholds);
+  } else {
+    binGenerator.thresholds(options.numBins ?? sturgesBins(n));
+  }
 
   const bins = binGenerator(values);
   const binWidth = bins.length > 0 ? bins[0].x1 - bins[0].x0 : 1;
@@ -90,6 +126,7 @@ export function computeBins(values, options = {}) {
  * @param {boolean} [options.animate] - Whether to animate bars (default: true)
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
  * @param {[number,number]} [options.domain] - Override x-axis domain
+ * @param {number[]} [options.thresholds] - Explicit bin threshold values (overrides numBins)
  * @param {number[]} [options.prevBinCounts] - Previous bin counts for stacked delta highlight
  * @returns {{ frame: ChartFrame, bins: d3Array.Bin<number, number>[], xScale: d3Scale.ScaleLinear<number,number>, update: (values: number[], opts?: object) => void }}
  */
@@ -107,11 +144,12 @@ export function drawHistogram(container, values, options = {}) {
     margin,
     numBins,
     domain,
+    thresholds,
     prevBinCounts,
   } = options;
 
   const frame = createChart(container, { titleText, descText, id, margin });
-  const { bins, domain: finalDomain } = computeBins(values, { numBins, domain });
+  const { bins, domain: finalDomain } = computeBins(values, { numBins, domain, thresholds });
 
   const xScale = d3Scale.scaleLinear()
     .domain(finalDomain)

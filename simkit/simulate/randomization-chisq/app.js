@@ -333,7 +333,9 @@ function generateSimulations(count) {
     mechanismDescEl.hidden = false;
   }
 
-  const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(allStats, prevLength, count, computeBins);
+  const csHi = Math.max(...allStats, observedChisq) * 1.05 || 1;
+  const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(
+    allStats, prevLength, count, computeBins, { domain: [0, csHi] });
   const { pValue, extremeCount } = computePValue(allStats, observedChisq);
   displayResults(allStats, observedChisq, pValue, extremeCount);
 

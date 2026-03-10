@@ -9,8 +9,9 @@ import { parseCSV } from './csv-parser.js';
 import { createRng } from './prng.js';
 import { mean, median, sd, quantile, resample, permute } from './stats.js';
 import { bootstrapCI, permutationPValue } from './sim-engine.js';
-import { drawHistogram, computeBins } from './histogram.js';
+import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot } from './dotplot.js';
+import { drawSpike } from './spike.js';
 import { renderPValueAnnotation } from './chart-utils.js';
 import { initPlayPause } from './page-utils.js';
 /**
@@ -117,13 +118,16 @@ export function initSimPage(config) {
   /** @type {[number,number]|null} */
   let preSimDomain = null;
 
-  // Chart type toggle (Dotplot / Histogram)
+  // Chart type toggle (Dotplot / Spike / Histogram)
   const chartFigure = chartContainer?.closest('figure');
+  /** @type {HTMLDivElement|null} */
+  let toggleDiv = null;
   if (chartFigure) {
-    const toggleDiv = document.createElement('div');
+    toggleDiv = document.createElement('div');
     toggleDiv.className = 'chart-type-toggle';
     toggleDiv.setAttribute('role', 'group');
     toggleDiv.setAttribute('aria-label', 'Chart type');
+    // Initial buttons — will be rebuilt when we know if data is discrete
     toggleDiv.innerHTML = `
       <button type="button" class="btn-sm" data-chart="dotplot" aria-pressed="true">Dotplot</button>
       <button type="button" class="btn-sm" data-chart="histogram" aria-pressed="false">Histogram</button>`;
@@ -131,7 +135,7 @@ export function initSimPage(config) {
     toggleDiv.addEventListener('click', (e) => {
       const btn = /** @type {HTMLButtonElement} */ (e.target);
       if (!btn.dataset.chart) return;
-      chartType = /** @type {'dotplot'|'histogram'} */ (btn.dataset.chart);
+      chartType = btn.dataset.chart;
       for (const b of toggleDiv.querySelectorAll('button')) {
         b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
       }
@@ -143,6 +147,33 @@ export function initSimPage(config) {
         renderChart(allStats, lastCI, lastObserved, lastDirection);
       }
     });
+  }
+
+  /**
+   * Rebuild the chart toggle buttons based on whether data is discrete.
+   * @param {boolean} isDiscrete
+   */
+  function updateToggleButtons(isDiscrete) {
+    if (!toggleDiv) return;
+    const currentType = chartType;
+    if (isDiscrete) {
+      toggleDiv.innerHTML = `
+        <button type="button" class="btn-sm" data-chart="dotplot" aria-pressed="false">Dotplot</button>
+        <button type="button" class="btn-sm" data-chart="spike" aria-pressed="false">Spike</button>
+        <button type="button" class="btn-sm" data-chart="histogram" aria-pressed="false">Histogram</button>`;
+    } else {
+      toggleDiv.innerHTML = `
+        <button type="button" class="btn-sm" data-chart="dotplot" aria-pressed="false">Dotplot</button>
+        <button type="button" class="btn-sm" data-chart="histogram" aria-pressed="false">Histogram</button>`;
+      // If spike was selected but we switched to continuous data, reset to auto
+      if (currentType === 'spike') chartType = 'auto';
+    }
+    // Restore pressed state
+    for (const b of toggleDiv.querySelectorAll('button')) {
+      const match = b.dataset.chart === currentType ||
+        (currentType === 'auto' && b.dataset.chart === 'dotplot');
+      b.setAttribute('aria-pressed', String(match));
+    }
   }
 
   // Tab handling
@@ -380,6 +411,8 @@ export function initSimPage(config) {
       }
     }
     for (const btn of genBtns) btn.disabled = false;
+    // Update chart toggle: discrete (proportion) data gets spike option
+    updateToggleButtons(!!config.proportion);
     // Clear stale results
     resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
     // Show mechanism strip
@@ -776,10 +809,20 @@ export function initSimPage(config) {
         }
       } else if (prevLength > 0) {
         // Histogram mode: compute previous bin counts for stacked delta
-        // Use same numBins as renderChart for consistent bin edges
-        const histNumBins = config.proportion && data1.length <= 50 ? data1.length : undefined;
+        // Must use FULL dataset domain + same thresholds so bins align with renderChart
+        const vals = allStats;
+        let lo = Math.min(...vals);
+        let hi = Math.max(...vals);
+        const dPad = (hi - lo) * 0.05 || 0.5;
+        /** @type {[number,number]} */
+        const fullDomain = [lo - dPad, hi + dPad];
+        const histThresholds = config.proportion
+          ? snappedPropThresholds(data1.length, fullDomain, allStats.length)
+          : undefined;
         const prevStats = allStats.slice(0, prevLength);
-        const { bins: prevBins } = computeBins(prevStats, { numBins: histNumBins });
+        const { bins: prevBins } = computeBins(prevStats, {
+          domain: fullDomain, thresholds: histThresholds,
+        });
         prevBinCounts = prevBins.map(b => b.length);
       }
       // Only show CI lines once we have enough resamples for stability
@@ -834,9 +877,19 @@ export function initSimPage(config) {
           }
         }
       } else if (prevLength > 0) {
-        const histNumBins = config.proportion && data1.length <= 50 ? data1.length : undefined;
+        const rVals = observedStat != null ? [...allStats, observedStat] : allStats;
+        let rLo = Math.min(...rVals);
+        let rHi = Math.max(...rVals);
+        const rPad = (rHi - rLo) * 0.05 || 0.5;
+        /** @type {[number,number]} */
+        const rDomain = [rLo - rPad, rHi + rPad];
+        const rThresholds = config.proportion
+          ? snappedPropThresholds(data1.length, rDomain, allStats.length)
+          : undefined;
         const prevStats = allStats.slice(0, prevLength);
-        const { bins: prevBins } = computeBins(prevStats, { numBins: histNumBins });
+        const { bins: prevBins } = computeBins(prevStats, {
+          domain: rDomain, thresholds: rThresholds,
+        });
         prevBinCounts = prevBins.map(b => b.length);
       }
       const { pValue, extremeCount } = permutationPValue(allStats, observedStat, direction);
@@ -1317,24 +1370,32 @@ export function initSimPage(config) {
     // Highlight new dots in dotplot mode
     const highlightIndex = lastStatIndex >= 0 ? lastStatIndex : -1;
     const highlightIndices = batchHighlightIndices ?? undefined;
-    // For proportion data, use sample size as numBins so dots align to k/n grid
-    // Cap at 50 — beyond that the discrete structure is fine-grained enough for default binning
-    const dotNumBins = config.proportion && data1.length <= 50 ? data1.length : undefined;
+    const sampleSize = data1.length;
 
-    const useDotplot = chartType === 'dotplot' || (chartType === 'auto' && n <= 200);
+    // For proportion histogram: snap bin edges to k/n grid so bars touch
+    /** @type {number[]|undefined} */
+    let propThresholds;
+    if (config.proportion && domain) {
+      propThresholds = snappedPropThresholds(sampleSize, domain, n);
+    }
+
+    // Determine which chart type to render
+    let activeChart = chartType;
+    if (activeChart === 'auto') {
+      activeChart = n <= 200 ? 'dotplot' : (config.proportion ? 'spike' : 'histogram');
+    }
+
     // Sync toggle buttons to reflect actual chart type
-    if (chartFigure) {
-      const toggleBtns = chartFigure.querySelectorAll('.chart-type-toggle button');
-      for (const b of toggleBtns) {
-        const pressed = b.dataset.chart === (useDotplot ? 'dotplot' : 'histogram');
-        b.setAttribute('aria-pressed', String(pressed));
+    if (toggleDiv) {
+      for (const b of toggleDiv.querySelectorAll('button')) {
+        b.setAttribute('aria-pressed', String(b.dataset.chart === activeChart));
       }
     }
     /** @type {import('./chart-utils.js').ChartFrame|undefined} */
     let chartResult;
     /** @type {any} */
     let chartXScale;
-    if (useDotplot) {
+    if (activeChart === 'dotplot') {
       const r = drawDotplot(chartContainer, stats, {
         id: 'sim-chart',
         xLabel,
@@ -1346,9 +1407,24 @@ export function initSimPage(config) {
         ciLines: ci ?? undefined,
         animate: false,
         domain,
-        numBins: dotNumBins,
+        numBins: config.proportion && sampleSize <= 50 ? sampleSize : undefined,
         highlightIndex,
         highlightIndices,
+      });
+      chartResult = r.frame;
+      chartXScale = r.xScale;
+    } else if (activeChart === 'spike') {
+      const r = drawSpike(chartContainer, stats, {
+        id: 'sim-chart',
+        xLabel,
+        titleText,
+        isTail: observedStat != null
+          ? (v) => isExtreme(v, observedStat, direction)
+          : undefined,
+        observedStat: observedStat ?? undefined,
+        ciLines: ci ?? undefined,
+        animate: false,
+        domain,
       });
       chartResult = r.frame;
       chartXScale = r.xScale;
@@ -1364,7 +1440,7 @@ export function initSimPage(config) {
         ciLines: ci ?? undefined,
         animate: false,
         domain,
-        numBins: dotNumBins,
+        thresholds: propThresholds,
         prevBinCounts: prevBinCounts ?? undefined,
       });
       chartResult = r.frame;

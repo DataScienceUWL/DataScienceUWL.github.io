@@ -215,7 +215,12 @@ function generateResamples(count) {
     }
   }
 
-  const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(allSlopes, prevLength, count, computeBins);
+  const bsLo = Math.min(...allSlopes);
+  const bsHi = Math.max(...allSlopes);
+  const bsPad = (bsHi - bsLo) * 0.05 || 0.5;
+  const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(
+    allSlopes, prevLength, count, computeBins,
+    { domain: [bsLo - bsPad, bsHi + bsPad] });
 
   renderScatter();
   renderHist(allSlopes, hlIndex, hlIndices, prevBinCounts);

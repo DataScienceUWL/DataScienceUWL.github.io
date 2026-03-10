@@ -244,10 +244,14 @@ export function initPlayPause(genBtns, resetBtn, options) {
  * @param {number[]} allStats - All accumulated statistics
  * @param {number} prevLength - Length before this batch
  * @param {number} count - Number of new values added
- * @param {(values: number[], opts: {numBins: undefined}) => {bins: number[][]}} computeBins
+ * @param {(values: number[], opts: object) => {bins: Array}} computeBins
+ * @param {object} [options]
+ * @param {[number,number]} [options.domain] - Domain for bin alignment
+ * @param {number} [options.numBins] - Number of bins override
+ * @param {number[]} [options.thresholds] - Explicit bin thresholds for discrete data
  * @returns {{ hlIndex: number, hlIndices: Set<number>|undefined, prevBinCounts: number[]|undefined }}
  */
-export function computeHighlights(allStats, prevLength, count, computeBins) {
+export function computeHighlights(allStats, prevLength, count, computeBins, options = {}) {
   let hlIndex = -1;
   /** @type {Set<number>|undefined} */
   let hlIndices;
@@ -262,8 +266,13 @@ export function computeHighlights(allStats, prevLength, count, computeBins) {
       for (let j = prevLength; j < allStats.length; j++) hlIndices.add(j);
     }
   } else if (prevLength > 0) {
+    // Use the FULL dataset domain so prev bins align with current bins
     const prevStats = allStats.slice(0, prevLength);
-    const { bins: prevBins } = computeBins(prevStats, { numBins: undefined });
+    const { bins: prevBins } = computeBins(prevStats, {
+      numBins: options.numBins,
+      domain: options.domain,
+      thresholds: options.thresholds,
+    });
     prevBinCounts = prevBins.map(b => b.length);
   }
 

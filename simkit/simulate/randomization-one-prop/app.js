@@ -6,10 +6,11 @@
 
 import { createRng } from '../../js/prng.js';
 import { mean } from '../../js/stats.js';
-import { drawHistogram, computeBins } from '../../js/histogram.js';
+import { drawHistogram, computeBins, snappedPropThresholds } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
+import { drawSpike } from '../../js/spike.js';
 import { renderPValueAnnotation } from '../../js/chart-utils.js';
-import { announce, initKeyboardShortcuts, initPlayPause, flashMechanism, computeHighlights } from '../../js/page-utils.js';
+import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, loadDatasetIndex, fetchDataset, computeHighlights } from '../../js/page-utils.js';
 
 // DOM elements
 const chartContainer = document.getElementById('chart-container');
@@ -24,6 +25,10 @@ const inputSuccesses = /** @type {HTMLInputElement} */ (document.getElementById(
 const loadSummaryBtn = document.getElementById('load-summary');
 const nullPropInput = /** @type {HTMLInputElement} */ (document.getElementById('null-prop'));
 const altDirectionSelect = /** @type {HTMLSelectElement} */ (document.getElementById('alt-direction'));
+const datasetSelect = /** @type {HTMLSelectElement} */ (document.getElementById('dataset-select'));
+const datasetDesc = document.getElementById('dataset-desc');
+const successSelector = document.getElementById('success-selector');
+const successOutcome = /** @type {HTMLSelectElement} */ (document.getElementById('success-outcome'));
 
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
   document.querySelectorAll('.gen-btn'));
@@ -35,8 +40,39 @@ const mechSimStat = document.getElementById('mech-sim-stat');
 const mechanismDescEl = document.getElementById('mechanism-description');
 const simTitleEl = document.getElementById('sim-title');
 
+initTabs();
 initKeyboardShortcuts(genBtns, resetBtn);
 initPlayPause(genBtns, resetBtn);
+
+// ─── Chart type toggle ───
+
+let chartType = 'auto';
+const chartFigure = chartContainer?.closest('figure');
+/** @type {HTMLDivElement|null} */
+let toggleDiv = null;
+if (chartFigure) {
+  toggleDiv = document.createElement('div');
+  toggleDiv.className = 'chart-type-toggle';
+  toggleDiv.setAttribute('role', 'group');
+  toggleDiv.setAttribute('aria-label', 'Chart type');
+  toggleDiv.innerHTML = `
+    <button type="button" class="btn-sm" data-chart="dotplot" aria-pressed="true">Dotplot</button>
+    <button type="button" class="btn-sm" data-chart="spike" aria-pressed="false">Spike</button>
+    <button type="button" class="btn-sm" data-chart="histogram" aria-pressed="false">Histogram</button>`;
+  chartFigure.insertBefore(toggleDiv, chartContainer);
+  toggleDiv.addEventListener('click', (e) => {
+    const btn = /** @type {HTMLButtonElement} */ (e.target);
+    if (!btn.dataset.chart) return;
+    chartType = btn.dataset.chart;
+    for (const b of toggleDiv.querySelectorAll('button')) {
+      b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+    }
+    if (allStats.length > 0) {
+      const direction = getDirection();
+      renderChart(allStats, observedPHat, direction);
+    }
+  });
+}
 
 /** @type {number[]} */
 let allStats = [];
@@ -48,7 +84,88 @@ let sampleN = 0;
 let sampleSuccesses = 0;
 let observedPHat = 0;
 
-// ─── Load data ───
+/** @type {string[]} */
+let rawOutcomes = [];
+
+// ─── Dataset loading ───
+
+/** @type {Array<{id:string,name:string,description:string,type:string}>} */
+let datasetIndex = [];
+
+if (datasetSelect) {
+  loadDatasetIndex(datasetSelect, ds => ds.type === 'bootstrap_prop', datasetDesc)
+    .then(index => { datasetIndex = index; });
+
+  datasetSelect.addEventListener('change', () => {
+    const id = datasetSelect.value;
+    if (!id) return;
+    const meta = datasetIndex.find(d => d.id === id);
+    if (meta && datasetDesc) datasetDesc.textContent = meta.description;
+
+    fetchDataset(id)
+      .then(ds => {
+        // Find the binary/categorical variable
+        const catVar = ds.variables.find(v => v.type === 'categorical') || ds.variables[0];
+        if (!catVar) { announce('No categorical variable found.'); return; }
+        rawOutcomes = ds.rows.map(r => String(r[catVar.name]));
+        const levels = [...new Set(rawOutcomes)];
+
+        // Show success selector
+        if (successSelector && successOutcome) {
+          successOutcome.innerHTML = '';
+          for (const lev of levels) {
+            const opt = document.createElement('option');
+            opt.value = lev;
+            opt.textContent = lev;
+            successOutcome.appendChild(opt);
+          }
+          // Auto-select from context.successLabel if available
+          const ctx = ds.context || {};
+          if (ctx.successLabel && levels.includes(ctx.successLabel)) {
+            successOutcome.value = ctx.successLabel;
+          }
+          successSelector.hidden = false;
+          applyDatasetOutcome();
+        }
+        announce(`Loaded dataset: ${ds.name}`);
+      })
+      .catch(() => announce('Failed to load dataset.'));
+  });
+}
+
+if (successOutcome) {
+  successOutcome.addEventListener('change', applyDatasetOutcome);
+}
+
+function applyDatasetOutcome() {
+  const successVal = successOutcome?.value;
+  if (!successVal || rawOutcomes.length === 0) return;
+
+  sampleN = rawOutcomes.length;
+  sampleSuccesses = rawOutcomes.filter(v => v === successVal).length;
+  observedPHat = sampleSuccesses / sampleN;
+
+  resetSimulation();
+  if (dataPreview) dataPreview.hidden = false;
+  if (dataSummary) {
+    dataSummary.textContent = `n = ${sampleN}, successes = ${sampleSuccesses} ("${successVal}"), p̂ = ${observedPHat.toFixed(4)}`;
+  }
+  if (hypothesisDisplay) hypothesisDisplay.hidden = false;
+  for (const btn of genBtns) btn.disabled = false;
+  resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
+
+  if (mechanismStrip && mechObservedStat) {
+    mechanismStrip.hidden = false;
+    mechObservedStat.textContent = `${sampleSuccesses} of ${sampleN} (p̂ = ${observedPHat.toFixed(4)})`;
+  }
+
+  setTimeout(() => {
+    const target = document.getElementById('controls') || genBtns[0]?.closest('.generate-bar');
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+// ─── Summary input ───
 
 if (loadSummaryBtn) {
   loadSummaryBtn.addEventListener('click', loadData);
@@ -167,7 +284,15 @@ function generateSimulations(count) {
   }
 
   const direction = getDirection();
-  const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(allStats, prevLength, count, computeBins);
+  // Compute domain from full dataset for consistent bin alignment
+  const lo = Math.min(...allStats, observedPHat);
+  const hi = Math.max(...allStats, observedPHat);
+  const pad = (hi - lo) * 0.05 || 0.05;
+  const hlDomain = /** @type {[number,number]} */ ([lo - pad, hi + pad]);
+  const hlThresholds = snappedPropThresholds(n, hlDomain, allStats.length);
+  const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(
+    allStats, prevLength, count, computeBins,
+    { domain: hlDomain, thresholds: hlThresholds });
 
   const { pValue, extremeCount } = computePValue(allStats, observedPHat, direction);
   displayResults(allStats, observedPHat, pValue, extremeCount, direction);
@@ -206,11 +331,24 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
   /** @type {[number, number]} */
   const domain = [lo - pad, hi + pad];
 
+  // Determine active chart type
+  let activeChart = chartType;
+  if (activeChart === 'auto') {
+    activeChart = n <= 200 ? 'dotplot' : 'spike';
+  }
+  // Sync toggle
+  if (toggleDiv) {
+    for (const b of toggleDiv.querySelectorAll('button')) {
+      b.setAttribute('aria-pressed', String(b.dataset.chart === activeChart));
+    }
+  }
+
   /** @type {import('../../js/chart-utils.js').ChartFrame} */
   let frame;
   /** @type {any} */
   let xScale;
-  if (n <= 200) {
+
+  if (activeChart === 'dotplot') {
     const r = drawDotplot(chartContainer, stats, {
       id: 'sim-chart',
       xLabel: 'Sample Proportion (p̂)',
@@ -219,12 +357,25 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
       observedStat: observed,
       animate: false,
       domain,
+      numBins: sampleN <= 50 ? sampleN : undefined,
       highlightIndex,
       highlightIndices,
     });
     frame = r.frame;
     xScale = r.xScale;
+  } else if (activeChart === 'spike') {
+    const r = drawSpike(chartContainer, stats, {
+      id: 'sim-chart',
+      xLabel: 'Sample Proportion (p̂)',
+      titleText: 'Null Distribution',
+      isTail: (v) => isExtreme(v, observed, direction),
+      observedStat: observed,
+      domain,
+    });
+    frame = r.frame;
+    xScale = r.xScale;
   } else {
+    const propThresholds = snappedPropThresholds(sampleN, domain, n);
     const r = drawHistogram(chartContainer, stats, {
       id: 'sim-chart',
       xLabel: 'Sample Proportion (p̂)',
@@ -233,6 +384,7 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
       observedStat: observed,
       animate: false,
       domain,
+      thresholds: propThresholds,
       prevBinCounts,
     });
     frame = r.frame;

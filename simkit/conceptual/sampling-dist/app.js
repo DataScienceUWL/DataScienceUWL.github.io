@@ -146,7 +146,13 @@ function drawSamples(count) {
   }
   if (seTheoryEl) seTheoryEl.textContent = (popSigma / Math.sqrt(n)).toFixed(4);
 
-  const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(sampleMeans, prevLength, count, computeBins);
+  // Pass domain from full data so prev bin edges align with current bins
+  const smLo = Math.min(...sampleMeans);
+  const smHi = Math.max(...sampleMeans);
+  const smPad = (smHi - smLo) * 0.05 || 0.5;
+  const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(
+    sampleMeans, prevLength, count, computeBins,
+    { domain: [smLo - smPad, smHi + smPad] });
 
   renderSamplingDist(hlIndex, hlIndices, prevBinCounts);
   displayInterpretation();
