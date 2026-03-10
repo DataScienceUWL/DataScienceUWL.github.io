@@ -370,7 +370,7 @@ function renderChart(primaryValues, primaryLabel, secondaryValues, secondaryLabe
       xLabel: primaryLabel,
       titleText: `${primaryLabel}`,
       id: 'cat-chart',
-      animate: true,
+      animate: false,
     });
   } else {
     // Grouped bar chart — use dodged for frequency, stacked/filled as selected
@@ -382,7 +382,7 @@ function renderChart(primaryValues, primaryLabel, secondaryValues, secondaryLabe
       xLabel: primaryLabel,
       titleText: `${primaryLabel} by ${secondaryLabel}`,
       id: 'cat-chart',
-      animate: true,
+      animate: false,
     });
   }
 }

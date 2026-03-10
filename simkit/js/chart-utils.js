@@ -49,7 +49,19 @@ const OKABE_ITO = [
  */
 export function prefersReducedMotion() {
   if (typeof globalThis.matchMedia !== 'function') return false;
-  return globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+  // Also suppress animation if d3-transition isn't loaded
+  try {
+    const tmp = d3Selection.select(
+      typeof document !== 'undefined'
+        ? document.createElementNS('http://www.w3.org/2000/svg', 'g')
+        : null
+    );
+    if (typeof tmp.transition !== 'function') return true;
+  } catch {
+    return true;
+  }
+  return false;
 }
 
 /**

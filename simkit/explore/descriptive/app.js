@@ -279,7 +279,7 @@ function renderCharts(values, xLabel) {
     titleText: `Histogram of ${xLabel}`,
     descText: `Histogram showing the distribution of ${xLabel}`,
     id: 'desc-hist',
-    animate: true,
+    animate: false,
   });
 
   // Dotplot: show for datasets up to 200 values
@@ -289,7 +289,7 @@ function renderCharts(values, xLabel) {
       titleText: `Dotplot of ${xLabel}`,
       descText: `Dot plot showing individual values of ${xLabel}`,
       id: 'desc-dot',
-      animate: true,
+      animate: false,
     });
   } else {
     dotplotContainer.innerHTML =
@@ -301,7 +301,7 @@ function renderCharts(values, xLabel) {
     titleText: `Boxplot of ${xLabel}`,
     descText: `Boxplot showing five-number summary of ${xLabel}`,
     id: 'desc-box',
-    animate: true,
+    animate: false,
   });
 }
 
