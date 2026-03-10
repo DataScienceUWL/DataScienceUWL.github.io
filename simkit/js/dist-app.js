@@ -61,6 +61,49 @@ export function initDistCalculator(config) {
     }
   }
 
+  // --- Preset probability buttons ---
+  const PRESET_PROBS = [0.005, 0.01, 0.025, 0.05, 0.10];
+  const presetBar = document.createElement('div');
+  presetBar.className = 'preset-bar';
+  presetBar.setAttribute('role', 'group');
+  presetBar.setAttribute('aria-label', 'Common tail probabilities');
+  // Render left-tail and right-tail presets
+  function buildPresetButtons() {
+    const tail = getTail();
+    presetBar.innerHTML = '';
+    const label = document.createElement('span');
+    label.className = 'preset-label';
+    label.textContent = 'Tail area:';
+    presetBar.appendChild(label);
+    for (const p of PRESET_PROBS) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'preset-btn';
+      btn.textContent = p < 0.01 ? p.toFixed(3) : p < 0.1 ? p.toFixed(3) : p.toFixed(2);
+      btn.addEventListener('click', () => {
+        if (!currentInv) return;
+        let newX;
+        if (tail === 'left') {
+          newX = currentInv(p);
+        } else if (tail === 'right') {
+          newX = currentInv(1 - p);
+        } else {
+          // Two-tailed: total tail area = p, each tail = p/2
+          newX = Math.abs(currentInv(p / 2));
+        }
+        if (!isFinite(newX)) return;
+        inputX.value = formatForInput(tail === 'both' ? Math.abs(newX) : newX);
+        onValueChange(tail === 'both' ? Math.abs(newX) : newX, tail);
+      });
+      presetBar.appendChild(btn);
+    }
+  }
+  // Insert after the chart figure
+  const chartFigure = chartContainer?.closest('figure');
+  if (chartFigure) {
+    chartFigure.after(presetBar);
+  }
+
   // --- State ---
   /** @type {ReturnType<typeof drawCurve>|null} */
   let curveState = null;
@@ -277,8 +320,33 @@ export function initDistCalculator(config) {
       }
     }
 
+    // Snap point indicators — small triangles on the x-axis at common critical values
+    addSnapIndicators(annotations, frame, xScale);
+
     // Editable value label on x-axis
     addEditableValueLabel(annotations, frame, xScale, x, tail);
+  }
+
+  /**
+   * Render small triangle markers on the x-axis at each snap point.
+   * @param {*} group
+   * @param {import('./types.js').ChartFrame} frame
+   * @param {*} xScale
+   */
+  function addSnapIndicators(group, frame, xScale) {
+    const [lo, hi] = xScale.domain();
+    const visible = snapPoints.filter(sp => sp > lo && sp < hi);
+    const y = frame.height;
+    const size = 4;
+
+    for (const sp of visible) {
+      const px = xScale(sp);
+      group.append('polygon')
+        .attr('class', 'snap-indicator')
+        .attr('points', `${px},${y} ${px - size},${y + size + 1} ${px + size},${y + size + 1}`)
+        .attr('fill', '#569BBD')
+        .attr('opacity', 0.5);
+    }
   }
 
   /**
@@ -700,6 +768,7 @@ export function initDistCalculator(config) {
   // Tail direction change → recompute from x
   for (const r of tailRadios) {
     r.addEventListener('change', () => {
+      buildPresetButtons();
       syncProbFromX(getTail());
       updateShading();
     });
@@ -820,6 +889,7 @@ export function initDistCalculator(config) {
   }
 
   // --- Initial render ---
+  buildPresetButtons();
   fullRender();
   syncProbFromX(getTail());
 }
