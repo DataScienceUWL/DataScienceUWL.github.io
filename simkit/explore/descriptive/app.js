@@ -28,6 +28,7 @@ const chartsSection = document.getElementById('charts-section');
 const histogramContainer = document.getElementById('histogram-container');
 const dotplotContainer = document.getElementById('dotplot-container');
 const boxplotContainer = document.getElementById('boxplot-container');
+const showOutliersCheckbox = /** @type {HTMLInputElement} */ (document.getElementById('show-outliers'));
 
 // Stat output cells
 const statN = document.getElementById('stat-n');
@@ -42,6 +43,21 @@ const statIqr = document.getElementById('stat-iqr');
 const statRange = document.getElementById('stat-range');
 
 initTabs();
+
+// Outlier toggle re-renders boxplot only
+showOutliersCheckbox?.addEventListener('change', () => {
+  if (currentValues.length === 0) return;
+  boxplotContainer.innerHTML = '';
+  const varLabel = dataSummary?.textContent?.split(' - ')[1]?.split(' (')[0] || 'Value';
+  drawBoxplot(boxplotContainer, currentValues, {
+    xLabel: varLabel,
+    titleText: `Boxplot of ${varLabel}`,
+    descText: `Boxplot showing five-number summary of ${varLabel}`,
+    id: 'desc-box',
+    animate: false,
+    showOutliers: showOutliersCheckbox.checked,
+  });
+});
 
 // ── State ─────────────────────────────────────────────────────────────
 
@@ -302,6 +318,7 @@ function renderCharts(values, xLabel) {
     descText: `Boxplot showing five-number summary of ${xLabel}`,
     id: 'desc-box',
     animate: false,
+    showOutliers: showOutliersCheckbox?.checked ?? true,
   });
 }
 

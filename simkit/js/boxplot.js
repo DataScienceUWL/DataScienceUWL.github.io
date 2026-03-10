@@ -76,6 +76,7 @@ export function computeBoxplotStats(values) {
  * @param {string} [options.descText] - Chart description for accessibility
  * @param {string} [options.id] - Unique ID prefix
  * @param {boolean} [options.animate] - Whether to animate (default: true)
+ * @param {boolean} [options.showOutliers] - Whether to use 1.5×IQR fences and show outliers (default: true). When false, whiskers extend to min/max.
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
  * @returns {{ frame: ChartFrame, stats: Record<string, BoxplotStats> }}
  */
@@ -86,6 +87,7 @@ export function drawBoxplot(container, data, options = {}) {
     descText = '',
     id,
     animate = true,
+    showOutliers = true,
     margin,
   } = options;
 
@@ -151,12 +153,17 @@ export function drawBoxplot(container, data, options = {}) {
 
   for (const name of groupNames) {
     const s = stats[name];
+    const vals = groups[name];
     const bandY = yScale(name);
     const bandH = yScale.bandwidth();
     const boxH = bandH * 0.4;
     const boxY = bandY + (bandH - boxH) / 2;
     const capH = boxH / 2;
     const capY = bandY + (bandH - capH) / 2;
+
+    // Whisker endpoints: 1.5×IQR fences (with outliers) or min/max (without)
+    const wLo = showOutliers ? s.whiskerLo : d3Array.min(vals);
+    const wHi = showOutliers ? s.whiskerHi : d3Array.max(vals);
 
     const g = dataGroup.append('g')
       .attr('class', 'boxplot-group')
@@ -195,7 +202,7 @@ export function drawBoxplot(container, data, options = {}) {
     // Lower whisker
     g.append('line')
       .attr('class', 'whisker-lo')
-      .attr('x1', xScale(s.whiskerLo))
+      .attr('x1', xScale(wLo))
       .attr('x2', xScale(s.q1))
       .attr('y1', bandY + bandH / 2)
       .attr('y2', bandY + bandH / 2)
@@ -206,7 +213,7 @@ export function drawBoxplot(container, data, options = {}) {
     g.append('line')
       .attr('class', 'whisker-hi')
       .attr('x1', xScale(s.q3))
-      .attr('x2', xScale(s.whiskerHi))
+      .attr('x2', xScale(wHi))
       .attr('y1', bandY + bandH / 2)
       .attr('y2', bandY + bandH / 2)
       .attr('stroke', IMS_BLUE)
@@ -215,8 +222,8 @@ export function drawBoxplot(container, data, options = {}) {
     // Lower whisker cap
     g.append('line')
       .attr('class', 'cap-lo')
-      .attr('x1', xScale(s.whiskerLo))
-      .attr('x2', xScale(s.whiskerLo))
+      .attr('x1', xScale(wLo))
+      .attr('x2', xScale(wLo))
       .attr('y1', capY)
       .attr('y2', capY + capH)
       .attr('stroke', IMS_BLUE)
@@ -225,40 +232,42 @@ export function drawBoxplot(container, data, options = {}) {
     // Upper whisker cap
     g.append('line')
       .attr('class', 'cap-hi')
-      .attr('x1', xScale(s.whiskerHi))
-      .attr('x2', xScale(s.whiskerHi))
+      .attr('x1', xScale(wHi))
+      .attr('x2', xScale(wHi))
       .attr('y1', capY)
       .attr('y2', capY + capH)
       .attr('stroke', IMS_BLUE)
       .attr('stroke-width', 1);
 
-    // Mild outliers (open circles)
-    g.selectAll('.outlier-mild')
-      .data(s.mildOutliers)
-      .join('circle')
-      .attr('class', 'outlier-mild')
-      .attr('cx', d => xScale(d))
-      .attr('cy', bandY + bandH / 2)
-      .attr('r', OUTLIER_RADIUS)
-      .attr('fill', 'none')
-      .attr('stroke', IMS_BLUE)
-      .attr('stroke-width', 1.5)
-      .attr('role', 'listitem')
-      .attr('aria-label', d => `Mild outlier: ${d}`);
+    if (showOutliers) {
+      // Mild outliers (open circles)
+      g.selectAll('.outlier-mild')
+        .data(s.mildOutliers)
+        .join('circle')
+        .attr('class', 'outlier-mild')
+        .attr('cx', d => xScale(d))
+        .attr('cy', bandY + bandH / 2)
+        .attr('r', OUTLIER_RADIUS)
+        .attr('fill', 'none')
+        .attr('stroke', IMS_BLUE)
+        .attr('stroke-width', 1.5)
+        .attr('role', 'listitem')
+        .attr('aria-label', d => `Mild outlier: ${d}`);
 
-    // Extreme outliers (filled circles)
-    g.selectAll('.outlier-extreme')
-      .data(s.extremeOutliers)
-      .join('circle')
-      .attr('class', 'outlier-extreme')
-      .attr('cx', d => xScale(d))
-      .attr('cy', bandY + bandH / 2)
-      .attr('r', OUTLIER_RADIUS)
-      .attr('fill', IMS_BLUE)
-      .attr('stroke', IMS_BLUE)
-      .attr('stroke-width', 1.5)
-      .attr('role', 'listitem')
-      .attr('aria-label', d => `Extreme outlier: ${d}`);
+      // Extreme outliers (filled circles)
+      g.selectAll('.outlier-extreme')
+        .data(s.extremeOutliers)
+        .join('circle')
+        .attr('class', 'outlier-extreme')
+        .attr('cx', d => xScale(d))
+        .attr('cy', bandY + bandH / 2)
+        .attr('r', OUTLIER_RADIUS)
+        .attr('fill', IMS_BLUE)
+        .attr('stroke', IMS_BLUE)
+        .attr('stroke-width', 1.5)
+        .attr('role', 'listitem')
+        .attr('aria-label', d => `Extreme outlier: ${d}`);
+    }
   }
 
   return { frame, stats };
