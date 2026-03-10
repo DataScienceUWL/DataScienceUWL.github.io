@@ -140,16 +140,20 @@ function adjustWorkspaces() {
             var ws = findPrecedingWorkspace(pb);
             if (ws) expandWorkspace(ws, remaining);
         }
-        pb.remove();  // no longer needed — workspace expansion handles the break
+        // Keep the div — its CSS page-break-before:always guarantees the break
+        // even if the workspace expansion calculation is slightly off.
     });
 
     // --- Pass B: Auto-detect orphaned section starts ---
+    // Skip sections preceded by an explicit .pagebreak (already handled by Pass A).
     var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
     var sections = document.querySelectorAll('main > section');
     for (var pass = 0; pass < 3; pass++) {
         var changed = false;
         for (var i = 1; i < sections.length; i++) {
             var sec = sections[i];
+            var prev = sec.previousElementSibling;
+            if (prev && prev.classList && prev.classList.contains('pagebreak')) continue;
             var secRect = sec.getBoundingClientRect();
             var secTop = secRect.top + window.scrollY;
             var secBot = secTop + secRect.height;
@@ -195,19 +199,51 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="from-calc-i-to-calc-iii" aria-label="From Calc I to Calc III">
   <h2>From Calc I to Calc III</h2>
-  <figure>
-  <img src="figures/surface_volume.png" alt="A 3D plot showing the volume under the surface f(x,y) = x squared plus y squared over the rectangle [0,2] by [0,2]. The curved paraboloid surface rises from z=0 at the origin to z=8 at corner (2,2), with the solid region between the surface and the xy-plane shaded to illustrate the volume --- the Calc III analogue of area under a curve from Calc I.">
-  <figcaption><a href="figures/surface_volume.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure>
-<aside class="key-point" role="note" aria-label="Key point"><p>Same idea, one dimension higher: chop the region into pieces, build columns, add up volumes, take the limit.</p></aside>
+  <div><p>In Calculus I, the <strong>area</strong> under a curve \(y = f(x)\) over \([a,b]\) is the limit of Riemann sums:</p>
+<p>\[\int_a^b f(x)\,dx = \lim_{n \to \infty} \sum_{i=1}^{n} f(x_i^*)\,\Delta x\]</p></div>
+<div class="two-col-print">
+  <div><div><p><em>Calc I: strips in 2D</em></p></div>
+<figure>
+  <img src="figures/riemann_strips_1d.png" alt="A 2D graph of y = x squared on [0,2] approximated by 8 midpoint Riemann sum strips shaded in blue. The red curve lies above the strips. This is the Calc I picture: area under a curve via rectangular strips.">
+</figure></div>
+  <div><div><p><em>Calc III: columns in 3D</em></p></div>
+<figure>
+  <img src="figures/riemann_sum_dense.png" alt="The paraboloid f(x,y) = x squared plus y squared approximated by a 6 by 6 grid of 36 opaque rectangular columns colored from blue at low heights to amber at high heights, giving a staircase approximation of the volume under the surface.">
+  <figcaption><a href="figures/riemann_sum_dense.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure></div>
+</div>
 </section>
 
 <section id="building-a-double-riemann-sum" aria-label="Building a Double Riemann Sum">
   <h2>Building a Double Riemann Sum</h2>
-  <figure>
-  <img src="figures/riemann_sum_3d.png" alt="A 3D diagram showing a surface z = f(x,y) over a rectangular region R in the xy-plane. The rectangle is subdivided into a grid of small subrectangles, and over each subrectangle a thin rectangular column rises to the height of the surface at the sample point. The columns together approximate the volume under the surface.">
+  <div><p>Suppose \(f(x,y) \geq 0\) is defined on the rectangle \(R = [a,b] \times [c,d]\).</p></div>
+<div class="two-col-print">
+  <div><div><p><strong>Step 1: Partition the rectangle.</strong></p>
+<ul>
+<li>Divide \([a,b]\) into \(m\) equal subintervals of width \(\Delta x = \frac{b-a}{m}\)</li>
+<li>Divide \([c,d]\) into \(n\) equal subintervals of width \(\Delta y = \frac{d-c}{n}\)</li>
+<li>This creates \(m \times n\) subrectangles, each with area \(\Delta A = \Delta x \cdot \Delta y\)</li>
+</ul></div></div>
+  <div><figure>
+  <img src="figures/rectangle_partition.png" alt="A top-down diagram of the rectangle [0,2] by [0,2] divided into a 4 by 4 grid of 16 equal subrectangles shaded light blue. One subrectangle R_ij is highlighted in amber. Double-headed arrows along the bottom and left edges are labeled delta-x and delta-y.">
+</figure></div>
+</div>
+<div class="two-col-print">
+  <div><div><p><strong>Step 2: Choose sample points.</strong></p>
+<p>In each subrectangle \(R_{ij}\), choose a sample point \((x_{ij}^*, y_{ij}^*)\). Common choices: corners, midpoints, or random points.</p></div></div>
+  <div><figure>
+  <img src="figures/sample_points.png" alt="The same 4 by 4 grid with a red dot at the midpoint of each subrectangle representing the sample point. One dot is labeled (x-star_ij, y-star_ij) with an arrow.">
+</figure></div>
+</div>
+<div class="two-col-print">
+  <div><div><p><strong>Step 3: Build columns and add.</strong></p>
+<p>Each column has base area \(\Delta A\) and height \(f(x_{ij}^*, y_{ij}^*)\), so its volume is \(f(x_{ij}^*, y_{ij}^*)\,\Delta A\). The total volume is approximately:</p>
+<p>\[V \approx \sum_{i=1}^{m}\sum_{j=1}^{n} f(x_{ij}^*, y_{ij}^*)\,\Delta A\]</p></div></div>
+  <div><figure>
+  <img src="figures/riemann_sum_3d.png" alt="A 3D diagram showing 4 rectangular columns rising from the xy-plane to midpoint heights on the surface z = f(x,y) = x squared plus y squared over a 2 by 2 grid. The transparent surface hovers above, and midpoint heights are labeled on top of each column.">
   <figcaption><a href="figures/riemann_sum_3d.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure>
+</figure></div>
+</div>
 </section>
 
 <section id="the-double-integral" aria-label="The Double Integral">
@@ -218,38 +254,53 @@ if (window.MathJax && window.MathJax.startup) {
 <p>\[\iint_R f(x,y)\,dA = \lim_{m,n \to \infty} \sum_{i=1}^{m}\sum_{j=1}^{n} f(x_{ij}^*, y_{ij}^*)\,\Delta A\]</p>
 <p>provided this limit exists (in which case we say \(f\) is <strong>integrable</strong> over \(R\)).</p>
 </section>
+<div><p><strong>Geometric interpretation:</strong></p>
+<ul>
+<li>When \(f(x,y) \geq 0\): \(\iint_R f\,dA\) = <strong>volume</strong> under the surface and above \(R\)</li>
+<li>When \(f\) takes both signs: \(\iint_R f\,dA\) = (volume above \(R\)) \(-\) (volume below \(R\))</li>
+</ul></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>The double integral generalizes the single integral: \(\int f(x)\,dx\) gives area under a curve; \(\iint f(x,y)\,dA\) gives volume under a surface.</p></aside>
-</section>
-
-<section id="quick-check-setting-up-a-midpoint-riemann-sum" aria-label="Quick Check: Setting Up a Midpoint Riemann Sum">
-  <h2>Quick Check: Setting Up a Midpoint Riemann Sum</h2>
-  <div class="blank-space" role="region" aria-label="Student workspace: The four subrectangles each have $\Delta A = \frac{1}{2} \cdot \frac{1}{2} = \frac{1}{4}$. What are the midpoints?" style="min-height:2in;">
-  <div class="blank-prompt">The four subrectangles each have \(\Delta A = \frac{1}{2} \cdot \frac{1}{2} = \frac{1}{4}\). What are the midpoints?</div>
-</div>
 </section>
 
 <section id="example-1-midpoint-approximation" class="example-group" aria-label="Example 1: Midpoint Approximation">
   <h2>Example 1: Midpoint Approximation</h2>
   <section class="example-box" role="region" aria-label="Example 1">
   <h3 class="example-title">Example 1</h3>
-  <p>Approximate \(\displaystyle\iint_R (x^2 + y^2)\,dA\) where \(R = [0,2] \times [0,2]\), using \(m = n = 2\) (4 equal subrectangles) and <strong>midpoints</strong>.</p>
+  <p>Let \(f(x,y) = x^2 + y^2\) and \(R = [0,2] \times [0,2]\). Approximate the volume under \(f\) over \(R\) by dividing \(R\) into a \(2 \times 2\) grid and using midpoints.</p>
 </section>
-<div class="blank-space" role="region" aria-label="Student workspace: Each subrectangle is $1 \times 1$, so $\Delta A = 1$. Find the four midpoints and evaluate $f$ at each." style="min-height:3in;">
-  <div class="blank-prompt">Each subrectangle is \(1 \times 1\), so \(\Delta A = 1\). Find the four midpoints and evaluate \(f\) at each.</div>
+<div class="blank-space" role="region" aria-label="Student workspace: Draw the $2 \times 2$ grid on $[0,2] \times [0,2]$. Find $\Delta A$. Mark the midpoints. Evaluate $f$ at each." style="min-height:3.9in;">
+  <div class="blank-prompt">Draw the \(2 \times 2\) grid on \([0,2] \times [0,2]\). Find \(\Delta A\). Mark the midpoints. Evaluate \(f\) at each.</div>
+</div>
+</section>
+
+<section id="your-turn-midpoint-riemann-sum" class="example-group" aria-label="Your Turn: Midpoint Riemann Sum">
+  <h2>Your Turn: Midpoint Riemann Sum</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Let \(f(x,y) = xy\) and \(R = [0,1] \times [0,1]\). Approximate the volume under \(f\) over \(R\) using a \(2 \times 2\) grid and midpoints.</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Draw the $2 \times 2$ grid on $[0,1] \times [0,1]$. Find $\Delta A$. Mark the midpoints. Evaluate $f$ at each." style="min-height:4in;">
+  <div class="blank-prompt">Draw the \(2 \times 2\) grid on \([0,1] \times [0,1]\). Find \(\Delta A\). Mark the midpoints. Evaluate \(f\) at each.</div>
 </div>
 </section>
 
 <section id="geometric-interpretation-of-the-double-integral" aria-label="Geometric Interpretation of the Double Integral">
   <h2>Geometric Interpretation of the Double Integral</h2>
-  <div class="two-col-print">
+  <div><p>When \(f(x,y) \geq 0\), the double integral \(\iint_R f\,dA\) gives the <strong>volume</strong> of the solid between the surface \(z = f(x,y)\) and the rectangle \(R\) in the \(xy\)-plane.</p>
+<p>This means we can evaluate some double integrals by recognizing the solid as a <strong>familiar geometric shape</strong>.</p></div>
+<div class="two-col-print">
   <div><figure>
   <img src="figures/constant_box.png" alt="A rectangular box with base in the xy-plane over the rectangle R = [1,7] times [-2,2] and constant height z = 5. The box has length 6, width 4, and height 5.">
   <figcaption><a href="figures/constant_box.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure></div>
+</figure>
+<div><p><strong>Constant function:</strong> \(z = c\) over \(R\) is a <strong>box</strong>.</p>
+<p>Volume \(= \text{length} \times \text{width} \times \text{height}\)</p></div></div>
   <div><figure>
   <img src="figures/ramp_wedge.png" alt="A wedge-shaped solid (triangular prism) over the rectangle R = [3,6] times [1,5]. The surface z = x forms a ramp that rises linearly from x = 3 (height 3) to x = 6 (height 6). The cross-section in the xz-plane is a trapezoid.">
   <figcaption><a href="figures/ramp_wedge.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure></div>
+</figure>
+<div><p><strong>Linear function:</strong> \(z = x\) over \(R\) is a <strong>ramp/wedge</strong>.</p>
+<p>Volume \(= \text{cross-sectional area} \times \text{depth}\)</p></div></div>
 </div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Before reaching for computation, ask: <strong>can I see the shape?</strong> If the solid is a box, wedge, cylinder, cone, or hemisphere, use the geometric formula!</p></aside>
 </section>
@@ -263,29 +314,23 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: The surface $z = 5$ is a horizontal plane. What solid sits between this plane and the rectangle $R$?" style="min-height:2in;">
   <div class="blank-prompt">The surface \(z = 5\) is a horizontal plane. What solid sits between this plane and the rectangle \(R\)?</div>
 </div>
+<aside class="key-point" role="note" aria-label="Key point"><p>When the integrand is a <strong>constant</strong> \(c\), \(\displaystyle\iint_R c\,dA = c \cdot \text{Area}(R)\)</p></aside>
 </section>
 
-<section id="quick-check-geometric-interpretation" aria-label="Quick Check: Geometric Interpretation">
-  <h2>Quick Check: Geometric Interpretation</h2>
-  <div class="blank-space" role="region" aria-label="Student workspace: The surface $z = 1-x$ is a plane. At $x = 0$ the height is $1$; at $x = 1$ the height is $0$. What solid is this?" style="min-height:2.5in;">
+<section id="your-turn-geometric-interpretation" aria-label="Your Turn: Geometric Interpretation">
+  <h2>Your Turn: Geometric Interpretation</h2>
+  <div><p><em>Without computing any integrals, what is \(\displaystyle\iint_R (1-x)\,dA\) where \(R = [0,1] \times [0,1]\)?</em></p>
+<p><em>Hint: Sketch \(z = 1 - x\) over the unit square. What shape do you see?</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: The surface $z = 1-x$ is a plane. At $x = 0$ the height is $1$; at $x = 1$ the height is $0$. What solid is this?" style="min-height:2.5in;">
   <div class="blank-prompt">The surface \(z = 1-x\) is a plane. At \(x = 0\) the height is \(1\); at \(x = 1\) the height is \(0\). What solid is this?</div>
 </div>
-</section>
-
-<section id="example-3-volume-under-a-ramp" class="example-group" aria-label="Example 3: Volume Under a Ramp">
-  <h2>Example 3: Volume Under a Ramp</h2>
-  <section class="example-box" role="region" aria-label="Example 3">
-  <h3 class="example-title">Example 3</h3>
-  <p>Evaluate \(\displaystyle\iint_R x\,dA\) where \(R = \{(x,y) \mid 3 \leq x \leq 6,\; 1 \leq y \leq 5\}\).</p>
-</section>
-<div class="blank-space" role="region" aria-label="Student workspace: Sketch the surface $z = x$ over $R$. What is the cross-sectional shape in the $xz$-plane?" style="min-height:3in;">
-  <div class="blank-prompt">Sketch the surface \(z = x\) over \(R\). What is the cross-sectional shape in the \(xz\)-plane?</div>
-</div>
+<aside class="key-point" role="note" aria-label="Key point"><p>A linear function over a rectangle always produces a shape you can compute geometrically &mdash; no integral formulas needed!</p></aside>
 </section>
 
 <section id="properties-of-double-integrals" aria-label="Properties of Double Integrals">
   <h2>Properties of Double Integrals</h2>
-  <section class="defn-box theorem-box" role="region" aria-label="Theorem: Properties of Double Integrals">
+  <div><p>Double integrals obey the same <strong>linearity rules</strong> as single integrals.</p></div>
+<section class="defn-box theorem-box" role="region" aria-label="Theorem: Properties of Double Integrals">
   <h3 class="defn-title">Theorem: Properties of Double Integrals</h3>
   <p>If \(f\) and \(g\) are integrable over \(R\) and \(c\) is a constant:</p>
 <ol>
@@ -295,12 +340,25 @@ if (window.MathJax && window.MathJax.startup) {
 <li><strong>Splitting:</strong> If \(R = R_1 \cup R_2\) where \(R_1\) and \(R_2\) don't overlap (except on edges), then \(\displaystyle\iint_R f\,dA = \iint_{R_1} f\,dA + \iint_{R_2} f\,dA\)</li>
 </ol>
 </section>
+<figure>
+  <img src="figures/splitting_property.png" alt="A 2D diagram showing rectangle R split into sub-rectangles R1 (blue, left) and R2 (amber, right) by a dashed dividing line. The equation below reads: double integral over R of f dA equals double integral over R1 plus double integral over R2.">
+</figure>
+<div><p>These properties follow directly from the corresponding properties of finite sums and limits. They'll be essential when we learn to <strong>compute</strong> double integrals via iterated integrals in the next section.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Linearity is your best friend: it lets you break complicated integrals into simpler pieces.</p></aside>
 </section>
 
 <section id="looking-ahead-how-will-we-actually-compute-these" aria-label="Looking Ahead: How Will We Actually Compute These?">
   <h2>Looking Ahead: How Will We Actually Compute These?</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>Today's takeaway: understand <strong>what</strong> a double integral is (limit of Riemann sums, volume under a surface). Next time: learn <strong>how</strong> to compute them efficiently.</p></aside>
+  <div><p>So far, we've only evaluated double integrals by:</p>
+<ul>
+<li>Riemann sum approximations (Example 1)</li>
+<li>Geometric formulas for simple shapes (Example 2)</li>
+</ul></div>
+<div><p><strong>The big question:</strong> What about \(\displaystyle\iint_R e^{x+y}\,dA\) or \(\displaystyle\iint_R \sin(x^2 y)\,dA\)? We can't draw those as boxes or wedges!</p></div>
+<div><p><strong>Coming in Section 15.2:</strong> <strong>Fubini's Theorem</strong> tells us we can compute a double integral as two nested single integrals:</p>
+<p>\[\iint_R f(x,y)\,dA = \int_a^b \left[\int_c^d f(x,y)\,dy\right]\,dx\]</p>
+<p>This is called an <strong>iterated integral</strong>, and it reduces the problem to two Calc I integrals!</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Today's takeaway: understand <strong>what</strong> a double integral is (limit of Riemann sums, volume under a surface). Next time: learn <strong>how</strong> to compute them efficiently.</p></aside>
 </section>
 
 <section class="homework-section" aria-label="Homework">
