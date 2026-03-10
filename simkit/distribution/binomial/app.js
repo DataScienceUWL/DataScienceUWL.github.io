@@ -119,7 +119,7 @@ function update() {
 
   // Display result
   displayResult(k, type, prob);
-  renderChart(data, n, p, k, shadedKs, mu, sigma);
+  renderChart(data, n, p, k, shadedKs, mu, sigma, prob, type);
   renderTable(data, shadedKs);
   announce(`${typeLabel(k, type)} = ${prob.toFixed(6)}`);
 }
@@ -195,8 +195,10 @@ function displayResult(k, type, prob) {
  * @param {Set<number>} shadedKs
  * @param {number} mu
  * @param {number} sigma
+ * @param {number} prob
+ * @param {string} type
  */
-function renderChart(data, n, p, k, shadedKs, mu, sigma) {
+function renderChart(data, n, p, k, shadedKs, mu, sigma, prob, type) {
   if (!chartContainer) return;
   chartContainer.innerHTML = '';
 
@@ -294,6 +296,9 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma) {
     .attr('stroke', '#fff')
     .attr('stroke-width', 0.5);
 
+  // Probability pills
+  addProbPills(g, xLinear, innerW, innerH, lo, hi, k, prob, type);
+
   // Normal approximation overlay
   if (showNormal.checked && sigma > 0) {
     const nPts = 200;
@@ -348,6 +353,85 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma) {
 
   // Draggable k boundary line
   addDraggableKLine(g, svg, data, n, k, innerW, innerH, margin);
+}
+
+/**
+ * Render a probability pill (rounded rect + text) at a given position.
+ * @param {d3Selection.Selection} g
+ * @param {number} cx - Center x in pixels
+ * @param {number} cy - Center y in pixels
+ * @param {string} text
+ * @param {boolean} isComplement
+ */
+function renderPill(g, cx, cy, text, isComplement) {
+  const textWidth = text.length * 9.5 + 18;
+  const pillH = 26;
+  g.append('rect')
+    .attr('class', isComplement ? 'prob-label-bg prob-complement-bg' : 'prob-label-bg')
+    .attr('x', cx - textWidth / 2)
+    .attr('y', cy - pillH / 2 - 2)
+    .attr('width', textWidth)
+    .attr('height', pillH)
+    .attr('rx', 4)
+    .attr('fill', isComplement ? '#f5f5f5' : '#e8f4f8')
+    .attr('stroke', isComplement ? '#ccc' : '#569BBD')
+    .attr('stroke-width', 1)
+    .style('pointer-events', 'none');
+  g.append('text')
+    .attr('class', isComplement ? 'prob-label prob-complement' : 'prob-label')
+    .attr('x', cx)
+    .attr('y', cy + 4)
+    .attr('text-anchor', 'middle')
+    .attr('fill', isComplement ? '#808080' : '#114B5F')
+    .style('pointer-events', 'none')
+    .text(text);
+}
+
+/**
+ * Add probability pills on the chart matching the continuous distribution style.
+ * @param {d3Selection.Selection} g
+ * @param {d3Scale.ScaleLinear<number,number>} xLin
+ * @param {number} innerW
+ * @param {number} innerH
+ * @param {number} lo - Visible range lower bound
+ * @param {number} hi - Visible range upper bound
+ * @param {number} k
+ * @param {number} prob
+ * @param {string} type
+ */
+function addProbPills(g, xLin, innerW, innerH, lo, hi, k, prob, type) {
+  const labelY = innerH * 0.55;
+  const complement = 1 - prob;
+  const probText = prob.toFixed(4);
+  const compText = complement.toFixed(4);
+
+  if (type === 'exact') {
+    // Center pill on the k line
+    const cx = Math.max(45, Math.min(innerW - 45, xLin(k)));
+    renderPill(g, cx, labelY, probText, false);
+  } else if (type === 'leq' || type === 'lt') {
+    // Shaded region is left of k — center pill in [lo, k]
+    const leftMid = xLin((lo + k) / 2);
+    const leftCx = Math.max(45, Math.min(innerW - 45, leftMid));
+    renderPill(g, leftCx, labelY, probText, false);
+    // Complement on right side
+    if (k < hi) {
+      const rightMid = xLin((k + hi) / 2);
+      const rightCx = Math.max(45, Math.min(innerW - 45, rightMid));
+      renderPill(g, rightCx, labelY, compText, true);
+    }
+  } else if (type === 'geq' || type === 'gt') {
+    // Shaded region is right of k — center pill in [k, hi]
+    const rightMid = xLin((k + hi) / 2);
+    const rightCx = Math.max(45, Math.min(innerW - 45, rightMid));
+    renderPill(g, rightCx, labelY, probText, false);
+    // Complement on left side
+    if (k > lo) {
+      const leftMid = xLin((lo + k) / 2);
+      const leftCx = Math.max(45, Math.min(innerW - 45, leftMid));
+      renderPill(g, leftCx, labelY, compText, true);
+    }
+  }
 }
 
 /**
@@ -450,6 +534,10 @@ function addDraggableKLine(g, svg, data, n, k, innerW, innerH, margin) {
     const { prob, shadedKs } = computeShading(data, newK, n, type);
     g.selectAll('.pmf-bar')
       .attr('fill', (/** @type {{k:number}} */ d) => shadedKs.has(d.k) ? '#569BBD' : '#c0d6e4');
+
+    // Update probability pills
+    g.selectAll('.prob-label-bg, .prob-label').remove();
+    addProbPills(g, xLinear, innerW, innerH, visibleLo, visibleHi, newK, prob, type);
 
     // Update result display
     displayResult(newK, type, prob);
