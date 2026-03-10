@@ -329,6 +329,23 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma) {
     .attr('stroke-width', 1.5)
     .attr('stroke-dasharray', '4,3');
 
+  // Tap-to-place: click anywhere on chart to move k boundary
+  g.append('rect')
+    .attr('class', 'tap-target')
+    .attr('width', innerW).attr('height', innerH)
+    .attr('fill', 'transparent')
+    .attr('cursor', 'crosshair')
+    .on('click', function (event) {
+      const svgEl = /** @type {SVGSVGElement} */ (svg.node());
+      const pt = svgEl.createSVGPoint();
+      pt.x = event.clientX; pt.y = event.clientY;
+      const svgPt = pt.matrixTransform(svgEl.getScreenCTM().inverse());
+      const rawX = xLinear.invert(svgPt.x - margin.left);
+      const newK = Math.max(visibleLo, Math.min(visibleHi, Math.round(rawX)));
+      paramK.value = String(newK);
+      update();
+    });
+
   // Draggable k boundary line
   addDraggableKLine(g, svg, data, n, k, innerW, innerH, margin);
 }
@@ -357,8 +374,8 @@ function addDraggableKLine(g, svg, data, n, k, innerW, innerH, margin) {
     .attr('stroke-width', 1.5)
     .attr('stroke-dasharray', '6,3');
 
-  // Invisible wide handle for easier dragging
-  const handleWidth = 24;
+  // Invisible wide handle for easier dragging (44px for touch targets)
+  const handleWidth = 44;
   const handle = g.append('rect')
     .attr('class', 'k-drag-handle')
     .attr('x', kPx - handleWidth / 2)
@@ -478,12 +495,117 @@ function renderTable(data, shadedKs) {
   tableContainer.innerHTML = html;
 }
 
+// ─── Stepper buttons for integer inputs ───
+
+/**
+ * Wrap an integer input with [−] [input] [+] stepper buttons.
+ * @param {HTMLInputElement} input
+ */
+function addStepperButtons(input) {
+  const parent = input.parentElement;
+  if (!parent) return;
+
+  const wrapper = document.createElement('span');
+  wrapper.className = 'stepper-group';
+
+  const minusBtn = document.createElement('button');
+  minusBtn.type = 'button';
+  minusBtn.className = 'stepper-btn';
+  minusBtn.textContent = '−';
+  minusBtn.setAttribute('aria-label', `Decrease ${input.id}`);
+
+  const plusBtn = document.createElement('button');
+  plusBtn.type = 'button';
+  plusBtn.className = 'stepper-btn';
+  plusBtn.textContent = '+';
+  plusBtn.setAttribute('aria-label', `Increase ${input.id}`);
+
+  minusBtn.addEventListener('click', () => { input.stepDown(); input.dispatchEvent(new Event('input')); });
+  plusBtn.addEventListener('click', () => { input.stepUp(); input.dispatchEvent(new Event('input')); });
+
+  parent.insertBefore(wrapper, input);
+  wrapper.appendChild(minusBtn);
+  wrapper.appendChild(input);
+  wrapper.appendChild(plusBtn);
+}
+
+addStepperButtons(paramN);
+addStepperButtons(paramK);
+
+// ─── Preset probability buttons ───
+
+const PRESET_PROBS = [0.01, 0.025, 0.05, 0.10, 0.25];
+
+/**
+ * Find the smallest k such that P(X ≤ k) ≥ targetP (binomial inverse CDF).
+ * @param {number} n
+ * @param {number} p
+ * @param {number} targetP
+ * @returns {number}
+ */
+function binomQuantile(n, p, targetP) {
+  let cumulative = 0;
+  for (let i = 0; i <= n; i++) {
+    cumulative += binomPMF(i, n, p);
+    if (cumulative >= targetP - 1e-12) return i;
+  }
+  return n;
+}
+
+function buildPresetButtons() {
+  const existing = document.getElementById('preset-bar');
+  if (existing) existing.remove();
+
+  const n = Math.max(1, Math.min(500, parseInt(paramN.value, 10) || 20));
+  const p = Math.max(0, Math.min(1, parseFloat(paramP.value) || 0.5));
+  const type = probType.value;
+
+  const bar = document.createElement('div');
+  bar.id = 'preset-bar';
+  bar.className = 'preset-bar';
+
+  const label = document.createElement('span');
+  label.textContent = 'Quick set: ';
+  label.style.fontSize = '0.8rem';
+  bar.appendChild(label);
+
+  for (const prob of PRESET_PROBS) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'preset-btn';
+
+    let k;
+    if (type === 'leq' || type === 'lt') {
+      k = binomQuantile(n, p, prob);
+      btn.textContent = `P≤${prob}→k=${k}`;
+    } else if (type === 'geq' || type === 'gt') {
+      // Find k such that P(X ≥ k) ≈ prob → P(X ≤ k-1) ≈ 1-prob
+      k = binomQuantile(n, p, 1 - prob) + 1;
+      if (k > n) k = n;
+      btn.textContent = `P≥${prob}→k=${k}`;
+    } else {
+      // exact — less useful, skip presets for exact
+      continue;
+    }
+
+    btn.addEventListener('click', () => {
+      paramK.value = String(k);
+      update();
+    });
+    bar.appendChild(btn);
+  }
+
+  // Insert after chart area
+  const chartSection = document.getElementById('chart');
+  if (chartSection) chartSection.appendChild(bar);
+}
+
 // ─── Event listeners ───
 
-paramN.addEventListener('input', update);
-paramP.addEventListener('input', update);
+paramN.addEventListener('input', () => { buildPresetButtons(); update(); });
+paramP.addEventListener('input', () => { buildPresetButtons(); update(); });
 paramK.addEventListener('input', update);
-probType.addEventListener('change', update);
+probType.addEventListener('change', () => { buildPresetButtons(); update(); });
 showNormal.addEventListener('change', update);
 
 /** @param {string} msg */
@@ -494,3 +616,4 @@ function announce(msg) {
 // ─── Init ───
 
 update();
+buildPresetButtons();
