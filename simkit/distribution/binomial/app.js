@@ -17,6 +17,7 @@ const paramN = /** @type {HTMLInputElement} */ (document.getElementById('param-n
 const paramP = /** @type {HTMLInputElement} */ (document.getElementById('param-p'));
 const paramK = /** @type {HTMLInputElement} */ (document.getElementById('param-k'));
 const probType = /** @type {HTMLSelectElement} */ (document.getElementById('prob-type'));
+const showMean = /** @type {HTMLInputElement} */ (document.getElementById('show-mean'));
 const showNormal = /** @type {HTMLInputElement} */ (document.getElementById('show-normal'));
 const chartContainer = document.getElementById('chart-container');
 const tableContainer = document.getElementById('table-container');
@@ -324,15 +325,17 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma, prob, type) {
       .attr('opacity', 0.8);
   }
 
-  // Mean line
-  g.append('line')
-    .attr('x1', xLinear(mu))
-    .attr('x2', xLinear(mu))
-    .attr('y1', 0)
-    .attr('y2', innerH)
-    .attr('stroke', '#114B5F')
-    .attr('stroke-width', 1.5)
-    .attr('stroke-dasharray', '4,3');
+  // Mean line (optional)
+  if (showMean.checked) {
+    g.append('line')
+      .attr('x1', xLinear(mu))
+      .attr('x2', xLinear(mu))
+      .attr('y1', 0)
+      .attr('y2', innerH)
+      .attr('stroke', '#114B5F')
+      .attr('stroke-width', 1.5)
+      .attr('stroke-dasharray', '4,3');
+  }
 
   // Tap-to-place: click anywhere on chart to move k boundary
   g.append('rect')
@@ -694,6 +697,7 @@ paramN.addEventListener('input', () => { buildPresetButtons(); update(); });
 paramP.addEventListener('input', () => { buildPresetButtons(); update(); });
 paramK.addEventListener('input', update);
 probType.addEventListener('change', () => { buildPresetButtons(); update(); });
+showMean.addEventListener('change', update);
 showNormal.addEventListener('change', update);
 
 /** @param {string} msg */
