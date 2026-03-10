@@ -9,7 +9,7 @@ import { mean } from '../../js/stats.js';
 import { drawHistogram, computeBins, snappedPropThresholds } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { drawSpike } from '../../js/spike.js';
-import { renderPValueAnnotation } from '../../js/chart-utils.js';
+import * as d3Select from 'd3-selection';
 import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, loadDatasetIndex, fetchDataset, computeHighlights } from '../../js/page-utils.js';
 
 // DOM elements
@@ -391,11 +391,64 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
     xScale = r.xScale;
   }
 
-  // P-value annotation
+  // P-value pills
   if (stats.length > 0) {
     const { pValue } = computePValue(stats, observed, direction);
-    renderPValueAnnotation(frame, xScale, pValue, observed, direction);
+    renderPValuePills(frame, xScale, pValue, observed, direction);
   }
+}
+
+/**
+ * Render p-value pills on the chart (replaces single annotation).
+ * @param {import('../../js/chart-utils.js').ChartFrame} frame
+ * @param {any} xScale
+ * @param {number} pValue
+ * @param {number} observed
+ * @param {'left'|'right'|'both'} direction
+ */
+function renderPValuePills(frame, xScale, pValue, observed, direction) {
+  const annotations = d3Select.select(frame.inner).select('.annotations');
+  const w = frame.width;
+  const pillY = frame.height * 0.22;
+  const obsX = xScale(observed);
+  const comp = 1 - pValue;
+
+  let pText;
+  if (pValue === 0) pText = 'p ≈ 0';
+  else if (pValue < 0.0001) pText = 'p < 0.0001';
+  else pText = `p = ${pValue.toFixed(4)}`;
+
+  if (direction === 'both') {
+    const labelX = Math.max(60, Math.min(w - 60, obsX));
+    _pill(annotations, `${pText}  (two-tailed)`, labelX, pillY, false);
+  } else if (direction === 'left') {
+    _pill(annotations, pText, Math.max(50, obsX / 2), pillY, false);
+    _pill(annotations, comp.toFixed(4), Math.min(w - 50, (obsX + w) / 2), pillY, true);
+  } else {
+    _pill(annotations, pText, Math.min(w - 50, (obsX + w) / 2), pillY, false);
+    _pill(annotations, comp.toFixed(4), Math.max(50, obsX / 2), pillY, true);
+  }
+}
+
+/** @param {any} g @param {string} text @param {number} cx @param {number} cy @param {boolean} isComp */
+function _pill(g, text, cx, cy, isComp) {
+  const group = g.append('g').attr('class', 'sim-pill');
+  const tw = text.length * 8.5 + 16;
+  const ph = 22;
+  group.append('rect')
+    .attr('x', cx - tw / 2).attr('y', cy - ph / 2 - 2)
+    .attr('width', tw).attr('height', ph).attr('rx', 4)
+    .attr('fill', isComp ? '#f5f5f5' : '#e8f4f8')
+    .attr('stroke', isComp ? '#ccc' : '#569BBD')
+    .attr('stroke-width', 1)
+    .style('pointer-events', 'none');
+  group.append('text')
+    .attr('class', isComp ? 'prob-label prob-complement' : 'prob-label')
+    .attr('x', cx).attr('y', cy + 4)
+    .attr('text-anchor', 'middle')
+    .attr('fill', isComp ? '#808080' : '#114B5F')
+    .style('pointer-events', 'none')
+    .text(text);
 }
 
 /**

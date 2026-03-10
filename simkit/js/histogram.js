@@ -12,11 +12,14 @@ import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import { createChart, addAxes, formatTick, prefersReducedMotion, TRANSITION_MS } from './chart-utils.js';
 
-/** Default bar fill (IMS blue at 50% opacity). */
+/** Default bar fill (IMS blue at 50% opacity) — used when no isTail predicate. */
 const BAR_FILL = '#569BBD80';
 
-/** Tail/extreme bar fill (IMS red at 25% opacity). */
-const TAIL_FILL = '#F0513340';
+/** Body bar fill when isTail is active (subdued blue-gray). */
+const BODY_FILL = '#b0c4d080';
+
+/** Region-of-interest bar fill when isTail is active (bold IMS blue). */
+const REGION_FILL = '#569BBD';
 
 /** Bar stroke (white separator). */
 const BAR_STROKE = '#FFFFFF';
@@ -291,9 +294,9 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate) {
     .attr('width', d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 1))
     .attr('fill', d => {
       if (!isTail) return BAR_FILL;
-      // A bin is "tail" if its midpoint satisfies the predicate
+      // A bin is "region of interest" if its midpoint satisfies the predicate
       const mid = (d.x0 + d.x1) / 2;
-      return isTail(mid) ? TAIL_FILL : BAR_FILL;
+      return isTail(mid) ? REGION_FILL : BODY_FILL;
     })
     .attr('stroke', BAR_STROKE)
     .attr('stroke-width', 1)

@@ -9,6 +9,7 @@ import { createRng } from '../../js/prng.js';
 import { linreg, mean } from '../../js/stats.js';
 import { bootstrapCI } from '../../js/sim-engine.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
+import * as d3Select from 'd3-selection';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { parseCSV } from '../../js/csv-parser.js';
@@ -205,8 +206,11 @@ function generateResamples(count) {
   }
 
   const ciLevel = parseInt(ciSelect?.value ?? '95', 10);
+  /** @type {[number,number]|null} */
+  let currentCI = null;
   if (allSlopes.length >= 10) {
     const result = bootstrapCI([...allSlopes], ciLevel);
+    currentCI = result.ci;
     displayResults(allSlopes, result.ci, result.se, ciLevel);
   } else {
     if (resultDiv) {
@@ -223,7 +227,7 @@ function generateResamples(count) {
     { domain: [bsLo - bsPad, bsHi + bsPad] });
 
   renderScatter();
-  renderHist(allSlopes, hlIndex, hlIndices, prevBinCounts);
+  renderHist(allSlopes, hlIndex, hlIndices, prevBinCounts, currentCI);
 
   if (resetBtn) resetBtn.hidden = false;
   announce(`Generated ${count} resample${count > 1 ? 's' : ''}. Total: ${allSlopes.length}`);
@@ -249,33 +253,96 @@ function renderScatter() {
  * @param {number} [highlightIndex]
  * @param {Set<number>} [highlightIndices]
  * @param {number[]} [prevBinCounts]
+ * @param {[number,number]|null} [ci]
  */
-function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts) {
+function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts, ci) {
   if (!histContainer) return;
   histContainer.innerHTML = '';
   const n = slopes.length;
   if (n === 0) return;
 
+  // Region predicate: values inside CI are the region of interest
+  const regionPred = ci ? (/** @type {number} */ v) => v >= ci[0] && v <= ci[1] : undefined;
+
+  /** @type {import('../../js/chart-utils.js').ChartFrame} */
+  let frame;
+  /** @type {any} */
+  let xScale;
+
   if (n <= 200) {
-    drawDotplot(histContainer, slopes, {
+    const r = drawDotplot(histContainer, slopes, {
       id: 'slope-dist',
       xLabel: 'Bootstrap Slope',
       titleText: 'Bootstrap Distribution of Slope',
+      isExtreme: regionPred,
       observedStat: observedSlope,
+      ciLines: ci ?? undefined,
       animate: false,
       highlightIndex,
       highlightIndices,
     });
+    frame = r.frame;
+    xScale = r.xScale;
   } else {
-    drawHistogram(histContainer, slopes, {
+    const r = drawHistogram(histContainer, slopes, {
       id: 'slope-dist',
       xLabel: 'Bootstrap Slope',
       titleText: 'Bootstrap Distribution of Slope',
+      isTail: regionPred,
       observedStat: observedSlope,
+      ciLines: ci ?? undefined,
       animate: false,
       prevBinCounts,
     });
+    frame = r.frame;
+    xScale = r.xScale;
   }
+
+  // Add CI proportion pills
+  if (ci && n > 0) {
+    const inside = slopes.filter(v => v >= ci[0] && v <= ci[1]).length;
+    const proportion = inside / n;
+    const annotations = d3Select.select(frame.inner).select('.annotations');
+    const w = frame.width;
+    const pillY = frame.height * 0.22;
+    const loX = xScale(ci[0]);
+    const hiX = xScale(ci[1]);
+
+    // Middle pill
+    const midX = Math.max(50, Math.min(w - 50, (loX + hiX) / 2));
+    _pill(annotations, proportion.toFixed(4), midX, pillY, false);
+
+    // Tail pills
+    const leftTail = (1 - proportion) / 2;
+    const rightTail = 1 - proportion - leftTail;
+    if (loX > 80) {
+      _pill(annotations, leftTail.toFixed(4), Math.max(40, loX / 2), pillY, true);
+    }
+    if (w - hiX > 80) {
+      _pill(annotations, rightTail.toFixed(4), Math.min(w - 40, (hiX + w) / 2), pillY, true);
+    }
+  }
+}
+
+/** @param {any} g @param {string} text @param {number} cx @param {number} cy @param {boolean} isComp */
+function _pill(g, text, cx, cy, isComp) {
+  const group = g.append('g').attr('class', 'sim-pill');
+  const tw = text.length * 8.5 + 16;
+  const ph = 22;
+  group.append('rect')
+    .attr('x', cx - tw / 2).attr('y', cy - ph / 2 - 2)
+    .attr('width', tw).attr('height', ph).attr('rx', 4)
+    .attr('fill', isComp ? '#f5f5f5' : '#e8f4f8')
+    .attr('stroke', isComp ? '#ccc' : '#569BBD')
+    .attr('stroke-width', 1)
+    .style('pointer-events', 'none');
+  group.append('text')
+    .attr('class', isComp ? 'prob-label prob-complement' : 'prob-label')
+    .attr('x', cx).attr('y', cy + 4)
+    .attr('text-anchor', 'middle')
+    .attr('fill', isComp ? '#808080' : '#114B5F')
+    .style('pointer-events', 'none')
+    .text(text);
 }
 
 /**

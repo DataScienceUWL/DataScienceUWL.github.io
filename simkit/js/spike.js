@@ -12,11 +12,14 @@ import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import { createChart, addAxes, formatTick } from './chart-utils.js';
 
-/** Spike line color (IMS blue). */
+/** Default spike color (IMS blue) — used when no isTail predicate. */
 const SPIKE_COLOR = '#569BBD';
 
-/** Tail spike color (IMS red at 60% opacity). */
-const TAIL_COLOR = '#F0513399';
+/** Body spike color when isTail is active (subdued gray). */
+const BODY_SPIKE = '#a0a0a0';
+
+/** Region-of-interest spike color when isTail is active (bold IMS blue). */
+const REGION_SPIKE = '#569BBD';
 
 /** Spike cap radius. */
 const CAP_RADIUS = 3;
@@ -121,7 +124,7 @@ export function drawSpike(container, values, options = {}) {
     .attr('y2', d => yScale(d.count))
     .attr('stroke', d => {
       if (!isTail) return SPIKE_COLOR;
-      return isTail(d.value) ? TAIL_COLOR : SPIKE_COLOR;
+      return isTail(d.value) ? REGION_SPIKE : BODY_SPIKE;
     })
     .attr('stroke-width', 2)
     .attr('role', 'listitem')
@@ -137,7 +140,7 @@ export function drawSpike(container, values, options = {}) {
     .attr('r', CAP_RADIUS)
     .attr('fill', d => {
       if (!isTail) return SPIKE_COLOR;
-      return isTail(d.value) ? TAIL_COLOR : SPIKE_COLOR;
+      return isTail(d.value) ? REGION_SPIKE : BODY_SPIKE;
     });
 
   // Tooltips

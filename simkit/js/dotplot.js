@@ -312,7 +312,7 @@ function renderObservedLine(overlays, value, xScale, innerHeight) {
 }
 
 /** CI line color (green). */
-const CI_COLOR = '#2E7D32';
+const CI_COLOR = '#114B5F';
 
 /**
  * Render a CI bound vertical line with label.

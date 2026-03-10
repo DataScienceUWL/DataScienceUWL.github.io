@@ -9,7 +9,7 @@ import { createRng, shuffle } from '../../js/prng.js';
 import { chisqStat } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
-import { renderPValueAnnotation } from '../../js/chart-utils.js';
+import * as d3Select from 'd3-selection';
 import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, loadDatasetIndex, fetchDataset, computeHighlights } from '../../js/page-utils.js';
 
 // ─── DOM elements ───
@@ -404,9 +404,59 @@ function renderChart(stats, observed, highlightIndex = -1, highlightIndices, pre
     xScale = r.xScale;
   }
 
-  // P-value annotation (always right-tailed)
-  const { pValue } = computePValue(stats, observed);
-  renderPValueAnnotation(frame, xScale, pValue, observed, 'right');
+  // P-value pills (always right-tailed)
+  if (stats.length > 0) {
+    const { pValue } = computePValue(stats, observed);
+    renderPValuePills(frame, xScale, pValue, observed);
+  }
+}
+
+/**
+ * Render p-value pills (right-tail only for chi-square).
+ * @param {import('../../js/chart-utils.js').ChartFrame} frame
+ * @param {any} xScale
+ * @param {number} pValue
+ * @param {number} observed
+ */
+function renderPValuePills(frame, xScale, pValue, observed) {
+  const annotations = d3Select.select(frame.inner).select('.annotations');
+  const w = frame.width;
+  const pillY = frame.height * 0.22;
+  const obsX = xScale(observed);
+  const comp = 1 - pValue;
+
+  let pText;
+  if (pValue === 0) pText = 'p ≈ 0';
+  else if (pValue < 0.0001) pText = 'p < 0.0001';
+  else pText = `p = ${pValue.toFixed(4)}`;
+
+  // Right tail pill
+  const tailX = Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2));
+  _pill(annotations, pText, tailX, pillY, false);
+  // Body pill
+  const bodyX = Math.max(50, Math.min(obsX - 10, obsX / 2));
+  _pill(annotations, comp.toFixed(4), bodyX, pillY, true);
+}
+
+/** @param {any} g @param {string} text @param {number} cx @param {number} cy @param {boolean} isComp */
+function _pill(g, text, cx, cy, isComp) {
+  const group = g.append('g').attr('class', 'sim-pill');
+  const tw = text.length * 8.5 + 16;
+  const ph = 22;
+  group.append('rect')
+    .attr('x', cx - tw / 2).attr('y', cy - ph / 2 - 2)
+    .attr('width', tw).attr('height', ph).attr('rx', 4)
+    .attr('fill', isComp ? '#f5f5f5' : '#e8f4f8')
+    .attr('stroke', isComp ? '#ccc' : '#569BBD')
+    .attr('stroke-width', 1)
+    .style('pointer-events', 'none');
+  group.append('text')
+    .attr('class', isComp ? 'prob-label prob-complement' : 'prob-label')
+    .attr('x', cx).attr('y', cy + 4)
+    .attr('text-anchor', 'middle')
+    .attr('fill', isComp ? '#808080' : '#114B5F')
+    .style('pointer-events', 'none')
+    .text(text);
 }
 
 /**
