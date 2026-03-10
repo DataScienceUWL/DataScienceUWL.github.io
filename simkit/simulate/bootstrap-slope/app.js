@@ -298,7 +298,7 @@ function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts
     xScale = r.xScale;
   }
 
-  // Add CI proportion pills
+  // Add CI proportion pill (single blue pill in middle)
   if (ci && n > 0) {
     const inside = slopes.filter(v => v >= ci[0] && v <= ci[1]).length;
     const proportion = inside / n;
@@ -307,20 +307,8 @@ function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts
     const pillY = frame.height * 0.22;
     const loX = xScale(ci[0]);
     const hiX = xScale(ci[1]);
-
-    // Middle pill
     const midX = Math.max(50, Math.min(w - 50, (loX + hiX) / 2));
     _pill(annotations, proportion.toFixed(4), midX, pillY, false);
-
-    // Tail pills
-    const leftTail = (1 - proportion) / 2;
-    const rightTail = 1 - proportion - leftTail;
-    if (loX > 80) {
-      _pill(annotations, leftTail.toFixed(4), Math.max(40, loX / 2), pillY, true);
-    }
-    if (w - hiX > 80) {
-      _pill(annotations, rightTail.toFixed(4), Math.min(w - 40, (hiX + w) / 2), pillY, true);
-    }
   }
 }
 
@@ -328,9 +316,9 @@ function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts
 function _pill(g, text, cx, cy, isComp) {
   const group = g.append('g').attr('class', 'sim-pill');
   const tw = text.length * 8.5 + 16;
-  const ph = 22;
+  const ph = 24;
   group.append('rect')
-    .attr('x', cx - tw / 2).attr('y', cy - ph / 2 - 2)
+    .attr('x', cx - tw / 2).attr('y', cy - ph / 2)
     .attr('width', tw).attr('height', ph).attr('rx', 4)
     .attr('fill', isComp ? '#f5f5f5' : '#e8f4f8')
     .attr('stroke', isComp ? '#ccc' : '#569BBD')
@@ -338,8 +326,9 @@ function _pill(g, text, cx, cy, isComp) {
     .style('pointer-events', 'none');
   group.append('text')
     .attr('class', isComp ? 'prob-label prob-complement' : 'prob-label')
-    .attr('x', cx).attr('y', cy + 4)
+    .attr('x', cx).attr('y', cy)
     .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'central')
     .attr('fill', isComp ? '#808080' : '#114B5F')
     .style('pointer-events', 'none')
     .text(text);

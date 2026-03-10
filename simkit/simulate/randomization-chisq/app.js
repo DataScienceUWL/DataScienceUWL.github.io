@@ -442,9 +442,9 @@ function renderPValuePills(frame, xScale, pValue, observed) {
 function _pill(g, text, cx, cy, isComp) {
   const group = g.append('g').attr('class', 'sim-pill');
   const tw = text.length * 8.5 + 16;
-  const ph = 22;
+  const ph = 24;
   group.append('rect')
-    .attr('x', cx - tw / 2).attr('y', cy - ph / 2 - 2)
+    .attr('x', cx - tw / 2).attr('y', cy - ph / 2)
     .attr('width', tw).attr('height', ph).attr('rx', 4)
     .attr('fill', isComp ? '#f5f5f5' : '#e8f4f8')
     .attr('stroke', isComp ? '#ccc' : '#569BBD')
@@ -452,8 +452,9 @@ function _pill(g, text, cx, cy, isComp) {
     .style('pointer-events', 'none');
   group.append('text')
     .attr('class', isComp ? 'prob-label prob-complement' : 'prob-label')
-    .attr('x', cx).attr('y', cy + 4)
+    .attr('x', cx).attr('y', cy)
     .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'central')
     .attr('fill', isComp ? '#808080' : '#114B5F')
     .style('pointer-events', 'none')
     .text(text);

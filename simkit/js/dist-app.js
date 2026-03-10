@@ -488,11 +488,11 @@ export function initDistCalculator(config) {
     // Background pill
     const labelText = prob.toFixed(4);
     const textWidth = labelText.length * 8.5 + 16;
-    const pillH = 22;
+    const pillH = 24;
     group.append('rect')
       .attr('class', isComplement ? 'prob-label-bg prob-complement-bg' : 'prob-label-bg')
       .attr('x', clampedX - textWidth / 2)
-      .attr('y', labelY - pillH / 2 - 2)
+      .attr('y', labelY - pillH / 2)
       .attr('width', textWidth)
       .attr('height', pillH)
       .attr('rx', 4)
@@ -504,8 +504,9 @@ export function initDistCalculator(config) {
     const textEl = group.append('text')
       .attr('class', isComplement ? 'prob-label prob-complement' : 'prob-label')
       .attr('x', clampedX)
-      .attr('y', labelY + 4)
+      .attr('y', labelY)
       .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'central')
       .attr('fill', isComplement ? '#808080' : '#114B5F')
       .attr('cursor', 'pointer')
       .text(labelText);

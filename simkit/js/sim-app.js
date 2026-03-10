@@ -1541,24 +1541,10 @@ export function initSimPage(config) {
       const [ciLo, ciHi] = opts.ci;
       const loX = xScale(ciLo);
       const hiX = xScale(ciHi);
-      const prop = opts.proportion;
 
-      // Middle pill: proportion inside CI
+      // Single pill: proportion inside CI
       const midX = Math.max(50, Math.min(w - 50, (loX + hiX) / 2));
-      _addSimPill(annotations, prop.toFixed(4), midX, pillY, false);
-
-      // Left tail pill
-      const leftTail = (1 - prop) / 2;
-      if (loX > 80) {
-        const ltX = Math.max(40, loX / 2);
-        _addSimPill(annotations, leftTail.toFixed(4), ltX, pillY, true);
-      }
-      // Right tail pill
-      const rightTail = 1 - prop - leftTail;
-      if (w - hiX > 80) {
-        const rtX = Math.min(w - 40, (hiX + w) / 2);
-        _addSimPill(annotations, rightTail.toFixed(4), rtX, pillY, true);
-      }
+      _addSimPill(annotations, opts.proportion.toFixed(4), midX, pillY, false);
     }
   }
 
@@ -1573,10 +1559,10 @@ export function initSimPage(config) {
   function _addSimPill(group, text, cx, cy, isComplement) {
     const g = group.append('g').attr('class', 'sim-pill');
     const textWidth = text.length * 8.5 + 16;
-    const pillH = 22;
+    const pillH = 24;
     g.append('rect')
       .attr('x', cx - textWidth / 2)
-      .attr('y', cy - pillH / 2 - 2)
+      .attr('y', cy - pillH / 2)
       .attr('width', textWidth)
       .attr('height', pillH)
       .attr('rx', 4)
@@ -1587,8 +1573,9 @@ export function initSimPage(config) {
     g.append('text')
       .attr('class', isComplement ? 'prob-label prob-complement' : 'prob-label')
       .attr('x', cx)
-      .attr('y', cy + 4)
+      .attr('y', cy)
       .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'central')
       .attr('fill', isComplement ? '#808080' : '#114B5F')
       .style('pointer-events', 'none')
       .text(text);
