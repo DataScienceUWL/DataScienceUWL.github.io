@@ -321,24 +321,45 @@ export function initDistCalculator(config) {
     }
 
     // Snap point indicators — small triangles on the x-axis at common critical values
-    addSnapIndicators(annotations, frame, xScale);
+    addSnapIndicators(annotations, frame, xScale, tail);
 
     // Editable value label on x-axis
     addEditableValueLabel(annotations, frame, xScale, x, tail);
   }
 
   /**
-   * Render small triangle markers on the x-axis at each snap point.
+   * Render small triangle markers on the x-axis at snap points relevant to the current tail.
    * @param {*} group
    * @param {import('./types.js').ChartFrame} frame
    * @param {*} xScale
+   * @param {'left'|'right'|'both'} tail
    */
-  function addSnapIndicators(group, frame, xScale) {
+  function addSnapIndicators(group, frame, xScale, tail) {
+    if (!currentInv) return;
     const [lo, hi] = xScale.domain();
-    const visible = snapPoints.filter(sp => sp > lo && sp < hi);
     const y = frame.height;
     const size = 4;
 
+    // Build tail-specific snap points
+    /** @type {number[]} */
+    const points = [];
+    for (const p of SNAP_PROBS) {
+      if (tail === 'left') {
+        const xLeft = currentInv(p);
+        if (isFinite(xLeft)) points.push(xLeft);
+      } else if (tail === 'right') {
+        const xRight = currentInv(1 - p);
+        if (isFinite(xRight)) points.push(xRight);
+      } else {
+        // Both tails: show snap points on both sides
+        const xLeft = currentInv(p / 2);
+        const xRight = currentInv(1 - p / 2);
+        if (isFinite(xLeft)) points.push(xLeft);
+        if (isFinite(xRight) && Math.abs(xRight - xLeft) > 1e-10) points.push(xRight);
+      }
+    }
+
+    const visible = points.filter(sp => sp > lo && sp < hi);
     for (const sp of visible) {
       const px = xScale(sp);
       group.append('polygon')
