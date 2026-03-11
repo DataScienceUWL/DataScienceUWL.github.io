@@ -140,16 +140,20 @@ function adjustWorkspaces() {
             var ws = findPrecedingWorkspace(pb);
             if (ws) expandWorkspace(ws, remaining);
         }
-        pb.remove();  // no longer needed — workspace expansion handles the break
+        // Keep the div — its CSS page-break-before:always guarantees the break
+        // even if the workspace expansion calculation is slightly off.
     });
 
     // --- Pass B: Auto-detect orphaned section starts ---
+    // Skip sections preceded by an explicit .pagebreak (already handled by Pass A).
     var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
     var sections = document.querySelectorAll('main > section');
     for (var pass = 0; pass < 3; pass++) {
         var changed = false;
         for (var i = 1; i < sections.length; i++) {
             var sec = sections[i];
+            var prev = sec.previousElementSibling;
+            if (prev && prev.classList && prev.classList.contains('pagebreak')) continue;
             var secRect = sec.getBoundingClientRect();
             var secTop = secRect.top + window.scrollY;
             var secBot = secTop + secRect.height;
@@ -195,29 +199,44 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="lines-in-2d-review" class="example-group" aria-label="Lines in 2D &mdash; Review">
   <h2>Lines in 2D &mdash; Review</h2>
-  <section class="example-box" role="region" aria-label="Example 1">
+  <div><p>In 2D, a line is determined by a <strong>point</strong> and a <strong>slope</strong> (direction):</p>
+<p>\[y = mx + b \qquad \text{or} \qquad y - y_0 = m(x - x_0)\]</p></div>
+<section class="example-box" role="region" aria-label="Example 1">
   <h3 class="example-title">Example 1</h3>
   <p>Find the equation of the line through \(P(0,0)\) and \(Q(1,2)\).</p>
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace: Find the slope, then use point-slope form." style="min-height:1.5in;">
   <div class="blank-prompt">Find the slope, then use point-slope form.</div>
 </div>
+<div><p>Slope: \(m = \dfrac{2-0}{1-0} = 2\)</p></div>
+<div><p>Using point-slope with \(P(0,0)\): \(y - 0 = 2(x - 0)\), so \(y = 2x\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>A line needs two things: a <strong>point</strong> and a <strong>direction</strong>.</p></aside>
 </section>
 
 <section id="parametric-equations-of-lines" class="example-group" aria-label="Parametric Equations of Lines">
   <h2>Parametric Equations of Lines</h2>
-  <section class="example-box" role="region" aria-label="Example 2">
+  <div><p>Instead of \(y = mx + b\), we can describe a line <strong>parametrically</strong>:</p>
+<p>\[x = x_0 + at, \qquad y = y_0 + bt\]</p>
+<p>The parameter \(t\) sweeps out the line. The <strong>direction vector</strong> \(\vec{v} = \langle a, b \rangle\) tells which way the line goes.</p></div>
+<section class="example-box" role="region" aria-label="Example 2">
   <h3 class="example-title">Example 2</h3>
   <p>Write parametric equations for the line through \(P(0,0)\) with direction \(\langle 1, 2 \rangle\).</p>
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace: Use the parametric form with the given point and direction." style="min-height:1.5in;">
   <div class="blank-prompt">Use the parametric form with the given point and direction.</div>
 </div>
+<div><p>\[x = 0 + 1 \cdot t = t, \qquad y = 0 + 2 \cdot t = 2t\]</p></div>
+<div><p>Check: when \(t = 0\) we get \(P(0,0)\) \(\checkmark\). When \(t = 1\) we get \((1,2)\) \(\checkmark\).</p></div>
+
+<div><p><strong>Multiple parametrizations:</strong> The same line has many parametric descriptions.</p>
+<p>Starting at \(Q(1,2)\) and going backward: \(x = 1 - s, \quad y = 2 - 2s\)</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Parametric equations are <strong>not unique</strong> &mdash; different starting points and direction vectors can describe the same line.</p></aside>
 </section>
 
 <section id="vector-equation-of-a-line" aria-label="Vector Equation of a Line">
   <h2>Vector Equation of a Line</h2>
-  <section class="defn-box" role="region" aria-label="Vector Equation of a Line">
+  <div><p>Pack the parametric equations into one <strong>vector equation</strong>:</p></div>
+<section class="defn-box" role="region" aria-label="Vector Equation of a Line">
   <h3 class="defn-title">Vector Equation of a Line</h3>
   <p>\[\vec{r} = \vec{r}_0 + t\vec{v}\]</p>
 <ul>
@@ -235,22 +254,39 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="lines-in-3d" class="example-group" aria-label="Lines in 3D">
   <h2>Lines in 3D</h2>
-  <section class="example-box" role="region" aria-label="Example 3">
+  <div><p>The same formula works in 3D &mdash; no changes needed!</p>
+<p>\[\vec{r} = \vec{r}_0 + t\vec{v}\]</p></div>
+<section class="example-box" role="region" aria-label="Example 3">
   <h3 class="example-title">Example 3</h3>
   <p>Find vector and parametric equations for the line through \(P(1,1,1)\) and \(Q(4,5,6)\).</p>
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace: Find the direction vector PQ, then write the vector equation. Expand into parametric form." style="min-height:2in;">
   <div class="blank-prompt">Find the direction vector PQ, then write the vector equation. Expand into parametric form.</div>
 </div>
+<div><p><strong>Direction vector:</strong> \(\vec{v} = \overrightarrow{PQ} = \langle 4-1,\; 5-1,\; 6-1 \rangle = \langle 3, 4, 5 \rangle\)</p></div>
+<div><p><strong>Vector equation:</strong> \(\vec{r} = \langle 1, 1, 1 \rangle + t\langle 3, 4, 5 \rangle\)</p></div>
+<div><p><strong>Parametric equations:</strong></p>
+<p>\[x = 1 + 3t, \qquad y = 1 + 4t, \qquad z = 1 + 5t\]</p></div>
+<figure>
+  <img src="figures/line_3d.png" alt="A line in 3D space passing through P(1,1,1) and Q(4,5,6) with the direction vector shown">
+  <figcaption><a href="figures/line_3d.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
 </section>
 
 <section id="symmetric-equations" aria-label="Symmetric Equations">
   <h2>Symmetric Equations</h2>
-  <section class="defn-box" role="region" aria-label="Symmetric Equations">
+  <div><p>From the parametric equations, <strong>solve each one for \(t\)</strong>:</p>
+<p>\[t = \frac{x - 1}{3} = \frac{y - 1}{4} = \frac{z - 1}{5}\]</p></div>
+<section class="defn-box" role="region" aria-label="Symmetric Equations">
   <h3 class="defn-title">Symmetric Equations</h3>
   <p>If \(\vec{v} = \langle a, b, c \rangle\) (all nonzero), the <strong>symmetric equations</strong> of the line through \((x_0, y_0, z_0)\) are:</p>
 <p>\[\frac{x - x_0}{a} = \frac{y - y_0}{b} = \frac{z - z_0}{c}\]</p>
 </section>
+<div><p><strong>Uses:</strong></p>
+<ul>
+<li>Quick way to check if a point is on the line (plug in and see if all three fractions are equal)</li>
+<li>Eliminates the parameter \(t\)</li>
+</ul></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>If one direction component is <strong>zero</strong>, that coordinate is constant &mdash; write it separately. For example, if \(a = 0\): \(x = x_0\) and \(\dfrac{y - y_0}{b} = \dfrac{z - z_0}{c}\).</p></aside>
 </section>
 
@@ -263,14 +299,24 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Find the direction vector AB, write parametric equations, then solve each for t." style="min-height:2.5in;">
   <div class="blank-prompt">Find the direction vector AB, write parametric equations, then solve each for t.</div>
 </div>
+<div><p><strong>Direction vector:</strong> \(\vec{v} = \overrightarrow{AB} = \langle 4-2,\; 3-(-1),\; 1-3 \rangle = \langle 2, 4, -2 \rangle\)</p></div>
+<div><p><strong>Parametric equations:</strong></p>
+<p>\[x = 2 + 2t, \qquad y = -1 + 4t, \qquad z = 3 - 2t\]</p></div>
+<div><p><strong>Symmetric equations:</strong></p>
+<p>\[\frac{x - 2}{2} = \frac{y + 1}{4} = \frac{z - 3}{-2}\]</p></div>
 </section>
 
 <section id="planes-in-3d" aria-label="Planes in 3D">
   <h2>Planes in 3D</h2>
-  <figure>
+  <div class="two-col-print">
+  <div><div><p>A <strong>plane</strong> is determined by a point and a <strong>normal vector</strong> (perpendicular to the plane).</p>
+<p>If \(\vec{r}_0\) points to a known point \(P_0\) and \(\vec{n}\) is normal to the plane, then any point \(\vec{r}\) in the plane satisfies:</p>
+<p>\[\vec{n} \cdot (\vec{r} - \vec{r}_0) = 0\]</p></div></div>
+  <div><figure>
   <img src="figures/plane_normal.png" alt="A plane in 3D with normal vector n perpendicular to the surface, showing point P0 and an arbitrary point P in the plane">
   <figcaption><a href="figures/plane_normal.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure>
+</figure></div>
+</div>
 <section class="defn-box" role="region" aria-label="Equations of a Plane">
   <h3 class="defn-title">Equations of a Plane</h3>
   <ul>
@@ -291,6 +337,14 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Use the scalar equation with the given point and normal vector." style="min-height:2in;">
   <div class="blank-prompt">Use the scalar equation with the given point and normal vector.</div>
 </div>
+<div><p><strong>Step 1:</strong> Use the scalar form \(\vec{n} \cdot (\vec{r} - \vec{r}_0) = 0\):</p>
+<p>\[\langle -1, -2, 3 \rangle \cdot \langle x - 3,\; y - 0,\; z - 2 \rangle = 0\]</p></div>
+<div><p><strong>Step 2:</strong> Expand the dot product:</p>
+<p>\[-(x - 3) - 2(y - 0) + 3(z - 2) = 0\]</p></div>
+<div><p><strong>Step 3:</strong> Simplify:</p>
+<p>\[-x + 3 - 2y + 3z - 6 = 0\]</p>
+<p>\[-x - 2y + 3z = 3\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Shortcut:</strong> The coefficients of \(x\), \(y\), \(z\) come straight from the normal vector. Just plug in the point to find \(d\).</p></aside>
 </section>
 
 <section id="line-plane-intersection" class="example-group" aria-label="Line-Plane Intersection">
@@ -302,6 +356,15 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Substitute the parametric equations into the plane equation and solve for t." style="min-height:2.5in;">
   <div class="blank-prompt">Substitute the parametric equations into the plane equation and solve for t.</div>
 </div>
+<div><p><strong>Parametric equations:</strong> \(x = 1 + 4t\), \(y = 2 - t\), \(z = -1 + 3t\)</p>
+<p><strong>Substitute into</strong> \(-x - 2y + 3z = 3\):</p>
+<p>\[-(1 + 4t) - 2(2 - t) + 3(-1 + 3t) = 3\]</p></div>
+<div><p>\[-1 - 4t - 4 + 2t - 3 + 9t = 3\]</p>
+<p>\[7t - 8 = 3\]</p>
+<p>\[t = \frac{11}{7}\]</p></div>
+<div><p><strong>Plug back in:</strong></p>
+<p>\[x = 1 + 4\!\left(\tfrac{11}{7}\right) = \tfrac{51}{7}, \quad y = 2 - \tfrac{11}{7} = \tfrac{3}{7}, \quad z = -1 + 3\!\left(\tfrac{11}{7}\right) = \tfrac{26}{7}\]</p>
+<p><strong>Intersection point:</strong> \(\left(\dfrac{51}{7},\; \dfrac{3}{7},\; \dfrac{26}{7}\right)\)</p></div>
 </section>
 
 <section id="plane-through-three-points" class="example-group" aria-label="Plane Through Three Points">
@@ -310,19 +373,34 @@ if (window.MathJax && window.MathJax.startup) {
   <h3 class="example-title">Example 7</h3>
   <p>Find the equation of the plane through \(P(1,1,2)\), \(Q(2,3,1)\), and \(R(-1,4,2)\).</p>
 </section>
-<figure>
+<div class="two-col-print">
+  <div><div><p><strong>Strategy:</strong> Find two vectors in the plane, then use the <strong>cross product</strong> to get the normal.</p></div></div>
+  <div><figure>
   <img src="figures/three_points_plane.png" alt="3D diagram showing points P(1,1,2), Q(2,3,1), and R(-1,4,2) forming a triangle with edge vectors PQ (red) and PR (green), and the normal vector n = PQ x PR (amber) rising from the centroid.">
-</figure>
+</figure></div>
+</div>
 <div class="blank-space" role="region" aria-label="Student workspace: Find PQ and PR, compute their cross product, then use the result as the normal vector." style="min-height:3in;">
   <div class="blank-prompt">Find PQ and PR, compute their cross product, then use the result as the normal vector.</div>
 </div>
+<div><p><strong>Step 1 &mdash; Two vectors in the plane:</strong></p>
+<p>\[\overrightarrow{PQ} = \langle 2-1,\; 3-1,\; 1-2 \rangle = \langle 1, 2, -1 \rangle\]</p>
+<p>\[\overrightarrow{PR} = \langle -1-1,\; 4-1,\; 2-2 \rangle = \langle -2, 3, 0 \rangle\]</p></div>
+<div><p><strong>Step 2 &mdash; Normal vector</strong> \(\vec{n} = \overrightarrow{PQ} \times \overrightarrow{PR}\):</p>
+<p>\[\vec{n} = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \ 1 & 2 & -1 \ -2 & 3 & 0 \end{vmatrix} = \langle (2)(0) - (-1)(3),\; (-1)(-2) - (1)(0),\; (1)(3) - (2)(-2) \rangle = \langle 3, 2, 7 \rangle\]</p></div>
+<div><p><strong>Step 3 &mdash; Plane equation</strong> using point \(P(1,1,2)\):</p>
+<p>\[3(x - 1) + 2(y - 1) + 7(z - 2) = 0\]</p>
+<p>\[3x + 2y + 7z = 19\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Three points \(\rightarrow\) two vectors \(\rightarrow\) cross product \(\rightarrow\) normal \(\rightarrow\) plane equation.</strong> This is one of the most important recipes in 12.5.</p></aside>
 </section>
 
 <section id="angle-between-planes" class="example-group" aria-label="Angle Between Planes">
   <h2>Angle Between Planes</h2>
-  <figure>
+  <div class="two-col-print">
+  <div><div><p>The <strong>angle between two planes</strong> equals the angle between their normal vectors.</p></div></div>
+  <div><figure>
   <img src="figures/two_planes_angle.png" alt="Two intersecting planes (blue and red) with normal vectors n1 and n2, and the angle theta between them marked with an amber arc.">
-</figure>
+</figure></div>
+</div>
 <section class="defn-box" role="region" aria-label="Angle Between Planes">
   <h3 class="defn-title">Angle Between Planes</h3>
   <p>If two planes have normal vectors \(\vec{n}_1\) and \(\vec{n}_2\), the angle \(\theta\) between the planes satisfies:</p>
@@ -336,13 +414,26 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Read off the normal vectors, then use the angle formula." style="min-height:2in;">
   <div class="blank-prompt">Read off the normal vectors, then use the angle formula.</div>
 </div>
+<div><p><strong>Normal vectors:</strong> \(\vec{n}_1 = \langle 1, -2, 1 \rangle\), \(\vec{n}_2 = \langle 3, -2, 3 \rangle\)</p></div>
+<div><p>\[\vec{n}_1 \cdot \vec{n}_2 = (1)(3) + (-2)(-2) + (1)(3) = 3 + 4 + 3 = 10\]</p>
+<p>\[|\vec{n}_1| = \sqrt{1 + 4 + 1} = \sqrt{6}, \qquad |\vec{n}_2| = \sqrt{9 + 4 + 9} = \sqrt{22}\]</p></div>
+<div><p>\[\cos \theta = \frac{10}{\sqrt{6}\;\sqrt{22}} = \frac{10}{\sqrt{132}}\]</p>
+<p>\[\theta = \cos^{-1}\!\left(\frac{10}{\sqrt{132}}\right) \approx 29.5{^\circ}\]</p></div>
+<div><p><strong>Special cases:</strong></p>
+<ul>
+<li><strong>Parallel planes:</strong> \(\vec{n}_1 = c\,\vec{n}_2\) (normal vectors are scalar multiples)</li>
+<li><strong>Perpendicular planes:</strong> \(\vec{n}_1 \cdot \vec{n}_2 = 0\)</li>
+</ul></div>
 </section>
 
 <section id="distance-from-a-point-to-a-plane" class="example-group" aria-label="Distance from a Point to a Plane">
   <h2>Distance from a Point to a Plane</h2>
-  <figure>
+  <div class="two-col-print">
+  <div><div><p>To find the distance from a point to a plane, <strong>project</strong> a connecting vector onto the normal.</p></div></div>
+  <div><figure>
   <img src="figures/point_to_plane_distance.png" alt="Point P(-6,3,5) above a plane, with dashed vector QP to point Q on the plane. A red perpendicular line from P to the plane shows the distance D. Formula box shows D = |n dot QP| / |n|.">
-</figure>
+</figure></div>
+</div>
 <section class="defn-box" role="region" aria-label="Distance from a Point to a Plane">
   <h3 class="defn-title">Distance from a Point to a Plane</h3>
   <p>The distance from point \(P_1(x_1, y_1, z_1)\) to the plane \(ax + by + cz = d\) is:</p>
@@ -355,13 +446,41 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Method: pick any point Q on the plane, form PQ, then project onto the normal. Or use the formula." style="min-height:2.5in;">
   <div class="blank-prompt">Method: pick any point Q on the plane, form PQ, then project onto the normal. Or use the formula.</div>
 </div>
+<div><p><strong>Method 1 &mdash; Projection approach:</strong></p>
+<p>Pick \(Q = (8, 0, 0)\) on the plane (set \(y = z = 0\)).</p>
+<p>\[\overrightarrow{QP} = \langle -6 - 8,\; 3 - 0,\; 5 - 0 \rangle = \langle -14, 3, 5 \rangle\]</p>
+<p>Normal: \(\vec{n} = \langle 1, -2, -4 \rangle\)</p>
+<p>\[D = |\text{comp}_{\vec{n}}\, \overrightarrow{QP}| = \frac{|\vec{n} \cdot \overrightarrow{QP}|}{|\vec{n}|} = \frac{|(-14)(1) + (3)(-2) + (5)(-4)|}{\sqrt{1 + 4 + 16}} = \frac{|-14 - 6 - 20|}{\sqrt{21}} = \frac{40}{\sqrt{21}}\]</p></div>
+<div><p><strong>Method 2 &mdash; Formula:</strong></p>
+<p>\[D = \frac{|(-6)(1) + (3)(-2) + (5)(-4) - 8|}{\sqrt{1 + 4 + 16}} = \frac{|-6 - 6 - 20 - 8|}{\sqrt{21}} = \frac{40}{\sqrt{21}}\]</p></div>
 </section>
 
 <section id="geometry-true-false-lines-and-planes-in-3d" aria-label="Geometry True/False &mdash; Lines and Planes in 3D">
   <h2>Geometry True/False &mdash; Lines and Planes in 3D</h2>
-  <div class="blank-space" role="region" aria-label="Student workspace: Think carefully about each one. Sketch examples and counterexamples." style="min-height:2.5in;">
+  <div><p>Let's test our spatial intuition! Decide whether each statement is <strong>True</strong> or <strong>False</strong>.</p>
+<table>
+<tr><th>Statement</th><th>T/F</th></tr>
+<tr><td>Two planes either intersect or are parallel.</td><td></td></tr>
+<tr><td>Two lines either intersect or are parallel.</td><td></td></tr>
+<tr><td>Two planes parallel to a third plane are parallel.</td><td></td></tr>
+<tr><td>Two planes orthogonal to a third plane are parallel.</td><td></td></tr>
+<tr><td>Two lines parallel to a plane are parallel.</td><td></td></tr>
+<tr><td>Two lines orthogonal to a plane are parallel.</td><td></td></tr>
+<tr><td>A plane and a line either intersect or are parallel.</td><td></td></tr>
+</table></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Think carefully about each one. Sketch examples and counterexamples." style="min-height:2.5in;">
   <div class="blank-prompt">Think carefully about each one. Sketch examples and counterexamples.</div>
 </div>
+<div><p>| Statement | T/F | Reason |</p>
+<p>|&mdash;|&mdash;|&mdash;|</p>
+<p>| Two planes either intersect or are parallel. | <strong>T</strong> | Planes are infinite &mdash; if they aren't parallel, they must cross somewhere. |</p>
+<p>| Two lines either intersect or are parallel. | <strong>F</strong> | In 3D, lines can be <strong>skew</strong> (not parallel and not intersecting)! |</p>
+<p>| Two planes parallel to a third plane are parallel. | <strong>T</strong> | All three share the same normal direction. |</p>
+<p>| Two planes orthogonal to a third plane are parallel. | <strong>F</strong> | Think of two walls meeting at a corner &mdash; both perpendicular to the floor, but not parallel to each other. |</p>
+<p>| Two lines parallel to a plane are parallel. | <strong>F</strong> | They can point in different directions within (or parallel to) the plane. |</p>
+<p>| Two lines orthogonal to a plane are parallel. | <strong>T</strong> | Both must be parallel to the normal vector \(\vec{n}\). |</p>
+<p>| A plane and a line either intersect or are parallel. | <strong>T</strong> | (Or the line lies in the plane, a special case of "parallel.") |</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>In 3D, lines have a <strong>third option</strong>: <strong>skew</strong> &mdash; not parallel and not intersecting. This never happens in 2D!</p></aside>
 </section>
 
 <section class="homework-section" aria-label="Homework">

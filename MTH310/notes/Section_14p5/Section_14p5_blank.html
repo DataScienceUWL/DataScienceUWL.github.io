@@ -140,16 +140,20 @@ function adjustWorkspaces() {
             var ws = findPrecedingWorkspace(pb);
             if (ws) expandWorkspace(ws, remaining);
         }
-        pb.remove();  // no longer needed — workspace expansion handles the break
+        // Keep the div — its CSS page-break-before:always guarantees the break
+        // even if the workspace expansion calculation is slightly off.
     });
 
     // --- Pass B: Auto-detect orphaned section starts ---
+    // Skip sections preceded by an explicit .pagebreak (already handled by Pass A).
     var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
     var sections = document.querySelectorAll('main > section');
     for (var pass = 0; pass < 3; pass++) {
         var changed = false;
         for (var i = 1; i < sections.length; i++) {
             var sec = sections[i];
+            var prev = sec.previousElementSibling;
+            if (prev && prev.classList && prev.classList.contains('pagebreak')) continue;
             var secRect = sec.getBoundingClientRect();
             var secTop = secRect.top + window.scrollY;
             var secBot = secTop + secRect.height;
@@ -195,20 +199,45 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="the-chain-rule-from-calc-i-to-calc-iii" aria-label="The Chain Rule &mdash; From Calc I to Calc III">
   <h2>The Chain Rule &mdash; From Calc I to Calc III</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>Calc I chain rule: one path, one product. Calc III chain rule: <strong>multiply along each branch, add across branches</strong>.</p></aside>
+  <div><p>In Calc I, the chain rule handled <strong>compositions</strong> of single-variable functions:</p>
+<p>\[\frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx}\]</p>
+<p><strong>Example:</strong> If \(y = \sin(x^2)\), let \(u = x^2\). Then \(y = \sin u\), so:</p>
+<p>\[\frac{dy}{dx} = \cos(u) \cdot 2x = 2x\cos(x^2)\]</p>
+<p><strong>Now in Calc III:</strong> What if \(z\) depends on \(x\) and \(y\), and \(x\) and \(y\) each depend on other variables?</p>
+<p>There are <strong>multiple paths</strong> from the independent variable to \(z\) &mdash; we need to account for <strong>all of them</strong>.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Calc I chain rule: one path, one product. Calc III chain rule: <strong>multiply along each branch, add across branches</strong>.</p></aside>
 </section>
 
 <section id="case-1-one-independent-variable" aria-label="Case 1: One Independent Variable">
   <h2>Case 1: One Independent Variable</h2>
-  <section class="defn-box" role="region" aria-label="Chain Rule (Case 1)">
+  <div><p>Suppose \(z = f(x, y)\) where \(x = g(t)\) and \(y = h(t)\). Then \(z\) is ultimately a function of \(t\) alone.</p></div>
+<section class="defn-box" role="region" aria-label="Chain Rule (Case 1)">
   <h3 class="defn-title">Chain Rule (Case 1)</h3>
   <p>If \(z = f(x, y)\) is differentiable, and \(x = g(t)\), \(y = h(t)\) are differentiable functions of \(t\), then:</p>
 <p>\[\frac{dz}{dt} = \frac{\partial z}{\partial x}\frac{dx}{dt} + \frac{\partial z}{\partial y}\frac{dy}{dt}\]</p>
 </section>
+<div><p>Notice the pattern:</p>
+<ul>
+<li>One term for <strong>each intermediate variable</strong> (\(x\) and \(y\))</li>
+<li>Each term is a product: (partial of \(z\)) \(\times\) (derivative of that variable)</li>
+<li>The terms are <strong>added</strong> together</li>
+</ul></div>
 
-<figure>
+<div><p>A <strong>variable tree</strong> makes the pattern visual. Draw the dependencies, then read off the formula:</p></div>
+<div class="two-col-print">
+  <div><figure>
   <img src="figures/tree_case1.png" alt="Variable tree for Case 1: z at top branches to x (red) and y (green), each branching down to t. Branches are labeled with partial derivatives.">
-</figure>
+</figure></div>
+  <div><div><p><strong>How to read the tree:</strong></p>
+<ol>
+<li>Each <strong>branch</strong> from top to bottom is a path from \(z\) to \(t\)</li>
+<li><strong>Multiply</strong> the derivatives along each branch</li>
+<li><strong>Add</strong> the products from all branches</li>
+</ol>
+<p><strong>Left branch:</strong> \(\dfrac{\partial z}{\partial x} \cdot \dfrac{dx}{dt}\)</p>
+<p><strong>Right branch:</strong> \(\dfrac{\partial z}{\partial y} \cdot \dfrac{dy}{dt}\)</p>
+<p><strong>Total:</strong> \(\dfrac{dz}{dt} = \dfrac{\partial z}{\partial x}\dfrac{dx}{dt} + \dfrac{\partial z}{\partial y}\dfrac{dy}{dt}\)</p></div></div>
+</div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Draw the tree <strong>first</strong>, then read off the formula. <strong>Multiply along each path, add across paths.</strong></p></aside>
 </section>
 
@@ -222,6 +251,14 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Draw the variable tree, write the chain rule formula, compute each piece, then evaluate at t = π/4." style="min-height:3in;">
   <div class="blank-prompt">Draw the variable tree, write the chain rule formula, compute each piece, then evaluate at t = π/4.</div>
 </div>
+<div><p><strong>Chain rule formula:</strong></p>
+<p>\[\frac{dz}{dt} = \frac{\partial z}{\partial x}\frac{dx}{dt} + \frac{\partial z}{\partial y}\frac{dy}{dt}\]</p></div>
+<div><p><strong>Compute the pieces:</strong></p>
+<p>\(\dfrac{\partial z}{\partial x} = 2x + y\), \(\;\dfrac{dx}{dt} = \cos t\), \(\quad \dfrac{\partial z}{\partial y} = 2y + x\), \(\;\dfrac{dy}{dt} = e^t\)</p></div>
+<div><p><strong>Assemble:</strong></p>
+<p>\[\frac{dz}{dt} = (2x + y)\cos t + (2y + x)e^t\]</p></div>
+<div><p><strong>Evaluate at \(t = \pi/4\):</strong> \(\;x = \frac{\sqrt{2}}{2}\), \(\;y = e^{\pi/4}\)</p>
+<p>\[\frac{dz}{dt}\bigg|_{t=\pi/4} = \left(\sqrt{2} + e^{\pi/4}\right)\frac{\sqrt{2}}{2} + \left(2e^{\pi/4} + \frac{\sqrt{2}}{2}\right)e^{\pi/4} = 1 + \sqrt{2}\,e^{\pi/4} + 2e^{\pi/2}\]</p></div>
 </section>
 
 <section id="your-turn-one-variable-chain-rule" class="example-group" aria-label="Your Turn: One Variable Chain Rule">
@@ -234,19 +271,31 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Draw the variable tree, compute the partials and derivatives, then combine." style="min-height:2.5in;">
   <div class="blank-prompt">Draw the variable tree, compute the partials and derivatives, then combine.</div>
 </div>
+<div><p><strong>Chain rule:</strong></p>
+<p>\[\frac{dz}{dt} = \frac{\partial z}{\partial x}\frac{dx}{dt} + \frac{\partial z}{\partial y}\frac{dy}{dt}\]</p></div>
+<div><p><strong>Compute:</strong></p>
+<p>\(\dfrac{\partial z}{\partial x} = e^x \sin y\), \(\;\dfrac{dx}{dt} = 2t\), \(\quad \dfrac{\partial z}{\partial y} = e^x \cos y\), \(\;\dfrac{dy}{dt} = 3\)</p></div>
+<div><p><strong>Assemble:</strong></p>
+<p>\[\frac{dz}{dt} = 2t\,e^{t^2}\sin(3t) + 3e^{t^2}\cos(3t) = e^{t^2}\bigl[2t\sin(3t) + 3\cos(3t)\bigr]\]</p></div>
 </section>
 
 <section id="case-2-two-independent-variables" aria-label="Case 2: Two Independent Variables">
   <h2>Case 2: Two Independent Variables</h2>
-  <section class="defn-box" role="region" aria-label="Chain Rule (Case 2)">
+  <div><p>Now suppose \(z = f(x,y)\) where \(x = g(s,t)\) and \(y = h(s,t)\). Then \(z\) depends on <strong>two</strong> independent variables \(s\) and \(t\).</p></div>
+<section class="defn-box" role="region" aria-label="Chain Rule (Case 2)">
   <h3 class="defn-title">Chain Rule (Case 2)</h3>
   <p>If \(z = f(x, y)\), \(x = g(s,t)\), \(y = h(s,t)\), all differentiable, then:</p>
 <p>\[\frac{\partial z}{\partial s} = \frac{\partial z}{\partial x}\frac{\partial x}{\partial s} + \frac{\partial z}{\partial y}\frac{\partial y}{\partial s}\]</p>
 <p>\[\frac{\partial z}{\partial t} = \frac{\partial z}{\partial x}\frac{\partial x}{\partial t} + \frac{\partial z}{\partial y}\frac{\partial y}{\partial t}\]</p>
 </section>
-<figure>
+<div class="two-col-print">
+  <div><figure>
   <img src="figures/tree_case2.png" alt="Variable tree for Case 2: z at top branches to x (red) and y (green). Each of x and y branches to both s and t, giving four leaf nodes.">
-</figure>
+</figure></div>
+  <div><div><p>The tree now has <strong>four branches</strong> &mdash; two paths to \(s\) and two paths to \(t\).</p>
+<p>For \(\partial z / \partial s\): follow only the branches that end at \(s\), multiply along each, and add.</p>
+<p>Same idea &mdash; but now each intermediate variable (\(x\), \(y\)) depends on <strong>both</strong> \(s\) and \(t\).</p></div></div>
+</div>
 <aside class="key-point" role="note" aria-label="Key point"><p>With two independent variables, we get <strong>two formulas</strong> &mdash; one for \(\partial z / \partial s\) and one for \(\partial z / \partial t\). Each follows the same tree pattern.</p></aside>
 </section>
 
@@ -260,22 +309,46 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Draw the variable tree for ∂z/∂s. Compute partials, then evaluate at the given point." style="min-height:3in;">
   <div class="blank-prompt">Draw the variable tree for ∂z/∂s. Compute partials, then evaluate at the given point.</div>
 </div>
+<div><p><strong>Chain rule for \(\partial z / \partial s\):</strong></p>
+<p>\[\frac{\partial z}{\partial s} = \frac{\partial z}{\partial x}\frac{\partial x}{\partial s} + \frac{\partial z}{\partial y}\frac{\partial y}{\partial s}\]</p></div>
+<div><p><strong>Compute the pieces:</strong></p>
+<p>\(\dfrac{\partial z}{\partial x} = 2xy^3\), \(\;\dfrac{\partial x}{\partial s} = \cos t\), \(\quad \dfrac{\partial z}{\partial y} = 3x^2 y^2\), \(\;\dfrac{\partial y}{\partial s} = \sin t\)</p></div>
+<div><p><strong>Assemble:</strong> \(\;\dfrac{\partial z}{\partial s} = 2xy^3 \cos t + 3x^2 y^2 \sin t\)</p></div>
+<div><p><strong>Evaluate at \((s, t) = (2\sqrt{2}, \pi/4)\):</strong> \(\;x = 2\sqrt{2}\cdot\frac{\sqrt{2}}{2} = 2\), \(\;y = 2\sqrt{2}\cdot\frac{\sqrt{2}}{2} = 2\)</p>
+<p>\[\frac{\partial z}{\partial s} = 2(2)(8)\frac{\sqrt{2}}{2} + 3(4)(4)\frac{\sqrt{2}}{2} = 16\sqrt{2} + 24\sqrt{2} = 40\sqrt{2}\]</p></div>
 </section>
 
 <section id="the-general-chain-rule" aria-label="The General Chain Rule">
   <h2>The General Chain Rule</h2>
-  <section class="defn-box" role="region" aria-label="General Chain Rule">
+  <div><p>The pattern extends to <strong>any</strong> number of intermediate and independent variables.</p></div>
+<section class="defn-box" role="region" aria-label="General Chain Rule">
   <h3 class="defn-title">General Chain Rule</h3>
   <p>If \(u = f(x_1, x_2, \ldots, x_n)\) where each \(x_i = g_i(t_1, t_2, \ldots, t_m)\), then:</p>
 <p>\[\frac{\partial u}{\partial t_j} = \frac{\partial u}{\partial x_1}\frac{\partial x_1}{\partial t_j} + \frac{\partial u}{\partial x_2}\frac{\partial x_2}{\partial t_j} + \cdots + \frac{\partial u}{\partial x_n}\frac{\partial x_n}{\partial t_j}\]</p>
 <p>for each \(j = 1, 2, \ldots, m\).</p>
 </section>
+<div><p><strong>The recipe is always the same:</strong></p>
+<ol>
+<li>Draw the variable tree</li>
+<li>For each path from \(u\) down to \(t_j\): multiply the derivatives along the path</li>
+<li>Add all the path-products together</li>
+</ol></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>You don't need to memorize separate formulas for each case. Just <strong>draw the tree</strong> and read off the answer.</p></aside>
 </section>
 
 <section id="implicit-differentiation-revisited" aria-label="Implicit Differentiation Revisited">
   <h2>Implicit Differentiation Revisited</h2>
-  <section class="defn-box" role="region" aria-label="Implicit Differentiation Formulas">
+  <div><p>In Calc I, we used implicit differentiation to find \(dy/dx\) when \(y\) was defined implicitly by an equation like \(x^2 + y^2 = 25\).</p>
+<p>In Calc III, we often have an equation like \(F(x, y, z) = 0\) that defines \(z\) implicitly as a function of \(x\) and \(y\). How do we find \(\partial z / \partial x\)?</p></div>
+<div><p><strong>Method 1 &mdash; Direct differentiation:</strong></p>
+<ul>
+<li>Treat \(y\) as a constant and \(z\) as a function of \(x\)</li>
+<li>Differentiate the equation with respect to \(x\)</li>
+<li>Solve for \(\partial z / \partial x\)</li>
+</ul></div>
+<div><p><strong>Method 2 &mdash; The shortcut formula:</strong></p>
+<p>If \(F(x, y, z) = 0\) defines \(z\) implicitly as a function of \(x\) and \(y\), and \(F_z \neq 0\):</p></div>
+<section class="defn-box" role="region" aria-label="Implicit Differentiation Formulas">
   <h3 class="defn-title">Implicit Differentiation Formulas</h3>
   <p>\[\frac{\partial z}{\partial x} = -\frac{F_x}{F_z} \qquad \text{and} \qquad \frac{\partial z}{\partial y} = -\frac{F_y}{F_z}\]</p>
 </section>
@@ -284,7 +357,15 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="why-does-work" aria-label="Why Does $\partial z / \partial x = -F_x / F_z$ Work?">
   <h2>Why Does \(\partial z / \partial x = -F_x / F_z\) Work?</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>The formula comes directly from the chain rule applied to \(F(x, y, z) = 0\). Same idea gives \(\partial z / \partial y = -F_y / F_z\).</p></aside>
+  <div><p>Start with \(F(x, y, z) = 0\), where \(z = z(x, y)\) is implicitly defined.</p>
+<p>Differentiate both sides with respect to \(x\) (holding \(y\) constant):</p>
+<p>By the chain rule:</p>
+<p>\[\frac{\partial F}{\partial x}\frac{\partial x}{\partial x} + \frac{\partial F}{\partial y}\frac{\partial y}{\partial x} + \frac{\partial F}{\partial z}\frac{\partial z}{\partial x} = 0\]</p>
+<p>Since \(x\) is independent: \(\dfrac{\partial x}{\partial x} = 1\). Since \(y\) is held constant: \(\dfrac{\partial y}{\partial x} = 0\).</p>
+<p>\[F_x \cdot 1 + F_y \cdot 0 + F_z \cdot \frac{\partial z}{\partial x} = 0\]</p>
+<p>Solve for \(\partial z / \partial x\):</p>
+<p>\[\frac{\partial z}{\partial x} = -\frac{F_x}{F_z} \qquad\square\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The formula comes directly from the chain rule applied to \(F(x, y, z) = 0\). Same idea gives \(\partial z / \partial y = -F_y / F_z\).</p></aside>
 </section>
 
 <section id="example-4-implicit-differentiation" class="example-group" aria-label="Example 4: Implicit Differentiation">
@@ -297,6 +378,14 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Method 1: Differentiate directly w.r.t. x (y constant, z = z(x,y)). Method 2: Set F = 0, use $\partial z/\partial x = -F_x/F_z$." style="min-height:3in;">
   <div class="blank-prompt">Method 1: Differentiate directly w.r.t. x (y constant, z = z(x,y)). Method 2: Set F = 0, use \(\partial z/\partial x = -F_x/F_z\).</div>
 </div>
+<div><p><strong>Method 1 &mdash; Direct differentiation.</strong> Differentiate w.r.t. \(x\) (\(y\) constant, \(z = z(x,y)\)):</p>
+<p>\[2x\sin(yz) + x^2 \cos(yz) \cdot y \frac{\partial z}{\partial x} + 3\frac{\partial z}{\partial x} = 0\]</p></div>
+<div><p>Solve for \(\partial z / \partial x\):</p>
+<p>\[\frac{\partial z}{\partial x}\bigl[x^2 y\cos(yz) + 3\bigr] = -2x\sin(yz) \quad\Rightarrow\quad \frac{\partial z}{\partial x} = \frac{-2x\sin(yz)}{x^2 y\cos(yz) + 3}\]</p></div>
+<div><p><strong>Method 2 &mdash; Formula.</strong> Set \(F(x,y,z) = x^2 \sin(yz) + 3z - y^2 = 0\).</p>
+<p>\(F_x = 2x\sin(yz)\), \(\quad F_z = x^2 y\cos(yz) + 3\)</p>
+<p>\[\frac{\partial z}{\partial x} = -\frac{F_x}{F_z} = \frac{-2x\sin(yz)}{x^2 y\cos(yz) + 3} \quad\checkmark\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Both methods give the <strong>same answer</strong>. Method 2 is faster once you're comfortable with it.</p></aside>
 </section>
 
 <section id="your-turn-implicit-differentiation" class="example-group" aria-label="Your Turn: Implicit Differentiation">
@@ -309,6 +398,10 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Set F(x,y,z) = 0, compute $F_x$ and $F_z$, then apply the formula." style="min-height:2.5in;">
   <div class="blank-prompt">Set F(x,y,z) = 0, compute \(F_x\) and \(F_z\), then apply the formula.</div>
 </div>
+<div><p><strong>Set up:</strong> \(F(x,y,z) = x^3 + y^3 + z^3 + 6xyz - 1 = 0\)</p></div>
+<div><p><strong>Partial derivatives:</strong> \(\;F_x = 3x^2 + 6yz\), \(\quad F_z = 3z^2 + 6xy\)</p></div>
+<div><p><strong>Apply the formula:</strong></p>
+<p>\[\frac{\partial z}{\partial x} = -\frac{F_x}{F_z} = -\frac{3x^2 + 6yz}{3z^2 + 6xy} = -\frac{x^2 + 2yz}{z^2 + 2xy}\]</p></div>
 </section>
 
 <section class="homework-section" aria-label="Homework">

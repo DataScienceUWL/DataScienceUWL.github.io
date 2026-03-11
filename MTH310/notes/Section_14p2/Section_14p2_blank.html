@@ -140,16 +140,20 @@ function adjustWorkspaces() {
             var ws = findPrecedingWorkspace(pb);
             if (ws) expandWorkspace(ws, remaining);
         }
-        pb.remove();  // no longer needed — workspace expansion handles the break
+        // Keep the div — its CSS page-break-before:always guarantees the break
+        // even if the workspace expansion calculation is slightly off.
     });
 
     // --- Pass B: Auto-detect orphaned section starts ---
+    // Skip sections preceded by an explicit .pagebreak (already handled by Pass A).
     var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
     var sections = document.querySelectorAll('main > section');
     for (var pass = 0; pass < 3; pass++) {
         var changed = false;
         for (var i = 1; i < sections.length; i++) {
             var sec = sections[i];
+            var prev = sec.previousElementSibling;
+            if (prev && prev.classList && prev.classList.contains('pagebreak')) continue;
             var secRect = sec.getBoundingClientRect();
             var secTop = secRect.top + window.scrollY;
             var secBot = secTop + secRect.height;
@@ -195,17 +199,24 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="limits-in-multiple-variables" aria-label="Limits in Multiple Variables">
   <h2>Limits in Multiple Variables</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>This is the key difference: in 1D you check two directions. In 2D you must worry about <strong>every possible path</strong> to the point.</p></aside>
+  <div><p>In Calc I, we asked: what happens to \(f(x)\) as \(x \to a\)?</p>
+<p>There were only <strong>two directions</strong> to approach from &mdash; left and right.</p>
+<p>In Calc III, we ask: what happens to \(f(x, y)\) as \((x, y) \to (a, b)\)?</p>
+<p>Now there are <strong>infinitely many paths</strong> to approach from &mdash; along lines, curves, spirals, any path you can imagine.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>This is the key difference: in 1D you check two directions. In 2D you must worry about <strong>every possible path</strong> to the point.</p></aside>
 </section>
 
 <section id="two-functions-two-very-different-behaviors" aria-label="Two Functions, Two Very Different Behaviors">
   <h2>Two Functions, Two Very Different Behaviors</h2>
-  <div class="two-col-print">
-  <div><figure>
+  <div><p>Let's compare what happens at the origin for two functions that both have the form \(\frac{0}{0}\) there.</p></div>
+<div class="two-col-print">
+  <div><div><p>\[f(x,y) = \frac{\sin(x^2 + y^2)}{x^2 + y^2}\]</p></div>
+<figure>
   <img src="figures/sinc_clean.png" alt="3D surface of sin(x-squared + y-squared) over (x-squared + y-squared), a smooth bowl approaching height 1 at the origin.">
   <figcaption><a href="figures/sinc_clean.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure></div>
-  <div><figure>
+  <div><div><p>\[g(x,y) = \frac{x^2 - y^2}{x^2 + y^2}\]</p></div>
+<figure>
   <img src="figures/saddle_clean.png" alt="3D surface of (x-squared minus y-squared) over (x-squared plus y-squared), a saddle that twists between 1 and negative 1 at the origin.">
   <figcaption><a href="figures/saddle_clean.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure></div>
@@ -218,6 +229,8 @@ if (window.MathJax && window.MathJax.startup) {
   <img src="figures/saddle_contour.png" alt="Contour plot of (x-squared minus y-squared) over (x-squared + y-squared) showing hyperbolic contours with value 1 along the x-axis and negative 1 along the y-axis.">
 </figure></div>
 </div>
+<div><p>\(f\) settles down to a single value (\(1\)) no matter how you approach the origin.</p>
+<p>\(g\) gives <strong>different values</strong> depending on your path &mdash; the limit <strong>does not exist</strong>.</p></div>
 </section>
 
 <section id="the-formal-definition-of-a-multivariable-limit" aria-label="The Formal Definition of a Multivariable Limit">
@@ -229,13 +242,25 @@ if (window.MathJax && window.MathJax.startup) {
 <p>if for every \(\varepsilon > 0\) there is a corresponding \(\delta > 0\) such that</p>
 <p>\[\text{if } (x,y) \in D \text{ and } 0 < \sqrt{(x-a)^2 + (y-b)^2} < \delta \text{ then } |f(x,y) - L| < \varepsilon\]</p>
 </section>
+<div><p><strong>What does this mean in plain language?</strong></p>
+<p>If the limit is going to be \(L\), then you must be able to make \(f(x,y)\) as close to \(L\) as you want, just by squeezing \((x,y)\) close enough to \((a,b)\) &mdash; from <strong>any direction</strong>.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>The crucial phrase: <strong>from any direction</strong>. In Calc I, "closeness" meant \(|x - a| < \delta\) (an interval). Here, closeness means \(\sqrt{(x-a)^2 + (y-b)^2} < \delta\) (a disk).</p></aside>
+<div><p>In practice, we rarely use the \(\varepsilon\)-\(\delta\) definition directly. Instead, we develop <strong>strategies</strong> for showing limits exist or don't exist.</p></div>
 </section>
 
 <section id="strategy-showing-a-limit-does-not-exist" aria-label="Strategy: Showing a Limit Does NOT Exist">
   <h2>Strategy: Showing a Limit Does NOT Exist</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p><strong>The Two-Path Test</strong></p>
+  <div><p>If a limit exists, it must be the <strong>same value</strong> no matter which path you take to the point. So to show a limit <strong>does not</strong> exist, we just need to find trouble:</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>The Two-Path Test</strong></p>
 <p>Find two paths to \((a, b)\) that give <strong>different limiting values</strong>. Then the limit does not exist.</p></aside>
+<div><p><strong>Common paths to try:</strong></p>
+<ul>
+<li>Along the \(x\)-axis: set \(y = 0\)</li>
+<li>Along the \(y\)-axis: set \(x = 0\)</li>
+<li>Along \(y = x\) (diagonal)</li>
+<li>Along \(y = mx\) (any line through the origin)</li>
+<li>Along curves: \(y = x^2\), \(y = x^3\), etc.</li>
+</ul></div>
 <aside class="key-point" role="note" aria-label="Key point"><p><strong>Warning:</strong> If two paths give the <strong>same</strong> value, that does <strong>not</strong> prove the limit exists. It just means those two paths agree. You would need to check <strong>all</strong> paths.</p></aside>
 </section>
 
@@ -248,6 +273,11 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Try the paths y = 0 and x = 0. What value does the function approach along each?" style="min-height:2in;">
   <div class="blank-prompt">Try the paths y = 0 and x = 0. What value does the function approach along each?</div>
 </div>
+<div><p><strong>Path 1 &mdash; Along the \(x\)-axis</strong> (set \(y = 0\)):</p>
+<p>\[f(x, 0) = \frac{x^2 - 0}{x^2 + 0} = \frac{x^2}{x^2} = 1 \quad\Rightarrow\quad \lim_{x \to 0} f(x, 0) = 1\]</p></div>
+<div><p><strong>Path 2 &mdash; Along the \(y\)-axis</strong> (set \(x = 0\)):</p>
+<p>\[f(0, y) = \frac{0 - y^2}{0 + y^2} = \frac{-y^2}{y^2} = -1 \quad\Rightarrow\quad \lim_{y \to 0} f(0, y) = -1\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Since \(1 \neq -1\), the two paths give different values. <strong>The limit does not exist.</strong></p></aside>
 </section>
 
 <section id="example-2-when-simple-paths-aren-t-enough" class="example-group" aria-label="Example 2: When Simple Paths Aren't Enough">
@@ -259,6 +289,14 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Try the obvious paths (axes, y = mx) first, then try a curved path like y = x-cubed." style="min-height:2.5in;">
   <div class="blank-prompt">Try the obvious paths (axes, y = mx) first, then try a curved path like y = x-cubed.</div>
 </div>
+<div><p>Let's try the obvious paths first.</p></div>
+<div><p><strong>Along the \(x\)-axis</strong> (\(y = 0\)): \(\dfrac{8x^3 \cdot 0}{x^6 + 0} = 0\)</p>
+<p><strong>Along the \(y\)-axis</strong> (\(x = 0\)): \(\dfrac{0}{0 + y^2} = 0\)</p>
+<p><strong>Along \(y = mx\)</strong>: \(\dfrac{8x^3(mx)}{x^6 + m^2 x^2} = \dfrac{8mx^2}{x^4 + m^2} \to 0\)</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Every line through the origin gives \(0\). But matching along all lines is <strong>still not enough</strong>. We need <strong>curved</strong> paths.</p></aside>
+<div><p><strong>Along \(y = x^3\):</strong></p>
+<p>\[\frac{8x^3 \cdot x^3}{x^6 + (x^3)^2} = \frac{8x^6}{2x^6} = 4\]</p>
+<p>Along \(y = x^3\), the function is <strong>constantly 4</strong>. Since the linear paths gave \(0\) and the cubic path gives \(4\): <strong>the limit does not exist.</strong></p></div>
 </section>
 
 <section id="your-turn-test-this-limit" class="example-group" aria-label="Your Turn: Test This Limit">
@@ -270,11 +308,17 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Try a path that will obviously give a limit of zero, then see if you can think of path that could do something else." style="min-height:2in;">
   <div class="blank-prompt">Try a path that will obviously give a limit of zero, then see if you can think of path that could do something else.</div>
 </div>
+<div><p><strong>Along \(y = 0\):</strong></p>
+<p>\[\frac{x \cdot 0}{x^2 + 0} = 0 \quad\Rightarrow\quad \text{limit} = 0\]</p></div>
+<div><p><strong>Along \(y = x\):</strong></p>
+<p>\[\frac{x \cdot x}{x^2 + x^2} = \frac{x^2}{2x^2} = \frac{1}{2} \quad\Rightarrow\quad \text{limit} = \frac{1}{2}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Since \(0 \neq \frac{1}{2}\), <strong>the limit does not exist</strong>.</p></aside>
 </section>
 
 <section id="continuity-of-multivariable-functions" aria-label="Continuity of Multivariable Functions">
   <h2>Continuity of Multivariable Functions</h2>
-  <section class="defn-box" role="region" aria-label="Continuity at a Point">
+  <div><p>Continuity works just like Calc I &mdash; the limit equals the function value at the point.</p></div>
+<section class="defn-box" role="region" aria-label="Continuity at a Point">
   <h3 class="defn-title">Continuity at a Point</h3>
   <p>A function \(f\) of two variables is <strong>continuous at</strong> \((a, b)\) if:</p>
 <p>\[\lim_{(x,y) \to (a,b)} f(x,y) = f(a,b)\]</p>
@@ -290,12 +334,15 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="strategy-showing-a-limit-does-exist" aria-label="Strategy: Showing a Limit DOES Exist">
   <h2>Strategy: Showing a Limit DOES Exist</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p><strong>Tool 1: Squeeze Theorem</strong></p>
+  <div><p>The two-path test can <strong>disprove</strong> a limit, but it can never <strong>prove</strong> one.</p>
+<p>To prove a limit exists, we need tools that handle <strong>all paths at once</strong>.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Tool 1: Squeeze Theorem</strong></p>
 <p>If \(|f(x,y) - L| \leq g(x,y)\) and \(g(x,y) \to 0\) as \((x,y) \to (a,b)\), then \(f(x,y) \to L\).</p>
 <p>Trap the function between bounds that both go to the same value.</p></aside>
 <aside class="key-point" role="note" aria-label="Key point"><p><strong>Tool 2: Polar Coordinates</strong></p>
 <p>Substitute \(x = r\cos\theta\), \(y = r\sin\theta\). Then \((x,y) \to (0,0)\) becomes \(r \to 0^+\).</p>
 <p>Apply the Squeeze Theorem to bound the \(\theta\)-dependent factor and show the expression goes to zero.</p></aside>
+<div><p>Both tools convert the multivariable problem into something we can handle with Calc I techniques.</p></div>
 </section>
 
 <section id="example-4-proving-a-limit-exists" class="example-group" aria-label="Example 4: Proving a Limit Exists">
@@ -307,6 +354,17 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Try the Squeeze Theorem using $y^2 \leq x^2 + y^2$. Then try polar coordinates and apply the Squeeze Theorem to the result." style="min-height:3.5in;">
   <div class="blank-prompt">Try the Squeeze Theorem using \(y^2 \leq x^2 + y^2\). Then try polar coordinates and apply the Squeeze Theorem to the result.</div>
 </div>
+<div><p><strong>Method 1 &mdash; Direct Squeeze Theorem:</strong></p></div>
+<div><p>Since \(y^2 \leq x^2 + y^2\), we have \(\dfrac{y^2}{x^2 + y^2} \leq 1\). Therefore:</p>
+<p>\[0 \leq \left|\frac{5xy^2}{x^2 + y^2}\right| = 5|x| \cdot \frac{y^2}{x^2 + y^2} \leq 5|x| \to 0\]</p>
+<p>By the Squeeze Theorem, \(\dfrac{5xy^2}{x^2+y^2} \to 0\). \(\square\)</p></div>
+<div><p><strong>Method 2 &mdash; Polar Coordinates + Squeeze Theorem:</strong></p></div>
+<div><p>Let \(x = r\cos\theta\), \(y = r\sin\theta\):</p>
+<p>\[\frac{5xy^2}{x^2+y^2} = \frac{5r^3\cos\theta\sin^2\theta}{r^2} = 5r\cos\theta\sin^2\theta\]</p>
+<p>Now squeeze: since \(|\cos\theta\sin^2\theta| \leq 1\) for all \(\theta\):</p>
+<p>\[0 \leq |5r\cos\theta\sin^2\theta| \leq 5r \to 0 \text{ as } r \to 0^+\]</p>
+<p>By the Squeeze Theorem, the limit is \(0\), regardless of path. \(\square\)</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Both methods use the Squeeze Theorem at the end. Polar coordinates simplify the algebra first &mdash; the \(r^2\) cancels, leaving a single factor of \(r\) to squeeze.</p></aside>
 </section>
 
 <section id="your-turn-prove-or-disprove" class="example-group" aria-label="Your Turn: Prove or Disprove">
@@ -318,6 +376,9 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Use either the squeeze theorem or polar coordinates." style="min-height:2in;">
   <div class="blank-prompt">Use either the squeeze theorem or polar coordinates.</div>
 </div>
+<div><p><strong>Polar coordinates:</strong> Let \(x = r\cos\theta\), \(y = r\sin\theta\):</p>
+<p>\[\frac{x^2 y}{x^2 + y^2} = \frac{r^2\cos^2\theta \cdot r\sin\theta}{r^2} = r\cos^2\theta\sin\theta\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Since \(|\cos^2\theta\sin\theta| \leq 1\), we get \(|r\cos^2\theta\sin\theta| \leq r \to 0\). <strong>The limit is \(0\).</strong></p></aside>
 </section>
 
 <section class="homework-section" aria-label="Homework">

@@ -140,16 +140,20 @@ function adjustWorkspaces() {
             var ws = findPrecedingWorkspace(pb);
             if (ws) expandWorkspace(ws, remaining);
         }
-        pb.remove();  // no longer needed — workspace expansion handles the break
+        // Keep the div — its CSS page-break-before:always guarantees the break
+        // even if the workspace expansion calculation is slightly off.
     });
 
     // --- Pass B: Auto-detect orphaned section starts ---
+    // Skip sections preceded by an explicit .pagebreak (already handled by Pass A).
     var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
     var sections = document.querySelectorAll('main > section');
     for (var pass = 0; pass < 3; pass++) {
         var changed = false;
         for (var i = 1; i < sections.length; i++) {
             var sec = sections[i];
+            var prev = sec.previousElementSibling;
+            if (prev && prev.classList && prev.classList.contains('pagebreak')) continue;
             var secRect = sec.getBoundingClientRect();
             var secTop = secRect.top + window.scrollY;
             var secBot = secTop + secRect.height;
@@ -195,11 +199,15 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="directional-derivatives-motivation" aria-label="Directional Derivatives &mdash; Motivation">
   <h2>Directional Derivatives &mdash; Motivation</h2>
-  <figure>
+  <div><p>Partial derivatives give the rate of change along the <strong>axes</strong>. But what if we walk in some other direction?</p>
+<p>Consider \(f(x,y) = x^2 + 4y^2\) at the point \(P(2,1)\). Pick a direction \(\vec{u}\) at \(45{^\circ}\) and slice the surface with a vertical plane along that direction:</p></div>
+<figure>
   <img src="figures/dd_3d_surface.png" alt="Interactive 3D plot of the elliptic paraboloid z = x-squared + 4y-squared. A semi-transparent amber vertical plane slices through the point P(2,1,8) in the direction of the unit vector u at 45 degrees. The blue trace curve shows where the plane intersects the surface. A red dashed tangent line at P shows the slope of the trace curve, which is the directional derivative. Two sample points are marked on the trace in green and purple.">
   <figcaption><a href="figures/dd_3d_surface.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
+<div><p>The vertical plane cuts a <strong>trace curve</strong> out of the surface. The slope of that trace at \(P\) is the rate of change in the \(\vec{u}\) direction &mdash; the <strong>directional derivative</strong>.</p></div>
 
+<div><p>From the side, this is just a single-variable function \(g(t) = f(P + t\vec{u})\). Its derivative at \(t = 0\) is the slope we want.</p></div>
 <figure>
   <img src="figures/dd_domain_profile.png" alt="Two-panel figure. Left panel: contour plot of f(x,y) = x-squared + 4y-squared with elliptical level curves, the point P(2,1), a red unit vector u at 45 degrees, and two sample points along u at t = 1/2 (green) and t = 1 (purple). Right panel: the cross-section g(t) = f(P + tu) plotted as a function of t, showing a parabolic curve with a red dashed tangent line at t = 0 whose slope equals the directional derivative. The same green and purple sample points appear at their corresponding t values.">
 </figure>
@@ -208,12 +216,23 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="definition-of-the-directional-derivative" aria-label="Definition of the Directional Derivative">
   <h2>Definition of the Directional Derivative</h2>
-  <section class="defn-box" role="region" aria-label="Directional Derivative">
+  <div><p>\(f_x\) and \(f_y\) are just special cases of the directional derivative:</p>
+<ul>
+<li>\(f_x = D_{\vec{i}}\, f\) &mdash; rate of change in the \(\vec{i}\) direction</li>
+<li>\(f_y = D_{\vec{j}}\, f\) &mdash; rate of change in the \(\vec{j}\) direction</li>
+</ul></div>
+<section class="defn-box" role="region" aria-label="Directional Derivative">
   <h3 class="defn-title">Directional Derivative</h3>
   <p>Let \(\vec{u} = \langle a, b \rangle\) be a <strong>unit vector</strong> (\(|\vec{u}| = 1\)). The <strong>directional derivative</strong> of \(f\) at \((x,y)\) in the direction of \(\vec{u}\) is:</p>
 <p>\[D_{\vec{u}} f(x,y) = \lim_{t \to 0} \frac{f(x + ta,\; y + tb) - f(x,y)}{t}\]</p>
 <p>provided this limit exists.</p>
 </section>
+<div><p><strong>Reading the formula:</strong></p>
+<ul>
+<li>Start at \((x, y)\)</li>
+<li>Move a tiny step \(t\) in the direction \(\vec{u} = \langle a, b \rangle\), arriving at \((x + ta,\; y + tb)\)</li>
+<li>Measure the change in \(f\), divide by \(t\), take the limit</li>
+</ul></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>This is the same <strong>rise-over-run</strong> idea from Calc I, but now we walk in the direction \(\vec{u}\) instead of along the \(x\)-axis.</p></aside>
 </section>
 
@@ -226,16 +245,27 @@ if (window.MathJax && window.MathJax.startup) {
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace" style="min-height:3in;">
 </div>
+<div><p><strong>Write the limit definition formula:</strong></p>
+<p>\[D_{\vec{u}} f(x,y) = \lim_{t \to 0} \frac{f(x + ta,\; y + tb) - f(x,y)}{t}\]</p></div>
+<div><p><strong>Substitute</strong> \((x,y) = (2,1)\), \(\vec{u} = \left\langle \frac{\sqrt{2}}{2}, \frac{\sqrt{2}}{2}\right\rangle\), and \(f(2,1) = 4 + 4 = 8\):</p>
+<p>\[D_{\vec{u}} f(2,1) = \lim_{t \to 0} \frac{f\!\left(2 + \frac{\sqrt{2}}{2}\,t,\; 1 + \frac{\sqrt{2}}{2}\,t\right) - 8}{t}\]</p></div>
+<div><p><strong>Expand the numerator:</strong></p>
+<p>\[f\!\left(2 + \tfrac{\sqrt{2}}{2}\,t,\; 1 + \tfrac{\sqrt{2}}{2}\,t\right) = \left(2 + \tfrac{\sqrt{2}}{2}\,t\right)^2 + 4\!\left(1 + \tfrac{\sqrt{2}}{2}\,t\right)^2 = 8 + 6\sqrt{2}\,t + \tfrac{5}{2}\,t^2\]</p></div>
+<div><p><strong>Simplify and take the limit:</strong></p>
+<p>\[D_{\vec{u}} f(2,1) = \lim_{t \to 0} \frac{8 + 6\sqrt{2}\,t + \tfrac{5}{2}\,t^2 - 8}{t} = \lim_{t \to 0} \left(6\sqrt{2} + \tfrac{5}{2}\,t\right) = 6\sqrt{2} \approx 8.49\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>That was a lot of algebra! There must be a better way...</p></aside>
 </section>
 
 <section id="the-gradient-vector" class="example-group" aria-label="The Gradient Vector">
   <h2>The Gradient Vector</h2>
-  <section class="defn-box" role="region" aria-label="Gradient Vector">
+  <div><p>Before we find the shortcut, we need a new object.</p></div>
+<section class="defn-box" role="region" aria-label="Gradient Vector">
   <h3 class="defn-title">Gradient Vector</h3>
   <p>If \(f\) has partial derivatives \(f_x\) and \(f_y\), the <strong>gradient</strong> of \(f\) is the vector:</p>
 <p>\[\nabla f(x,y) = \langle f_x(x,y),\; f_y(x,y) \rangle = f_x\,\vec{i} + f_y\,\vec{j}\]</p>
 <p>The symbol \(\nabla\) is called <strong>nabla</strong> or <strong>del</strong>.</p>
 </section>
+<div><p>The gradient packages <strong>both partial derivatives</strong> into a single vector. It lives in the <strong>domain</strong> (the \(xy\)-plane), not on the surface.</p></div>
 
 <section class="example-box" role="region" aria-label="Example 2">
   <h3 class="example-title">Example 2</h3>
@@ -243,6 +273,8 @@ if (window.MathJax && window.MathJax.startup) {
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace" style="min-height:1.5in;">
 </div>
+<div><p>\(\nabla f = \langle f_x, f_y \rangle\): \(\;f_x = 2x\), \(\;f_y = 8y\) \(\;\Rightarrow\;\) \(\nabla f(x,y) = \langle 2x,\; 8y \rangle\)</p>
+<p><strong>Substitute</strong> \((2, 1)\): \(\;\nabla f(2,1) = \langle 4,\; 8 \rangle\)</p></div>
 </section>
 
 <section id="the-big-theorem" aria-label="The Big Theorem: $D_{\vec{u}} f = \nabla f \cdot \vec{u}$">
@@ -253,8 +285,21 @@ if (window.MathJax && window.MathJax.startup) {
 <p>\[D_{\vec{u}} f(x,y) = \nabla f(x,y) \cdot \vec{u}\]</p>
 <p>for any unit vector \(\vec{u}\).</p>
 </section>
+<div><p><strong>Translation:</strong> To find the rate of change in any direction, just take the <strong>dot product</strong> of the gradient with the direction vector.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>This is the <strong>central formula</strong> of Section 14.6. It connects direction, rate of change, and gradient in one equation.</p></aside>
+<div><p><strong>Why is this so much better than the definition?</strong></p>
+<ul>
+<li>Limit definition: expand, simplify, take a limit (messy algebra)</li>
+<li>Gradient formula: compute two partial derivatives, take a dot product (fast!)</li>
+</ul></div>
 
+<div><p><strong>Why does it work?</strong> Recall the cross-section from our motivation: define \(g(t) = f(x + ta,\; y + tb)\). Then by the Calc I derivative definition:</p>
+<p>\[g'(0) = \lim_{t \to 0} \frac{g(t) - g(0)}{t} = \lim_{t \to 0} \frac{f(x + ta,\; y + tb) - f(x,y)}{t} = D_{\vec{u}} f(x,y)\]</p>
+<p>So the directional derivative is just \(g'(0)\). Now use the <strong>chain rule</strong> to find \(g'(0)\) without limits.</p></div>
+<div><p>Apply the <strong>chain rule</strong> (Section 14.5):</p>
+<p>\[g'(t) = f_x(x + ta,\; y + tb) \cdot a \;+\; f_y(x + ta,\; y + tb) \cdot b\]</p></div>
+<div><p>Evaluate at \(t = 0\):</p>
+<p>\[g'(0) = f_x(x,y) \cdot a + f_y(x,y) \cdot b = \langle f_x,\; f_y \rangle \cdot \langle a,\; b \rangle = \nabla f \cdot \vec{u}\]</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>The dot product appears <strong>because of the chain rule</strong>. Each partial derivative gets multiplied by the corresponding component of \(\vec{u}\), which is exactly what a dot product does.</p></aside>
 </section>
 
@@ -267,22 +312,40 @@ if (window.MathJax && window.MathJax.startup) {
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace" style="min-height:1.5in;">
 </div>
+<div><p><strong>Write the formula:</strong></p>
+<p>\[D_{\vec{u}} f(x,y) = \nabla f(x,y) \cdot \vec{u}\]</p></div>
+<div><p><strong>Substitute</strong> (using \(\nabla f(2,1) = \langle 4, 8 \rangle\) from Example 2):</p>
+<p>\[D_{\vec{u}} f(2,1) = \langle 4, 8 \rangle \cdot \left\langle \frac{\sqrt{2}}{2},\; \frac{\sqrt{2}}{2} \right\rangle = \frac{4\sqrt{2}}{2} + \frac{8\sqrt{2}}{2} = 6\sqrt{2}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Same answer as the limit definition (\(6\sqrt{2}\)), but in <strong>one line</strong> instead of half a page!</p></aside>
 </section>
 
 <section id="maximizing-the-directional-derivative" aria-label="Maximizing the Directional Derivative">
   <h2>Maximizing the Directional Derivative</h2>
-  <figure>
+  <div><p><strong>Question:</strong> You're at \(P(2,1)\) on the surface \(f(x,y) = x^2 + 4y^2\). Which direction increases \(f\) the fastest?</p>
+<p>Use the slider to sweep \(\vec{u}\) around and watch \(D_{\vec{u}} f\) change:</p></div>
+<figure>
   <img src="figures/directional_derivative_explorer.png" alt="Interactive contour plot of f(x,y) = x-squared + 4y-squared with elliptical level curves. A fixed blue gradient vector nabla-f = (4,8) is shown at the point P(2,1). A green/red unit vector u rotates as the slider sweeps theta from 0 to 360 degrees. The directional derivative value is displayed and color-coded: green when positive (f increasing), red when negative (f decreasing), gray near zero (moving along a level curve). The maximum occurs when u aligns with the gradient, the minimum when u opposes it, and zero when u is perpendicular to the gradient.">
   <figcaption><a href="figures/directional_derivative_explorer.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
 <aside class="key-point" role="note" aria-label="Key point"><p>Notice: \(D_{\vec{u}} f\) is <strong>largest</strong> when \(\vec{u}\) aligns with \(\nabla f\), <strong>most negative</strong> when opposing, and <strong>zero</strong> when perpendicular. Why?</p></aside>
 
+<div><p><strong>Why?</strong> Rewrite \(D_{\vec{u}} f\) using the dot product identity:</p>
+<p>\[D_{\vec{u}} f = \nabla f \cdot \vec{u} = |\nabla f|\;|\vec{u}|\;\cos\theta = |\nabla f|\;\cos\theta\]</p>
+<p>where \(\theta\) is the angle between \(\nabla f\) and \(\vec{u}\).</p></div>
+<div><p>\(|\nabla f|\) is fixed at each point. The <strong>only thing we control</strong> is \(\theta\), and \(\cos\theta\) ranges from \(-1\) to \(1\):</p></div>
+<div><table>
+<tr><th>\(\theta\)</th><th>\(\cos\theta\)</th><th>\(D_{\vec{u}} f\)</th><th>Meaning</th></tr>
+<tr><td>\(0\)</td><td>\(1\)</td><td>\(|\nabla f|\) (max)</td><td>\(\vec{u}\) <strong>with</strong> \(\nabla f\) \(\rightarrow\) steepest increase</td></tr>
+<tr><td>\(\pi/2\)</td><td>\(0\)</td><td>\(0\)</td><td>\(\vec{u} \perp \nabla f\) \(\rightarrow\) along level curve</td></tr>
+<tr><td>\(\pi\)</td><td>\(-1\)</td><td>\(-|\nabla f|\) (min)</td><td>\(\vec{u}\) <strong>against</strong> \(\nabla f\) \(\rightarrow\) steepest decrease</td></tr>
+</table></div>
 <aside class="key-point" role="note" aria-label="Key point"><p><strong>The gradient tells you everything:</strong></p>
 <ul>
 <li>Its <strong>direction</strong> = steepest ascent</li>
 <li>Its <strong>magnitude</strong> \(|\nabla f|\) = the maximum rate of change</li>
 <li><strong>Perpendicular</strong> to it = no change (along the level curve)</li>
 </ul></aside>
+<div><p><strong>Important:</strong> \(\nabla f\) lives in the <strong>domain</strong> (the \(xy\)-plane), not on the surface. It points toward larger \(f\)-values in the input space.</p></div>
 </section>
 
 <section id="example-4-fastest-increase-and-decrease" class="example-group" aria-label="Example 4: Fastest Increase and Decrease">
@@ -296,6 +359,16 @@ if (window.MathJax && window.MathJax.startup) {
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace" style="min-height:2.5in;">
 </div>
+<div><p><strong>Key formulas:</strong></p>
+<ul>
+<li>Max increase direction: \(\vec{u} = \frac{\nabla f}{|\nabla f|}\), max rate \(= |\nabla f|\)</li>
+<li>Max decrease direction: \(\vec{u} = -\frac{\nabla f}{|\nabla f|}\), rate \(= -|\nabla f|\)</li>
+<li>Zero change: \(\vec{u} \perp \nabla f\)</li>
+</ul></div>
+<div><p><strong>Substitute</strong> \(\nabla f(2,1) = \langle 4, 8 \rangle\), \(\;|\nabla f| = \sqrt{16 + 64} = 4\sqrt{5}\):</p>
+<p><strong>(a)</strong> \(\vec{u}_{\max} = \frac{\langle 4, 8 \rangle}{4\sqrt{5}} = \left\langle \frac{1}{\sqrt{5}},\; \frac{2}{\sqrt{5}} \right\rangle\), max rate \(= 4\sqrt{5} \approx 8.94\)</p></div>
+<div><p><strong>(b)</strong> \(\vec{u}_{\min} = -\left\langle \frac{1}{\sqrt{5}},\; \frac{2}{\sqrt{5}} \right\rangle\), rate \(= -4\sqrt{5}\)</p>
+<p><strong>(c)</strong> \(\vec{u} \perp \nabla f\): swap components and negate one \(\;\Rightarrow\; \vec{u} = \pm\left\langle \frac{2}{\sqrt{5}},\; \frac{-1}{\sqrt{5}} \right\rangle\)</p></div>
 </section>
 
 <section id="example-5-which-way-should-i-walk" class="example-group" aria-label="Example 5: Which Way Should I Walk?">
@@ -308,6 +381,13 @@ if (window.MathJax && window.MathJax.startup) {
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace" style="min-height:3in;">
 </div>
+<div><p><strong>Compute the gradient:</strong> \(\nabla f(2,1) = \langle 4, 8 \rangle\) (from Example 2), \(\;|\nabla f| = 4\sqrt{5}\)</p></div>
+<div><p><strong>(a) Steepest descent</strong> = opposite the gradient:</p>
+<p>\[\vec{u}_{\text{down}} = -\frac{\nabla f}{|\nabla f|} = -\frac{\langle 4, 8 \rangle}{4\sqrt{5}} = \left\langle \frac{-1}{\sqrt{5}},\; \frac{-2}{\sqrt{5}} \right\rangle\]</p>
+<p>She should walk in the direction \(\langle -1, -2 \rangle\) (toward the origin). The rate of descent is \(-4\sqrt{5} \approx -8.94\) hundred ft per unit.</p></div>
+<div><p><strong>(b) Constant elevation</strong> = perpendicular to \(\nabla f\):</p>
+<p>Swap components and negate one: \(\;\vec{u} = \pm\left\langle \frac{2}{\sqrt{5}},\; \frac{-1}{\sqrt{5}} \right\rangle\)</p>
+<p>Two directions along the contour &mdash; she can go either way. In both, \(D_{\vec{u}} f = 0\).</p></div>
 </section>
 
 <section id="your-turn-directional-derivative-practice" class="example-group" aria-label="Your Turn: Directional Derivative Practice">
@@ -321,6 +401,12 @@ if (window.MathJax && window.MathJax.startup) {
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace" style="min-height:3in;">
 </div>
+<div><p><strong>Normalize:</strong> \(\vec{u} = \frac{\vec{v}}{|\vec{v}|}\) \(\;\Rightarrow\;\) \(|\langle 2, -1 \rangle| = \sqrt{5}\) \(\;\Rightarrow\;\) \(\vec{u} = \left\langle \frac{2}{\sqrt{5}},\; \frac{-1}{\sqrt{5}} \right\rangle\)</p></div>
+<div><p><strong>(a)</strong> \(\nabla f = \langle f_x, f_y \rangle\): \(\;f_x = e^{-y}\), \(\;f_y = -xe^{-y}\)</p>
+<p><strong>Substitute</strong> \((2, 0)\): \(\;\nabla f(2,0) = \langle e^0,\; -2e^0 \rangle = \langle 1, -2 \rangle\)</p></div>
+<div><p><strong>(b)</strong> \(D_{\vec{u}} f = \nabla f \cdot \vec{u}\):</p>
+<p>\[D_{\vec{u}} f(2,0) = \langle 1, -2 \rangle \cdot \left\langle \frac{2}{\sqrt{5}},\; \frac{-1}{\sqrt{5}} \right\rangle = \frac{2}{\sqrt{5}} + \frac{2}{\sqrt{5}} = \frac{4}{\sqrt{5}} = \frac{4\sqrt{5}}{5}\]</p></div>
+<div><p><strong>(c)</strong> Max rate \(= |\nabla f|\): \(\;|\nabla f(2,0)| = |\langle 1, -2 \rangle| = \sqrt{1 + 4} = \sqrt{5}\)</p></div>
 </section>
 
 <section id="gradient-is-perpendicular-to-level-curves" aria-label="Gradient Is Perpendicular to Level Curves">
@@ -329,6 +415,10 @@ if (window.MathJax && window.MathJax.startup) {
   <h3 class="defn-title">Theorem: Gradient Perpendicular to Level Curves</h3>
   <p>The gradient vector \(\nabla f(a,b)\) is <strong>perpendicular</strong> to the level curve \(f(x,y) = k\) at the point \((a,b)\).</p>
 </section>
+<div><p><strong>Why does this make sense?</strong></p>
+<p>Along a level curve, \(f\) is constant, so the rate of change is <strong>zero</strong>. We saw that \(D_{\vec{u}} f = 0\) when \(\vec{u} \perp \nabla f\).</p>
+<p>The tangent direction to a level curve is a direction of zero change &mdash; so it must be perpendicular to \(\nabla f\).</p>
+<p>Look back at our explorer figure: \(\nabla f(2,1) = \langle 4, 8 \rangle\) visibly points <strong>straight away from the ellipse</strong> \(f = 8\). Sweep the slider to \(\theta \approx 153{^\circ}\) or \(333{^\circ}\) to see \(D_{\vec{u}} f = 0\) &mdash; those are the tangent directions to the level curve.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>The gradient always points <strong>perpendicular to level curves</strong>, aiming toward higher values of \(f\). This is why contour maps and gradients are deeply connected.</p></aside>
 </section>
 
@@ -341,15 +431,29 @@ if (window.MathJax && window.MathJax.startup) {
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace" style="min-height:2.5in;">
 </div>
+<div><p><strong>Identify the pieces:</strong> The level curve through \((2,1)\) is \(f(x,y) = 8\) (the ellipse \(x^2 + 4y^2 = 8\)).</p>
+<p><strong>Normal vector:</strong> \(\nabla f(2,1) = \langle 4, 8 \rangle\)</p></div>
+<div><p><strong>Write the tangent line formula</strong> (normal vector dot displacement = 0):</p>
+<p>\[\nabla f(x_0, y_0) \cdot \langle x - x_0,\; y - y_0 \rangle = 0\]</p></div>
+<div><p><strong>Substitute:</strong></p>
+<p>\[\langle 4, 8 \rangle \cdot \langle x - 2,\; y - 1 \rangle = 0 \;\;\Rightarrow\;\; 4(x - 2) + 8(y - 1) = 0\]</p></div>
+<div><p><strong>Simplify:</strong> \(\;4x + 8y = 16\) \(\;\Rightarrow\;\) \(x + 2y = 4\)</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The gradient gives you the <strong>normal vector</strong> to the level curve. From there, writing the tangent line is just like writing a plane equation in 2D.</p></aside>
 </section>
 
 <section id="extending-to-three-variables" aria-label="Extending to Three Variables">
   <h2>Extending to Three Variables</h2>
-  <section class="defn-box" role="region" aria-label="Gradient in Three Variables">
+  <div><p>Everything generalizes naturally to functions of three variables \(f(x, y, z)\):</p></div>
+<section class="defn-box" role="region" aria-label="Gradient in Three Variables">
   <h3 class="defn-title">Gradient in Three Variables</h3>
   <p>\[\nabla f(x,y,z) = \langle f_x,\; f_y,\; f_z \rangle\]</p>
 </section>
+<div><p>The directional derivative formula is exactly the same:</p>
+<p>\[D_{\vec{u}} f(x,y,z) = \nabla f(x,y,z) \cdot \vec{u}\]</p>
+<p>where \(\vec{u} = \langle a, b, c \rangle\) is a unit vector in \(\mathbb{R}^3\).</p></div>
 
+<div><p><strong>Level surfaces replace level curves:</strong></p>
+<p>For \(F(x,y,z) = k\), the gradient \(\nabla F\) is perpendicular to the <strong>level surface</strong> at each point.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Since \(\nabla F\) is perpendicular to the level surface, it serves as the <strong>normal vector</strong> for the tangent plane!</p>
 <p><strong>Tangent plane to</strong> \(F(x,y,z) = k\) <strong>at</strong> \((a,b,c)\):</p>
 <p>\[F_x(a,b,c)(x - a) + F_y(a,b,c)(y - b) + F_z(a,b,c)(z - c) = 0\]</p></aside>
@@ -365,6 +469,16 @@ if (window.MathJax && window.MathJax.startup) {
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace" style="min-height:3in;">
 </div>
+<div><p><strong>Check the point:</strong> \(F(1,2,3) = 3(1) - 2(9) = 3 - 18 = -15\) \(\checkmark\)</p></div>
+<div><p><strong>(a) Compute the gradient:</strong> \(\nabla F = \langle F_x, F_y, F_z \rangle\)</p>
+<p>\(F_x = 2xz\), \(\quad F_y = -z^2\), \(\quad F_z = x^2 - 2yz\)</p>
+<p><strong>Substitute</strong> \((1, 2, 3)\): \(\;\nabla F(1,2,3) = \langle 6,\; -9,\; 1 - 12 \rangle = \langle 6,\; -9,\; -11 \rangle\)</p></div>
+<div><p><strong>(b) Write the tangent plane formula:</strong></p>
+<p>\[F_x(a,b,c)(x - a) + F_y(a,b,c)(y - b) + F_z(a,b,c)(z - c) = 0\]</p></div>
+<div><p><strong>Substitute:</strong></p>
+<p>\[6(x - 1) - 9(y - 2) - 11(z - 3) = 0\]</p>
+<p><strong>Simplify:</strong> \(\;6x - 9y - 11z = -45\)</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The gradient \(\nabla F\) of a function of 3 variables is the <strong>normal vector</strong> to the level surface \(F = k\). This gives us tangent planes to implicitly defined surfaces.</p></aside>
 </section>
 
 <section class="homework-section" aria-label="Homework">

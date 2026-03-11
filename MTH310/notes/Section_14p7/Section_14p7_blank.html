@@ -140,16 +140,20 @@ function adjustWorkspaces() {
             var ws = findPrecedingWorkspace(pb);
             if (ws) expandWorkspace(ws, remaining);
         }
-        pb.remove();  // no longer needed — workspace expansion handles the break
+        // Keep the div — its CSS page-break-before:always guarantees the break
+        // even if the workspace expansion calculation is slightly off.
     });
 
     // --- Pass B: Auto-detect orphaned section starts ---
+    // Skip sections preceded by an explicit .pagebreak (already handled by Pass A).
     var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
     var sections = document.querySelectorAll('main > section');
     for (var pass = 0; pass < 3; pass++) {
         var changed = false;
         for (var i = 1; i < sections.length; i++) {
             var sec = sections[i];
+            var prev = sec.previousElementSibling;
+            if (prev && prev.classList && prev.classList.contains('pagebreak')) continue;
             var secRect = sec.getBoundingClientRect();
             var secTop = secRect.top + window.scrollY;
             var secBot = secTop + secRect.height;
@@ -195,40 +199,55 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="local-extrema-on-surfaces" aria-label="Local Extrema on Surfaces">
   <h2>Local Extrema on Surfaces</h2>
-  <section class="defn-box" role="region" aria-label="Local Maximum and Minimum">
+  <div><p>In Calc I, a local max of \(y = f(x)\) is a ``peak'' and a local min is a ``valley.'' What does this look like for a <strong>surface</strong> \(z = f(x,y)\)?</p></div>
+<section class="defn-box" role="region" aria-label="Local Maximum and Minimum">
   <h3 class="defn-title">Local Maximum and Minimum</h3>
   <p>A function \(f(x,y)\) has a <strong>local maximum</strong> at \((a,b)\) if \(f(x,y) \leq f(a,b)\) for all \((x,y)\) near \((a,b)\).</p>
 <p>A <strong>local minimum</strong> at \((a,b)\) means \(f(x,y) \geq f(a,b)\) for all \((x,y)\) near \((a,b)\).</p>
 </section>
 <div><p><em>Can a differentiable function \(f\) have a local maximum at \((a,b)\) with \(f_x(a,b) = 3\)?</em></p></div>
+<div><p><strong>No!</strong> If \(f_x(a,b) = 3\), the surface is still <em>rising</em> in the \(x\)-direction &mdash; so \((a,b)\) can't be the highest point nearby. At any local extremum the tangent plane must be <strong>horizontal</strong>: both \(f_x = 0\) and \(f_y = 0\).</p></div>
 <section class="defn-box theorem-box" role="region" aria-label="Theorem: Necessary Condition for Local Extrema">
   <h3 class="defn-title">Theorem: Necessary Condition for Local Extrema</h3>
   <p>If \(f\) has a local extremum at \((a,b)\) and the first-order partial derivatives exist there, then</p>
 <p>\[f_x(a,b) = 0 \quad \text{and} \quad f_y(a,b) = 0\]</p>
 </section>
+<div><p><em>OK, so both partials must be zero. But is that enough?</em> No &mdash; a <strong>saddle point</strong> has \(f_x = 0\) and \(f_y = 0\) but is neither a max nor a min.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>At a differentiable extremum, both partial derivatives must be zero &mdash; but zero partials alone aren't enough to guarantee an extremum.</p></aside>
 </section>
 
 <section id="optimization-from-calc-i-to-calc-iii" aria-label="Optimization: From Calc I to Calc III">
   <h2>Optimization: From Calc I to Calc III</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>The big ideas carry over &mdash; but the <strong>boundary</strong> is now a curve instead of two endpoints, and <strong>saddle points</strong> are genuinely new.</p></aside>
+  <div><p>In Calculus I you learned a systematic optimization procedure. Let's see what changes in Calculus III.</p>
+<table>
+<tr><th></th><th><strong>Calculus I (\(y = f(x)\))</strong></th><th><strong>Calculus III (\(z = f(x,y)\))</strong></th></tr>
+<tr><td><strong>Critical points</strong></td><td>\(f'(x) = 0\) or DNE</td><td>\(f_x = 0\) and \(f_y = 0\) (or DNE)</td></tr>
+<tr><td><strong>Classify</strong></td><td>2nd Derivative Test</td><td>2nd Derivative Test (with \(D\))</td></tr>
+<tr><td><strong>New phenomenon</strong></td><td>&mdash;</td><td>Saddle points!</td></tr>
+<tr><td><strong>Absolute extrema</strong></td><td>Check critical pts + endpoints</td><td>Check critical pts + boundary</td></tr>
+</table></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The big ideas carry over &mdash; but the <strong>boundary</strong> is now a curve instead of two endpoints, and <strong>saddle points</strong> are genuinely new.</p></aside>
 <div class="two-col-print">
   <div><figure>
   <img src="figures/14_7_calc1_opt.png" alt="Graph of a cubic function f(x) = x cubed minus 3x showing a local maximum at x = -1 with a horizontal dashed tangent line and a local minimum at x = 1 with a horizontal dashed tangent line. Annotations show f prime equals zero and the sign of f double prime at each critical point.">
-</figure></div>
+</figure>
+<div><p><strong>Familiar:</strong> Horizontal tangent (\(f'=0\)) at each local extremum. Classify with the sign of \(f''\).</p></div></div>
   <div><figure>
   <img src="figures/14_7_saddle_intro.png" alt="3D surface plot of z = x squared minus y squared showing a saddle point at the origin. A green curve along the x-axis shows the surface curving upward like a bowl, while a red curve along the y-axis shows the surface curving downward. The surface resembles a Pringles chip or a mountain pass.">
   <figcaption><a href="figures/14_7_saddle_intro.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure></div>
+</figure>
+<div><p><strong>New in Calc III:</strong> At a <strong>saddle point</strong> the tangent plane is horizontal, but the surface curves <em>up</em> in one direction and <em>down</em> in another.</p></div></div>
 </div>
 <div class="two-col-print">
   <div><figure>
   <img src="figures/14_7_calc1_boundary.png" alt="Graph of f(x) = x cubed minus 3x plus 1 on the closed interval from -1.5 to 2.5. An interior local max is marked at (-1, 3) and an interior absolute min at (1, -1). The absolute max occurs at the right endpoint (2.5, 9.125), which is highlighted with a star marker and labeled abs max endpoint.">
-</figure></div>
+</figure>
+<div><p><strong>Calc I:</strong> The absolute max is at an <strong>endpoint</strong>, not the interior local max. Must check both!</p></div></div>
   <div><figure>
   <img src="figures/14_7_calc3_boundary.png" alt="3D surface plot of f(x,y) = x squared plus y squared minus 2x on the disk x squared plus y squared at most 4. An off-center paraboloid bowl with interior absolute minimum at (1, 0) labeled in green and absolute maximum at (-2, 0) on the boundary rim labeled in red. The black boundary curve traces the edge of the disk on the surface.">
   <figcaption><a href="figures/14_7_calc3_boundary.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure></div>
+</figure>
+<div><p><strong>Calc III:</strong> Same idea &mdash; but now the ``boundary'' is a <strong>curve</strong>, not just two points.</p></div></div>
 </div>
 </section>
 
@@ -260,33 +279,60 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Compute $f_x$ and $f_y$, set both equal to zero, and solve the system." style="min-height:3in;">
   <div class="blank-prompt">Compute \(f_x\) and \(f_y\), set both equal to zero, and solve the system.</div>
 </div>
+<div><p><strong>Step 1:</strong> Compute partial derivatives.</p>
+<p>\[f_x = 6x^2 + y^2 + 10x\]</p>
+<p>\[f_y = 2xy + 2y\]</p></div>
+<div><p><strong>Step 2:</strong> Set \(f_y = 0\):</p>
+<p>\[2xy + 2y = 0\]</p>
+<p>\[2y(x + 1) = 0\]</p>
+<p>so \(y = 0\) <strong>or</strong> \(x = -1\).</p></div>
+<div><p><strong>Case 1:</strong> \(y = 0\)</p>
+<p>\[f_x = 6x^2 + 10x = 2x(3x + 5) = 0\]</p>
+<p>\[x = 0 \quad \text{or} \quad x = -\tfrac{5}{3}\]</p>
+<p><strong>Case 2:</strong> \(x = -1\)</p>
+<p>\[f_x = 6(-1)^2 + y^2 + 10(-1) = y^2 - 4 = 0\]</p>
+<p>\[y = \pm 2\]</p></div>
+<div><p><strong>Critical points:</strong></p>
+<p>\[(0,\, 0), \quad \left(-\tfrac{5}{3},\, 0\right), \quad (-1,\, 2), \quad (-1,\, -2)\]</p></div>
 </section>
 
 <section id="the-second-derivative-test" aria-label="The Second Derivative Test">
   <h2>The Second Derivative Test</h2>
-  <section class="defn-box" role="region" aria-label="Second Derivative Test">
+  <div><p>Now that we can <em>find</em> critical points, how do we <em>classify</em> them?</p></div>
+<section class="defn-box" role="region" aria-label="Second Derivative Test">
   <h3 class="defn-title">Second Derivative Test</h3>
   <p>Suppose the second partial derivatives of \(f\) are continuous near \((a,b)\) and \(f_x(a,b) = f_y(a,b) = 0\). Define:</p>
 <p>\[D = D(a,b) = f_{xx}(a,b) \cdot f_{yy}(a,b) - \left[f_{xy}(a,b)\right]^2\]</p>
 </section>
+<div><table>
+<tr><th><strong>Condition</strong></th><th><strong>Conclusion</strong></th></tr>
+<tr><td>\(D > 0\) and \(f_{xx} > 0\)</td><td><strong>Local minimum</strong></td></tr>
+<tr><td>\(D > 0\) and \(f_{xx} < 0\)</td><td><strong>Local maximum</strong></td></tr>
+<tr><td>\(D < 0\)</td><td><strong>Saddle point</strong></td></tr>
+<tr><td>\(D = 0\)</td><td><strong>Inconclusive</strong> (test fails)</td></tr>
+</table></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>\(D\) measures <strong>curvature agreement</strong>: \(D > 0\) means the surface</p>
 <p>curves the same way in all directions. \(D < 0\) means \(f_{xy}\) dominates &mdash;</p>
 <p>the surface is <strong>twisting</strong>, curving up in one direction and down in another.</p></aside>
 
+<div><p>Zoomed views of \(f(x,y) = 2x^3 + xy^2 + 5x^2 + y^2\) near each type of critical point &mdash; <strong>rotate to explore!</strong></p></div>
 <div class="two-col-print">
   <div><figure>
   <img src="figures/14_7_sdt_min.png" alt="3D surface zoomed near (0,0) showing a bowl-shaped local minimum. D greater than 0 and f\_xx greater than 0.">
   <figcaption><a href="figures/14_7_sdt_min.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure></div>
+</figure>
+<div><p>\(D > 0\), \(f_{xx} > 0\) \(\Rightarrow\) <strong>Local min</strong></p></div></div>
   <div><figure>
   <img src="figures/14_7_sdt_max.png" alt="3D surface zoomed near (-5/3, 0) showing a dome-shaped local maximum. D greater than 0 and f\_xx less than 0.">
   <figcaption><a href="figures/14_7_sdt_max.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure></div>
+</figure>
+<div><p>\(D > 0\), \(f_{xx} < 0\) \(\Rightarrow\) <strong>Local max</strong></p></div></div>
 </div>
 <figure>
   <img src="figures/14_7_sdt_saddle.png" alt="3D surface zoomed near (-1, 2) showing a saddle point where the surface curves up in one direction and down in another. D less than 0.">
   <figcaption><a href="figures/14_7_sdt_saddle.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
+<div><p>\(D < 0\) \(\Rightarrow\) <strong>Saddle point</strong></p></div>
 </section>
 
 <section id="quick-check-use-the-second-derivative-test" aria-label="Quick Check: Use the Second Derivative Test">
@@ -297,6 +343,10 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Use $D = f_{xx} f_{yy} - (f_{xy})^2$. Check sign of $D$ first, then $f_{xx}$." style="min-height:2.5in;">
   <div class="blank-prompt">Use \(D = f_{xx} f_{yy} - (f_{xy})^2\). Check sign of \(D\) first, then \(f_{xx}\).</div>
 </div>
+<div><p>\(D = (-6)(-4) - (1)^2 = 24 - 1 = 23 > 0\). Since \(D > 0\), it's an extremum.</p></div>
+<div><p>\(f_{xx} = -6 < 0\) \(\Rightarrow\) surface curves <strong>downward</strong> \(\Rightarrow\) <strong>local maximum</strong>.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Two-step classification: (1) sign of \(D\) &mdash; extremum or saddle?</p>
+<p>(2) If \(D > 0\), sign of \(f_{xx}\) &mdash; max or min?</p></aside>
 </section>
 
 <section id="caution-when" class="example-group" aria-label="Caution: When $D = 0$">
@@ -307,6 +357,24 @@ if (window.MathJax && window.MathJax.startup) {
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace: Compute all second partials at (0,0) and find D. Then argue from the formula for f." style="min-height:2.5in;">
   <div class="blank-prompt">Compute all second partials at (0,0) and find D. Then argue from the formula for f.</div>
+</div>
+<div><p>\(f_x = 4x^3\), \(f_y = 4y^3\) \(\Rightarrow\) \((0,0)\) is a critical point.</p></div>
+<div><p>\(f_{xx} = 12x^2\), \(f_{yy} = 12y^2\), \(f_{xy} = 0\)</p>
+<p>At \((0,0)\): \(D = (0)(0) - 0^2 = 0\) &mdash; <strong>test is inconclusive</strong>.</p></div>
+<div><p>But \(f(x,y) = x^4 + y^4 \geq 0 = f(0,0)\) for all \((x,y)\), so \((0,0)\) is clearly an <strong>absolute minimum</strong>.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>When \(D = 0\), you need a <strong>different argument</strong> &mdash; the test simply gives no information.</p></aside>
+<div><p><strong>\(D = 0\) can go either way!</strong> Both surfaces below have \(D = 0\) at the origin &mdash; <strong>rotate to explore!</strong></p></div>
+<div class="two-col-print">
+  <div><figure>
+  <img src="figures/14_7_d_zero_min.png" alt="3D surface of f = x to the fourth plus y to the fourth, a very flat bowl shape. Despite D = 0 at the origin, this IS a minimum because the function is always nonnegative.">
+  <figcaption><a href="figures/14_7_d_zero_min.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
+<div><p>\(f = x^4 + y^4\): So flat that all second derivatives vanish &mdash; but still a <strong>minimum</strong>.</p></div></div>
+  <div><figure>
+  <img src="figures/14_7_d_zero_monkey.png" alt="3D surface of f = x cubed minus 3xy squared, a monkey saddle with three alternating high and low lobes meeting at the origin. Despite D = 0, this is NOT an extremum.">
+  <figcaption><a href="figures/14_7_d_zero_monkey.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
+<div><p>\(f = x^3 - 3xy^2\): A ``monkey saddle'' with three lobes &mdash; definitely <strong>not an extremum</strong>.</p></div></div>
 </div>
 </section>
 
@@ -319,6 +387,21 @@ if (window.MathJax && window.MathJax.startup) {
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace: Compute $f_{xx}$, $f_{yy}$, $f_{xy}$, then evaluate $D$ at each critical point." style="min-height:3.5in;">
   <div class="blank-prompt">Compute \(f_{xx}\), \(f_{yy}\), \(f_{xy}\), then evaluate \(D\) at each critical point.</div>
+</div>
+<div><p><strong>Second partials:</strong> \(f_{xx} = 12x + 10\), \(\;f_{yy} = 2x + 2\), \(\;f_{xy} = 2y\)</p></div>
+<div><p><strong>At \((0,0)\):</strong> \(D = (10)(2) - 0 = 20 > 0\), \(f_{xx} = 10 > 0\) \(\Rightarrow\) <strong>local min</strong></p></div>
+<div><p><strong>At \((-\tfrac{5}{3}, 0)\):</strong> \(D = (-10)(-\tfrac{4}{3}) - 0 = \tfrac{40}{3} > 0\), \(f_{xx} = -10 < 0\) \(\Rightarrow\) <strong>local max</strong></p></div>
+<div><p><strong>At \((-1, 2)\):</strong> \(D = (-2)(0) - 16 = -16 < 0\) \(\Rightarrow\) <strong>saddle point</strong></p></div>
+<div><p><strong>At \((-1, -2)\):</strong> \(D = (-2)(0) - 16 = -16 < 0\) \(\Rightarrow\) <strong>saddle point</strong></p></div>
+<div class="two-col-print">
+  <div><figure>
+  <img src="figures/14_7_surface.png" alt="3D surface plot of f(x,y) = 2x^3 + xy^2 + 5x^2 + y^2 showing a local minimum near the origin, a local maximum near (-5/3, 0), and saddle points at (-1, 2) and (-1, -2). The surface has a bowl-shaped region around the local min and a dome near the local max.">
+  <figcaption><a href="figures/14_7_surface.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure></div>
+  <div><figure>
+  <img src="figures/14_7_contour.png" alt="Contour plot of f(x,y) = 2x^3 + xy^2 + 5x^2 + y^2. Closed oval contours surround the local max and local min. Near the saddle points at (-1, 2) and (-1, -2), contour lines pinch into an X-shaped crossing pattern.">
+  <figcaption><a href="figures/14_7_contour.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure></div>
 </div>
 </section>
 
@@ -333,17 +416,33 @@ other and substitute." style="min-height:3.5in;">
   <div class="blank-prompt">Set \(f_x = 0\) and \(f_y = 0\). Express one variable in terms of the
 other and substitute.</div>
 </div>
+<div><p>\(f_x = 3x^2 - 3y = 0\) \(\Rightarrow\) \(y = x^2\)</p>
+<p>\(f_y = -3x + 3y^2 = 0\) \(\Rightarrow\) \(x = y^2\)</p></div>
+<div><p><strong>Substitute</strong> \(y = x^2\) into \(x = y^2\):</p>
+<p>\(x = (x^2)^2 = x^4\) \(\Rightarrow\) \(x^4 - x = 0\) \(\Rightarrow\) \(x(x^3 - 1) = 0\)</p>
+<p>So \(x = 0\) (then \(y = 0\)) or \(x = 1\) (then \(y = 1\)).</p>
+<p><strong>Critical points:</strong> \((0,0)\) and \((1,1)\).</p></div>
+<div><p><strong>Classify:</strong> \(f_{xx} = 6x\), \(f_{yy} = 6y\), \(f_{xy} = -3\)</p></div>
+<div><p><strong>At \((0,0)\):</strong> \(D = (0)(0) - (-3)^2 = -9 < 0\) \(\Rightarrow\) <strong>saddle point</strong></p></div>
+<div><p><strong>At \((1,1)\):</strong> \(D = (6)(6) - (-3)^2 = 27 > 0\), \(f_{xx} = 6 > 0\) \(\Rightarrow\) <strong>local minimum</strong></p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Two critical points, different classifications. The coupled system</p>
+<p>required <strong>substitution</strong> &mdash; watch for this pattern on homework.</p></aside>
+<figure>
+  <img src="figures/14_7_ex4_cubic.png" alt="3D surface of f(x,y) = x cubed minus 3xy plus y cubed showing a saddle point at the origin where the surface twists, and a local minimum at (1,1) where the surface forms a bowl shape.">
+  <figcaption><a href="figures/14_7_ex4_cubic.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
 </section>
 
 <section id="the-extreme-value-theorem" aria-label="The Extreme Value Theorem">
   <h2>The Extreme Value Theorem</h2>
-  <section class="defn-box" role="region" aria-label="Extreme Value Theorem (Two Variables)">
+  <div><p>Recall from Calc I: if \(f\) is continuous on \([a,b]\), then \(f\) attains an absolute max and an absolute min on \([a,b]\).</p></div>
+<section class="defn-box" role="region" aria-label="Extreme Value Theorem (Two Variables)">
   <h3 class="defn-title">Extreme Value Theorem (Two Variables)</h3>
   <p>If \(f\) is continuous on a <strong>closed, bounded</strong> set \(D\) in \(\mathbb{R}^2\), then \(f\) attains an absolute maximum and an absolute minimum on \(D\).</p>
 </section>
 <div><p><strong>Closed set:</strong> includes all its boundary points (like \(\leq\) vs. \(<\))</p>
-<p><strong>Bounded set:</strong> fits inside some large disk (not stretching to infinity)</p></div>
-<div><p><strong>Cautionary notes:</strong></p>
+<p><strong>Bounded set:</strong> fits inside some large disk (not stretching to infinity)</p>
+<p><strong>Cautionary notes:</strong></p>
 <ul>
 <li>Absolute extrema may occur where \(f\) is <strong>not differentiable</strong></li>
 <li>Absolute extrema may occur <strong>on the boundary</strong> (not just interior critical points)</li>
@@ -359,9 +458,14 @@ other and substitute.</div>
 
 <section id="quick-check-why-check-the-boundary" aria-label="Quick Check: Why Check the Boundary?">
   <h2>Quick Check: Why Check the Boundary?</h2>
-  <div class="blank-space" role="region" aria-label="Student workspace: Where is the absolute max of $f(x) = x^2$ on $[-1, 2]$?" style="min-height:1.5in;">
+  <div><p><em>Why can't we just find interior critical points and pick the largest value?</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Where is the absolute max of $f(x) = x^2$ on $[-1, 2]$?" style="min-height:1.5in;">
   <div class="blank-prompt">Where is the absolute max of \(f(x) = x^2\) on \([-1, 2]\)?</div>
 </div>
+<div><p>\(f'(x) = 2x = 0\) \(\Rightarrow\) \(x = 0\) (local <strong>min</strong>, \(f(0) = 0\)).</p>
+<p>The absolute <strong>max</strong> is at the endpoint \(x = 2\): \(f(2) = 4\).</p>
+<p>The critical point gave the minimum &mdash; the maximum is on the boundary.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Interior critical points only capture <strong>local</strong> behavior. On a closed, bounded domain, the absolute extrema can occur on the boundary &mdash; so we must check both.</p></aside>
 </section>
 
 <section id="example-absolute-extrema-on-a-rectangle" class="example-group" aria-label="Example: Absolute Extrema on a Rectangle">
@@ -383,6 +487,9 @@ other and substitute.</div>
 <div class="blank-space" role="region" aria-label="Student workspace: Substitute $y = x^3$ into $x = y^3$ to find the interior critical points in $D$." style="min-height:2.5in;">
   <div class="blank-prompt">Substitute \(y = x^3\) into \(x = y^3\) to find the interior critical points in \(D\).</div>
 </div>
+<div><p>Substituting: \(x = (x^3)^3 = x^9\) \(\Rightarrow\) \(x^9 - x = 0\) \(\Rightarrow\) \(x(x^8 - 1) = 0\)</p>
+<p>So \(x = 0\) or \(x = 1\) (taking real roots). Gives critical points \((0,0)\) and \((1,1)\).</p>
+<p>\(f(0,0) = 2\) and \(f(1,1) = 1 + 1 - 4 + 2 = 0\)</p></div>
 </section>
 
 <section id="checking-the-boundary-continued" aria-label="Checking the Boundary (Continued)">
@@ -390,6 +497,40 @@ other and substitute.</div>
   <div><p><strong>Step 2:</strong> Check \(f\) on each edge of the rectangle \([0,3] \times [0,2]\).</p></div>
 <div class="blank-space" role="region" aria-label="Student workspace: Evaluate $f$ on all four edges. On each edge, one variable is fixed." style="min-height:4in;">
   <div class="blank-prompt">Evaluate \(f\) on all four edges. On each edge, one variable is fixed.</div>
+</div>
+<div><p><strong>Edge 1:</strong> \(y = 0\), \(0 \leq x \leq 3\)</p>
+<p>\[f(x, 0) = x^4 + 2\]</p>
+<p>No critical points to find (increasing on \([0,3]\)). Check endpoints:</p>
+<p>\[f(0,0) = 2, \qquad f(3,0) = 81 + 2 = 83\]</p></div>
+<div><p><strong>Edge 2:</strong> \(x = 3\), \(0 \leq y \leq 2\)</p>
+<p>\[f(3, y) = 81 + y^4 - 12y + 2 = y^4 - 12y + 83\]</p>
+<p>Set \(\dfrac{d}{dy}f = 4y^3 - 12 = 0\) \(\Rightarrow\) \(y = \sqrt[3]{3} \approx 1.44\). Evaluate:</p>
+<p>\[f(3,0) = 83, \qquad f(3, \sqrt[3]{3}) \approx 74.0, \qquad f(3,2) = 75\]</p></div>
+<div><p><strong>Edge 3:</strong> \(y = 2\), \(0 \leq x \leq 3\)</p>
+<p>\[f(x, 2) = x^4 - 8x + 18\]</p>
+<p>Set \(\dfrac{d}{dx}f = 4x^3 - 8 = 0\) \(\Rightarrow\) \(x = \sqrt[3]{2} \approx 1.26\). Evaluate:</p>
+<p>\[f(0,2) = 18, \qquad f(\sqrt[3]{2},2) \approx 11.97, \qquad f(3,2) = 75\]</p></div>
+<div><p><em>Your Turn:</em> Check <strong>Edge 4</strong> (\(x = 0\), \(0 \leq y \leq 2\))</p>
+<p>yourself before looking ahead &mdash; it's the simplest one!</p></div>
+<div><p><strong>Edge 4:</strong> \(x = 0\), \(0 \leq y \leq 2\)</p>
+<p>\[f(0, y) = y^4 + 2\]</p>
+<p>No critical points (increasing on \([0,2]\)). Check endpoints:</p>
+<p>\[f(0,0) = 2, \qquad f(0,2) = 18\]</p></div>
+
+<div><p><strong>Step 3:</strong> Compare all values:</p>
+<table>
+<tr><th><strong>Point</strong></th><th><strong>\(f\)-value</strong></th></tr>
+<tr><td>\((1, 1)\)</td><td>\(0\) \(\leftarrow\) <strong>absolute min</strong></td></tr>
+<tr><td>\((0, 0)\)</td><td>\(2\)</td></tr>
+<tr><td>\((3, 0)\)</td><td>\(83\) \(\leftarrow\) <strong>absolute max</strong></td></tr>
+<tr><td>\((3, 2)\)</td><td>\(75\)</td></tr>
+<tr><td>\((3, \sqrt[3]{3})\)</td><td>\(\approx 74.0\)</td></tr>
+</table></div>
+<div class="two-col-print">
+  <div><aside class="key-point" role="note" aria-label="Key point"><p><strong>Absolute minimum</strong> is \(f(1,1) = 0\) and <strong>absolute maximum</strong> is \(f(3,0) = 83\).</p></aside></div>
+  <div><figure>
+  <img src="figures/14_7_rect_contour.png" alt="Contour plot of f = x to the fourth plus y to the fourth minus 4xy plus 2 on the rectangle D = [0,3] times [0,2]. Level curves show the absolute minimum at (1,1) in the interior (blue star, f=0) and the absolute maximum at (3,0) at a boundary corner (red star, f=83).">
+</figure></div>
 </div>
 </section>
 
@@ -412,6 +553,19 @@ other and substitute.</div>
 <div class="blank-space" role="region" aria-label="Student workspace: Substitute $z = 1000/(xy)$ into $S$, then find critical points." style="min-height:3.5in;">
   <div class="blank-prompt">Substitute \(z = 1000/(xy)\) into \(S\), then find critical points.</div>
 </div>
+<div><p>Substituting \(z = \frac{1000}{xy}\):</p>
+<p>\[S(x,y) = 2xy + \frac{2000}{y} + \frac{2000}{x}\]</p></div>
+<div><p>\(S_x = 2y - \frac{2000}{x^2} = 0\) \(\Rightarrow\) \(y = \frac{1000}{x^2}\)</p>
+<p>\(S_y = 2x - \frac{2000}{y^2} = 0\) \(\Rightarrow\) \(x = \frac{1000}{y^2}\)</p></div>
+<div><p>Substituting the first into the second: \(x = \frac{1000 x^4}{1000000} = \frac{x^4}{1000}\)</p>
+<p>So \(x^3 = 1000\) \(\Rightarrow\) \(x = 10\). Then \(y = 10\) and \(z = 10\).</p></div>
+<div><p><strong>But how do we know this is the global minimum?</strong> The domain \(x > 0\), \(y > 0\) is open and unbounded &mdash; no EVT. Instead, check the boundary behavior:</p>
+<ul>
+<li>As \(x \to 0^+\) or \(y \to 0^+\): \(\;\frac{2000}{x}\) or \(\frac{2000}{y} \to \infty\), so \(S \to \infty\)</li>
+<li>As \(x \to \infty\) or \(y \to \infty\): \(\;2xy \to \infty\), so \(S \to \infty\)</li>
+</ul>
+<p>\(S\) blows up in every extreme direction, so a minimum <em>must</em> exist in the interior. There's only one critical point &mdash; it wins.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The optimal box is a \(10 \times 10 \times 10\) cube (\(S = 600\) cm\(^2\)). On open domains, verify that the function \(\to \infty\) at all edges so the lone critical point must be the global min.</p></aside>
 </section>
 
 <section class="homework-section" aria-label="Homework">

@@ -475,8 +475,39 @@ Reveal.initialize({
     mouseWheel: false,
     plugins: [RevealNotes]
 });
+// ── Scoped MathJax: only typeset the current slide, not the whole document ──
+function typesetCurrentSlide() {
+    var slide = Reveal.getCurrentSlide();
+    if (slide && MathJax?.typesetPromise) {
+        MathJax.typesetPromise([slide]).catch(function(){});
+    }
+}
+// ── Iframe cleanup: pause Desmos/embedded iframes on non-visible slides ──
+function manageIframes(event) {
+    // Pause iframes on the previous slide
+    if (event.previousSlide) {
+        event.previousSlide.querySelectorAll('iframe[data-src-active]').forEach(function(iframe) {
+            iframe.setAttribute('data-src-paused', iframe.src);
+            iframe.src = 'about:blank';
+        });
+    }
+    // Restore iframes on the current slide
+    if (event.currentSlide) {
+        event.currentSlide.querySelectorAll('iframe[data-src-paused]').forEach(function(iframe) {
+            iframe.src = iframe.getAttribute('data-src-paused');
+            iframe.removeAttribute('data-src-paused');
+        });
+    }
+}
+// Mark all Desmos/embedded iframes for management
+document.querySelectorAll('.desmos-container iframe').forEach(function(iframe) {
+    iframe.setAttribute('data-src-active', '1');
+});
 Reveal.on('slidechanged', (event) => {
-    MathJax?.typesetPromise?.();
+    typesetCurrentSlide();
+    manageIframes(event);
+    // Reset scroll position on the new slide so it starts at the top
+    if (event.currentSlide) event.currentSlide.scrollTop = 0;
     try {
         if (window.parent && window.parent !== window) {
             window.parent.postMessage({ type: 'revealSlideChanged', indexh: event.indexh, indexv: event.indexv }, '*');
@@ -559,13 +590,13 @@ function _notifyParentFragment() {
     } catch(e) {}
 }
 Reveal.on('fragmentshown', (event) => {
-    MathJax?.typesetPromise?.();
+    typesetCurrentSlide();
     if (!event.fragment) return;
     setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
     _notifyParentFragment();
 });
 Reveal.on('fragmenthidden', (event) => {
-    MathJax?.typesetPromise?.();
+    typesetCurrentSlide();
     if (!event.fragment) return;
     // Scroll back to the previous fragment or top of slide
     var prev = event.fragment.previousElementSibling;
@@ -577,7 +608,7 @@ Reveal.on('fragmenthidden', (event) => {
     _notifyParentFragment();
 });
 Reveal.on('ready', () => {
-    MathJax?.typesetPromise?.();
+    typesetCurrentSlide();
     // Tell the CourseKit editor that Reveal is initialized so it can sync the fragment
     try {
         if (window.parent && window.parent !== window) {
@@ -630,8 +661,9 @@ Reveal.on('ready', () => {
             .then(function(fragment) {
                 var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
                     '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"><\/script>' +
-                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;}' +
-                    '.plotly-graph-div{width:100vw!important;height:100vh!important;}</style>' +
+                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;' +
+                    'display:flex;justify-content:center;align-items:center;width:100vw;height:100vh;}' +
+                    '.js-plotly-plot,.plotly-graph-div{width:100%!important;height:100%!important;}</style>' +
                     '</head><body>' + fragment + '</body></html>';
                 var blob = new Blob([html], {type: 'text/html'});
                 openPlotlyLightbox(URL.createObjectURL(blob));

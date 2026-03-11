@@ -140,16 +140,20 @@ function adjustWorkspaces() {
             var ws = findPrecedingWorkspace(pb);
             if (ws) expandWorkspace(ws, remaining);
         }
-        pb.remove();  // no longer needed — workspace expansion handles the break
+        // Keep the div — its CSS page-break-before:always guarantees the break
+        // even if the workspace expansion calculation is slightly off.
     });
 
     // --- Pass B: Auto-detect orphaned section starts ---
+    // Skip sections preceded by an explicit .pagebreak (already handled by Pass A).
     var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
     var sections = document.querySelectorAll('main > section');
     for (var pass = 0; pass < 3; pass++) {
         var changed = false;
         for (var i = 1; i < sections.length; i++) {
             var sec = sections[i];
+            var prev = sec.previousElementSibling;
+            if (prev && prev.classList && prev.classList.contains('pagebreak')) continue;
             var secRect = sec.getBoundingClientRect();
             var secTop = secRect.top + window.scrollY;
             var secBot = secTop + secRect.height;
@@ -195,13 +199,29 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="your-turn-derivatives-warm-up" aria-label="Your Turn: Derivatives Warm-Up">
   <h2>Your Turn: Derivatives Warm-Up</h2>
-  <div class="blank-space" role="region" aria-label="Student workspace" style="min-height:3in;">
+  <div><p>We'll need the partial derivatives of the <strong>hemi-ellipsoid</strong></p>
+<p>\[f(x,y) = \sqrt{25 - 4x^2 - y^2} = (25 - 4x^2 - y^2)^{1/2}\]</p>
+<p>Compute the partial derivatives \(f_x\) and \(f_y\), then evaluate each at \((2, 1)\).</p>
+<p><strong>Hint:</strong> Rewrite as a \(\frac{1}{2}\)-power so you can use the <strong>chain rule</strong>.</p></div>
+<div class="blank-space" role="region" aria-label="Student workspace" style="min-height:3in;">
 </div>
+<div><p><strong>Finding \(f_x\):</strong> Hold \(y\) constant, chain rule on the \(\frac{1}{2}\)-power:</p>
+<p>\[f_x = \tfrac{1}{2}(25 - 4x^2 - y^2)^{-1/2} \cdot (-8x) = \frac{-4x}{\sqrt{25 - 4x^2 - y^2}}\]</p></div>
+<div><p><strong>Finding \(f_y\):</strong> Hold \(x\) constant, same chain rule pattern:</p>
+<p>\[f_y = \tfrac{1}{2}(25 - 4x^2 - y^2)^{-1/2} \cdot (-2y) = \frac{-y}{\sqrt{25 - 4x^2 - y^2}}\]</p></div>
+<div><p><strong>Evaluate at \((2, 1)\):</strong> The denominator is \(\sqrt{25 - 16 - 1} = \sqrt{8} = 2\sqrt{2}\)</p>
+<p>\[f_x(2,1) = \frac{-8}{2\sqrt{2}} = -2\sqrt{2} \approx -2.83 \qquad f_y(2,1) = \frac{-1}{2\sqrt{2}} = -\frac{\sqrt{2}}{4} \approx -0.35\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The chain rule is the key skill here &mdash; every square root, exponential, or composition in \(f\) will need it for partial derivatives.</p></aside>
 </section>
 
 <section id="from-tangent-lines-to-tangent-planes" aria-label="From Tangent Lines to Tangent Planes">
   <h2>From Tangent Lines to Tangent Planes</h2>
-  <figure>
+  <div><p><strong>Recall from Calc I:</strong> If \(f(x)\) is differentiable, then when you zoom in near a point the graph looks like a straight line &mdash; the <strong>tangent line</strong>.</p>
+<p>The tangent line at \(x_0\) is the best <strong>linear approximation</strong>:</p>
+<p>\[y - y_0 = f'(x_0)(x - x_0)\]</p>
+<p><strong>Now in Calc III:</strong> For a function of two variables \(z = f(x, y)\), zooming in near a point makes the surface look like a <strong>flat plane</strong> &mdash; the <strong>tangent plane</strong>.</p>
+<p>The tangent plane is the best linear approximation to the surface near that point.</p></div>
+<figure>
   <img src="figures/tangent_plane.png" alt="A hemi-ellipsoid surface with a tangent plane (amber) touching at point P(2,1,2sqrt2). Red and green tangent lines show the slopes in the x- and y-directions.">
   <figcaption><a href="figures/tangent_plane.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
@@ -210,22 +230,33 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="the-tangent-plane-equation" aria-label="The Tangent Plane Equation">
   <h2>The Tangent Plane Equation</h2>
-  <section class="defn-box" role="region" aria-label="Equation of the Tangent Plane">
+  <div><p>In Calc I we needed one slope \(f'(x_0)\). Now we have <strong>two</strong> independent directions to tilt &mdash; one for \(x\) and one for \(y\) &mdash; so we need <strong>both partial derivatives</strong>.</p></div>
+<section class="defn-box" role="region" aria-label="Equation of the Tangent Plane">
   <h3 class="defn-title">Equation of the Tangent Plane</h3>
   <p>If \(f\) is differentiable at \((x_0, y_0)\), the tangent plane to \(z = f(x, y)\) at the point \((x_0, y_0, z_0)\) is:</p>
 <p>\[z - z_0 = f_x(x_0, y_0)(x - x_0) + f_y(x_0, y_0)(y - y_0)\]</p>
 <p>where \(z_0 = f(x_0, y_0)\).</p>
 </section>
+<div><table>
+<tr><th></th><th>Calc I (Tangent Line)</th><th>Calc III (Tangent Plane)</th></tr>
+<tr><td>Function</td><td>\(y = f(x)\)</td><td>\(z = f(x, y)\)</td></tr>
+<tr><td>Slopes needed</td><td>\(f'(x_0)\)</td><td>\(f_x(x_0, y_0)\) and \(f_y(x_0, y_0)\)</td></tr>
+<tr><td>Equation</td><td>\(y - y_0 = f'(x_0)(x - x_0)\)</td><td>\(z - z_0 = f_x(x_0, y_0)(x - x_0) + f_y(x_0, y_0)(y - y_0)\)</td></tr>
+</table></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Same structure as the tangent line equation, but with <strong>two slope terms</strong> instead of one.</p></aside>
+<div><p><strong>Common mistake:</strong> Students write the tangent plane formula but forget to <strong>evaluate everything at the point</strong>. The function value \(f(x_0, y_0)\) and the partial derivatives \(f_x(x_0, y_0)\), \(f_y(x_0, y_0)\) must all be computed as <strong>numbers</strong>. Your final answer should be the equation of a line (Calc I) or a plane (Calc III) &mdash; no derivatives or function values left!</p></div>
 </section>
 
 <section id="when-does-the-tangent-plane-exist" aria-label="When Does the Tangent Plane Exist?">
   <h2>When Does the Tangent Plane Exist?</h2>
-  <section class="defn-box theorem-box" role="region" aria-label="Theorem: Differentiability (Sufficient Condition)">
+  <div><p><strong>Warning:</strong> For the tangent plane to exist, we need the function to be <strong>differentiable</strong>. In Calc I, if \(f'(x_0)\) exists, then \(f\) is differentiable at \(x_0\). For two variables, it is <strong>not enough</strong> for the partial derivatives to merely exist at the point.</p></div>
+<section class="defn-box theorem-box" role="region" aria-label="Theorem: Differentiability (Sufficient Condition)">
   <h3 class="defn-title">Theorem: Differentiability (Sufficient Condition)</h3>
   <p>If the partial derivatives \(f_x\) and \(f_y\) are <strong>continuous</strong> on an open region containing \((x_0, y_0)\), then \(f\) is differentiable at \((x_0, y_0)\).</p>
 <p>In other words: continuous partials \(\Rightarrow\) differentiable \(\Rightarrow\) tangent plane exists.</p>
 </section>
+<div><p><strong>Why is "partials exist" not enough?</strong></p>
+<p>A function can have partial derivatives at a point yet still have a sharp crease or corner there. Continuous partials <strong>near</strong> the point guarantee the surface is truly smooth.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p><strong>Rule of thumb:</strong> If \(f_x\) and \(f_y\) are built from standard functions (polynomials, trig, exponentials, etc.) and the point is in the domain, you're safe.</p></aside>
 </section>
 
@@ -237,6 +268,11 @@ if (window.MathJax && window.MathJax.startup) {
 </section>
 <div class="blank-space" role="region" aria-label="Student workspace" style="min-height:2.5in;">
 </div>
+<div><p>From the warm-up, the partial derivatives are:</p>
+<p>\[f_x(x,y) = \frac{-4x}{\sqrt{25 - 4x^2 - y^2}}, \qquad f_y(x,y) = \frac{-y}{\sqrt{25 - 4x^2 - y^2}}\]</p></div>
+<div><p>These are built from standard functions (quotients of polynomials and square roots) and are <strong>continuous</strong> wherever the denominator \(\sqrt{25 - 4x^2 - y^2} \neq 0\) &mdash; that is, everywhere in the interior of the domain.</p></div>
+<div><p>At \((2, 1)\): \(\;\sqrt{25 - 16 - 1} = 2\sqrt{2} \neq 0\), so \((2,1)\) is an interior point.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Yes</strong> &mdash; \(f_x\) and \(f_y\) are continuous near \((2, 1)\), so \(f\) is differentiable there and the tangent plane exists.</p></aside>
 </section>
 
 <section id="example-2-tangent-plane-to-a-hemi-ellipsoid" class="example-group" aria-label="Example 2: Tangent Plane to a Hemi-Ellipsoid">
@@ -250,6 +286,17 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Find $f(2,1), f_x(2,1), f_y(2,1)$, and use: $z - z_0 = f_x(x_0, y_0)(x - x_0) + f_y(x_0, y_0)(y - y_0)$" style="min-height:2.5in;">
   <div class="blank-prompt">Find \(f(2,1), f_x(2,1), f_y(2,1)\), and use: \(z - z_0 = f_x(x_0, y_0)(x - x_0) + f_y(x_0, y_0)(y - y_0)\)</div>
 </div>
+<div><p><strong>Step 1 &mdash; Gather the ingredients:</strong> From the warm-up,</p>
+<p>\[z_0 = f(2,1) = 2\sqrt{2}, \qquad f_x(2,1) = -2\sqrt{2}, \qquad f_y(2,1) = -\frac{\sqrt{2}}{4}\]</p></div>
+<div><p><strong>Step 2 &mdash; Write the tangent plane formula:</strong></p>
+<p>\[z - z_0 = f_x(x_0, y_0)(x - x_0) + f_y(x_0, y_0)(y - y_0)\]</p></div>
+<div><p><strong>Step 3 &mdash; Substitute:</strong></p>
+<p>\[z - 2\sqrt{2} = -2\sqrt{2}(x - 2) - \frac{\sqrt{2}}{4}(y - 1)\]</p></div>
+<figure>
+  <img src="figures/tangent_plane.png" alt="The hemi-ellipsoid z = sqrt(25 - 4x^2 - y^2) with the tangent plane (amber) at P(2,1,2sqrt2). Red and green trace curves on the surface show the cross-sections, with matching tangent lines.">
+  <figcaption><a href="figures/tangent_plane.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
+<aside class="key-point" role="note" aria-label="Key point"><p>The tangent plane tilts steeply in the \(x\)-direction (slope \(-2\sqrt{2} \approx -2.83\)) but gently in \(y\) (slope \(-\sqrt{2}/4 \approx -0.35\)).</p></aside>
 </section>
 
 <section id="your-turn-find-a-tangent-plane" class="example-group" aria-label="Your Turn: Find a Tangent Plane">
@@ -263,16 +310,27 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Compute f_x and f_y, evaluate at (1, 2), and plug into the formula." style="min-height:2.5in;">
   <div class="blank-prompt">Compute f_x and f_y, evaluate at (1, 2), and plug into the formula.</div>
 </div>
+<div><p><strong>Gather the ingredients:</strong></p>
+<p>\(f(1,2) = 5, \quad f_x = 2x \;\Rightarrow\; f_x(1,2) = 2, \quad f_y = 2y \;\Rightarrow\; f_y(1,2) = 4\)</p></div>
+<div><p><strong>Write the formula:</strong></p>
+<p>\[z - z_0 = f_x(x_0, y_0)(x - x_0) + f_y(x_0, y_0)(y - y_0)\]</p></div>
+<div><p><strong>Substitute:</strong></p>
+<p>\[z - 5 = 2(x - 1) + 4(y - 2)\]</p></div>
+<div><p><strong>Simplify:</strong></p>
+<p>\(z - 5 = 2x - 2 + 4y - 8 \;\;\Rightarrow\;\; z = 2x + 4y - 5\)</p>
+<p><strong>Quick check:</strong> Does \((1, 2, 5)\) satisfy this? \(2(1) + 4(2) - 5 = 5\) \(\checkmark\)</p></div>
 </section>
 
 <section id="linear-approximation" aria-label="Linear Approximation">
   <h2>Linear Approximation</h2>
-  <section class="defn-box" role="region" aria-label="Linearization">
+  <div><p>Once we have the tangent plane, we can use it to <strong>estimate</strong> the value of \(f\) at nearby points &mdash; exactly as we used the tangent line in Calc I.</p></div>
+<section class="defn-box" role="region" aria-label="Linearization">
   <h3 class="defn-title">Linearization</h3>
   <p>The <strong>linearization</strong> (or <strong>linear approximation</strong>) of \(f\) at \((a, b)\) is:</p>
 <p>\[L(x, y) = f(a, b) + f_x(a, b)(x - a) + f_y(a, b)(y - b)\]</p>
 <p>For \((x, y)\) near \((a, b)\): \(f(x, y) \approx L(x, y)\).</p>
 </section>
+<div><p>Notice: \(L(x, y)\) is just the tangent plane equation solved for \(z\). The tangent plane <strong>is</strong> the linear approximation.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>The tangent plane gives us a simple formula to <strong>approximate</strong> a complicated function near a known point.</p></aside>
 </section>
 
@@ -286,16 +344,40 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Use L(x,y) = f(2,1) + f_x(2,1)(x-2) + f_y(2,1)(y-1) with x = 2.05, y = 0.92." style="min-height:2in;">
   <div class="blank-prompt">Use L(x,y) = f(2,1) + f_x(2,1)(x-2) + f_y(2,1)(y-1) with x = 2.05, y = 0.92.</div>
 </div>
+<div><p><strong>Write the linearization formula:</strong></p>
+<p>\[L(x, y) = f(a, b) + f_x(a, b)(x - a) + f_y(a, b)(y - b)\]</p></div>
+<div><p><strong>From Example 2:</strong> \(f(2,1) = 2\sqrt{2}\), \(f_x(2,1) = -2\sqrt{2}\), \(f_y(2,1) = -\frac{\sqrt{2}}{4}\)</p>
+<p><strong>Substitute:</strong></p>
+<p>\[L(2.05,\, 0.92) = 2\sqrt{2} + (-2\sqrt{2})(2.05 - 2) + \left(-\frac{\sqrt{2}}{4}\right)(0.92 - 1)\]</p></div>
+<div><p><strong>Simplify:</strong></p>
+<p>\[= 2\sqrt{2} + (-2\sqrt{2})(0.05) + \left(-\frac{\sqrt{2}}{4}\right)(-0.08)\]</p>
+<p>\[= 2\sqrt{2} - 0.1\sqrt{2} + 0.02\sqrt{2} = 1.92\sqrt{2} \approx 2.7153\]</p></div>
+<div><p><strong>Calculator check:</strong> \(f(2.05, 0.92) = \sqrt{25 - 16.81 - 0.8464} \approx 2.7109\)</p>
+<p>Error \(\approx 0.004\) &mdash; very close!</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>For small changes in \(x\) and \(y\), the tangent plane gives an excellent estimate without needing a calculator.</p></aside>
 </section>
 
 <section id="differentials" aria-label="Differentials">
   <h2>Differentials</h2>
-  <section class="defn-box" role="region" aria-label="Total Differential">
+  <div><p>There is an equivalent way to think about linear approximation using <strong>differentials</strong> &mdash; the same idea from Calc I, extended to two variables.</p></div>
+<section class="defn-box" role="region" aria-label="Total Differential">
   <h3 class="defn-title">Total Differential</h3>
   <p>If \(z = f(x, y)\) and \(f\) is differentiable, the <strong>total differential</strong> is:</p>
 <p>\[dz = f_x(x, y)\, dx + f_y(x, y)\, dy\]</p>
 <p>where \(dx = \Delta x\) and \(dy = \Delta y\) are the changes in \(x\) and \(y\).</p>
 </section>
+<div><p><strong>Connection to linear approximation:</strong></p>
+<ul>
+<li>\(dz\) is the change predicted by the tangent plane (the approximation)</li>
+<li>\(\Delta z = f(x_0 + \Delta x,\, y_0 + \Delta y) - f(x_0, y_0)\) is the actual change</li>
+<li>For small \(dx\) and \(dy\): \(\Delta z \approx dz\)</li>
+</ul>
+<table>
+<tr><th></th><th>Calc I</th><th>Calc III</th></tr>
+<tr><td>Differential</td><td>\(dy = f'(x)\, dx\)</td><td>\(dz = f_x\, dx + f_y\, dy\)</td></tr>
+<tr><td>Meaning</td><td>Change in \(y\) along tangent <strong>line</strong></td><td>Change in \(z\) along tangent <strong>plane</strong></td></tr>
+<tr><td>Approximation</td><td>\(\Delta y \approx dy\)</td><td>\(\Delta z \approx dz\)</td></tr>
+</table></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Differentials give you the <strong>change</strong> in the output. Linear approximation gives you the <strong>new value</strong>. They're two sides of the same coin: \(L = f + dz\).</p></aside>
 </section>
 
@@ -309,6 +391,17 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Set dx = 0.05, dy = -0.08. Compute dz = f_x dx + f_y dy. Then f(2.05, 0.92) ≈ f(2,1) + dz." style="min-height:2in;">
   <div class="blank-prompt">Set dx = 0.05, dy = -0.08. Compute dz = f_x dx + f_y dy. Then f(2.05, 0.92) ≈ f(2,1) + dz.</div>
 </div>
+<div><p><strong>Write the general differential:</strong></p>
+<p>\[dz = f_x(x, y)\, dx + f_y(x, y)\, dy\]</p>
+<p>For \(f(x,y) = \sqrt{25 - 4x^2 - y^2}\):</p>
+<p>\[dz = \frac{-4x}{\sqrt{25 - 4x^2 - y^2}}\, dx + \frac{-y}{\sqrt{25 - 4x^2 - y^2}}\, dy\]</p></div>
+<div><p><strong>Identify the changes:</strong> \(dx = 2.05 - 2 = 0.05\), \(\;dy = 0.92 - 1 = -0.08\)</p>
+<p><strong>Substitute</strong> at \((2, 1)\):</p>
+<p>\[dz = (-2\sqrt{2})(0.05) + \left(-\frac{\sqrt{2}}{4}\right)(-0.08) = -0.1\sqrt{2} + 0.02\sqrt{2} = -0.08\sqrt{2}\]</p></div>
+<div><p><strong>Approximation:</strong> \(f(2.05,\, 0.92) \approx f(2,1) + dz\)</p>
+<p>\[= 2\sqrt{2} + (-0.08\sqrt{2}) = 1.92\sqrt{2} \approx 2.7153\]</p>
+<p>Same answer as Example 4 &mdash; because it's the same idea!</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Linear approximation says "plug in." Differentials say "find the change." Both give the same result.</p></aside>
 </section>
 
 <section id="your-turn-differentials-practice" class="example-group" aria-label="Your Turn: Differentials Practice">
@@ -321,6 +414,10 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Find dV = V_r dr + V_h dh. Use |dr| = |dh| = 0.1 to get the maximum |dV|." style="min-height:2.5in;">
   <div class="blank-prompt">Find dV = V_r dr + V_h dh. Use |dr| = |dh| = 0.1 to get the maximum |dV|.</div>
 </div>
+<div><p><strong>Write the general differential:</strong></p>
+<p>\[dV = V_r\, dr + V_h\, dh = \frac{2}{3}\pi r h\, dr + \frac{1}{3}\pi r^2\, dh\]</p></div>
+<div><p><strong>Substitute</strong> \(r = 5\), \(h = 12\), \(|dr| = |dh| = 0.1\):</p>
+<p>\[|dV| \leq \frac{2}{3}\pi(5)(12)(0.1) + \frac{1}{3}\pi(25)(0.1) = 4\pi + \frac{2.5\pi}{3} = \frac{14.5\pi}{3} \approx 15.18 \text{ cm}^3\]</p></div>
 </section>
 
 <section class="homework-section" aria-label="Homework">

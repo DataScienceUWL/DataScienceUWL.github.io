@@ -140,16 +140,20 @@ function adjustWorkspaces() {
             var ws = findPrecedingWorkspace(pb);
             if (ws) expandWorkspace(ws, remaining);
         }
-        pb.remove();  // no longer needed — workspace expansion handles the break
+        // Keep the div — its CSS page-break-before:always guarantees the break
+        // even if the workspace expansion calculation is slightly off.
     });
 
     // --- Pass B: Auto-detect orphaned section starts ---
+    // Skip sections preceded by an explicit .pagebreak (already handled by Pass A).
     var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
     var sections = document.querySelectorAll('main > section');
     for (var pass = 0; pass < 3; pass++) {
         var changed = false;
         for (var i = 1; i < sections.length; i++) {
             var sec = sections[i];
+            var prev = sec.previousElementSibling;
+            if (prev && prev.classList && prev.classList.contains('pagebreak')) continue;
             var secRect = sec.getBoundingClientRect();
             var secTop = secRect.top + window.scrollY;
             var secBot = secTop + secRect.height;
@@ -196,7 +200,13 @@ if (window.MathJax && window.MathJax.startup) {
 <section id="ordered-triples-in-3d" aria-label="Ordered Triples in 3D">
   <h2>Ordered Triples in 3D</h2>
   <div class="two-col-print">
-  <div><aside class="key-point" role="note" aria-label="Key point"><p>We use a <strong>right-handed</strong> coordinate system.</p></aside></div>
+  <div><div><p>We locate points in space using <strong>ordered triples</strong> \((a, b, c)\):</p>
+<ul>
+<li>\(a\) = x-coordinate</li>
+<li>\(b\) = y-coordinate</li>
+<li>\(c\) = z-coordinate</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>We use a <strong>right-handed</strong> coordinate system.</p></aside></div>
   <div><figure>
   <img src="figures/coordinate_axes.png" alt="3D coordinate axes with origin O. The x-axis (red) points right, the y-axis (green) points into the page, and the z-axis (blue) points up. A sample point is plotted at (2, 3, 2.5) with dashed projection lines showing how its coordinates are measured along each axis.">
   <figcaption><a href="figures/coordinate_axes.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
@@ -206,9 +216,13 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="the-right-hand-rule" aria-label="The Right-Hand Rule">
   <h2>The Right-Hand Rule</h2>
-  <figure>
+  <div class="two-col-print">
+  <div><figure>
   <img src="figures/12_1_2.png" alt="Right hand shown in a thumbs-up position demonstrating the right-hand rule for 3D coordinates. The fingers curl from the positive x-axis toward the positive y-axis, and the thumb points upward along the positive z-axis. This gesture determines the standard orientation of the three coordinate axes in a right-handed coordinate system.">
-</figure>
+</figure></div>
+  <div><div><p>Curl your <strong>right hand</strong> from the positive x-axis toward the positive y-axis.</p>
+<p>Your <strong>thumb</strong> points in the direction of the positive z-axis.</p></div></div>
+</div>
 </section>
 
 <section id="classroom-coordinates" class="example-group" aria-label="Classroom Coordinates">
@@ -227,20 +241,42 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Estimate the coordinates of each object." style="min-height:2in;">
   <div class="blank-prompt">Estimate the coordinates of each object.</div>
 </div>
+<div><p>The projector: \((15, 15, 9)\)</p></div>
+<div><p>Nearest door in Murphy Library: \((300, -36, -25)\) &mdash; negative coordinates mean behind/below the origin</p></div>
 </section>
 
 <section id="coordinate-planes" aria-label="Coordinate Planes">
   <h2>Coordinate Planes</h2>
-  <figure>
+  <div class="two-col-print">
+  <div><figure>
   <img src="figures/12_1_3_planes.png" alt="The three coordinate planes in 3D space shown from the textbook. The xy-plane (gray, z = 0) is horizontal, the xz-plane (green, y = 0) is a vertical wall, and the yz-plane (blue, x = 0) is another vertical wall. All three planes meet at the origin O. The x, y, and z axes are drawn along the intersections of the planes.">
-</figure>
+</figure></div>
+  <div><div><p>The three <strong>coordinate planes</strong> divide space:</p>
+<ul>
+<li><strong>xy-plane</strong>: \(z = 0\) (the floor)</li>
+<li><strong>xz-plane</strong>: \(y = 0\) (left wall)</li>
+<li><strong>yz-plane</strong>: \(x = 0\) (front wall)</li>
+</ul></div></div>
+</div>
 </section>
 
 <section id="the-eight-octants" aria-label="The Eight Octants">
   <h2>The Eight Octants</h2>
-  <figure>
+  <div class="two-col-print">
+  <div><div><p>The coordinate planes divide \(\mathbb{R}^3\) into <strong>8 octants</strong>.</p>
+<p>The <strong>first octant</strong> has all positive coordinates: \((+, +, +)\)</p>
+<table>
+<tr><th>Octant</th><th>x</th><th>y</th><th>z</th></tr>
+<tr><td>I</td><td>+</td><td>+</td><td>+</td></tr>
+<tr><td>II</td><td>\(-\)</td><td>+</td><td>+</td></tr>
+<tr><td>III</td><td>\(-\)</td><td>\(-\)</td><td>+</td></tr>
+<tr><td>IV</td><td>+</td><td>\(-\)</td><td>+</td></tr>
+</table>
+<p>\\[2pt]\small ... and 4 more below the xy-plane</p></div></div>
+  <div><figure>
   <img src="figures/12_1_4.jpeg" alt="The eight octants of 3D space formed by the three coordinate planes, viewed from the first octant. Each octant is labeled with its Roman numeral (I through VIII) and color-coded. The first octant I (+,+,+) is at the front-right-top, and the remaining octants are arranged by sign pattern: II, III, IV above the xy-plane, and V, VI, VII, VIII below it.">
-</figure>
+</figure></div>
+</div>
 </section>
 
 <section id="curves-vs-surfaces" aria-label="Curves vs. Surfaces">
@@ -261,6 +297,18 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Sketch each plane in a 3D coordinate system." style="min-height:2.5in;">
   <div class="blank-prompt">Sketch each plane in a 3D coordinate system.</div>
 </div>
+<div><p>\(z = 3\): a <strong>horizontal plane</strong> &mdash; all points whose z-coordinate equals 3. The plane floats 3 units above the xy-plane.</p></div>
+<div><p>\(y = 5\): a <strong>vertical plane</strong> &mdash; all points whose y-coordinate equals 5. The plane is parallel to the xz-plane, shifted 5 units in the y-direction.</p></div>
+<div class="two-col-print">
+  <div><figure>
+  <img src="figures/plane_z3.png" alt="The horizontal plane z = 3 shown in 3D space as a semi-transparent blue surface floating 3 units above the xy-plane. Four sample points are marked on the surface to show that any point with z-coordinate 3 lies on this plane.">
+  <figcaption>\(z = 3\): horizontal plane | <a href="figures/plane_z3.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure></div>
+  <div><figure>
+  <img src="figures/plane_y5.png" alt="The vertical plane y = 5 shown in 3D space as a semi-transparent green surface, parallel to the xz-plane and shifted 5 units in the y-direction. Three sample points are marked on the surface.">
+  <figcaption>\(y = 5\): vertical plane | <a href="figures/plane_y5.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure></div>
+</div>
 </section>
 
 <section id="a-cylinder" class="example-group" aria-label="A Cylinder">
@@ -272,18 +320,38 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: What does this equation look like in 2D? What happens in 3D?" style="min-height:2in;">
   <div class="blank-prompt">What does this equation look like in 2D? What happens in 3D?</div>
 </div>
+<div><p>Compare to \(x^2 + y^2 = r^2\) &mdash; this is a circle of radius \(r\). Here \(x^2 + z^2 = 4\) is a circle of radius 2 in the \(xz\)-plane.</p></div>
+<div><p>Since \(y\) is missing, it can be <strong>anything</strong> &mdash; the circle extends infinitely along the \(y\)-axis.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Result: a <strong>circular cylinder</strong> of radius 2, centered on the \(y\)-axis.</p></aside>
+<figure>
+  <img src="figures/cylinder.png" alt="A circular cylinder of radius 2 centered on the y-axis, shown as a semi-transparent blue surface satisfying x-squared + z-squared = 4. Cross-section circles are highlighted in amber at y = -2, 0, and 2, showing that every slice perpendicular to the y-axis is a circle of radius 2.">
+  <figcaption><a href="figures/cylinder.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
 </section>
 
 <section id="bonus-parabolic-cylinder" aria-label="Bonus: Parabolic Cylinder">
   <h2>Bonus: Parabolic Cylinder</h2>
-  <div class="blank-space" role="region" aria-label="Student workspace: Sketch z = x-squared in the xz-plane, then think about what happens in 3D." style="min-height:1.5in;">
+  <div><p>What about \(z = x^2\)?</p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Sketch z = x-squared in the xz-plane, then think about what happens in 3D." style="min-height:1.5in;">
   <div class="blank-prompt">Sketch z = x-squared in the xz-plane, then think about what happens in 3D.</div>
 </div>
+<div><p>In 2D, \(z = x^2\) is a parabola in the \(xz\)-plane.</p></div>
+<div><p>\(y\) is free &mdash; extends infinitely in the \(y\)-direction. Result: a <strong>parabolic cylinder</strong>.</p></div>
+<figure>
+  <img src="figures/parabolic_cylinder.png" alt="A parabolic cylinder formed by the equation z = x-squared, shown as a purple semi-transparent surface extending along the entire y-axis. Cross-section parabolas are highlighted in amber at y = -2, 0, and 2, showing that every slice perpendicular to the y-axis is the same parabola.">
+  <figcaption><a href="figures/parabolic_cylinder.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
 </section>
 
 <section id="key-idea-cylinders" aria-label="Key Idea: Cylinders">
   <h2>Key Idea: Cylinders</h2>
   <aside class="key-point" role="note" aria-label="Key point"><p>When an equation is <strong>missing one variable</strong> in \(\mathbb{R}^3\), the graph is a <strong>cylinder</strong> &mdash; the 2D curve extended along the missing axis.</p></aside>
+<div class="two-col-print">
+  <div><div><p>\(x^2 + z^2 = 4\)</p>
+<p>Missing \(y\) \(\Rightarrow\) circular cylinder along \(y\)-axis</p></div></div>
+  <div><div><p>\(z = x^2\)</p>
+<p>Missing \(y\) \(\Rightarrow\) parabolic cylinder along \(y\)-axis</p></div></div>
+</div>
 </section>
 
 <section id="distance-formula-in-3d" aria-label="Distance Formula in 3D">
@@ -293,7 +361,8 @@ if (window.MathJax && window.MathJax.startup) {
   <h3 class="defn-title">Distance Formula in Three Dimensions</h3>
   <p>The distance \(|P_1 P_2|\) between points \(P_1(x_1, y_1, z_1)\) and \(P_2(x_2, y_2, z_2)\) is:</p>
 <p>\[|P_1 P_2| = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2 + (z_2 - z_1)^2}\]</p>
-</section></div>
+</section>
+<div><p>This is the natural extension of the 2D distance formula &mdash; just add the \(z\)-component under the radical.</p></div></div>
   <div><figure>
   <img src="figures/distance_3d.png" alt="Two points P1(1,1,1) and P2(4,3,4) connected by an amber line segment labeled |P1P2|, illustrating the 3D distance formula. Dashed lines show the three component differences: delta-x (red) from x = 1 to x = 4, delta-y (green) from y = 1 to y = 3, delta-z (blue) from z = 1 to z = 4.">
   <figcaption><a href="figures/distance_3d.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
@@ -310,6 +379,17 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Use the distance formula with |PC| = r. Square both sides." style="min-height:2.5in;">
   <div class="blank-prompt">Use the distance formula with |PC| = r. Square both sides.</div>
 </div>
+<div><p>We want all points \(P(x,y,z)\) so that \(|PC| = r\). Apply the distance formula:</p></div>
+<div><p>\[\sqrt{(x-h)^2 + (y-k)^2 + (z-l)^2} = r\]</p>
+<p>Square both sides:</p></div>
+<section class="defn-box" role="region" aria-label="Equation of a Sphere">
+  <h3 class="defn-title">Equation of a Sphere</h3>
+  <p>\[(x-h)^2 + (y-k)^2 + (z-l)^2 = r^2\]</p>
+</section>
+<figure>
+  <img src="figures/sphere.png" alt="A semi-transparent sphere centered at point C(h,k,l) with a red dot at the center and an amber line segment from the center to the surface labeled r. The sphere illustrates the equation (x-h) squared + (y-k) squared + (z-l) squared = r squared.">
+  <figcaption><a href="figures/sphere.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
 </section>
 
 <section id="describing-a-3d-region" class="example-group" aria-label="Describing a 3D Region">
@@ -322,6 +402,13 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Start with the 2D circle in the xz-plane. Then think about what the cylinder looks like. Finally, apply the y-bounds." style="min-height:2.5in;">
   <div class="blank-prompt">Start with the 2D circle in the xz-plane. Then think about what the cylinder looks like. Finally, apply the y-bounds.</div>
 </div>
+<div><p>Start with \(x^2 + z^2 \leq 25\): a solid disk of radius 5 in the \(xz\)-plane. As a cylinder in 3D, it extends infinitely in the \(y\)-direction.</p></div>
+<div><p>\(0 \leq y \leq 2\) chops the cylinder between planes \(y = 0\) and \(y = 2\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Result:</strong> A circular "puck" of radius 5, height 2, centered on the \(y\)-axis.</p></aside>
+<figure>
+  <img src="figures/cylindrical_region.png" alt="A short cylinder (puck shape) of radius 5 and height 2, centered on the y-axis. The bottom cap at y = 0 is outlined in red, the top cap at y = 2 in green, and the curved wall is a semi-transparent blue surface. This region satisfies x-squared + z-squared is less than or equal to 25 with 0 less than or equal to y less than or equal to 2.">
+  <figcaption><a href="figures/cylindrical_region.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
 </section>
 
 <section class="homework-section" aria-label="Homework">

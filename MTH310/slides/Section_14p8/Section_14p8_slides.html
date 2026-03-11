@@ -166,8 +166,8 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 
 <section id="approach-1-parameterize-the-constraint">
 <h2>Approach 1: Parameterize the Constraint</h2>
-<div class="fragment" data-editor-line="56"><p><strong>Idea:</strong> Turn the constraint curve into a parametric curve, then substitute into \(f\) to get a single-variable problem.</p></div>
-<div class="fragment" data-editor-line="58"><p>The ellipse \(0.2x^2 + 0.3y^2 = 3.6\) can be parameterized as:</p>
+<div class="fragment" data-editor-line="56"><p><strong>Idea:</strong> Turn the constraint curve into a parametric curve, then substitute into \(f\) to get a single-variable problem.</p>
+<p>The ellipse \(0.2x^2 + 0.3y^2 = 3.6\) can be parameterized as:</p>
 <p>\[x = \sqrt{18}\cos t, \quad y = \sqrt{12}\sin t, \quad 0 \leq t < 2\pi\]</p></div>
 <div class="fragment" data-editor-line="61"><p>Now substitute into \(f\):</p>
 <p>\[f(t) = 6 - 2\sqrt{18}\cos t + 1.8\cos^2 t + 0.3\sqrt{216}\cos t \sin t\]</p></div>
@@ -243,8 +243,8 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
   <div class="example-title">Example 2</div>
   <p>Find the maximum and minimum values of \(f(x,y) = x^2 + y^2\) on the ellipse \(x^2 + 4y^2 = 1\).</p>
 </div>
-<div class="fragment" data-editor-line="161"><p>Since \(x^2 + y^2\) is the square of the distance from the origin, maximizing/minimizing \(f\) finds the <strong>farthest</strong> and <strong>closest</strong> points on the ellipse to the origin.</p></div>
-<div class="fragment" data-editor-line="163"><p><strong>Set up:</strong> \(f(x,y) = x^2 + y^2\), \(\quad g(x,y) = x^2 + 4y^2 = 1\).</p></div>
+<div class="fragment" data-editor-line="161"><p>Since \(x^2 + y^2\) is the square of the distance from the origin, maximizing/minimizing \(f\) finds the <strong>farthest</strong> and <strong>closest</strong> points on the ellipse to the origin.</p>
+<p><strong>Set up:</strong> \(f(x,y) = x^2 + y^2\), \(\quad g(x,y) = x^2 + 4y^2 = 1\).</p></div>
 <div class="fragment" data-editor-line="165"><p class="work-prompt">Write \(\nabla f = \lambda \nabla g\) and \(g = 1\). You'll get a system with cases &mdash; set factors to zero.</p></div>
 <div class="fragment" data-editor-line="167"><p><strong>Compute gradients:</strong> \(\nabla f = \langle 2x, \, 2y \rangle\), \(\quad \nabla g = \langle 2x, \, 8y \rangle\).</p>
 <p><strong>System:</strong> \(2x = \lambda(2x)\), \(\quad 2y = \lambda(8y)\), \(\quad x^2 + 4y^2 = 1\).</p></div>
@@ -346,8 +346,8 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 
 <section id="when-to-use-lagrange-multipliers">
 <h2>When to Use Lagrange Multipliers</h2>
-<div class="fragment" data-editor-line="306"><p>How does Lagrange fit into the optimization toolkit from Chapter 14?</p></div>
-<div class="fragment" data-editor-line="308"><p><strong>Step 1: What kind of region?</strong></p></div>
+<div class="fragment" data-editor-line="306"><p>How does Lagrange fit into the optimization toolkit from Chapter 14?</p>
+<p><strong>Step 1: What kind of region?</strong></p></div>
 <div class="fragment" data-editor-line="310"><table>
 <thead><tr><th scope="col">Region Type</th><th scope="col">What to Do</th></tr></thead>
 <tbody>
@@ -419,8 +419,39 @@ Reveal.initialize({
     mouseWheel: false,
     plugins: [RevealNotes]
 });
+// ── Scoped MathJax: only typeset the current slide, not the whole document ──
+function typesetCurrentSlide() {
+    var slide = Reveal.getCurrentSlide();
+    if (slide && MathJax?.typesetPromise) {
+        MathJax.typesetPromise([slide]).catch(function(){});
+    }
+}
+// ── Iframe cleanup: pause Desmos/embedded iframes on non-visible slides ──
+function manageIframes(event) {
+    // Pause iframes on the previous slide
+    if (event.previousSlide) {
+        event.previousSlide.querySelectorAll('iframe[data-src-active]').forEach(function(iframe) {
+            iframe.setAttribute('data-src-paused', iframe.src);
+            iframe.src = 'about:blank';
+        });
+    }
+    // Restore iframes on the current slide
+    if (event.currentSlide) {
+        event.currentSlide.querySelectorAll('iframe[data-src-paused]').forEach(function(iframe) {
+            iframe.src = iframe.getAttribute('data-src-paused');
+            iframe.removeAttribute('data-src-paused');
+        });
+    }
+}
+// Mark all Desmos/embedded iframes for management
+document.querySelectorAll('.desmos-container iframe').forEach(function(iframe) {
+    iframe.setAttribute('data-src-active', '1');
+});
 Reveal.on('slidechanged', (event) => {
-    MathJax?.typesetPromise?.();
+    typesetCurrentSlide();
+    manageIframes(event);
+    // Reset scroll position on the new slide so it starts at the top
+    if (event.currentSlide) event.currentSlide.scrollTop = 0;
     try {
         if (window.parent && window.parent !== window) {
             window.parent.postMessage({ type: 'revealSlideChanged', indexh: event.indexh, indexv: event.indexv }, '*');
@@ -503,13 +534,13 @@ function _notifyParentFragment() {
     } catch(e) {}
 }
 Reveal.on('fragmentshown', (event) => {
-    MathJax?.typesetPromise?.();
+    typesetCurrentSlide();
     if (!event.fragment) return;
     setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
     _notifyParentFragment();
 });
 Reveal.on('fragmenthidden', (event) => {
-    MathJax?.typesetPromise?.();
+    typesetCurrentSlide();
     if (!event.fragment) return;
     // Scroll back to the previous fragment or top of slide
     var prev = event.fragment.previousElementSibling;
@@ -521,7 +552,7 @@ Reveal.on('fragmenthidden', (event) => {
     _notifyParentFragment();
 });
 Reveal.on('ready', () => {
-    MathJax?.typesetPromise?.();
+    typesetCurrentSlide();
     // Tell the CourseKit editor that Reveal is initialized so it can sync the fragment
     try {
         if (window.parent && window.parent !== window) {
@@ -574,8 +605,9 @@ Reveal.on('ready', () => {
             .then(function(fragment) {
                 var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
                     '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"><\/script>' +
-                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;}' +
-                    '.plotly-graph-div{width:100vw!important;height:100vh!important;}</style>' +
+                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;' +
+                    'display:flex;justify-content:center;align-items:center;width:100vw;height:100vh;}' +
+                    '.js-plotly-plot,.plotly-graph-div{width:100%!important;height:100%!important;}</style>' +
                     '</head><body>' + fragment + '</body></html>';
                 var blob = new Blob([html], {type: 'text/html'});
                 openPlotlyLightbox(URL.createObjectURL(blob));

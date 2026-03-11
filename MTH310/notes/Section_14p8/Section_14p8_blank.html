@@ -140,16 +140,20 @@ function adjustWorkspaces() {
             var ws = findPrecedingWorkspace(pb);
             if (ws) expandWorkspace(ws, remaining);
         }
-        pb.remove();  // no longer needed — workspace expansion handles the break
+        // Keep the div — its CSS page-break-before:always guarantees the break
+        // even if the workspace expansion calculation is slightly off.
     });
 
     // --- Pass B: Auto-detect orphaned section starts ---
+    // Skip sections preceded by an explicit .pagebreak (already handled by Pass A).
     var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
     var sections = document.querySelectorAll('main > section');
     for (var pass = 0; pass < 3; pass++) {
         var changed = false;
         for (var i = 1; i < sections.length; i++) {
             var sec = sections[i];
+            var prev = sec.previousElementSibling;
+            if (prev && prev.classList && prev.classList.contains('pagebreak')) continue;
             var secRect = sec.getBoundingClientRect();
             var secTop = secRect.top + window.scrollY;
             var secBot = secTop + secRect.height;
@@ -195,7 +199,16 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="why-constrained-optimization" aria-label="Why Constrained Optimization?">
   <h2>Why Constrained Optimization?</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>Lagrange multipliers give us an elegant, systematic method for optimizing a function <strong>subject to a constraint</strong> &mdash; no parameterization needed.</p></aside>
+  <div><p>In Section 14.7 we found absolute extrema by checking critical points <strong>and</strong> the boundary.</p>
+<p>But what if the constraint is more complicated than a rectangular box?</p>
+<p><strong>Real-world examples:</strong></p>
+<ul>
+<li>Maximize profit subject to a fixed budget</li>
+<li>Minimize material used to build a container with a required volume</li>
+<li>Find the hottest point on a wire bent into a curve</li>
+</ul>
+<p>In each case we want to optimize \(f(x,y)\) (or \(f(x,y,z)\)) but we are <strong>restricted</strong> to points satisfying a constraint \(g(x,y) = k\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Lagrange multipliers give us an elegant, systematic method for optimizing a function <strong>subject to a constraint</strong> &mdash; no parameterization needed.</p></aside>
 </section>
 
 <section id="a-motivating-example" aria-label="A Motivating Example">
@@ -204,22 +217,37 @@ if (window.MathJax && window.MathJax.startup) {
   <h3 class="example-title">Example 1</h3>
   <p>Find the absolute maximum and minimum of \(f(x,y) = 6 - 2x + 0.1x^2 + 0.3xy\) on the ellipse \(0.2x^2 + 0.3y^2 = 3.6\).</p>
 </section>
+<div><p>The <strong>constraint</strong> is that we only consider points \((x,y)\) lying on the ellipse. We can't just find critical points of \(f\) &mdash; the extrema occur <em>on the ellipse</em>.</p></div>
 <figure>
   <img src="figures/motivating_surface.png" alt="A 3D surface showing the function f(x,y) = 6 - 2x + 0.1x-squared + 0.3xy with a red elliptical constraint curve traced on the surface. The curve reaches a highest point (green diamond labeled max) and a lowest point (purple diamond labeled min).">
   <figcaption>The surface \(z = f(x,y)\) restricted to the ellipse | <a href="figures/motivating_surface.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
+<div><p>Let's look at two approaches to this problem.</p></div>
 </section>
 
 <section id="approach-1-parameterize-the-constraint" aria-label="Approach 1: Parameterize the Constraint">
   <h2>Approach 1: Parameterize the Constraint</h2>
-  <div><p>The ellipse \(0.2x^2 + 0.3y^2 = 3.6\) can be parameterized as:</p>
+  <div><p><strong>Idea:</strong> Turn the constraint curve into a parametric curve, then substitute into \(f\) to get a single-variable problem.</p>
+<p>The ellipse \(0.2x^2 + 0.3y^2 = 3.6\) can be parameterized as:</p>
 <p>\[x = \sqrt{18}\cos t, \quad y = \sqrt{12}\sin t, \quad 0 \leq t < 2\pi\]</p></div>
+<div><p>Now substitute into \(f\):</p>
+<p>\[f(t) = 6 - 2\sqrt{18}\cos t + 1.8\cos^2 t + 0.3\sqrt{216}\cos t \sin t\]</p></div>
+<div><p>This is a <strong>single-variable</strong> calculus problem &mdash; find the absolute max/min on \([0, 2\pi)\). But the algebra is <em>ugly</em>.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Parameterization <strong>works</strong> but has drawbacks: finding a parameterization can be difficult, and the resulting function can be messy. We need a better way.</p></aside>
 </section>
 
 <section id="the-geometry-behind-lagrange-multipliers" aria-label="The Geometry Behind Lagrange Multipliers">
   <h2>The Geometry Behind Lagrange Multipliers</h2>
-  <figure>
+  <div><p>Think about walking along the constraint curve \(g(x,y) = k\). At most points, \(f\) is either increasing or decreasing as you walk.</p></div>
+<div><p>At an <strong>extremum</strong> along the constraint, \(f\) is neither increasing nor decreasing &mdash; the level curves of \(f\) are <strong>tangent</strong> to the constraint curve.</p></div>
+<div><p>Recall:</p>
+<ul>
+<li>\(\nabla f\) is <strong>perpendicular</strong> to level curves of \(f\)</li>
+<li>\(\nabla g\) is <strong>perpendicular</strong> to the constraint curve \(g = k\)</li>
+</ul></div>
+<div><p>If both gradients are perpendicular to the same curve at the same point, they must be <strong>parallel</strong>:</p>
+<p>\[\nabla f = \lambda \nabla g\]</p></div>
+<figure>
   <img src="figures/gradient_comparison.png" alt="Side-by-side comparison. Left panel shows a non-optimal point on an ellipse where the gradient of f and gradient of g point in different directions, with a component of gradient-f along the curve (amber arrow). Right panel shows an optimal point where both gradients point in the same direction (parallel), labeled Optimal with a green dot.">
 </figure>
 <aside class="key-point" role="note" aria-label="Key point"><p>At a constrained extremum, \(\nabla f\) and \(\nabla g\) point in the <strong>same (or opposite) direction</strong>. The scalar \(\lambda\) is called the <strong>Lagrange multiplier</strong>.</p></aside>
@@ -231,6 +259,9 @@ if (window.MathJax && window.MathJax.startup) {
 <figure>
   <img src="figures/lagrange_geometry.png" alt="A contour plot showing concentric circular level curves of f(x,y) = x-squared + y-squared in blue, with the constraint ellipse x-squared + 4y-squared = 1 drawn in red. At the four optimal points (plus/minus 1 comma 0) and (0 comma plus/minus one-half), the blue gradient arrows and red dashed gradient arrows point in the same direction, showing the gradients are parallel. At a non-optimal point on the upper-right of the ellipse, the two gradient arrows point in different directions, labeled not optimal.">
 </figure>
+<div><p>At the <strong>green dots</strong> (max), the level curve \(f = 1\) is tangent to the ellipse, and \(\nabla f \parallel \nabla g\).</p>
+<p>At the <strong>purple dots</strong> (min), the level curve \(f = \frac{1}{4}\) is tangent to the ellipse, and \(\nabla f \parallel \nabla g\).</p>
+<p>At the <strong>gray square</strong> (not optimal), \(\nabla f\) and \(\nabla g\) point in different directions &mdash; you can still increase \(f\) by walking along the ellipse.</p></div>
 </section>
 
 <section id="the-method-of-lagrange-multipliers" aria-label="The Method of Lagrange Multipliers">
@@ -246,6 +277,9 @@ if (window.MathJax && window.MathJax.startup) {
 <li>Evaluate \(f\) at all the points \((x,y)\) found in step 1. The largest value is the <strong>maximum</strong>; the smallest is the <strong>minimum</strong>.</li>
 </ol>
 </section>
+<div><p><strong>In two variables</strong>, \(\nabla f = \lambda \nabla g\) becomes the system:</p>
+<p>\[f_x = \lambda g_x, \quad f_y = \lambda g_y, \quad g(x,y) = k\]</p>
+<p>That's <strong>3 equations in 3 unknowns</strong> (\(x\), \(y\), \(\lambda\)).</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>You often don't need the actual value of \(\lambda\) &mdash; it can be eliminated from the system to find \(x\) and \(y\).</p></aside>
 </section>
 
@@ -256,6 +290,11 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Identify $f$ and $g$, compute $\nabla f$ and $\nabla g$, then write $f_x = \lambda g_x$, $f_y = \lambda g_y$, and $g = k$." style="min-height:2.5in;">
   <div class="blank-prompt">Identify \(f\) and \(g\), compute \(\nabla f\) and \(\nabla g\), then write \(f_x = \lambda g_x\), \(f_y = \lambda g_y\), and \(g = k\).</div>
 </div>
+<div><p>\(f(x,y) = x^2 + 2y^2\), \(\quad g(x,y) = x + y = 4\).</p>
+<p>\(\nabla f = \langle 2x, \, 4y \rangle\), \(\quad \nabla g = \langle 1, \, 1 \rangle\).</p></div>
+<div><p>The system:</p>
+<p>\[2x = \lambda(1), \quad 4y = \lambda(1), \quad x + y = 4\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Setting up the system is the mechanical part. The thinking comes in solving it &mdash; look for ways to eliminate \(\lambda\).</p></aside>
 </section>
 
 <section id="example-2-closest-and-farthest-from-the-origin" class="example-group" aria-label="Example 2: Closest and Farthest from the Origin">
@@ -264,10 +303,29 @@ if (window.MathJax && window.MathJax.startup) {
   <h3 class="example-title">Example 2</h3>
   <p>Find the maximum and minimum values of \(f(x,y) = x^2 + y^2\) on the ellipse \(x^2 + 4y^2 = 1\).</p>
 </section>
-<div><p><strong>Set up:</strong> \(f(x,y) = x^2 + y^2\), \(\quad g(x,y) = x^2 + 4y^2 = 1\).</p></div>
+<div><p>Since \(x^2 + y^2\) is the square of the distance from the origin, maximizing/minimizing \(f\) finds the <strong>farthest</strong> and <strong>closest</strong> points on the ellipse to the origin.</p>
+<p><strong>Set up:</strong> \(f(x,y) = x^2 + y^2\), \(\quad g(x,y) = x^2 + 4y^2 = 1\).</p></div>
 <div class="blank-space" role="region" aria-label="Student workspace: Write $\nabla f = \lambda \nabla g$ and $g = 1$. You'll get a system with cases &mdash; set factors to zero." style="min-height:4in;">
   <div class="blank-prompt">Write \(\nabla f = \lambda \nabla g\) and \(g = 1\). You'll get a system with cases &mdash; set factors to zero.</div>
 </div>
+<div><p><strong>Compute gradients:</strong> \(\nabla f = \langle 2x, \, 2y \rangle\), \(\quad \nabla g = \langle 2x, \, 8y \rangle\).</p>
+<p><strong>System:</strong> \(2x = \lambda(2x)\), \(\quad 2y = \lambda(8y)\), \(\quad x^2 + 4y^2 = 1\).</p></div>
+<div><p><strong>From equation 1:</strong> \(2x(1 - \lambda) = 0\) \(\Rightarrow\) \(x = 0\) or \(\lambda = 1\).</p></div>
+<div><p><strong>Case 1: \(\lambda = 1\).</strong> Equation 2 gives \(2y = 8y\) \(\Rightarrow\) \(y = 0\).</p>
+<p>Constraint: \(x^2 = 1\) \(\Rightarrow\) \(x = \pm 1\). Points: \((\pm 1, 0)\).</p></div>
+<div><p><strong>Case 2: \(x = 0\).</strong> Constraint: \(4y^2 = 1\) \(\Rightarrow\) \(y = \pm \frac{1}{2}\). Points: \((0, \pm \frac{1}{2})\).</p></div>
+<div><p><strong>Evaluate:</strong></p>
+<ul>
+<li>\(f(\pm 1, 0) = 1\) \(\leftarrow\) <strong>maximum</strong> (farthest from origin)</li>
+<li>\(f(0, \pm \frac{1}{2}) = \frac{1}{4}\) \(\leftarrow\) <strong>minimum</strong> (closest to origin)</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The case analysis strategy is typical: factor one equation, then consider each factor being zero. This gives distinct cases to chase through the system.</p></aside>
+
+<figure>
+  <img src="figures/paraboloid_ellipse.png" alt="A 3D graph showing the paraboloid f(x,y) = x-squared + y-squared with a red constraint curve tracing the ellipse x-squared + 4y-squared = 1 on the surface. Green diamond markers at (1,0) and (-1,0) show the maxima where f = 1; purple diamond markers at (0, one-half) and (0, negative one-half) show the minima where f = one-quarter.">
+  <figcaption><a href="figures/paraboloid_ellipse.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
+<div><p>The farthest points \((\pm 1, 0)\) sit at the ends of the ellipse; the closest points \((0, \pm \frac{1}{2})\) sit at the narrow waist &mdash; exactly what the contour map from Slide 5 predicted.</p></div>
 </section>
 
 <section id="your-turn-lagrange-practice" class="example-group" aria-label="Your Turn: Lagrange Practice">
@@ -280,11 +338,29 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Set up the three equations, then solve for $x$, $y$, and $\lambda$." style="min-height:3in;">
   <div class="blank-prompt">Set up the three equations, then solve for \(x\), \(y\), and \(\lambda\).</div>
 </div>
+<div><p><strong>Gradients:</strong> \(\nabla f = \langle 3, \, 4 \rangle\), \(\quad \nabla g = \langle 2x, \, 2y \rangle\).</p>
+<p><strong>System:</strong> \(3 = 2\lambda x\), \(\quad 4 = 2\lambda y\), \(\quad x^2 + y^2 = 1\).</p></div>
+<div><p><strong>Solve for \(x\) and \(y\):</strong> \(x = \dfrac{3}{2\lambda}\), \(\quad y = \dfrac{2}{\lambda}\).</p>
+<p><strong>Substitute into constraint:</strong></p>
+<p>\[\frac{9}{4\lambda^2} + \frac{4}{\lambda^2} = 1 \quad \Rightarrow \quad \frac{25}{4\lambda^2} = 1 \quad \Rightarrow \quad \lambda = \pm \frac{5}{2}\]</p></div>
+<div><p>\(\lambda = \frac{5}{2}\): \(x = \frac{3}{5}\), \(y = \frac{4}{5}\). \(f = 5\). \(\leftarrow\) <strong>maximum</strong></p>
+<p>\(\lambda = -\frac{5}{2}\): \(x = -\frac{3}{5}\), \(y = -\frac{4}{5}\). \(f = -5\). \(\leftarrow\) <strong>minimum</strong></p></div>
+
+<figure>
+  <img src="figures/quickcheck_linear_circle.png" alt="A contour plot showing parallel diagonal level lines of f(x,y) = 3x + 4y in blue, with the unit circle constraint drawn in red. The maximum point (three-fifths, four-fifths) with f = 5 is marked with a green dot, and the minimum point (negative three-fifths, negative four-fifths) with f = negative 5 is marked with a purple dot. The level lines are tangent to the circle at exactly these points.">
+</figure>
+<div><p>Notice how the level lines of \(f\) (parallel lines) are <strong>tangent</strong> to the circle at the optimal points &mdash; exactly the geometry we predicted!</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>For a linear objective \(f = ax + by\) on a circle, the max and min always occur at \(\pm \frac{1}{\sqrt{a^2+b^2}}\langle a, b \rangle\).</p></aside>
 </section>
 
 <section id="three-variables-with-constraint" aria-label="Three Variables: $f(x,y,z)$ with Constraint $g(x,y,z) = k$">
   <h2>Three Variables: \(f(x,y,z)\) with Constraint \(g(x,y,z) = k\)</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>Same idea, one more variable. The system is bigger but the strategy is the same: use the gradient equations to relate the variables, then plug into the constraint.</p></aside>
+  <div><p>The method extends naturally to functions of three variables.</p></div>
+<div><p>Optimize \(f(x,y,z)\) subject to \(g(x,y,z) = k\):</p>
+<p>\[\nabla f = \lambda \nabla g \quad \Longrightarrow \quad f_x = \lambda g_x, \quad f_y = \lambda g_y, \quad f_z = \lambda g_z\]</p>
+<p>Plus the constraint: \(g(x,y,z) = k\).</p></div>
+<div><p>That's <strong>4 equations in 4 unknowns</strong> (\(x\), \(y\), \(z\), \(\lambda\)).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Same idea, one more variable. The system is bigger but the strategy is the same: use the gradient equations to relate the variables, then plug into the constraint.</p></aside>
 </section>
 
 <section id="quick-check-set-up-a-3-variable-lagrange-system" aria-label="Quick Check: Set Up a 3-Variable Lagrange System">
@@ -294,6 +370,10 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Identify $f$ and $g$, compute $\nabla f$ and $\nabla g$, then write $f_x = \lambda g_x$, $f_y = \lambda g_y$, $f_z = \lambda g_z$, and $g = k$." style="min-height:2in;">
   <div class="blank-prompt">Identify \(f\) and \(g\), compute \(\nabla f\) and \(\nabla g\), then write \(f_x = \lambda g_x\), \(f_y = \lambda g_y\), \(f_z = \lambda g_z\), and \(g = k\).</div>
 </div>
+<div><p>\(\nabla f = \langle 2x, \, 2y, \, 2z \rangle\), \(\quad \nabla g = \langle 1, \, 2, \, 3 \rangle\).</p></div>
+<div><p>The system:</p>
+<p>\[2x = \lambda, \quad 2y = 2\lambda, \quad 2z = 3\lambda, \quad x + 2y + 3z = 6\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Same pattern as two variables &mdash; one more gradient equation, one more unknown. Each equation immediately gives \(x\), \(y\), \(z\) in terms of \(\lambda\).</p></aside>
 </section>
 
 <section id="example-4-minimum-surface-area-box" class="example-group" aria-label="Example 4: Minimum Surface Area Box">
@@ -310,11 +390,24 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Compute gradients, write the 4 equations, and look for symmetry!" style="min-height:3in;">
   <div class="blank-prompt">Compute gradients, write the 4 equations, and look for symmetry!</div>
 </div>
+<div><p><strong>Gradients:</strong></p>
+<p>\[\nabla f = \langle 2y + 2z, \; 2x + 2z, \; 2x + 2y \rangle\]</p>
+<p>\[\nabla g = \langle yz, \; xz, \; xy \rangle\]</p></div>
+<div><p><strong>System from \(\nabla f = \lambda \nabla g\):</strong></p>
+<p>\[2y + 2z = \lambda yz \quad (1) \qquad 2x + 2z = \lambda xz \quad (2) \qquad 2x + 2y = \lambda xy \quad (3)\]</p>
+<p>\[xyz = 1000 \quad (4)\]</p></div>
+<div><p><strong>Use symmetry:</strong> Subtract (2) from (1):</p>
+<p>\[2(y - x) = \lambda z(y - x)\]</p>
+<p>Either \(y = x\) or \(\lambda z = 2\). Similarly, subtracting (3) from (2) gives \(z = x\) or \(\lambda y = 2\).</p></div>
+<div><p><strong>If \(x = y = z\):</strong> From the constraint: \(x^3 = 1000\) \(\Rightarrow\) \(x = 10\).</p>
+<p><strong>The box is a cube:</strong> \(10 \times 10 \times 10\) cm, with surface area \(600 \text{ cm}^2\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The cube minimizes surface area for a given volume. Symmetry in the equations often signals that the optimal solution is symmetric too.</p></aside>
 </section>
 
 <section id="when-to-use-lagrange-multipliers" aria-label="When to Use Lagrange Multipliers">
   <h2>When to Use Lagrange Multipliers</h2>
-  <div><p><strong>Step 1: What kind of region?</strong></p></div>
+  <div><p>How does Lagrange fit into the optimization toolkit from Chapter 14?</p>
+<p><strong>Step 1: What kind of region?</strong></p></div>
 <table>
 <thead><tr><th scope="col">Region Type</th><th scope="col">What to Do</th></tr></thead>
 <tbody>
@@ -322,6 +415,7 @@ if (window.MathJax && window.MathJax.startup) {
 <tr><td><strong>Closed & bounded region</strong></td><td>Check <strong>interior</strong> critical points + optimize on the <strong>boundary</strong> separately</td></tr>
 </tbody>
 </table>
+<div><p><strong>Step 2: If you need to optimize on a boundary curve \(g = k\)\ldots</strong></p></div>
 <table>
 <thead><tr><th scope="col">Boundary Method</th><th scope="col">Best When</th></tr></thead>
 <tbody>

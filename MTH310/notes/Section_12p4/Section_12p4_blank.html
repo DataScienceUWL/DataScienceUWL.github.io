@@ -140,16 +140,20 @@ function adjustWorkspaces() {
             var ws = findPrecedingWorkspace(pb);
             if (ws) expandWorkspace(ws, remaining);
         }
-        pb.remove();  // no longer needed — workspace expansion handles the break
+        // Keep the div — its CSS page-break-before:always guarantees the break
+        // even if the workspace expansion calculation is slightly off.
     });
 
     // --- Pass B: Auto-detect orphaned section starts ---
+    // Skip sections preceded by an explicit .pagebreak (already handled by Pass A).
     var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
     var sections = document.querySelectorAll('main > section');
     for (var pass = 0; pass < 3; pass++) {
         var changed = false;
         for (var i = 1; i < sections.length; i++) {
             var sec = sections[i];
+            var prev = sec.previousElementSibling;
+            if (prev && prev.classList && prev.classList.contains('pagebreak')) continue;
             var secRect = sec.getBoundingClientRect();
             var secTop = secRect.top + window.scrollY;
             var secBot = secTop + secRect.height;
@@ -195,7 +199,13 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="the-cross-product-a-new-kind-of-product" aria-label="The Cross Product &mdash; A New Kind of Product">
   <h2>The Cross Product &mdash; A New Kind of Product</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>The <strong>cross product</strong> \(\vec{a} \times \vec{b}\) takes two vectors in \(\mathbb{R}^3\) and returns a <strong>vector</strong> that is <strong>perpendicular</strong> to both \(\vec{a}\) and \(\vec{b}\).</p></aside>
+  <div><p>The <strong>dot product</strong> takes two vectors and returns a <strong>scalar</strong> (\(\vec{a} \cdot \vec{b} \in \mathbb{R}\)).</p>
+<p>Now we introduce a second way to multiply vectors:</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The <strong>cross product</strong> \(\vec{a} \times \vec{b}\) takes two vectors in \(\mathbb{R}^3\) and returns a <strong>vector</strong> that is <strong>perpendicular</strong> to both \(\vec{a}\) and \(\vec{b}\).</p></aside>
+<div><ul>
+<li>The cross product is <strong>only defined in 3D</strong> (not 2D!)</li>
+<li>It's used everywhere: torque, angular momentum, normal vectors to surfaces, area calculations</li>
+</ul></div>
 </section>
 
 <section id="quick-review-determinants" class="example-group" aria-label="Quick Review: Determinants">
@@ -208,6 +218,7 @@ if (window.MathJax && window.MathJax.startup) {
   <h3 class="example-title">Example 1</h3>
   <p>Compute the determinant \(\begin{vmatrix} 2 & 3 \ 4 & 1 \end{vmatrix}\).</p>
 </section>
+<div><p>\[\begin{vmatrix} 2 & 3 \ 4 & 1 \end{vmatrix} = (2)(1) - (3)(4) = 2 - 12 = -10\]</p></div>
 
 <section class="defn-box" role="region" aria-label="3 $\times$ 3 Determinant (Cofactor Expansion)">
   <h3 class="defn-title">3 $\times$ 3 Determinant (Cofactor Expansion)</h3>
@@ -223,6 +234,13 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Expand along the first row using the cofactor formula." style="min-height:2in;">
   <div class="blank-prompt">Expand along the first row using the cofactor formula.</div>
 </div>
+<div><p><strong>Setup:</strong> Expand along the first row with alternating signs \(+\), \(-\), \(+\):</p>
+<p>\[= 2\begin{vmatrix} 1 & -3 \ 5 & 2 \end{vmatrix} - 3\begin{vmatrix} 4 & -3 \ -2 & 2 \end{vmatrix} + 1\begin{vmatrix} 4 & 1 \ -2 & 5 \end{vmatrix}\]</p></div>
+<div><p><strong>Expand</strong> each 2x2 determinant:</p>
+<p>\[= 2(1 \cdot 2 - (-3) \cdot 5) - 3(4 \cdot 2 - (-3)(-2)) + 1(4 \cdot 5 - 1 \cdot (-2))\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Simplify:</strong></p>
+<p>\[= 2(2 + 15) - 3(8 - 6) + 1(20 + 2) = 2(17) - 3(2) + 1(22) = 34 - 6 + 22 = 50\]</p>
+<p>Note: this gives a <strong>scalar</strong>.</p></aside>
 </section>
 
 <section id="the-cross-product-formula" aria-label="The Cross Product Formula">
@@ -232,6 +250,8 @@ if (window.MathJax && window.MathJax.startup) {
   <p>If \(\vec{a} = \langle a_1, a_2, a_3 \rangle\) and \(\vec{b} = \langle b_1, b_2, b_3 \rangle\), then:</p>
 <p>\[\vec{a} \times \vec{b} = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \ a_1 & a_2 & a_3 \ b_1 & b_2 & b_3 \end{vmatrix}\]</p>
 </section>
+<div><p>Expanding along the first row:</p>
+<p>\[\vec{a} \times \vec{b} = \vec{i}(a_2 b_3 - a_3 b_2) - \vec{j}(a_1 b_3 - a_3 b_1) + \vec{k}(a_1 b_2 - a_2 b_1)\]</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>The result is a <strong>vector</strong> (note the \(\vec{i}\), \(\vec{j}\), \(\vec{k}\)). This is a "symbolic" determinant &mdash; the first row contains vectors, not numbers.</p></aside>
 </section>
 
@@ -244,6 +264,17 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Set up the 3x3 determinant and expand along the first row." style="min-height:2.5in;">
   <div class="blank-prompt">Set up the 3x3 determinant and expand along the first row.</div>
 </div>
+<div><p><strong>Step 1 &mdash; Set up the determinant:</strong></p>
+<p>\[\vec{a} \times \vec{b} = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \ -1 & 3 & 4 \ 5 & 2 & 1 \end{vmatrix}\]</p></div>
+<div><p><strong>Step 2 &mdash; Expand:</strong></p>
+<p>\[= \vec{i}(3 \cdot 1 - 4 \cdot 2) - \vec{j}((-1) \cdot 1 - 4 \cdot 5) + \vec{k}((-1) \cdot 2 - 3 \cdot 5)\]</p></div>
+<div><p><strong>Step 3 &mdash; Simplify:</strong></p>
+<p>\[= \vec{i}(3 - 8) - \vec{j}(-1 - 20) + \vec{k}(-2 - 15)\]</p>
+<p>\[= -5\,\vec{i} + 21\,\vec{j} - 17\,\vec{k} = \langle -5, 21, -17 \rangle\]</p></div>
+
+<div><p><strong>Verification:</strong> \(\vec{a} \times \vec{b}\) should be perpendicular to both inputs, so the dot products should be zero:</p>
+<p>\[\vec{a} \cdot (\vec{a} \times \vec{b}) = \langle -1, 3, 4 \rangle \cdot \langle -5, 21, -17 \rangle = 5 + 63 - 68 = 0 \;\checkmark\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The result is a <strong>vector</strong>, and it's perpendicular to both inputs. Always verify with a quick dot product!</p></aside>
 </section>
 
 <section id="your-turn-cross-product-practice" class="example-group" aria-label="Your Turn: Cross Product Practice">
@@ -255,15 +286,37 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Set up the determinant and expand. Check your answer with a dot product." style="min-height:2.5in;">
   <div class="blank-prompt">Set up the determinant and expand. Check your answer with a dot product.</div>
 </div>
+<div><p><strong>Determinant setup:</strong></p>
+<p>\[\begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \ 1 & 0 & 2 \ 3 & 1 & -1 \end{vmatrix}\]</p></div>
+<div><p><strong>Expand:</strong></p>
+<p>\[= \vec{i}(0 \cdot (-1) - 2 \cdot 1) - \vec{j}(1 \cdot (-1) - 2 \cdot 3) + \vec{k}(1 \cdot 1 - 0 \cdot 3)\]</p>
+<p>\[= \vec{i}(0 - 2) - \vec{j}(-1 - 6) + \vec{k}(1 - 0)\]</p>
+<p>\[= \langle -2, 7, 1 \rangle\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Check:</strong> \(\langle 1, 0, 2 \rangle \cdot \langle -2, 7, 1 \rangle = -2 + 0 + 2 = 0\;\checkmark\)</p></aside>
 </section>
 
 <section id="key-properties-of-the-cross-product" aria-label="Key Properties of the Cross Product">
   <h2>Key Properties of the Cross Product</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>Order matters! \(\vec{a} \times \vec{b} \neq \vec{b} \times \vec{a}\) (they point in <strong>opposite</strong> directions).</p></aside>
+  <div><p>Here are the properties you'll use most often:</p>
+<table>
+<tr><th>Property</th><th>Meaning</th></tr>
+<tr><td>\(\vec{a} \times \vec{a} = \vec{0}\)</td><td>A vector is parallel to itself, so the cross product is the zero vector</td></tr>
+<tr><td>\(\vec{a} \times \vec{b}\) is orthogonal to both \(\vec{a}\) and \(\vec{b}\)</td><td>The result is perpendicular to both inputs</td></tr>
+<tr><td>\(\vec{a} \times \vec{b} = -(\vec{b} \times \vec{a})\)</td><td><strong>Anti-commutative</strong> &mdash; swapping order flips the sign</td></tr>
+</table></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Order matters! \(\vec{a} \times \vec{b} \neq \vec{b} \times \vec{a}\) (they point in <strong>opposite</strong> directions).</p></aside>
 
-<figure>
+<div class="two-col-print">
+  <div><div><p><strong>Which direction does \(\vec{a} \times \vec{b}\) point?</strong> Use the <strong>right-hand rule</strong>:</p>
+<ol>
+<li>Point your fingers along \(\vec{a}\)</li>
+<li>Curl them toward \(\vec{b}\)</li>
+<li>Your <strong>thumb</strong> points in the direction of \(\vec{a} \times \vec{b}\)</li>
+</ol></div></div>
+  <div><figure>
   <img src="figures/12_4_5.png" alt="Right-hand rule illustration: vectors a and b with angle theta between them, and a cross b pointing upward perpendicular to both. A right hand shows fingers curling from a toward b with the thumb pointing in the direction of a cross b.">
-</figure>
+</figure></div>
+</div>
 </section>
 
 <section id="magnitude-of-the-cross-product" aria-label="Magnitude of the Cross Product">
@@ -273,14 +326,27 @@ if (window.MathJax && window.MathJax.startup) {
   <p>\[|\vec{a} \times \vec{b}| = |\vec{a}|\,|\vec{b}|\,\sin\theta\]</p>
 <p>where \(\theta\) is the angle between \(\vec{a}\) and \(\vec{b}\) (\(0 \leq \theta \leq \pi\)).</p>
 </section>
+<div><p>Compare with the dot product:</p>
+<ul>
+<li><strong>Dot product:</strong> \(\vec{a} \cdot \vec{b} = |\vec{a}|\,|\vec{b}|\,\cos\theta\) &mdash; measures <strong>alignment</strong></li>
+<li><strong>Cross product magnitude:</strong> \(|\vec{a} \times \vec{b}| = |\vec{a}|\,|\vec{b}|\,\sin\theta\) &mdash; measures <strong>perpendicularity</strong></li>
+</ul></div>
 
+<div><p>If \(\theta = 0\) or \(\theta = \pi\) (vectors are <strong>parallel</strong>), then \(\sin\theta = 0\), so:</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>\(\vec{a}\) and \(\vec{b}\) are <strong>parallel</strong> if and only if \(\vec{a} \times \vec{b} = \vec{0}\).</p></aside>
+<div><p>This gives us two tests:</p>
+<ul>
+<li><strong>Parallel test:</strong> \(\vec{a} \times \vec{b} = \vec{0}\)</li>
+<li><strong>Perpendicular test (from 12.3):</strong> \(\vec{a} \cdot \vec{b} = 0\)</li>
+</ul></div>
 </section>
 
 <section id="area-from-the-cross-product" aria-label="Area from the Cross Product">
   <h2>Area from the Cross Product</h2>
   <div class="two-col-print">
-  <div><aside class="key-point" role="note" aria-label="Key point"><ul>
+  <div><div><p>Recall that the area of a parallelogram is base \(\times\) height:</p>
+<p>\[\text{Area} = |\vec{a}|\,(|\vec{b}|\sin\theta) = |\vec{a} \times \vec{b}|\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><ul>
 <li><strong>Parallelogram</strong> with sides \(\vec{a}\) and \(\vec{b}\): Area \(= |\vec{a} \times \vec{b}|\)</li>
 <li><strong>Triangle</strong> with sides \(\vec{a}\) and \(\vec{b}\): Area \(= \tfrac{1}{2}|\vec{a} \times \vec{b}|\)</li>
 </ul></aside></div>
@@ -288,6 +354,7 @@ if (window.MathJax && window.MathJax.startup) {
   <img src="figures/12_4_7.png" alt="Parallelogram with sides a and b, angle theta between them. A dashed line shows the height |b| sin theta, illustrating that the area equals |a| times |b| sin theta, which is the magnitude of a cross b.">
 </figure></div>
 </div>
+<div><p>This is incredibly useful: find the area of <strong>any triangle in 3D</strong> just from its three vertices!</p></div>
 <figure>
   <img src="figures/triangle_area_parallelogram.png" alt="3D triangle PQR with edge vectors PQ (red) and PR (green). Dashed lines complete a parallelogram. The triangle area equals half the parallelogram area, which is half the magnitude of PQ cross PR.">
 </figure>
@@ -304,11 +371,29 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Form two edge vectors from P, then take their cross product." style="min-height:2.5in;">
   <div class="blank-prompt">Form two edge vectors from P, then take their cross product.</div>
 </div>
+<div><p><strong>Step 1 &mdash; Edge vectors:</strong></p>
+<p>\[\vec{PQ} = Q - P = \langle -3 - (-2),\; 4 - 1,\; 11 - 7 \rangle = \langle -1, 3, 4 \rangle\]</p>
+<p>\[\vec{PR} = R - P = \langle 3 - (-2),\; 3 - 1,\; 8 - 7 \rangle = \langle 5, 2, 1 \rangle\]</p></div>
+<div><p><strong>Step 2 &mdash; Normal vector</strong> (cross product &mdash; already computed in Example 3!):</p>
+<p>\[\vec{PQ} \times \vec{PR} = \langle -5, 21, -17 \rangle\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Step 3 &mdash; Area of triangle:</strong></p>
+<p>\[\text{Area} = \tfrac{1}{2}|\langle -5, 21, -17 \rangle| = \tfrac{1}{2}\sqrt{25 + 441 + 289} = \tfrac{1}{2}\sqrt{755} \approx 13.74\]</p></aside>
+<div class="two-col-print">
+  <div><aside class="key-point" role="note" aria-label="Key point"><p>The cross product of two edge vectors gives a <strong>normal vector</strong> to the plane &mdash; a vector pointing straight out of the surface. We'll use this constantly in Section 12.5.</p></aside></div>
+  <div><figure>
+  <img src="figures/normal_vector_plane.png" alt="3D diagram of triangle PQR with edge vectors PQ (red) and PR (green) from P. The normal vector n = PQ cross PR (amber) rises from the centroid, perpendicular to the plane.">
+</figure></div>
+</div>
 </section>
 
 <section id="cross-products-of-the-standard-basis-vectors" aria-label="Cross Products of the Standard Basis Vectors">
   <h2>Cross Products of the Standard Basis Vectors</h2>
-  <div class="two-col-print">
+  <div><p>The standard basis vectors \(\vec{i}\), \(\vec{j}\), \(\vec{k}\) follow a <strong>cyclic pattern</strong>:</p>
+<p><strong>Forward (cyclic order \(\vec{i} \to \vec{j} \to \vec{k} \to \vec{i}\)):</strong></p>
+<p>\[\vec{i} \times \vec{j} = \vec{k}, \qquad \vec{j} \times \vec{k} = \vec{i}, \qquad \vec{k} \times \vec{i} = \vec{j}\]</p>
+<p><strong>Backward (reversed order = negative):</strong></p>
+<p>\[\vec{j} \times \vec{i} = -\vec{k}, \qquad \vec{k} \times \vec{j} = -\vec{i}, \qquad \vec{i} \times \vec{k} = -\vec{j}\]</p></div>
+<div class="two-col-print">
   <div><aside class="key-point" role="note" aria-label="Key point"><p>Remember the cyclic pattern: \(\vec{i} \to \vec{j} \to \vec{k} \to \vec{i} \to \cdots\) Going forward gives a positive result; going backward gives a negative.</p></aside></div>
   <div><figure>
   <img src="figures/cyclic_ijk.png" alt="Circular mnemonic diagram with i (red), j (green), k (blue) in a circle connected by clockwise arrows. Going clockwise: i cross j equals k, j cross k equals i, k cross i equals j. Reversing gives negatives.">

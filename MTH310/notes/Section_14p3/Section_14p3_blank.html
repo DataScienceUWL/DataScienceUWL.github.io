@@ -140,16 +140,20 @@ function adjustWorkspaces() {
             var ws = findPrecedingWorkspace(pb);
             if (ws) expandWorkspace(ws, remaining);
         }
-        pb.remove();  // no longer needed — workspace expansion handles the break
+        // Keep the div — its CSS page-break-before:always guarantees the break
+        // even if the workspace expansion calculation is slightly off.
     });
 
     // --- Pass B: Auto-detect orphaned section starts ---
+    // Skip sections preceded by an explicit .pagebreak (already handled by Pass A).
     var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
     var sections = document.querySelectorAll('main > section');
     for (var pass = 0; pass < 3; pass++) {
         var changed = false;
         for (var i = 1; i < sections.length; i++) {
             var sec = sections[i];
+            var prev = sec.previousElementSibling;
+            if (prev && prev.classList && prev.classList.contains('pagebreak')) continue;
             var secRect = sec.getBoundingClientRect();
             var secTop = secRect.top + window.scrollY;
             var secBot = secTop + secRect.height;
@@ -195,17 +199,24 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="partial-derivatives-motivation-and-definition" aria-label="Partial Derivatives &mdash; Motivation and Definition">
   <h2>Partial Derivatives &mdash; Motivation and Definition</h2>
-  <section class="defn-box" role="region" aria-label="Partial Derivatives">
+  <div><p>In Calc I, \(f'(x)\) measures how \(f\) changes as \(x\) changes.</p>
+<p>For \(f(x,y)\), we have <strong>two</strong> input variables. How do we measure the rate of change?</p>
+<p><strong>Idea:</strong> Change one variable at a time, holding the other constant.</p></div>
+<section class="defn-box" role="region" aria-label="Partial Derivatives">
   <h3 class="defn-title">Partial Derivatives</h3>
   <p>\[f_x(x,y) = \lim_{h \to 0} \frac{f(x+h,\, y) - f(x,y)}{h}\]</p>
 <p>\[f_y(x,y) = \lim_{k \to 0} \frac{f(x,\, y+k) - f(x,y)}{k}\]</p>
 </section>
+<div><p><strong>Notation:</strong> All of these mean the same thing:</p>
+<p>\[f_x = \frac{\partial f}{\partial x} = \frac{\partial}{\partial x} f(x,y) = D_x f\]</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>These are just Calc I derivatives in disguise. The only new idea: <strong>hold the other variable constant</strong>.</p></aside>
 </section>
 
 <section id="computing-partial-derivatives" aria-label="Computing Partial Derivatives">
   <h2>Computing Partial Derivatives</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>You already know how to do this! Every derivative rule from Calc I (power, product, quotient, chain) still applies &mdash; you're just ignoring one variable.</p></aside>
+  <div><p><strong>The Rule:</strong> To find \(f_x\), treat \(y\) as a constant and differentiate with respect to \(x\) using all your Calc I rules.</p>
+<p>For \(f_y\), treat \(x\) as a constant and differentiate with respect to \(y\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>You already know how to do this! Every derivative rule from Calc I (power, product, quotient, chain) still applies &mdash; you're just ignoring one variable.</p></aside>
 </section>
 
 <section id="example-1-polynomial-partials" class="example-group" aria-label="Example 1: Polynomial Partials">
@@ -217,6 +228,13 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: For f_x, treat y as a constant. For f_y, treat x as a constant." style="min-height:1in;">
   <div class="blank-prompt">For f_x, treat y as a constant. For f_y, treat x as a constant.</div>
 </div>
+<div><p><strong>Finding \(f_x\):</strong> Treat \(y\) as a constant and differentiate with respect to \(x\):</p>
+<p>\[f_x = \frac{\partial}{\partial x}(3x^2 y) + \frac{\partial}{\partial x}(xy^2) + \frac{\partial}{\partial x}(y) - \frac{\partial}{\partial x}(1)\]</p>
+<p>\[f_x = 6xy + y^2 + 0 - 0 = 6xy + y^2\]</p></div>
+<div><p><strong>Finding \(f_y\):</strong> Treat \(x\) as a constant and differentiate with respect to \(y\):</p>
+<p>\[f_y = \frac{\partial}{\partial y}(3x^2 y) + \frac{\partial}{\partial y}(xy^2) + \frac{\partial}{\partial y}(y) - \frac{\partial}{\partial y}(1)\]</p>
+<p>\[f_y = 3x^2 + 2xy + 1 - 0 = 3x^2 + 2xy + 1\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Notice: in \(f_x\), the \(y\) and \(-1\) terms vanish (they're constants). In \(f_y\), the \(-1\) vanishes but \(y\) differentiates to \(1\).</p></aside>
 </section>
 
 <section id="your-turn-compute-partials" class="example-group" aria-label="Your Turn: Compute Partials">
@@ -228,14 +246,27 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: For f_x, treat y as a constant — which terms involve x? For f_y, treat x as a constant." style="min-height:1.75in;">
   <div class="blank-prompt">For f_x, treat y as a constant — which terms involve x? For f_y, treat x as a constant.</div>
 </div>
+<div><p><strong>\(f_x\):</strong> Treat \(y\) as constant:</p>
+<p>\[f_x = 2x \ln y + y \cos x\]</p>
+<p>(\(x^2 \to 2x\) by power rule, \(\sin x \to \cos x\), and \(\ln y\) and \(y\) are just constant factors)</p></div>
+<div><p><strong>\(f_y\):</strong> Treat \(x\) as constant:</p>
+<p>\[f_y = \frac{x^2}{y} + \sin x\]</p>
+<p>(\(\ln y \to 1/y\), and \(\sin x\) is a constant that differentiates to \(\sin x \cdot 1 = \sin x\))</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Different Calc I rules for each variable: power rule and trig in \(f_x\), logarithm and constants in \(f_y\). The partial derivative picks out the rules that apply to <strong>its</strong> variable.</p></aside>
 </section>
 
 <section id="geometric-interpretation-of-partial-derivatives" aria-label="Geometric Interpretation of Partial Derivatives">
   <h2>Geometric Interpretation of Partial Derivatives</h2>
-  <figure>
+  <div class="two-col-print">
+  <div><div><p>Slice the surface \(z = f(x,y)\) with the plane \(y = b\).</p>
+<p>This gives a <strong>trace curve</strong> \(C_1\) in the \(xz\)-plane.</p>
+<p>\(f_x(a,b)\) = <strong>slope of the tangent</strong> to \(C_1\) at the point \((a,\, b,\, f(a,b))\).</p>
+<p>Similarly, slicing with \(x = a\) gives a trace \(C_2\), and \(f_y(a,b)\) is the slope of the tangent to \(C_2\).</p></div></div>
+  <div><figure>
   <img src="figures/partial_deriv_geometry.png" alt="A 3D surface with two trace curves: C1 (red) is the intersection of the surface with the plane y=b, and C2 (green) is the intersection with the plane x=a. Dashed tangent lines show the slopes f_x and f_y at the point P(a,b,f(a,b)).">
   <figcaption><a href="figures/partial_deriv_geometry.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure>
+</figure></div>
+</div>
 <aside class="key-point" role="note" aria-label="Key point"><p>\(f_x(a,b)\) = slope in the <strong>\(x\)-direction</strong>. \(f_y(a,b)\) = slope in the <strong>\(y\)-direction</strong>. Each partial derivative captures only <strong>one direction</strong> of change.</p></aside>
 </section>
 
@@ -249,6 +280,11 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: For f_x, treat y as constant (power rule). For f_y, treat x as constant (exponential rule)." style="min-height:2.5in;">
   <div class="blank-prompt">For f_x, treat y as constant (power rule). For f_y, treat x as constant (exponential rule).</div>
 </div>
+<div><p><strong>\(f_x\):</strong> Treat \(y\) as a constant. Then \(x^y\) is a <strong>power function</strong> in \(x\):</p>
+<p>\[f_x = y x^{y-1} \qquad \text{(power rule)}\]</p></div>
+<div><p><strong>\(f_y\):</strong> Treat \(x\) as a constant. Then \(x^y\) is an <strong>exponential function</strong> in \(y\):</p>
+<p>\[f_y = x^y \ln x \qquad \text{(exponential rule: } \frac{d}{dy} a^y = a^y \ln a \text{)}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Same function, two completely different differentiation rules! Which rule you use depends on which variable you're differentiating with respect to.</p></aside>
 </section>
 
 <section id="example-4-rates-of-change-heat-index" class="example-group" aria-label="Example 4: Rates of Change &mdash; Heat Index">
@@ -258,29 +294,59 @@ if (window.MathJax && window.MathJax.startup) {
   <p>The heat index \(I\) is the perceived temperature as a function of actual temperature \(T\) and relative humidity \(H\).</p>
 <p>Use the table to estimate \(f_T(96, 70)\) and \(f_H(96, 70)\), and interpret each.</p>
 </section>
+<div><table>
+<tr><th>\(T\)</th></tr>
+<tr><td>\(H\)</td><td>50</td><td>55</td><td>60</td><td>65</td><td>70</td><td>75</td><td>80</td><td>85</td><td>90</td></tr>
+<tr><td>90</td><td>96</td><td>98</td><td>100</td><td>103</td><td>106</td><td>109</td><td>112</td><td>115</td><td>119</td></tr>
+<tr><td>92</td><td>100</td><td>103</td><td>105</td><td>108</td><td>112</td><td>115</td><td>119</td><td>123</td><td>128</td></tr>
+<tr><td>94</td><td>104</td><td>107</td><td>111</td><td>114</td><td>118</td><td>122</td><td>127</td><td>132</td><td>137</td></tr>
+<tr><td><strong>96</strong></td><td>109</td><td>113</td><td>116</td><td>121</td><td><strong>125</strong></td><td>130</td><td>135</td><td>141</td><td>146</td></tr>
+<tr><td>98</td><td>114</td><td>118</td><td>123</td><td>127</td><td>133</td><td>138</td><td>144</td><td>150</td><td>157</td></tr>
+<tr><td>100</td><td>119</td><td>124</td><td>129</td><td>135</td><td>141</td><td>147</td><td>154</td><td>161</td><td>168</td></tr>
+</table>
+<p>\\[2pt]\small Heat index values for temperature T (\(^\circ\)F) and relative humidity H (\%)</p></div>
 <div class="blank-space" role="region" aria-label="Student workspace: Use the difference quotient with nearby table values. Hold one variable constant while varying the other." style="min-height:2.5in;">
   <div class="blank-prompt">Use the difference quotient with nearby table values. Hold one variable constant while varying the other.</div>
 </div>
+<div><p><strong>Estimating \(f_T(96, 70)\):</strong> Hold \(H = 70\) constant, use \(T = 94\) and \(T = 98\):</p>
+<p>\[f_T(96, 70) \approx \frac{f(98, 70) - f(94, 70)}{98 - 94} = \frac{133 - 118}{4} = \frac{15}{4} = 3.75\]</p></div>
+<div><p><strong>Interpretation:</strong> When \(T = 96^\circ F\) and \(H = 70\%\), the heat index rises by about \(3.75\) for each \(1^\circ F\) increase in temperature.</p></div>
+<div><p><strong>Estimating \(f_H(96, 70)\):</strong> Hold \(T = 96\) constant, use \(H = 65\) and \(H = 75\):</p>
+<p>\[f_H(96, 70) \approx \frac{f(96, 75) - f(96, 65)}{75 - 65} = \frac{130 - 121}{10} = \frac{9}{10} = 0.9\]</p></div>
+<div><p><strong>Interpretation:</strong> The heat index rises by about \(0.9\) for each \(1\%\) increase in humidity.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Partial derivatives work even when we don't have a formula &mdash; just data. The key idea: hold one variable constant, vary the other.</p></aside>
 </section>
 
 <section id="higher-order-partial-derivatives" aria-label="Higher-Order Partial Derivatives">
   <h2>Higher-Order Partial Derivatives</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p><strong>Interpretation:</strong></p>
+  <div><p>Just like in Calc I, we can differentiate <strong>again</strong> to get second (and higher) derivatives.</p>
+<p>For \(f(x,y)\), there are <strong>four</strong> second-order partial derivatives:</p>
+<ul>
+<li>\(f_{xx} = \dfrac{\partial^2 f}{\partial x^2}\) &mdash; differentiate twice with respect to \(x\)</li>
+<li>\(f_{yy} = \dfrac{\partial^2 f}{\partial y^2}\) &mdash; differentiate twice with respect to \(y\)</li>
+<li>\(f_{xy} = \dfrac{\partial^2 f}{\partial y \,\partial x}\) &mdash; first \(x\), then \(y\)</li>
+<li>\(f_{yx} = \dfrac{\partial^2 f}{\partial x \,\partial y}\) &mdash; first \(y\), then \(x\)</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Interpretation:</strong></p>
 <ul>
 <li>\(f_{xx}\) = concavity in the \(x\)-direction (is the surface curving up or down as you walk in \(x\)?)</li>
 <li>\(f_{yy}\) = concavity in the \(y\)-direction</li>
 <li>\(f_{xy}\) = how the \(x\)-slope changes as you move in \(y\) (a <strong>mixed</strong> partial)</li>
 </ul></aside>
+<div><p><strong>Notation warning:</strong> \(f_{xy}\) means differentiate with respect to \(x\) <strong>first</strong>, then \(y\). Read the subscripts left to right.</p></div>
 </section>
 
 <section id="clairaut-s-theorem" aria-label="Clairaut's Theorem">
   <h2>Clairaut's Theorem</h2>
-  <section class="defn-box theorem-box" role="region" aria-label="Theorem: Clairaut's Theorem">
+  <div><p>Are \(f_{xy}\) and \(f_{yx}\) always equal? That is, does the <strong>order of differentiation</strong> matter?</p></div>
+<section class="defn-box theorem-box" role="region" aria-label="Theorem: Clairaut's Theorem">
   <h3 class="defn-title">Theorem: Clairaut's Theorem</h3>
   <p>Suppose \(f\) is defined on a disk \(D\) containing the point \((a,b)\).</p>
 <p>If \(f_{xy}\) and \(f_{yx}\) are both <strong>continuous</strong> on \(D\), then:</p>
 <p>\[f_{xy}(a,b) = f_{yx}(a,b)\]</p>
 </section>
+<div><p><strong>Practical use:</strong> For polynomials, trig functions, exponentials, and all the "nice" functions we encounter in this course, mixed partials are equal:</p>
+<p>\[f_{xy} = f_{yx}, \qquad f_{xxy} = f_{xyx} = f_{yxx}, \qquad \text{etc.}\]</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>For any function built from standard Calc I functions, the <strong>order of differentiation doesn't matter</strong>. Differentiate in whichever order is easiest!</p></aside>
 </section>
 
@@ -295,6 +361,13 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Check whether Clairaut's theorem is satisfied." style="min-height:2in;">
   <div class="blank-prompt">Check whether Clairaut's theorem is satisfied.</div>
 </div>
+<div><p>If such a function \(f\) existed, Clairaut's Theorem requires \(f_{xy} = f_{yx}\).</p></div>
+<div><p><strong>Check \(f_{xy}\):</strong> Start with \(f_x = x + 4y\), then differentiate with respect to \(y\):</p>
+<p>\[f_{xy} = \frac{\partial}{\partial y}(x + 4y) = 4\]</p></div>
+<div><p><strong>Check \(f_{yx}\):</strong> Start with \(f_y = 3x - y\), then differentiate with respect to \(x\):</p>
+<p>\[f_{yx} = \frac{\partial}{\partial x}(3x - y) = 3\]</p></div>
+<div><p>Since \(f_{xy} = 4 \neq 3 = f_{yx}\), Clairaut's Theorem is violated.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>NO</strong> &mdash; no such function exists! Clairaut's Theorem gives us a quick test: if \(f_{xy} \neq f_{yx}\), the proposed partials are <strong>inconsistent</strong>.</p></aside>
 </section>
 
 <section id="example-6-laplace-s-equation" class="example-group" aria-label="Example 6: Laplace's Equation">
@@ -308,6 +381,14 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Simplify u first, then find u_x, u_xx, u_y, u_yy, and add the second derivatives." style="min-height:3in;">
   <div class="blank-prompt">Simplify u first, then find u_x, u_xx, u_y, u_yy, and add the second derivatives.</div>
 </div>
+<div><p><strong>Simplify first:</strong> \(u = \ln\sqrt{x^2 + y^2} = \frac{1}{2}\ln(x^2 + y^2)\)</p></div>
+<div><p><strong>\(u_x\):</strong> \(u_x = \frac{1}{2} \cdot \frac{2x}{x^2 + y^2} = \frac{x}{x^2 + y^2}\)</p>
+<p><strong>\(u_{xx}\):</strong> Use the quotient rule:</p>
+<p>\[u_{xx} = \frac{(x^2 + y^2)(1) - x(2x)}{(x^2 + y^2)^2} = \frac{y^2 - x^2}{(x^2 + y^2)^2}\]</p></div>
+<div><p><strong>\(u_y\):</strong> By symmetry, \(u_y = \frac{y}{x^2 + y^2}\)</p>
+<p><strong>\(u_{yy}\):</strong> \(u_{yy} = \frac{x^2 - y^2}{(x^2 + y^2)^2}\)</p></div>
+<div><p><strong>Check:</strong> \(u_{xx} + u_{yy} = \frac{y^2 - x^2}{(x^2 + y^2)^2} + \frac{x^2 - y^2}{(x^2 + y^2)^2} = \frac{0}{(x^2 + y^2)^2} = 0 \quad \checkmark\)</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The numerators are <strong>negatives</strong> of each other, so they cancel perfectly. This is not a coincidence &mdash; \(\ln r\) is a fundamental solution to Laplace's equation in 2D.</p></aside>
 </section>
 
 <section id="example-7-implicit-partial-differentiation" class="example-group" aria-label="Example 7: Implicit Partial Differentiation">
@@ -320,6 +401,15 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Differentiate both sides with respect to x. Remember z depends on x, so use the chain rule." style="min-height:3in;">
   <div class="blank-prompt">Differentiate both sides with respect to x. Remember z depends on x, so use the chain rule.</div>
 </div>
+<div><p>Differentiate both sides with respect to \(x\), holding \(y\) constant:</p>
+<p><strong>Left side:</strong> \(\frac{\partial}{\partial x}(yz) = y \frac{\partial z}{\partial x}\) &mdash; \(y\) is constant, \(z\) depends on \(x\)</p></div>
+<div><p><strong>Right side:</strong> \(\frac{\partial}{\partial x}\ln(x + z) = \frac{1}{x + z} \cdot \left(1 + \frac{\partial z}{\partial x}\right)\) &mdash; chain rule</p></div>
+<div><p><strong>Set equal and solve:</strong></p>
+<p>\[y \frac{\partial z}{\partial x} = \frac{1 + \frac{\partial z}{\partial x}}{x + z}\]</p>
+<p>\[y(x + z)\frac{\partial z}{\partial x} = 1 + \frac{\partial z}{\partial x}\]</p>
+<p>\[\frac{\partial z}{\partial x}\bigl[y(x + z) - 1\bigr] = 1\]</p>
+<p>\[\frac{\partial z}{\partial x} = \frac{1}{y(x + z) - 1}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Same strategy as implicit differentiation in Calc I, but now we hold \(y\) constant and remember that \(z\) depends on \(x\).</p></aside>
 </section>
 
 <section class="homework-section" aria-label="Homework">

@@ -140,16 +140,20 @@ function adjustWorkspaces() {
             var ws = findPrecedingWorkspace(pb);
             if (ws) expandWorkspace(ws, remaining);
         }
-        pb.remove();  // no longer needed — workspace expansion handles the break
+        // Keep the div — its CSS page-break-before:always guarantees the break
+        // even if the workspace expansion calculation is slightly off.
     });
 
     // --- Pass B: Auto-detect orphaned section starts ---
+    // Skip sections preceded by an explicit .pagebreak (already handled by Pass A).
     var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
     var sections = document.querySelectorAll('main > section');
     for (var pass = 0; pass < 3; pass++) {
         var changed = false;
         for (var i = 1; i < sections.length; i++) {
             var sec = sections[i];
+            var prev = sec.previousElementSibling;
+            if (prev && prev.classList && prev.classList.contains('pagebreak')) continue;
             var secRect = sec.getBoundingClientRect();
             var secTop = secRect.top + window.scrollY;
             var secBot = secTop + secRect.height;
@@ -195,7 +199,14 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="functions-of-several-variables" aria-label="Functions of Several Variables">
   <h2>Functions of Several Variables</h2>
-  <section class="defn-box" role="region" aria-label="Function of Two Variables">
+  <div><p>In Calc I and II, every function had <strong>one input</strong> and <strong>one output</strong>: \(y = f(x)\).</p>
+<p>But in the real world, most quantities depend on <strong>more than one variable</strong>:</p>
+<ul>
+<li>Temperature in a room depends on position \((x, y, z)\)</li>
+<li>Your grade depends on homework, quizzes, and exams</li>
+<li>Wind chill depends on temperature <em>and</em> wind speed</li>
+</ul></div>
+<section class="defn-box" role="region" aria-label="Function of Two Variables">
   <h3 class="defn-title">Function of Two Variables</h3>
   <p>A <strong>function of two variables</strong> is a rule that assigns to each ordered pair \((x, y)\) in a set \(D \subseteq \mathbb{R}^2\) a unique real number \(z\):</p>
 <p>\[z = f(x, y)\]</p>
@@ -204,6 +215,7 @@ if (window.MathJax && window.MathJax.startup) {
 <li><strong>Range</strong>: the set of all output values \(z = f(x,y)\)</li>
 </ul>
 </section>
+<div><p>This extends naturally: \(w = f(x, y, z)\) is a function of <strong>three</strong> variables, and so on.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Same idea as Calc I, but now the input is a <strong>point</strong> in \(\mathbb{R}^2\) (or \(\mathbb{R}^3\)) instead of a single number.</p></aside>
 </section>
 
@@ -216,6 +228,14 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Look for restrictions, set up and solve inequalities, sketch." style="min-height:2in;">
   <div class="blank-prompt">Look for restrictions, set up and solve inequalities, sketch.</div>
 </div>
+<div><p>We need \(x^2 - y > 0\), which means \(y < x^2\).</p></div>
+<div><p>The domain is the set of all points \((x, y)\) that lie <strong>strictly below</strong> the parabola \(y = x^2\).</p>
+<p>\[D = \{(x, y) \mid y < x^2\}\]</p>
+<p>The boundary \(y = x^2\) is <strong>not</strong> included (we need strictly greater than zero inside the logarithm).</p></div>
+<figure>
+  <img src="figures/domain_parabola.png" alt="The xy-plane with the region below the parabola y = x-squared shaded, representing the domain of f(x,y) = x ln(x-squared minus y).">
+  <figcaption>Domain: the region below \(y = x^2\)</figcaption>
+</figure>
 </section>
 
 <section id="your-turn-find-the-domain" class="example-group" aria-label="Your Turn: Find the Domain">
@@ -227,11 +247,17 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Identify both restrictions, then describe and sketch the domain." style="min-height:2in;">
   <div class="blank-prompt">Identify both restrictions, then describe and sketch the domain.</div>
 </div>
+<div><p><strong>Restriction 1:</strong> Square root requires \(y - x^2 \geq 0\), so \(y \geq x^2\).</p>
+<p><strong>Restriction 2:</strong> Denominator requires \(1 - x^2 \neq 0\), so \(x \neq \pm 1\).</p>
+<p>\[D = \{(x, y) \mid y \geq x^2 \text{ and } x \neq \pm 1\}\]</p>
+<p>This is the region <strong>on or above</strong> the parabola \(y = x^2\), with two vertical lines removed.</p></div>
 </section>
 
 <section id="graphs-of-functions-of-two-variables" class="example-group" aria-label="Graphs of Functions of Two Variables">
   <h2>Graphs of Functions of Two Variables</h2>
-  <section class="defn-box" role="region" aria-label="Graph of a Function of Two Variables">
+  <div><p>In Calc I, the graph of \(y = f(x)\) was a <strong>curve</strong> in \(\mathbb{R}^2\).</p>
+<p>Now the graph of \(z = f(x, y)\) is a <strong>surface</strong> in \(\mathbb{R}^3\):</p></div>
+<section class="defn-box" role="region" aria-label="Graph of a Function of Two Variables">
   <h3 class="defn-title">Graph of a Function of Two Variables</h3>
   <p>The <strong>graph</strong> of \(f\) is the set of all points \((x, y, z)\) in \(\mathbb{R}^3\) such that \(z = f(x, y)\) and \((x, y) \in D\).</p>
 <p>\[\text{graph} = \{(x, y, z) \mid z = f(x, y),\; (x, y) \in D\}\]</p>
@@ -242,14 +268,27 @@ if (window.MathJax && window.MathJax.startup) {
   <h3 class="example-title">Example 3</h3>
   <p>Sketch the graph of \(f(x, y) = -3x - 2y + 6\).</p>
 </section>
+<div><p><strong>Recognize:</strong> This is \(z = -3x - 2y + 6\), which is <strong>linear</strong> in \(x\) and \(y\). A linear equation in three variables is a <strong>plane</strong>.</p></div>
 <div class="blank-space" role="region" aria-label="Student workspace: Find the intercepts and sketch the plane." style="min-height:2.5in;">
   <div class="blank-prompt">Find the intercepts and sketch the plane.</div>
 </div>
+<div><p>Find the intercepts by setting two variables to zero:</p>
+<ul>
+<li>\(x\)-intercept: set \(y = 0, z = 0\) \(\rightarrow\) \(x = 2\) \(\rightarrow\) point \((2, 0, 0)\)</li>
+<li>\(y\)-intercept: set \(x = 0, z = 0\) \(\rightarrow\) \(y = 3\) \(\rightarrow\) point \((0, 3, 0)\)</li>
+<li>\(z\)-intercept: set \(x = 0, y = 0\) \(\rightarrow\) \(z = 6\) \(\rightarrow\) point \((0, 0, 6)\)</li>
+</ul>
+<p>Connect these three points to form a triangular portion of the plane in the first octant. The full plane extends in all directions.</p></div>
+<figure>
+  <img src="figures/plane_3x_2y_6.png" alt="A plane in 3D space passing through the points (2,0,0), (0,3,0), and (0,0,6), showing the first-octant triangle.">
+  <figcaption>The plane \(z = -3x - 2y + 6\) | <a href="figures/plane_3x_2y_6.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
 </section>
 
 <section id="traces-slicing-a-surface" aria-label="Traces: Slicing a Surface">
   <h2>Traces: Slicing a Surface</h2>
-  <section class="defn-box" role="region" aria-label="Traces">
+  <div><p>A 3D surface can be hard to visualize all at once. One strategy: <strong>slice it</strong> with a plane and look at the resulting curve.</p></div>
+<section class="defn-box" role="region" aria-label="Traces">
   <h3 class="defn-title">Traces</h3>
   <p>A <strong>trace</strong> of a surface is the curve of intersection when the surface is sliced by a plane.</p>
 <ul>
@@ -257,6 +296,8 @@ if (window.MathJax && window.MathJax.startup) {
 <li><strong>Vertical trace</strong>: set \(x = c\) or \(y = c\) and see the resulting curve</li>
 </ul>
 </section>
+<div><p><strong>Analogy:</strong> Think of slicing a loaf of bread. Each slice reveals a 2D cross-section of the 3D shape.</p>
+<p>Or think of a topographic map &mdash; each contour line is where the terrain has a specific elevation.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Traces reduce a 3D problem to a <strong>2D curve</strong> &mdash; something you already know how to analyze from Calc I.</p></aside>
 </section>
 
@@ -267,6 +308,13 @@ if (window.MathJax && window.MathJax.startup) {
   <p>The <strong>level curves</strong> of \(f(x, y)\) are the horizontal traces \(f(x, y) = k\) for various constants \(k\).</p>
 <p>Each level curve is drawn in the \(xy\)-plane. Viewed together, they form a <strong>contour map</strong> (or <em>contour plot</em>).</p>
 </section>
+<div><p><strong>You've seen these before!</strong></p>
+<ul>
+<li>Topographic maps: curves of constant elevation</li>
+<li>Weather maps: curves of constant temperature (isotherms) or constant pressure (isobars)</li>
+<li>Closely spaced contour lines = the surface is <strong>steep</strong></li>
+<li>Widely spaced = the surface is <strong>gentle</strong></li>
+</ul></div>
 <figure>
   <img src="figures/surface_contours.png" alt="A two-peak surface with level curves projected onto the xy-plane below, showing how horizontal slices of a 3D surface become a 2D contour map.">
   <figcaption>Drag to rotate --- see how the surface produces the contour map on the floor | <a href="figures/surface_contours.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
@@ -287,12 +335,31 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Sketch the level curves of $f(x, y) = x^2 - y^2$ for $k = -4, -1, 0, 1, 4$." style="min-height:3in;">
   <div class="blank-prompt">Sketch the level curves of \(f(x, y) = x^2 - y^2\) for \(k = -4, -1, 0, 1, 4\).</div>
 </div>
+<div><ul>
+<li>\(k = 0\): \(x^2 - y^2 = 0\) \(\rightarrow\) \(y = \pm x\) (two lines through the origin)</li>
+<li>\(k > 0\) (e.g., \(k = 1, 4\)): \(x^2 - y^2 = k\) \(\rightarrow\) <strong>hyperbolas</strong> opening left and right</li>
+<li>\(k < 0\) (e.g., \(k = -1, -4\)): \(x^2 - y^2 = k\) \(\rightarrow\) <strong>hyperbolas</strong> opening up and down</li>
+</ul>
+<p>The surface \(z = x^2 - y^2\) is a <strong>hyperbolic paraboloid</strong> (saddle surface). The contour map reveals this saddle shape through its family of hyperbolas rotating through the lines \(y = \pm x\) at \(k = 0\).</p></div>
+<figure>
+  <img src="figures/contour_hyperbolic.png" alt="Contour plot of f(x,y) = x-squared minus y-squared showing hyperbolas for various values of k. At k=0, the level curve is two crossing lines y = x and y = -x. For positive k, hyperbolas open left-right; for negative k, they open up-down.">
+  <figcaption>Level curves of the hyperbolic paraboloid \(z = x^2 - y^2\)</figcaption>
+</figure>
+
+<div><p>Here is the saddle surface with level curves drawn on it &mdash; rotate to a top-down view to see the contour map:</p></div>
+<figure>
+  <img src="figures/saddle_contours.png" alt="The hyperbolic paraboloid z = x-squared minus y-squared as a 3D saddle surface with level curves at k = -4 through 4. Blue regions are negative z, red regions positive. Rotating to top-down reveals the hyperbolic contour pattern.">
+  <figcaption>Drag to rotate --- try looking straight down! | <a href="figures/saddle_contours.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
 </section>
 
 <section id="match-the-contour-plot-to-the-surface" aria-label="Match the Contour Plot to the Surface">
   <h2>Match the Contour Plot to the Surface</h2>
-  <div class="two-col-print">
-  <div><figure>
+  <div><p><strong>Challenge:</strong> Can you match each contour plot (left) to its surface (right)?</p>
+<p>Look for clues: symmetry, shape of level curves, spacing of contour lines.</p></div>
+<div class="two-col-print">
+  <div><div><p><strong>Contour Plots</strong>\\</p></div>
+<figure>
   <img src="figures/14_1_cp_1.png" alt="Contour plot 1: a set of level curves to be matched with a surface plot.">
 </figure>
 <figure>
@@ -301,7 +368,8 @@ if (window.MathJax && window.MathJax.startup) {
 <figure>
   <img src="figures/14_1_cp_3.png" alt="Contour plot 3: a set of level curves to be matched with a surface plot.">
 </figure></div>
-  <div><figure>
+  <div><div><p><strong>Surfaces</strong>\\</p></div>
+<figure>
   <img src="figures/14_1_sp_1.png" alt="Surface plot 1: a 3D surface to be matched with a contour plot.">
 </figure>
 <figure>
@@ -318,14 +386,18 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="the-equations-behind-the-surfaces" aria-label="The Equations Behind the Surfaces">
   <h2>The Equations Behind the Surfaces</h2>
-  <figure>
+  <div><p>All three surfaces have the form \(z = r^p\) where \(r = \sqrt{x^2 + y^2}\). The <strong>power</strong> \(p\) controls the contour spacing. Rotate to look straight down to see the contour map!</p></div>
+<div><p><strong>Cone:</strong> \(z = \sqrt{x^2+y^2}\) &mdash; constant slope, so contours are <strong>evenly spaced</strong>.</p></div>
+<figure>
   <img src="figures/match_cone.png" alt="Cone z = square root of (x-squared + y-squared) with evenly spaced circular contour lines. Orthographic projection allows rotation to a true top-down contour view.">
   <figcaption><a href="figures/match_cone.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
+<div><p><strong>Paraboloid:</strong> \(z = x^2+y^2\) &mdash; slope increases outward, so contours get <strong>closer together</strong>.</p></div>
 <figure>
   <img src="figures/match_paraboloid.png" alt="Paraboloid z = x-squared + y-squared with circular contour lines that get closer together away from the origin.">
   <figcaption><a href="figures/match_paraboloid.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
+<div><p><strong>Fourth root:</strong> \(z = (x^2+y^2)^{1/4}\) &mdash; slope decreases outward, so contours get <strong>farther apart</strong>.</p></div>
 <figure>
   <img src="figures/match_fourthroot.png" alt="Surface z = (x-squared + y-squared) to the one-fourth power with contour lines that get farther apart away from the origin.">
   <figcaption><a href="figures/match_fourthroot.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
@@ -334,10 +406,20 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="level-surfaces-functions-of-three-variables" aria-label="Level Surfaces: Functions of Three Variables">
   <h2>Level Surfaces: Functions of Three Variables</h2>
-  <section class="defn-box" role="region" aria-label="Level Surfaces">
+  <div><p>What if the function has <strong>three</strong> input variables, like \(w = f(x, y, z)\)?</p>
+<p>We can't graph \(w = f(x,y,z)\) directly &mdash; that would require <strong>4 dimensions</strong>!</p>
+<p>Instead, we visualize using <strong>level surfaces</strong>: set \(f(x, y, z) = k\) for various constants \(k\).</p>
+<p>Each value of \(k\) gives a <strong>surface</strong> in \(\mathbb{R}^3\) (not just a curve).</p></div>
+<section class="defn-box" role="region" aria-label="Level Surfaces">
   <h3 class="defn-title">Level Surfaces</h3>
   <p>The <strong>level surfaces</strong> of \(f(x, y, z)\) are the surfaces defined by \(f(x, y, z) = k\) for constants \(k\) in the range of \(f\).</p>
 </section>
+<div><p><strong>Analogy:</strong></p>
+<ul>
+<li>For \(f(x,y)\): level <em>curves</em> (1D objects in 2D space)</li>
+<li>For \(f(x,y,z)\): level <em>surfaces</em> (2D objects in 3D space)</li>
+<li>Same idea, one dimension up!</li>
+</ul></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Level curves collapse a 3D graph to 2D. Level surfaces collapse a 4D graph to 3D. Both let us visualize functions we can't directly graph.</p></aside>
 </section>
 
@@ -352,6 +434,20 @@ if (window.MathJax && window.MathJax.startup) {
 <div class="blank-space" role="region" aria-label="Student workspace: Set $T = k$ and solve for the relationship between $x$, $y$, and $z$." style="min-height:2.5in;">
   <div class="blank-prompt">Set \(T = k\) and solve for the relationship between \(x\), \(y\), and \(z\).</div>
 </div>
+<div><p>Set \(T = k\):</p>
+<p>\[\frac{100}{(x^2 + y^2 + z^2)^{3/2}} = k\]</p>
+<p>\[(x^2 + y^2 + z^2)^{3/2} = \frac{100}{k}\]</p>
+<p>\[x^2 + y^2 + z^2 = \left(\frac{100}{k}\right)^{2/3}\]</p></div>
+<div><p>This is a <strong>sphere</strong> of radius \(r = \left(\frac{100}{k}\right)^{1/3}\) centered at the origin.</p></div>
+<div><ul>
+<li>Larger \(k\) (higher temperature) \(\rightarrow\) smaller radius \(\rightarrow\) closer to the origin</li>
+<li>Temperature is <strong>hottest at the origin</strong> and decreases as you move outward</li>
+<li>The level surfaces are <strong>concentric spheres</strong> (like layers of an onion)</li>
+</ul></div>
+<figure>
+  <img src="figures/level_spheres.png" alt="Three concentric hemispheres showing level surfaces of the temperature function T = 100 / (x-squared + y-squared + z-squared)^(3/2). The inner hemisphere at T=100 is hot red, the middle at T=10 is warm orange, and the outer at T=1 is cool blue. Each hemisphere is cut along x=0 to reveal the nesting.">
+  <figcaption>Hemispheres cut at \(x=0\) to show nesting | <a href="figures/level_spheres.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
 </section>
 
 <section class="homework-section" aria-label="Homework">
