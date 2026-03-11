@@ -184,14 +184,11 @@ export function createChart(container, options = {}) {
 
   const svg = el.append('svg')
     .attr('role', 'img')
-    .attr('aria-labelledby', `${id}-title ${id}-desc`)
+    .attr('aria-label', [titleText, descText].filter(Boolean).join(' — '))
     .attr('viewBox', `0 0 ${viewWidth} ${viewHeight}`)
     .attr('preserveAspectRatio', 'xMidYMid meet')
     .style('width', '100%')
     .style('height', 'auto');
-
-  svg.append('title').attr('id', `${id}-title`).text(titleText);
-  svg.append('desc').attr('id', `${id}-desc`).text(descText);
 
   const inner = svg.append('g')
     .attr('class', 'chart-inner')
