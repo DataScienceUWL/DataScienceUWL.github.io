@@ -6,7 +6,7 @@
 
 import { parseCSV } from '../../js/csv-parser.js';
 import { mean, median, sd, quantile, iqr, range, detectPrecision, formatStat } from '../../js/stats.js';
-import { drawHistogram } from '../../js/histogram.js';
+import { drawHistogram, sturgesBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { announce, initTabs, initDataPanel } from '../../js/page-utils.js';
@@ -24,6 +24,7 @@ const histogramContainer = document.getElementById('histogram-container');
 const dotplotContainer = document.getElementById('dotplot-container');
 const boxplotContainer = document.getElementById('boxplot-container');
 const showOutliersCheckbox = /** @type {HTMLInputElement} */ (document.getElementById('show-outliers'));
+const binCountInput = /** @type {HTMLInputElement} */ (document.getElementById('bin-count'));
 
 // Stat output cells
 const statN = document.getElementById('stat-n');
@@ -38,6 +39,24 @@ const statIqr = document.getElementById('stat-iqr');
 const statRange = document.getElementById('stat-range');
 
 initTabs();
+
+// Bin count change re-renders histogram only
+binCountInput?.addEventListener('change', () => {
+  if (currentValues.length === 0) return;
+  const varLabel = dataSummary?.textContent?.split(' - ')[1]?.split(' (')[0] || 'Value';
+  histogramContainer.innerHTML = '';
+  const numBins = parseInt(binCountInput.value, 10);
+  if (!isFinite(numBins) || numBins < 3) return;
+  drawHistogram(histogramContainer, currentValues, {
+    xLabel: varLabel,
+    yLabel: 'Frequency',
+    titleText: `Histogram of ${varLabel}`,
+    descText: `Histogram showing the distribution of ${varLabel}`,
+    id: 'desc-hist',
+    animate: false,
+    numBins,
+  });
+});
 
 // Outlier toggle re-renders boxplot only
 showOutliersCheckbox?.addEventListener('change', () => {
@@ -256,6 +275,10 @@ function renderCharts(values, xLabel) {
   boxplotContainer.innerHTML = '';
 
   if (values.length === 0) return;
+
+  // Set bin count default from Sturges' rule
+  const defaultBins = sturgesBins(values.length);
+  if (binCountInput) binCountInput.value = String(defaultBins);
 
   drawHistogram(histogramContainer, values, {
     xLabel,

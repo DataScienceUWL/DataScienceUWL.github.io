@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, prefersReducedMotion, hasD3Transition, TRANSITION_MS } from './chart-utils.js';
+import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS } from './chart-utils.js';
 
 /** Default bar fill (IMS blue at 50% opacity) — used when no isTail predicate. */
 const BAR_FILL = '#569BBD80';
@@ -97,7 +97,16 @@ export function computeBins(values, options = {}) {
     return { bins: [bin], binWidth: 1, domain };
   }
 
-  const domain = options.domain ?? /** @type {[number, number]} */ ([xMin, xMax]);
+  const rawDomain = options.domain ?? /** @type {[number, number]} */ ([xMin, xMax]);
+
+  // When using auto-thresholds (not explicit), "nice" the domain so that
+  // edge bins have the same width as interior bins (no partial-width bars).
+  const useNice = !options.thresholds;
+  let domain = rawDomain;
+  if (useNice) {
+    const niceScale = d3Scale.scaleLinear().domain(rawDomain).nice();
+    domain = /** @type {[number, number]} */ (niceScale.domain());
+  }
 
   const binGenerator = d3Array.bin().domain(domain);
   if (options.thresholds) {
@@ -214,7 +223,8 @@ export function drawHistogram(container, values, options = {}) {
       yScale.domain([0, d3Array.max(result.bins, b => b.length) || 1]).nice();
 
       // Update axes
-      d3Selection.select(frame.inner).select('.x-axis').call(xAxis);
+      const xAxisSel = d3Selection.select(frame.inner).select('.x-axis').call(xAxis);
+      autoReduceTicks(xAxisSel, xAxis);
       d3Selection.select(frame.inner).select('.y-axis').call(yAxis);
 
       // Re-render bars
