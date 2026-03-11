@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick } from './chart-utils.js';
+import { createChart, addAxes, formatTick, showTooltip, hideTooltip } from './chart-utils.js';
 
 /** Default spike color (IMS blue) — used when no isTail predicate. */
 const SPIKE_COLOR = '#569BBD';
@@ -145,8 +145,12 @@ export function drawSpike(container, values, options = {}) {
 
   // Tooltips
   dataGroup.selectAll('.spike-line')
-    .append('title')
-    .text(d => `${d.value.toFixed(4)}: ${d.count}`);
+    .on('mouseenter', function(event, d) {
+      showTooltip(frame.inner,
+        [formatTick(d.value), `Frequency: ${d.count}`],
+        xScale(d.value), yScale(d.count));
+    })
+    .on('mouseleave', () => hideTooltip(frame.inner));
 
   // Click spike → show count label
   dataGroup.selectAll('.spike-line')

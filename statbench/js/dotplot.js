@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS } from './chart-utils.js';
+import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip } from './chart-utils.js';
 
 /** Default dot fill (non-extreme). */
 const DOT_FILL = '#808080';
@@ -162,7 +162,7 @@ export function drawDotplot(container, values, options = {}) {
   }
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
-  renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex, highlightIndices);
+  renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex, highlightIndices, frame.inner);
 
   // Observed statistic line
   const overlaysGroup = d3Selection.select(frame.inner).select('.overlays');
@@ -194,7 +194,7 @@ export function drawDotplot(container, values, options = {}) {
         frame.width, frame.height, newResult.maxStack, newEffectiveBins);
 
       dataGroup.selectAll('circle').remove();
-      renderDots(dataGroup, newResult.dots, xScale, frame.height, newRadius, newIsExtreme, animate);
+      renderDots(dataGroup, newResult.dots, xScale, frame.height, newRadius, newIsExtreme, animate, -1, undefined, frame.inner);
 
       const overlays = d3Selection.select(frame.inner).select('.overlays');
       overlays.selectAll('*').remove();
@@ -223,8 +223,9 @@ const HIGHLIGHT_FILL = '#E07020';
  * @param {boolean} animate
  * @param {number} [highlightIndex] - Single newest dot (+1): yellow pulse
  * @param {Set<number>} [highlightIndices] - Batch new dots (+10): accent pulse
+ * @param {SVGGElement} [innerNode] - chart-inner node for custom tooltips
  */
-function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate, highlightIndex = -1, highlightIndices) {
+function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate, highlightIndex = -1, highlightIndices, innerNode) {
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
   /** Normal fill for a dot at index i. */
@@ -246,7 +247,15 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
     .attr('aria-label', d => String(d.value));
 
   // Hover tooltip: show original value
-  circles.append('title').text(d => d.value);
+  if (innerNode) {
+    circles
+      .on('mouseenter', function(event, d) {
+        const cx = xScale(d.binCenter);
+        const cy = innerHeight - (d.stackIndex + 0.5) * radius * 2 - radius;
+        showTooltip(innerNode, [String(d.value)], cx, cy);
+      })
+      .on('mouseleave', () => hideTooltip(innerNode));
+  }
 
   if (shouldAnimate) {
     circles

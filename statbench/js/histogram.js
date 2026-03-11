@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS } from './chart-utils.js';
+import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip } from './chart-utils.js';
 
 /** Default bar fill (IMS blue at 50% opacity) — used when no isTail predicate. */
 const BAR_FILL = '#569BBD80';
@@ -192,7 +192,7 @@ export function drawHistogram(container, values, options = {}) {
   addAxes(frame, xAxis, yAxis, xLabel, yLabel);
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
-  renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate);
+  renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate, frame.inner);
 
   // Stacked delta highlight: show new portions of bars in orange
   if (prevBinCounts) {
@@ -238,7 +238,7 @@ export function drawHistogram(container, values, options = {}) {
 
       // Re-render bars
       dataGroup.selectAll('rect').remove();
-      renderBars(dataGroup, result.bins, xScale, yScale, frame.height, newIsTail, animate);
+      renderBars(dataGroup, result.bins, xScale, yScale, frame.height, newIsTail, animate, frame.inner);
 
       // Re-render overlays
       overlays.selectAll('*').remove();
@@ -317,8 +317,9 @@ function renderDeltaBars(group, bins, xScale, yScale, innerHeight, prevCounts) {
  * @param {number} innerHeight
  * @param {((value: number) => boolean)} [isTail]
  * @param {boolean} animate
+ * @param {SVGGElement} [innerNode] - chart-inner node for custom tooltips
  */
-function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate) {
+function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, innerNode) {
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
   const bars = group.selectAll('rect')
@@ -352,7 +353,17 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate) {
   }
 
   // Hover tooltip: show bin range and frequency
-  bars.append('title').text(d => `${formatTick(d.x0)} to ${formatTick(d.x1)}\nFrequency: ${d.length}`);
+  if (innerNode) {
+    bars
+      .on('mouseenter', function(event, d) {
+        const cx = (xScale(d.x0) + xScale(d.x1)) / 2;
+        const cy = yScale(d.length);
+        showTooltip(innerNode,
+          [`${formatTick(d.x0)} to ${formatTick(d.x1)}`, `Frequency: ${d.length}`],
+          cx, cy);
+      })
+      .on('mouseleave', () => hideTooltip(innerNode));
+  }
 
   // Click bar → show count label above it
   bars.style('cursor', 'pointer')

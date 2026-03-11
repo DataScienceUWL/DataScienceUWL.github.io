@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick } from './chart-utils.js';
+import { createChart, addAxes, formatTick, showTooltip, hideTooltip } from './chart-utils.js';
 
 /** IMS blue. */
 const IMS_BLUE = '#569BBD';
@@ -137,7 +137,11 @@ export function drawScatterplot(container, xValues, yValues, options = {}) {
     .attr('stroke-width', 1)
     .attr('role', 'listitem')
     .attr('aria-label', d => `(${d.x}, ${d.y})`)
-    .append('title').text(d => `(${d.x}, ${d.y})`);
+    .on('mouseenter', function(event, d) {
+      showTooltip(frame.inner, [`(${formatTick(d.x)}, ${formatTick(d.y)})`],
+        xScale(d.x), yScale(d.y) - r);
+    })
+    .on('mouseleave', () => hideTooltip(frame.inner));
 
   return { frame, xScale, yScale };
 }
@@ -172,13 +176,16 @@ export function drawResidualPlot(container, fitted, residuals, options = {}) {
     xLabel, yLabel, titleText, descText, id, margin,
   });
 
-  // Replace generic (x, y) tooltips with residual-specific tooltips
+  // Override generic tooltips with residual-specific tooltips
   const dataGroup = d3Selection.select(result.frame.inner).select('.data');
-  dataGroup.selectAll('circle').each(function(d) {
-    const el = d3Selection.select(this);
-    el.select('title').text(`Fitted: ${formatTick(d.x)}\nResidual: ${formatTick(d.y)}`);
-    el.attr('aria-label', `Fitted ${formatTick(d.x)}, Residual ${formatTick(d.y)}`);
-  });
+  dataGroup.selectAll('circle')
+    .attr('aria-label', d => `Fitted ${formatTick(d.x)}, Residual ${formatTick(d.y)}`)
+    .on('mouseenter', function(event, d) {
+      showTooltip(result.frame.inner,
+        [`Fitted: ${formatTick(d.x)}`, `Residual: ${formatTick(d.y)}`],
+        result.xScale(d.x), result.yScale(d.y) - pointRadius(fitted.length));
+    })
+    .on('mouseleave', () => hideTooltip(result.frame.inner));
 
   // Add horizontal reference line at y = 0
   const overlays = d3Selection.select(result.frame.inner).select('.overlays');

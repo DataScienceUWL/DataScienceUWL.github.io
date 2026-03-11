@@ -11,7 +11,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import { quantile } from './stats.js';
-import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS } from './chart-utils.js';
+import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip } from './chart-utils.js';
 
 /** IMS blue for strokes and fills. */
 const IMS_BLUE = '#569BBD';
@@ -181,8 +181,13 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('height', boxH)
       .attr('fill', BOX_FILL)
       .attr('stroke', IMS_BLUE)
-      .attr('stroke-width', 1.5);
-    box.append('title').text(`Q1 = ${s.q1}\nMedian = ${s.median}\nQ3 = ${s.q3}\nIQR = ${s.iqr}`);
+      .attr('stroke-width', 1.5)
+      .on('mouseenter', () => {
+        showTooltip(frame.inner,
+          [`Q1 = ${s.q1}`, `Median = ${s.median}`, `Q3 = ${s.q3}`, `IQR = ${s.iqr}`],
+          (xScale(s.q1) + xScale(s.q3)) / 2, boxY);
+      })
+      .on('mouseleave', () => hideTooltip(frame.inner));
 
     if (shouldAnimate) {
       g.select('.box')
@@ -192,15 +197,19 @@ export function drawBoxplot(container, data, options = {}) {
     }
 
     // Median line
-    const medLine = g.append('line')
+    g.append('line')
       .attr('class', 'median')
       .attr('x1', xScale(s.median))
       .attr('x2', xScale(s.median))
       .attr('y1', boxY)
       .attr('y2', boxY + boxH)
       .attr('stroke', IMS_BLUE)
-      .attr('stroke-width', 2);
-    medLine.append('title').text(`Median = ${s.median}`);
+      .attr('stroke-width', 2)
+      .on('mouseenter', () => {
+        showTooltip(frame.inner, [`Median = ${s.median}`],
+          xScale(s.median), boxY);
+      })
+      .on('mouseleave', () => hideTooltip(frame.inner));
 
     // Lower whisker
     g.append('line')
@@ -223,35 +232,45 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('stroke-width', 1);
 
     // Lower whisker cap
-    const capLo = g.append('line')
+    const capLoLabel = showOutliers ? `Min (non-outlier) = ${wLo}` : `Min = ${wLo}`;
+    g.append('line')
       .attr('class', 'cap-lo')
       .attr('x1', xScale(wLo))
       .attr('x2', xScale(wLo))
       .attr('y1', capY)
       .attr('y2', capY + capH)
       .attr('stroke', IMS_BLUE)
-      .attr('stroke-width', 1);
-    capLo.append('title').text(showOutliers ? `Min (non-outlier) = ${wLo}` : `Min = ${wLo}`);
+      .attr('stroke-width', 1)
+      .on('mouseenter', () => {
+        showTooltip(frame.inner, [capLoLabel], xScale(wLo), capY);
+      })
+      .on('mouseleave', () => hideTooltip(frame.inner));
 
     // Upper whisker cap
-    const capHi = g.append('line')
+    const capHiLabel = showOutliers ? `Max (non-outlier) = ${wHi}` : `Max = ${wHi}`;
+    g.append('line')
       .attr('class', 'cap-hi')
       .attr('x1', xScale(wHi))
       .attr('x2', xScale(wHi))
       .attr('y1', capY)
       .attr('y2', capY + capH)
       .attr('stroke', IMS_BLUE)
-      .attr('stroke-width', 1);
-    capHi.append('title').text(showOutliers ? `Max (non-outlier) = ${wHi}` : `Max = ${wHi}`);
+      .attr('stroke-width', 1)
+      .on('mouseenter', () => {
+        showTooltip(frame.inner, [capHiLabel], xScale(wHi), capY);
+      })
+      .on('mouseleave', () => hideTooltip(frame.inner));
 
     if (showOutliers) {
+      const outlierCy = bandY + bandH / 2;
+
       // Mild outliers (open circles)
-      const mild = g.selectAll('.outlier-mild')
+      g.selectAll('.outlier-mild')
         .data(s.mildOutliers)
         .join('circle')
         .attr('class', 'outlier-mild')
         .attr('cx', d => xScale(d))
-        .attr('cy', bandY + bandH / 2)
+        .attr('cy', outlierCy)
         .attr('r', OUTLIER_RADIUS)
         .attr('fill', 'none')
         .attr('stroke', IMS_BLUE)
@@ -259,15 +278,14 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('role', 'listitem')
         .attr('aria-label', d => `Mild outlier: ${d}`)
         .style('cursor', 'pointer');
-      mild.append('title').text(d => d);
 
       // Extreme outliers (filled circles)
-      const extreme = g.selectAll('.outlier-extreme')
+      g.selectAll('.outlier-extreme')
         .data(s.extremeOutliers)
         .join('circle')
         .attr('class', 'outlier-extreme')
         .attr('cx', d => xScale(d))
-        .attr('cy', bandY + bandH / 2)
+        .attr('cy', outlierCy)
         .attr('r', OUTLIER_RADIUS)
         .attr('fill', IMS_BLUE)
         .attr('stroke', IMS_BLUE)
@@ -275,16 +293,18 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('role', 'listitem')
         .attr('aria-label', d => `Extreme outlier: ${d}`)
         .style('cursor', 'pointer');
-      extreme.append('title').text(d => d);
 
-      // Enlarge outlier dots on hover for easier identification
+      // Enlarge outlier dots on hover + show tooltip
       const allOutliers = g.selectAll('.outlier-mild, .outlier-extreme');
       allOutliers
-        .on('mouseenter', function() {
+        .on('mouseenter', function(event, d) {
           d3Selection.select(this).attr('r', OUTLIER_RADIUS * 1.8).attr('stroke-width', 2.5);
+          showTooltip(frame.inner, [String(d)],
+            xScale(d), outlierCy - OUTLIER_RADIUS * 2);
         })
         .on('mouseleave', function() {
           d3Selection.select(this).attr('r', OUTLIER_RADIUS).attr('stroke-width', 1.5);
+          hideTooltip(frame.inner);
         });
     }
   }

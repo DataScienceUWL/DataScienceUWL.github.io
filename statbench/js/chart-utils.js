@@ -201,6 +201,9 @@ export function createChart(container, options = {}) {
   inner.append('g').attr('class', 'data');
   inner.append('g').attr('class', 'overlays');
   inner.append('g').attr('class', 'annotations');
+  inner.append('g').attr('class', 'chart-tooltip')
+    .style('pointer-events', 'none')
+    .attr('visibility', 'hidden');
 
   return {
     svg: svg.node(),
@@ -359,4 +362,69 @@ function _addPLabel(group, text, x, y) {
   } catch {
     // getBBox may fail in test/JSDOM — skip background
   }
+}
+
+/**
+ * Show a custom SVG tooltip above a point inside a chart.
+ * The tooltip is rendered in the chart's .chart-tooltip layer so it
+ * appears on top of all chart elements and is positioned in viewBox
+ * coordinates (not screen pixels).
+ *
+ * @param {SVGGElement} innerNode - The chart-inner <g> node (frame.inner)
+ * @param {string[]} lines - Lines of text to display
+ * @param {number} x - X position in inner coordinates (center of tooltip)
+ * @param {number} y - Y position in inner coordinates (tooltip appears above this)
+ */
+export function showTooltip(innerNode, lines, x, y) {
+  const g = d3Selection.select(innerNode).select('.chart-tooltip');
+  g.selectAll('*').remove();
+  g.attr('visibility', 'visible');
+
+  const text = g.append('text')
+    .attr('text-anchor', 'middle')
+    .attr('fill', '#333')
+    .style('font-size', '11px');
+
+  lines.forEach((line, i) => {
+    text.append('tspan')
+      .attr('x', 0)
+      .attr('dy', i === 0 ? '0' : '1.25em')
+      .text(line);
+  });
+
+  // Measure and add background rect behind text
+  try {
+    const bbox = /** @type {SVGTextElement} */ (text.node()).getBBox();
+    const pad = 4;
+    g.insert('rect', 'text')
+      .attr('x', bbox.x - pad)
+      .attr('y', bbox.y - pad)
+      .attr('width', bbox.width + pad * 2)
+      .attr('height', bbox.height + pad * 2)
+      .attr('fill', 'white')
+      .attr('fill-opacity', 0.95)
+      .attr('stroke', '#bbb')
+      .attr('stroke-width', 0.5)
+      .attr('rx', 3);
+
+    // Position centered above the target point
+    let tooltipY = y - (-bbox.y) - pad - 6;
+    // Clamp: don't go above the chart area
+    if (tooltipY + bbox.y - pad < -20) {
+      tooltipY = y + 20; // flip below instead
+    }
+    g.attr('transform', `translate(${x}, ${tooltipY})`);
+  } catch {
+    // getBBox fails in JSDOM — position without measurement
+    g.attr('transform', `translate(${x}, ${y - 20})`);
+  }
+}
+
+/**
+ * Hide the custom SVG tooltip.
+ * @param {SVGGElement} innerNode - The chart-inner <g> node (frame.inner)
+ */
+export function hideTooltip(innerNode) {
+  const g = d3Selection.select(innerNode).select('.chart-tooltip');
+  g.attr('visibility', 'hidden').selectAll('*').remove();
 }
