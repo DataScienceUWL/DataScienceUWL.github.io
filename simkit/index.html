@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SimKit</title>
+    <title>SimKit — Statistics Toolkit</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,13 +16,14 @@
         .tool-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 1rem;
-            margin: 1rem 0;
+            gap: 0.75rem;
+            margin: 0.5rem 0 1.5rem;
         }
         .tool-card {
+            display: block;
             border: 1px solid var(--border);
             border-radius: 6px;
-            padding: 1rem 1.25rem;
+            padding: 0.85rem 1rem;
             text-decoration: none;
             color: var(--fg);
             transition: border-color 0.15s, box-shadow 0.15s;
@@ -32,13 +33,14 @@
             box-shadow: 0 2px 8px rgba(86, 155, 189, 0.15);
         }
         .tool-card h3 {
-            margin: 0 0 0.25rem;
-            font-size: 1rem;
+            margin: 0 0 0.2rem;
+            font-size: 0.95rem;
         }
         .tool-card p {
             margin: 0;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--ims-gray);
+            line-height: 1.35;
         }
         .section-label {
             font-size: 0.8rem;
@@ -46,125 +48,159 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--ims-gray);
-            margin: 2rem 0 0.5rem;
+            margin: 0 0 0.4rem;
         }
-        .section-label:first-of-type { margin-top: 1rem; }
-        .badge {
-            display: inline-block;
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 0.1rem 0.4rem;
-            border-radius: 3px;
-            vertical-align: middle;
-            margin-left: 0.4rem;
+
+        /* Two-column inference layout */
+        .inference-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 0.5rem 0 1.5rem;
         }
-        .badge-done { background: #114B5F20; color: #114B5F; }
-        .badge-wip  { background: #F4DC0040; color: #806e00; }
-        .badge-soon { background: #D9D9D9; color: #555; }
+        .inference-col h2 {
+            font-size: 1rem;
+            margin: 0 0 0.5rem;
+            padding-bottom: 0.35rem;
+            border-bottom: 2px solid var(--accent);
+        }
+        .inference-col .tool-card {
+            margin-bottom: 0.6rem;
+        }
+        .inference-col .tool-card:last-child {
+            margin-bottom: 0;
+        }
+        @media (max-width: 640px) {
+            .inference-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+
+        /* Subtle dividers between sections */
+        .section-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 1.5rem 0;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: var(--ims-gray);
+            margin: -0.25rem 0 1.25rem;
+        }
     </style>
 </head>
 <body>
     <main>
         <h1>SimKit</h1>
-        <p>Statistics toolkit for Stat 145. Pick a tool below.</p>
+        <p class="subtitle">Statistics toolkit for simulation-based inference.</p>
 
-        <p class="section-label">Distribution Calculators</p>
-        <div class="tool-grid">
-            <a class="tool-card" href="distribution/normal/">
-                <h3>Normal <span class="badge badge-done">live</span></h3>
-                <p>Find probabilities and critical values for the normal distribution.</p>
-            </a>
-            <a class="tool-card" href="distribution/t/">
-                <h3>t <span class="badge badge-done">live</span></h3>
-                <p>Student's t-distribution calculator with adjustable df.</p>
-            </a>
-            <a class="tool-card" href="distribution/chisq/">
-                <h3>Chi-Square <span class="badge badge-done">live</span></h3>
-                <p>Chi-square distribution calculator.</p>
-            </a>
-            <a class="tool-card" href="distribution/f/">
-                <h3>F <span class="badge badge-done">live</span></h3>
-                <p>F distribution with numerator and denominator df.</p>
-            </a>
-            <a class="tool-card" href="distribution/binomial/">
-                <h3>Binomial <span class="badge badge-done">live</span></h3>
-                <p>Discrete PMF bar chart, cumulative P(X ≤ k), normal approximation overlay.</p>
-            </a>
-        </div>
-
-        <p class="section-label">Estimation (Bootstrap CIs)</p>
-        <div class="tool-grid">
-            <a class="tool-card" href="simulate/bootstrap-mean/">
-                <h3>Bootstrap CI: One Sample <span class="badge badge-done">live</span></h3>
-                <p>Resample to build a confidence interval for a single population parameter (mean, median, SD, quartiles).</p>
-            </a>
-            <a class="tool-card" href="simulate/bootstrap-prop/">
-                <h3>Bootstrap CI: One Proportion <span class="badge badge-done">live</span></h3>
-                <p>Bootstrap confidence interval for a single proportion. See the lumpy, discrete distribution.</p>
-            </a>
-            <a class="tool-card" href="simulate/bootstrap-paired/">
-                <h3>Bootstrap CI: Paired Differences <span class="badge badge-done">live</span></h3>
-                <p>Bootstrap the differences from matched pairs to build a CI for the mean difference.</p>
-            </a>
-            <a class="tool-card" href="simulate/bootstrap-two-means/">
-                <h3>Bootstrap CI: Two Samples <span class="badge badge-done">live</span></h3>
-                <p>Bootstrap confidence interval for the difference in two group means.</p>
-            </a>
-        </div>
-
-        <p class="section-label">Testing (Randomization Tests)</p>
-        <div class="tool-grid">
-            <a class="tool-card" href="simulate/randomization-diff-means/">
-                <h3>Randomization Test: Difference in Means <span class="badge badge-done">live</span></h3>
-                <p>Permutation test for a difference in two group means.</p>
-            </a>
-            <a class="tool-card" href="simulate/randomization-one-prop/">
-                <h3>Randomization Test: One Proportion <span class="badge badge-done">live</span></h3>
-                <p>Test a single proportion via simulation under the null.</p>
-            </a>
-            <a class="tool-card" href="simulate/randomization-diff-props/">
-                <h3>Randomization Test: Diff in Proportions <span class="badge badge-done">live</span></h3>
-                <p>Permutation test for a difference in two group proportions.</p>
-            </a>
-            <a class="tool-card" href="simulate/randomization-chisq/">
-                <h3>Chi-Square Randomization Test <span class="badge badge-done">live</span></h3>
-                <p>Shuffle group labels to test independence in a contingency table. Always right-skewed.</p>
-            </a>
-        </div>
-
-        <p class="section-label">Regression Inference</p>
-        <div class="tool-grid">
-            <a class="tool-card" href="simulate/bootstrap-slope/">
-                <h3>Bootstrap CI: Regression Slope <span class="badge badge-done">live</span></h3>
-                <p>Resample (x, y) pairs, refit regression, build a CI for the slope. Bootstrap lines overlay the scatterplot.</p>
-            </a>
-        </div>
-
-        <p class="section-label">Conceptual Demos</p>
-        <div class="tool-grid">
-            <a class="tool-card" href="conceptual/sampling-dist/">
-                <h3>Sampling Distributions <span class="badge badge-done">live</span></h3>
-                <p>Watch the CLT in action: draw samples, build the sampling distribution.</p>
-            </a>
-            <a class="tool-card" href="conceptual/ci-coverage/">
-                <h3>CI Coverage <span class="badge badge-done">live</span></h3>
-                <p>See what "95% confidence" really means across many samples.</p>
-            </a>
-        </div>
-
+        <!-- ── Explore Data ─────────────────────────────────── -->
         <p class="section-label">Explore Data</p>
         <div class="tool-grid">
             <a class="tool-card" href="explore/descriptive/">
-                <h3>Descriptive Statistics <span class="badge badge-done">live</span></h3>
-                <p>Summary stats, histogram, boxplot, and dotplot for one variable.</p>
+                <h3>Descriptive Statistics</h3>
+                <p>Summary stats, histogram, boxplot, and dotplot for one numeric variable.</p>
             </a>
             <a class="tool-card" href="explore/regression/">
-                <h3>Two-Variable (Regression) <span class="badge badge-done">live</span></h3>
-                <p>Scatterplot with least-squares regression line.</p>
+                <h3>Two-Variable (Regression)</h3>
+                <p>Scatterplot with least-squares line, correlation, and residuals.</p>
             </a>
             <a class="tool-card" href="explore/categorical/">
-                <h3>Categorical Data <span class="badge badge-done">live</span></h3>
-                <p>Contingency table with proportion toggles and bar charts for one or two categorical variables.</p>
+                <h3>Categorical Data</h3>
+                <p>Contingency tables with proportion toggles and bar chart modes.</p>
+            </a>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- ── Sampling & Variability ───────────────────────── -->
+        <p class="section-label">Sampling &amp; Variability</p>
+        <div class="tool-grid">
+            <a class="tool-card" href="conceptual/sampling-dist/">
+                <h3>Sampling Distributions</h3>
+                <p>Draw samples, compute statistics, watch the sampling distribution build. See the CLT in action.</p>
+            </a>
+            <a class="tool-card" href="conceptual/ci-coverage/">
+                <h3>CI Coverage</h3>
+                <p>Draw 100 confidence intervals and see what "95% confidence" really means.</p>
+            </a>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- ── Simulation-Based Inference (two columns) ─────── -->
+        <p class="section-label">Simulation-Based Inference</p>
+        <div class="inference-row">
+            <div class="inference-col">
+                <h2>Confidence Intervals (Bootstrap)</h2>
+                <a class="tool-card" href="simulate/bootstrap-mean/">
+                    <h3>CI for a Mean</h3>
+                    <p>Bootstrap a single mean, median, or SD.</p>
+                </a>
+                <a class="tool-card" href="simulate/bootstrap-prop/">
+                    <h3>CI for a Proportion</h3>
+                    <p>Bootstrap a single proportion. See the lumpy discrete distribution.</p>
+                </a>
+                <a class="tool-card" href="simulate/bootstrap-two-means/">
+                    <h3>CI for Difference in Means</h3>
+                    <p>Bootstrap the difference between two group means.</p>
+                </a>
+                <a class="tool-card" href="simulate/bootstrap-paired/">
+                    <h3>CI for Paired Differences</h3>
+                    <p>Bootstrap mean difference from matched pairs.</p>
+                </a>
+                <a class="tool-card" href="simulate/bootstrap-slope/">
+                    <h3>CI for Regression Slope</h3>
+                    <p>Resample (x, y) pairs, refit lines, build CI for slope.</p>
+                </a>
+            </div>
+            <div class="inference-col">
+                <h2>Hypothesis Tests (Randomization)</h2>
+                <a class="tool-card" href="simulate/randomization-one-prop/">
+                    <h3>Test for a Proportion</h3>
+                    <p>Simulate under the null to test a single proportion.</p>
+                </a>
+                <a class="tool-card" href="simulate/randomization-diff-props/">
+                    <h3>Test for Difference in Proportions</h3>
+                    <p>Shuffle group labels to test two proportions.</p>
+                </a>
+                <a class="tool-card" href="simulate/randomization-diff-means/">
+                    <h3>Test for Difference in Means</h3>
+                    <p>Permutation test for two group means.</p>
+                </a>
+                <a class="tool-card" href="simulate/randomization-chisq/">
+                    <h3>Chi-Square Test</h3>
+                    <p>Randomization test for a contingency table. Always right-skewed.</p>
+                </a>
+            </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- ── Distribution Calculators ─────────────────────── -->
+        <p class="section-label">Distribution Calculators</p>
+        <div class="tool-grid">
+            <a class="tool-card" href="distribution/normal/">
+                <h3>Normal</h3>
+                <p>Probabilities and critical values for the normal distribution.</p>
+            </a>
+            <a class="tool-card" href="distribution/t/">
+                <h3>t</h3>
+                <p>Student's t-distribution with adjustable degrees of freedom.</p>
+            </a>
+            <a class="tool-card" href="distribution/chisq/">
+                <h3>Chi-Square</h3>
+                <p>Chi-square distribution calculator.</p>
+            </a>
+            <a class="tool-card" href="distribution/f/">
+                <h3>F</h3>
+                <p>F distribution with numerator and denominator df.</p>
+            </a>
+            <a class="tool-card" href="distribution/binomial/">
+                <h3>Binomial</h3>
+                <p>Discrete PMF, cumulative probabilities, normal approximation overlay.</p>
             </a>
         </div>
     </main>
