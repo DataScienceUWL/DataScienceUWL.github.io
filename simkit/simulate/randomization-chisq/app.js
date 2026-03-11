@@ -334,8 +334,15 @@ function generateSimulations(count) {
   }
 
   const csHi = Math.max(...allStats, observedChisq) * 1.05 || 1;
+  /** @type {[number,number]} */
+  const hlDomain = [0, csHi];
+
+  // Pre-compute bins to lock in bin edges for both computeHighlights and drawHistogram
+  const { bins: fullBins } = computeBins(allStats, { domain: hlDomain });
+  const lockedThresholds = fullBins.slice(1).map(b => b.x0);
+
   const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(
-    allStats, prevLength, count, computeBins, { domain: [0, csHi] });
+    allStats, prevLength, count, computeBins, { domain: hlDomain, thresholds: lockedThresholds });
   const { pValue, extremeCount } = computePValue(allStats, observedChisq);
   displayResults(allStats, observedChisq, pValue, extremeCount);
 
@@ -343,11 +350,11 @@ function generateSimulations(count) {
     setTimeout(() => {
       flashMechanism(mechanismStrip);
       setTimeout(() => {
-        renderChart(allStats, observedChisq, hlIndex, hlIndices, prevBinCounts);
+        renderChart(allStats, observedChisq, hlIndex, hlIndices, prevBinCounts, hlDomain, lockedThresholds);
       }, 120);
     }, 120);
   } else {
-    renderChart(allStats, observedChisq, hlIndex, hlIndices, prevBinCounts);
+    renderChart(allStats, observedChisq, hlIndex, hlIndices, prevBinCounts, hlDomain, lockedThresholds);
   }
 
   if (resetBtn) resetBtn.hidden = false;
@@ -362,14 +369,16 @@ function generateSimulations(count) {
  * @param {number} [highlightIndex]
  * @param {Set<number>} [highlightIndices]
  * @param {number[]} [prevBinCounts]
+ * @param {[number,number]} [hlDomain]
+ * @param {number[]} [hlThresholds]
  */
-function renderChart(stats, observed, highlightIndex = -1, highlightIndices, prevBinCounts) {
+function renderChart(stats, observed, highlightIndex = -1, highlightIndices, prevBinCounts, hlDomain, hlThresholds) {
   if (!chartContainer) return;
   chartContainer.innerHTML = '';
 
   const hi = Math.max(...stats, observed) * 1.05 || 1;
   /** @type {[number, number]} */
-  const domain = [0, hi];
+  const domain = hlDomain || [0, hi];
 
   /** @type {import('../../js/chart-utils.js').ChartFrame} */
   let frame;
@@ -398,6 +407,7 @@ function renderChart(stats, observed, highlightIndex = -1, highlightIndices, pre
       observedStat: observed,
       animate: false,
       domain,
+      thresholds: hlThresholds,
       prevBinCounts,
     });
     frame = r.frame;

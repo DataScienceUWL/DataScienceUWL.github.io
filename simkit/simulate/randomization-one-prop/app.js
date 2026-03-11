@@ -290,9 +290,13 @@ function generateSimulations(count) {
   const pad = (hi - lo) * 0.05 || 0.05;
   const hlDomain = /** @type {[number,number]} */ ([lo - pad, hi + pad]);
   const hlThresholds = snappedPropThresholds(n, hlDomain, allStats.length);
+  // Pre-compute bins to lock in bin edges for both computeHighlights and drawHistogram
+  const { bins: fullBins } = computeBins(allStats, { domain: hlDomain, thresholds: hlThresholds });
+  const lockedThresholds = fullBins.slice(1).map(b => b.x0);
+
   const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(
     allStats, prevLength, count, computeBins,
-    { domain: hlDomain, thresholds: hlThresholds });
+    { domain: hlDomain, thresholds: lockedThresholds });
 
   const { pValue, extremeCount } = computePValue(allStats, observedPHat, direction);
   displayResults(allStats, observedPHat, pValue, extremeCount, direction);
@@ -302,11 +306,11 @@ function generateSimulations(count) {
     setTimeout(() => {
       flashMechanism(mechanismStrip);
       setTimeout(() => {
-        renderChart(allStats, observedPHat, direction, hlIndex, hlIndices, prevBinCounts);
+        renderChart(allStats, observedPHat, direction, hlIndex, hlIndices, prevBinCounts, hlDomain, lockedThresholds);
       }, 120);
     }, 120);
   } else {
-    renderChart(allStats, observedPHat, direction, hlIndex, hlIndices, prevBinCounts);
+    renderChart(allStats, observedPHat, direction, hlIndex, hlIndices, prevBinCounts, hlDomain, lockedThresholds);
   }
   announce(`Generated ${count} simulation${count > 1 ? 's' : ''}. Total: ${allStats.length}`);
 }
@@ -320,8 +324,10 @@ function generateSimulations(count) {
  * @param {number} [highlightIndex]
  * @param {Set<number>} [highlightIndices]
  * @param {number[]} [prevBinCounts]
+ * @param {[number,number]} [hlDomain]
+ * @param {number[]} [hlThresholds]
  */
-function renderChart(stats, observed, direction, highlightIndex = -1, highlightIndices, prevBinCounts) {
+function renderChart(stats, observed, direction, highlightIndex = -1, highlightIndices, prevBinCounts, hlDomain, hlThresholds) {
   chartContainer.innerHTML = '';
   const n = stats.length;
 
@@ -375,7 +381,8 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
     frame = r.frame;
     xScale = r.xScale;
   } else {
-    const propThresholds = snappedPropThresholds(sampleN, domain, n);
+    const propThresholds = hlThresholds || snappedPropThresholds(sampleN, domain, n);
+    const histDomain = hlDomain || domain;
     const r = drawHistogram(chartContainer, stats, {
       id: 'sim-chart',
       xLabel: 'Sample Proportion (p̂)',
@@ -383,7 +390,7 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
       isTail: (v) => isExtreme(v, observed, direction),
       observedStat: observed,
       animate: false,
-      domain,
+      domain: histDomain,
       thresholds: propThresholds,
       prevBinCounts,
     });

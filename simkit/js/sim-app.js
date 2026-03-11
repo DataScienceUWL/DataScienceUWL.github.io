@@ -810,19 +810,29 @@ export function initSimPage(config) {
         }
       } else if (prevLength > 0) {
         // Histogram mode: compute previous bin counts for stacked delta
-        // Must use FULL dataset domain + same thresholds so bins align with renderChart
-        const vals = allStats;
-        let lo = Math.min(...vals);
-        let hi = Math.max(...vals);
+        // Must use EXACT same domain + thresholds as renderChart to align bins
+        let lo = Math.min(...allStats);
+        let hi = Math.max(...allStats);
         const dPad = (hi - lo) * 0.05 || 0.5;
+        lo -= dPad; hi += dPad;
+        if (preSimDomain) {
+          lo = Math.min(lo, preSimDomain[0]);
+          hi = Math.max(hi, preSimDomain[1]);
+        }
         /** @type {[number,number]} */
-        const fullDomain = [lo - dPad, hi + dPad];
+        const fullDomain = [lo, hi];
         const histThresholds = config.proportion
           ? snappedPropThresholds(data1.length, fullDomain, allStats.length)
           : undefined;
+        // Bin the FULL dataset first to lock in bin edges
+        const { bins: fullBins } = computeBins(allStats, {
+          domain: fullDomain, thresholds: histThresholds,
+        });
+        // Extract interior edges so prev data bins with identical edges
+        const lockedThresholds = fullBins.slice(1).map(b => b.x0);
         const prevStats = allStats.slice(0, prevLength);
         const { bins: prevBins } = computeBins(prevStats, {
-          domain: fullDomain, thresholds: histThresholds,
+          domain: fullDomain, thresholds: lockedThresholds,
         });
         prevBinCounts = prevBins.map(b => b.length);
       }
@@ -878,18 +888,29 @@ export function initSimPage(config) {
           }
         }
       } else if (prevLength > 0) {
+        // Must use EXACT same domain + thresholds as renderChart to align bins
         const rVals = observedStat != null ? [...allStats, observedStat] : allStats;
         let rLo = Math.min(...rVals);
         let rHi = Math.max(...rVals);
         const rPad = (rHi - rLo) * 0.05 || 0.5;
+        rLo -= rPad; rHi += rPad;
+        if (preSimDomain) {
+          rLo = Math.min(rLo, preSimDomain[0]);
+          rHi = Math.max(rHi, preSimDomain[1]);
+        }
         /** @type {[number,number]} */
-        const rDomain = [rLo - rPad, rHi + rPad];
+        const rDomain = [rLo, rHi];
         const rThresholds = config.proportion
           ? snappedPropThresholds(data1.length, rDomain, allStats.length)
           : undefined;
+        // Bin the FULL dataset first to lock in bin edges
+        const { bins: fullBins } = computeBins(allStats, {
+          domain: rDomain, thresholds: rThresholds,
+        });
+        const lockedThresholds = fullBins.slice(1).map(b => b.x0);
         const prevStats = allStats.slice(0, prevLength);
         const { bins: prevBins } = computeBins(prevStats, {
-          domain: rDomain, thresholds: rThresholds,
+          domain: rDomain, thresholds: lockedThresholds,
         });
         prevBinCounts = prevBins.map(b => b.length);
       }

@@ -222,12 +222,19 @@ function generateResamples(count) {
   const bsLo = Math.min(...allSlopes);
   const bsHi = Math.max(...allSlopes);
   const bsPad = (bsHi - bsLo) * 0.05 || 0.5;
+  /** @type {[number,number]} */
+  const hlDomain = [bsLo - bsPad, bsHi + bsPad];
+
+  // Pre-compute bins to lock in bin edges for both computeHighlights and drawHistogram
+  const { bins: fullBins } = computeBins(allSlopes, { domain: hlDomain });
+  const lockedThresholds = fullBins.slice(1).map(b => b.x0);
+
   const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(
     allSlopes, prevLength, count, computeBins,
-    { domain: [bsLo - bsPad, bsHi + bsPad] });
+    { domain: hlDomain, thresholds: lockedThresholds });
 
   renderScatter();
-  renderHist(allSlopes, hlIndex, hlIndices, prevBinCounts, currentCI);
+  renderHist(allSlopes, hlIndex, hlIndices, prevBinCounts, currentCI, hlDomain, lockedThresholds);
 
   if (resetBtn) resetBtn.hidden = false;
   announce(`Generated ${count} resample${count > 1 ? 's' : ''}. Total: ${allSlopes.length}`);
@@ -254,8 +261,10 @@ function renderScatter() {
  * @param {Set<number>} [highlightIndices]
  * @param {number[]} [prevBinCounts]
  * @param {[number,number]|null} [ci]
+ * @param {[number,number]} [hlDomain]
+ * @param {number[]} [hlThresholds]
  */
-function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts, ci) {
+function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts, ci, hlDomain, hlThresholds) {
   if (!histContainer) return;
   histContainer.innerHTML = '';
   const n = slopes.length;
@@ -292,6 +301,8 @@ function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts
       observedStat: observedSlope,
       ciLines: ci ?? undefined,
       animate: false,
+      domain: hlDomain,
+      thresholds: hlThresholds,
       prevBinCounts,
     });
     frame = r.frame;

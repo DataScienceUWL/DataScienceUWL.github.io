@@ -242,8 +242,9 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
   const n = sampleMeans.length;
   if (n === 0) return;
 
-  const sampleN = parseInt(sampleSizeInput.value, 10) || 30;
-  const se = popSigma / Math.sqrt(sampleN);
+  // Use empirical mean/SD for the curve — matches the actual data better
+  const empiricalMu = mean(sampleMeans);
+  const empiricalSE = sd(sampleMeans);
 
   // Use histogram when we have enough samples (or when normal overlay is on)
   const useHistogram = n > 200 || (showNormalCheckbox?.checked && n > 30);
@@ -271,7 +272,7 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
     });
     if (showNormalCheckbox?.checked && result?.bins?.length > 0) {
       const binWidth = result.bins[0].x1 - result.bins[0].x0;
-      overlayNormalCurve(result.frame, popMu, se, result.xScale, result.yScale, n, binWidth);
+      overlayNormalCurve(result.frame, empiricalMu, empiricalSE, result.xScale, result.yScale, n, binWidth);
     }
   }
 }
@@ -291,17 +292,19 @@ function displayInterpretation() {
   const xbarSd = sd(sampleMeans);
   const theorySE = popSigma / Math.sqrt(n);
 
-  let html = `<p><strong>Sampling Distribution</strong> (${k} samples of size <em>n</em> = ${n})</p>`;
-  html += `<p>Population: <em>&mu;</em> = ${popMu.toFixed(2)}, &ensp;<em>&sigma;</em> = ${popSigma.toFixed(2)}</p>`;
-  html += `<p>Mean of <em>x&#x0304;</em>&rsquo;s = ${xbarMean.toFixed(4)} &ensp;(should be close to <em>&mu;</em> = ${popMu.toFixed(2)})</p>`;
-  html += `<p>SD of <em>x&#x0304;</em>&rsquo;s = ${xbarSd.toFixed(4)} &ensp;(theory: <em>&sigma;</em>/&radic;<em>n</em> = ${theorySE.toFixed(4)})</p>`;
+  const m = (s) => `<span class="math">${s}</span>`;
+
+  let html = `<p><strong>Sampling Distribution</strong> — ${k} samples of size ${m('n')} = ${n}</p>`;
+  html += `<p>Population: ${m('μ')} = ${popMu.toFixed(2)}, \u2003${m('σ')} = ${popSigma.toFixed(2)}</p>`;
+  html += `<p>Mean of ${m('x̄')}'s = ${xbarMean.toFixed(4)} \u2003(should be close to ${m('μ')} = ${popMu.toFixed(2)})</p>`;
+  html += `<p>SD of ${m('x̄')}'s = ${xbarSd.toFixed(4)} \u2003(theory: ${m('σ')}/√${m('n')} = ${theorySE.toFixed(4)})</p>`;
 
   if (k >= 100) {
-    html += `<p class="interpretation">The Central Limit Theorem says the sampling distribution of <em>x&#x0304;</em> is approximately normal with mean <em>&mu;</em> and standard deviation <em>&sigma;</em>/&radic;<em>n</em>, regardless of the population shape — as long as <em>n</em> is large enough. `;
+    html += `<p class="interpretation">The Central Limit Theorem says the sampling distribution of ${m('x̄')} is approximately normal with mean ${m('μ')} and standard deviation ${m('σ')}/√${m('n')}, regardless of the population shape — as long as ${m('n')} is large enough. `;
     if (n >= 30) {
-      html += `With <em>n</em> = ${n}, notice how the distribution of sample means is roughly bell-shaped, even though the population may not be.</p>`;
+      html += `With ${m('n')} = ${n}, notice how the distribution of sample means is roughly bell-shaped, even though the population may not be.</p>`;
     } else {
-      html += `With <em>n</em> = ${n}, the shape depends more on the population. Try increasing <em>n</em> to see the distribution become more normal.</p>`;
+      html += `With ${m('n')} = ${n}, the shape depends more on the population. Try increasing ${m('n')} to see the distribution become more normal.</p>`;
     }
   } else {
     html += `<p class="hint">Draw more samples (at least 100) to see the pattern clearly.</p>`;
