@@ -145,10 +145,6 @@ export function initSimPage(config) {
   if (chartFigure) {
     toggleFieldset = document.createElement('fieldset');
     toggleFieldset.className = 'chart-type-toggle';
-    const legend = document.createElement('legend');
-    legend.textContent = 'Chart:';
-    toggleFieldset.appendChild(legend);
-    // Initial options — rebuilt when we know if data is discrete
     toggleFieldset.insertAdjacentHTML('beforeend', buildToggleHTML(['dotplot', 'histogram'], 'dotplot'));
     chartFigure.insertBefore(toggleFieldset, chartContainer);
     toggleFieldset.addEventListener('change', (e) => {
@@ -194,10 +190,7 @@ export function initSimPage(config) {
       ? ['dotplot', 'spike', 'histogram']
       : ['dotplot', 'histogram'];
     const selected = (chartType === 'auto' ? 'dotplot' : chartType);
-    // Keep the legend, replace everything else
-    const legend = toggleFieldset.querySelector('legend');
     toggleFieldset.innerHTML = '';
-    if (legend) toggleFieldset.appendChild(legend);
     toggleFieldset.insertAdjacentHTML('beforeend', buildToggleHTML(types, selected));
   }
 

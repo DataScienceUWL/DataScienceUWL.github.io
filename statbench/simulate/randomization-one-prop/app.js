@@ -51,9 +51,6 @@ let toggleFieldset = null;
 if (chartFigure) {
   toggleFieldset = document.createElement('fieldset');
   toggleFieldset.className = 'chart-type-toggle';
-  const legend = document.createElement('legend');
-  legend.textContent = 'Chart:';
-  toggleFieldset.appendChild(legend);
   toggleFieldset.insertAdjacentHTML('beforeend', [
     ['dotplot', 'Dotplot'], ['spike', 'Spike'], ['histogram', 'Histogram'],
   ].map(([v, l]) =>
