@@ -32,7 +32,7 @@
   --font-body: "Atkinson Hyperlegible", sans-serif;
   --font-mono: "Source Code Pro", monospace;
   --font-size-base: 16px;
-  --font-size-chart: 20px;
+  --font-size-chart: 14px;
 }
 
 /* ===== Reset & Base ===== */
@@ -854,13 +854,14 @@ input[aria-invalid="true"] {
 /* Full-width (~600px), viewBox is 1:1, so 30vb → 30px.                 */
 
 /* ── viewBox font sizes (600×371 canvas) ──
-   Full-width (~600px container): 1:1 scale, sizes render as-is.
-   2-col grid  (~300px container): 0.5× scale, 20vb → 10px physical.
-   Phone       (~350px container): 0.58× scale, 20vb → 12px physical. */
+   main is max-width: 800px → chart container ≈770px → 1.28× scale.
+   14vb → ~18px physical on desktop. Fine for tick labels.
+   Phone (350px container): 0.58× → 14vb → 8px — too small, so
+   we bump to 22px on phones (22 × 0.58 ≈ 13px physical). */
 
 svg[role="img"] {
   font-family: var(--font-body);
-  font-size: var(--font-size-chart);       /* tick labels: 20px vb */
+  font-size: var(--font-size-chart);
 }
 
 /* D3 axis sets font-size:10px as an inline style on <g class="tick">.
@@ -871,38 +872,52 @@ svg[role="img"] .tick text {
 
 svg[role="img"] .x-label,
 svg[role="img"] .y-label {
-  font-size: 20px;                         /* axis labels — same as ticks */
+  font-size: 15px;                         /* axis labels — slightly larger than ticks */
 }
 
 svg[role="img"] .overlay-value {
-  font-size: 22px;                         /* observed stat / CI bound numbers */
+  font-size: 16px;                         /* observed stat / CI bound numbers */
   font-weight: 600;
 }
 
 svg[role="img"] .bar-count-label {
-  font-size: 20px;                         /* histogram bar click labels */
+  font-size: 14px;                         /* histogram bar click labels */
   font-weight: 700;
 }
 
 svg[role="img"] .p-value-label {
-  font-size: 22px;                         /* p-value on chart */
+  font-size: 16px;                         /* p-value on chart */
   font-weight: 700;
 }
 
 svg[role="img"] .prob-label {
-  font-size: 20px;                         /* distribution probability labels */
+  font-size: 14px;                         /* distribution probability labels */
   font-weight: bold;
   font-family: var(--font-mono);
 }
 
 svg[role="img"] .prob-complement {
-  font-size: 18px;
+  font-size: 13px;
   font-weight: normal;
 }
 
 svg[role="img"] .crit-label {
-  font-size: 20px;                         /* critical value labels */
+  font-size: 14px;                         /* critical value labels */
   font-family: var(--font-mono);
+}
+
+/* Phone: charts are full-width (~350px container, 0.58× scale).
+   Bump viewBox font sizes so text stays readable. */
+@media (max-width: 480px) {
+  :root { --font-size-chart: 22px; }
+  svg[role="img"] .x-label,
+  svg[role="img"] .y-label        { font-size: 23px; }
+  svg[role="img"] .overlay-value  { font-size: 24px; }
+  svg[role="img"] .bar-count-label { font-size: 22px; }
+  svg[role="img"] .p-value-label  { font-size: 24px; }
+  svg[role="img"] .prob-label     { font-size: 22px; }
+  svg[role="img"] .prob-complement { font-size: 20px; }
+  svg[role="img"] .crit-label     { font-size: 22px; }
 }
 
 /* Probability label pills on distribution charts */

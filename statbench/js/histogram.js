@@ -154,8 +154,13 @@ export function drawHistogram(container, values, options = {}) {
   const frame = createChart(container, { titleText, descText, id, margin });
   const { bins, domain: finalDomain } = computeBins(values, { numBins, domain, thresholds });
 
+  // Extend x-domain to encompass full first and last bins (no partial bars)
+  const xDomain = bins.length > 0
+    ? [bins[0].x0, bins[bins.length - 1].x1]
+    : finalDomain;
+
   const xScale = d3Scale.scaleLinear()
-    .domain(finalDomain)
+    .domain(xDomain)
     .range([0, frame.width]);
 
   const yScale = d3Scale.scaleLinear()
@@ -200,7 +205,11 @@ export function drawHistogram(container, values, options = {}) {
       const newObserved = opts.observedStat ?? observedStat;
       const newCiLines = opts.ciLines ?? ciLines;
 
-      xScale.domain(result.domain);
+      // Extend to full first/last bin edges
+      const newXDomain = result.bins.length > 0
+        ? [result.bins[0].x0, result.bins[result.bins.length - 1].x1]
+        : result.domain;
+      xScale.domain(newXDomain);
       yScale.domain([0, d3Array.max(result.bins, b => b.length) || 1]).nice();
 
       // Update axes
