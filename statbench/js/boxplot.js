@@ -240,9 +240,11 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('stroke', IMS_BLUE)
       .attr('stroke-width', 1);
 
+    // Actual data min/max for five-number summary tooltip
+    const dataMin = d3Array.min(vals);
+    const dataMax = d3Array.max(vals);
+
     // Invisible hit rect spanning full whisker-to-whisker range for easy hover
-    const minLabel = showOutliers ? 'Min (non-outlier)' : 'Min';
-    const maxLabel = showOutliers ? 'Max (non-outlier)' : 'Max';
     g.append('rect')
       .attr('class', 'boxplot-hit')
       .attr('x', xScale(wLo))
@@ -253,11 +255,43 @@ export function drawBoxplot(container, data, options = {}) {
       .style('cursor', 'pointer')
       .on('mouseenter', () => {
         showTooltip(frame.inner,
-          [`${minLabel} = ${wLo}`, `Q1 = ${s.q1}`, `Median = ${s.median}`,
-           `Q3 = ${s.q3}`, `${maxLabel} = ${wHi}`],
+          [`Min = ${dataMin}`, `Q1 = ${s.q1}`, `Median = ${s.median}`,
+           `Q3 = ${s.q3}`, `Max = ${dataMax}`],
           (xScale(s.q1) + xScale(s.q3)) / 2, boxY);
       })
       .on('mouseleave', () => hideTooltip(frame.inner));
+
+    // Whisker cap hit zones (wider invisible rects for easy hover)
+    // Only show special labels when outliers are present
+    if (showOutliers && (s.mildOutliers.length > 0 || s.extremeOutliers.length > 0)) {
+      const capHitW = 16; // viewBox units wide
+      g.append('rect')
+        .attr('class', 'cap-hit-lo')
+        .attr('x', xScale(wLo) - capHitW / 2)
+        .attr('y', bandY)
+        .attr('width', capHitW)
+        .attr('height', bandH)
+        .attr('fill', 'transparent')
+        .style('cursor', 'pointer')
+        .on('mouseenter', () => {
+          showTooltip(frame.inner, ['Smallest non-outlier', String(wLo)],
+            xScale(wLo), capY);
+        })
+        .on('mouseleave', () => hideTooltip(frame.inner));
+      g.append('rect')
+        .attr('class', 'cap-hit-hi')
+        .attr('x', xScale(wHi) - capHitW / 2)
+        .attr('y', bandY)
+        .attr('width', capHitW)
+        .attr('height', bandH)
+        .attr('fill', 'transparent')
+        .style('cursor', 'pointer')
+        .on('mouseenter', () => {
+          showTooltip(frame.inner, ['Largest non-outlier', String(wHi)],
+            xScale(wHi), capY);
+        })
+        .on('mouseleave', () => hideTooltip(frame.inner));
+    }
 
     if (showOutliers) {
       const outlierCy = bandY + bandH / 2;
