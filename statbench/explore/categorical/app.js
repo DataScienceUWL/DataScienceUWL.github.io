@@ -170,6 +170,7 @@ function updateDisplay() {
     const colValues = rawRows.map(r => r[colVar]);
     renderTwoVarTable(rowValues, colValues);
     renderChart(rowValues, rowVar, colValues, colVar);
+    applyTableColors();
   }
 
   if (resultsSection) resultsSection.hidden = false;
@@ -318,6 +319,9 @@ function formatTotal(subtotal, grandTotal, mode, direction) {
 
 // ── Bar chart ────────────────────────────────────────────────────────
 
+/** Last color map from grouped chart (for table tinting). @type {null | { categories: string[], colors: string[] }} */
+let lastColorMap = null;
+
 /**
  * @param {string[]} primaryValues
  * @param {string} primaryLabel
@@ -327,6 +331,7 @@ function formatTotal(subtotal, grandTotal, mode, direction) {
 function renderChart(primaryValues, primaryLabel, secondaryValues, secondaryLabel) {
   if (!chartContainer) return;
   chartContainer.innerHTML = '';
+  lastColorMap = null;
 
   const chartMode = chartModeSelect.value;
 
@@ -343,15 +348,66 @@ function renderChart(primaryValues, primaryLabel, secondaryValues, secondaryLabe
     // Grouped bar chart — use dodged for frequency, stacked/filled as selected
     /** @type {import('../../js/barchart.js').BarMode} */
     const barMode = chartMode === 'frequency' ? 'dodged' : chartMode;
-    drawBarChart(chartContainer, primaryValues, {
+    const result = drawBarChart(chartContainer, primaryValues, {
       mode: barMode,
       groupValues: secondaryValues,
+      groupLabel: secondaryLabel,
       xLabel: primaryLabel,
       titleText: `${primaryLabel} by ${secondaryLabel}`,
       id: 'cat-chart',
       animate: false,
     });
+    lastColorMap = result.colorMap ?? null;
   }
 }
 
+// ── Table ↔ Chart color link ─────────────────────────────────────────
 
+/**
+ * Apply light color tints to contingency table columns matching the chart legend.
+ * Uses the color map from the most recent grouped bar chart render.
+ */
+function applyTableColors() {
+  if (!lastColorMap || !tableContainer) return;
+  const { categories, colors } = lastColorMap;
+
+  const table = tableContainer.querySelector('table');
+  if (!table) return;
+
+  // Build a map: column header text → color
+  /** @type {Map<string, string>} */
+  const colorByCategory = new Map();
+  for (let i = 0; i < categories.length; i++) {
+    colorByCategory.set(categories[i], colors[i % colors.length]);
+  }
+
+  // Find which column index corresponds to each secondary category
+  const headerRow = table.querySelector('thead tr');
+  if (!headerRow) return;
+  const ths = headerRow.querySelectorAll('th');
+
+  // Map column index → color (skip first th which is the row variable label)
+  /** @type {Map<number, string>} */
+  const colIndexToColor = new Map();
+  ths.forEach((th, i) => {
+    if (i === 0) return; // row variable label
+    const text = th.textContent?.trim() ?? '';
+    const color = colorByCategory.get(text);
+    if (color) {
+      colIndexToColor.set(i, color);
+      th.style.borderBottom = `3px solid ${color}`;
+    }
+  });
+
+  // Tint data cells with a very light background
+  const bodyRows = table.querySelectorAll('tbody tr, tfoot tr');
+  bodyRows.forEach(row => {
+    const cells = row.querySelectorAll('th, td');
+    cells.forEach((cell, i) => {
+      const color = colIndexToColor.get(i);
+      if (color) {
+        /** @type {HTMLElement} */ (cell).style.backgroundColor = color + '18'; // ~9% opacity
+      }
+    });
+  });
+}

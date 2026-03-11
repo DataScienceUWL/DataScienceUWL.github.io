@@ -11,7 +11,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS } from './chart-utils.js';
+import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip } from './chart-utils.js';
 
 /** Bar stroke (white separator). */
 const BAR_STROKE = '#FFFFFF';
@@ -91,7 +91,8 @@ export function computeGroupedFrequencies(primary, secondary) {
  * @param {string[]} [options.categoryOrder] - Explicit category order
  * @param {boolean} [options.animate] - Whether to animate (default: true)
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
- * @returns {{ frame: ChartFrame }}
+ * @param {string} [options.groupLabel] - Label for the legend title (secondary variable name)
+ * @returns {{ frame: ChartFrame, colorMap?: { categories: string[], colors: string[] } }}
  */
 export function drawBarChart(container, values, options = {}) {
   const {
@@ -104,14 +105,19 @@ export function drawBarChart(container, values, options = {}) {
     categoryOrder,
     animate = true,
     margin,
+    groupLabel,
   } = options;
 
   const isGrouped = groupValues != null && (mode === 'stacked' || mode === 'dodged' || mode === 'filled');
   const frame = createChart(container, { titleText, descText, id, margin });
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
+  /** @type {{ categories: string[], colors: string[] } | undefined} */
+  let colorMap;
+
   if (isGrouped) {
-    drawGroupedBars(frame, values, groupValues, mode, { xLabel, categoryOrder, shouldAnimate });
+    colorMap = drawGroupedBars(frame, values, groupValues, mode, { xLabel, categoryOrder, shouldAnimate });
+    drawLegend(frame, colorMap.categories, colorMap.colors, groupLabel);
   } else {
     drawSimpleBars(frame, values, mode, { xLabel, categoryOrder, shouldAnimate });
   }
@@ -128,7 +134,7 @@ export function drawBarChart(container, values, options = {}) {
       .text(yLabel);
   }
 
-  return { frame };
+  return { frame, colorMap };
 }
 
 /**
@@ -202,7 +208,17 @@ function drawSimpleBars(frame, values, mode, opts) {
       return mode === 'relative'
         ? `${c}: ${(count / total).toFixed(3)}`
         : `${c}: ${count}`;
-    });
+    })
+    .on('mouseenter', function(event, c) {
+      const count = counts.get(c) ?? 0;
+      const val = mode === 'relative' ? count / total : count;
+      const label = mode === 'relative'
+        ? `${c}: ${(count / total).toFixed(3)}`
+        : `${c}: ${count}`;
+      const cx = /** @type {number} */ (xScale(c)) + xScale.bandwidth() / 2;
+      showTooltip(frame.inner, [label], cx, yScale(val));
+    })
+    .on('mouseleave', () => hideTooltip(frame.inner));
 
   if (opts.shouldAnimate) {
     bars
@@ -220,7 +236,84 @@ function drawSimpleBars(frame, values, mode, opts) {
 }
 
 /**
+ * Draw a legend in the chart's overlays layer (top-right).
+ * @param {ChartFrame} frame
+ * @param {string[]} categories
+ * @param {string[]} colors
+ * @param {string} [title]
+ */
+function drawLegend(frame, categories, colors, title) {
+  const overlays = d3Selection.select(frame.inner).select('.overlays');
+  const g = overlays.append('g').attr('class', 'chart-legend');
+
+  const swatchSize = 12;
+  const lineHeight = 18;
+  const padX = 8;
+  const padY = 6;
+  let yOff = padY;
+
+  // Optional title
+  if (title) {
+    g.append('text')
+      .attr('x', padX)
+      .attr('y', yOff + 11)
+      .style('font-size', '11px')
+      .style('font-weight', '700')
+      .attr('fill', '#333')
+      .text(title);
+    yOff += lineHeight;
+  }
+
+  for (let i = 0; i < categories.length; i++) {
+    g.append('rect')
+      .attr('x', padX)
+      .attr('y', yOff)
+      .attr('width', swatchSize)
+      .attr('height', swatchSize)
+      .attr('fill', colors[i % colors.length])
+      .attr('stroke', '#999')
+      .attr('stroke-width', 0.5)
+      .attr('rx', 2);
+
+    g.append('text')
+      .attr('x', padX + swatchSize + 5)
+      .attr('y', yOff + swatchSize - 1)
+      .style('font-size', '11px')
+      .attr('fill', '#333')
+      .text(categories[i]);
+
+    yOff += lineHeight;
+  }
+
+  // Measure and add background rect
+  try {
+    const bbox = /** @type {SVGGElement} */ (g.node()).getBBox();
+    const bgPad = 4;
+    g.insert('rect', ':first-child')
+      .attr('x', bbox.x - bgPad)
+      .attr('y', bbox.y - bgPad)
+      .attr('width', bbox.width + bgPad * 2)
+      .attr('height', bbox.height + bgPad * 2)
+      .attr('fill', 'white')
+      .attr('fill-opacity', 0.9)
+      .attr('stroke', '#ccc')
+      .attr('stroke-width', 0.5)
+      .attr('rx', 4);
+  } catch { /* getBBox fails in JSDOM */ }
+
+  // Position top-right
+  g.attr('transform', `translate(${frame.width - 120}, 0)`);
+
+  // Adjust position based on measured width
+  try {
+    const bbox = /** @type {SVGGElement} */ (g.node()).getBBox();
+    g.attr('transform', `translate(${frame.width - bbox.width - 4}, 0)`);
+  } catch { /* JSDOM fallback */ }
+}
+
+/**
  * Draw grouped bars (stacked, dodged, or filled).
+ * @returns {{ categories: string[], colors: string[] }}
  */
 function drawGroupedBars(frame, values, groupValues, mode, opts) {
   const { primaryCats, secondaryCats, table, primaryTotals } = computeGroupedFrequencies(values, groupValues);
@@ -260,20 +353,27 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
     }
 
     for (const p of primaryCats) {
-      const g = dataGroup.append('g').attr('transform', `translate(${xScale(p)}, 0)`);
+      const gx = /** @type {number} */ (xScale(p));
+      const g = dataGroup.append('g').attr('transform', `translate(${gx}, 0)`);
       for (let si = 0; si < secondaryCats.length; si++) {
         const s = secondaryCats[si];
         const count = table.get(p)?.get(s) ?? 0;
+        const barX = /** @type {number} */ (xSubScale(s));
+        const barY = yScale(count);
         g.append('rect')
-          .attr('x', xSubScale(s))
-          .attr('y', yScale(count))
+          .attr('x', barX)
+          .attr('y', barY)
           .attr('width', xSubScale.bandwidth())
-          .attr('height', frame.height - yScale(count))
+          .attr('height', frame.height - barY)
           .attr('fill', colors[si % colors.length])
           .attr('stroke', BAR_STROKE)
           .attr('stroke-width', 1)
           .attr('role', 'listitem')
-          .attr('aria-label', `${p}, ${s}: ${count}`);
+          .attr('aria-label', `${p}, ${s}: ${count}`)
+          .on('mouseenter', () => {
+            showTooltip(frame.inner, [`${s}: ${count}`], gx + barX + xSubScale.bandwidth() / 2, barY);
+          })
+          .on('mouseleave', () => hideTooltip(frame.inner));
       }
     }
   } else {
@@ -298,20 +398,31 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
         const count = table.get(p)?.get(s) ?? 0;
         const value = mode === 'filled' ? count / pTotal : count;
         const y0 = mode === 'filled' ? cumulative / pTotal : cumulative;
+        const barY = yScale(y0 + value);
+        const barMidX = /** @type {number} */ (xScale(p)) + xScale.bandwidth() / 2;
+        const label = mode === 'filled'
+          ? `${s}: ${(value * 100).toFixed(1)}%`
+          : `${s}: ${count}`;
 
         dataGroup.append('rect')
           .attr('x', xScale(p))
-          .attr('y', yScale(y0 + value))
+          .attr('y', barY)
           .attr('width', xScale.bandwidth())
-          .attr('height', yScale(y0) - yScale(y0 + value))
+          .attr('height', yScale(y0) - barY)
           .attr('fill', colors[si % colors.length])
           .attr('stroke', BAR_STROKE)
           .attr('stroke-width', 1)
           .attr('role', 'listitem')
-          .attr('aria-label', `${p}, ${s}: ${count}`);
+          .attr('aria-label', `${p}, ${s}: ${count}`)
+          .on('mouseenter', () => {
+            showTooltip(frame.inner, [label], barMidX, barY);
+          })
+          .on('mouseleave', () => hideTooltip(frame.inner));
 
         cumulative += count;
       }
     }
   }
+
+  return { categories: secondaryCats, colors };
 }
