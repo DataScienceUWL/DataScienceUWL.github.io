@@ -172,6 +172,14 @@ export function drawResidualPlot(container, fitted, residuals, options = {}) {
     xLabel, yLabel, titleText, descText, id, margin,
   });
 
+  // Replace generic (x, y) tooltips with residual-specific tooltips
+  const dataGroup = d3Selection.select(result.frame.inner).select('.data');
+  dataGroup.selectAll('circle').each(function(d) {
+    const el = d3Selection.select(this);
+    el.select('title').text(`Fitted: ${formatTick(d.x)}\nResidual: ${formatTick(d.y)}`);
+    el.attr('aria-label', `Fitted ${formatTick(d.x)}, Residual ${formatTick(d.y)}`);
+  });
+
   // Add horizontal reference line at y = 0
   const overlays = d3Selection.select(result.frame.inner).select('.overlays');
   overlays.append('line')
