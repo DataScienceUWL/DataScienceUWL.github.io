@@ -119,6 +119,23 @@ function _ticksOverlap(nodes) {
   return false;
 }
 
+/**
+ * Auto-reduce x-axis ticks if labels overlap. Call after initial axis render.
+ * @param {d3Selection.Selection} axisG - The axis <g> element
+ * @param {*} xAxis - d3.axisBottom with .ticks() method
+ */
+export function autoReduceTicks(axisG, xAxis) {
+  if (typeof xAxis.ticks !== 'function') return;
+  const tickTexts = axisG.selectAll('.tick text').nodes();
+  if (!_ticksOverlap(tickTexts)) return;
+  const isPhone = detectPhoneMargin();
+  const maxTicks = isPhone ? 5 : 8;
+  for (let n = maxTicks; n >= 3; n--) {
+    axisG.call(xAxis.ticks(n));
+    if (!_ticksOverlap(axisG.selectAll('.tick text').nodes())) break;
+  }
+}
+
 /** Up to 3 sig figs, strip trailing zeros (40.0 → 40, 1.50 → 1.5). */
 function _siClean(v) {
   return String(Number(v.toPrecision(3)));
@@ -217,19 +234,7 @@ export function addAxes(frame, xAxis, yAxis, xLabel, yLabel) {
     .attr('class', 'x-axis')
     .attr('transform', `translate(0, ${frame.height})`)
     .call(xAxis);
-
-  // Check for overlapping x-axis tick labels and re-render with fewer ticks
-  if (typeof xAxis.ticks === 'function') {
-    const tickTexts = xAxisG.selectAll('.tick text').nodes();
-    if (_ticksOverlap(tickTexts)) {
-      // Try progressively fewer ticks until they don't overlap
-      const maxTicks = isPhone ? 5 : 8;
-      for (let n = maxTicks; n >= 3; n--) {
-        xAxisG.call(xAxis.ticks(n));
-        if (!_ticksOverlap(xAxisG.selectAll('.tick text').nodes())) break;
-      }
-    }
-  }
+  autoReduceTicks(xAxisG, xAxis);
 
   // Y axis
   axes.append('g')

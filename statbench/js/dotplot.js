@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, prefersReducedMotion, hasD3Transition, TRANSITION_MS } from './chart-utils.js';
+import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS } from './chart-utils.js';
 
 /** Default dot fill (non-extreme). */
 const DOT_FILL = '#808080';
@@ -146,10 +146,11 @@ export function drawDotplot(container, values, options = {}) {
   // Y axis is implicit (stacking height), no y-axis labels needed
   const xAxis = d3Axis.axisBottom(xScale).tickFormat(formatTick);
   const axes = d3Selection.select(frame.inner).select('.axes');
-  axes.append('g')
+  const xAxisG = axes.append('g')
     .attr('class', 'x-axis')
     .attr('transform', `translate(0, ${frame.height})`)
     .call(xAxis);
+  autoReduceTicks(xAxisG, xAxis);
 
   if (xLabel) {
     axes.append('text')
@@ -186,7 +187,8 @@ export function drawDotplot(container, values, options = {}) {
       const newEffectiveBins = newNumBins ?? Math.min(newValues.length, 40);
 
       xScale.domain(newResult.domain);
-      d3Selection.select(frame.inner).select('.x-axis').call(xAxis);
+      const xAxisSel = d3Selection.select(frame.inner).select('.x-axis').call(xAxis);
+      autoReduceTicks(xAxisSel, xAxis);
 
       const newRadius = computeDotRadius(
         frame.width, frame.height, newResult.maxStack, newEffectiveBins);

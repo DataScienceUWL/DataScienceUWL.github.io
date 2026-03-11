@@ -11,7 +11,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import { quantile } from './stats.js';
-import { createChart, addAxes, formatTick, prefersReducedMotion, hasD3Transition, TRANSITION_MS } from './chart-utils.js';
+import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS } from './chart-utils.js';
 
 /** IMS blue for strokes and fills. */
 const IMS_BLUE = '#569BBD';
@@ -126,10 +126,11 @@ export function drawBoxplot(container, data, options = {}) {
   // X axis
   const xAxis = d3Axis.axisBottom(xScale).tickFormat(formatTick);
   const axes = d3Selection.select(frame.inner).select('.axes');
-  axes.append('g')
+  const xAxisG = axes.append('g')
     .attr('class', 'x-axis')
     .attr('transform', `translate(0, ${frame.height})`)
     .call(xAxis);
+  autoReduceTicks(xAxisG, xAxis);
 
   if (xLabel) {
     axes.append('text')
@@ -241,7 +242,7 @@ export function drawBoxplot(container, data, options = {}) {
 
     if (showOutliers) {
       // Mild outliers (open circles)
-      g.selectAll('.outlier-mild')
+      const mild = g.selectAll('.outlier-mild')
         .data(s.mildOutliers)
         .join('circle')
         .attr('class', 'outlier-mild')
@@ -252,10 +253,12 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('stroke', IMS_BLUE)
         .attr('stroke-width', 1.5)
         .attr('role', 'listitem')
-        .attr('aria-label', d => `Mild outlier: ${d}`);
+        .attr('aria-label', d => `Mild outlier: ${d}`)
+        .style('cursor', 'pointer');
+      mild.append('title').text(d => d);
 
       // Extreme outliers (filled circles)
-      g.selectAll('.outlier-extreme')
+      const extreme = g.selectAll('.outlier-extreme')
         .data(s.extremeOutliers)
         .join('circle')
         .attr('class', 'outlier-extreme')
@@ -266,7 +269,19 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('stroke', IMS_BLUE)
         .attr('stroke-width', 1.5)
         .attr('role', 'listitem')
-        .attr('aria-label', d => `Extreme outlier: ${d}`);
+        .attr('aria-label', d => `Extreme outlier: ${d}`)
+        .style('cursor', 'pointer');
+      extreme.append('title').text(d => d);
+
+      // Enlarge outlier dots on hover for easier identification
+      const allOutliers = g.selectAll('.outlier-mild, .outlier-extreme');
+      allOutliers
+        .on('mouseenter', function() {
+          d3Selection.select(this).attr('r', OUTLIER_RADIUS * 1.8).attr('stroke-width', 2.5);
+        })
+        .on('mouseleave', function() {
+          d3Selection.select(this).attr('r', OUTLIER_RADIUS).attr('stroke-width', 1.5);
+        });
     }
   }
 
