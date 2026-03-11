@@ -93,14 +93,35 @@ export function formatTick(value) {
   if (value === 0) return '0';
   const abs = Math.abs(value);
   // Large numbers: use SI-like suffix
-  if (abs >= 1e9) return (value / 1e9).toPrecision(3) + 'B';
-  if (abs >= 1e6) return (value / 1e6).toPrecision(3) + 'M';
-  if (abs >= 1e4) return (value / 1e3).toPrecision(3) + 'K';
+  if (abs >= 1e9) return _siClean(value / 1e9) + 'B';
+  if (abs >= 1e6) return _siClean(value / 1e6) + 'M';
+  if (abs >= 1e4) return _siClean(value / 1e3) + 'K';
   // Small decimals: up to 4 significant digits, strip trailing zeros
   if (abs < 0.001) return value.toExponential(2);
   // General case: up to 4 significant digits
   const s = Number(value.toPrecision(4));
   return String(s);
+}
+
+/**
+ * Check if SVG text elements overlap horizontally (with a small gap).
+ * @param {SVGTextElement[]} nodes
+ * @returns {boolean}
+ */
+function _ticksOverlap(nodes) {
+  const GAP = 4; // minimum px gap between labels
+  for (let i = 1; i < nodes.length; i++) {
+    const prev = typeof nodes[i - 1].getBBox === 'function' ? nodes[i - 1].getBBox() : null;
+    const curr = typeof nodes[i].getBBox === 'function' ? nodes[i].getBBox() : null;
+    if (!prev || !curr) return false; // Can't measure (e.g. jsdom) — assume no overlap
+    if (prev.x + prev.width + GAP > curr.x) return true;
+  }
+  return false;
+}
+
+/** Up to 3 sig figs, strip trailing zeros (40.0 → 40, 1.50 → 1.5). */
+function _siClean(v) {
+  return String(Number(v.toPrecision(3)));
 }
 
 /**
@@ -185,18 +206,30 @@ export function addAxes(frame, xAxis, yAxis, xLabel, yLabel) {
   const inner = d3Selection.select(frame.inner);
   const axes = inner.select('.axes');
 
-  // On phone viewports, reduce tick counts to avoid overlap
+  // On phone viewports, reduce y-axis ticks
   const isPhone = detectPhoneMargin();
   if (isPhone) {
-    if (typeof xAxis.ticks === 'function') xAxis.ticks(6);
     if (typeof yAxis.ticks === 'function') yAxis.ticks(5);
   }
 
-  // X axis
-  axes.append('g')
+  // X axis — render, then auto-reduce ticks if labels overlap
+  const xAxisG = axes.append('g')
     .attr('class', 'x-axis')
     .attr('transform', `translate(0, ${frame.height})`)
     .call(xAxis);
+
+  // Check for overlapping x-axis tick labels and re-render with fewer ticks
+  if (typeof xAxis.ticks === 'function') {
+    const tickTexts = xAxisG.selectAll('.tick text').nodes();
+    if (_ticksOverlap(tickTexts)) {
+      // Try progressively fewer ticks until they don't overlap
+      const maxTicks = isPhone ? 5 : 8;
+      for (let n = maxTicks; n >= 3; n--) {
+        xAxisG.call(xAxis.ticks(n));
+        if (!_ticksOverlap(xAxisG.selectAll('.tick text').nodes())) break;
+      }
+    }
+  }
 
   // Y axis
   axes.append('g')
