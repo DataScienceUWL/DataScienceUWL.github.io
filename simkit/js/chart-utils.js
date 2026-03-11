@@ -207,7 +207,7 @@ export function addAxes(frame, xAxis, yAxis, xLabel, yLabel) {
       .attr('text-anchor', 'middle')
       .attr('transform', 'rotate(-90)')
       .attr('x', -frame.height / 2)
-      .attr('y', -frame.margin.left + 16)
+      .attr('y', -frame.margin.left + 12)
       .text(yLabel);
   }
 }

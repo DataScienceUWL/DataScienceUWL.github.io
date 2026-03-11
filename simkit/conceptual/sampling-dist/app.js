@@ -140,7 +140,16 @@ function drawSamples(count) {
   }
 
   // Update stats
-  if (samplingStats) samplingStats.hidden = false;
+  if (samplingStats) {
+    const wasHidden = samplingStats.hidden;
+    samplingStats.hidden = false;
+    // KaTeX auto-render skips hidden elements — render on first show
+    if (wasHidden && typeof renderMathInElement === 'function') {
+      renderMathInElement(samplingStats, {
+        delimiters: [{ left: '\\(', right: '\\)', display: false }],
+      });
+    }
+  }
   if (nSamplesEl) nSamplesEl.textContent = String(sampleMeans.length);
   if (sampleMeans.length >= 2) {
     if (meanXbarEl) meanXbarEl.textContent = mean(sampleMeans).toFixed(4);
