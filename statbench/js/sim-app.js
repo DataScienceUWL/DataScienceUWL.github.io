@@ -169,12 +169,10 @@ export function initSimPage(config) {
    * @returns {string}
    */
   function buildToggleHTML(types, selected) {
+    /** @type {Record<string, string>} */
     const labels = { dotplot: 'Dotplot', spike: 'Spike', histogram: 'Histogram' };
     return types.map(t =>
-      `<label class="chart-toggle-option">
-        <input type="radio" name="chart-type" value="${t}"${t === selected ? ' checked' : ''}>
-        <span>${labels[t] ?? t}</span>
-      </label>`
+      `<label class="chart-toggle-option"><input type="radio" name="chart-type" value="${t}"${t === selected ? ' checked' : ''}> ${labels[t] ?? t}</label>`
     ).join('');
   }
 

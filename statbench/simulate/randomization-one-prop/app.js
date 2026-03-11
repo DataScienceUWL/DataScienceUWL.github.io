@@ -54,10 +54,7 @@ if (chartFigure) {
   toggleFieldset.insertAdjacentHTML('beforeend', [
     ['dotplot', 'Dotplot'], ['spike', 'Spike'], ['histogram', 'Histogram'],
   ].map(([v, l]) =>
-    `<label class="chart-toggle-option">
-      <input type="radio" name="chart-type" value="${v}"${v === 'dotplot' ? ' checked' : ''}>
-      <span>${l}</span>
-    </label>`
+    `<label class="chart-toggle-option"><input type="radio" name="chart-type" value="${v}"${v === 'dotplot' ? ' checked' : ''}> ${l}</label>`
   ).join(''));
   chartFigure.insertBefore(toggleFieldset, chartContainer);
   toggleFieldset.addEventListener('change', (e) => {
