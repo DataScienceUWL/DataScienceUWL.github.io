@@ -245,6 +245,9 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
     .attr('role', 'listitem')
     .attr('aria-label', d => String(d.value));
 
+  // Hover tooltip: show original value
+  circles.append('title').text(d => d.value);
+
   if (shouldAnimate) {
     circles
       .attr('cy', innerHeight)

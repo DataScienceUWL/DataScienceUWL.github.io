@@ -351,8 +351,8 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate) {
       .attr('height', d => innerHeight - yScale(d.length));
   }
 
-  // Hover tooltip: show count on mouseover
-  bars.append('title').text(d => `${d.x0.toFixed(2)} to ${d.x1.toFixed(2)}: ${d.length}`);
+  // Hover tooltip: show bin range and frequency
+  bars.append('title').text(d => `${formatTick(d.x0)} to ${formatTick(d.x1)}\nFrequency: ${d.length}`);
 
   // Click bar → show count label above it
   bars.style('cursor', 'pointer')

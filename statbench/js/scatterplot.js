@@ -136,7 +136,8 @@ export function drawScatterplot(container, xValues, yValues, options = {}) {
     .attr('stroke', IMS_BLUE)
     .attr('stroke-width', 1)
     .attr('role', 'listitem')
-    .attr('aria-label', d => `(${d.x}, ${d.y})`);
+    .attr('aria-label', d => `(${d.x}, ${d.y})`)
+    .append('title').text(d => `(${d.x}, ${d.y})`);
 
   return { frame, xScale, yScale };
 }

@@ -173,7 +173,7 @@ export function drawBoxplot(container, data, options = {}) {
         : `Median ${s.median}, Q1 ${s.q1}, Q3 ${s.q3}`);
 
     // Box (IQR)
-    g.append('rect')
+    const box = g.append('rect')
       .attr('class', 'box')
       .attr('x', xScale(s.q1))
       .attr('y', boxY)
@@ -182,6 +182,7 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('fill', BOX_FILL)
       .attr('stroke', IMS_BLUE)
       .attr('stroke-width', 1.5);
+    box.append('title').text(`Q1 = ${s.q1}\nMedian = ${s.median}\nQ3 = ${s.q3}\nIQR = ${s.iqr}`);
 
     if (shouldAnimate) {
       g.select('.box')
@@ -191,7 +192,7 @@ export function drawBoxplot(container, data, options = {}) {
     }
 
     // Median line
-    g.append('line')
+    const medLine = g.append('line')
       .attr('class', 'median')
       .attr('x1', xScale(s.median))
       .attr('x2', xScale(s.median))
@@ -199,6 +200,7 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('y2', boxY + boxH)
       .attr('stroke', IMS_BLUE)
       .attr('stroke-width', 2);
+    medLine.append('title').text(`Median = ${s.median}`);
 
     // Lower whisker
     g.append('line')
@@ -221,7 +223,7 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('stroke-width', 1);
 
     // Lower whisker cap
-    g.append('line')
+    const capLo = g.append('line')
       .attr('class', 'cap-lo')
       .attr('x1', xScale(wLo))
       .attr('x2', xScale(wLo))
@@ -229,9 +231,10 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('y2', capY + capH)
       .attr('stroke', IMS_BLUE)
       .attr('stroke-width', 1);
+    capLo.append('title').text(showOutliers ? `Min (non-outlier) = ${wLo}` : `Min = ${wLo}`);
 
     // Upper whisker cap
-    g.append('line')
+    const capHi = g.append('line')
       .attr('class', 'cap-hi')
       .attr('x1', xScale(wHi))
       .attr('x2', xScale(wHi))
@@ -239,6 +242,7 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('y2', capY + capH)
       .attr('stroke', IMS_BLUE)
       .attr('stroke-width', 1);
+    capHi.append('title').text(showOutliers ? `Max (non-outlier) = ${wHi}` : `Max = ${wHi}`);
 
     if (showOutliers) {
       // Mild outliers (open circles)
