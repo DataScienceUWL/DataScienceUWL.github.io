@@ -52,13 +52,12 @@ if (chartFigure) {
   toggleFieldset = document.createElement('fieldset');
   toggleFieldset.className = 'chart-type-toggle';
   const legend = document.createElement('legend');
-  legend.className = 'sr-only';
-  legend.textContent = 'Chart type';
+  legend.textContent = 'Chart:';
   toggleFieldset.appendChild(legend);
   toggleFieldset.insertAdjacentHTML('beforeend', [
     ['dotplot', 'Dotplot'], ['spike', 'Spike'], ['histogram', 'Histogram'],
   ].map(([v, l]) =>
-    `<label class="chart-toggle-option${v === 'dotplot' ? ' active' : ''}">
+    `<label class="chart-toggle-option">
       <input type="radio" name="chart-type" value="${v}"${v === 'dotplot' ? ' checked' : ''}>
       <span>${l}</span>
     </label>`
@@ -68,20 +67,11 @@ if (chartFigure) {
     const radio = /** @type {HTMLInputElement} */ (e.target);
     if (!radio.value) return;
     chartType = radio.value;
-    syncToggleActive();
     if (allStats.length > 0) {
       const direction = getDirection();
       renderChart(allStats, observedPHat, direction);
     }
   });
-}
-
-function syncToggleActive() {
-  if (!toggleFieldset) return;
-  for (const label of toggleFieldset.querySelectorAll('.chart-toggle-option')) {
-    const radio = /** @type {HTMLInputElement} */ (label.querySelector('input'));
-    label.classList.toggle('active', radio?.checked ?? false);
-  }
 }
 
 /** @type {number[]} */
@@ -365,7 +355,6 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
     const radio = /** @type {HTMLInputElement|null} */ (
       toggleFieldset.querySelector(`input[value="${activeChart}"]`));
     if (radio) radio.checked = true;
-    syncToggleActive();
   }
 
   /** @type {import('../../js/chart-utils.js').ChartFrame} */

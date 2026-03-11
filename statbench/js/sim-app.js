@@ -146,17 +146,16 @@ export function initSimPage(config) {
     toggleFieldset = document.createElement('fieldset');
     toggleFieldset.className = 'chart-type-toggle';
     const legend = document.createElement('legend');
-    legend.className = 'sr-only';
-    legend.textContent = 'Chart type';
+    legend.textContent = 'Chart:';
     toggleFieldset.appendChild(legend);
     // Initial options — rebuilt when we know if data is discrete
-    toggleFieldset.innerHTML += buildToggleHTML(['dotplot', 'histogram'], 'dotplot');
+    toggleFieldset.insertAdjacentHTML('beforeend', buildToggleHTML(['dotplot', 'histogram'], 'dotplot'));
     chartFigure.insertBefore(toggleFieldset, chartContainer);
     toggleFieldset.addEventListener('change', (e) => {
       const radio = /** @type {HTMLInputElement} */ (e.target);
       if (!radio.value) return;
       chartType = radio.value;
-      syncToggleActive();
+
       // Re-render if we have data
       if (allStats.length > 0) {
         lastStatIndex = -1;
@@ -176,20 +175,11 @@ export function initSimPage(config) {
   function buildToggleHTML(types, selected) {
     const labels = { dotplot: 'Dotplot', spike: 'Spike', histogram: 'Histogram' };
     return types.map(t =>
-      `<label class="chart-toggle-option${t === selected ? ' active' : ''}">
+      `<label class="chart-toggle-option">
         <input type="radio" name="chart-type" value="${t}"${t === selected ? ' checked' : ''}>
         <span>${labels[t] ?? t}</span>
       </label>`
     ).join('');
-  }
-
-  /** Sync the .active class on toggle labels to match the checked radio. */
-  function syncToggleActive() {
-    if (!toggleFieldset) return;
-    for (const label of toggleFieldset.querySelectorAll('.chart-toggle-option')) {
-      const radio = /** @type {HTMLInputElement} */ (label.querySelector('input'));
-      label.classList.toggle('active', radio?.checked ?? false);
-    }
   }
 
   /**
@@ -1562,7 +1552,7 @@ export function initSimPage(config) {
       const radio = /** @type {HTMLInputElement|null} */ (
         toggleFieldset.querySelector(`input[value="${activeChart}"]`));
       if (radio) radio.checked = true;
-      syncToggleActive();
+
     }
     // Build region-of-interest predicate
     // Randomization: extreme values (tail) are the region of interest
