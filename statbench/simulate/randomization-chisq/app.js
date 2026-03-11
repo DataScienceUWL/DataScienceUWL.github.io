@@ -6,11 +6,11 @@
  */
 
 import { createRng, shuffle } from '../../js/prng.js';
-import { chisqStat } from '../../js/stats.js';
+import { chisqStat, formatStat } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import * as d3Select from 'd3-selection';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, loadDatasetIndex, fetchDataset, computeHighlights, setupFileInput } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, initDataPanel, computeHighlights } from '../../js/page-utils.js';
 
 // ─── DOM elements ───
 
@@ -26,12 +26,6 @@ const mechObservedChisq = document.getElementById('mech-observed-chisq');
 const mechShuffledChisq = document.getElementById('mech-shuffled-chisq');
 const mechanismDescEl = document.getElementById('mechanism-description');
 const simTitleEl = document.getElementById('sim-title');
-
-const pasteArea = /** @type {HTMLTextAreaElement} */ (document.getElementById('paste-area'));
-const loadPastedBtn = document.getElementById('load-pasted');
-const clearBtn = document.getElementById('clear-btn');
-const datasetSelect = /** @type {HTMLSelectElement} */ (document.getElementById('dataset-select'));
-const datasetDesc = document.getElementById('dataset-desc');
 
 const tableRowsInput = /** @type {HTMLInputElement} */ (document.getElementById('table-rows'));
 const tableColsInput = /** @type {HTMLInputElement} */ (document.getElementById('table-cols'));
@@ -68,38 +62,7 @@ let totalN = 0;
 /** @type {Array<{group: string, outcome: string}>} */
 let rawData = [];
 
-// ─── Data loading: Paste ───
-
-if (loadPastedBtn && pasteArea) {
-  loadPastedBtn.addEventListener('click', () => {
-    const text = pasteArea.value.trim();
-    if (!text) return;
-    datasetContext = {};
-    loadFromCSV(text);
-  });
-}
-
-const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
-if (fileInput) {
-  setupFileInput(fileInput, (text) => {
-    datasetContext = {};
-    loadFromCSV(text);
-  });
-}
-
-if (clearBtn) {
-  clearBtn.addEventListener('click', () => {
-    rawData = [];
-    observedTable = [];
-    resetSimulation();
-    if (pasteArea) pasteArea.value = '';
-    if (dataPreview) dataPreview.hidden = true;
-    if (dataSummary) dataSummary.textContent = '\u2014';
-    for (const btn of genBtns) btn.disabled = true;
-    if (mechanismStrip) mechanismStrip.hidden = true;
-    announce('Data cleared.');
-  });
-}
+// ─── Data loading: Paste / File / Clear ───
 
 /** @param {string} text */
 function loadFromCSV(text) {
@@ -206,38 +169,38 @@ if (loadTableBtn && tableGrid) {
   });
 }
 
-// ─── Data loading: Datasets ───
+// ─── Data loading: Datasets / initDataPanel ───
 
-/** @type {Array<{id:string,name:string,description:string,type:string}>} */
-let datasetIndex = [];
-
-if (datasetSelect) {
-  loadDatasetIndex(datasetSelect, ds => ds.type === 'chisq', datasetDesc)
-    .then(index => { datasetIndex = index; });
-
-  datasetSelect.addEventListener('change', () => {
-    const id = datasetSelect.value;
-    if (!id) return;
-    const meta = datasetIndex.find(d => d.id === id);
-    if (meta && datasetDesc) datasetDesc.textContent = meta.description;
-
-    fetchDataset(id)
-      .then(ds => {
-        resetSimulation();
-        datasetContext = ds.context || {};
-        const catVars = ds.variables.filter(v => v.type === 'categorical');
-        if (catVars.length < 2) return;
-        rawData = ds.rows.map(r => ({
-          group: r[catVars[0].name],
-          outcome: r[catVars[1].name],
-        }));
-        buildTableFromRaw();
-        showDataLoaded();
-        announce(`${ds.name}.`);
-      })
-      .catch(() => announce('Failed to load dataset.'));
-  });
-}
+initDataPanel({
+  datasetFilter: ds => ds.type === 'chisq',
+  onDataset: (ds) => {
+    resetSimulation();
+    datasetContext = ds.context || {};
+    const catVars = ds.variables.filter(v => v.type === 'categorical');
+    if (catVars.length < 2) return;
+    rawData = ds.rows.map(r => ({
+      group: r[catVars[0].name],
+      outcome: r[catVars[1].name],
+    }));
+    buildTableFromRaw();
+    showDataLoaded();
+    announce(`${ds.name}.`);
+  },
+  onRawText: (text) => {
+    datasetContext = {};
+    loadFromCSV(text);
+  },
+  onClear: () => {
+    rawData = [];
+    observedTable = [];
+    resetSimulation();
+    if (dataPreview) dataPreview.hidden = true;
+    if (dataSummary) dataSummary.textContent = '\u2014';
+    for (const btn of genBtns) btn.disabled = true;
+    if (mechanismStrip) mechanismStrip.hidden = true;
+    announce('Data cleared.');
+  },
+});
 
 // ─── Show data ───
 
@@ -246,7 +209,7 @@ function showDataLoaded() {
   if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
     const dims = `${rowLabels.length} × ${colLabels.length}`;
-    dataSummary.textContent = `${dims} table, n = ${totalN}, observed χ² = ${observedChisq.toFixed(4)}`;
+    dataSummary.textContent = `${dims} table, n = ${totalN}, observed χ² = ${formatStat(observedChisq, 2)}`;
   }
   for (const btn of genBtns) btn.disabled = false;
   if (resultDiv) resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
@@ -254,7 +217,7 @@ function showDataLoaded() {
   if (mechanismStrip && mechObservedTable) {
     mechanismStrip.hidden = false;
     mechObservedTable.innerHTML = renderTableHTML(observedTable, rowLabels, colLabels);
-    if (mechObservedChisq) mechObservedChisq.textContent = observedChisq.toFixed(4);
+    if (mechObservedChisq) mechObservedChisq.textContent = formatStat(observedChisq, 2);
   }
   announce(`Data loaded: ${rowLabels.length} × ${colLabels.length} table, n = ${totalN}`);
 
@@ -334,7 +297,7 @@ function generateSimulations(count) {
 
   if (mechShuffledTable && mechShuffledChisq) {
     mechShuffledTable.innerHTML = renderTableHTML(lastShuffledTable, rowLabels, colLabels);
-    mechShuffledChisq.textContent = lastChisq.toFixed(4);
+    mechShuffledChisq.textContent = formatStat(lastChisq, 2);
   }
   if (mechanismDescEl) {
     mechanismDescEl.textContent = 'Shuffle group labels, keeping outcomes fixed';
@@ -443,17 +406,14 @@ function renderPValuePills(frame, xScale, pValue, observed) {
   const obsX = xScale(observed);
   const comp = 1 - pValue;
 
-  let pText;
-  if (pValue === 0) pText = 'p ≈ 0';
-  else if (pValue < 0.0001) pText = 'p < 0.0001';
-  else pText = `p = ${pValue.toFixed(4)}`;
+  const pText = formatStat(pValue, 0, 'pvalue');
 
   // Right tail pill
   const tailX = Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2));
   _pill(annotations, pText, tailX, pillY, false);
   // Body pill
   const bodyX = Math.max(50, Math.min(obsX - 10, obsX / 2));
-  _pill(annotations, comp.toFixed(4), bodyX, pillY, true);
+  _pill(annotations, formatStat(comp, 0, 'proportion'), bodyX, pillY, true);
 }
 
 /** @param {any} g @param {string} text @param {number} cx @param {number} cy @param {boolean} isComp */
@@ -506,10 +466,10 @@ function displayResults(stats, observed, pValue, extremeCount) {
   if (resultDiv) {
     resultDiv.innerHTML = `
       <p><strong>Null Distribution</strong> (${stats.length} simulations)</p>
-      <p>Observed χ² = ${observed.toFixed(4)}</p>
+      <p>Observed χ² = ${formatStat(observed, 2)}</p>
       <p>Extreme count: ${extremeCount} of ${stats.length} (right-tail)</p>
-      <p><strong>p-value:</strong> ${pValue.toFixed(4)}</p>
-      <p class="interpretation">${extremeCount} of ${stats.length} shuffled tables had χ² ≥ ${observed.toFixed(2)}. This provides ${strength} evidence against H₀: ${datasetContext.nullClaim || 'the row and column variables are independent'}.</p>
+      <p><strong>p-value:</strong> ${formatStat(pValue, 0, 'pvalue')}</p>
+      <p class="interpretation">${extremeCount} of ${stats.length} shuffled tables had χ² ≥ ${formatStat(observed, 2)}. This provides ${strength} evidence against H₀: ${datasetContext.nullClaim || 'the row and column variables are independent'}.</p>
     `;
   }
 }

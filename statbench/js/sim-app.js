@@ -7,7 +7,7 @@
 import { parseParams } from './url-params.js';
 import { parseCSV } from './csv-parser.js';
 import { createRng } from './prng.js';
-import { mean, median, sd, quantile, resample, permute } from './stats.js';
+import { mean, median, sd, quantile, resample, permute, detectPrecision, formatStat } from './stats.js';
 import { bootstrapCI, permutationPValue } from './sim-engine.js';
 import * as d3Selection from 'd3-selection';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
@@ -95,6 +95,17 @@ export function initSimPage(config) {
   /** Dataset context for natural-language interpretations. */
   /** @type {{population?:string, parameter?:string, unit?:string, nullClaim?:string, successLabel?:string}} */
   let datasetContext = {};
+
+  /** Decimal places in source data (for formatStat). */
+  let dataPrecision = 0;
+
+  // ── Variable selector (for multi-column CSV files) ──
+  /** @type {HTMLDivElement|null} */
+  let varSelectorDiv = null;
+  /** @type {HTMLSelectElement|null} */
+  let varSelectorSelect = null;
+  /** Parsed CSV data cached for variable switching. @type {{headers:string[], types:string[], data:Array<Record<string,any>>}|null} */
+  let parsedCSVCache = null;
 
   // Chart highlight state (declared early so renderChart can be called from showDataLoaded)
   /** Index of single newest dot for +1 highlight, or -1. */
@@ -241,6 +252,47 @@ export function initSimPage(config) {
     ciSelect.value = String(urlParams.ci);
   }
 
+  // ─── Variable selector helpers ───
+
+  /**
+   * Show a variable selector above the data-preview area.
+   * @param {string[]} columns - Numeric column names to choose from
+   * @param {(colName: string) => void} onChange - Called when selection changes
+   */
+  function showVarSelector(columns, onChange) {
+    hideVarSelector();
+    varSelectorDiv = document.createElement('div');
+    varSelectorDiv.className = 'var-selector-row';
+    varSelectorDiv.innerHTML = '<label for="sim-var-select">Variable: </label>';
+    varSelectorSelect = document.createElement('select');
+    varSelectorSelect.id = 'sim-var-select';
+    for (const col of columns) {
+      const opt = document.createElement('option');
+      opt.value = col;
+      opt.textContent = col;
+      varSelectorSelect.appendChild(opt);
+    }
+    varSelectorDiv.appendChild(varSelectorSelect);
+    // Insert before data-preview
+    const insertTarget = dataPreview?.parentElement;
+    if (insertTarget && dataPreview) {
+      insertTarget.insertBefore(varSelectorDiv, dataPreview);
+    }
+    varSelectorSelect.addEventListener('change', () => {
+      onChange(varSelectorSelect.value);
+    });
+  }
+
+  /** Remove the variable selector if present. */
+  function hideVarSelector() {
+    if (varSelectorDiv) {
+      varSelectorDiv.remove();
+      varSelectorDiv = null;
+      varSelectorSelect = null;
+    }
+    parsedCSVCache = null;
+  }
+
   // ─── Data loading ───
 
   /**
@@ -337,10 +389,24 @@ export function initSimPage(config) {
           }
 
           if (numIdx >= 0) {
-            const colName = parsed.headers[numIdx];
+            const numericCols = parsed.headers.filter((h, i) => parsed.types[i] === 'numeric');
+            const colName = numericCols[0];
             data1 = parsed.data
               .map(row => parseFloat(row[colName]))
               .filter(v => isFinite(v));
+
+            // Show variable selector for multi-column CSV on single-variable pages
+            if (numericCols.length > 1 && !config.twoGroup && !config.paired) {
+              parsedCSVCache = parsed;
+              showVarSelector(numericCols, (selected) => {
+                data1 = parsedCSVCache.data
+                  .map(row => parseFloat(row[selected]))
+                  .filter(v => isFinite(v));
+                resetSimulation();
+                showDataLoaded();
+              });
+            }
+
             showDataLoaded();
             return;
           }
@@ -381,6 +447,7 @@ export function initSimPage(config) {
       data1 = [];
       data2 = [];
       resetSimulation();
+      hideVarSelector();
       if (pasteArea) pasteArea.value = '';
       if (dataPreview) dataPreview.hidden = true;
       if (dataSummary) dataSummary.textContent = '\u2014';
@@ -395,36 +462,45 @@ export function initSimPage(config) {
   }
 
   function showDataLoaded() {
+    // Set dataPrecision based on source data type
+    if (config.proportion) {
+      dataPrecision = 0; // proportion data is 0/1 integers
+    } else if (config.paired || (config.twoGroup && data2.length > 0)) {
+      dataPrecision = Math.max(detectPrecision(data1), detectPrecision(data2));
+    } else {
+      dataPrecision = detectPrecision(data1);
+    }
+
     if (dataPreview) dataPreview.hidden = false;
     if (dataSummary) {
       if (config.paired) {
         const diffs = data2.map((v, i) => v - data1[i]);
         const m = mean(diffs);
         dataSummary.textContent =
-          `${data1.length} pairs | ${group1Name}: x̄ = ${mean(data1).toFixed(2)} | ` +
-          `${group2Name}: x̄ = ${mean(data2).toFixed(2)} | Mean diff = ${m.toFixed(4)}`;
+          `${data1.length} pairs | ${group1Name}: x̄ = ${formatStat(mean(data1), dataPrecision)} | ` +
+          `${group2Name}: x̄ = ${formatStat(mean(data2), dataPrecision)} | Mean diff = ${formatStat(m, dataPrecision)}`;
       } else if (config.proportion && !config.twoGroup) {
         const p1 = mean(data1);
         const s1 = data1.filter(v => v === 1).length;
         dataSummary.textContent =
-          `n = ${data1.length}, successes = ${s1}, p̂ = ${p1.toFixed(4)}`;
+          `n = ${data1.length}, successes = ${s1}, p̂ = ${formatStat(p1, dataPrecision, 'proportion')}`;
       } else if (config.proportion && data2.length > 0) {
         const p1 = mean(data1);
         const p2 = mean(data2);
         const s1 = data1.filter(v => v === 1).length;
         const s2 = data2.filter(v => v === 1).length;
         dataSummary.textContent =
-          `${group1Name}: ${s1}/${data1.length} (p̂ = ${p1.toFixed(3)}) | ` +
-          `${group2Name}: ${s2}/${data2.length} (p̂ = ${p2.toFixed(3)})`;
+          `${group1Name}: ${s1}/${data1.length} (p̂ = ${formatStat(p1, dataPrecision, 'proportion')}) | ` +
+          `${group2Name}: ${s2}/${data2.length} (p̂ = ${formatStat(p2, dataPrecision, 'proportion')})`;
       } else if (config.twoGroup && data2.length > 0) {
         dataSummary.textContent =
-          `${group1Name}: n = ${data1.length}, x̄ = ${mean(data1).toFixed(2)} | ` +
-          `${group2Name}: n = ${data2.length}, x̄ = ${mean(data2).toFixed(2)}`;
+          `${group1Name}: n = ${data1.length}, x̄ = ${formatStat(mean(data1), dataPrecision)} | ` +
+          `${group2Name}: n = ${data2.length}, x̄ = ${formatStat(mean(data2), dataPrecision)}`;
       } else {
         const n = data1.length;
         const m = mean(data1);
         const s = sd(data1);
-        dataSummary.textContent = `n = ${n}, mean = ${m.toFixed(2)}, SD = ${s.toFixed(2)}`;
+        dataSummary.textContent = `n = ${n}, mean = ${formatStat(m, dataPrecision)}, SD = ${formatStat(s, dataPrecision)}`;
       }
     }
     for (const btn of genBtns) btn.disabled = false;
@@ -633,6 +709,7 @@ export function initSimPage(config) {
       })
       .then((ds) => {
         resetSimulation();
+        hideVarSelector();
         datasetContext = ds.context || {};
 
         if (config.paired) {
@@ -986,7 +1063,7 @@ export function initSimPage(config) {
       originalContentEl.appendChild(container);
 
       if (origNEl) origNEl.textContent = `${diffs.length} pairs`;
-      if (origMeanEl) origMeanEl.textContent = mean(diffs).toFixed(4);
+      if (origMeanEl) origMeanEl.textContent = formatStat(mean(diffs), dataPrecision);
       return;
     }
 
@@ -998,11 +1075,11 @@ export function initSimPage(config) {
       const container = document.createElement('div');
       container.className = 'prop-summary';
       container.setAttribute('role', 'img');
-      container.setAttribute('aria-label', `Original sample: ${successes} successes, ${failures} failures, p-hat = ${pHat.toFixed(4)}`);
+      container.setAttribute('aria-label', `Original sample: ${successes} successes, ${failures} failures, p-hat = ${formatStat(pHat, dataPrecision, 'proportion')}`);
       container.innerHTML = `
         <span class="prop-count"><strong>${successes}</strong> S</span>
         <span class="prop-count"><strong>${failures}</strong> F</span>
-        <span class="prop-count">p̂ = ${pHat.toFixed(4)}</span>
+        <span class="prop-count">p̂ = ${formatStat(pHat, dataPrecision, 'proportion')}</span>
       `;
       originalContentEl.appendChild(container);
     } else if (data1.length <= CHIP_THRESHOLD) {
@@ -1038,9 +1115,9 @@ export function initSimPage(config) {
     if (origNEl) origNEl.textContent = String(data1.length);
     if (origMeanEl) {
       if (config.proportion) {
-        origMeanEl.textContent = mean(data1).toFixed(4);
+        origMeanEl.textContent = formatStat(mean(data1), dataPrecision, 'proportion');
       } else {
-        origMeanEl.textContent = mean(data1).toFixed(2);
+        origMeanEl.textContent = formatStat(mean(data1), dataPrecision);
       }
     }
   }
@@ -1054,12 +1131,13 @@ export function initSimPage(config) {
     const statSymbol = config.proportion ? 'p̂' : 'x̄';
     const s1 = statFn(data1);
     const s2 = statFn(data2);
+    const fmtType = config.proportion ? 'proportion' : undefined;
     mechOriginalContent.innerHTML = `
       <div class="mech-group-row"><span class="mech-group-name">${group1Name}:</span>
-        <span class="mech-group-stat">n = ${data1.length}, ${statSymbol} = ${s1.toFixed(4)}</span></div>
+        <span class="mech-group-stat">n = ${data1.length}, ${statSymbol} = ${formatStat(s1, dataPrecision, fmtType)}</span></div>
       <div class="mech-group-row"><span class="mech-group-name">${group2Name}:</span>
-        <span class="mech-group-stat">n = ${data2.length}, ${statSymbol} = ${s2.toFixed(4)}</span></div>
-      <div class="mech-diff">diff = ${(s1 - s2).toFixed(4)}</div>
+        <span class="mech-group-stat">n = ${data2.length}, ${statSymbol} = ${formatStat(s2, dataPrecision, fmtType)}</span></div>
+      <div class="mech-diff">diff = ${formatStat(s1 - s2, dataPrecision, fmtType)}</div>
     `;
   }
 
@@ -1075,12 +1153,13 @@ export function initSimPage(config) {
     const statSymbol = config.proportion ? 'p̂' : 'x̄';
     const s1 = statFn(g1);
     const s2 = statFn(g2);
+    const fmtType = config.proportion ? 'proportion' : undefined;
     mechResampleContent.innerHTML = `
       <div class="mech-group-row"><span class="mech-group-name">${group1Name}:</span>
-        <span class="mech-group-stat">n = ${g1.length}, ${statSymbol} = ${s1.toFixed(4)}</span></div>
+        <span class="mech-group-stat">n = ${g1.length}, ${statSymbol} = ${formatStat(s1, dataPrecision, fmtType)}</span></div>
       <div class="mech-group-row"><span class="mech-group-name">${group2Name}:</span>
-        <span class="mech-group-stat">n = ${g2.length}, ${statSymbol} = ${s2.toFixed(4)}</span></div>
-      <div class="mech-diff">diff = ${(s1 - s2).toFixed(4)}</div>
+        <span class="mech-group-stat">n = ${g2.length}, ${statSymbol} = ${formatStat(s2, dataPrecision, fmtType)}</span></div>
+      <div class="mech-diff">diff = ${formatStat(s1 - s2, dataPrecision, fmtType)}</div>
     `;
 
     if (config.mode === 'bootstrap') {
@@ -1114,7 +1193,10 @@ export function initSimPage(config) {
 
     if (resampleMeanEl) {
       const stat = getBootstrapStat();
-      resampleMeanEl.textContent = stat.fn(resampleValues).toFixed(4);
+      const resampleVal = stat.fn(resampleValues);
+      resampleMeanEl.textContent = config.proportion
+        ? formatStat(resampleVal, dataPrecision, 'proportion')
+        : formatStat(resampleVal, dataPrecision);
       const statLabelEl = document.getElementById('resample-stat-label');
       if (statLabelEl) {
         if (config.proportion) {
@@ -1189,7 +1271,7 @@ export function initSimPage(config) {
       container.innerHTML = `
         <span class="prop-count"><strong>${successes}</strong> S</span>
         <span class="prop-count"><strong>${failures}</strong> F</span>
-        <span class="prop-count">p̂ = ${pHat.toFixed(4)}</span>
+        <span class="prop-count">p̂ = ${formatStat(pHat, dataPrecision, 'proportion')}</span>
       `;
       resampleContentEl.appendChild(container);
       return;
@@ -1324,8 +1406,7 @@ export function initSimPage(config) {
    */
   function formatChipValue(v) {
     if (Number.isInteger(v)) return String(v);
-    // Show up to 2 decimal places, trimming trailing zeros
-    return parseFloat(v.toFixed(2)).toString();
+    return formatStat(v, dataPrecision);
   }
 
   // ─── Reset ───
@@ -1550,10 +1631,9 @@ export function initSimPage(config) {
       const p = opts.pValue;
       const comp = 1 - p;
 
-      let pText;
-      if (p === 0) pText = 'p ≈ 0';
-      else if (p < 0.0001) pText = 'p < 0.0001';
-      else pText = `p = ${p.toFixed(4)}`;
+      const pFormatted = formatStat(p, 0, 'pvalue');
+      // formatStat('pvalue') returns 'p ≈ 0', 'p < 0.0001', or bare '0.0342'
+      const pText = pFormatted.startsWith('p') ? pFormatted : `p = ${pFormatted}`;
 
       if (opts.direction === 'both') {
         // Two-tailed: single pill near the observed stat
@@ -1581,7 +1661,7 @@ export function initSimPage(config) {
 
       // Single pill: proportion inside CI
       const midX = Math.max(50, Math.min(w - 50, (loX + hiX) / 2));
-      _addSimPill(annotations, opts.proportion.toFixed(4), midX, pillY, false);
+      _addSimPill(annotations, formatStat(opts.proportion, dataPrecision, 'proportion'), midX, pillY, false);
     }
   }
 
@@ -1660,13 +1740,15 @@ export function initSimPage(config) {
     }
     const unitSuffix = ctx.unit ? ` ${ctx.unit}` : '';
     const popPhrase = ctx.population ? ` for ${ctx.population}` : '';
+    /** @param {number} v */
+    const fmt = (v) => config.proportion ? formatStat(v, dataPrecision, 'proportion') : formatStat(v, dataPrecision);
     resultDiv.innerHTML = `
       <p><strong>Bootstrap Distribution</strong> (${stats.length} resamples)</p>
-      <p>${paramLabel}: ${m.toFixed(4)}</p>
-      <p>SE: ${se.toFixed(4)}</p>
-      <p><strong>${ciLevel}% Confidence Interval:</strong> (${ci[0].toFixed(4)}, ${ci[1].toFixed(4)})</p>
-      <p class="interpretation">The middle ${ciLevel}% of bootstrap ${bootLong}s fall between ${ci[0].toFixed(2)}${unitSuffix} and ${ci[1].toFixed(2)}${unitSuffix}.</p>
-      <p class="interpretation">We are ${ciLevel}% confident that the ${ctxParam}${popPhrase} is between ${ci[0].toFixed(2)}${unitSuffix} and ${ci[1].toFixed(2)}${unitSuffix}.</p>
+      <p>${paramLabel}: ${fmt(m)}</p>
+      <p>SE: ${formatStat(se, dataPrecision)}</p>
+      <p><strong>${ciLevel}% Confidence Interval:</strong> (${fmt(ci[0])}, ${fmt(ci[1])})</p>
+      <p class="interpretation">The middle ${ciLevel}% of bootstrap ${bootLong}s fall between ${fmt(ci[0])}${unitSuffix} and ${fmt(ci[1])}${unitSuffix}.</p>
+      <p class="interpretation">We are ${ciLevel}% confident that the ${ctxParam}${popPhrase} is between ${fmt(ci[0])}${unitSuffix} and ${fmt(ci[1])}${unitSuffix}.</p>
       ${stats.length < 50 ? '<p class="hint">CI is approximate with few resamples. Generate more for stability.</p>' : ''}
     `;
   }
@@ -1683,11 +1765,11 @@ export function initSimPage(config) {
       : direction === 'right' ? 'right-tail' : 'left-tail';
     let obsLabel;
     if (config.proportion) {
-      obsLabel = `p̂<sub>${group1Name}</sub> − p̂<sub>${group2Name}</sub> = ${observedStat.toFixed(4)}`;
+      obsLabel = `p̂<sub>${group1Name}</sub> − p̂<sub>${group2Name}</sub> = ${formatStat(observedStat, dataPrecision, 'proportion')}`;
     } else if (config.twoGroup) {
-      obsLabel = `x̄<sub>${group1Name}</sub> − x̄<sub>${group2Name}</sub> = ${observedStat.toFixed(4)}`;
+      obsLabel = `x̄<sub>${group1Name}</sub> − x̄<sub>${group2Name}</sub> = ${formatStat(observedStat, dataPrecision)}`;
     } else {
-      obsLabel = observedStat.toFixed(4);
+      obsLabel = formatStat(observedStat, dataPrecision);
     }
     // Plain-language interpretation
     let strength;
@@ -1699,11 +1781,13 @@ export function initSimPage(config) {
       ? 'no difference in population proportions'
       : 'no difference in population means';
     const nullDesc = datasetContext.nullClaim || defaultNull;
+    const pFmt = formatStat(pValue, 0, 'pvalue');
+    const pDisplay = pFmt.startsWith('p') ? pFmt : `p-value: ${pFmt}`;
     resultDiv.innerHTML = `
       <p><strong>Randomization Distribution</strong> (${stats.length} shuffles)</p>
       <p>Observed statistic: ${obsLabel}</p>
       <p>Extreme count: ${extremeCount} of ${stats.length} (${dirLabel})</p>
-      <p><strong>p-value:</strong> ${pValue.toFixed(4)}</p>
+      <p><strong>${pDisplay}</strong></p>
       <p class="interpretation">${extremeCount} of ${stats.length} shuffled statistics were at least as extreme as the observed value. This provides ${strength} evidence against H₀: ${nullDesc}.</p>
     `;
   }

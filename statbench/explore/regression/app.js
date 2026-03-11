@@ -5,9 +5,8 @@
  */
 
 import { drawScatterplot, drawResidualPlot } from '../../js/scatterplot.js';
-import { linreg } from '../../js/stats.js';
-import { parseCSV } from '../../js/csv-parser.js';
-import { announce, initTabs, loadDatasetIndex, fetchDataset, setupFileInput } from '../../js/page-utils.js';
+import { linreg, detectPrecision, formatStat } from '../../js/stats.js';
+import { announce, initTabs, initDataPanel } from '../../js/page-utils.js';
 
 // ── State ──────────────────────────────────────────────────────────────────
 
@@ -23,13 +22,11 @@ let xVar = '';
 /** @type {string} */
 let yVar = '';
 
+/** Decimal places in source data (for formatStat). */
+let dataPrecision = 0;
+
 // ── DOM refs ───────────────────────────────────────────────────────────────
 
-const datasetSelect = /** @type {HTMLSelectElement} */ (document.getElementById('dataset-select'));
-const datasetDesc = /** @type {HTMLParagraphElement} */ (document.getElementById('dataset-desc'));
-const pasteArea = /** @type {HTMLTextAreaElement} */ (document.getElementById('paste-area'));
-const loadPastedBtn = /** @type {HTMLButtonElement} */ (document.getElementById('load-pasted'));
-const clearBtn = /** @type {HTMLButtonElement} */ (document.getElementById('clear-btn'));
 const varPanel = /** @type {HTMLDivElement} */ (document.getElementById('var-panel'));
 const xVarSelect = /** @type {HTMLSelectElement} */ (document.getElementById('x-var'));
 const yVarSelect = /** @type {HTMLSelectElement} */ (document.getElementById('y-var'));
@@ -43,86 +40,41 @@ const showResidualsCheckbox = /** @type {HTMLInputElement} */ (document.getEleme
 const equationDisplay = /** @type {HTMLDivElement} */ (document.getElementById('equation-display'));
 const statsDisplay = /** @type {HTMLDivElement} */ (document.getElementById('stats-display'));
 
-// ── Datasets index ─────────────────────────────────────────────────────────
-
-/** @type {Array<{id:string, name:string, description:string, type:string}>} */
-let datasetsIndex = [];
-
 /**
- * Load a dataset by ID.
- * @param {string} id
+ * Load parsed CSV data (shared by paste + file handlers).
+ * @param {{headers:string[], types:string[], data:Array<Record<string,any>>}} parsed
+ * @param {string} sourceName
  */
-async function loadDataset(id) {
-    const data = await fetchDataset(id);
+function loadParsedData(parsed, sourceName) {
+    const numericHeaders = parsed.headers.filter((h, i) => parsed.types[i] === 'numeric');
 
-    currentRows = data.rows;
-
-    const varInfo = data.variables || [];
-    numericColumns = varInfo
-        .filter(/** @param {any} v */ v => v.type === 'numeric')
-        .map(/** @param {any} v */ v => v.name);
-
-    if (numericColumns.length < 2 && currentRows.length > 0) {
-        numericColumns = Object.keys(currentRows[0]).filter(k => {
-            return typeof currentRows[0][k] === 'number';
-        });
+    if (numericHeaders.length < 2) {
+        announce('Need at least two numeric columns. Check your data format.');
+        return;
     }
 
+    currentRows = parsed.data.map(row => {
+        /** @type {Object<string,any>} */
+        const out = {};
+        for (const h of parsed.headers) {
+            const val = row[h];
+            if (numericHeaders.includes(h)) {
+                out[h] = val === '' || val === 'NA' ? NaN : Number(val);
+            } else {
+                out[h] = val;
+            }
+        }
+        return out;
+    });
+
+    numericColumns = numericHeaders;
     populateVarSelectors();
-
-    const meta = datasetsIndex.find(d => d.id === id);
-    if (meta) {
-        datasetDesc.textContent = meta.description;
-    }
 
     dataSummary.textContent = `${currentRows.length} observations, ${numericColumns.length} numeric variables`;
     dataPreview.hidden = false;
 
-    announce(`${data.name}: ${currentRows.length} observations.`);
+    announce(`${sourceName}: ${currentRows.length} observations.`);
     updateChart();
-}
-
-// ── Paste data ─────────────────────────────────────────────────────────────
-
-function loadPastedData() {
-    const text = pasteArea.value.trim();
-    if (!text) return;
-
-    try {
-        const parsed = parseCSV(text);
-        const numericHeaders = parsed.headers.filter((h, i) => parsed.types[i] === 'numeric');
-
-        if (numericHeaders.length < 2) {
-            announce('Need at least two numeric columns. Check your data format.');
-            return;
-        }
-
-        // Convert parsed data to numeric rows
-        currentRows = parsed.data.map(row => {
-            /** @type {Object<string,any>} */
-            const out = {};
-            for (const h of parsed.headers) {
-                const val = row[h];
-                if (numericHeaders.includes(h)) {
-                    out[h] = val === '' || val === 'NA' ? NaN : Number(val);
-                } else {
-                    out[h] = val;
-                }
-            }
-            return out;
-        });
-
-        numericColumns = numericHeaders;
-        populateVarSelectors();
-
-        dataSummary.textContent = `${currentRows.length} observations, ${numericColumns.length} numeric variables`;
-        dataPreview.hidden = false;
-
-        announce(`Pasted data: ${currentRows.length} observations.`);
-        updateChart();
-    } catch (e) {
-        announce(`Error parsing data: ${e instanceof Error ? e.message : String(e)}`);
-    }
 }
 
 // ── Variable selectors ─────────────────────────────────────────────────────
@@ -198,6 +150,8 @@ function updateChart() {
     // Compute regression
     const reg = linreg(xClean, yClean);
     const showLine = showLineCheckbox.checked;
+    dataPrecision = Math.max(detectPrecision(xClean), detectPrecision(yClean));
+    const d = dataPrecision;
 
     // Draw scatterplot
     chartContainer.innerHTML = '';
@@ -211,8 +165,8 @@ function updateChart() {
     });
 
     // Equation display
-    const b0 = formatNum(reg.intercept);
-    const b1 = formatNum(reg.slope);
+    const b0 = formatStat(reg.intercept, d);
+    const b1 = formatStat(reg.slope, d);
     const sign = reg.slope >= 0 ? '+' : '';
     equationDisplay.innerHTML = `&#375; = ${b0} ${sign} ${b1} &middot; x`;
     equationDisplay.hidden = false;
@@ -226,23 +180,23 @@ function updateChart() {
     statsDisplay.innerHTML = `
         <div class="stat-card">
             <div class="stat-label">Correlation (r)</div>
-            <div class="stat-value">${formatNum(reg.r)}</div>
+            <div class="stat-value">${formatStat(reg.r, d, 'correlation')}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">R-squared</div>
-            <div class="stat-value">${formatNum(reg.r2)}</div>
+            <div class="stat-value">${formatStat(reg.r2, d, 'correlation')}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Slope (b&#8321;)</div>
-            <div class="stat-value">${formatNum(reg.slope)}</div>
+            <div class="stat-value">${formatStat(reg.slope, d)}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Intercept (b&#8320;)</div>
-            <div class="stat-value">${formatNum(reg.intercept)}</div>
+            <div class="stat-value">${formatStat(reg.intercept, d)}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Residual SE</div>
-            <div class="stat-value">${formatNum(residSE)}</div>
+            <div class="stat-value">${formatStat(residSE, d)}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">n</div>
@@ -264,98 +218,47 @@ function updateChart() {
         residualContainer.hidden = true;
     }
 
-    announce(`Regression: r = ${formatNum(reg.r)}, R-squared = ${formatNum(reg.r2)}, slope = ${formatNum(reg.slope)}`);
+    announce(`Regression: r = ${formatStat(reg.r, d, 'correlation')}, R² = ${formatStat(reg.r2, d, 'correlation')}, slope = ${formatStat(reg.slope, d)}`);
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-/**
- * Format a number for display with up to 4 decimal places.
- * @param {number} val
- * @returns {string}
- */
-function formatNum(val) {
-    if (!isFinite(val)) return 'N/A';
-    // Use up to 4 significant digits for display
-    if (Math.abs(val) >= 100) return val.toFixed(2);
-    if (Math.abs(val) >= 10) return val.toFixed(3);
-    return val.toFixed(4);
-}
-
-// ── Event listeners ────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────
 
 initTabs();
 
-loadDatasetIndex(datasetSelect, ds => ds.type === 'regression', datasetDesc)
-    .then(index => { datasetsIndex = index; });
+initDataPanel({
+    datasetFilter: ds => ds.type === 'regression',
+    onDataset: (ds) => {
+        currentRows = ds.rows;
+        const varInfo = ds.variables || [];
+        numericColumns = varInfo
+            .filter(/** @param {any} v */ v => v.type === 'numeric')
+            .map(/** @param {any} v */ v => v.name);
 
-datasetSelect.addEventListener('change', () => {
-    const id = datasetSelect.value;
-    if (id) {
-        loadDataset(id).catch(() => announce('Failed to load dataset.'));
-    }
-});
+        if (numericColumns.length < 2 && currentRows.length > 0) {
+            numericColumns = Object.keys(currentRows[0]).filter(k =>
+                typeof currentRows[0][k] === 'number');
+        }
 
-loadPastedBtn.addEventListener('click', loadPastedData);
-
-clearBtn.addEventListener('click', () => {
-    pasteArea.value = '';
-    currentRows = [];
-    numericColumns = [];
-    chartContainer.innerHTML = '';
-    equationDisplay.hidden = true;
-    statsDisplay.hidden = true;
-    residualContainer.hidden = true;
-    varPanel.hidden = true;
-    dataPreview.hidden = true;
-    datasetSelect.value = '';
-    datasetDesc.textContent = '';
+        populateVarSelectors();
+        dataSummary.textContent = `${currentRows.length} observations, ${numericColumns.length} numeric variables`;
+        dataPreview.hidden = false;
+        announce(`${ds.name}: ${currentRows.length} observations.`);
+        updateChart();
+    },
+    onText: loadParsedData,
+    onClear: () => {
+        currentRows = [];
+        numericColumns = [];
+        chartContainer.innerHTML = '';
+        equationDisplay.hidden = true;
+        statsDisplay.hidden = true;
+        residualContainer.hidden = true;
+        varPanel.hidden = true;
+        dataPreview.hidden = true;
+    },
 });
 
 xVarSelect.addEventListener('change', updateChart);
 yVarSelect.addEventListener('change', updateChart);
 showLineCheckbox.addEventListener('change', updateChart);
 showResidualsCheckbox.addEventListener('change', updateChart);
-
-// ── File input ────────────────────────────────────────────────────────
-
-const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
-if (fileInput) {
-    setupFileInput(fileInput, (text, filename) => {
-        try {
-            const parsed = parseCSV(text);
-            const numericHeaders = parsed.headers.filter((h, i) => parsed.types[i] === 'numeric');
-
-            if (numericHeaders.length < 2) {
-                announce('Need at least two numeric columns.');
-                return;
-            }
-
-            currentRows = parsed.data.map(row => {
-                /** @type {Object<string,any>} */
-                const out = {};
-                for (const h of parsed.headers) {
-                    const val = row[h];
-                    if (numericHeaders.includes(h)) {
-                        out[h] = val === '' || val === 'NA' ? NaN : Number(val);
-                    } else {
-                        out[h] = val;
-                    }
-                }
-                return out;
-            });
-
-            numericColumns = numericHeaders;
-            populateVarSelectors();
-
-            datasetDesc.textContent = '';
-            dataSummary.textContent = `${currentRows.length} observations, ${numericColumns.length} numeric variables`;
-            dataPreview.hidden = false;
-
-            announce(`${filename}: ${currentRows.length} observations.`);
-            updateChart();
-        } catch (e) {
-            announce(`Error reading file: ${e instanceof Error ? e.message : String(e)}`);
-        }
-    });
-}

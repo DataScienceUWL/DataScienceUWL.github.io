@@ -418,3 +418,64 @@ export function permute(arr1, arr2, rng) {
     shuffle(combined, rng);
     return [combined.slice(0, arr1.length), combined.slice(arr1.length)];
 }
+
+// ─── Display formatting ──────────────────────────────────────────────
+
+/**
+ * Detect the maximum decimal places present in source data.
+ * Returns 0 for integer data, 1 for one-decimal data, etc.
+ * @param {number[]} values
+ * @returns {number}
+ */
+export function detectPrecision(values) {
+    let maxDec = 0;
+    for (const v of values) {
+        if (!isFinite(v)) continue;
+        const s = String(v);
+        const dot = s.indexOf('.');
+        if (dot >= 0) {
+            const dec = s.length - dot - 1;
+            if (dec > maxDec) maxDec = dec;
+        }
+    }
+    return maxDec;
+}
+
+/**
+ * Format a statistic for display using the "one more digit than source" rule.
+ *
+ * Convention:
+ * - 'stat' (default): d + 1 decimals (mean, median, SD, IQR, quartiles, etc.)
+ * - 'variance': d + 2 decimals
+ * - 'proportion': max(d + 1, 3) decimals (p-hat, proportions in tables)
+ * - 'correlation': 3 decimals (r, R²)
+ * - 'pvalue': 4 decimals, or "< 0.0001" when tiny
+ * - 'count': integer (no decimals)
+ * - 'percent': 1 decimal + "%" suffix
+ *
+ * @param {number} value
+ * @param {number} d - Decimal places in source data (from detectPrecision)
+ * @param {'stat'|'variance'|'proportion'|'correlation'|'pvalue'|'count'|'percent'} [type='stat']
+ * @returns {string}
+ */
+export function formatStat(value, d, type = 'stat') {
+    if (!isFinite(value)) return '\u2014';
+    switch (type) {
+        case 'variance':
+            return value.toFixed(d + 2);
+        case 'proportion':
+            return value.toFixed(Math.max(d + 1, 3));
+        case 'correlation':
+            return value.toFixed(3);
+        case 'pvalue':
+            if (value === 0) return 'p \u2248 0';
+            if (value < 0.0001) return 'p < 0.0001';
+            return value.toFixed(4);
+        case 'count':
+            return String(Math.round(value));
+        case 'percent':
+            return value.toFixed(1) + '%';
+        default:
+            return value.toFixed(d + 1);
+    }
+}

@@ -6,14 +6,14 @@
  */
 
 import { createRng } from '../../js/prng.js';
-import { linreg, mean } from '../../js/stats.js';
+import { linreg, mean, detectPrecision, formatStat } from '../../js/stats.js';
 import { bootstrapCI } from '../../js/sim-engine.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
 import * as d3Select from 'd3-selection';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { parseCSV } from '../../js/csv-parser.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, loadDatasetIndex, fetchDataset, computeHighlights, setupFileInput } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initDataPanel, computeHighlights } from '../../js/page-utils.js';
 
 // ─── DOM ───
 
@@ -24,11 +24,6 @@ const resetBtn = /** @type {HTMLButtonElement} */ (document.getElementById('rese
 const ciSelect = /** @type {HTMLSelectElement} */ (document.getElementById('ci-level'));
 const dataSummary = document.getElementById('data-summary');
 const dataPreview = document.getElementById('data-preview');
-const pasteArea = /** @type {HTMLTextAreaElement} */ (document.getElementById('paste-area'));
-const loadPastedBtn = document.getElementById('load-pasted');
-const clearBtn = document.getElementById('clear-btn');
-const datasetSelect = /** @type {HTMLSelectElement} */ (document.getElementById('dataset-select'));
-const datasetDesc = document.getElementById('dataset-desc');
 
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
   document.querySelectorAll('.gen-btn'));
@@ -59,40 +54,10 @@ let seed = Math.random().toString(36).slice(2, 10);
 let observedSlope = 0;
 let observedIntercept = 0;
 
+/** Decimal places in source data (for formatStat). */
+let dataPrecision = 0;
+
 // ─── Data loading ───
-
-/** @type {Array<{id:string,name:string,description:string,type:string}>} */
-let datasetIndex = [];
-
-if (datasetSelect) {
-  loadDatasetIndex(datasetSelect, ds => ds.type === 'regression', datasetDesc)
-    .then(index => { datasetIndex = index; });
-
-  datasetSelect.addEventListener('change', () => {
-    const id = datasetSelect.value;
-    if (!id) return;
-    const meta = datasetIndex.find(d => d.id === id);
-    if (meta && datasetDesc) datasetDesc.textContent = meta.description;
-
-    fetchDataset(id)
-      .then(ds => {
-        resetSimulation();
-        datasetContext = ds.context || {};
-        const numVars = ds.variables.filter(v => v.type === 'numeric');
-        if (numVars.length < 2) return;
-        xLabel = numVars[0].name;
-        yLabel = numVars[1].name;
-        xData = ds.rows.map(r => r[xLabel]).filter(v => isFinite(v));
-        yData = ds.rows.map(r => r[yLabel]).filter(v => isFinite(v));
-        const minLen = Math.min(xData.length, yData.length);
-        xData = xData.slice(0, minLen);
-        yData = yData.slice(0, minLen);
-        showDataLoaded();
-        announce(`${ds.name}: ${minLen} observations.`);
-      })
-      .catch(() => announce('Failed to load dataset.'));
-  });
-}
 
 /** @param {string} text */
 function loadTextData(text) {
@@ -119,27 +84,34 @@ function loadTextData(text) {
   }
 }
 
-if (loadPastedBtn && pasteArea) {
-  loadPastedBtn.addEventListener('click', () => loadTextData(pasteArea.value));
-}
-
-const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
-if (fileInput) {
-  setupFileInput(fileInput, (text) => loadTextData(text));
-}
-
-if (clearBtn) {
-  clearBtn.addEventListener('click', () => {
+initDataPanel({
+  datasetFilter: ds => ds.type === 'regression',
+  onDataset: (ds) => {
+    resetSimulation();
+    datasetContext = ds.context || {};
+    const numVars = ds.variables.filter(v => v.type === 'numeric');
+    if (numVars.length < 2) return;
+    xLabel = numVars[0].name;
+    yLabel = numVars[1].name;
+    xData = ds.rows.map(r => r[xLabel]).filter(v => isFinite(v));
+    yData = ds.rows.map(r => r[yLabel]).filter(v => isFinite(v));
+    const minLen = Math.min(xData.length, yData.length);
+    xData = xData.slice(0, minLen);
+    yData = yData.slice(0, minLen);
+    showDataLoaded();
+    announce(`${ds.name}: ${minLen} observations.`);
+  },
+  onRawText: (text) => loadTextData(text),
+  onClear: () => {
     xData = [];
     yData = [];
     resetSimulation();
-    if (pasteArea) pasteArea.value = '';
     if (dataPreview) dataPreview.hidden = true;
     if (dataSummary) dataSummary.textContent = '\u2014';
     for (const btn of genBtns) btn.disabled = true;
     announce('Data cleared.');
-  });
-}
+  },
+});
 
 function showDataLoaded() {
   if (xData.length < 3) {
@@ -149,11 +121,13 @@ function showDataLoaded() {
   const reg = linreg(xData, yData);
   observedSlope = reg.slope;
   observedIntercept = reg.intercept;
+  dataPrecision = Math.max(detectPrecision(xData), detectPrecision(yData));
 
   if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
+    const d = dataPrecision;
     dataSummary.textContent =
-      `n = ${xData.length}, slope = ${reg.slope.toFixed(4)}, r² = ${reg.r2.toFixed(4)}`;
+      `n = ${xData.length}, slope = ${formatStat(reg.slope, d)}, r² = ${formatStat(reg.r2, d, 'correlation')}`;
   }
   for (const btn of genBtns) btn.disabled = false;
   if (resultDiv) resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
@@ -326,7 +300,7 @@ function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts
     const loX = xScale(ci[0]);
     const hiX = xScale(ci[1]);
     const midX = Math.max(50, Math.min(w - 50, (loX + hiX) / 2));
-    _pill(annotations, proportion.toFixed(4), midX, pillY, false);
+    _pill(annotations, formatStat(proportion, 0, 'proportion'), midX, pillY, false);
   }
 }
 
@@ -360,13 +334,15 @@ function _pill(g, text, cx, cy, isComp) {
  */
 function displayResults(slopes, ci, se, ciLevel) {
   if (!resultDiv) return;
+  const d = dataPrecision;
+  const fmt = (v) => formatStat(v, d);
   resultDiv.innerHTML = `
     <p><strong>Bootstrap Distribution</strong> (${slopes.length} resamples)</p>
-    <p>Observed slope: ${observedSlope.toFixed(4)}</p>
-    <p>Bootstrap mean slope: ${mean(slopes).toFixed(4)}</p>
-    <p>SE: ${se.toFixed(4)}</p>
-    <p><strong>${ciLevel}% Confidence Interval:</strong> (${ci[0].toFixed(4)}, ${ci[1].toFixed(4)})</p>
-    <p class="interpretation">We are ${ciLevel}% confident that the ${datasetContext.parameter || 'true population slope'}${datasetContext.population ? ' for ' + datasetContext.population : ''} is between ${ci[0].toFixed(4)} and ${ci[1].toFixed(4)}. The ${bootLines.length} semi-transparent lines on the scatterplot show the variability in the fitted regression across bootstrap resamples.</p>
+    <p>Observed slope: ${fmt(observedSlope)}</p>
+    <p>Bootstrap mean slope: ${fmt(mean(slopes))}</p>
+    <p>SE: ${fmt(se)}</p>
+    <p><strong>${ciLevel}% Confidence Interval:</strong> (${fmt(ci[0])}, ${fmt(ci[1])})</p>
+    <p class="interpretation">We are ${ciLevel}% confident that the ${datasetContext.parameter || 'true population slope'}${datasetContext.population ? ' for ' + datasetContext.population : ''} is between ${fmt(ci[0])} and ${fmt(ci[1])}. The ${bootLines.length} semi-transparent lines on the scatterplot show the variability in the fitted regression across bootstrap resamples.</p>
     ${slopes.length < 50 ? '<p class="hint">CI is approximate with few resamples. Generate more for stability.</p>' : ''}
   `;
 }

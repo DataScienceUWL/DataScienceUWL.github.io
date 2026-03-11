@@ -5,6 +5,8 @@
  * @module page-utils
  */
 
+import { parseCSV } from './csv-parser.js';
+
 /**
  * Resolve the path to the data/ directory from any page.
  * Uses the stylesheet href to infer the relative prefix.
@@ -307,4 +309,87 @@ export function computeHighlights(allStats, prevLength, count, computeBins, opti
   }
 
   return { hlIndex, hlIndices, prevBinCounts };
+}
+
+/**
+ * Initialize a standard data panel with dataset dropdown, paste, file input, and clear button.
+ * Handles common wiring and delegates page-specific processing to callbacks.
+ *
+ * @param {object} config
+ * @param {(ds: {id:string, type:string}) => boolean} config.datasetFilter - Filter for dataset dropdown
+ * @param {(ds: any, meta: {id:string,name:string,description:string,type:string,n:number}) => void} config.onDataset - Called with fetched dataset JSON + metadata
+ * @param {(parsed: {headers:string[], types:string[], data:Array<Record<string,any>>}, sourceName: string) => void} [config.onText] - Called with parseCSV result for paste/file
+ * @param {(text: string, sourceName: string) => void} [config.onRawText] - Receive raw text instead (overrides onText)
+ * @param {() => void} config.onClear - Called when clear button clicked
+ * @returns {{ getDatasetIndex: () => Array<{id:string,name:string,description:string,type:string,n:number}> }}
+ */
+export function initDataPanel(config) {
+  const { datasetFilter, onDataset, onText, onRawText, onClear } = config;
+
+  const datasetSelect = /** @type {HTMLSelectElement|null} */ (document.getElementById('dataset-select'));
+  const datasetDesc = document.getElementById('dataset-desc');
+  const pasteArea = /** @type {HTMLTextAreaElement|null} */ (document.getElementById('paste-area'));
+  const loadPastedBtn = document.getElementById('load-pasted');
+  const clearBtn = document.getElementById('clear-btn');
+  const fileInput = /** @type {HTMLInputElement|null} */ (document.getElementById('file-input'));
+
+  /** @type {Array<{id:string,name:string,description:string,type:string,n:number}>} */
+  let datasetIndex = [];
+
+  // ── Dataset dropdown ──
+  if (datasetSelect) {
+    loadDatasetIndex(datasetSelect, datasetFilter, datasetDesc)
+      .then(index => { datasetIndex = index; });
+
+    datasetSelect.addEventListener('change', () => {
+      const id = datasetSelect.value;
+      if (!id) {
+        if (datasetDesc) datasetDesc.textContent = '';
+        return;
+      }
+      const meta = datasetIndex.find(d => d.id === id);
+      if (meta && datasetDesc) datasetDesc.textContent = meta.description;
+
+      fetchDataset(id)
+        .then(ds => onDataset(ds, meta))
+        .catch(() => announce('Failed to load dataset.'));
+    });
+  }
+
+  // ── Text handler (shared by paste + file) ──
+  const handleText = onRawText || ((/** @type {string} */ text, /** @type {string} */ sourceName) => {
+    if (!onText) return;
+    try {
+      const parsed = parseCSV(text);
+      onText(parsed, sourceName);
+    } catch (e) {
+      announce(`Error parsing data: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  });
+
+  // ── Paste ──
+  if (loadPastedBtn && pasteArea) {
+    loadPastedBtn.addEventListener('click', () => {
+      const text = pasteArea.value.trim();
+      if (!text) return;
+      handleText(text, 'Pasted data');
+    });
+  }
+
+  // ── File input ──
+  if (fileInput) {
+    setupFileInput(fileInput, (text, filename) => handleText(text, filename));
+  }
+
+  // ── Clear ──
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      if (pasteArea) pasteArea.value = '';
+      onClear();
+    });
+  }
+
+  return {
+    getDatasetIndex: () => datasetIndex,
+  };
 }

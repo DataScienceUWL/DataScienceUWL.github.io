@@ -5,13 +5,12 @@
  */
 
 import { createRng } from '../../js/prng.js';
-import { mean } from '../../js/stats.js';
+import { mean, formatStat } from '../../js/stats.js';
 import { drawHistogram, computeBins, snappedPropThresholds } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { drawSpike } from '../../js/spike.js';
 import * as d3Select from 'd3-selection';
-import { parseCSV } from '../../js/csv-parser.js';
-import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, loadDatasetIndex, fetchDataset, computeHighlights, setupFileInput } from '../../js/page-utils.js';
+import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, initDataPanel, computeHighlights } from '../../js/page-utils.js';
 
 // DOM elements
 const chartContainer = document.getElementById('chart-container');
@@ -26,8 +25,6 @@ const inputSuccesses = /** @type {HTMLInputElement} */ (document.getElementById(
 const loadSummaryBtn = document.getElementById('load-summary');
 const nullPropInput = /** @type {HTMLInputElement} */ (document.getElementById('null-prop'));
 const altDirectionSelect = /** @type {HTMLSelectElement} */ (document.getElementById('alt-direction'));
-const datasetSelect = /** @type {HTMLSelectElement} */ (document.getElementById('dataset-select'));
-const datasetDesc = document.getElementById('dataset-desc');
 const successSelector = document.getElementById('success-selector');
 const successOutcome = /** @type {HTMLSelectElement} */ (document.getElementById('success-outcome'));
 
@@ -88,84 +85,59 @@ let observedPHat = 0;
 /** @type {string[]} */
 let rawOutcomes = [];
 
-// ─── Dataset loading ───
+// ─── Dataset + File loading ───
 
-/** @type {Array<{id:string,name:string,description:string,type:string}>} */
-let datasetIndex = [];
-
-if (datasetSelect) {
-  loadDatasetIndex(datasetSelect, ds => ds.type === 'bootstrap_prop', datasetDesc)
-    .then(index => { datasetIndex = index; });
-
-  datasetSelect.addEventListener('change', () => {
-    const id = datasetSelect.value;
-    if (!id) return;
-    const meta = datasetIndex.find(d => d.id === id);
-    if (meta && datasetDesc) datasetDesc.textContent = meta.description;
-
-    fetchDataset(id)
-      .then(ds => {
-        // Find the binary/categorical variable
-        const catVar = ds.variables.find(v => v.type === 'categorical') || ds.variables[0];
-        if (!catVar) { announce('No categorical variable found.'); return; }
-        rawOutcomes = ds.rows.map(r => String(r[catVar.name]));
-        const levels = [...new Set(rawOutcomes)];
-
-        // Show success selector
-        if (successSelector && successOutcome) {
-          successOutcome.innerHTML = '';
-          for (const lev of levels) {
-            const opt = document.createElement('option');
-            opt.value = lev;
-            opt.textContent = lev;
-            successOutcome.appendChild(opt);
-          }
-          // Auto-select from context.successLabel if available
-          const ctx = ds.context || {};
-          if (ctx.successLabel && levels.includes(ctx.successLabel)) {
-            successOutcome.value = ctx.successLabel;
-          }
-          successSelector.hidden = false;
-          applyDatasetOutcome();
-        }
-        announce(`${ds.name}.`);
-      })
-      .catch(() => announce('Failed to load dataset.'));
-  });
+/**
+ * Populate success outcome selector from categorical levels.
+ * @param {string[]} levels
+ * @param {string} [autoSelect] - Auto-select this level if present
+ */
+function populateSuccessSelector(levels, autoSelect) {
+  if (!successSelector || !successOutcome) return;
+  successOutcome.innerHTML = '';
+  for (const lev of levels) {
+    const opt = document.createElement('option');
+    opt.value = lev;
+    opt.textContent = lev;
+    successOutcome.appendChild(opt);
+  }
+  if (autoSelect && levels.includes(autoSelect)) {
+    successOutcome.value = autoSelect;
+  }
+  successSelector.hidden = false;
+  applyDatasetOutcome();
 }
 
-// ── File input ────────────────────────────────────────────────────────
-
-const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
-if (fileInput) {
-  setupFileInput(fileInput, (text) => {
-    try {
-      const parsed = parseCSV(text);
-      const catIdx = parsed.types.indexOf('categorical');
-      if (catIdx < 0) {
-        announce('Need at least one categorical column.');
-        return;
-      }
-      const colName = parsed.headers[catIdx];
-      rawOutcomes = parsed.data.map(r => String(r[colName]));
-      const levels = [...new Set(rawOutcomes)];
-
-      if (successSelector && successOutcome) {
-        successOutcome.innerHTML = '';
-        for (const lev of levels) {
-          const opt = document.createElement('option');
-          opt.value = lev;
-          opt.textContent = lev;
-          successOutcome.appendChild(opt);
-        }
-        successSelector.hidden = false;
-        applyDatasetOutcome();
-      }
-    } catch {
-      announce('Could not parse file.');
+initDataPanel({
+  datasetFilter: ds => ds.type === 'bootstrap_prop',
+  onDataset: (ds) => {
+    const catVar = ds.variables.find(v => v.type === 'categorical') || ds.variables[0];
+    if (!catVar) { announce('No categorical variable found.'); return; }
+    rawOutcomes = ds.rows.map(r => String(r[catVar.name]));
+    const levels = [...new Set(rawOutcomes)];
+    const ctx = ds.context || {};
+    populateSuccessSelector(levels, ctx.successLabel);
+    announce(`${ds.name}.`);
+  },
+  onText: (parsed) => {
+    const catIdx = parsed.types.indexOf('categorical');
+    if (catIdx < 0) {
+      announce('Need at least one categorical column.');
+      return;
     }
-  });
-}
+    const colName = parsed.headers[catIdx];
+    rawOutcomes = parsed.data.map(r => String(r[colName]));
+    populateSuccessSelector([...new Set(rawOutcomes)]);
+  },
+  onClear: () => {
+    rawOutcomes = [];
+    resetSimulation();
+    if (dataPreview) dataPreview.hidden = true;
+    if (dataSummary) dataSummary.textContent = '\u2014';
+    for (const btn of genBtns) btn.disabled = true;
+    announce('Data cleared.');
+  },
+});
 
 if (successOutcome) {
   successOutcome.addEventListener('change', applyDatasetOutcome);
@@ -182,7 +154,7 @@ function applyDatasetOutcome() {
   resetSimulation();
   if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
-    dataSummary.textContent = `n = ${sampleN}, successes = ${sampleSuccesses} ("${successVal}"), p̂ = ${observedPHat.toFixed(4)}`;
+    dataSummary.textContent = `n = ${sampleN}, successes = ${sampleSuccesses} ("${successVal}"), p̂ = ${formatStat(observedPHat, 0, 'proportion')}`;
   }
   if (hypothesisDisplay) hypothesisDisplay.hidden = false;
   for (const btn of genBtns) btn.disabled = false;
@@ -190,7 +162,7 @@ function applyDatasetOutcome() {
 
   if (mechanismStrip && mechObservedStat) {
     mechanismStrip.hidden = false;
-    mechObservedStat.textContent = `${sampleSuccesses} of ${sampleN} (p̂ = ${observedPHat.toFixed(4)})`;
+    mechObservedStat.textContent = `${sampleSuccesses} of ${sampleN} (p̂ = ${formatStat(observedPHat, 0, 'proportion')})`;
   }
 
   setTimeout(() => {
@@ -221,7 +193,7 @@ function loadData() {
 
   if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
-    dataSummary.textContent = `n = ${n}, successes = ${k}, p̂ = ${observedPHat.toFixed(4)}`;
+    dataSummary.textContent = `n = ${n}, successes = ${k}, p̂ = ${formatStat(observedPHat, 0, 'proportion')}`;
   }
   if (hypothesisDisplay) hypothesisDisplay.hidden = false;
   for (const btn of genBtns) btn.disabled = false;
@@ -229,7 +201,7 @@ function loadData() {
 
   if (mechanismStrip && mechObservedStat) {
     mechanismStrip.hidden = false;
-    mechObservedStat.textContent = `${k} of ${n} (p̂ = ${observedPHat.toFixed(4)})`;
+    mechObservedStat.textContent = `${k} of ${n} (p̂ = ${formatStat(observedPHat, 0, 'proportion')})`;
   }
   announce(`Data loaded: n = ${n}, successes = ${k}`);
 
@@ -312,7 +284,7 @@ function generateSimulations(count) {
 
   if (mechSimStat && mechanismDescEl) {
     const lastPHat = lastSimSuccesses / n;
-    mechSimStat.textContent = `${lastSimSuccesses} of ${n} (p̂ = ${lastPHat.toFixed(4)})`;
+    mechSimStat.textContent = `${lastSimSuccesses} of ${n} (p̂ = ${formatStat(lastPHat, 0, 'proportion')})`;
     mechanismDescEl.textContent = `Simulate ${n} trials, each with P(success) = ${p0}`;
     mechanismDescEl.hidden = false;
   }
@@ -454,20 +426,17 @@ function renderPValuePills(frame, xScale, pValue, observed, direction) {
   const obsX = xScale(observed);
   const comp = 1 - pValue;
 
-  let pText;
-  if (pValue === 0) pText = 'p ≈ 0';
-  else if (pValue < 0.0001) pText = 'p < 0.0001';
-  else pText = `p = ${pValue.toFixed(4)}`;
+  const pText = formatStat(pValue, 0, 'pvalue');
 
   if (direction === 'both') {
     const labelX = Math.max(60, Math.min(w - 60, obsX));
     _pill(annotations, `${pText}  (two-tailed)`, labelX, pillY, false);
   } else if (direction === 'left') {
     _pill(annotations, pText, Math.max(50, obsX / 2), pillY, false);
-    _pill(annotations, comp.toFixed(4), Math.min(w - 50, (obsX + w) / 2), pillY, true);
+    _pill(annotations, formatStat(comp, 0, 'proportion'), Math.min(w - 50, (obsX + w) / 2), pillY, true);
   } else {
     _pill(annotations, pText, Math.min(w - 50, (obsX + w) / 2), pillY, false);
-    _pill(annotations, comp.toFixed(4), Math.max(50, obsX / 2), pillY, true);
+    _pill(annotations, formatStat(comp, 0, 'proportion'), Math.max(50, obsX / 2), pillY, true);
   }
 }
 
@@ -535,12 +504,13 @@ function displayResults(stats, observed, pValue, extremeCount, direction) {
   else if (pValue < 0.05) strength = 'strong';
   else if (pValue < 0.10) strength = 'moderate';
   else strength = 'little';
+  const fmtP = (v) => formatStat(v, 0, 'proportion');
   resultDiv.innerHTML = `
     <p><strong>Null Distribution</strong> (${stats.length} simulations, p₀ = ${getNullProp()})</p>
-    <p>Observed p̂ = ${observed.toFixed(4)}</p>
+    <p>Observed p̂ = ${fmtP(observed)}</p>
     <p>Extreme count: ${extremeCount} of ${stats.length} (${dirLabel})</p>
-    <p><strong>p-value:</strong> ${pValue.toFixed(4)}</p>
-    <p class="interpretation">${extremeCount} of ${stats.length} simulated proportions were at least as extreme as the observed p̂ = ${observed.toFixed(4)}. This provides ${strength} evidence against H₀: p = ${getNullProp()}.</p>
+    <p><strong>p-value:</strong> ${formatStat(pValue, 0, 'pvalue')}</p>
+    <p class="interpretation">${extremeCount} of ${stats.length} simulated proportions were at least as extreme as the observed p̂ = ${fmtP(observed)}. This provides ${strength} evidence against H₀: p = ${getNullProp()}.</p>
   `;
 }
 

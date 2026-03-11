@@ -4,17 +4,12 @@
  * Contingency table with proportion toggles and bar chart modes.
  */
 
-import { parseCSV } from '../../js/csv-parser.js';
 import { drawBarChart, computeGroupedFrequencies } from '../../js/barchart.js';
-import { announce, initTabs, loadDatasetIndex, fetchDataset, setupFileInput } from '../../js/page-utils.js';
+import { formatStat } from '../../js/stats.js';
+import { announce, initTabs, initDataPanel } from '../../js/page-utils.js';
 
 // ── DOM ──────────────────────────────────────────────────────────────
 
-const datasetSelect = /** @type {HTMLSelectElement} */ (document.getElementById('dataset-select'));
-const datasetDesc = document.getElementById('dataset-desc');
-const pasteArea = /** @type {HTMLTextAreaElement} */ (document.getElementById('paste-area'));
-const loadPastedBtn = document.getElementById('load-pasted');
-const clearBtn = document.getElementById('clear-btn');
 const dataSummary = document.getElementById('data-summary');
 const dataPreview = document.getElementById('data-preview');
 const variableControls = document.getElementById('variable-controls');
@@ -40,74 +35,49 @@ let catVarNames = [];
 let rowVar = '';
 let colVar = '';
 
-// ── Dataset loading ──────────────────────────────────────────────────
+// ── Data loading ─────────────────────────────────────────────────────
 
-/** @type {Array<{id:string, name:string, description:string, type:string, n:number}>} */
-let datasetIndex = [];
-
-if (datasetSelect) {
-  loadDatasetIndex(datasetSelect,
-    ds => ds.type === 'chisq' || ds.type === 'randomization_prop' || ds.type === 'randomization',
-    datasetDesc)
-    .then(index => { datasetIndex = index; });
-
-  datasetSelect.addEventListener('change', () => {
-    const id = datasetSelect.value;
-    if (!id) return;
-    const meta = datasetIndex.find(d => d.id === id);
-    if (meta && datasetDesc) datasetDesc.textContent = meta.description;
-
-    fetchDataset(id)
-      .then(ds => {
-        const catVars = ds.variables.filter(v => v.type === 'categorical');
-        if (catVars.length < 1) {
-          announce('No categorical variables found.');
-          return;
-        }
-        catVarNames = catVars.map(v => v.name);
-        rawRows = ds.rows;
-        setupVariableSelectors(catVarNames);
-        showDataLoaded(ds.name);
-      })
-      .catch(() => announce('Failed to load dataset.'));
+/**
+ * Load parsed CSV data (shared by paste + file).
+ * @param {{headers:string[], types:string[], data:Array<Record<string,any>>}} parsed
+ * @param {string} sourceName
+ */
+function loadParsedData(parsed, sourceName) {
+  const catIndices = parsed.types
+    .map((t, i) => t === 'categorical' ? i : -1)
+    .filter(i => i >= 0);
+  if (catIndices.length < 1) {
+    announce('Need at least one categorical column.');
+    return;
+  }
+  catVarNames = catIndices.map(i => parsed.headers[i]);
+  rawRows = parsed.data.map(row => {
+    /** @type {Record<string, string>} */
+    const obj = {};
+    for (const col of catVarNames) obj[col] = String(row[col]);
+    return obj;
   });
+  setupVariableSelectors(catVarNames);
+  showDataLoaded(sourceName);
 }
 
-// ── Paste data ───────────────────────────────────────────────────────
-
-if (loadPastedBtn && pasteArea) {
-  loadPastedBtn.addEventListener('click', () => {
-    const text = pasteArea.value.trim();
-    if (!text) return;
-    try {
-      const parsed = parseCSV(text);
-      const catIndices = parsed.types
-        .map((t, i) => t === 'categorical' ? i : -1)
-        .filter(i => i >= 0);
-      if (catIndices.length < 1) {
-        announce('Need at least one categorical column.');
-        return;
-      }
-      catVarNames = catIndices.map(i => parsed.headers[i]);
-      rawRows = parsed.data.map(row => {
-        /** @type {Record<string, string>} */
-        const obj = {};
-        for (const col of catVarNames) obj[col] = String(row[col]);
-        return obj;
-      });
-      setupVariableSelectors(catVarNames);
-      showDataLoaded('Pasted data');
-    } catch {
-      announce('Could not parse data.');
+initDataPanel({
+  datasetFilter: ds => ds.type === 'chisq' || ds.type === 'randomization_prop' || ds.type === 'randomization',
+  onDataset: (ds) => {
+    const catVars = ds.variables.filter(v => v.type === 'categorical');
+    if (catVars.length < 1) {
+      announce('No categorical variables found.');
+      return;
     }
-  });
-}
-
-if (clearBtn) {
-  clearBtn.addEventListener('click', () => {
+    catVarNames = catVars.map(v => v.name);
+    rawRows = ds.rows;
+    setupVariableSelectors(catVarNames);
+    showDataLoaded(ds.name);
+  },
+  onText: loadParsedData,
+  onClear: () => {
     rawRows = [];
     catVarNames = [];
-    if (pasteArea) pasteArea.value = '';
     if (dataPreview) dataPreview.hidden = true;
     if (variableControls) variableControls.hidden = true;
     if (tableSection) tableSection.hidden = true;
@@ -115,8 +85,8 @@ if (clearBtn) {
     if (tableContainer) tableContainer.innerHTML = '';
     if (chartContainer) chartContainer.innerHTML = '';
     announce('Data cleared.');
-  });
-}
+  },
+});
 
 // ── Variable selectors ───────────────────────────────────────────────
 
@@ -237,13 +207,13 @@ function renderSingleVarTable(values, varName) {
 
   for (const cat of cats) {
     const count = counts.get(cat) ?? 0;
-    const display = mode === 'counts' ? count : (count / total).toFixed(3);
+    const display = mode === 'counts' ? count : formatStat(count / total, 0, 'proportion');
     html += `<tr><th scope="row">${cat}</th><td>${display}</td></tr>`;
   }
 
   html += '</tbody>';
   html += '<tfoot><tr class="total-row">';
-  html += `<th scope="row">Total</th><td>${mode === 'counts' ? total : '1.000'}</td>`;
+  html += `<th scope="row">Total</th><td>${mode === 'counts' ? total : formatStat(1, 0, 'proportion')}</td>`;
   html += '</tr></tfoot></table>';
 
   tableContainer.innerHTML = html;
@@ -297,7 +267,7 @@ function renderTwoVarTable(rowValues, colValues) {
     const ct = colTotals.get(s) ?? 0;
     html += `<td>${formatTotal(ct, grandTotal, mode, 'col')}</td>`;
   }
-  html += `<td class="total-col">${mode === 'counts' ? grandTotal : '1.000'}</td>`;
+  html += `<td class="total-col">${mode === 'counts' ? grandTotal : formatStat(1, 0, 'proportion')}</td>`;
   html += '</tr></tbody></table>';
 
   tableContainer.innerHTML = html;
@@ -329,9 +299,9 @@ function renderTwoVarTable(rowValues, colValues) {
  */
 function formatCell(count, rowTotal, colTotal, grandTotal, mode) {
   switch (mode) {
-    case 'row': return (count / rowTotal).toFixed(3);
-    case 'col': return (count / colTotal).toFixed(3);
-    case 'cell': return (count / grandTotal).toFixed(3);
+    case 'row': return formatStat(count / rowTotal, 0, 'proportion');
+    case 'col': return formatStat(count / colTotal, 0, 'proportion');
+    case 'cell': return formatStat(count / grandTotal, 0, 'proportion');
     default: return String(count);
   }
 }
@@ -345,8 +315,8 @@ function formatCell(count, rowTotal, colTotal, grandTotal, mode) {
  */
 function formatTotal(subtotal, grandTotal, mode, direction) {
   if (mode === 'counts') return String(subtotal);
-  if (mode === direction) return '1.000';
-  return (subtotal / grandTotal).toFixed(3);
+  if (mode === direction) return formatStat(1, 0, 'proportion');
+  return formatStat(subtotal / grandTotal, 0, 'proportion');
 }
 
 // ── Bar chart ────────────────────────────────────────────────────────
@@ -387,32 +357,4 @@ function renderChart(primaryValues, primaryLabel, secondaryValues, secondaryLabe
   }
 }
 
-// ── File input ────────────────────────────────────────────────────────
-
-const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
-if (fileInput) {
-  setupFileInput(fileInput, (text, filename) => {
-    try {
-      const parsed = parseCSV(text);
-      const catIndices = parsed.types
-        .map((t, i) => t === 'categorical' ? i : -1)
-        .filter(i => i >= 0);
-      if (catIndices.length < 1) {
-        announce('Need at least one categorical column.');
-        return;
-      }
-      catVarNames = catIndices.map(i => parsed.headers[i]);
-      rawRows = parsed.data.map(row => {
-        /** @type {Record<string, string>} */
-        const obj = {};
-        for (const col of catVarNames) obj[col] = String(row[col]);
-        return obj;
-      });
-      setupVariableSelectors(catVarNames);
-      showDataLoaded(filename);
-    } catch {
-      announce('Could not parse file.');
-    }
-  });
-}
 
