@@ -112,7 +112,16 @@ export function computeBins(values, options = {}) {
   if (options.thresholds) {
     binGenerator.thresholds(options.thresholds);
   } else {
-    binGenerator.thresholds(options.numBins ?? sturgesBins(n));
+    // Generate explicit evenly-spaced thresholds so the bin count is exact.
+    // d3's .thresholds(n) treats n as a suggestion and picks "nice" values,
+    // which ignores small changes (e.g. 7→8→9 all produce the same bins).
+    const numBins = options.numBins ?? sturgesBins(n);
+    const step = (domain[1] - domain[0]) / numBins;
+    const thresholds = [];
+    for (let i = 1; i < numBins; i++) {
+      thresholds.push(domain[0] + i * step);
+    }
+    binGenerator.thresholds(thresholds);
   }
 
   const bins = binGenerator(values);
