@@ -287,17 +287,17 @@ function displayInterpretation() {
   const xbarSd = sd(sampleMeans);
   const theorySE = popSigma / Math.sqrt(n);
 
-  let html = `<p><strong>Sampling Distribution</strong> (${k} samples of size n = ${n})</p>`;
-  html += `<p>Population: μ = ${popMu.toFixed(2)}, σ = ${popSigma.toFixed(2)}</p>`;
-  html += `<p>Mean of x̄'s = ${xbarMean.toFixed(4)} (should be close to μ = ${popMu.toFixed(2)})</p>`;
-  html += `<p>SD of x̄'s = ${xbarSd.toFixed(4)} (theory: σ/√n = ${theorySE.toFixed(4)})</p>`;
+  let html = `<p><strong>Sampling Distribution</strong> (${k} samples of size <em>n</em> = ${n})</p>`;
+  html += `<p>Population: <em>&mu;</em> = ${popMu.toFixed(2)}, &ensp;<em>&sigma;</em> = ${popSigma.toFixed(2)}</p>`;
+  html += `<p>Mean of <em>x&#x0304;</em>&rsquo;s = ${xbarMean.toFixed(4)} &ensp;(should be close to <em>&mu;</em> = ${popMu.toFixed(2)})</p>`;
+  html += `<p>SD of <em>x&#x0304;</em>&rsquo;s = ${xbarSd.toFixed(4)} &ensp;(theory: <em>&sigma;</em>/&radic;<em>n</em> = ${theorySE.toFixed(4)})</p>`;
 
   if (k >= 100) {
-    html += `<p class="interpretation">The Central Limit Theorem says the sampling distribution of x̄ is approximately normal with mean μ and standard deviation σ/√n, regardless of the population shape — as long as n is large enough. `;
+    html += `<p class="interpretation">The Central Limit Theorem says the sampling distribution of <em>x&#x0304;</em> is approximately normal with mean <em>&mu;</em> and standard deviation <em>&sigma;</em>/&radic;<em>n</em>, regardless of the population shape — as long as <em>n</em> is large enough. `;
     if (n >= 30) {
-      html += `With n = ${n}, notice how the distribution of sample means is roughly bell-shaped, even though the population may not be.</p>`;
+      html += `With <em>n</em> = ${n}, notice how the distribution of sample means is roughly bell-shaped, even though the population may not be.</p>`;
     } else {
-      html += `With n = ${n}, the shape depends more on the population. Try increasing n to see the distribution become more normal.</p>`;
+      html += `With <em>n</em> = ${n}, the shape depends more on the population. Try increasing <em>n</em> to see the distribution become more normal.</p>`;
     }
   } else {
     html += `<p class="hint">Draw more samples (at least 100) to see the pattern clearly.</p>`;

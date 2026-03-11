@@ -204,5 +204,5 @@ function renderOverlayLine(overlays, value, xScale, innerHeight, color, label) {
     .attr('x', x).attr('y', -4)
     .attr('text-anchor', 'middle')
     .attr('fill', color)
-    .text(value.toFixed(3));
+    .text(value.toFixed(2));
 }
