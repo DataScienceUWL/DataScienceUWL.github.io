@@ -10,6 +10,9 @@ import { mean, sd } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { announce, initKeyboardShortcuts, initPlayPause, computeHighlights } from '../../js/page-utils.js';
+import * as d3Scale from 'd3-scale';
+import * as d3Shape from 'd3-shape';
+import * as d3Selection from 'd3-selection';
 
 // ─── DOM ───
 
@@ -27,6 +30,8 @@ const nSamplesEl = document.getElementById('n-samples');
 const meanXbarEl = document.getElementById('mean-xbar');
 const sdXbarEl = document.getElementById('sd-xbar');
 const seTheoryEl = document.getElementById('se-theory');
+
+const showNormalCheckbox = /** @type {HTMLInputElement} */ (document.getElementById('show-normal'));
 
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
   document.querySelectorAll('.gen-btn'));
@@ -162,6 +167,86 @@ function drawSamples(count) {
 }
 
 /**
+ * Normal PDF: f(x) = (1 / (σ√(2π))) * exp(-0.5 * ((x-μ)/σ)²)
+ * @param {number} x
+ * @param {number} mu
+ * @param {number} sigma
+ * @returns {number}
+ */
+function normalPdf(x, mu, sigma) {
+  const z = (x - mu) / sigma;
+  return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
+}
+
+/**
+ * Overlay a N(mu, se) curve on a histogram/dotplot chart.
+ * Scales the PDF so area under the curve matches the histogram area (count × binWidth).
+ * @param {import('../../js/types.js').ChartFrame} frame
+ * @param {number} mu
+ * @param {number} se - standard error (σ/√n)
+ * @param {import('d3-scale').ScaleLinear<number,number>} xScale
+ * @param {number} totalCount - number of sample means
+ * @param {number} binWidth
+ */
+function overlayNormalCurve(frame, mu, se, xScale, totalCount, binWidth) {
+  const overlays = d3Selection.select(frame.inner).select('.overlays');
+  overlays.selectAll('.normal-curve').remove();
+
+  if (se <= 0 || totalCount < 10) return;
+
+  const [xMin, xMax] = xScale.domain();
+  const steps = 120;
+  const dx = (xMax - xMin) / steps;
+
+  // Build yScale to match histogram: max bar height = maxCount, so
+  // scale PDF by totalCount * binWidth to convert density → count
+  const scaleFactor = totalCount * binWidth;
+  const points = [];
+  for (let i = 0; i <= steps; i++) {
+    const x = xMin + i * dx;
+    const y = normalPdf(x, mu, se) * scaleFactor;
+    points.push([x, y]);
+  }
+
+  // We need a yScale that matches the histogram's yScale.
+  // The histogram yScale maps [0, maxCount] → [height, 0].
+  // We'll infer it from the existing y-axis.
+  const maxCount = Math.max(...points.map(p => p[1]));
+  // Get actual histogram max from the axis domain — read from the SVG
+  const yAxisTicks = d3Selection.select(frame.inner).select('.y-axis');
+  let yMax = maxCount;
+  // Use the frame height and build a matching scale
+  // The histogram yScale domain is [0, niced max], range [height, 0]
+  // We need to match it. Best approach: find the tallest bar's count from the data.
+  // Since we rebuild every render, we can compute from bins. But we don't have bins here.
+  // Instead, take the max y tick value from the axis.
+  const tickTexts = yAxisTicks.selectAll('.tick text');
+  if (!tickTexts.empty()) {
+    tickTexts.each(function () {
+      const v = parseFloat(/** @type {SVGTextElement} */ (this).textContent || '0');
+      if (v > yMax) yMax = v;
+    });
+  }
+
+  const yScale = d3Scale.scaleLinear()
+    .domain([0, yMax])
+    .range([frame.height, 0]);
+
+  const line = d3Shape.line()
+    .x(d => xScale(d[0]))
+    .y(d => yScale(d[1]));
+
+  overlays.append('path')
+    .attr('class', 'normal-curve')
+    .attr('d', line(points))
+    .attr('fill', 'none')
+    .attr('stroke', '#114B5F')
+    .attr('stroke-width', 2.5)
+    .attr('stroke-dasharray', '8,4')
+    .attr('aria-label', `Normal curve: N(${mu.toFixed(2)}, ${se.toFixed(4)})`);
+}
+
+/**
  * @param {number} [highlightIndex]
  * @param {Set<number>} [highlightIndices]
  * @param {number[]} [prevBinCounts]
@@ -172,8 +257,11 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
   const n = sampleMeans.length;
   if (n === 0) return;
 
+  const sampleN = parseInt(sampleSizeInput.value, 10) || 30;
+  const se = popSigma / Math.sqrt(sampleN);
+
   if (n <= 200) {
-    drawDotplot(samplingContainer, sampleMeans, {
+    const result = drawDotplot(samplingContainer, sampleMeans, {
       id: 'sampling-dist',
       xLabel: 'Sample Mean (x̄)',
       titleText: 'Sampling Distribution of x̄',
@@ -182,8 +270,15 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
       highlightIndex,
       highlightIndices,
     });
+    // Normal overlay on dotplot — approximate binWidth from dotplot range
+    if (showNormalCheckbox?.checked && result?.frame) {
+      const smLo = Math.min(...sampleMeans);
+      const smHi = Math.max(...sampleMeans);
+      const approxBinWidth = (smHi - smLo) / Math.max(10, Math.ceil(Math.sqrt(n)));
+      overlayNormalCurve(result.frame, popMu, se, result.xScale, n, approxBinWidth || 1);
+    }
   } else {
-    drawHistogram(samplingContainer, sampleMeans, {
+    const result = drawHistogram(samplingContainer, sampleMeans, {
       id: 'sampling-dist',
       xLabel: 'Sample Mean (x̄)',
       titleText: 'Sampling Distribution of x̄',
@@ -191,6 +286,10 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
       animate: false,
       prevBinCounts,
     });
+    if (showNormalCheckbox?.checked && result?.frame) {
+      const binWidth = result.bins.length > 0 ? result.bins[0].x1 - result.bins[0].x0 : 1;
+      overlayNormalCurve(result.frame, popMu, se, result.xScale, n, binWidth);
+    }
   }
 }
 
@@ -238,6 +337,12 @@ for (const btn of genBtns) {
 }
 
 popShapeSelect.addEventListener('change', () => initPopulation());
+
+if (showNormalCheckbox) {
+  showNormalCheckbox.addEventListener('change', () => {
+    if (sampleMeans.length > 0) renderSamplingDist();
+  });
+}
 
 sampleSizeInput.addEventListener('change', () => {
   const val = parseInt(sampleSizeInput.value, 10);
