@@ -40,7 +40,10 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +71,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,16 +451,33 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#fitting-a-line-with-least-squares" id="toc-fitting-a-line-with-least-squares" class="nav-link active" data-scroll-target="#fitting-a-line-with-least-squares"><span class="header-section-number">28.1</span> Fitting a line with least squares</a></li>
-  <li><a href="#interpreting-slope-and-intercept" id="toc-interpreting-slope-and-intercept" class="nav-link" data-scroll-target="#interpreting-slope-and-intercept"><span class="header-section-number">28.2</span> Interpreting slope and intercept</a></li>
-  <li><a href="#residuals" id="toc-residuals" class="nav-link" data-scroll-target="#residuals"><span class="header-section-number">28.3</span> Residuals</a></li>
-  <li><a href="#the-coefficient-of-determination-r²" id="toc-the-coefficient-of-determination-r²" class="nav-link" data-scroll-target="#the-coefficient-of-determination-r²"><span class="header-section-number">28.4</span> The coefficient of determination R²</a></li>
-  <li><a href="#inference-for-the-slope" id="toc-inference-for-the-slope" class="nav-link" data-scroll-target="#inference-for-the-slope"><span class="header-section-number">28.5</span> Inference for the slope</a></li>
-  <li><a href="#conditions-for-regression" id="toc-conditions-for-regression" class="nav-link" data-scroll-target="#conditions-for-regression"><span class="header-section-number">28.6</span> Conditions for regression</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">28.7</span> Chapter review</a>
+  <li><a href="#sec-fitting-line" id="toc-sec-fitting-line" class="nav-link active" data-scroll-target="#sec-fitting-line"><span class="header-section-number">28.1</span> Fitting a line to data</a>
+  <ul class="collapse">
+  <li><a href="#using-linear-regression-to-predict-possum-head-lengths" id="toc-using-linear-regression-to-predict-possum-head-lengths" class="nav-link" data-scroll-target="#using-linear-regression-to-predict-possum-head-lengths"><span class="header-section-number">28.1.1</span> Using linear regression to predict possum head lengths</a></li>
+  </ul></li>
+  <li><a href="#sec-residuals" id="toc-sec-residuals" class="nav-link" data-scroll-target="#sec-residuals"><span class="header-section-number">28.2</span> Residuals</a>
+  <ul class="collapse">
+  <li><a href="#residual-plots" id="toc-residual-plots" class="nav-link" data-scroll-target="#residual-plots"><span class="header-section-number">28.2.1</span> Residual plots</a></li>
+  </ul></li>
+  <li><a href="#sec-least-squares" id="toc-sec-least-squares" class="nav-link" data-scroll-target="#sec-least-squares"><span class="header-section-number">28.3</span> Least squares regression</a>
+  <ul class="collapse">
+  <li><a href="#the-objective-minimize-squared-residuals" id="toc-the-objective-minimize-squared-residuals" class="nav-link" data-scroll-target="#the-objective-minimize-squared-residuals"><span class="header-section-number">28.3.1</span> The objective: minimize squared residuals</a></li>
+  <li><a href="#interpreting-the-slope-and-intercept" id="toc-interpreting-the-slope-and-intercept" class="nav-link" data-scroll-target="#interpreting-the-slope-and-intercept"><span class="header-section-number">28.3.2</span> Interpreting the slope and intercept</a></li>
+  <li><a href="#computing-the-slope-and-intercept-from-summary-statistics" id="toc-computing-the-slope-and-intercept-from-summary-statistics" class="nav-link" data-scroll-target="#computing-the-slope-and-intercept-from-summary-statistics"><span class="header-section-number">28.3.3</span> Computing the slope and intercept from summary statistics</a></li>
+  </ul></li>
+  <li><a href="#sec-r-squared" id="toc-sec-r-squared" class="nav-link" data-scroll-target="#sec-r-squared"><span class="header-section-number">28.4</span> R-squared</a></li>
+  <li><a href="#sec-inference-slope" id="toc-sec-inference-slope" class="nav-link" data-scroll-target="#sec-inference-slope"><span class="header-section-number">28.5</span> Inference for the slope</a>
+  <ul class="collapse">
+  <li><a href="#hypotheses" id="toc-hypotheses" class="nav-link" data-scroll-target="#hypotheses"><span class="header-section-number">28.5.1</span> Hypotheses</a></li>
+  <li><a href="#randomization-test-for-the-slope" id="toc-randomization-test-for-the-slope" class="nav-link" data-scroll-target="#randomization-test-for-the-slope"><span class="header-section-number">28.5.2</span> Randomization test for the slope</a></li>
+  <li><a href="#mathematical-model-the-t-test-for-slope" id="toc-mathematical-model-the-t-test-for-slope" class="nav-link" data-scroll-target="#mathematical-model-the-t-test-for-slope"><span class="header-section-number">28.5.3</span> Mathematical model: the t-test for slope</a></li>
+  <li><a href="#confidence-intervals-for-the-slope" id="toc-confidence-intervals-for-the-slope" class="nav-link" data-scroll-target="#confidence-intervals-for-the-slope"><span class="header-section-number">28.5.4</span> Confidence intervals for the slope</a></li>
+  </ul></li>
+  <li><a href="#sec-conditions-regression" id="toc-sec-conditions-regression" class="nav-link" data-scroll-target="#sec-conditions-regression"><span class="header-section-number">28.6</span> Conditions for linear regression</a></li>
+  <li><a href="#sec-ch27-review" id="toc-sec-ch27-review" class="nav-link" data-scroll-target="#sec-ch27-review"><span class="header-section-number">28.7</span> Chapter review</a>
   <ul class="collapse">
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">28.7.1</span> Summary</a></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">28.7.2</span> Exercises</a></li>
+  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">28.7.2</span> Key terms</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -455,53 +504,308 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: IMS <code>model-slr.qmd</code> + <code>inf-model-slr.qmd</code> — 100% coverage</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Linear Regression</em> will go here.</p>
+<p>Linear regression is a powerful statistical technique for describing the relationship between two numerical variables. Many people have some familiarity with regression just from reading the news, where straight lines are overlaid on scatterplots. In this chapter, we build on the ideas of correlation from the previous chapter to develop the least squares regression line. We learn how to interpret the slope and intercept, use residuals to assess model fit, quantify the strength of the model with <span class="math inline">\(R^2\)</span>, and perform inference on the slope to test whether a linear relationship exists in the population.</p>
 </div>
-<div class="simkit">
-<p><strong>SimKit tools for this chapter</strong>: <strong>Regression Intuition Tool</strong> (Phase 4)</p>
+<section id="sec-fitting-line" class="level2" data-number="28.1">
+<h2 data-number="28.1" class="anchored" data-anchor-id="sec-fitting-line"><span class="header-section-number">28.1</span> Fitting a line to data</h2>
+<p>Linear regression is the statistical method for fitting a line to data where the relationship between two variables, <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>, can be modeled by a straight line with some error:</p>
+<p><span class="math display">\[y = b_0 + b_1 x + e\]</span></p>
+<p>The values <span class="math inline">\(b_0\)</span> and <span class="math inline">\(b_1\)</span> represent the model’s <strong>intercept</strong> and <strong>slope</strong>, respectively, and the error is represented by <span class="math inline">\(e\)</span>. These values are calculated from the data – they are sample statistics. If the observed data are a random sample from a target population, these values are point estimates for the population parameters <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span>.</p>
+<p>When we use <span class="math inline">\(x\)</span> to predict <span class="math inline">\(y\)</span>, we call <span class="math inline">\(x\)</span> the <strong>predictor</strong> variable (or explanatory variable) and <span class="math inline">\(y\)</span> the <strong>outcome</strong> variable (or response variable). We often write the model without the error term when focusing on the predicted average outcome:</p>
+<p><span class="math display">\[\hat{y} = b_0 + b_1 x\]</span></p>
+<p>The “hat” on <span class="math inline">\(y\)</span> signifies that this is a predicted (estimated) value.</p>
+<p>It is rare for all data to fall perfectly on a straight line. Instead, data more commonly appear as a cloud of points, where the trend may be strong or weak.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Three scatterplots with fabricated data showing a strong negative linear trend, a moderate positive linear trend, and a very weak trend."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Three scatterplots. The first shows a strong negative linear relationship, the second shows a moderate positive relationship, and the third shows almost no relationship."></a></p>
+<figcaption>Three scatterplots with fabricated data showing a strong negative linear trend, a moderate positive linear trend, and a very weak trend.</figcaption>
+</figure>
 </div>
-<section id="fitting-a-line-with-least-squares" class="level2" data-number="28.1">
-<h2 data-number="28.1" class="anchored" data-anchor-id="fitting-a-line-with-least-squares"><span class="header-section-number">28.1</span> Fitting a line with least squares</h2>
-<p>Content under development.</p>
+<p>There are also cases where fitting a straight line is inappropriate, even if there is a clear relationship between the variables. When the relationship is nonlinear, a linear model can be misleading.</p>
+<section id="using-linear-regression-to-predict-possum-head-lengths" class="level3" data-number="28.1.1">
+<h3 data-number="28.1.1" class="anchored" data-anchor-id="using-linear-regression-to-predict-possum-head-lengths"><span class="header-section-number">28.1.1</span> Using linear regression to predict possum head lengths</h3>
+<p>Researchers captured 104 brushtail possums in Australia and took body measurements. We consider total body length (cm) as the predictor to predict head length (mm).</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="A scatterplot showing head length against total length for 104 brushtail possums, with a linear model fit to the data."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A scatterplot with total length on the x-axis and head length on the y-axis, with a least squares line superimposed."></a></p>
+<figcaption>A scatterplot showing head length against total length for 104 brushtail possums, with a linear model fit to the data.</figcaption>
+</figure>
+</div>
+<p>The equation for this line is:</p>
+<p><span class="math display">\[\hat{y} = 41 + 0.59x\]</span></p>
+<p>We can use this line to make predictions. For instance, the equation predicts a possum with a total length of 80 cm will have a head length of:</p>
+<p><span class="math display">\[\hat{y} = 41 + 0.59 \times 80 = 88.2 \text{ mm}\]</span></p>
+<p>This estimate may be viewed as an average: the equation predicts that possums with a total length of 80 cm will have an average head length of 88.2 mm.</p>
 </section>
-<section id="interpreting-slope-and-intercept" class="level2" data-number="28.2">
-<h2 data-number="28.2" class="anchored" data-anchor-id="interpreting-slope-and-intercept"><span class="header-section-number">28.2</span> Interpreting slope and intercept</h2>
-<p>Content under development.</p>
 </section>
-<section id="residuals" class="level2" data-number="28.3">
-<h2 data-number="28.3" class="anchored" data-anchor-id="residuals"><span class="header-section-number">28.3</span> Residuals</h2>
-<p>Content under development.</p>
+<section id="sec-residuals" class="level2" data-number="28.2">
+<h2 data-number="28.2" class="anchored" data-anchor-id="sec-residuals"><span class="header-section-number">28.2</span> Residuals</h2>
+<p><strong>Residuals</strong> are the leftover variation in the data after accounting for the model fit:</p>
+<p><span class="math display">\[\text{Data} = \text{Fit} + \text{Residual}\]</span></p>
+<p>Each observation has a residual. If an observation is above the regression line, its residual is positive. If it is below the line, the residual is negative.</p>
+<div class="important">
+<p><strong>Residual: Difference between observed and expected.</strong></p>
+<p>The residual of the <span class="math inline">\(i^{th}\)</span> observation <span class="math inline">\((x_i, y_i)\)</span> is the difference between the observed outcome and the predicted outcome:</p>
+<p><span class="math display">\[e_i = y_i - \hat{y}_i\]</span></p>
+<p>We identify <span class="math inline">\(\hat{y}_i\)</span> by plugging <span class="math inline">\(x_i\)</span> into the model.</p>
+</div>
+<div class="workedexample">
+<p>The linear fit is <span class="math inline">\(\hat{y} = 41 + 0.59x\)</span>. Compute the residual for the observation <span class="math inline">\((76.0, 85.1)\)</span>.</p>
+<hr>
+<p>First compute the predicted value: <span class="math inline">\(\hat{y} = 41 + 0.59 \times 76.0 = 85.84\)</span>. The residual is <span class="math inline">\(e = 85.1 - 85.84 = -0.74\)</span> mm. The negative residual indicates that the model overpredicted head length for this possum.</p>
+</div>
+<div class="guidedpractice">
+<p>If a model underestimates an observation, will the residual be positive or negative? What about if it overestimates?<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
+<section id="residual-plots" class="level3" data-number="28.2.1">
+<h3 data-number="28.2.1" class="anchored" data-anchor-id="residual-plots"><span class="header-section-number">28.2.1</span> Residual plots</h3>
+<p>Residuals are helpful in evaluating how well a linear model fits a dataset. We display them in a <strong>residual plot</strong>, where the horizontal axis shows the predicted values and the vertical axis shows the residuals.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="A residual plot for the possum model. The residuals appear randomly scattered around zero with no obvious pattern."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A residual plot with predicted values on the x-axis and residuals on the y-axis, scattered randomly around the horizontal line at zero."></a></p>
+<figcaption>A residual plot for the possum model. The residuals appear randomly scattered around zero with no obvious pattern.</figcaption>
+</figure>
+</div>
+<div class="workedexample">
+<p>What patterns should we look for in a residual plot?</p>
+<hr>
+<ul>
+<li><strong>No pattern (good):</strong> Residuals scattered randomly around zero suggest the linear model is appropriate.</li>
+<li><strong>Curved pattern (bad):</strong> A U-shape or other curve in the residuals indicates a nonlinear relationship that a straight line fails to capture.</li>
+<li><strong>Fan shape (bad):</strong> Increasing or decreasing spread in the residuals indicates non-constant variability.</li>
+</ul>
+</div>
 </section>
-<section id="the-coefficient-of-determination-r²" class="level2" data-number="28.4">
-<h2 data-number="28.4" class="anchored" data-anchor-id="the-coefficient-of-determination-r²"><span class="header-section-number">28.4</span> The coefficient of determination R²</h2>
-<p>Content under development.</p>
 </section>
-<section id="inference-for-the-slope" class="level2" data-number="28.5">
-<h2 data-number="28.5" class="anchored" data-anchor-id="inference-for-the-slope"><span class="header-section-number">28.5</span> Inference for the slope</h2>
-<p>Content under development.</p>
+<section id="sec-least-squares" class="level2" data-number="28.3">
+<h2 data-number="28.3" class="anchored" data-anchor-id="sec-least-squares"><span class="header-section-number">28.3</span> Least squares regression</h2>
+<p>Fitting linear models by eye is subjective. <strong>Least squares regression</strong> provides an objective, rigorous approach.</p>
+<section id="the-objective-minimize-squared-residuals" class="level3" data-number="28.3.1">
+<h3 data-number="28.3.1" class="anchored" data-anchor-id="the-objective-minimize-squared-residuals"><span class="header-section-number">28.3.1</span> The objective: minimize squared residuals</h3>
+<p>We want a line with small residuals. The <strong>least squares line</strong> minimizes the sum of the squared residuals:</p>
+<p><span class="math display">\[e_1^2 + e_2^2 + \cdots + e_n^2\]</span></p>
+<p>Why square the residuals rather than just sum their absolute values?</p>
+<ol type="1">
+<li>It is the most commonly used method.</li>
+<li>It is widely supported in statistical software.</li>
+<li>A residual twice as large is usually more than twice as bad. Squaring accounts for this.</li>
+<li>The inference theory connecting the model to population parameters is most straightforward with least squares.</li>
+</ol>
 </section>
-<section id="conditions-for-regression" class="level2" data-number="28.6">
-<h2 data-number="28.6" class="anchored" data-anchor-id="conditions-for-regression"><span class="header-section-number">28.6</span> Conditions for regression</h2>
-<p>Content under development.</p>
+<section id="interpreting-the-slope-and-intercept" class="level3" data-number="28.3.2">
+<h3 data-number="28.3.2" class="anchored" data-anchor-id="interpreting-the-slope-and-intercept"><span class="header-section-number">28.3.2</span> Interpreting the slope and intercept</h3>
+<p>For the Elmhurst College data, the least squares line predicting gift aid (in $1,000s) from family income (in $1,000s) is:</p>
+<p><span class="math display">\[\widehat{\text{aid}} = 24.3 - 0.0431 \times \text{family\_income}\]</span></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Term</th>
+<th style="text-align: center;">Estimate</th>
+<th style="text-align: center;">Std. Error</th>
+<th style="text-align: center;">T statistic</th>
+<th style="text-align: center;">p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td style="text-align: center;">24.32</td>
+<td style="text-align: center;">1.29</td>
+<td style="text-align: center;">18.83</td>
+<td style="text-align: center;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td>family_income</td>
+<td style="text-align: center;">-0.0431</td>
+<td style="text-align: center;">0.0108</td>
+<td style="text-align: center;">-3.98</td>
+<td style="text-align: center;">0.0002</td>
+</tr>
+</tbody>
+</table>
+<div class="workedexample">
+<p>What do the intercept and slope mean?</p>
+<hr>
+<p><strong>Slope (<span class="math inline">\(b_1 = -0.0431\)</span>):</strong> For each additional $1,000 of family income, we would expect a student to receive $43.10 less in gift aid, on average. The negative coefficient means higher income is associated with less aid. We must be cautious: this is an observational study, so we cannot interpret a causal connection.</p>
+<p><strong>Intercept (<span class="math inline">\(b_0 = 24.32\)</span>):</strong> The model predicts that a student whose family has no income would receive $24,320 in gift aid, on average. This is meaningful because the family income for some students is near zero. In other applications, the intercept may have no practical meaning if <span class="math inline">\(x = 0\)</span> is outside the range of the data.</p>
+</div>
+<div class="important">
+<p><strong>Interpreting parameters estimated by least squares.</strong></p>
+<p>The <strong>slope</strong> describes the estimated difference in the predicted average outcome of <span class="math inline">\(y\)</span> if the predictor variable <span class="math inline">\(x\)</span> were one unit larger.</p>
+<p>The <strong>intercept</strong> describes the average outcome of <span class="math inline">\(y\)</span> if <span class="math inline">\(x = 0\)</span>, provided the linear model is valid at <span class="math inline">\(x = 0\)</span> (which may not be the case if <span class="math inline">\(x = 0\)</span> is far outside the observed data range).</p>
+</div>
 </section>
-<section id="chapter-review" class="level2" data-number="28.7">
-<h2 data-number="28.7" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">28.7</span> Chapter review</h2>
+<section id="computing-the-slope-and-intercept-from-summary-statistics" class="level3" data-number="28.3.3">
+<h3 data-number="28.3.3" class="anchored" data-anchor-id="computing-the-slope-and-intercept-from-summary-statistics"><span class="header-section-number">28.3.3</span> Computing the slope and intercept from summary statistics</h3>
+<p>The slope can be computed using the correlation and the standard deviations of the two variables:</p>
+<p><span class="math display">\[b_1 = \frac{s_y}{s_x} \cdot r\]</span></p>
+<p>The least squares line always passes through the point <span class="math inline">\((\bar{x}, \bar{y})\)</span>. Using the point-slope form:</p>
+<p><span class="math display">\[b_0 = \bar{y} - b_1 \cdot \bar{x}\]</span></p>
+<div class="important">
+<p><strong>Identifying the least squares line from summary statistics.</strong></p>
+<ul>
+<li>Estimate the slope: <span class="math inline">\(b_1 = (s_y / s_x) \cdot r\)</span>.</li>
+<li>Find the intercept using the fact that <span class="math inline">\((\bar{x}, \bar{y})\)</span> is on the line: <span class="math inline">\(b_0 = \bar{y} - b_1 \bar{x}\)</span>.</li>
+</ul>
+</div>
+</section>
+</section>
+<section id="sec-r-squared" class="level2" data-number="28.4">
+<h2 data-number="28.4" class="anchored" data-anchor-id="sec-r-squared"><span class="header-section-number">28.4</span> R-squared</h2>
+<p>We evaluated the strength of a linear relationship using <span class="math inline">\(r\)</span>. More commonly, we describe the strength of a linear fit using <span class="math inline">\(R^2\)</span>, called <strong>R-squared</strong> or the <strong>coefficient of determination</strong>.</p>
+<div class="important">
+<p><strong>Coefficient of determination: proportion of variability explained by the model.</strong></p>
+<p><span class="math inline">\(R^2\)</span> measures the proportion of variation in the outcome variable <span class="math inline">\(y\)</span> that is explained by the linear model with predictor <span class="math inline">\(x\)</span>. Since <span class="math inline">\(r\)</span> is always between <span class="math inline">\(-1\)</span> and <span class="math inline">\(1\)</span>, <span class="math inline">\(R^2\)</span> is always between 0 and 1.</p>
+<p><span class="math display">\[R^2 = 1 - \frac{SSE}{SST}\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(SST = \sum (y_i - \bar{y})^2\)</span> is the <strong>total sum of squares</strong>, measuring total variability in <span class="math inline">\(y\)</span>.</li>
+<li><span class="math inline">\(SSE = \sum (y_i - \hat{y}_i)^2 = \sum e_i^2\)</span> is the <strong>sum of squared errors</strong>, measuring leftover variability after using the model.</li>
+</ul>
+<p>For simple linear regression, <span class="math inline">\(R^2 = r^2\)</span>.</p>
+</div>
+<div class="workedexample">
+<p>For the Elmhurst data, the correlation is <span class="math inline">\(r = -0.499\)</span>. What proportion of the variability in gift aid is explained by family income?</p>
+<hr>
+<p><span class="math inline">\(R^2 = (-0.499)^2 = 0.249\)</span>, or about 25%. Family income explains about 25% of the variability in gift aid among these students.</p>
+</div>
+<div class="guidedpractice">
+<p>If a linear model has a very strong negative relationship with <span class="math inline">\(r = -0.97\)</span>, how much of the variation in the outcome is explained by the predictor?<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
+</section>
+<section id="sec-inference-slope" class="level2" data-number="28.5">
+<h2 data-number="28.5" class="anchored" data-anchor-id="sec-inference-slope"><span class="header-section-number">28.5</span> Inference for the slope</h2>
+<p>We have been computing sample statistics <span class="math inline">\(b_0\)</span> and <span class="math inline">\(b_1\)</span>, but these are estimates of population parameters <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span>. We now turn to formal inference: testing whether a linear relationship exists in the population.</p>
+<section id="hypotheses" class="level3" data-number="28.5.1">
+<h3 data-number="28.5.1" class="anchored" data-anchor-id="hypotheses"><span class="header-section-number">28.5.1</span> Hypotheses</h3>
+<ul>
+<li><span class="math inline">\(H_0\)</span>: <span class="math inline">\(\beta_1 = 0\)</span>. There is no linear relationship between <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>.</li>
+<li><span class="math inline">\(H_A\)</span>: <span class="math inline">\(\beta_1 \ne 0\)</span>. There is a linear relationship between <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>.</li>
+</ul>
+</section>
+<section id="randomization-test-for-the-slope" class="level3" data-number="28.5.2">
+<h3 data-number="28.5.2" class="anchored" data-anchor-id="randomization-test-for-the-slope"><span class="header-section-number">28.5.2</span> Randomization test for the slope</h3>
+<p>If the null hypothesis is true (<span class="math inline">\(\beta_1 = 0\)</span>), then <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> are not linearly related. We can simulate this by <strong>permuting</strong> the response variable: randomly shuffling the <span class="math inline">\(y\)</span> values while keeping the <span class="math inline">\(x\)</span> values fixed. This breaks any relationship between <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Original data showing a positive linear relationship between weeks of gestation and birth weight, alongside the same data after permuting the weight variable, which destroys the relationship."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Two scatterplots side by side. The left shows the original data with a positive trend. The right shows permuted data with no trend."></a></p>
+<figcaption>Original data showing a positive linear relationship between weeks of gestation and birth weight, alongside the same data after permuting the weight variable, which destroys the relationship.</figcaption>
+</figure>
+</div>
+<p>By repeating the permutation many times and computing the slope each time, we build a null distribution of slopes.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Histogram of slopes from 1,000 permutations of birth weight. The permuted slopes range from about -0.15 to +0.15, centered at zero. The observed slope of 0.335 is far from this distribution."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Histogram of permuted slopes centered at zero, ranging from about -0.15 to +0.15. The observed slope of 0.335 is far to the right of the distribution."></a></p>
+<figcaption>Histogram of slopes from 1,000 permutations of birth weight. The permuted slopes range from about <span class="math inline">\(-0.15\)</span> to <span class="math inline">\(+0.15\)</span>, centered at zero. The observed slope of 0.335 is far from this distribution.</figcaption>
+</figure>
+</div>
+<p>The observed slope of 0.335 is far from any value in the null distribution. We reject <span class="math inline">\(H_0\)</span> and conclude there is a linear relationship between weeks of gestation and birth weight.</p>
+</section>
+<section id="mathematical-model-the-t-test-for-slope" class="level3" data-number="28.5.3">
+<h3 data-number="28.5.3" class="anchored" data-anchor-id="mathematical-model-the-t-test-for-slope"><span class="header-section-number">28.5.3</span> Mathematical model: the t-test for slope</h3>
+<p>When the technical conditions are met, we can use the <span class="math inline">\(t\)</span>-distribution to test the slope:</p>
+<p><span class="math display">\[T = \frac{b_1 - 0}{SE_{b_1}}\]</span></p>
+<p>This <span class="math inline">\(T\)</span>-statistic follows a <span class="math inline">\(t\)</span>-distribution with <span class="math inline">\(df = n - 2\)</span>.</p>
+<div class="workedexample">
+<p>The regression output for predicting the change in House seats for the President’s party from the unemployment rate is:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Term</th>
+<th style="text-align: center;">Estimate</th>
+<th style="text-align: center;">Std. Error</th>
+<th style="text-align: center;">T statistic</th>
+<th style="text-align: center;">p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td style="text-align: center;">-7.36</td>
+<td style="text-align: center;">5.16</td>
+<td style="text-align: center;">-1.43</td>
+<td style="text-align: center;">0.1649</td>
+</tr>
+<tr class="even">
+<td>unemp</td>
+<td style="text-align: center;">-0.89</td>
+<td style="text-align: center;">0.835</td>
+<td style="text-align: center;">-1.07</td>
+<td style="text-align: center;">0.2961</td>
+</tr>
+</tbody>
+</table>
+<p>The p-value of 0.2961 is not significant. The data do not provide convincing evidence that the unemployment rate is a useful predictor of midterm election outcomes.</p>
+</div>
+</section>
+<section id="confidence-intervals-for-the-slope" class="level3" data-number="28.5.4">
+<h3 data-number="28.5.4" class="anchored" data-anchor-id="confidence-intervals-for-the-slope"><span class="header-section-number">28.5.4</span> Confidence intervals for the slope</h3>
+<div class="important">
+<p><strong>Confidence intervals for model coefficients.</strong></p>
+<p>Confidence intervals for model coefficients can be computed using the <span class="math inline">\(t\)</span>-distribution:</p>
+<p><span class="math display">\[b_1 \pm t_{df}^* \times SE_{b_1}\]</span></p>
+<p>where <span class="math inline">\(t_{df}^*\)</span> is the critical value corresponding to the confidence level, with <span class="math inline">\(df = n - 2\)</span>.</p>
+</div>
+<div class="workedexample">
+<p>Using the Elmhurst College regression output (<span class="math inline">\(b_1 = -0.0431\)</span>, <span class="math inline">\(SE = 0.0108\)</span>, <span class="math inline">\(df = 48\)</span>), compute a 95% confidence interval for the slope.</p>
+<hr>
+<p>The critical value is <span class="math inline">\(t_{48}^* = 2.01\)</span>. The confidence interval is:</p>
+<p><span class="math display">\[-0.0431 \pm 2.01 \times 0.0108 = (-0.0648, -0.0214)\]</span></p>
+<p>We are 95% confident that for each additional $1,000 in family income, the university’s gift aid decreases by between $21.40 and $64.80 on average.</p>
+</div>
+</section>
+</section>
+<section id="sec-conditions-regression" class="level2" data-number="28.6">
+<h2 data-number="28.6" class="anchored" data-anchor-id="sec-conditions-regression"><span class="header-section-number">28.6</span> Conditions for linear regression</h2>
+<p>For the mathematical inference to be valid, we check four conditions, often remembered by the <strong>LINE</strong> mnemonic:</p>
+<ul>
+<li><strong>L – Linear model:</strong> The data should show a linear trend. Check the scatterplot and residual plot.</li>
+<li><strong>I – Independent observations:</strong> Be cautious with time series data or clustered observations.</li>
+<li><strong>N – Nearly normal residuals:</strong> Residuals should be approximately normally distributed. This is less critical for large samples (Central Limit Theorem), but outliers are always a concern.</li>
+<li><strong>E – Equal variability:</strong> The variability of points around the line should be roughly constant across all values of <span class="math inline">\(x\)</span>. A “fan shape” in the residual plot indicates a violation.</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Four scatterplots and their residual plots showing common violations: nonlinearity, an outlier, increasing variability, and correlated observations."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A grid of 2 by 4 plots showing four types of regression condition violations: nonlinearity, outlier, non-constant variance, and correlated observations."></a></p>
+<figcaption>Four scatterplots and their residual plots showing common violations: nonlinearity, an outlier, increasing variability, and correlated observations.</figcaption>
+</figure>
+</div>
+<div class="important">
+<p><strong>Diagnostics for linear regression.</strong></p>
+<p>Independence is always important. The normality condition matters most for small samples. The constant variance condition is especially important for inference. The linearity condition is the most fundamental – if the true relationship is not linear, the slope estimate has no meaningful interpretation.</p>
+</div>
+</section>
+<section id="sec-ch27-review" class="level2" data-number="28.7">
+<h2 data-number="28.7" class="anchored" data-anchor-id="sec-ch27-review"><span class="header-section-number">28.7</span> Chapter review</h2>
 <section id="summary" class="level3" data-number="28.7.1">
 <h3 data-number="28.7.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">28.7.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+<p>In this chapter, we developed the least squares regression line as a tool for modeling the linear relationship between two numerical variables. The slope describes the predicted change in <span class="math inline">\(y\)</span> for a one-unit increase in <span class="math inline">\(x\)</span>, and the intercept describes the predicted value of <span class="math inline">\(y\)</span> when <span class="math inline">\(x = 0\)</span>. Residuals measure the difference between observed and predicted values, and residual plots help assess whether the linear model is appropriate. The coefficient of determination <span class="math inline">\(R^2\)</span> quantifies the proportion of variability in <span class="math inline">\(y\)</span> explained by the model. For inference, we use either a randomization test or the <span class="math inline">\(t\)</span>-distribution to test whether the slope is significantly different from zero, and we can construct confidence intervals for the slope. The LINE conditions (linearity, independence, normality, equal variance) must be checked for the mathematical model to be valid.</p>
 </section>
-<section id="exercises" class="level3 exercises" data-number="28.7.2">
-<h3 class="exercises anchored" data-number="28.7.2" data-anchor-id="exercises"><span class="header-section-number">28.7.2</span> Exercises</h3>
-<div class="underconstruction">
-<p>Exercises for this chapter are under development.</p>
-</div>
+<section id="key-terms" class="level3" data-number="28.7.2">
+<h3 data-number="28.7.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">28.7.2</span> Key terms</h3>
+<ul>
+<li>Predictor / outcome variable</li>
+<li>Least squares line</li>
+<li>Slope (<span class="math inline">\(b_1\)</span>) and intercept (<span class="math inline">\(b_0\)</span>)</li>
+<li>Residual</li>
+<li>Residual plot</li>
+<li>R-squared (<span class="math inline">\(R^2\)</span>) / coefficient of determination</li>
+<li>Total sum of squares (SST) / sum of squared errors (SSE)</li>
+<li>T-test for slope</li>
+<li>LINE conditions</li>
+<li>Extrapolation</li>
+</ul>
 
 
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>If a model underestimates an observation, the residual is positive (the actual value exceeds the prediction). If it overestimates, the residual is negative.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p><span class="math inline">\(R^2 = (-0.97)^2 = 0.94\)</span>, or about 94% of the variation is explained.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
@@ -948,6 +1252,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

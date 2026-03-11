@@ -40,7 +40,10 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +71,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,14 +451,36 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#from-simulation-to-theory" id="toc-from-simulation-to-theory" class="nav-link active" data-scroll-target="#from-simulation-to-theory"><span class="header-section-number">10.1</span> From simulation to theory</a></li>
-  <li><a href="#the-central-limit-theorem" id="toc-the-central-limit-theorem" class="nav-link" data-scroll-target="#the-central-limit-theorem"><span class="header-section-number">10.2</span> The Central Limit Theorem</a></li>
-  <li><a href="#comparing-randomization-bootstrap-and-mathematical-approaches" id="toc-comparing-randomization-bootstrap-and-mathematical-approaches" class="nav-link" data-scroll-target="#comparing-randomization-bootstrap-and-mathematical-approaches"><span class="header-section-number">10.3</span> Comparing randomization, bootstrap, and mathematical approaches</a></li>
-  <li><a href="#when-is-the-normal-approximation-good-enough" id="toc-when-is-the-normal-approximation-good-enough" class="nav-link" data-scroll-target="#when-is-the-normal-approximation-good-enough"><span class="header-section-number">10.4</span> When is the normal approximation good enough?</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">10.5</span> Chapter review</a>
+  <li><a href="#sec-simulation-to-theory" id="toc-sec-simulation-to-theory" class="nav-link active" data-scroll-target="#sec-simulation-to-theory"><span class="header-section-number">10.1</span> From simulation to theory</a></li>
+  <li><a href="#sec-clt" id="toc-sec-clt" class="nav-link" data-scroll-target="#sec-clt"><span class="header-section-number">10.2</span> The Central Limit Theorem</a>
   <ul class="collapse">
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">10.5.1</span> Summary</a></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">10.5.2</span> Exercises</a></li>
+  <li><a href="#conditions-for-the-clt" id="toc-conditions-for-the-clt" class="nav-link" data-scroll-target="#conditions-for-the-clt"><span class="header-section-number">10.2.1</span> Conditions for the CLT</a></li>
+  <li><a href="#visualizing-the-clt" id="toc-visualizing-the-clt" class="nav-link" data-scroll-target="#visualizing-the-clt"><span class="header-section-number">10.2.2</span> Visualizing the CLT</a></li>
+  </ul></li>
+  <li><a href="#sec-comparing-approaches" id="toc-sec-comparing-approaches" class="nav-link" data-scroll-target="#sec-comparing-approaches"><span class="header-section-number">10.3</span> Comparing randomization, bootstrap, and mathematical approaches</a>
+  <ul class="collapse">
+  <li><a href="#which-method-should-i-use" id="toc-which-method-should-i-use" class="nav-link" data-scroll-target="#which-method-should-i-use"><span class="header-section-number">10.3.1</span> Which method should I use?</a></li>
+  </ul></li>
+  <li><a href="#sec-normal-approximation" id="toc-sec-normal-approximation" class="nav-link" data-scroll-target="#sec-normal-approximation"><span class="header-section-number">10.4</span> When is the normal approximation good enough?</a>
+  <ul class="collapse">
+  <li><a href="#the-success-failure-condition-for-proportions" id="toc-the-success-failure-condition-for-proportions" class="nav-link" data-scroll-target="#the-success-failure-condition-for-proportions"><span class="header-section-number">10.4.1</span> The success-failure condition for proportions</a></li>
+  <li><a href="#the-sample-size-condition-for-means" id="toc-the-sample-size-condition-for-means" class="nav-link" data-scroll-target="#the-sample-size-condition-for-means"><span class="header-section-number">10.4.2</span> The sample size condition for means</a></li>
+  <li><a href="#simulation-as-a-check-on-theory" id="toc-simulation-as-a-check-on-theory" class="nav-link" data-scroll-target="#simulation-as-a-check-on-theory"><span class="header-section-number">10.4.3</span> Simulation as a check on theory</a></li>
+  </ul></li>
+  <li><a href="#sec-normal-preview" id="toc-sec-normal-preview" class="nav-link" data-scroll-target="#sec-normal-preview"><span class="header-section-number">10.5</span> The normal distribution: a preview</a>
+  <ul class="collapse">
+  <li><a href="#the-68-95-99.7-rule" id="toc-the-68-95-99.7-rule" class="nav-link" data-scroll-target="#the-68-95-99.7-rule"><span class="header-section-number">10.5.1</span> The 68-95-99.7 rule</a></li>
+  <li><a href="#z-scores" id="toc-z-scores" class="nav-link" data-scroll-target="#z-scores"><span class="header-section-number">10.5.2</span> Z scores</a></li>
+  </ul></li>
+  <li><a href="#sec-recap-three-approaches" id="toc-sec-recap-three-approaches" class="nav-link" data-scroll-target="#sec-recap-three-approaches"><span class="header-section-number">10.6</span> Recap: connecting the three approaches</a>
+  <ul class="collapse">
+  <li><a href="#the-big-picture-of-part-ii" id="toc-the-big-picture-of-part-ii" class="nav-link" data-scroll-target="#the-big-picture-of-part-ii"><span class="header-section-number">10.6.1</span> The big picture of Part II</a></li>
+  </ul></li>
+  <li><a href="#sec-ch09-review" id="toc-sec-ch09-review" class="nav-link" data-scroll-target="#sec-ch09-review"><span class="header-section-number">10.7</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">10.7.1</span> Summary</a></li>
+  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">10.7.2</span> Key terms</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">10.7.3</span> Exercises</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -453,45 +507,442 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: IMS <code>foundations-mathematical.qmd</code> + <code>foundations-applications.qmd</code> — 75% coverage. ~25% original writing needed.</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Sampling Distributions via Simulation</em> will go here.</p>
+<p>In Chapters 7 and 8, we used simulation to answer two fundamental questions of inference: <em>Is there an effect?</em> (randomization tests) and <em>How big is the parameter?</em> (bootstrap confidence intervals). Both methods relied on the computer to generate distributions — randomization distributions and bootstrap distributions — that helped us quantify uncertainty. In this chapter, we step back to see the bigger picture. We examine the shape, center, and spread of these simulated distributions and discover a remarkable pattern: under certain conditions, they all look approximately <strong>normal</strong> (bell-shaped). This observation, formalized as the <strong>Central Limit Theorem</strong>, is the bridge from the simulation-based methods of Part II to the formula-based methods of Part III.</p>
+</div>
+<section id="sec-simulation-to-theory" class="level2" data-number="10.1">
+<h2 data-number="10.1" class="anchored" data-anchor-id="sec-simulation-to-theory"><span class="header-section-number">10.1</span> From simulation to theory</h2>
+<p>In Chapters 7 and 8, we encountered several case studies:</p>
+<ul>
+<li><strong>Sex discrimination</strong> (Chapter 7): We shuffled promotion decisions and computed the difference in promotion rates 10,000 times.</li>
+<li><strong>Opportunity cost</strong> (Chapter 7): We shuffled buying decisions and computed the difference in proportions 1,000 times.</li>
+<li><strong>Medical consultant</strong> (Chapter 8): We bootstrapped the complication rate from 62 surgeries 10,000 times.</li>
+<li><strong>Tappers and listeners</strong> (Chapter 8): We bootstrapped the proportion of correct guesses from 120 listeners 10,000 times.</li>
+</ul>
+<p>Each of these simulations produced a distribution of a sample statistic. While they differed in their settings, outcomes, and the simulation technique used, they all shared something in common: the general shape of the distribution.</p>
+<div class="guidedpractice">
+<p>Think back to the randomization and bootstrap distributions you have seen. What shape did most of them have? Were they skewed, uniform, or something else?<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
+<div class="original">
+<p>This is no coincidence. The bell shape keeps appearing because of a deep mathematical result that underlies most of statistics. Whether we shuffle labels, resample with replacement, or imagine taking repeated samples from a population, the distribution of the resulting statistic tends to look the same — symmetric, unimodal, and bell-shaped.</p>
+<p>In the simulation chapters, we let the computer show us this pattern directly. Now, we formalize it.</p>
+</div>
+</section>
+<section id="sec-clt" class="level2" data-number="10.2">
+<h2 data-number="10.2" class="anchored" data-anchor-id="sec-clt"><span class="header-section-number">10.2</span> The Central Limit Theorem</h2>
+<div class="definition">
+<p>The <strong>Central Limit Theorem (CLT)</strong> states that when we take sufficiently large random samples from a population, the sampling distribution of many common statistics (such as <span class="math inline">\(\hat{p}\)</span> or <span class="math inline">\(\bar{x}\)</span>) is approximately <strong>normal</strong> (bell-shaped), regardless of the shape of the underlying population distribution.</p>
+</div>
+<p>This is a stunning result. Even if the population distribution is skewed, bimodal, or has some other non-normal shape, the distribution of the <em>sample statistic</em> will be approximately normal — provided the sample is large enough.</p>
+<div class="important">
+<p><strong>Central Limit Theorem: the key ideas.</strong></p>
+<ol type="1">
+<li>The sampling distribution of a sample statistic is approximately normal when the sample size is large enough.</li>
+<li>The center of the sampling distribution is at the population parameter.</li>
+<li>The spread of the sampling distribution (the standard error) decreases as sample size increases.</li>
+</ol>
+<p>These three facts together mean: with a large enough sample, the sample statistic will be close to the population parameter, and we can use the normal distribution to describe <em>how</em> close.</p>
+</div>
+<section id="conditions-for-the-clt" class="level3" data-number="10.2.1">
+<h3 data-number="10.2.1" class="anchored" data-anchor-id="conditions-for-the-clt"><span class="header-section-number">10.2.1</span> Conditions for the CLT</h3>
+<p>The normal approximation does not apply in all situations. Two conditions must hold:</p>
+<ol type="1">
+<li><p><strong>Independent observations.</strong> The observations in the sample must be independent of each other. This is typically guaranteed by random sampling from a population, or by random assignment in an experiment.</p></li>
+<li><p><strong>Large enough sample.</strong> The sample size cannot be too small. What counts as “large enough” depends on the context:</p>
+<ul>
+<li>For proportions: we generally need at least 10 expected successes and 10 expected failures.</li>
+<li>For means: the rule of thumb depends on how skewed the population is. For roughly symmetric populations, <span class="math inline">\(n \geq 30\)</span> is often sufficient. For highly skewed populations, larger samples may be needed.</li>
+</ul></li>
+</ol>
+<div class="caution">
+<p>When these conditions are not met, the normal approximation may be poor and simulation-based methods (randomization tests, bootstrap CIs) are the better choice. This is one of the great advantages of simulation: it works even when mathematical conditions are not satisfied.</p>
+</div>
+</section>
+<section id="visualizing-the-clt" class="level3" data-number="10.2.2">
+<h3 data-number="10.2.2" class="anchored" data-anchor-id="visualizing-the-clt"><span class="header-section-number">10.2.2</span> Visualizing the CLT</h3>
+<div class="original">
+<p>Imagine a population that is distinctly non-normal — say, a right-skewed distribution like household income. If we take a single random sample of <span class="math inline">\(n = 5\)</span> people and compute the mean income, that mean might be quite far from the population mean <span class="math inline">\(\mu\)</span>. But if we do this thousands of times (each time taking a new sample of 5 and computing the mean), the distribution of those thousands of sample means will already start to look somewhat bell-shaped, even though the underlying population is skewed.</p>
+<p>Now increase the sample size to <span class="math inline">\(n = 30\)</span>. The distribution of sample means looks even more bell-shaped. At <span class="math inline">\(n = 100\)</span>, it is nearly indistinguishable from a perfect normal curve.</p>
+<p>This progression — from skewed population, to somewhat normal at small <span class="math inline">\(n\)</span>, to very normal at larger <span class="math inline">\(n\)</span> — is the Central Limit Theorem in action.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Sample size</th>
+<th style="text-align: left;">Shape of sampling distribution</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(n = 5\)</span></td>
+<td style="text-align: left;">Retains some skew from the population</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(n = 30\)</span></td>
+<td style="text-align: left;">Approximately normal for most populations</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(n = 100\)</span></td>
+<td style="text-align: left;">Very close to normal for virtually all populations</td>
+</tr>
+</tbody>
+</table>
+<p>The speed at which the sampling distribution approaches normality depends on how non-normal the population is. Symmetric populations converge quickly; highly skewed populations take longer.</p>
 </div>
 <div class="simkit">
-<p><strong>SimKit tools for this chapter</strong>: Sampling Distribution Simulator + Simulation vs Theory Comparison (Phase 2)</p>
+<p><strong>See the CLT in action!</strong> Use SimKit’s Sampling Distribution Simulator:</p>
+<p><a href="https://datascienceuwl.github.io/simkit/explore/sampling-distribution/" target="_blank">Launch Sampling Distribution Simulator</a></p>
+<ol type="1">
+<li>Select a skewed population (e.g., exponential or right-skewed).</li>
+<li>Set the sample size to <span class="math inline">\(n = 5\)</span> and draw 1,000 samples. Observe the shape.</li>
+<li>Increase to <span class="math inline">\(n = 30\)</span> and draw 1,000 more. How does the shape change?</li>
+<li>Try <span class="math inline">\(n = 100\)</span>. How close is the distribution to a normal curve?</li>
+</ol>
 </div>
-<section id="from-simulation-to-theory" class="level2" data-number="10.1">
-<h2 data-number="10.1" class="anchored" data-anchor-id="from-simulation-to-theory"><span class="header-section-number">10.1</span> From simulation to theory</h2>
-<p>Content under development.</p>
 </section>
-<section id="the-central-limit-theorem" class="level2" data-number="10.2">
-<h2 data-number="10.2" class="anchored" data-anchor-id="the-central-limit-theorem"><span class="header-section-number">10.2</span> The Central Limit Theorem</h2>
-<p>Content under development.</p>
 </section>
-<section id="comparing-randomization-bootstrap-and-mathematical-approaches" class="level2" data-number="10.3">
-<h2 data-number="10.3" class="anchored" data-anchor-id="comparing-randomization-bootstrap-and-mathematical-approaches"><span class="header-section-number">10.3</span> Comparing randomization, bootstrap, and mathematical approaches</h2>
-<p>Content under development.</p>
+<section id="sec-comparing-approaches" class="level2" data-number="10.3">
+<h2 data-number="10.3" class="anchored" data-anchor-id="sec-comparing-approaches"><span class="header-section-number">10.3</span> Comparing randomization, bootstrap, and mathematical approaches</h2>
+<p>We now have three tools for statistical inference, each grounded in the same core ideas but using different mechanisms:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">Randomization</th>
+<th style="text-align: left;">Bootstrap</th>
+<th style="text-align: left;">Mathematical model</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Question answered</strong></td>
+<td style="text-align: left;">Is there an effect? (hypothesis test)</td>
+<td style="text-align: left;">How big is the parameter? (confidence interval)</td>
+<td style="text-align: left;">Both</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>How variability is generated</strong></td>
+<td style="text-align: left;">Shuffle labels to simulate <span class="math inline">\(H_0\)</span></td>
+<td style="text-align: left;">Resample with replacement from sample</td>
+<td style="text-align: left;">Use formulas based on the normal distribution</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>What it models</strong></td>
+<td style="text-align: left;">Variability due to random assignment</td>
+<td style="text-align: left;">Variability due to random sampling</td>
+<td style="text-align: left;">Variability predicted by mathematical theory</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Center of distribution</strong></td>
+<td style="text-align: left;">Null hypothesis value</td>
+<td style="text-align: left;">Sample statistic</td>
+<td style="text-align: left;">Depends on context (<span class="math inline">\(H_0\)</span> for tests, <span class="math inline">\(\hat{p}\)</span> for CIs)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Conditions required</strong></td>
+<td style="text-align: left;">Minimal</td>
+<td style="text-align: left;">Minimal</td>
+<td style="text-align: left;">Independence + large sample</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Computational cost</strong></td>
+<td style="text-align: left;">Moderate (need many simulations)</td>
+<td style="text-align: left;">Moderate (need many resamples)</td>
+<td style="text-align: left;">Low (just plug into formula)</td>
+</tr>
+</tbody>
+</table>
+<div class="important">
+<p><strong>Key insight.</strong> All three methods answer the same fundamental question: <em>How much does the statistic vary?</em> They just measure that variability in different ways.</p>
+<ul>
+<li><strong>Randomization</strong> asks: “How much would the statistic vary if the null hypothesis were true?”</li>
+<li><strong>Bootstrap</strong> asks: “How much would the statistic vary across different samples from this population?”</li>
+<li><strong>Mathematical models</strong> ask: “How much does theory predict the statistic would vary?”</li>
+</ul>
+<p>When conditions are met, all three give similar answers. The mathematical approach is faster and requires no simulation, which is why it is widely used. But the simulation approaches are more flexible and work even when conditions for the mathematical model are not met.</p>
+</div>
+<section id="which-method-should-i-use" class="level3 original" data-number="10.3.1">
+<h3 data-number="10.3.1" class="anchored" data-anchor-id="which-method-should-i-use"><span class="header-section-number">10.3.1</span> Which method should I use?</h3>
+<p>Here is a practical guide:</p>
+<ol type="1">
+<li><p><strong>When conditions for the mathematical model are clearly met</strong> (independent observations, large sample, not too skewed), the formula-based approach is convenient and widely accepted. This will be our primary tool in Part III.</p></li>
+<li><p><strong>When conditions are questionable</strong> (small sample, very skewed data, unusual statistic), simulation-based methods are safer. The bootstrap and randomization test make fewer assumptions.</p></li>
+<li><p><strong>When you want to build intuition</strong>, simulation is invaluable. Seeing 10,000 shuffles or resamples gives you a concrete feel for what “random variability” looks like — something a formula alone cannot provide.</p></li>
+<li><p><strong>In practice</strong>, many statisticians use simulation to check their formula-based results. If the two approaches agree, confidence in the conclusion is strengthened.</p></li>
+</ol>
 </section>
-<section id="when-is-the-normal-approximation-good-enough" class="level2" data-number="10.4">
-<h2 data-number="10.4" class="anchored" data-anchor-id="when-is-the-normal-approximation-good-enough"><span class="header-section-number">10.4</span> When is the normal approximation good enough?</h2>
-<p>Content under development.</p>
 </section>
-<section id="chapter-review" class="level2" data-number="10.5">
-<h2 data-number="10.5" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">10.5</span> Chapter review</h2>
-<section id="summary" class="level3" data-number="10.5.1">
-<h3 data-number="10.5.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">10.5.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+<section id="sec-normal-approximation" class="level2" data-number="10.4">
+<h2 data-number="10.4" class="anchored" data-anchor-id="sec-normal-approximation"><span class="header-section-number">10.4</span> When is the normal approximation good enough?</h2>
+<p>The mathematical approach to inference (which we will develop in Part III) replaces simulation with the normal distribution. Instead of generating thousands of shuffles or resamples, we use a formula to compute the standard error and then rely on the bell curve to find p-values or construct confidence intervals.</p>
+<p>But when can we trust this shortcut?</p>
+<section id="the-success-failure-condition-for-proportions" class="level3" data-number="10.4.1">
+<h3 data-number="10.4.1" class="anchored" data-anchor-id="the-success-failure-condition-for-proportions"><span class="header-section-number">10.4.1</span> The success-failure condition for proportions</h3>
+<p>For a sample proportion <span class="math inline">\(\hat{p}\)</span>, the sampling distribution is approximately normal when:</p>
+<p><span class="math display">\[np \geq 10 \quad \text{and} \quad n(1 - p) \geq 10\]</span></p>
+<p>where <span class="math inline">\(n\)</span> is the sample size and <span class="math inline">\(p\)</span> is the proportion of interest. In practice, since <span class="math inline">\(p\)</span> is unknown, we use <span class="math inline">\(\hat{p}\)</span> as a stand-in:</p>
+<p><span class="math display">\[n\hat{p} \geq 10 \quad \text{and} \quad n(1 - \hat{p}) \geq 10\]</span></p>
+<p>This is called the <strong>success-failure condition</strong>.</p>
+<div class="workedexample">
+<p>In the medical consultant example, <span class="math inline">\(n = 62\)</span> and <span class="math inline">\(\hat{p} = 3/62 = 0.048\)</span>. Check the success-failure condition.</p>
+<hr>
+<ul>
+<li>Expected successes: <span class="math inline">\(n\hat{p} = 62 \times 0.048 = 3\)</span> (less than 10)</li>
+<li>Expected failures: <span class="math inline">\(n(1 - \hat{p}) = 62 \times 0.952 = 59\)</span> (at least 10)</li>
+</ul>
+<p>The success-failure condition is <strong>not met</strong> because there are fewer than 10 expected successes. The normal approximation would be unreliable here. This is exactly the kind of situation where the bootstrap (as used in Chapter 8) is the better approach.</p>
+</div>
+<div class="guidedpractice">
+<p>In the tappers and listeners study, <span class="math inline">\(n = 120\)</span> and <span class="math inline">\(\hat{p} = 3/120 = 0.025\)</span>. Check the success-failure condition. Should we use the normal approximation?<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
+<div class="workedexample">
+<p>A poll of <span class="math inline">\(n = 1{,}000\)</span> voters finds that <span class="math inline">\(\hat{p} = 0.52\)</span> support a policy. Check the success-failure condition.</p>
+<hr>
+<ul>
+<li>Expected successes: <span class="math inline">\(n\hat{p} = 1{,}000 \times 0.52 = 520\)</span> (well above 10)</li>
+<li>Expected failures: <span class="math inline">\(n(1 - \hat{p}) = 1{,}000 \times 0.48 = 480\)</span> (well above 10)</li>
+</ul>
+<p>The success-failure condition is comfortably met. The normal approximation is reliable here.</p>
+</div>
 </section>
-<section id="exercises" class="level3 exercises" data-number="10.5.2">
-<h3 class="exercises anchored" data-number="10.5.2" data-anchor-id="exercises"><span class="header-section-number">10.5.2</span> Exercises</h3>
+<section id="the-sample-size-condition-for-means" class="level3" data-number="10.4.2">
+<h3 data-number="10.4.2" class="anchored" data-anchor-id="the-sample-size-condition-for-means"><span class="header-section-number">10.4.2</span> The sample size condition for means</h3>
+<div class="original">
+<p>For a sample mean <span class="math inline">\(\bar{x}\)</span>, the CLT tells us the sampling distribution is approximately normal when:</p>
+<ul>
+<li>The sample size is “large enough,” and</li>
+<li>The observations are independent.</li>
+</ul>
+<p>A common guideline is <span class="math inline">\(n \geq 30\)</span>, but this is only a rough rule of thumb. If the population distribution is nearly symmetric, the normal approximation can work well even for smaller samples. If the population is highly skewed or has extreme outliers, a larger sample may be needed.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Population shape</th>
+<th style="text-align: center;">Minimum <span class="math inline">\(n\)</span> for normal approximation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Symmetric, no outliers</td>
+<td style="text-align: center;"><span class="math inline">\(n \geq 15\)</span> or even smaller</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Slightly skewed</td>
+<td style="text-align: center;"><span class="math inline">\(n \geq 30\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Highly skewed or heavy-tailed</td>
+<td style="text-align: center;"><span class="math inline">\(n \geq 60\)</span> or more</td>
+</tr>
+</tbody>
+</table>
+<p>When in doubt, use simulation (bootstrap) to check whether the normal approximation is reasonable.</p>
+</div>
+</section>
+<section id="simulation-as-a-check-on-theory" class="level3" data-number="10.4.3">
+<h3 data-number="10.4.3" class="anchored" data-anchor-id="simulation-as-a-check-on-theory"><span class="header-section-number">10.4.3</span> Simulation as a check on theory</h3>
+<div class="original">
+<p>One of the most powerful uses of simulation is as a <strong>reality check</strong> on mathematical results. Here is the workflow:</p>
+<ol type="1">
+<li>Compute a confidence interval or p-value using the formula-based (normal) approach.</li>
+<li>Compute the same quantity using simulation (bootstrap CI or randomization test).</li>
+<li>Compare. If the two results are similar, you can be confident in the mathematical approach. If they differ substantially, the conditions for the normal approximation may not be met, and you should rely on the simulation result.</li>
+</ol>
+<p>This “trust but verify” approach is standard practice among professional statisticians and data scientists.</p>
+</div>
+</section>
+</section>
+<section id="sec-normal-preview" class="level2" data-number="10.5">
+<h2 data-number="10.5" class="anchored" data-anchor-id="sec-normal-preview"><span class="header-section-number">10.5</span> The normal distribution: a preview</h2>
+<p>Since the normal distribution will be our primary tool in Part III, let us briefly introduce its key features here.</p>
+<section id="the-68-95-99.7-rule" class="level3" data-number="10.5.1">
+<h3 data-number="10.5.1" class="anchored" data-anchor-id="the-68-95-99.7-rule"><span class="header-section-number">10.5.1</span> The 68-95-99.7 rule</h3>
+<p>The normal distribution has a very useful property: the percentage of observations falling within 1, 2, and 3 standard deviations of the mean is always approximately the same.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="The 68-95-99.7 rule for normal distributions. Approximately 68% of values fall within 1 standard deviation of the mean, 95% within 2, and 99.7% within 3."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A normal curve with the areas within one, two, and three standard deviations of the mean labeled as 68 percent, 95 percent, and 99.7 percent respectively."></a></p>
+<figcaption>The 68-95-99.7 rule for normal distributions. Approximately 68% of values fall within 1 standard deviation of the mean, 95% within 2, and 99.7% within 3.</figcaption>
+</figure>
+</div>
+<div class="important">
+<p><strong>The 68-95-99.7 rule.</strong></p>
+<p>For any normal distribution:</p>
+<ul>
+<li>About <strong>68%</strong> of values fall within 1 standard deviation of the mean: <span class="math inline">\(\mu \pm \sigma\)</span></li>
+<li>About <strong>95%</strong> of values fall within 2 standard deviations of the mean: <span class="math inline">\(\mu \pm 2\sigma\)</span></li>
+<li>About <strong>99.7%</strong> of values fall within 3 standard deviations of the mean: <span class="math inline">\(\mu \pm 3\sigma\)</span></li>
+</ul>
+</div>
+<p>This rule has an immediate connection to confidence intervals. In Chapter 8, we found that a 95% bootstrap confidence interval captures the middle 95% of the bootstrap distribution. If the bootstrap distribution is approximately normal, then the middle 95% corresponds to approximately <span class="math inline">\(\pm 2\)</span> standard errors. This gives us the quick approximation:</p>
+<p><span class="math display">\[\text{95% CI} \approx \text{statistic} \pm 2 \times SE\]</span></p>
+<div class="workedexample">
+<p>A poll of <span class="math inline">\(n = 1{,}000\)</span> voters finds <span class="math inline">\(\hat{p} = 0.52\)</span> with a standard error of <span class="math inline">\(SE = 0.016\)</span>. Use the quick approximation to construct a 95% confidence interval.</p>
+<hr>
+<p><span class="math display">\[\hat{p} \pm 2 \times SE = 0.52 \pm 2(0.016) = 0.52 \pm 0.032 = (0.488, 0.552)\]</span></p>
+<p>We are 95% confident that the true proportion of voters who support the policy is between 48.8% and 55.2%.</p>
+</div>
+<div class="guidedpractice">
+<p>Why is it “approximately 2” standard errors rather than exactly 2? What is the more precise multiplier for a 95% confidence interval based on the normal distribution?<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+</div>
+</section>
+<section id="z-scores" class="level3" data-number="10.5.2">
+<h3 data-number="10.5.2" class="anchored" data-anchor-id="z-scores"><span class="header-section-number">10.5.2</span> Z scores</h3>
+<p>A <strong>Z score</strong> measures how many standard deviations an observation is above or below the mean:</p>
+<p><span class="math display">\[Z = \frac{x - \mu}{\sigma}\]</span></p>
+<p>In the context of sampling distributions, we can compute a Z score for an observed statistic:</p>
+<p><span class="math display">\[Z = \frac{\text{statistic} - \text{parameter}}{SE}\]</span></p>
+<p>This Z score tells us how unusual the observed statistic is, measured in standard-error units. In Part III, we will use Z scores (and their cousins, t-scores) extensively to compute p-values and confidence intervals without simulation.</p>
+<div class="workedexample">
+<p>In the sex discrimination study, the observed difference in promotion rates was 0.292. Suppose the standard error of the difference (computed under the null hypothesis) is 0.12. Compute the Z score.</p>
+<hr>
+<p>Under <span class="math inline">\(H_0\)</span>, the parameter (the true difference) is 0. So:</p>
+<p><span class="math display">\[Z = \frac{0.292 - 0}{0.12} = 2.43\]</span></p>
+<p>The observed difference is 2.43 standard errors above the null value of 0. Since values beyond 2 standard deviations are unusual for a normal distribution (the 95% rule), this is strong evidence against the null hypothesis — consistent with our earlier simulation result.</p>
+</div>
+</section>
+</section>
+<section id="sec-recap-three-approaches" class="level2" data-number="10.6">
+<h2 data-number="10.6" class="anchored" data-anchor-id="sec-recap-three-approaches"><span class="header-section-number">10.6</span> Recap: connecting the three approaches</h2>
+<div class="important">
+<p><strong>Types of distributions (a reference guide).</strong></p>
+<p>You have now encountered several types of distributions in this course. Understanding the differences among them is essential:</p>
+<ul>
+<li>A <strong>data distribution</strong> (or sample distribution) describes the shape, center, and variability of the observed data.</li>
+<li>A <strong>population distribution</strong> describes the entire population — almost always unknown.</li>
+<li>A <strong>sampling distribution</strong> describes how a <em>sample statistic</em> varies from sample to sample. The CLT tells us this is approximately normal under certain conditions.</li>
+<li>A <strong>randomization distribution</strong> describes how a test statistic varies under random shuffling of the treatment variable. It is centered at the null hypothesis value.</li>
+<li>A <strong>bootstrap distribution</strong> describes how a statistic varies under resampling from the observed data. It is centered at the observed statistic.</li>
+</ul>
+</div>
+<section id="the-big-picture-of-part-ii" class="level3 original" data-number="10.6.1">
+<h3 data-number="10.6.1" class="anchored" data-anchor-id="the-big-picture-of-part-ii"><span class="header-section-number">10.6.1</span> The big picture of Part II</h3>
+<p>Part II has built your intuition for statistical inference using simulation:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Chapter</th>
+<th style="text-align: left;">Method</th>
+<th style="text-align: left;">Question</th>
+<th style="text-align: left;">How variability is generated</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">6</td>
+<td style="text-align: left;">Conceptual foundation</td>
+<td style="text-align: left;">How much do statistics vary?</td>
+<td style="text-align: left;">Thought experiments</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">Randomization test</td>
+<td style="text-align: left;">Is there an effect?</td>
+<td style="text-align: left;">Shuffle labels</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">Bootstrap CI</td>
+<td style="text-align: left;">How big is the parameter?</td>
+<td style="text-align: left;">Resample with replacement</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">CLT and normal model</td>
+<td style="text-align: left;">Can we skip the simulation?</td>
+<td style="text-align: left;">Mathematical formula</td>
+</tr>
+</tbody>
+</table>
+<p>The key takeaway: <strong>the simulation methods and the mathematical methods are answering the same questions</strong>. The CLT tells us <em>when</em> the mathematical shortcuts are valid. When they are, we can replace thousands of computer simulations with a single formula.</p>
+<p>In Part III, we will develop these formula-based methods for specific settings: one proportion, one mean, two proportions, two means, and more. But you now have the conceptual foundation to understand <em>why</em> those formulas work: they are mathematical descriptions of the same sampling variability that you observed through simulation.</p>
+</section>
+</section>
+<section id="sec-ch09-review" class="level2" data-number="10.7">
+<h2 data-number="10.7" class="anchored" data-anchor-id="sec-ch09-review"><span class="header-section-number">10.7</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="10.7.1">
+<h3 data-number="10.7.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">10.7.1</span> Summary</h3>
+<ul>
+<li>Randomization distributions, bootstrap distributions, and theoretical sampling distributions all tend to be approximately <strong>bell-shaped</strong> (normal) under common conditions. This is the <strong>Central Limit Theorem</strong> (CLT).</li>
+<li>The CLT states that for sufficiently large samples with independent observations, the sampling distribution of many common statistics is approximately normal, regardless of the shape of the population.</li>
+<li>The <strong>success-failure condition</strong> (<span class="math inline">\(n\hat{p} \geq 10\)</span> and <span class="math inline">\(n(1-\hat{p}) \geq 10\)</span>) is the practical check for whether the normal approximation is appropriate for proportions.</li>
+<li>The <strong>68-95-99.7 rule</strong> describes the area under a normal curve within 1, 2, and 3 standard deviations of the mean.</li>
+<li>A <strong>Z score</strong> measures how many standard deviations (or standard errors) an observation or statistic falls from the mean: <span class="math inline">\(Z = (x - \mu)/\sigma\)</span>.</li>
+<li>The three inference approaches — randomization, bootstrap, and mathematical models — answer the same fundamental questions. When conditions are met, they produce similar results. Mathematical models are faster; simulation methods are more flexible.</li>
+<li>This chapter bridges Part II (simulation-based inference) and Part III (formula-based inference). The CLT is the theoretical justification for the formulas we will use in Part III.</li>
+</ul>
+</section>
+<section id="key-terms" class="level3" data-number="10.7.2">
+<h3 data-number="10.7.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">10.7.2</span> Key terms</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 66%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Term</th>
+<th style="text-align: left;">Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Central Limit Theorem (CLT)</td>
+<td style="text-align: left;">The sampling distribution of a statistic is approximately normal for large samples</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Normal distribution</td>
+<td style="text-align: left;">A symmetric, bell-shaped distribution described by its mean and standard deviation</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Success-failure condition</td>
+<td style="text-align: left;">For proportions: need <span class="math inline">\(n\hat{p} \geq 10\)</span> and <span class="math inline">\(n(1-\hat{p}) \geq 10\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">68-95-99.7 rule</td>
+<td style="text-align: left;">About 68%, 95%, 99.7% of normal values fall within 1, 2, 3 SDs of the mean</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Z score</td>
+<td style="text-align: left;">Number of standard deviations an observation falls from the mean: <span class="math inline">\(Z = (x-\mu)/\sigma\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Null distribution</td>
+<td style="text-align: left;">The sampling distribution of the test statistic under <span class="math inline">\(H_0\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sampling distribution</td>
+<td style="text-align: left;">Distribution of a statistic over all possible samples of a given size</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="exercises" class="level3 exercises" data-number="10.7.3">
+<h3 class="exercises anchored" data-number="10.7.3" data-anchor-id="exercises"><span class="header-section-number">10.7.3</span> Exercises</h3>
 <div class="underconstruction">
 <p>Exercises for this chapter are under development.</p>
 </div>
 
 
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>In general, the distributions were approximately symmetric and bell-shaped. The medical consultant example was the only one with noticeable skew (skewed right), which makes sense because the proportion was very close to zero.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Expected successes: <span class="math inline">\(120 \times 0.025 = 3\)</span> (less than 10). Expected failures: <span class="math inline">\(120 \times 0.975 = 117\)</span> (at least 10). The condition is not met because there are too few successes. The normal approximation would not be appropriate. Bootstrap methods are preferred.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>The more precise multiplier is 1.96, not 2. The value 1.96 is the Z-score that puts exactly 2.5% in each tail of the standard normal distribution, leaving 95% in the middle. The approximation of 2 is close enough for quick mental calculations.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
@@ -938,6 +1389,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

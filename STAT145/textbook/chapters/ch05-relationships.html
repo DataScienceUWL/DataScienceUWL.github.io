@@ -40,7 +40,10 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +71,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,14 +451,34 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#two-categorical-variables" id="toc-two-categorical-variables" class="nav-link active" data-scroll-target="#two-categorical-variables"><span class="header-section-number">6.1</span> Two categorical variables</a></li>
-  <li><a href="#one-categorical-and-one-numerical-variable" id="toc-one-categorical-and-one-numerical-variable" class="nav-link" data-scroll-target="#one-categorical-and-one-numerical-variable"><span class="header-section-number">6.2</span> One categorical and one numerical variable</a></li>
-  <li><a href="#two-numerical-variables" id="toc-two-numerical-variables" class="nav-link" data-scroll-target="#two-numerical-variables"><span class="header-section-number">6.3</span> Two numerical variables</a></li>
-  <li><a href="#association-vs-causation" id="toc-association-vs-causation" class="nav-link" data-scroll-target="#association-vs-causation"><span class="header-section-number">6.4</span> Association vs causation</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">6.5</span> Chapter review</a>
+  <li><a href="#sec-two-categorical" id="toc-sec-two-categorical" class="nav-link active" data-scroll-target="#sec-two-categorical"><span class="header-section-number">6.1</span> Two categorical variables</a>
+  <ul class="collapse">
+  <li><a href="#contingency-tables" id="toc-contingency-tables" class="nav-link" data-scroll-target="#contingency-tables"><span class="header-section-number">6.1.1</span> Contingency tables</a></li>
+  <li><a href="#row-and-column-proportions" id="toc-row-and-column-proportions" class="nav-link" data-scroll-target="#row-and-column-proportions"><span class="header-section-number">6.1.2</span> Row and column proportions</a></li>
+  <li><a href="#bar-plots-for-two-categorical-variables" id="toc-bar-plots-for-two-categorical-variables" class="nav-link" data-scroll-target="#bar-plots-for-two-categorical-variables"><span class="header-section-number">6.1.3</span> Bar plots for two categorical variables</a></li>
+  <li><a href="#mosaic-plots" id="toc-mosaic-plots" class="nav-link" data-scroll-target="#mosaic-plots"><span class="header-section-number">6.1.4</span> Mosaic plots</a></li>
+  </ul></li>
+  <li><a href="#sec-cat-num" id="toc-sec-cat-num" class="nav-link" data-scroll-target="#sec-cat-num"><span class="header-section-number">6.2</span> One categorical and one numerical variable</a>
+  <ul class="collapse">
+  <li><a href="#side-by-side-box-plots" id="toc-side-by-side-box-plots" class="nav-link" data-scroll-target="#side-by-side-box-plots"><span class="header-section-number">6.2.1</span> Side-by-side box plots</a></li>
+  <li><a href="#faceted-histograms" id="toc-faceted-histograms" class="nav-link" data-scroll-target="#faceted-histograms"><span class="header-section-number">6.2.2</span> Faceted histograms</a></li>
+  <li><a href="#ridge-plots" id="toc-ridge-plots" class="nav-link" data-scroll-target="#ridge-plots"><span class="header-section-number">6.2.3</span> Ridge plots</a></li>
+  </ul></li>
+  <li><a href="#sec-two-numerical" id="toc-sec-two-numerical" class="nav-link" data-scroll-target="#sec-two-numerical"><span class="header-section-number">6.3</span> Two numerical variables</a>
+  <ul class="collapse">
+  <li><a href="#sec-scatterplots" id="toc-sec-scatterplots" class="nav-link" data-scroll-target="#sec-scatterplots"><span class="header-section-number">6.3.1</span> Scatterplots</a></li>
+  <li><a href="#describing-associations" id="toc-describing-associations" class="nav-link" data-scroll-target="#describing-associations"><span class="header-section-number">6.3.2</span> Describing associations</a></li>
+  <li><a href="#scatterplots-with-a-third-variable" id="toc-scatterplots-with-a-third-variable" class="nav-link" data-scroll-target="#scatterplots-with-a-third-variable"><span class="header-section-number">6.3.3</span> Scatterplots with a third variable</a></li>
+  </ul></li>
+  <li><a href="#sec-assoc-cause" id="toc-sec-assoc-cause" class="nav-link" data-scroll-target="#sec-assoc-cause"><span class="header-section-number">6.4</span> Association vs.&nbsp;causation</a>
+  <ul class="collapse">
+  <li><a href="#when-can-we-infer-causation" id="toc-when-can-we-infer-causation" class="nav-link" data-scroll-target="#when-can-we-infer-causation"><span class="header-section-number">6.4.1</span> When can we infer causation?</a></li>
+  </ul></li>
+  <li><a href="#sec-ch05-review" id="toc-sec-ch05-review" class="nav-link" data-scroll-target="#sec-ch05-review"><span class="header-section-number">6.5</span> Chapter review</a>
   <ul class="collapse">
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">6.5.1</span> Summary</a></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">6.5.2</span> Exercises</a></li>
+  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">6.5.2</span> Key terms</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">6.5.3</span> Exercises</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -453,45 +505,401 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: IMS <code>explore-categorical.qmd</code> + <code>explore-numerical.qmd</code> — 70% coverage</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Relationships Between Variables</em> will go here.</p>
+<p>The preceding chapters focused on exploring one variable at a time. But the most interesting statistical questions involve <strong>relationships between variables</strong>. Does higher education lead to higher income? Is a drug more effective for one group than another? Are two categorical variables associated? This chapter introduces tools for exploring relationships: contingency tables and mosaic plots for two categorical variables, side-by-side box plots and faceted histograms for a categorical and a numerical variable, and scatterplots for two numerical variables. We close with the critical distinction between association and causation.</p>
 </div>
 <div class="simkit">
-<p><strong>SimKit tools for this chapter</strong>: Two-Variable Explorer (Phase 5)</p>
+<p><strong>SimKit tools for this chapter</strong>: Use the Two-Variable Explorer to create scatterplots, side-by-side box plots, and contingency tables. Upload a CSV dataset and select two variables to explore their relationship interactively.</p>
 </div>
-<section id="two-categorical-variables" class="level2" data-number="6.1">
-<h2 data-number="6.1" class="anchored" data-anchor-id="two-categorical-variables"><span class="header-section-number">6.1</span> Two categorical variables</h2>
-<p>Content under development.</p>
+<section id="sec-two-categorical" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="sec-two-categorical"><span class="header-section-number">6.1</span> Two categorical variables</h2>
+<section id="contingency-tables" class="level3" data-number="6.1.1">
+<h3 data-number="6.1.1" class="anchored" data-anchor-id="contingency-tables"><span class="header-section-number">6.1.1</span> Contingency tables</h3>
+<p>When we want to explore the relationship between two categorical variables, we organize the data in a <strong>contingency table</strong> (also called a two-way table or cross-tabulation). Each cell in the table shows the count of observations that belong to a particular combination of categories.</p>
+<div class="definition">
+<p>A <strong>contingency table</strong> summarizes data for two categorical variables. The rows represent the levels of one variable, the columns represent the levels of the other, and each cell contains the count of observations in that combination. <strong>Row totals</strong> and <strong>column totals</strong> give the marginal distributions.</p>
+</div>
+<p>Consider a dataset of 10,000 loans. Each loan has a homeownership status (<code>rent</code>, <code>mortgage</code>, or <code>own</code>) and an application type (<code>joint</code> or <code>individual</code>). The contingency table below summarizes these two variables:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Rent</th>
+<th style="text-align: right;">Mortgage</th>
+<th style="text-align: right;">Own</th>
+<th style="text-align: right;">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Joint</td>
+<td style="text-align: right;">362</td>
+<td style="text-align: right;">950</td>
+<td style="text-align: right;">183</td>
+<td style="text-align: right;">1,495</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Individual</td>
+<td style="text-align: right;">3,496</td>
+<td style="text-align: right;">3,839</td>
+<td style="text-align: right;">1,170</td>
+<td style="text-align: right;">8,505</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Total</strong></td>
+<td style="text-align: right;"><strong>3,858</strong></td>
+<td style="text-align: right;"><strong>4,789</strong></td>
+<td style="text-align: right;"><strong>1,353</strong></td>
+<td style="text-align: right;"><strong>10,000</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Each cell represents a count. For example, 3,496 loans were made by individuals who rent their home. The row totals tell us that 1,495 loans were joint applications and 8,505 were individual applications. The column totals tell us the overall distribution of homeownership.</p>
+<div class="guidedpractice">
+<p>What does the value 950 in the table represent? What does the column total 4,789 represent?<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
 </section>
-<section id="one-categorical-and-one-numerical-variable" class="level2" data-number="6.2">
-<h2 data-number="6.2" class="anchored" data-anchor-id="one-categorical-and-one-numerical-variable"><span class="header-section-number">6.2</span> One categorical and one numerical variable</h2>
-<p>Content under development.</p>
+<section id="row-and-column-proportions" class="level3" data-number="6.1.2">
+<h3 data-number="6.1.2" class="anchored" data-anchor-id="row-and-column-proportions"><span class="header-section-number">6.1.2</span> Row and column proportions</h3>
+<p>Raw counts can be hard to compare when group sizes differ. Instead, we can compute <strong>row proportions</strong> or <strong>column proportions</strong> to see conditional relationships.</p>
+<div class="definition">
+<p><strong>Row proportions</strong> are computed by dividing each count by its row total. They show how a variable is distributed <em>within each level</em> of the row variable.</p>
+<p><strong>Column proportions</strong> are computed by dividing each count by its column total. They show how a variable is distributed <em>within each level</em> of the column variable.</p>
+<p>Both row and column proportions are examples of <strong>conditional proportions</strong> — the proportion of observations in one category, conditional on (given) the level of the other variable.</p>
+</div>
+<p><strong>Row proportions</strong> (each count divided by its row total):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Rent</th>
+<th style="text-align: right;">Mortgage</th>
+<th style="text-align: right;">Own</th>
+<th style="text-align: right;">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Joint</td>
+<td style="text-align: right;">0.242</td>
+<td style="text-align: right;">0.635</td>
+<td style="text-align: right;">0.122</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Individual</td>
+<td style="text-align: right;">0.411</td>
+<td style="text-align: right;">0.451</td>
+<td style="text-align: right;">0.138</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+</tbody>
+</table>
+<p>For example, <span class="math inline">\(3{,}496 / 8{,}505 = 0.411\)</span>, meaning 41.1% of individual applicants rent their home.</p>
+<p><strong>Column proportions</strong> (each count divided by its column total):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Rent</th>
+<th style="text-align: right;">Mortgage</th>
+<th style="text-align: right;">Own</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Joint</td>
+<td style="text-align: right;">0.094</td>
+<td style="text-align: right;">0.198</td>
+<td style="text-align: right;">0.135</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Individual</td>
+<td style="text-align: right;">0.906</td>
+<td style="text-align: right;">0.802</td>
+<td style="text-align: right;">0.865</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Total</strong></td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+</tbody>
+</table>
+<p>The value 0.906 tells us that 90.6% of renters applied individually. This rate is higher than for borrowers with mortgages (80.2%) or who own their home (86.5%). Because these rates vary across the levels of homeownership, there is evidence that application type and homeownership may be <strong>associated</strong>.</p>
+<div class="guidedpractice">
+<p>What does 0.451 represent in the row proportions table? What does 0.802 represent in the column proportions table?<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
+<div class="workedexample">
+<p>Data scientists use statistics to build email spam filters. One characteristic examined is email format (HTML or plain text). A contingency table of email format and spam status is shown below:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">HTML</th>
+<th style="text-align: right;">Text</th>
+<th style="text-align: right;">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Not spam</td>
+<td style="text-align: right;">2,568</td>
+<td style="text-align: right;">986</td>
+<td style="text-align: right;">3,554</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Spam</td>
+<td style="text-align: right;">158</td>
+<td style="text-align: right;">209</td>
+<td style="text-align: right;">367</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Total</strong></td>
+<td style="text-align: right;"><strong>2,726</strong></td>
+<td style="text-align: right;"><strong>1,195</strong></td>
+<td style="text-align: right;"><strong>3,921</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Which would be more useful for classifying email: row or column proportions?</p>
+<hr>
+<p>A data scientist would want to know how the proportion of spam changes depending on email format. This corresponds to <strong>column proportions</strong>: <span class="math inline">\(209/1{,}195 = 17.5\%\)</span> of plain text emails are spam, compared to <span class="math inline">\(158/2{,}726 = 5.8\%\)</span> of HTML emails. Plain text emails are more likely to be spam. Row or column proportions are not equivalent — before computing, consider which variable you want to “condition on” (usually the explanatory variable).</p>
+</div>
+<div class="guidedpractice">
+<p>In the spam example, which variable would you consider the explanatory variable and which the response?<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+</div>
 </section>
-<section id="two-numerical-variables" class="level2" data-number="6.3">
-<h2 data-number="6.3" class="anchored" data-anchor-id="two-numerical-variables"><span class="header-section-number">6.3</span> Two numerical variables</h2>
-<p>Content under development.</p>
+<section id="bar-plots-for-two-categorical-variables" class="level3" data-number="6.1.3">
+<h3 data-number="6.1.3" class="anchored" data-anchor-id="bar-plots-for-two-categorical-variables"><span class="header-section-number">6.1.3</span> Bar plots for two categorical variables</h3>
+<p>Bar plots can be extended to display the relationship between two categorical variables. There are three common variants:</p>
+<div class="definition">
+<p>A <strong>stacked bar plot</strong> stacks the bars for the second variable on top of each other within each level of the first variable. It shows both the total count and the breakdown by the second variable.</p>
+<p>A <strong>standardized bar plot</strong> (also called a <strong>filled bar plot</strong>) is like a stacked bar plot, but the bars are scaled to the same height (100%). It shows the <em>proportion</em> of each category of the second variable within each level of the first variable.</p>
+<p>A <strong>dodged bar plot</strong> (also called a <strong>grouped bar plot</strong>) places bars for the second variable side by side within each level of the first variable. It makes it easy to compare counts across groups.</p>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Three bar plots showing homeownership and application type: stacked, standardized (filled), and dodged."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Three bar plots displaying the relationship between homeownership (rent, mortgage, own) and application type (joint, individual). The stacked bar plot shows total counts with application types stacked. The standardized bar plot shows each bar at 100% height with proportional shading. The dodged bar plot places joint and individual bars side by side for each homeownership category."></a></p>
+<figcaption>Three bar plots showing homeownership and application type: stacked, standardized (filled), and dodged.</figcaption>
+</figure>
+</div>
+<div class="workedexample">
+<p>When is each type of bar plot most useful?</p>
+<hr>
+<ul>
+<li>The <strong>stacked bar plot</strong> is most useful when you want to see both the total count for each group and the breakdown by the second variable. It works well when one variable is clearly the explanatory variable.</li>
+<li>The <strong>standardized bar plot</strong> is helpful when comparing proportions across groups, especially when the groups have very different sizes. However, it sacrifices information about the total count.</li>
+<li>The <strong>dodged bar plot</strong> makes it easy to compare individual counts directly. It works well for showing both variables without implying one is the explanatory variable. However, it requires more horizontal space and can feel cramped when there are many categories.</li>
+</ul>
+</div>
 </section>
-<section id="association-vs-causation" class="level2" data-number="6.4">
-<h2 data-number="6.4" class="anchored" data-anchor-id="association-vs-causation"><span class="header-section-number">6.4</span> Association vs causation</h2>
-<p>Content under development.</p>
+<section id="mosaic-plots" class="level3" data-number="6.1.4">
+<h3 data-number="6.1.4" class="anchored" data-anchor-id="mosaic-plots"><span class="header-section-number">6.1.4</span> Mosaic plots</h3>
+<p>A <strong>mosaic plot</strong> is a visualization for contingency tables that improves on the standardized bar plot by also encoding the <em>size</em> of each group. In a mosaic plot:</p>
+<ul>
+<li>The <em>width</em> of each column is proportional to the number of observations in that category of the first variable</li>
+<li>The <em>height</em> of each section within a column is proportional to the conditional proportion of the second variable</li>
+</ul>
+<p>This means the <em>area</em> of each rectangle is proportional to the count in that cell of the contingency table.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="A mosaic plot of homeownership and application type. The width of each column reflects the number of borrowers in each homeownership category, and the height of each section reflects the proportion of joint vs.&nbsp;individual applications."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A mosaic plot with three columns (rent, mortgage, own). The mortgage column is widest, reflecting the largest group. Each column is divided into two sections: individual (top) and joint (bottom). The proportion of joint applications is slightly higher for mortgage holders than for renters or owners."></a></p>
+<figcaption>A mosaic plot of homeownership and application type. The width of each column reflects the number of borrowers in each homeownership category, and the height of each section reflects the proportion of joint vs.&nbsp;individual applications.</figcaption>
+</figure>
+</div>
+<div class="guidedpractice">
+<p>In the mosaic plot, how can you tell whether homeownership and application type are associated?<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+</div>
+<div class="important">
+<p><strong>Detecting association in a mosaic plot or standardized bar plot.</strong> If the proportional breakdown of the response variable is the <em>same</em> across all levels of the explanatory variable, then the variables are <strong>not</strong> associated. If the breakdown <em>differs</em> across levels, the variables are associated. In a mosaic plot, this means the horizontal dividing lines would be at different heights.</p>
+</div>
 </section>
-<section id="chapter-review" class="level2" data-number="6.5">
-<h2 data-number="6.5" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">6.5</span> Chapter review</h2>
+</section>
+<section id="sec-cat-num" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="sec-cat-num"><span class="header-section-number">6.2</span> One categorical and one numerical variable</h2>
+<p>Some of the most interesting investigations involve comparing a numerical variable across groups defined by a categorical variable.</p>
+<section id="side-by-side-box-plots" class="level3" data-number="6.2.1">
+<h3 data-number="6.2.1" class="anchored" data-anchor-id="side-by-side-box-plots"><span class="header-section-number">6.2.1</span> Side-by-side box plots</h3>
+<p><strong>Side-by-side box plots</strong> place a box plot for each group on the same scale, making it easy to compare centers, spreads, and shapes.</p>
+<p>Consider comparing median household income for US counties, grouped by whether the county experienced population growth from 2010 to 2017:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Side-by-side box plots of median household income by population change status (gain vs.&nbsp;no gain). Counties with population gain have a higher median income."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Two horizontal box plots on the same scale. The gain group has a higher median (about 45,000 dollars) and slightly larger IQR than the no-gain group (median about 40,000 dollars). Both groups have several high-income outlier points."></a></p>
+<figcaption>Side-by-side box plots of median household income by population change status (gain vs.&nbsp;no gain). Counties with population gain have a higher median income.</figcaption>
+</figure>
+</div>
+<div class="guidedpractice">
+<p>Using the box plots, compare the income distributions for the two groups. What do you notice about the centers, spreads, and shapes?<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+</div>
+</section>
+<section id="faceted-histograms" class="level3" data-number="6.2.2">
+<h3 data-number="6.2.2" class="anchored" data-anchor-id="faceted-histograms"><span class="header-section-number">6.2.2</span> Faceted histograms</h3>
+<p><strong>Faceting</strong> splits a graphical display into panels based on the levels of a categorical variable. Each panel shows the distribution for one group, using the same scale for easy comparison.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Faceted histograms of median household income, separated into panels for counties with population gain and those with no gain."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Two histograms arranged vertically, sharing the same horizontal axis (median household income). The top panel shows counties with population gain; the bottom panel shows counties with no gain. Both distributions are right skewed and unimodal, with the gain group shifted slightly to the right."></a></p>
+<figcaption>Faceted histograms of median household income, separated into panels for counties with population gain and those with no gain.</figcaption>
+</figure>
+</div>
+<p>Faceting extends naturally to multiple categorical variables. For example, we could split the income data by both population change <em>and</em> whether the county is in a metropolitan area, creating a 2-by-2 grid of histograms.</p>
+<div class="workedexample">
+<p>What are the advantages of faceted histograms compared to side-by-side box plots?</p>
+<hr>
+<p>Faceted histograms reveal the full shape of each distribution, including modality (unimodal vs.&nbsp;bimodal), the exact nature of any skewness, and gaps or clusters. Box plots, on the other hand, are more compact and make it easier to compare medians and IQRs at a glance, but they cannot show features like bimodality. The two displays complement each other well.</p>
+</div>
+</section>
+<section id="ridge-plots" class="level3" data-number="6.2.3">
+<h3 data-number="6.2.3" class="anchored" data-anchor-id="ridge-plots"><span class="header-section-number">6.2.3</span> Ridge plots</h3>
+<div class="original">
+<p>A <strong>ridge plot</strong> (also called a joy plot) is a set of overlapping density plots, one for each group, drawn on the same horizontal scale but offset vertically. Ridge plots are useful for comparing the shapes of many distributions at once while maintaining a compact display.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="A ridge plot comparing median household income for counties with and without population gain. Each group gets its own smoothed density curve."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Two overlapping density curves arranged vertically. The curve for counties with population gain is shifted slightly to the right compared to the curve for counties with no gain, indicating higher median incomes in the gain group."></a></p>
+<figcaption>A ridge plot comparing median household income for counties with and without population gain. Each group gets its own smoothed density curve.</figcaption>
+</figure>
+</div>
+</div>
+<div class="guidedpractice">
+<p>What does a ridge plot reveal that side-by-side box plots do not?<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+</div>
+</section>
+</section>
+<section id="sec-two-numerical" class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="sec-two-numerical"><span class="header-section-number">6.3</span> Two numerical variables</h2>
+<section id="sec-scatterplots" class="level3" data-number="6.3.1">
+<h3 data-number="6.3.1" class="anchored" data-anchor-id="sec-scatterplots"><span class="header-section-number">6.3.1</span> Scatterplots</h3>
+<p>A <strong>scatterplot</strong> displays the relationship between two numerical variables. Each observation is represented as a point, with one variable on the horizontal axis and the other on the vertical axis.</p>
+<div class="definition">
+<p>A <strong>scatterplot</strong> provides a case-by-case view of data for two numerical variables. Each point represents one observation. The horizontal axis shows the values of one variable and the vertical axis shows the values of the other.</p>
+</div>
+<p>Consider a dataset of 50 loans, where we plot total income on the horizontal axis and loan amount on the vertical axis:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="A scatterplot of loan amount versus total income for 50 loans. There is a moderate positive association."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A scatterplot with total income on the horizontal axis (ranging from about 0 to 350,000 dollars) and loan amount on the vertical axis (ranging from about 3,000 to 40,000 dollars). Points show a general upward trend — borrowers with higher incomes tend to take out larger loans — but with considerable scatter."></a></p>
+<figcaption>A scatterplot of loan amount versus total income for 50 loans. There is a moderate positive association.</figcaption>
+</figure>
+</div>
+<div class="guidedpractice">
+<p>What do scatterplots reveal about the data, and how are they useful?<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a></p>
+</div>
+</section>
+<section id="describing-associations" class="level3" data-number="6.3.2">
+<h3 data-number="6.3.2" class="anchored" data-anchor-id="describing-associations"><span class="header-section-number">6.3.2</span> Describing associations</h3>
+<p>When examining a scatterplot, we describe the association using four characteristics:</p>
+<div class="important">
+<p><strong>Describing the association between two numerical variables:</strong></p>
+<ol type="1">
+<li><p><strong>Direction</strong>: Is the association <strong>positive</strong> (both variables tend to increase together) or <strong>negative</strong> (one increases as the other decreases)?</p></li>
+<li><p><strong>Form</strong>: Is the relationship approximately <strong>linear</strong> (following a straight-line pattern) or <strong>nonlinear</strong> (curved)?</p></li>
+<li><p><strong>Strength</strong>: Is the association <strong>strong</strong> (points closely follow a pattern), <strong>moderate</strong>, or <strong>weak</strong> (points are loosely scattered)?</p></li>
+<li><p><strong>Unusual observations</strong>: Are there any <strong>outliers</strong> — points that deviate markedly from the overall pattern?</p></li>
+</ol>
+</div>
+<div class="workedexample">
+<p>A scatterplot shows the poverty rate vs.&nbsp;median household income for over 3,000 US counties. How would you describe the association?</p>
+<hr>
+<p>The association is <strong>negative</strong> (as poverty rate increases, median household income tends to decrease), <strong>nonlinear</strong> (the relationship curves, with income decreasing more steeply at lower poverty rates and leveling off at higher poverty rates), and <strong>moderately strong</strong> (the points follow the curving pattern fairly closely, though there is noticeable scatter). There do not appear to be any extreme outliers, though counties with very high poverty rates or very high incomes stand out somewhat.</p>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="A scatterplot of median household income versus poverty rate for US counties, with a curved trend line. The relationship is negative and nonlinear."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A scatterplot with poverty rate on the horizontal axis (ranging from about 0% to 50%) and median household income on the vertical axis (ranging from about 20,000 to over 120,000 dollars). The points show a clear negative, curved relationship. A dashed trend line curves downward from left to right."></a></p>
+<figcaption>A scatterplot of median household income versus poverty rate for US counties, with a curved trend line. The relationship is negative and nonlinear.</figcaption>
+</figure>
+</div>
+<div class="guidedpractice">
+<p>Describe two variables that would have a horseshoe-shaped (<span class="math inline">\(\cap\)</span>) association in a scatterplot.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a></p>
+</div>
+<div class="workedexample">
+<p>For the 50-loan dataset, the scatterplot of total income versus loan amount shows that borrowers with higher incomes tend to take out larger loans. Describe this association.</p>
+<hr>
+<p>The association is <strong>positive</strong> (higher income is associated with higher loan amounts), approximately <strong>linear</strong> (the general trend follows a straight line, though the pattern is loose), and <strong>weak to moderate</strong> (there is considerable scatter — many borrowers with similar incomes take out very different loan amounts). There are a few borrowers with income above $250,000 who stand out on the right side of the plot.</p>
+</div>
+</section>
+<section id="scatterplots-with-a-third-variable" class="level3" data-number="6.3.3">
+<h3 data-number="6.3.3" class="anchored" data-anchor-id="scatterplots-with-a-third-variable"><span class="header-section-number">6.3.3</span> Scatterplots with a third variable</h3>
+<p>We can add a third variable to a scatterplot by using color, shape, or size to represent a categorical or numerical variable. For example, in a scatterplot of income vs.&nbsp;poverty rate, we could color the points by whether the county is in a metropolitan area. This technique helps reveal whether the relationship between two numerical variables differs across groups.</p>
+</section>
+</section>
+<section id="sec-assoc-cause" class="level2" data-number="6.4">
+<h2 data-number="6.4" class="anchored" data-anchor-id="sec-assoc-cause"><span class="header-section-number">6.4</span> Association vs.&nbsp;causation</h2>
+<div class="original">
+<p>Throughout this chapter, we have explored associations between variables. But association is not the same as causation.</p>
+</div>
+<div class="important">
+<p><strong>Association does not imply causation.</strong></p>
+<p>When two variables are associated (correlated), it means they tend to vary together — but that does not necessarily mean one <em>causes</em> the other. There may be a <strong>confounding variable</strong> (a third variable) that is related to both, creating the illusion of a direct relationship.</p>
+</div>
+<div class="workedexample">
+<p>A study finds a strong positive association between ice cream sales and drowning deaths. Does eating ice cream cause drowning?</p>
+<hr>
+<p>Of course not. The association exists because both ice cream sales and drowning are related to a confounding variable: <strong>temperature</strong> (or season). In hot weather, people buy more ice cream <em>and</em> more people go swimming, which increases the risk of drowning. Temperature is the lurking variable that drives both.</p>
+</div>
+<div class="definition">
+<p>A <strong>confounding variable</strong> (also called a <strong>lurking variable</strong>) is a variable that is related to both the explanatory and response variables. Confounding variables can create misleading associations between two variables that have no direct causal relationship.</p>
+</div>
+<div class="guidedpractice">
+<p>A study finds that students who eat breakfast tend to have higher GPAs than students who skip breakfast. Can we conclude that eating breakfast causes higher GPAs?<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a></p>
+</div>
+<section id="when-can-we-infer-causation" class="level3 original" data-number="6.4.1">
+<h3 data-number="6.4.1" class="anchored" data-anchor-id="when-can-we-infer-causation"><span class="header-section-number">6.4.1</span> When can we infer causation?</h3>
+<p>Establishing a causal relationship between two variables generally requires:</p>
+<ol type="1">
+<li><p><strong>A randomized experiment</strong>: Randomly assigning subjects to treatment and control groups helps eliminate confounding variables. If a difference is observed between groups, we can more confidently attribute it to the treatment.</p></li>
+<li><p><strong>Temporal precedence</strong>: The cause must precede the effect in time.</p></li>
+<li><p><strong>Ruling out confounders</strong>: We must be able to argue that no lurking variables explain the observed association.</p></li>
+</ol>
+<p>In observational studies (where we observe but do not control the variables), we can identify associations but generally cannot draw causal conclusions. This is one of the most important distinctions in statistics.</p>
+</section>
+<div class="caution">
+<p>Be especially skeptical of causal claims from observational data. Media reports often say “X causes Y” when the underlying study only found an association. Always ask: Was this a randomized experiment? Could there be confounding variables?</p>
+</div>
+</section>
+<section id="sec-ch05-review" class="level2" data-number="6.5">
+<h2 data-number="6.5" class="anchored" data-anchor-id="sec-ch05-review"><span class="header-section-number">6.5</span> Chapter review</h2>
 <section id="summary" class="level3" data-number="6.5.1">
 <h3 data-number="6.5.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">6.5.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+<p>This chapter introduced tools for exploring relationships between variables. For <strong>two categorical variables</strong>, contingency tables organize counts, row and column proportions reveal conditional relationships, and bar plots (stacked, standardized, dodged) and mosaic plots provide visual comparisons. For <strong>one categorical and one numerical variable</strong>, side-by-side box plots, faceted histograms, and ridge plots compare distributions across groups. For <strong>two numerical variables</strong>, scatterplots reveal the direction, form, strength, and unusual features of an association. We closed with the fundamental principle that <strong>association does not imply causation</strong> — confounding variables can create misleading associations, and establishing causation generally requires a randomized experiment.</p>
 </section>
-<section id="exercises" class="level3 exercises" data-number="6.5.2">
-<h3 class="exercises anchored" data-number="6.5.2" data-anchor-id="exercises"><span class="header-section-number">6.5.2</span> Exercises</h3>
+<section id="key-terms" class="level3" data-number="6.5.2">
+<h3 data-number="6.5.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">6.5.2</span> Key terms</h3>
+<ul>
+<li>Contingency table, row totals, column totals</li>
+<li>Row proportions, column proportions, conditional proportions</li>
+<li>Stacked bar plot, standardized (filled) bar plot, dodged bar plot</li>
+<li>Mosaic plot</li>
+<li>Side-by-side box plot, faceted plot, ridge plot</li>
+<li>Scatterplot</li>
+<li>Positive association, negative association</li>
+<li>Linear, nonlinear</li>
+<li>Direction, form, strength (of an association)</li>
+<li>Confounding variable (lurking variable)</li>
+<li>Association vs.&nbsp;causation</li>
+</ul>
+</section>
+<section id="exercises" class="level3 exercises" data-number="6.5.3">
+<h3 class="exercises anchored" data-number="6.5.3" data-anchor-id="exercises"><span class="header-section-number">6.5.3</span> Exercises</h3>
 <div class="underconstruction">
 <p>Exercises for this chapter are under development.</p>
 </div>
 
 
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>The value 950 represents the number of loans that were joint applications from borrowers with a mortgage. The column total 4,789 represents the total number of borrowers (both joint and individual) who have a mortgage.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>0.451 represents the proportion of individual applicants who have a mortgage. 0.802 represents the fraction of applicants with mortgages who applied as individuals.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Email format (HTML vs.&nbsp;text) is the explanatory variable — it is a characteristic of the email that might help explain or predict whether the email is spam. Spam status (spam vs.&nbsp;not spam) is the response variable.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>If the variables were not associated, the division between joint and individual would occur at the same height in every column. Since the columns are divided at different heights — mortgage holders have a higher proportion of joint applications than renters or owners — the variables appear to be associated.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>Counties with population gains tend to have higher income (median about $45,000) compared to counties without gains (median about $40,000). The variability is also slightly larger for the gain group, as seen in the wider IQR. Both distributions show slight to moderate right skew, with outliers on the high end.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>Ridge plots show the full shape of each distribution, including modality and skewness, similar to histograms. Box plots compress all of this shape information into a five-number summary. Ridge plots are especially useful when you want to compare shapes across many groups in a compact space.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>Scatterplots are helpful for quickly spotting associations between two numerical variables — whether they tend to increase together, decrease together, or show no pattern. They can also reveal whether the relationship is linear or curved, how strong the association is, and whether there are any unusual points.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>Consider a situation where the vertical axis represents something “good” and the horizontal axis represents something that is good only in moderation. For example, health and water consumption: we need some water to survive, but consuming too much becomes dangerous. Athletic performance and practice time is another example — some practice improves performance, but overtraining leads to injury and decline.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>Not from this information alone. This is likely an observational study, and there could be confounding variables. For example, students who eat breakfast may come from more supportive home environments, may have better time management skills, or may generally take better care of their health — all of which could independently contribute to higher GPAs. To establish a causal connection, we would need a randomized experiment.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
@@ -938,6 +1346,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

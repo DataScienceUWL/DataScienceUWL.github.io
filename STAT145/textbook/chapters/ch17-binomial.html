@@ -40,7 +40,10 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +71,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,11 +451,26 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#binomial-conditions" id="toc-binomial-conditions" class="nav-link active" data-scroll-target="#binomial-conditions"><span class="header-section-number">18.1</span> Binomial conditions</a></li>
-  <li><a href="#computing-binomial-probabilities" id="toc-computing-binomial-probabilities" class="nav-link" data-scroll-target="#computing-binomial-probabilities"><span class="header-section-number">18.2</span> Computing binomial probabilities</a></li>
-  <li><a href="#mean-and-standard-deviation-of-a-binomial" id="toc-mean-and-standard-deviation-of-a-binomial" class="nav-link" data-scroll-target="#mean-and-standard-deviation-of-a-binomial"><span class="header-section-number">18.3</span> Mean and standard deviation of a binomial</a></li>
-  <li><a href="#normal-approximation-to-the-binomial" id="toc-normal-approximation-to-the-binomial" class="nav-link" data-scroll-target="#normal-approximation-to-the-binomial"><span class="header-section-number">18.4</span> Normal approximation to the binomial</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">18.5</span> Chapter review</a>
+  <li><a href="#sec-binomial-conditions" id="toc-sec-binomial-conditions" class="nav-link active" data-scroll-target="#sec-binomial-conditions"><span class="header-section-number">18.1</span> The binomial setting</a>
+  <ul class="collapse">
+  <li><a href="#the-bernoulli-distribution-a-single-trial" id="toc-the-bernoulli-distribution-a-single-trial" class="nav-link" data-scroll-target="#the-bernoulli-distribution-a-single-trial"><span class="header-section-number">18.1.1</span> The Bernoulli distribution: a single trial</a></li>
+  </ul></li>
+  <li><a href="#sec-binomial-formula" id="toc-sec-binomial-formula" class="nav-link" data-scroll-target="#sec-binomial-formula"><span class="header-section-number">18.2</span> Computing binomial probabilities</a>
+  <ul class="collapse">
+  <li><a href="#building-the-formula" id="toc-building-the-formula" class="nav-link" data-scroll-target="#building-the-formula"><span class="header-section-number">18.2.1</span> Building the formula</a></li>
+  <li><a href="#the-binomial-coefficient" id="toc-the-binomial-coefficient" class="nav-link" data-scroll-target="#the-binomial-coefficient"><span class="header-section-number">18.2.2</span> The binomial coefficient</a></li>
+  <li><a href="#the-binomial-probability-formula" id="toc-the-binomial-probability-formula" class="nav-link" data-scroll-target="#the-binomial-probability-formula"><span class="header-section-number">18.2.3</span> The binomial probability formula</a></li>
+  <li><a href="#computing-binomial-probabilities-in-practice" id="toc-computing-binomial-probabilities-in-practice" class="nav-link" data-scroll-target="#computing-binomial-probabilities-in-practice"><span class="header-section-number">18.2.4</span> Computing binomial probabilities in practice</a></li>
+  </ul></li>
+  <li><a href="#sec-binomial-mean-sd" id="toc-sec-binomial-mean-sd" class="nav-link" data-scroll-target="#sec-binomial-mean-sd"><span class="header-section-number">18.3</span> Mean and standard deviation</a>
+  <ul class="collapse">
+  <li><a href="#simulation-perspective-does-the-formula-match-reality" id="toc-simulation-perspective-does-the-formula-match-reality" class="nav-link" data-scroll-target="#simulation-perspective-does-the-formula-match-reality"><span class="header-section-number">18.3.1</span> Simulation perspective: Does the formula match reality?</a></li>
+  </ul></li>
+  <li><a href="#sec-normal-approx-binomial" id="toc-sec-normal-approx-binomial" class="nav-link" data-scroll-target="#sec-normal-approx-binomial"><span class="header-section-number">18.4</span> Normal approximation to the binomial</a>
+  <ul class="collapse">
+  <li><a href="#connecting-to-inference" id="toc-connecting-to-inference" class="nav-link" data-scroll-target="#connecting-to-inference"><span class="header-section-number">18.4.1</span> Connecting to inference</a></li>
+  </ul></li>
+  <li><a href="#sec-ch17-review" id="toc-sec-ch17-review" class="nav-link" data-scroll-target="#sec-ch17-review"><span class="header-section-number">18.5</span> Chapter review</a>
   <ul class="collapse">
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">18.5.1</span> Summary</a></li>
   <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">18.5.2</span> Exercises</a></li>
@@ -453,45 +500,202 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: OS <code>ch_distributions</code> (binomial section) — 90% coverage</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Binomial Distribution</em> will go here.</p>
+<p>How many of 400 randomly sampled adults are left-handed? How many of 20 randomly selected parts from an assembly line are defective? These “count of successes” questions arise constantly in statistics and are answered by the <strong>binomial distribution</strong>. In this chapter, we identify the four conditions that define a binomial setting, develop the formula for computing binomial probabilities, derive the mean and standard deviation, and show how the normal distribution can approximate binomial probabilities when the sample size is large.</p>
 </div>
 <div class="simkit">
 <p><strong>SimKit tools for this chapter</strong>: <strong>Binomial Distribution Explorer</strong> (Phase 3)</p>
 </div>
-<section id="binomial-conditions" class="level2" data-number="18.1">
-<h2 data-number="18.1" class="anchored" data-anchor-id="binomial-conditions"><span class="header-section-number">18.1</span> Binomial conditions</h2>
-<p>Content under development.</p>
+<section id="sec-binomial-conditions" class="level2" data-number="18.1">
+<h2 data-number="18.1" class="anchored" data-anchor-id="sec-binomial-conditions"><span class="header-section-number">18.1</span> The binomial setting</h2>
+<p>The binomial distribution describes the number of successes in a fixed number of independent trials, where each trial has only two possible outcomes.</p>
+<div class="important">
+<p><strong>The four binomial conditions.</strong> A random variable <span class="math inline">\(X\)</span> follows a binomial distribution if:</p>
+<ol type="1">
+<li><strong>Fixed number of trials</strong>: The number of trials <span class="math inline">\(n\)</span> is fixed in advance.</li>
+<li><strong>Binary outcomes</strong>: Each trial results in one of two outcomes, which we label “success” and “failure.”</li>
+<li><strong>Independence</strong>: The trials are independent — the outcome of one trial does not affect the outcome of any other trial.</li>
+<li><strong>Constant probability</strong>: The probability of success <span class="math inline">\(p\)</span> is the same for every trial.</li>
+</ol>
+<p>If all four conditions are met, we say <span class="math inline">\(X\)</span> follows a binomial distribution with parameters <span class="math inline">\(n\)</span> and <span class="math inline">\(p\)</span>, written <span class="math inline">\(X \sim \text{Binomial}(n, p)\)</span>.</p>
+</div>
+<div class="workedexample">
+<p>A health insurance company found that 70% of the people they insure stay below their deductible in any given year. Consider a random sample of four individuals. Does the number who stay below their deductible follow a binomial distribution?</p>
+<ol type="1">
+<li><strong>Fixed <span class="math inline">\(n\)</span></strong>: Yes, <span class="math inline">\(n = 4\)</span> individuals.</li>
+<li><strong>Binary</strong>: Yes, each person either stays below the deductible (success) or exceeds it (failure).</li>
+<li><strong>Independence</strong>: Yes, because the sample is random from a large population.</li>
+<li><strong>Constant <span class="math inline">\(p\)</span></strong>: Yes, each person has a 70% chance of staying below the deductible.</li>
+</ol>
+<p>All four conditions are met, so <span class="math inline">\(X \sim \text{Binomial}(n = 4, p = 0.70)\)</span>.</p>
+</div>
+<div class="caution">
+<p>The labels “success” and “failure” are just conventions — a “success” does not have to be a good outcome. If we are counting defective parts, a “success” might be finding a defective part. The mathematical framework does not depend on which outcome we call a success, as long as we are consistent.</p>
+</div>
+<div class="guidedpractice">
+<p>The probability that a random smoker will develop a severe lung condition is about 0.3. If you have 4 friends who smoke, are the conditions for the binomial model satisfied?<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
+<section id="the-bernoulli-distribution-a-single-trial" class="level3" data-number="18.1.1">
+<h3 data-number="18.1.1" class="anchored" data-anchor-id="the-bernoulli-distribution-a-single-trial"><span class="header-section-number">18.1.1</span> The Bernoulli distribution: a single trial</h3>
+<p>A single trial with two outcomes is called a <strong>Bernoulli trial</strong>, and the resulting random variable is a <strong>Bernoulli random variable</strong>.</p>
+<div class="definition">
+<p>If <span class="math inline">\(X\)</span> is a random variable that takes value 1 with probability <span class="math inline">\(p\)</span> (success) and 0 with probability <span class="math inline">\(1 - p\)</span> (failure), then <span class="math inline">\(X\)</span> is a <strong>Bernoulli random variable</strong> with:</p>
+<p><span class="math display">\[\mu = p \qquad \sigma = \sqrt{p(1-p)}\]</span></p>
+</div>
+<p>A binomial random variable is simply the sum of <span class="math inline">\(n\)</span> independent Bernoulli random variables, each with the same probability <span class="math inline">\(p\)</span>.</p>
 </section>
-<section id="computing-binomial-probabilities" class="level2" data-number="18.2">
-<h2 data-number="18.2" class="anchored" data-anchor-id="computing-binomial-probabilities"><span class="header-section-number">18.2</span> Computing binomial probabilities</h2>
-<p>Content under development.</p>
 </section>
-<section id="mean-and-standard-deviation-of-a-binomial" class="level2" data-number="18.3">
-<h2 data-number="18.3" class="anchored" data-anchor-id="mean-and-standard-deviation-of-a-binomial"><span class="header-section-number">18.3</span> Mean and standard deviation of a binomial</h2>
-<p>Content under development.</p>
+<section id="sec-binomial-formula" class="level2" data-number="18.2">
+<h2 data-number="18.2" class="anchored" data-anchor-id="sec-binomial-formula"><span class="header-section-number">18.2</span> Computing binomial probabilities</h2>
+<section id="building-the-formula" class="level3" data-number="18.2.1">
+<h3 data-number="18.2.1" class="anchored" data-anchor-id="building-the-formula"><span class="header-section-number">18.2.1</span> Building the formula</h3>
+<p>Let’s find the probability that exactly 1 of 4 randomly selected insured individuals exceeds the deductible (so 3 “successes” — staying below — and 1 “failure”).</p>
+<p>Consider the specific scenario where person A exceeds and persons B, C, D do not:</p>
+<p><span class="math display">\[P(A = \text{exceed}, B = \text{not}, C = \text{not}, D = \text{not}) = (0.3)(0.7)(0.7)(0.7) = (0.7)^3(0.3)^1 = 0.103\]</span></p>
+<p>But there are four such scenarios — any one of the four people could be the one who exceeds. Each scenario has the same probability. So:</p>
+<p><span class="math display">\[P(\text{exactly 3 successes in 4 trials}) = 4 \times (0.7)^3(0.3)^1 = 0.412\]</span></p>
+<p>The general pattern is:</p>
+<p><span class="math display">\[P(X = k) = [\text{number of arrangements}] \times [\text{probability of one arrangement}]\]</span></p>
 </section>
-<section id="normal-approximation-to-the-binomial" class="level2" data-number="18.4">
-<h2 data-number="18.4" class="anchored" data-anchor-id="normal-approximation-to-the-binomial"><span class="header-section-number">18.4</span> Normal approximation to the binomial</h2>
-<p>Content under development.</p>
+<section id="the-binomial-coefficient" class="level3" data-number="18.2.2">
+<h3 data-number="18.2.2" class="anchored" data-anchor-id="the-binomial-coefficient"><span class="header-section-number">18.2.2</span> The binomial coefficient</h3>
+<p>The number of ways to arrange <span class="math inline">\(k\)</span> successes in <span class="math inline">\(n\)</span> trials is given by the <strong>binomial coefficient</strong>:</p>
+<p><span class="math display">\[\binom{n}{k} = \frac{n!}{k!(n-k)!}\]</span></p>
+<p>read as “<span class="math inline">\(n\)</span> choose <span class="math inline">\(k\)</span>,” where <span class="math inline">\(n!\)</span> (read “<span class="math inline">\(n\)</span> factorial”) means <span class="math inline">\(n \times (n-1) \times \cdots \times 2 \times 1\)</span>, with the special case <span class="math inline">\(0! = 1\)</span>.</p>
+<p>For our example: <span class="math inline">\(\binom{4}{3} = \frac{4!}{3! \cdot 1!} = \frac{24}{6 \times 1} = 4\)</span>, confirming the four arrangements we identified.</p>
 </section>
-<section id="chapter-review" class="level2" data-number="18.5">
-<h2 data-number="18.5" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">18.5</span> Chapter review</h2>
+<section id="the-binomial-probability-formula" class="level3" data-number="18.2.3">
+<h3 data-number="18.2.3" class="anchored" data-anchor-id="the-binomial-probability-formula"><span class="header-section-number">18.2.3</span> The binomial probability formula</h3>
+<div class="important">
+<p><strong>Binomial probability formula.</strong> If <span class="math inline">\(X \sim \text{Binomial}(n, p)\)</span>, the probability of exactly <span class="math inline">\(k\)</span> successes is:</p>
+<p><span class="math display">\[P(X = k) = \binom{n}{k} p^k (1-p)^{n-k} = \frac{n!}{k!(n-k)!} \, p^k (1-p)^{n-k}\]</span></p>
+<p>for <span class="math inline">\(k = 0, 1, 2, \ldots, n\)</span>.</p>
+</div>
+<div class="workedexample">
+<p>What is the probability that 5 of 8 randomly selected insured individuals will not exceed the deductible?</p>
+<p>With <span class="math inline">\(n = 8\)</span>, <span class="math inline">\(k = 5\)</span>, and <span class="math inline">\(p = 0.70\)</span>:</p>
+<p><span class="math display">\[P(X = 5) = \binom{8}{5}(0.70)^5(0.30)^3\]</span></p>
+<p>Computing the binomial coefficient:</p>
+<p><span class="math display">\[\binom{8}{5} = \frac{8!}{5! \cdot 3!} = \frac{8 \times 7 \times 6}{3 \times 2 \times 1} = 56\]</span></p>
+<p>And the probability of a single arrangement: <span class="math inline">\((0.70)^5(0.30)^3 \approx 0.00454\)</span>.</p>
+<p><span class="math display">\[P(X = 5) = 56 \times 0.00454 \approx 0.254\]</span></p>
+</div>
+<div class="guidedpractice">
+<p>Suppose 4 friends who smoke can be treated as a random sample, with <span class="math inline">\(P(\text{severe lung condition}) = 0.3\)</span> for each. (a) What is the probability that none develop a severe lung condition? (b) What is the probability that exactly one does? (c) What is the probability that at most one does?<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
+<div class="guidedpractice">
+<p>What is the probability that at least 2 of the 4 smoking friends will develop a severe lung condition?<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+</div>
+</section>
+<section id="computing-binomial-probabilities-in-practice" class="level3 original" data-number="18.2.4">
+<h3 data-number="18.2.4" class="anchored" data-anchor-id="computing-binomial-probabilities-in-practice"><span class="header-section-number">18.2.4</span> Computing binomial probabilities in practice</h3>
+<p>For small values of <span class="math inline">\(n\)</span> and <span class="math inline">\(k\)</span>, the binomial formula can be computed by hand. For larger problems, use technology:</p>
+<ul>
+<li><strong>R</strong>: <code>dbinom(k, n, p)</code> for <span class="math inline">\(P(X = k)\)</span>; <code>pbinom(k, n, p)</code> for <span class="math inline">\(P(X \leq k)\)</span></li>
+<li><strong>Calculator</strong>: Most graphing calculators have a <code>binompdf</code> and <code>binomcdf</code> function</li>
+<li><strong>SimKit</strong>: The Binomial Distribution Explorer computes probabilities and visualizes the distribution</li>
+</ul>
+<p>For example, to find <span class="math inline">\(P(X \leq 42)\)</span> when <span class="math inline">\(X \sim \text{Binomial}(400, 0.15)\)</span>, computing 43 individual probabilities by hand would be impractical. In R:</p>
+<pre><code>pbinom(42, 400, 0.15)</code></pre>
+<p>returns approximately 0.0054.</p>
+</section>
+</section>
+<section id="sec-binomial-mean-sd" class="level2" data-number="18.3">
+<h2 data-number="18.3" class="anchored" data-anchor-id="sec-binomial-mean-sd"><span class="header-section-number">18.3</span> Mean and standard deviation</h2>
+<div class="important">
+<p><strong>Mean and standard deviation of a binomial distribution.</strong> If <span class="math inline">\(X \sim \text{Binomial}(n, p)\)</span>, then:</p>
+<p><span class="math display">\[\mu = np \qquad \sigma = \sqrt{np(1-p)}\]</span></p>
+</div>
+<p>These formulas follow from the fact that a binomial random variable is the sum of <span class="math inline">\(n\)</span> independent Bernoulli random variables, each with mean <span class="math inline">\(p\)</span> and variance <span class="math inline">\(p(1-p)\)</span>.</p>
+<div class="workedexample">
+<p>If 40 individuals are randomly sampled and each has a 70% chance of staying below their insurance deductible, how many would you expect to stay below? What is the standard deviation?</p>
+<p><span class="math display">\[\mu = np = 40 \times 0.70 = 28\]</span></p>
+<p><span class="math display">\[\sigma = \sqrt{np(1-p)} = \sqrt{40 \times 0.70 \times 0.30} = \sqrt{8.4} \approx 2.9\]</span></p>
+<p>We expect about 28 individuals to stay below their deductible, give or take about 2.9. Using the rough “95% within 2 standard deviations” guideline, we would expect between about 22 and 34 individuals in most samples.</p>
+</div>
+<div class="guidedpractice">
+<p>Suppose 7 friends who smoke can be treated as a random sample, with <span class="math inline">\(p = 0.3\)</span> for developing a severe lung condition. How many would you expect to develop the condition? What is the standard deviation?<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+</div>
+<section id="simulation-perspective-does-the-formula-match-reality" class="level3 original" data-number="18.3.1">
+<h3 data-number="18.3.1" class="anchored" data-anchor-id="simulation-perspective-does-the-formula-match-reality"><span class="header-section-number">18.3.1</span> Simulation perspective: Does the formula match reality?</h3>
+<p>We can verify the binomial formulas using simulation. Consider <span class="math inline">\(X \sim \text{Binomial}(n = 20, p = 0.3)\)</span>:</p>
+<ul>
+<li><strong>Theory</strong>: <span class="math inline">\(\mu = 20 \times 0.3 = 6\)</span> and <span class="math inline">\(\sigma = \sqrt{20 \times 0.3 \times 0.7} = \sqrt{4.2} \approx 2.05\)</span></li>
+<li><strong>Simulation</strong>: Generate 10,000 binomial random samples, each with <span class="math inline">\(n = 20\)</span> and <span class="math inline">\(p = 0.3\)</span>. The sample mean of the 10,000 counts will be very close to 6, and the sample standard deviation will be very close to 2.05.</li>
+</ul>
+<p>This is another instance of the Law of Large Numbers: the simulated distribution converges to the theoretical distribution as we increase the number of simulations.</p>
+<div class="simkit">
+<p><strong>Try it in SimKit</strong>: Use the Binomial Distribution Explorer to set <span class="math inline">\(n = 20\)</span> and <span class="math inline">\(p = 0.3\)</span>. Simulate 1,000 binomial experiments and compare the histogram of results to the theoretical formula. As you increase the number of simulations, the histogram converges to the theoretical distribution.</p>
+</div>
+</section>
+</section>
+<section id="sec-normal-approx-binomial" class="level2" data-number="18.4">
+<h2 data-number="18.4" class="anchored" data-anchor-id="sec-normal-approx-binomial"><span class="header-section-number">18.4</span> Normal approximation to the binomial</h2>
+<p>The binomial formula can be cumbersome for large <span class="math inline">\(n\)</span>, especially when computing cumulative probabilities like <span class="math inline">\(P(X \leq 42)\)</span> for <span class="math inline">\(n = 400\)</span>. Fortunately, when <span class="math inline">\(n\)</span> is large enough, the binomial distribution is well approximated by the normal distribution.</p>
+<div class="workedexample">
+<p>Approximately 15% of the US population smokes cigarettes. A local government surveyed 400 randomly selected individuals and found only 42 smokers. If the true proportion is 0.15, what is the probability of observing 42 or fewer smokers?</p>
+<p>The exact answer requires summing 43 binomial probabilities, which gives <span class="math inline">\(P(X \leq 42) = 0.0054\)</span>.</p>
+</div>
+<p>As the sample size increases, the binomial distribution becomes increasingly bell-shaped and symmetric. This is illustrated in the figure below.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Binomial distributions with p = 0.10 and sample sizes n = 10, 30, 100, and 300. As n increases, the distribution approaches a normal curve."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Four histograms of binomial distributions with p = 0.10. For n = 10, the distribution is right-skewed. For n = 30, it is slightly skewed. For n = 100 and n = 300, the distribution is approximately symmetric and bell-shaped."></a></p>
+<figcaption>Binomial distributions with <span class="math inline">\(p = 0.10\)</span> and sample sizes <span class="math inline">\(n = 10\)</span>, 30, 100, and 300. As <span class="math inline">\(n\)</span> increases, the distribution approaches a normal curve.</figcaption>
+</figure>
+</div>
+<div class="important">
+<p><strong>Normal approximation to the binomial.</strong> The binomial distribution with parameters <span class="math inline">\(n\)</span> and <span class="math inline">\(p\)</span> is approximately normal when both <span class="math inline">\(np \geq 10\)</span> and <span class="math inline">\(n(1-p) \geq 10\)</span>. The approximating normal distribution has:</p>
+<p><span class="math display">\[\mu = np \qquad \sigma = \sqrt{np(1-p)}\]</span></p>
+</div>
+<div class="workedexample">
+<p>Use the normal approximation to estimate <span class="math inline">\(P(X \leq 42)\)</span> for <span class="math inline">\(X \sim \text{Binomial}(400, 0.15)\)</span>.</p>
+<p>First, check the conditions: <span class="math inline">\(np = 400 \times 0.15 = 60 \geq 10\)</span> and <span class="math inline">\(n(1-p) = 400 \times 0.85 = 340 \geq 10\)</span>. The normal approximation is appropriate.</p>
+<p>The approximating distribution is <span class="math inline">\(N(\mu = 60, \sigma = 7.14)\)</span>, where <span class="math inline">\(\sigma = \sqrt{400 \times 0.15 \times 0.85} = 7.14\)</span>.</p>
+<p>Compute the Z-score:</p>
+<p><span class="math display">\[Z = \frac{42 - 60}{7.14} = \frac{-18}{7.14} = -2.52\]</span></p>
+<p>Using the standard normal distribution: <span class="math inline">\(P(Z \leq -2.52) = 0.0059\)</span>.</p>
+<p>This is very close to the exact binomial probability of 0.0054.</p>
+</div>
+<div class="guidedpractice">
+<p>A coin is flipped 100 times. Use the normal approximation to find the probability of getting 60 or more heads.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+</div>
+<section id="connecting-to-inference" class="level3 original" data-number="18.4.1">
+<h3 data-number="18.4.1" class="anchored" data-anchor-id="connecting-to-inference"><span class="header-section-number">18.4.1</span> Connecting to inference</h3>
+<p>The normal approximation to the binomial is not just a computational shortcut — it is the theoretical basis for the inference methods we developed in Parts II and III. When we studied the sampling distribution of the sample proportion <span class="math inline">\(\hat{p}\)</span> in Chapter 9, we were implicitly using the fact that the count of successes <span class="math inline">\(X\)</span> in a sample of size <span class="math inline">\(n\)</span> follows a binomial distribution, and that this binomial distribution is approximately normal for large <span class="math inline">\(n\)</span>.</p>
+<p>Specifically, if <span class="math inline">\(X \sim \text{Binomial}(n, p)\)</span>, then <span class="math inline">\(\hat{p} = X/n\)</span>, and the normal approximation tells us:</p>
+<p><span class="math display">\[\hat{p} \approx N\left(p, \sqrt{\frac{p(1-p)}{n}}\right)\]</span></p>
+<p>This is exactly the result we used when constructing confidence intervals and performing hypothesis tests for proportions in Chapter 13. The theory developed in this chapter <em>explains</em> why those methods work.</p>
+</section>
+</section>
+<section id="sec-ch17-review" class="level2" data-number="18.5">
+<h2 data-number="18.5" class="anchored" data-anchor-id="sec-ch17-review"><span class="header-section-number">18.5</span> Chapter review</h2>
 <section id="summary" class="level3" data-number="18.5.1">
 <h3 data-number="18.5.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">18.5.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+<ul>
+<li>The <strong>binomial distribution</strong> counts the number of successes in <span class="math inline">\(n\)</span> independent trials, each with the same probability of success <span class="math inline">\(p\)</span>.</li>
+<li><strong>Four conditions</strong>: fixed <span class="math inline">\(n\)</span>, binary outcomes, independence, constant <span class="math inline">\(p\)</span>.</li>
+<li><strong>Binomial probability formula</strong>: <span class="math inline">\(P(X = k) = \binom{n}{k} p^k (1-p)^{n-k}\)</span></li>
+<li><strong>Mean and standard deviation</strong>: <span class="math inline">\(\mu = np\)</span> and <span class="math inline">\(\sigma = \sqrt{np(1-p)}\)</span>.</li>
+<li>When <span class="math inline">\(np \geq 10\)</span> and <span class="math inline">\(n(1-p) \geq 10\)</span>, the binomial distribution is well approximated by the normal distribution <span class="math inline">\(N(np, \sqrt{np(1-p)})\)</span>.</li>
+<li>The normal approximation to the binomial provides the theoretical justification for the inference methods on proportions from Chapter 13.</li>
+</ul>
 </section>
 <section id="exercises" class="level3 exercises" data-number="18.5.2">
 <h3 class="exercises anchored" data-number="18.5.2" data-anchor-id="exercises"><span class="header-section-number">18.5.2</span> Exercises</h3>
-<div class="underconstruction">
 <p>Exercises for this chapter are under development.</p>
-</div>
 
 
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>This is questionable. If the friends know each other, the independence condition may be violated. Acquaintances may have similar smoking habits or might influence each other. If, however, we could treat them as a random sample of smokers, the conditions would be approximately met.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>(a) <span class="math inline">\(P(X = 0) = \binom{4}{0}(0.3)^0(0.7)^4 = 1 \times 1 \times 0.2401 = 0.2401\)</span>. (b) <span class="math inline">\(P(X = 1) = \binom{4}{1}(0.3)^1(0.7)^3 = 4 \times 0.3 \times 0.343 = 0.4116\)</span>. (c) <span class="math inline">\(P(X \leq 1) = P(X = 0) + P(X = 1) = 0.2401 + 0.4116 = 0.6517\)</span>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Using the complement: <span class="math inline">\(P(X \geq 2) = 1 - P(X \leq 1) = 1 - 0.6517 = 0.3483\)</span>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p><span class="math inline">\(\mu = np = 7 \times 0.3 = 2.1\)</span>. <span class="math inline">\(\sigma = \sqrt{7 \times 0.3 \times 0.7} = \sqrt{1.47} \approx 1.21\)</span>. You would expect about 2 of the 7 friends to develop a severe lung condition.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>Check conditions: <span class="math inline">\(np = 100 \times 0.5 = 50 \geq 10\)</span> and <span class="math inline">\(n(1-p) = 50 \geq 10\)</span>. The approximation is appropriate. <span class="math inline">\(\mu = 50\)</span>, <span class="math inline">\(\sigma = \sqrt{100 \times 0.5 \times 0.5} = 5\)</span>. <span class="math inline">\(Z = (60 - 50)/5 = 2\)</span>. <span class="math inline">\(P(Z \geq 2) = 1 - 0.9772 = 0.0228\)</span>. There is about a 2.3% chance of getting 60 or more heads in 100 flips of a fair coin.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
@@ -938,6 +1142,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

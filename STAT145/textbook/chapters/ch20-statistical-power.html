@@ -40,7 +40,10 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +71,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,14 +451,17 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#what-is-power" id="toc-what-is-power" class="nav-link active" data-scroll-target="#what-is-power"><span class="header-section-number">21.1</span> What is power?</a></li>
-  <li><a href="#factors-affecting-power" id="toc-factors-affecting-power" class="nav-link" data-scroll-target="#factors-affecting-power"><span class="header-section-number">21.2</span> Factors affecting power</a></li>
-  <li><a href="#simulation-based-power-estimation" id="toc-simulation-based-power-estimation" class="nav-link" data-scroll-target="#simulation-based-power-estimation"><span class="header-section-number">21.3</span> Simulation-based power estimation</a></li>
-  <li><a href="#power-curves" id="toc-power-curves" class="nav-link" data-scroll-target="#power-curves"><span class="header-section-number">21.4</span> Power curves</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">21.5</span> Chapter review</a>
+  <li><a href="#sec-what-is-power" id="toc-sec-what-is-power" class="nav-link active" data-scroll-target="#sec-what-is-power"><span class="header-section-number">21.1</span> What is power?</a></li>
+  <li><a href="#sec-why-power-matters" id="toc-sec-why-power-matters" class="nav-link" data-scroll-target="#sec-why-power-matters"><span class="header-section-number">21.2</span> Why power matters</a></li>
+  <li><a href="#sec-factors-power" id="toc-sec-factors-power" class="nav-link" data-scroll-target="#sec-factors-power"><span class="header-section-number">21.3</span> Factors affecting power</a></li>
+  <li><a href="#sec-simulation-power" id="toc-sec-simulation-power" class="nav-link" data-scroll-target="#sec-simulation-power"><span class="header-section-number">21.4</span> Simulation-based power estimation</a></li>
+  <li><a href="#sec-power-curves" id="toc-sec-power-curves" class="nav-link" data-scroll-target="#sec-power-curves"><span class="header-section-number">21.5</span> Power curves</a></li>
+  <li><a href="#sec-power-targets" id="toc-sec-power-targets" class="nav-link" data-scroll-target="#sec-power-targets"><span class="header-section-number">21.6</span> Typical power targets</a></li>
+  <li><a href="#sec-computing-power" id="toc-sec-computing-power" class="nav-link" data-scroll-target="#sec-computing-power"><span class="header-section-number">21.7</span> Computing power for a two-sample test</a></li>
+  <li><a href="#sec-ch20-review" id="toc-sec-ch20-review" class="nav-link" data-scroll-target="#sec-ch20-review"><span class="header-section-number">21.8</span> Chapter review</a>
   <ul class="collapse">
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">21.5.1</span> Summary</a></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">21.5.2</span> Exercises</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">21.8.1</span> Summary</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">21.8.2</span> Exercises</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -453,45 +488,353 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: OS <code>ch_inference_for_means</code> §7.4 + IMS partial — ~50% coverage. ~50% original.</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Statistical Power</em> will go here.</p>
+<p>In Chapter 19, we saw that a hypothesis test can miss a real effect — a Type II error. The flip side of this coin is <strong>power</strong>: the probability that a test <em>correctly</em> detects a real effect. Power is not just a theoretical concept; it is the foundation of good study design. Before collecting data, researchers need to ask: “Is my study large enough to find the effect I’m looking for?” This chapter defines power, explores the factors that influence it, and shows how simulation can estimate power when formulas are unavailable.</p>
 </div>
 <div class="simkit">
 <p><strong>SimKit tools for this chapter</strong>: <strong>Power Simulation Tool</strong> (Phase 4)</p>
 </div>
-<section id="what-is-power" class="level2" data-number="21.1">
-<h2 data-number="21.1" class="anchored" data-anchor-id="what-is-power"><span class="header-section-number">21.1</span> What is power?</h2>
-<p>Content under development.</p>
+<section id="sec-what-is-power" class="level2" data-number="21.1">
+<h2 data-number="21.1" class="anchored" data-anchor-id="sec-what-is-power"><span class="header-section-number">21.1</span> What is power?</h2>
+<div class="original">
+<p>In Chapter 19, we defined the Type II error rate <span class="math inline">\(\beta\)</span> as the probability of failing to reject <span class="math inline">\(H_0\)</span> when <span class="math inline">\(H_A\)</span> is true. Power is simply the complement of <span class="math inline">\(\beta\)</span>.</p>
+</div>
+<div class="definition">
+<p>The <strong>power</strong> of a hypothesis test is the probability of rejecting the null hypothesis when the alternative hypothesis is true:</p>
+<p><span class="math display">\[\text{Power} = 1 - \beta = P(\text{reject } H_0 \mid H_A \text{ is true})\]</span></p>
+</div>
+<div class="original">
+<p>Power answers the question: “If there is a real effect, how likely is my study to detect it?”</p>
+<p>The four possible outcomes of a hypothesis test, with their probabilities, are:</p>
+<div id="tbl-power-table" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-power-table-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;21.1: Probabilities of each outcome in a hypothesis test.
+</figcaption>
+<div aria-describedby="tbl-power-table-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 40%">
+<col style="width: 29%">
+<col style="width: 29%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: center;"><span class="math inline">\(H_0\)</span> is true</th>
+<th style="text-align: center;"><span class="math inline">\(H_A\)</span> is true</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Reject</strong> <span class="math inline">\(H_0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\alpha\)</span> (Type I error)</td>
+<td style="text-align: center;"><span class="math inline">\(1 - \beta\)</span> (Power)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Fail to reject</strong> <span class="math inline">\(H_0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1 - \alpha\)</span> (Correct)</td>
+<td style="text-align: center;"><span class="math inline">\(\beta\)</span> (Type II error)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>Notice the two columns must each sum to 1:</p>
+<ul>
+<li>When <span class="math inline">\(H_0\)</span> is true: <span class="math inline">\(\alpha + (1 - \alpha) = 1\)</span></li>
+<li>When <span class="math inline">\(H_A\)</span> is true: <span class="math inline">\((1 - \beta) + \beta = 1\)</span></li>
+</ul>
+<div class="important">
+<p><strong>Power = 1 − <span class="math inline">\(\beta\)</span>.</strong> A test with high power (close to 1) is very likely to detect a real effect. A test with low power (close to 0) will often miss real effects, even when they exist.</p>
+</div>
+</div>
 </section>
-<section id="factors-affecting-power" class="level2" data-number="21.2">
-<h2 data-number="21.2" class="anchored" data-anchor-id="factors-affecting-power"><span class="header-section-number">21.2</span> Factors affecting power</h2>
-<p>Content under development.</p>
+<section id="sec-why-power-matters" class="level2" data-number="21.2">
+<h2 data-number="21.2" class="anchored" data-anchor-id="sec-why-power-matters"><span class="header-section-number">21.2</span> Why power matters</h2>
+<div class="original">
+<p>Power matters for both scientific and ethical reasons.</p>
+<section id="designing-studies-that-can-actually-detect-effects" class="level3" data-number="21.2.1">
+<h3 data-number="21.2.1" class="anchored" data-anchor-id="designing-studies-that-can-actually-detect-effects"><span class="header-section-number">21.2.1</span> Designing studies that can actually detect effects</h3>
+<p>Imagine spending a year and $500,000 on a clinical trial, only to discover at the end that the study was too small to detect the treatment effect. The trial produces an inconclusive result — a non-significant p-value — even though the treatment actually works. The money is gone, the patients’ time was wasted, and the scientific question remains unanswered.</p>
+<p>This scenario is unfortunately common. A study with low power is essentially a gamble: you might detect the effect (if you’re lucky with your sample), or you might not (if natural variability obscures the signal). Low-powered studies are wasteful because they frequently produce null results that leave everyone uncertain.</p>
 </section>
-<section id="simulation-based-power-estimation" class="level2" data-number="21.3">
-<h2 data-number="21.3" class="anchored" data-anchor-id="simulation-based-power-estimation"><span class="header-section-number">21.3</span> Simulation-based power estimation</h2>
-<p>Content under development.</p>
+<section id="ethical-considerations" class="level3" data-number="21.2.2">
+<h3 data-number="21.2.2" class="anchored" data-anchor-id="ethical-considerations"><span class="header-section-number">21.2.2</span> Ethical considerations</h3>
+<p>In medical research, every patient enrolled in a clinical trial is exposed to some degree of risk — side effects, time away from proven treatments, or the inconvenience of participation. If a study is underpowered and unlikely to produce a clear answer, then patients are being exposed to risk with little prospect of scientific benefit. Many institutional review boards (IRBs) now require a power analysis before approving research involving human subjects.</p>
 </section>
-<section id="power-curves" class="level2" data-number="21.4">
-<h2 data-number="21.4" class="anchored" data-anchor-id="power-curves"><span class="header-section-number">21.4</span> Power curves</h2>
-<p>Content under development.</p>
+<section id="the-scientific-literature" class="level3" data-number="21.2.3">
+<h3 data-number="21.2.3" class="anchored" data-anchor-id="the-scientific-literature"><span class="header-section-number">21.2.3</span> The scientific literature</h3>
+<p>Low-powered studies distort the scientific literature. When only a small fraction of underpowered studies happen to produce significant results, the published literature overestimates effect sizes (because only the “lucky” studies with unusually large observed effects made it past the significance threshold). This phenomenon is sometimes called the <strong>winner’s curse</strong> — the studies that “win” (reject <span class="math inline">\(H_0\)</span>) in a low-power setting tend to have inflated effect sizes.</p>
+<div class="workedexample">
+<p>A researcher wants to study whether a new fertilizer increases crop yield. Based on previous research, she expects the fertilizer to increase yield by about 8%. She plans to compare treated and untreated fields. If her study has power of 0.50, what does this mean in practical terms?</p>
+<hr>
+<p>Power of 0.50 means that even if the fertilizer truly increases yield by 8%, there is only a 50% chance that her study will detect it — essentially a coin flip. She has a 50% chance of committing a Type II error and concluding there is no evidence the fertilizer works. This is generally considered unacceptable. She should increase her sample size or consider other design improvements before proceeding.</p>
+</div>
 </section>
-<section id="chapter-review" class="level2" data-number="21.5">
-<h2 data-number="21.5" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">21.5</span> Chapter review</h2>
-<section id="summary" class="level3" data-number="21.5.1">
-<h3 data-number="21.5.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">21.5.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+</div>
 </section>
-<section id="exercises" class="level3 exercises" data-number="21.5.2">
-<h3 class="exercises anchored" data-number="21.5.2" data-anchor-id="exercises"><span class="header-section-number">21.5.2</span> Exercises</h3>
+<section id="sec-factors-power" class="level2" data-number="21.3">
+<h2 data-number="21.3" class="anchored" data-anchor-id="sec-factors-power"><span class="header-section-number">21.3</span> Factors affecting power</h2>
+<div class="original">
+<p>The same four factors that affect <span class="math inline">\(\beta\)</span> (Chapter 19) determine power, since power = <span class="math inline">\(1 - \beta\)</span>. Here we frame each factor in terms of power rather than Type II error rate.</p>
+<section id="sample-size-uparrow-n-to-uparrow-power" class="level3" data-number="21.3.1">
+<h3 data-number="21.3.1" class="anchored" data-anchor-id="sample-size-uparrow-n-to-uparrow-power"><span class="header-section-number">21.3.1</span> Sample size: <span class="math inline">\(\uparrow n \to \uparrow\)</span> power</h3>
+<p>This is the most important lever researchers have. Larger samples produce smaller standard errors, which make the sampling distribution narrower. A narrower distribution makes it easier to distinguish the alternative from the null.</p>
+</section>
+</div>
+<div class="important">
+<p><strong>Power.</strong></p>
+<p>The power of the test is the probability of rejecting the null claim when the alternative claim is true.</p>
+<p>How easy it is to detect the effect depends on both how big the effect is (e.g., how good the medical treatment is) as well as the sample size.</p>
+</div>
+<div class="original">
+<div class="workedexample">
+<p>Consider the blood pressure medication example from Chapter 19. A new medication is expected to lower blood pressure by 3 mmHg compared to a standard medication. The standard deviation of blood pressure change is <span class="math inline">\(\sigma = 12\)</span> mmHg, and we use a two-sided test with <span class="math inline">\(\alpha = 0.05\)</span>.</p>
+<p>What is the approximate power with <span class="math inline">\(n = 100\)</span> patients per group? With <span class="math inline">\(n = 500\)</span> per group?</p>
+<hr>
+<p><strong>With <span class="math inline">\(n = 100\)</span> per group:</strong></p>
+<p>The standard error for the difference in means is:</p>
+<p><span class="math display">\[SE = \sqrt{\frac{12^2}{100} + \frac{12^2}{100}} = \sqrt{2.88} \approx 1.70\]</span></p>
+<p>The rejection boundary for a two-sided test at <span class="math inline">\(\alpha = 0.05\)</span> is approximately <span class="math inline">\(\pm 1.96 \times 1.70 = \pm 3.33\)</span> mmHg.</p>
+<p>If the true effect is <span class="math inline">\(-3\)</span> mmHg, then the alternative distribution is centered at <span class="math inline">\(-3\)</span> with standard deviation 1.70. We need to find the probability that a value from this distribution falls below <span class="math inline">\(-3.33\)</span>:</p>
+<p><span class="math display">\[Z = \frac{-3.33 - (-3)}{1.70} = \frac{-0.33}{1.70} = -0.20 \quad \to \quad P(Z &lt; -0.20) \approx 0.42\]</span></p>
+<p>The power is approximately <strong>42%</strong> — far too low.</p>
+<p><strong>With <span class="math inline">\(n = 500\)</span> per group:</strong></p>
+<p><span class="math display">\[SE = \sqrt{\frac{12^2}{500} + \frac{12^2}{500}} = \sqrt{0.576} \approx 0.76\]</span></p>
+<p>The rejection boundary is <span class="math inline">\(\pm 1.96 \times 0.76 = \pm 1.49\)</span> mmHg.</p>
+<p><span class="math display">\[Z = \frac{-1.49 - (-3)}{0.76} = \frac{1.51}{0.76} = 1.99 \quad \to \quad P(Z &lt; 1.99) \approx 0.977\]</span></p>
+<p>The power is approximately <strong>97.7%</strong> — excellent. With 500 patients per group, we would almost certainly detect a 3 mmHg effect.</p>
+</div>
+<section id="effect-size-uparrow-effect-to-uparrow-power" class="level3" data-number="21.3.2">
+<h3 data-number="21.3.2" class="anchored" data-anchor-id="effect-size-uparrow-effect-to-uparrow-power"><span class="header-section-number">21.3.2</span> Effect size: <span class="math inline">\(\uparrow\)</span> effect <span class="math inline">\(\to \uparrow\)</span> power</h3>
+<p>A larger effect is easier to detect. If a drug lowers blood pressure by 10 mmHg instead of 3 mmHg, the signal is much stronger relative to the noise, and even a modest sample size will detect it.</p>
+<div class="guidedpractice">
+<p>Using the same setup as the worked example above (<span class="math inline">\(\sigma = 12\)</span>, <span class="math inline">\(\alpha = 0.05\)</span>, <span class="math inline">\(n = 100\)</span> per group), estimate the power to detect a true difference of <span class="math inline">\(-8\)</span> mmHg instead of <span class="math inline">\(-3\)</span> mmHg.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
+</section>
+<section id="significance-level-uparrow-alpha-to-uparrow-power" class="level3" data-number="21.3.3">
+<h3 data-number="21.3.3" class="anchored" data-anchor-id="significance-level-uparrow-alpha-to-uparrow-power"><span class="header-section-number">21.3.3</span> Significance level: <span class="math inline">\(\uparrow \alpha \to \uparrow\)</span> power</h3>
+<p>A larger <span class="math inline">\(\alpha\)</span> means a wider rejection region. With more “room” to reject <span class="math inline">\(H_0\)</span>, the test is more sensitive — but also more prone to false alarms (Type I errors).</p>
+<div class="guidedpractice">
+<p>Using the blood pressure setup (<span class="math inline">\(\sigma = 12\)</span>, <span class="math inline">\(n = 100\)</span>, true effect <span class="math inline">\(= -3\)</span> mmHg), compare the power at <span class="math inline">\(\alpha = 0.05\)</span> versus <span class="math inline">\(\alpha = 0.10\)</span>.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
+</section>
+<section id="variability-uparrow-sigma-to-downarrow-power" class="level3" data-number="21.3.4">
+<h3 data-number="21.3.4" class="anchored" data-anchor-id="variability-uparrow-sigma-to-downarrow-power"><span class="header-section-number">21.3.4</span> Variability: <span class="math inline">\(\uparrow \sigma \to \downarrow\)</span> power</h3>
+<p>Greater variability in the data means a larger standard error, which spreads out the sampling distribution and makes it harder to distinguish the alternative from the null.</p>
+<div id="tbl-factors-power" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-factors-power-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;21.2: Factors that affect power. All relationships assume the other factors are held constant.
+</figcaption>
+<div aria-describedby="tbl-factors-power-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 31%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Factor</th>
+<th style="text-align: left;">Change</th>
+<th style="text-align: left;">Effect on Power</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Sample size (<span class="math inline">\(n\)</span>)</td>
+<td style="text-align: left;">Increase <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;">Power increases</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Effect size</td>
+<td style="text-align: left;">Larger effect</td>
+<td style="text-align: left;">Power increases</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Significance level (<span class="math inline">\(\alpha\)</span>)</td>
+<td style="text-align: left;">Increase <span class="math inline">\(\alpha\)</span></td>
+<td style="text-align: left;">Power increases</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Population variability (<span class="math inline">\(\sigma\)</span>)</td>
+<td style="text-align: left;">Decrease <span class="math inline">\(\sigma\)</span></td>
+<td style="text-align: left;">Power increases</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<div class="important">
+<p><strong>The researcher’s primary tool for increasing power is sample size.</strong> Effect size is determined by nature (we don’t control how effective a treatment is). Variability can sometimes be reduced through better measurement or study design, but it is largely a feature of the population. The significance level <span class="math inline">\(\alpha\)</span> is usually fixed by convention. That leaves sample size as the main adjustable dial.</p>
+</div>
+</section>
+</div>
+</section>
+<section id="sec-simulation-power" class="level2" data-number="21.4">
+<h2 data-number="21.4" class="anchored" data-anchor-id="sec-simulation-power"><span class="header-section-number">21.4</span> Simulation-based power estimation</h2>
+<div class="original">
+<p>When exact power formulas are available (as for <span class="math inline">\(t\)</span>-tests and <span class="math inline">\(z\)</span>-tests), we can compute power mathematically. But many real-world situations involve test procedures where exact formulas are complicated or unavailable — for example, bootstrap tests, permutation tests, or tests involving non-normal data. In these cases, <strong>simulation</strong> offers a straightforward alternative.</p>
+<section id="the-simulation-recipe" class="level3" data-number="21.4.1">
+<h3 data-number="21.4.1" class="anchored" data-anchor-id="the-simulation-recipe"><span class="header-section-number">21.4.1</span> The simulation recipe</h3>
+<p>The idea is simple: if we know (or hypothesize) the true state of the world under <span class="math inline">\(H_A\)</span>, we can simulate the data-collection process many times, run the hypothesis test each time, and count how often we reject <span class="math inline">\(H_0\)</span>.</p>
+<p>Here is the step-by-step recipe:</p>
+<ol type="1">
+<li><p><strong>Specify the alternative hypothesis</strong>: Choose the effect size you want to detect. For example: “The true mean difference is 5 points.”</p></li>
+<li><p><strong>Specify the data-generating process</strong>: Define the population(s) from which data will be drawn. For example: “Each observation comes from a normal distribution with mean 75 and standard deviation 15.”</p></li>
+<li><p><strong>Choose the sample size</strong> and <strong>significance level</strong>.</p></li>
+<li><p><strong>Simulate one experiment</strong>: Draw a random sample of size <span class="math inline">\(n\)</span> from the specified population, compute the test statistic, and determine whether you reject <span class="math inline">\(H_0\)</span>.</p></li>
+<li><p><strong>Repeat many times</strong>: Run step 4 a total of <span class="math inline">\(B\)</span> times (e.g., <span class="math inline">\(B = 1{,}000\)</span> or <span class="math inline">\(B = 10{,}000\)</span>).</p></li>
+<li><p><strong>Estimate power</strong>: Count the proportion of simulations that rejected <span class="math inline">\(H_0\)</span>. This proportion is the estimated power.</p></li>
+</ol>
+<p><span class="math display">\[\widehat{\text{Power}} = \frac{\text{Number of simulations that reject } H_0}{B}\]</span></p>
+<div class="workedexample">
+<p>A biologist plans to test whether a new habitat restoration technique increases the average number of bird species observed at a site. She expects the technique to increase the count from a baseline of 12 species to about 15 species, with a standard deviation of 6 species. She will survey <span class="math inline">\(n = 25\)</span> sites using a one-sample <span class="math inline">\(t\)</span>-test at <span class="math inline">\(\alpha = 0.05\)</span>.</p>
+<p>Describe how she could use simulation to estimate the power of her study.</p>
+<hr>
+<ol type="1">
+<li><strong>Alternative</strong>: true mean <span class="math inline">\(= 15\)</span>, null value <span class="math inline">\(= 12\)</span>.</li>
+<li><strong>Data-generating process</strong>: draw 25 observations from a normal distribution with mean 15 and standard deviation 6.</li>
+<li><strong>Sample size</strong> <span class="math inline">\(n = 25\)</span>, <strong>significance level</strong> <span class="math inline">\(\alpha = 0.05\)</span>.</li>
+<li><strong>One simulated experiment</strong>: generate 25 random values from <span class="math inline">\(N(15, 6)\)</span>, compute <span class="math inline">\(\bar{x}\)</span> and <span class="math inline">\(s\)</span>, calculate <span class="math inline">\(t = (\bar{x} - 12) / (s / \sqrt{25})\)</span>, find the p-value, and check if <span class="math inline">\(p &lt; 0.05\)</span>.</li>
+<li><strong>Repeat</strong> 10,000 times.</li>
+<li><strong>Estimate power</strong>: suppose 8,247 of the 10,000 simulations rejected <span class="math inline">\(H_0\)</span>. Then <span class="math inline">\(\widehat{\text{Power}} = 8{,}247 / 10{,}000 = 0.825\)</span>.</li>
+</ol>
+<p>She would estimate the power at about 82.5%, which exceeds the conventional 80% target.</p>
+</div>
+<p>The beauty of simulation-based power analysis is its flexibility. It works for any test procedure — not just <span class="math inline">\(t\)</span>-tests — and can accommodate complex scenarios like non-normal data, unequal group sizes, missing data, or multi-stage designs.</p>
+</section>
+</div>
+<div class="original">
+<div class="simkit">
+<p><strong>SimKit: Power Simulation Tool.</strong> The Power Simulation Tool implements exactly this recipe. Set the true effect size, sample size, variability, and significance level. Click “Run Simulation” to generate 1,000 simulated experiments. The tool displays the proportion that reject <span class="math inline">\(H_0\)</span> (the estimated power) and shows a histogram of simulated test statistics with the rejection region shaded.</p>
+</div>
+</div>
+</section>
+<section id="sec-power-curves" class="level2" data-number="21.5">
+<h2 data-number="21.5" class="anchored" data-anchor-id="sec-power-curves"><span class="header-section-number">21.5</span> Power curves</h2>
+<div class="original">
+<p>A single power calculation tells us the power for one specific combination of sample size, effect size, <span class="math inline">\(\alpha\)</span>, and <span class="math inline">\(\sigma\)</span>. But researchers often want to see how power changes across a range of values. <strong>Power curves</strong> show this relationship graphically.</p>
+<section id="power-vs.-sample-size" class="level3" data-number="21.5.1">
+<h3 data-number="21.5.1" class="anchored" data-anchor-id="power-vs.-sample-size"><span class="header-section-number">21.5.1</span> Power vs.&nbsp;sample size</h3>
+<p>The most common power curve plots power on the y-axis against sample size on the x-axis, for a fixed effect size, <span class="math inline">\(\alpha\)</span>, and <span class="math inline">\(\sigma\)</span>. This curve answers: “How many observations do I need to achieve a desired level of power?”</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="A power curve showing power (y-axis) versus sample size per group (x-axis) for the blood pressure example with true effect = 3 mmHg, \sigma = 12, \alpha = 0.05. The dashed horizontal line marks 80% power; the curve crosses it at approximately n = 250 per group."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A smooth curve rising from left to right. The x-axis shows sample size per group from 20 to 500, and the y-axis shows power from 0 to 1. The curve starts near 0.10 at n equals 20, rises steeply through the middle range, and levels off approaching 1.0 at large sample sizes. A dashed horizontal line at power equals 0.80 intersects the curve at approximately n equals 250."></a></p>
+<figcaption>A power curve showing power (y-axis) versus sample size per group (x-axis) for the blood pressure example with true effect = 3 mmHg, <span class="math inline">\(\sigma = 12\)</span>, <span class="math inline">\(\alpha = 0.05\)</span>. The dashed horizontal line marks 80% power; the curve crosses it at approximately <span class="math inline">\(n = 250\)</span> per group.</figcaption>
+</figure>
+</div>
+<p>Key features of power curves:</p>
+<ul>
+<li><strong>Power starts low</strong> for small sample sizes and <strong>increases toward 1</strong> as <span class="math inline">\(n\)</span> grows.</li>
+<li>The curve has a characteristic <strong>S-shape</strong>: power increases slowly at first, then more rapidly in the middle range, then levels off as it approaches 1.</li>
+<li>The curve <strong>never reaches exactly 1</strong> (there is always some chance of a Type II error, though it becomes negligibly small for very large <span class="math inline">\(n\)</span>).</li>
+<li>The steepest part of the curve — where adding more observations gives the biggest payoff in power — is typically in the middle range.</li>
+</ul>
+</section>
+<section id="power-vs.-effect-size" class="level3" data-number="21.5.2">
+<h3 data-number="21.5.2" class="anchored" data-anchor-id="power-vs.-effect-size"><span class="header-section-number">21.5.2</span> Power vs.&nbsp;effect size</h3>
+<p>We can also plot power against effect size, holding <span class="math inline">\(n\)</span>, <span class="math inline">\(\alpha\)</span>, and <span class="math inline">\(\sigma\)</span> fixed. This curve shows how the detectable effect depends on its magnitude.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="A power curve showing power (y-axis) versus true effect size (x-axis) for the blood pressure example with n = 200 per group, \sigma = 12, \alpha = 0.05. Larger effects are easier to detect."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A smooth curve rising from left to right. The x-axis shows true effect size in mmHg from 0 to 10, and the y-axis shows power from 0 to 1. At an effect size of 0, power equals alpha (0.05). The curve rises steeply and approaches 1.0 for effect sizes above about 5 mmHg."></a></p>
+<figcaption>A power curve showing power (y-axis) versus true effect size (x-axis) for the blood pressure example with <span class="math inline">\(n = 200\)</span> per group, <span class="math inline">\(\sigma = 12\)</span>, <span class="math inline">\(\alpha = 0.05\)</span>. Larger effects are easier to detect.</figcaption>
+</figure>
+</div>
+<p>At an effect size of 0, the “power” is just <span class="math inline">\(\alpha\)</span> — this is the Type I error rate, the probability of rejecting <span class="math inline">\(H_0\)</span> when there is no effect. As the effect size grows, power increases.</p>
+<div class="guidedpractice">
+<p>Look at the power-vs-sample-size curve description above. If a researcher can only afford to recruit 100 patients per group, approximately what power would she have? Is this adequate?<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+</div>
+</section>
+</div>
+</section>
+<section id="sec-power-targets" class="level2" data-number="21.6">
+<h2 data-number="21.6" class="anchored" data-anchor-id="sec-power-targets"><span class="header-section-number">21.6</span> Typical power targets</h2>
+<div class="original">
+<p>How much power is “enough”? There is no universal answer, but strong conventions have emerged in statistical practice.</p>
+<div class="important">
+<p><strong>The 80% power convention.</strong> The most widely used target is <strong>power = 0.80</strong> (80%). This means the study has an 80% chance of detecting the specified effect. Equivalently, <span class="math inline">\(\beta = 0.20\)</span> — a 20% chance of a Type II error.</p>
+</div>
+<p>Some fields or funding agencies require higher power:</p>
+<ul>
+<li><strong>80% power</strong> is the conventional minimum for most research.</li>
+<li><strong>90% power</strong> is sometimes required for clinical trials, especially when the consequences of a Type II error are severe.</li>
+<li><strong>95% power</strong> is occasionally used in high-stakes contexts but requires substantially larger sample sizes.</li>
+</ul>
+<div class="workedexample">
+<p>Why is 80% a reasonable target? Why not 95% or 99%?</p>
+<hr>
+<p>The choice of 80% reflects a practical tradeoff. Increasing power beyond 80% requires increasingly large sample sizes, and the gains become smaller. Going from 80% to 90% power might require 30-50% more observations. Going from 90% to 95% might require another 30% or more. At some point, the cost and logistical difficulty of recruiting additional participants outweigh the marginal reduction in Type II error risk.</p>
+<p>The 80% target also reflects the observation that in most settings, a Type II error (missing a real effect) is considered less serious than a Type I error (claiming a false effect), so we are comfortable with <span class="math inline">\(\beta = 0.20\)</span> even when <span class="math inline">\(\alpha = 0.05\)</span>. If the consequences of missing an effect are severe — for example, in a drug safety trial — a higher power target is appropriate.</p>
+</div>
+<div class="caution">
+<p><strong>Power analysis must be done before data collection.</strong> A power analysis conducted <em>after</em> data have been collected and analyzed is called <strong>post hoc power analysis</strong> (or “observed power”), and it is widely regarded as misleading. Post hoc power is mathematically determined by the p-value and adds no new information. The time to think about power is during the study design phase.</p>
+</div>
+</div>
+</section>
+<section id="sec-computing-power" class="level2" data-number="21.7">
+<h2 data-number="21.7" class="anchored" data-anchor-id="sec-computing-power"><span class="header-section-number">21.7</span> Computing power for a two-sample test</h2>
+<div class="original">
+<p>While a full derivation of power formulas is beyond the scope of this course, it is useful to see the mechanics of a power calculation for the common case of comparing two group means. This section walks through the logic step by step using the blood pressure medication example.</p>
+<section id="setting-up-the-null-and-alternative-distributions" class="level3" data-number="21.7.1">
+<h3 data-number="21.7.1" class="anchored" data-anchor-id="setting-up-the-null-and-alternative-distributions"><span class="header-section-number">21.7.1</span> Setting up the null and alternative distributions</h3>
+<p>Suppose a pharmaceutical company has developed a new drug to lower blood pressure. They plan a randomized experiment comparing the new drug to a standard medication. The hypotheses are:</p>
+<ul>
+<li><span class="math inline">\(H_0\)</span>: <span class="math inline">\(\mu_{\text{treatment}} - \mu_{\text{control}} = 0\)</span> (no difference)</li>
+<li><span class="math inline">\(H_A\)</span>: <span class="math inline">\(\mu_{\text{treatment}} - \mu_{\text{control}} \neq 0\)</span> (there is a difference)</li>
+</ul>
+<p>From pilot studies, the standard deviation of blood pressure measurements within each group is about <span class="math inline">\(\sigma = 12\)</span> mmHg. The test will use <span class="math inline">\(\alpha = 0.05\)</span>.</p>
+<p><strong>Step 1: Determine the null distribution.</strong> Under <span class="math inline">\(H_0\)</span>, the difference <span class="math inline">\(\bar{x}_{\text{treatment}} - \bar{x}_{\text{control}}\)</span> has mean 0 and standard error:</p>
+<p><span class="math display">\[SE = \sqrt{\frac{\sigma^2}{n} + \frac{\sigma^2}{n}} = \sigma\sqrt{\frac{2}{n}}\]</span></p>
+<p>With <span class="math inline">\(n = 100\)</span> per group: <span class="math inline">\(SE = 12\sqrt{2/100} = 12 \times 0.1414 = 1.70\)</span>.</p>
+<p>So under <span class="math inline">\(H_0\)</span>, the test statistic approximately follows a normal distribution centered at 0 with standard deviation 1.70.</p>
+<p><strong>Step 2: Find the rejection regions.</strong> At <span class="math inline">\(\alpha = 0.05\)</span> (two-sided), we reject <span class="math inline">\(H_0\)</span> when the observed difference falls more than <span class="math inline">\(1.96 \times SE = 1.96 \times 1.70 = 3.33\)</span> units from zero. That is, we reject when the observed difference is below <span class="math inline">\(-3.33\)</span> or above <span class="math inline">\(+3.33\)</span>.</p>
+<p><strong>Step 3: Specify the alternative.</strong> Suppose the new drug truly lowers blood pressure by 3 mmHg more than the standard medication, so the true difference is <span class="math inline">\(\mu_{\text{treatment}} - \mu_{\text{control}} = -3\)</span>.</p>
+<p>Under this alternative, the observed difference follows a normal distribution centered at <span class="math inline">\(-3\)</span> with standard deviation 1.70 (the standard error doesn’t change — it depends on <span class="math inline">\(\sigma\)</span> and <span class="math inline">\(n\)</span>, not the true mean).</p>
+<p><strong>Step 4: Compute the power.</strong> Power is the probability that the observed difference falls in the rejection region when the alternative is true. The rejection boundary closest to the true effect of <span class="math inline">\(-3\)</span> is at <span class="math inline">\(-3.33\)</span>. So we need:</p>
+<p><span class="math display">\[P(\bar{x}_{\text{treatment}} - \bar{x}_{\text{control}} &lt; -3.33 \mid \text{true difference} = -3)\]</span></p>
+<p>Standardizing:</p>
+<p><span class="math display">\[Z = \frac{-3.33 - (-3)}{1.70} = \frac{-0.33}{1.70} = -0.20\]</span></p>
+<p><span class="math display">\[P(Z &lt; -0.20) \approx 0.42\]</span></p>
+<p>The power is approximately <strong>42%</strong>. This is quite low — the study has less than a coin-flip chance of detecting the 3 mmHg effect.</p>
+</section>
+</div>
+<div class="original">
+<div class="guidedpractice">
+<p>Using the same setup (<span class="math inline">\(\sigma = 12\)</span>, <span class="math inline">\(\alpha = 0.05\)</span>, true effect <span class="math inline">\(= -3\)</span> mmHg), compute the power when <span class="math inline">\(n = 250\)</span> per group.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+</div>
+</div>
+</section>
+<section id="sec-ch20-review" class="level2" data-number="21.8">
+<h2 data-number="21.8" class="anchored" data-anchor-id="sec-ch20-review"><span class="header-section-number">21.8</span> Chapter review</h2>
+<section id="summary" class="level3 original" data-number="21.8.1">
+<h3 data-number="21.8.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">21.8.1</span> Summary</h3>
+<p><strong>Power</strong> is the probability of correctly rejecting a false null hypothesis: Power <span class="math inline">\(= 1 - \beta\)</span>. A well-designed study should have power of at least 0.80 (80%), meaning it has an 80% chance of detecting the effect of interest.</p>
+<p>Power depends on four factors: sample size (more data gives more power), effect size (larger effects are easier to detect), significance level (higher <span class="math inline">\(\alpha\)</span> gives more power but more false alarms), and population variability (less variability gives more power). Of these, sample size is the factor most under the researcher’s control.</p>
+<p>When exact power formulas are unavailable, simulation provides a flexible alternative: generate many datasets under the assumed alternative, run the test on each, and count the proportion that reject <span class="math inline">\(H_0\)</span>. Power curves visualize how power changes with sample size or effect size, helping researchers identify the “sweet spot” where power is adequate without wasting resources.</p>
+<p>Power analysis should always be done <em>before</em> data collection. Post hoc power analysis — computing power after the study is over — is misleading and widely discouraged.</p>
+</section>
+<section id="exercises" class="level3 exercises" data-number="21.8.2">
+<h3 class="exercises anchored" data-number="21.8.2" data-anchor-id="exercises"><span class="header-section-number">21.8.2</span> Exercises</h3>
 <div class="underconstruction">
 <p>Exercises for this chapter are under development.</p>
 </div>
 
 
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>With <span class="math inline">\(SE = 1.70\)</span> and rejection boundary at <span class="math inline">\(-3.33\)</span>, the alternative is centered at <span class="math inline">\(-8\)</span>. We compute <span class="math inline">\(Z = (-3.33 - (-8)) / 1.70 = 4.67 / 1.70 = 2.75\)</span>, giving <span class="math inline">\(P(Z &lt; 2.75) \approx 0.997\)</span>. The power is about 99.7%. An 8 mmHg effect is easy to detect even with only 100 patients per group.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>At <span class="math inline">\(\alpha = 0.05\)</span>: rejection boundary <span class="math inline">\(= \pm 1.96 \times 1.70 = \pm 3.33\)</span>. <span class="math inline">\(Z = (-3.33 - (-3))/1.70 = -0.20\)</span>, power <span class="math inline">\(\approx 0.42\)</span>. At <span class="math inline">\(\alpha = 0.10\)</span>: rejection boundary <span class="math inline">\(= \pm 1.645 \times 1.70 = \pm 2.80\)</span>. <span class="math inline">\(Z = (-2.80 - (-3))/1.70 = 0.12\)</span>, power <span class="math inline">\(\approx 0.55\)</span>. Power increases from 42% to 55% when we relax <span class="math inline">\(\alpha\)</span> from 0.05 to 0.10, but at the cost of a higher false alarm rate.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>From the curve, at <span class="math inline">\(n = 100\)</span> per group the power is approximately 42%. This is far below the conventional minimum of 80%. The researcher should either find a way to increase the sample size, or reconsider whether the study is worth conducting at this scale.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>With <span class="math inline">\(n = 250\)</span>: <span class="math inline">\(SE = 12\sqrt{2/250} = 12 \times 0.0894 = 1.073\)</span>. Rejection boundary: <span class="math inline">\(1.96 \times 1.073 = 2.10\)</span>. Under <span class="math inline">\(H_A\)</span> centered at <span class="math inline">\(-3\)</span>: <span class="math inline">\(Z = (-2.10 - (-3)) / 1.073 = 0.90/1.073 = 0.84\)</span>. <span class="math inline">\(P(Z &lt; 0.84) \approx 0.80\)</span>. The power is approximately 80% — right at the conventional target. So about 250 patients per group would be needed to achieve 80% power for this effect size.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
@@ -938,6 +1281,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

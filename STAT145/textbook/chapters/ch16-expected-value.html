@@ -40,7 +40,10 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +71,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,12 +451,20 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#expected-value-of-a-random-variable" id="toc-expected-value-of-a-random-variable" class="nav-link active" data-scroll-target="#expected-value-of-a-random-variable"><span class="header-section-number">17.1</span> Expected value of a random variable</a></li>
-  <li><a href="#variance-of-a-random-variable" id="toc-variance-of-a-random-variable" class="nav-link" data-scroll-target="#variance-of-a-random-variable"><span class="header-section-number">17.2</span> Variance of a random variable</a></li>
-  <li><a href="#properties-of-expected-value" id="toc-properties-of-expected-value" class="nav-link" data-scroll-target="#properties-of-expected-value"><span class="header-section-number">17.3</span> Properties of expected value</a></li>
-  <li><a href="#properties-of-variance" id="toc-properties-of-variance" class="nav-link" data-scroll-target="#properties-of-variance"><span class="header-section-number">17.4</span> Properties of variance</a></li>
-  <li><a href="#linear-combinations-of-random-variables" id="toc-linear-combinations-of-random-variables" class="nav-link" data-scroll-target="#linear-combinations-of-random-variables"><span class="header-section-number">17.5</span> Linear combinations of random variables</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">17.6</span> Chapter review</a>
+  <li><a href="#sec-expected-value" id="toc-sec-expected-value" class="nav-link active" data-scroll-target="#sec-expected-value"><span class="header-section-number">17.1</span> Expected value of a random variable</a>
+  <ul class="collapse">
+  <li><a href="#the-expected-value-as-a-center-of-gravity" id="toc-the-expected-value-as-a-center-of-gravity" class="nav-link" data-scroll-target="#the-expected-value-as-a-center-of-gravity"><span class="header-section-number">17.1.1</span> The expected value as a center of gravity</a></li>
+  </ul></li>
+  <li><a href="#sec-variance-rv" id="toc-sec-variance-rv" class="nav-link" data-scroll-target="#sec-variance-rv"><span class="header-section-number">17.2</span> Variance of a random variable</a></li>
+  <li><a href="#sec-ev-properties" id="toc-sec-ev-properties" class="nav-link" data-scroll-target="#sec-ev-properties"><span class="header-section-number">17.3</span> Properties of expected value</a></li>
+  <li><a href="#sec-var-properties" id="toc-sec-var-properties" class="nav-link" data-scroll-target="#sec-var-properties"><span class="header-section-number">17.4</span> Properties of variance</a></li>
+  <li><a href="#sec-linear-combinations" id="toc-sec-linear-combinations" class="nav-link" data-scroll-target="#sec-linear-combinations"><span class="header-section-number">17.5</span> Linear combinations of random variables</a>
+  <ul class="collapse">
+  <li><a href="#expected-value-of-a-linear-combination" id="toc-expected-value-of-a-linear-combination" class="nav-link" data-scroll-target="#expected-value-of-a-linear-combination"><span class="header-section-number">17.5.1</span> Expected value of a linear combination</a></li>
+  <li><a href="#variance-of-a-linear-combination" id="toc-variance-of-a-linear-combination" class="nav-link" data-scroll-target="#variance-of-a-linear-combination"><span class="header-section-number">17.5.2</span> Variance of a linear combination</a></li>
+  <li><a href="#why-variances-add-even-when-we-subtract" id="toc-why-variances-add-even-when-we-subtract" class="nav-link" data-scroll-target="#why-variances-add-even-when-we-subtract"><span class="header-section-number">17.5.3</span> Why variances add even when we subtract</a></li>
+  </ul></li>
+  <li><a href="#sec-ch16-review" id="toc-sec-ch16-review" class="nav-link" data-scroll-target="#sec-ch16-review"><span class="header-section-number">17.6</span> Chapter review</a>
   <ul class="collapse">
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">17.6.1</span> Summary</a></li>
   <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">17.6.2</span> Exercises</a></li>
@@ -454,46 +494,280 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: OS <code>ch_probability</code> (partial) — ~60% coverage. ~40% original writing.</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Expected Value and Variance</em> will go here.</p>
+<p>How much revenue should a bookstore expect per student? How much variability should a stock investor anticipate in their portfolio? These questions require us to summarize a random variable’s distribution with just two numbers: its <strong>expected value</strong> (center) and <strong>variance</strong> (spread). In this chapter, we define these quantities, develop useful computational properties, and extend them to linear combinations of random variables. These tools will be essential when we study the binomial and normal distributions in the chapters that follow.</p>
 </div>
-<section id="expected-value-of-a-random-variable" class="level2" data-number="17.1">
-<h2 data-number="17.1" class="anchored" data-anchor-id="expected-value-of-a-random-variable"><span class="header-section-number">17.1</span> Expected value of a random variable</h2>
-<p>Content under development.</p>
+<section id="sec-expected-value" class="level2" data-number="17.1">
+<h2 data-number="17.1" class="anchored" data-anchor-id="sec-expected-value"><span class="header-section-number">17.1</span> Expected value of a random variable</h2>
+<p>We introduced random variables in Chapter 15. Now we develop the tools to summarize them numerically, starting with the expected value — the long-run average of a random variable.</p>
+<div class="workedexample">
+<p>Two books are assigned for a statistics class: a textbook ($137) and a study guide ($33). From past experience, the bookstore knows that 20% of enrolled students buy neither book, 55% buy the textbook only, and 25% buy both books. If there are 100 students enrolled, how many books should the bookstore expect to sell?</p>
+<p>About 20 students buy 0 books, 55 buy 1 book (55 books total), and 25 buy 2 books (50 books total). The bookstore should expect to sell about <span class="math inline">\(0 + 55 + 50 = 105\)</span> books.</p>
+</div>
+<div class="workedexample">
+<p>What is the average revenue per student?</p>
+<p>The expected total revenue is <span class="math inline">\(\$0 \times 20 + \$137 \times 55 + \$170 \times 25 = \$11{,}785\)</span>, and there are 100 students. The expected revenue per student is <span class="math inline">\(\$11{,}785 / 100 = \$117.85\)</span>.</p>
+</div>
+<p>Notice that the “average revenue per student” was computed by multiplying each outcome by its probability and summing:</p>
+<p><span class="math display">\[0 \times 0.20 + 137 \times 0.55 + 170 \times 0.25 = 117.85\]</span></p>
+<p>This is the <strong>expected value</strong> of the random variable <span class="math inline">\(X\)</span>.</p>
+<div class="definition">
+<p><strong>Expected value of a discrete random variable.</strong> If <span class="math inline">\(X\)</span> takes outcomes <span class="math inline">\(x_1, x_2, \ldots, x_k\)</span> with probabilities <span class="math inline">\(P(X = x_1), P(X = x_2), \ldots, P(X = x_k)\)</span>, the <strong>expected value</strong> of <span class="math inline">\(X\)</span> is:</p>
+<p><span class="math display">\[E(X) = x_1 \cdot P(X = x_1) + x_2 \cdot P(X = x_2) + \cdots + x_k \cdot P(X = x_k) = \sum_{i=1}^{k} x_i \, P(X = x_i)\]</span></p>
+<p>The Greek letter <span class="math inline">\(\mu\)</span> may be used in place of <span class="math inline">\(E(X)\)</span>.</p>
+</div>
+<p>The expected value represents the <strong>long-run average</strong> of the random variable. If we were to observe the random process many, many times, the average of all observed values would converge to <span class="math inline">\(E(X)\)</span>.</p>
+<section id="the-expected-value-as-a-center-of-gravity" class="level3 original" data-number="17.1.1">
+<h3 data-number="17.1.1" class="anchored" data-anchor-id="the-expected-value-as-a-center-of-gravity"><span class="header-section-number">17.1.1</span> The expected value as a center of gravity</h3>
+<p>In physics, the expected value corresponds to the <strong>center of gravity</strong> (or balance point) of a distribution. Imagine cutting out the shape of a probability distribution from a piece of cardboard. The expected value is the point where you could balance the cutout on the tip of your finger. This is why we sometimes call <span class="math inline">\(E(X)\)</span> the “mean” — it is exactly analogous to the sample mean <span class="math inline">\(\bar{x}\)</span>, but for a probability distribution rather than a data set.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="A weight system representing the bookstore distribution balanced at the mean of $117.85."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A bar balanced on a fulcrum at the position 117.85, with weights at positions 0, 137, and 170 proportional to the probabilities 0.20, 0.55, and 0.25."></a></p>
+<figcaption>A weight system representing the bookstore distribution balanced at the mean of $117.85.</figcaption>
+</figure>
+</div>
 </section>
-<section id="variance-of-a-random-variable" class="level2" data-number="17.2">
-<h2 data-number="17.2" class="anchored" data-anchor-id="variance-of-a-random-variable"><span class="header-section-number">17.2</span> Variance of a random variable</h2>
-<p>Content under development.</p>
+<div class="guidedpractice">
+<p>A campus shuttle arrives every 10 minutes. The number of students boarding follows this distribution:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"><span class="math inline">\(x\)</span></th>
+<th style="text-align: center;">0</th>
+<th style="text-align: center;">1</th>
+<th style="text-align: center;">2</th>
+<th style="text-align: center;">3</th>
+<th style="text-align: center;">4</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(P(X = x)\)</span></td>
+<td style="text-align: center;">0.10</td>
+<td style="text-align: center;">0.25</td>
+<td style="text-align: center;">0.35</td>
+<td style="text-align: center;">0.20</td>
+<td style="text-align: center;">0.10</td>
+</tr>
+</tbody>
+</table>
+<p>What is the expected number of students who board?<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
+<div class="caution">
+<p>The expected value does not have to be a value that the random variable can actually take. In the shuttle example, <span class="math inline">\(E(X) = 1.95\)</span>, but you can never have 1.95 students board. The expected value is a long-run average, not a prediction of any single outcome.</p>
+</div>
 </section>
-<section id="properties-of-expected-value" class="level2" data-number="17.3">
-<h2 data-number="17.3" class="anchored" data-anchor-id="properties-of-expected-value"><span class="header-section-number">17.3</span> Properties of expected value</h2>
-<p>Content under development.</p>
+<section id="sec-variance-rv" class="level2" data-number="17.2">
+<h2 data-number="17.2" class="anchored" data-anchor-id="sec-variance-rv"><span class="header-section-number">17.2</span> Variance of a random variable</h2>
+<p>The expected value tells us where the center of a distribution lies, but it says nothing about the <em>spread</em>. The bookstore might want to know not just the average revenue per student, but how much that revenue varies from student to student.</p>
+<div class="definition">
+<p><strong>Variance of a discrete random variable.</strong> If <span class="math inline">\(X\)</span> takes outcomes <span class="math inline">\(x_1, \ldots, x_k\)</span> with probabilities <span class="math inline">\(P(X = x_1), \ldots, P(X = x_k)\)</span> and expected value <span class="math inline">\(\mu = E(X)\)</span>, then the <strong>variance</strong> of <span class="math inline">\(X\)</span> is:</p>
+<p><span class="math display">\[\text{Var}(X) = \sigma^2 = \sum_{i=1}^{k} (x_i - \mu)^2 \, P(X = x_i)\]</span></p>
+<p>The <strong>standard deviation</strong> is <span class="math inline">\(\sigma = \sqrt{\text{Var}(X)}\)</span>.</p>
+</div>
+<p>The variance is the average squared deviation from the mean, weighted by the probabilities. The standard deviation has the same units as <span class="math inline">\(X\)</span>, which makes it more interpretable.</p>
+<div class="workedexample">
+<p>Compute the variance and standard deviation of the bookstore revenue per student.</p>
+<p>We organize the calculation in a table with <span class="math inline">\(\mu = 117.85\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: center;"><span class="math inline">\(x_1 = 0\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(x_2 = 137\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(x_3 = 170\)</span></th>
+<th style="text-align: center;">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(P(X = x_i)\)</span></td>
+<td style="text-align: center;">0.20</td>
+<td style="text-align: center;">0.55</td>
+<td style="text-align: center;">0.25</td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(x_i - \mu\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(-117.85\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(19.15\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(52.15\)</span></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\((x_i - \mu)^2\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(13{,}888.6\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(366.7\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(2{,}719.6\)</span></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\((x_i - \mu)^2 \cdot P(X = x_i)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(2{,}777.7\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(201.7\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(679.9\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(3{,}659.3\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The variance is <span class="math inline">\(\sigma^2 = 3{,}659.3\)</span> and the standard deviation is <span class="math inline">\(\sigma = \sqrt{3{,}659.3} = \$60.49\)</span>.</p>
+</div>
+<div class="guidedpractice">
+<p>The bookstore also sells a chemistry textbook ($159) and supplement ($41). From past experience, 15% of chemistry students buy neither, 25% buy the textbook only, and 60% buy both. Let <span class="math inline">\(Y\)</span> be the revenue from a single chemistry student. (a) Write out the probability distribution of <span class="math inline">\(Y\)</span>. (b) Compute <span class="math inline">\(E(Y)\)</span>. (c) Compute <span class="math inline">\(\text{SD}(Y)\)</span>.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
 </section>
-<section id="properties-of-variance" class="level2" data-number="17.4">
-<h2 data-number="17.4" class="anchored" data-anchor-id="properties-of-variance"><span class="header-section-number">17.4</span> Properties of variance</h2>
-<p>Content under development.</p>
+<section id="sec-ev-properties" class="level2" data-number="17.3">
+<h2 data-number="17.3" class="anchored" data-anchor-id="sec-ev-properties"><span class="header-section-number">17.3</span> Properties of expected value</h2>
+<div class="original">
+<p>The expected value has several important algebraic properties that make it easy to work with. These properties follow from the definition but are worth stating explicitly because we will use them frequently.</p>
+<div class="important">
+<p><strong>Properties of expected value.</strong> For a random variable <span class="math inline">\(X\)</span> and constants <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span>:</p>
+<ol type="1">
+<li><strong>Adding a constant shifts the mean</strong>: <span class="math inline">\(E(X + b) = E(X) + b\)</span></li>
+<li><strong>Multiplying by a constant scales the mean</strong>: <span class="math inline">\(E(aX) = a \cdot E(X)\)</span></li>
+<li><strong>General linear transformation</strong>: <span class="math inline">\(E(aX + b) = a \cdot E(X) + b\)</span></li>
+</ol>
+</div>
+<p><strong>Why these make sense:</strong> If every student’s textbook cost increases by $10 (adding a constant <span class="math inline">\(b = 10\)</span>), then the average cost also increases by $10. If the bookstore marks up all prices by 20% (multiplying by <span class="math inline">\(a = 1.20\)</span>), then the average revenue also increases by 20%.</p>
+<div class="workedexample">
+<p>Suppose the bookstore offers a 10% discount to students who buy both books. The discounted price is <span class="math inline">\(0.90 \times X\)</span>, where <span class="math inline">\(X\)</span> is the original price. What is the expected revenue per student under the discount?</p>
+<p>Using the property <span class="math inline">\(E(aX) = aE(X)\)</span>:</p>
+<p><span class="math display">\[E(0.90X) = 0.90 \times E(X) = 0.90 \times 117.85 = \$106.07\]</span></p>
+<p>The expected revenue per student drops from $117.85 to $106.07.</p>
+</div>
+<div class="guidedpractice">
+<p>The bookstore charges a flat $5 processing fee in addition to book costs. If <span class="math inline">\(X\)</span> is the cost of books and the total charge is <span class="math inline">\(Y = X + 5\)</span>, what is <span class="math inline">\(E(Y)\)</span>?<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+</div>
+</div>
 </section>
-<section id="linear-combinations-of-random-variables" class="level2" data-number="17.5">
-<h2 data-number="17.5" class="anchored" data-anchor-id="linear-combinations-of-random-variables"><span class="header-section-number">17.5</span> Linear combinations of random variables</h2>
-<p>Content under development.</p>
+<section id="sec-var-properties" class="level2" data-number="17.4">
+<h2 data-number="17.4" class="anchored" data-anchor-id="sec-var-properties"><span class="header-section-number">17.4</span> Properties of variance</h2>
+<div class="original">
+<p>Variance has different algebraic properties than expected value. The most important distinction: adding a constant does not change the variance.</p>
+<div class="important">
+<p><strong>Properties of variance.</strong> For a random variable <span class="math inline">\(X\)</span> and constants <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span>:</p>
+<ol type="1">
+<li><strong>Adding a constant does not change variance</strong>: <span class="math inline">\(\text{Var}(X + b) = \text{Var}(X)\)</span></li>
+<li><strong>Multiplying by a constant scales variance by the square</strong>: <span class="math inline">\(\text{Var}(aX) = a^2 \cdot \text{Var}(X)\)</span></li>
+<li><strong>General linear transformation</strong>: <span class="math inline">\(\text{Var}(aX + b) = a^2 \cdot \text{Var}(X)\)</span></li>
+</ol>
+<p>For standard deviations:</p>
+<p><span class="math display">\[\text{SD}(aX + b) = |a| \cdot \text{SD}(X)\]</span></p>
+</div>
+<p><strong>Why adding a constant does not change variance:</strong> If every student pays $5 more, the <em>spread</em> of payments does not change — everyone’s payment shifts by the same amount. The center moves, but the variability stays the same.</p>
+<p><strong>Why multiplying scales by the square:</strong> If every price is doubled (<span class="math inline">\(a = 2\)</span>), then deviations from the mean are also doubled, so <em>squared</em> deviations are multiplied by <span class="math inline">\(2^2 = 4\)</span>.</p>
+<div class="workedexample">
+<p>For the bookstore revenue with <span class="math inline">\(\text{Var}(X) = 3{,}659.3\)</span> and <span class="math inline">\(\sigma_X = \$60.49\)</span>:</p>
+<ul>
+<li>If a $5 fee is added: <span class="math inline">\(\text{Var}(X + 5) = \text{Var}(X) = 3{,}659.3\)</span> and <span class="math inline">\(\text{SD}(X+5) = \$60.49\)</span>.</li>
+<li>If a 10% discount is applied: <span class="math inline">\(\text{Var}(0.90X) = 0.90^2 \times 3{,}659.3 = 0.81 \times 3{,}659.3 = 2{,}964.0\)</span> and <span class="math inline">\(\text{SD}(0.90X) = 0.90 \times 60.49 = \$54.44\)</span>.</li>
+</ul>
+</div>
+<div class="guidedpractice">
+<p>Suppose temperatures in Celsius are converted to Fahrenheit using <span class="math inline">\(F = 1.8C + 32\)</span>. If the standard deviation of daily high temperatures is <span class="math inline">\(\sigma_C = 5°\text{C}\)</span>, what is the standard deviation in Fahrenheit?<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+</div>
+</div>
 </section>
-<section id="chapter-review" class="level2" data-number="17.6">
-<h2 data-number="17.6" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">17.6</span> Chapter review</h2>
+<section id="sec-linear-combinations" class="level2" data-number="17.5">
+<h2 data-number="17.5" class="anchored" data-anchor-id="sec-linear-combinations"><span class="header-section-number">17.5</span> Linear combinations of random variables</h2>
+<p>Sometimes the total outcome is best described as a sum of several random variables. For instance, a person’s total weekly commute time is the sum of five daily commute times.</p>
+<div class="definition">
+<p>A <strong>linear combination</strong> of random variables <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> is an expression of the form <span class="math inline">\(aX + bY\)</span>, where <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> are fixed constants.</p>
+</div>
+<div class="workedexample">
+<p>John travels to work five days a week. Let <span class="math inline">\(X_i\)</span> represent his travel time on day <span class="math inline">\(i\)</span>. His total weekly commute time is:</p>
+<p><span class="math display">\[W = X_1 + X_2 + X_3 + X_4 + X_5\]</span></p>
+<p>If the average daily commute is 18 minutes, the expected weekly total is:</p>
+<p><span class="math display">\[E(W) = E(X_1) + E(X_2) + \cdots + E(X_5) = 18 + 18 + 18 + 18 + 18 = 90 \text{ minutes}\]</span></p>
+</div>
+<section id="expected-value-of-a-linear-combination" class="level3" data-number="17.5.1">
+<h3 data-number="17.5.1" class="anchored" data-anchor-id="expected-value-of-a-linear-combination"><span class="header-section-number">17.5.1</span> Expected value of a linear combination</h3>
+<div class="important">
+<p><strong>Expected value of a linear combination.</strong> For random variables <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> with constants <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span>:</p>
+<p><span class="math display">\[E(aX + bY) = a \cdot E(X) + b \cdot E(Y)\]</span></p>
+<p>This generalizes to any number of random variables:</p>
+<p><span class="math display">\[E(a_1 X_1 + a_2 X_2 + \cdots + a_k X_k) = a_1 E(X_1) + a_2 E(X_2) + \cdots + a_k E(X_k)\]</span></p>
+<p>This property holds whether or not the random variables are independent.</p>
+</div>
+<div class="guidedpractice">
+<p>Elena is selling a TV at auction (expected profit <span class="math inline">\(X\)</span>: $175) and buying a toaster oven (expected cost <span class="math inline">\(Y\)</span>: $23). Her net gain is <span class="math inline">\(X - Y\)</span>. What is her expected net gain?<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+</div>
+<div class="workedexample">
+<p>Leonard has invested $6,000 in Caterpillar stock (CAT) and $2,000 in Exxon Mobil stock (XOM). If <span class="math inline">\(X\)</span> represents CAT’s monthly percentage return (in decimal form) and <span class="math inline">\(Y\)</span> represents XOM’s return, his portfolio change is <span class="math inline">\(6000X + 2000Y\)</span>. If <span class="math inline">\(E(X) = 0.020\)</span> and <span class="math inline">\(E(Y) = 0.002\)</span>:</p>
+<p><span class="math display">\[E(6000X + 2000Y) = 6000 \times 0.020 + 2000 \times 0.002 = \$124\]</span></p>
+<p>Leonard expects to gain $124 per month on average.</p>
+</div>
+</section>
+<section id="variance-of-a-linear-combination" class="level3" data-number="17.5.2">
+<h3 data-number="17.5.2" class="anchored" data-anchor-id="variance-of-a-linear-combination"><span class="header-section-number">17.5.2</span> Variance of a linear combination</h3>
+<div class="important">
+<p><strong>Variance of a linear combination (independent case).</strong> If <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are <strong>independent</strong> random variables, then:</p>
+<p><span class="math display">\[\text{Var}(aX + bY) = a^2 \cdot \text{Var}(X) + b^2 \cdot \text{Var}(Y)\]</span></p>
+<p>The standard deviation is: <span class="math inline">\(\text{SD}(aX + bY) = \sqrt{a^2 \text{Var}(X) + b^2 \text{Var}(Y)}\)</span>.</p>
+</div>
+<div class="caution">
+<p><strong>Independence is required for the variance formula.</strong> The formula <span class="math inline">\(\text{Var}(aX + bY) = a^2\text{Var}(X) + b^2\text{Var}(Y)\)</span> is only valid when <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are independent. If the variables are not independent, an additional covariance term is needed.</p>
+<p>However, the expected value formula <span class="math inline">\(E(aX + bY) = aE(X) + bE(Y)\)</span> always holds, regardless of independence.</p>
+</div>
+<div class="workedexample">
+<p>John’s daily commute has a standard deviation of 4 minutes, and the commute times for different days are independent. What is the standard deviation of his weekly commute time <span class="math inline">\(W = X_1 + X_2 + X_3 + X_4 + X_5\)</span>?</p>
+<p>Each coefficient is 1, and <span class="math inline">\(\text{Var}(X_i) = 4^2 = 16\)</span>:</p>
+<p><span class="math display">\[\text{Var}(W) = 1^2(16) + 1^2(16) + 1^2(16) + 1^2(16) + 1^2(16) = 5 \times 16 = 80\]</span></p>
+<p><span class="math display">\[\text{SD}(W) = \sqrt{80} \approx 8.94 \text{ minutes}\]</span></p>
+<p>Notice that the standard deviation of the sum (8.94 minutes) is <em>not</em> five times the daily standard deviation (which would be 20 minutes). Variabilities do not add up as simply as means do — we must add <em>variances</em>, not standard deviations.</p>
+</div>
+<div class="workedexample">
+<p>Leonard’s portfolio has <span class="math inline">\(\text{Var}(X) = 0.0057\)</span> and <span class="math inline">\(\text{Var}(Y) = 0.0021\)</span> (where the stocks are approximately independent). What is the standard deviation of his monthly return?</p>
+<p><span class="math display">\[\text{Var}(6000X + 2000Y) = 6000^2 \times 0.0057 + 2000^2 \times 0.0021 = 205{,}200 + 8{,}400 = 213{,}600\]</span></p>
+<p><span class="math display">\[\text{SD} = \sqrt{213{,}600} \approx \$462\]</span></p>
+<p>While an average monthly return of $124 sounds nice, a standard deviation of $462 means the returns are highly volatile.</p>
+</div>
+<div class="guidedpractice">
+<p>Elena’s TV sale has <span class="math inline">\(\text{SD}(X) = \$25\)</span> and her toaster oven purchase has <span class="math inline">\(\text{SD}(Y) = \$8\)</span>. Assuming the auctions are independent, compute the standard deviation of her net gain <span class="math inline">\(X - Y\)</span>.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+</div>
+</section>
+<section id="why-variances-add-even-when-we-subtract" class="level3 original" data-number="17.5.3">
+<h3 data-number="17.5.3" class="anchored" data-anchor-id="why-variances-add-even-when-we-subtract"><span class="header-section-number">17.5.3</span> Why variances add even when we subtract</h3>
+<p>A common source of confusion: the variance of a difference is the <em>sum</em> of the variances (not the difference). This makes sense intuitively. If you buy a bag of apples and a bag of oranges, the uncertainty in the total weight is a combination of both uncertainties — regardless of whether you are adding or subtracting the weights. Two sources of randomness always create more total uncertainty.</p>
+</section>
+</section>
+<section id="sec-ch16-review" class="level2" data-number="17.6">
+<h2 data-number="17.6" class="anchored" data-anchor-id="sec-ch16-review"><span class="header-section-number">17.6</span> Chapter review</h2>
 <section id="summary" class="level3" data-number="17.6.1">
 <h3 data-number="17.6.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">17.6.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+<ul>
+<li>The <strong>expected value</strong> <span class="math inline">\(E(X) = \sum x_i P(X = x_i)\)</span> is the long-run average of a random variable.</li>
+<li>The <strong>variance</strong> <span class="math inline">\(\text{Var}(X) = \sum (x_i - \mu)^2 P(X = x_i)\)</span> measures spread; the <strong>standard deviation</strong> is <span class="math inline">\(\sigma = \sqrt{\text{Var}(X)}\)</span>.</li>
+<li><strong>Expected value properties</strong>: <span class="math inline">\(E(aX + b) = aE(X) + b\)</span> (always holds).</li>
+<li><strong>Variance properties</strong>: <span class="math inline">\(\text{Var}(aX + b) = a^2 \text{Var}(X)\)</span> (adding a constant does not change variance).</li>
+<li><strong>Linear combinations</strong>: <span class="math inline">\(E(aX + bY) = aE(X) + bE(Y)\)</span> (always). <span class="math inline">\(\text{Var}(aX + bY) = a^2\text{Var}(X) + b^2\text{Var}(Y)\)</span> (requires independence).</li>
+<li>Variances always add, even when random variables are subtracted.</li>
+</ul>
 </section>
 <section id="exercises" class="level3 exercises" data-number="17.6.2">
 <h3 class="exercises anchored" data-number="17.6.2" data-anchor-id="exercises"><span class="header-section-number">17.6.2</span> Exercises</h3>
-<div class="underconstruction">
 <p>Exercises for this chapter are under development.</p>
-</div>
 
 
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p><span class="math inline">\(E(X) = 0(0.10) + 1(0.25) + 2(0.35) + 3(0.20) + 4(0.10) = 0 + 0.25 + 0.70 + 0.60 + 0.40 = 1.95\)</span>. On average, about 1.95 students board the shuttle at this stop.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>(a) <span class="math inline">\(Y\)</span> takes values $0, $159, $200 with probabilities 0.15, 0.25, 0.60. (b) <span class="math inline">\(E(Y) = 0(0.15) + 159(0.25) + 200(0.60) = 0 + 39.75 + 120 = \$159.75\)</span>. (c) <span class="math inline">\(\text{Var}(Y) = (0 - 159.75)^2(0.15) + (159 - 159.75)^2(0.25) + (200 - 159.75)^2(0.60) = 3828.0 + 0.1 + 972.0 = 4800.1\)</span>, so <span class="math inline">\(\text{SD}(Y) = \sqrt{4800.1} \approx \$69.28\)</span>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><span class="math inline">\(E(Y) = E(X + 5) = E(X) + 5 = 117.85 + 5 = \$122.85\)</span>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p><span class="math inline">\(\text{SD}(1.8C + 32) = 1.8 \times \text{SD}(C) = 1.8 \times 5 = 9°\text{F}\)</span>. The additive constant 32 does not affect the spread.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p><span class="math inline">\(E(X - Y) = E(X) - E(Y) = 175 - 23 = \$152\)</span>.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>Note that <span class="math inline">\(X - Y = 1 \cdot X + (-1) \cdot Y\)</span>. So <span class="math inline">\(\text{Var}(X - Y) = 1^2 \times 25^2 + (-1)^2 \times 8^2 = 625 + 64 = 689\)</span>. Thus <span class="math inline">\(\text{SD}(X - Y) = \sqrt{689} \approx \$26.25\)</span>. The negative coefficient is eliminated when we square it — subtracting a random variable introduces <em>more</em> variability, not less.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
@@ -940,6 +1214,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

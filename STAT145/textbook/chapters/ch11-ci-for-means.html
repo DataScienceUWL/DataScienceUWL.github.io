@@ -40,7 +40,10 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +71,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,15 +451,36 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#the-t-distribution" id="toc-the-t-distribution" class="nav-link active" data-scroll-target="#the-t-distribution"><span class="header-section-number">12.1</span> The t-distribution</a></li>
-  <li><a href="#one-sample-t-confidence-interval" id="toc-one-sample-t-confidence-interval" class="nav-link" data-scroll-target="#one-sample-t-confidence-interval"><span class="header-section-number">12.2</span> One-sample t confidence interval</a></li>
-  <li><a href="#two-sample-t-confidence-interval" id="toc-two-sample-t-confidence-interval" class="nav-link" data-scroll-target="#two-sample-t-confidence-interval"><span class="header-section-number">12.3</span> Two-sample t confidence interval</a></li>
-  <li><a href="#paired-data-confidence-interval" id="toc-paired-data-confidence-interval" class="nav-link" data-scroll-target="#paired-data-confidence-interval"><span class="header-section-number">12.4</span> Paired data confidence interval</a></li>
-  <li><a href="#checking-conditions" id="toc-checking-conditions" class="nav-link" data-scroll-target="#checking-conditions"><span class="header-section-number">12.5</span> Checking conditions</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">12.6</span> Chapter review</a>
+  <li><a href="#sec-t-dist" id="toc-sec-t-dist" class="nav-link active" data-scroll-target="#sec-t-dist"><span class="header-section-number">12.1</span> The <span class="math inline">\(t\)</span>-distribution</a>
+  <ul class="collapse">
+  <li><a href="#why-not-the-normal-distribution" id="toc-why-not-the-normal-distribution" class="nav-link" data-scroll-target="#why-not-the-normal-distribution"><span class="header-section-number">12.1.1</span> Why not the normal distribution?</a></li>
+  <li><a href="#properties-of-the-t-distribution" id="toc-properties-of-the-t-distribution" class="nav-link" data-scroll-target="#properties-of-the-t-distribution"><span class="header-section-number">12.1.2</span> Properties of the <span class="math inline">\(t\)</span>-distribution</a></li>
+  <li><a href="#critical-values-from-the-t-distribution" id="toc-critical-values-from-the-t-distribution" class="nav-link" data-scroll-target="#critical-values-from-the-t-distribution"><span class="header-section-number">12.1.3</span> Critical values from the <span class="math inline">\(t\)</span>-distribution</a></li>
+  </ul></li>
+  <li><a href="#sec-one-sample-t-ci" id="toc-sec-one-sample-t-ci" class="nav-link" data-scroll-target="#sec-one-sample-t-ci"><span class="header-section-number">12.2</span> One-sample <span class="math inline">\(t\)</span> confidence interval</a>
+  <ul class="collapse">
+  <li><a href="#the-setup" id="toc-the-setup" class="nav-link" data-scroll-target="#the-setup"><span class="header-section-number">12.2.1</span> The setup</a></li>
+  <li><a href="#checking-conditions" id="toc-checking-conditions" class="nav-link" data-scroll-target="#checking-conditions"><span class="header-section-number">12.2.2</span> Checking conditions</a></li>
+  <li><a href="#worked-example-mercury-levels-in-rissos-dolphins" id="toc-worked-example-mercury-levels-in-rissos-dolphins" class="nav-link" data-scroll-target="#worked-example-mercury-levels-in-rissos-dolphins"><span class="header-section-number">12.2.3</span> Worked example: Mercury levels in Risso’s dolphins</a></li>
+  </ul></li>
+  <li><a href="#sec-two-sample-t-ci" id="toc-sec-two-sample-t-ci" class="nav-link" data-scroll-target="#sec-two-sample-t-ci"><span class="header-section-number">12.3</span> Two-sample <span class="math inline">\(t\)</span> confidence interval</a>
+  <ul class="collapse">
+  <li><a href="#the-setup-1" id="toc-the-setup-1" class="nav-link" data-scroll-target="#the-setup-1"><span class="header-section-number">12.3.1</span> The setup</a></li>
+  <li><a href="#worked-example-embryonic-stem-cells-and-heart-function" id="toc-worked-example-embryonic-stem-cells-and-heart-function" class="nav-link" data-scroll-target="#worked-example-embryonic-stem-cells-and-heart-function"><span class="header-section-number">12.3.2</span> Worked example: Embryonic stem cells and heart function</a></li>
+  </ul></li>
+  <li><a href="#sec-paired-ci" id="toc-sec-paired-ci" class="nav-link" data-scroll-target="#sec-paired-ci"><span class="header-section-number">12.4</span> Paired data confidence interval</a>
+  <ul class="collapse">
+  <li><a href="#what-makes-data-paired" id="toc-what-makes-data-paired" class="nav-link" data-scroll-target="#what-makes-data-paired"><span class="header-section-number">12.4.1</span> What makes data “paired”?</a></li>
+  <li><a href="#the-key-idea-analyze-the-differences" id="toc-the-key-idea-analyze-the-differences" class="nav-link" data-scroll-target="#the-key-idea-analyze-the-differences"><span class="header-section-number">12.4.2</span> The key idea: analyze the differences</a></li>
+  <li><a href="#worked-example-textbook-prices" id="toc-worked-example-textbook-prices" class="nav-link" data-scroll-target="#worked-example-textbook-prices"><span class="header-section-number">12.4.3</span> Worked example: Textbook prices</a></li>
+  <li><a href="#why-not-use-a-two-sample-t-interval-for-paired-data" id="toc-why-not-use-a-two-sample-t-interval-for-paired-data" class="nav-link" data-scroll-target="#why-not-use-a-two-sample-t-interval-for-paired-data"><span class="header-section-number">12.4.4</span> Why not use a two-sample <span class="math inline">\(t\)</span> interval for paired data?</a></li>
+  </ul></li>
+  <li><a href="#sec-t-vs-bootstrap" id="toc-sec-t-vs-bootstrap" class="nav-link" data-scroll-target="#sec-t-vs-bootstrap"><span class="header-section-number">12.5</span> Connecting <span class="math inline">\(t\)</span>-based and bootstrap confidence intervals</a></li>
+  <li><a href="#sec-ch11-review" id="toc-sec-ch11-review" class="nav-link" data-scroll-target="#sec-ch11-review"><span class="header-section-number">12.6</span> Chapter review</a>
   <ul class="collapse">
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">12.6.1</span> Summary</a></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">12.6.2</span> Exercises</a></li>
+  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">12.6.2</span> Key terms</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">12.6.3</span> Exercises</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -454,49 +507,380 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: IMS <code>inference-one-mean.qmd</code> + <code>inference-two-means.qmd</code> — 95% coverage</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Confidence Intervals for Means</em> will go here.</p>
+<p>In Chapter 8, we used bootstrapping to construct confidence intervals – a flexible, simulation-based approach that works well in many settings. In Chapter 10, we saw that sampling distributions are often well approximated by the normal distribution. For means, however, we encounter a complication: the population standard deviation <span class="math inline">\(\sigma\)</span> is almost never known, and estimating it with the sample standard deviation <span class="math inline">\(s\)</span> introduces extra uncertainty. To account for this, we use a slightly different bell-shaped distribution called the <strong><span class="math inline">\(t\)</span>-distribution</strong>. In this chapter, we develop <span class="math inline">\(t\)</span>-based confidence intervals for one mean, the difference between two independent means, and the mean of paired differences.</p>
 </div>
 <div class="simkit">
-<p><strong>SimKit tools for this chapter</strong>: Normal/t Distribution Explorer</p>
+<p><strong>SimKit tools for this chapter</strong>: Use the <strong><span class="math inline">\(t\)</span>-Distribution Explorer</strong> to compare the <span class="math inline">\(t\)</span>-distribution to the standard normal at various degrees of freedom.</p>
+<p><a href="https://datascienceuwl.github.io/simkit/explore/t/" target="_blank">Launch t-Distribution Explorer</a></p>
 </div>
-<section id="the-t-distribution" class="level2" data-number="12.1">
-<h2 data-number="12.1" class="anchored" data-anchor-id="the-t-distribution"><span class="header-section-number">12.1</span> The t-distribution</h2>
-<p>Content under development.</p>
+<section id="sec-t-dist" class="level2" data-number="12.1">
+<h2 data-number="12.1" class="anchored" data-anchor-id="sec-t-dist"><span class="header-section-number">12.1</span> The <span class="math inline">\(t\)</span>-distribution</h2>
+<section id="why-not-the-normal-distribution" class="level3" data-number="12.1.1">
+<h3 data-number="12.1.1" class="anchored" data-anchor-id="why-not-the-normal-distribution"><span class="header-section-number">12.1.1</span> Why not the normal distribution?</h3>
+<p>In Chapter 10, we used the normal distribution to model sampling distributions. For proportions, this works well because the standard error formula <span class="math inline">\(SE = \sqrt{\hat{p}(1 - \hat{p})/n}\)</span> depends only on the sample proportion and the sample size – both of which are known. For means, the standard error is <span class="math inline">\(SE = \sigma / \sqrt{n}\)</span>, which depends on <span class="math inline">\(\sigma\)</span>, the population standard deviation. Since we rarely know <span class="math inline">\(\sigma\)</span>, we estimate it using the sample standard deviation <span class="math inline">\(s\)</span>:</p>
+<p><span class="math display">\[SE \approx \frac{s}{\sqrt{n}}\]</span></p>
+<p>This substitution introduces additional uncertainty, especially in small samples. When <span class="math inline">\(n\)</span> is small, <span class="math inline">\(s\)</span> can be a poor estimate of <span class="math inline">\(\sigma\)</span>, and the normal model underestimates how variable the statistic really is. The <span class="math inline">\(t\)</span>-distribution corrects for this.</p>
 </section>
-<section id="one-sample-t-confidence-interval" class="level2" data-number="12.2">
-<h2 data-number="12.2" class="anchored" data-anchor-id="one-sample-t-confidence-interval"><span class="header-section-number">12.2</span> One-sample t confidence interval</h2>
-<p>Content under development.</p>
+<section id="properties-of-the-t-distribution" class="level3" data-number="12.1.2">
+<h3 data-number="12.1.2" class="anchored" data-anchor-id="properties-of-the-t-distribution"><span class="header-section-number">12.1.2</span> Properties of the <span class="math inline">\(t\)</span>-distribution</h3>
+<div class="definition">
+<p>The <strong><span class="math inline">\(t\)</span>-distribution</strong> is a bell-shaped, symmetric distribution that is similar to the normal distribution but has <strong>heavier tails</strong> (more probability in the extremes). The exact shape of the <span class="math inline">\(t\)</span>-distribution depends on a parameter called the <strong>degrees of freedom (df)</strong>.</p>
+<ul>
+<li>When <span class="math inline">\(df\)</span> is small, the <span class="math inline">\(t\)</span>-distribution has noticeably heavier tails than the normal – extreme values are more likely.</li>
+<li>As <span class="math inline">\(df\)</span> increases, the <span class="math inline">\(t\)</span>-distribution approaches the standard normal distribution.</li>
+<li>For <span class="math inline">\(df \geq 30\)</span>, the <span class="math inline">\(t\)</span>-distribution is nearly indistinguishable from the normal.</li>
+</ul>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Three distributions plotted on the same axes: the standard normal distribution N(0,1), a t-distribution with df = 5, and a t-distribution with df = 15. All are centered at 0 and bell-shaped, but the t-distributions have heavier tails, especially when df is small."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Three overlapping bell-shaped curves centered at zero. The standard normal curve is the tallest and has the thinnest tails. The t-distribution with 15 degrees of freedom is slightly shorter with slightly heavier tails. The t-distribution with 5 degrees of freedom is the shortest with the heaviest tails."></a></p>
+<figcaption>Three distributions plotted on the same axes: the standard normal distribution <span class="math inline">\(N(0,1)\)</span>, a <span class="math inline">\(t\)</span>-distribution with <span class="math inline">\(df = 5\)</span>, and a <span class="math inline">\(t\)</span>-distribution with <span class="math inline">\(df = 15\)</span>. All are centered at 0 and bell-shaped, but the <span class="math inline">\(t\)</span>-distributions have heavier tails, especially when <span class="math inline">\(df\)</span> is small.</figcaption>
+</figure>
+</div>
+<div class="important">
+<p><strong>Why heavier tails matter.</strong> Heavier tails mean that extreme values (large <span class="math inline">\(t\)</span>-scores) are more probable under the <span class="math inline">\(t\)</span>-distribution than under the normal distribution. In practice, this leads to <strong>wider confidence intervals</strong> when sample sizes are small – exactly the extra caution we need when <span class="math inline">\(\sigma\)</span> is estimated by <span class="math inline">\(s\)</span>.</p>
+</div>
+<div class="guidedpractice">
+<p>How does the <span class="math inline">\(t\)</span>-distribution compare to the normal distribution when <span class="math inline">\(df = 2\)</span>? When <span class="math inline">\(df = 100\)</span>?<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
 </section>
-<section id="two-sample-t-confidence-interval" class="level2" data-number="12.3">
-<h2 data-number="12.3" class="anchored" data-anchor-id="two-sample-t-confidence-interval"><span class="header-section-number">12.3</span> Two-sample t confidence interval</h2>
-<p>Content under development.</p>
+<section id="critical-values-from-the-t-distribution" class="level3" data-number="12.1.3">
+<h3 data-number="12.1.3" class="anchored" data-anchor-id="critical-values-from-the-t-distribution"><span class="header-section-number">12.1.3</span> Critical values from the <span class="math inline">\(t\)</span>-distribution</h3>
+<p>Just as we use <span class="math inline">\(z^*\)</span> for the normal distribution, we use <span class="math inline">\(t^*_{df}\)</span> for the <span class="math inline">\(t\)</span>-distribution. Because the <span class="math inline">\(t\)</span>-distribution has heavier tails, <span class="math inline">\(t^*\)</span> values are larger than the corresponding <span class="math inline">\(z^*\)</span> values (especially for small <span class="math inline">\(df\)</span>).</p>
+<p><strong>Selected critical values for 95% confidence intervals:</strong></p>
+<table class="table-striped caption-top table">
+<caption>Critical values <span class="math inline">\(t^*_{df}\)</span> for a 95% confidence interval. As <span class="math inline">\(df\)</span> increases, <span class="math inline">\(t^*\)</span> approaches <span class="math inline">\(z^* = 1.96\)</span>.</caption>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(df\)</span></th>
+<th><span class="math inline">\(t^*_{df}\)</span> (95% CI)</th>
+<th><span class="math inline">\(z^*\)</span> (for comparison)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>5</td>
+<td>2.571</td>
+<td>1.960</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>2.228</td>
+<td>1.960</td>
+</tr>
+<tr class="odd">
+<td>20</td>
+<td>2.086</td>
+<td>1.960</td>
+</tr>
+<tr class="even">
+<td>30</td>
+<td>2.042</td>
+<td>1.960</td>
+</tr>
+<tr class="odd">
+<td>50</td>
+<td>2.009</td>
+<td>1.960</td>
+</tr>
+<tr class="even">
+<td>100</td>
+<td>1.984</td>
+<td>1.960</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\infty\)</span></td>
+<td>1.960</td>
+<td>1.960</td>
+</tr>
+</tbody>
+</table>
+<div class="guidedpractice">
+<p>Why is the critical value <span class="math inline">\(t^*_5 = 2.571\)</span> so much larger than <span class="math inline">\(z^* = 1.96\)</span>?<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
 </section>
-<section id="paired-data-confidence-interval" class="level2" data-number="12.4">
-<h2 data-number="12.4" class="anchored" data-anchor-id="paired-data-confidence-interval"><span class="header-section-number">12.4</span> Paired data confidence interval</h2>
-<p>Content under development.</p>
 </section>
-<section id="checking-conditions" class="level2" data-number="12.5">
-<h2 data-number="12.5" class="anchored" data-anchor-id="checking-conditions"><span class="header-section-number">12.5</span> Checking conditions</h2>
-<p>Content under development.</p>
+<section id="sec-one-sample-t-ci" class="level2" data-number="12.2">
+<h2 data-number="12.2" class="anchored" data-anchor-id="sec-one-sample-t-ci"><span class="header-section-number">12.2</span> One-sample <span class="math inline">\(t\)</span> confidence interval</h2>
+<section id="the-setup" class="level3" data-number="12.2.1">
+<h3 data-number="12.2.1" class="anchored" data-anchor-id="the-setup"><span class="header-section-number">12.2.1</span> The setup</h3>
+<p>We want to estimate the population mean <span class="math inline">\(\mu\)</span> based on a single sample. The point estimate is the sample mean <span class="math inline">\(\bar{x}\)</span>, and the standard error is <span class="math inline">\(SE = s / \sqrt{n}\)</span>.</p>
+<div class="important">
+<p><strong>One-sample <span class="math inline">\(t\)</span> confidence interval for <span class="math inline">\(\mu\)</span>.</strong></p>
+<p><span class="math display">\[\bar{x} \pm t^*_{df} \times \frac{s}{\sqrt{n}}\]</span></p>
+<p>where <span class="math inline">\(df = n - 1\)</span>.</p>
+<p><strong>Conditions:</strong></p>
+<ol type="1">
+<li><strong>Independence.</strong> The observations are independent (e.g., from a random sample).</li>
+<li><strong>Normality / sample size.</strong> Either the population distribution is approximately normal, or the sample size is large enough (<span class="math inline">\(n \geq 30\)</span>). For smaller samples, check for strong skewness or extreme outliers.</li>
+</ol>
+</div>
 </section>
-<section id="chapter-review" class="level2" data-number="12.6">
-<h2 data-number="12.6" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">12.6</span> Chapter review</h2>
+<section id="checking-conditions" class="level3" data-number="12.2.2">
+<h3 data-number="12.2.2" class="anchored" data-anchor-id="checking-conditions"><span class="header-section-number">12.2.2</span> Checking conditions</h3>
+<p>The normality condition is about the shape of the <strong>population</strong>, not the sample. In practice:</p>
+<ul>
+<li>If <span class="math inline">\(n &lt; 30\)</span>: Check a histogram or dotplot of the sample data. If there is no strong skewness and no extreme outliers, the <span class="math inline">\(t\)</span>-methods are reasonable.</li>
+<li>If <span class="math inline">\(n \geq 30\)</span>: The Central Limit Theorem ensures that <span class="math inline">\(\bar{x}\)</span> is approximately normal, even if the population is moderately skewed. However, be cautious with extreme outliers, which can distort <span class="math inline">\(\bar{x}\)</span> and <span class="math inline">\(s\)</span>.</li>
+</ul>
+<div class="caution">
+<p><strong>Outliers and the <span class="math inline">\(t\)</span>-test.</strong> The sample mean <span class="math inline">\(\bar{x}\)</span> and sample standard deviation <span class="math inline">\(s\)</span> are sensitive to outliers. A single extreme observation can substantially shift <span class="math inline">\(\bar{x}\)</span> and inflate <span class="math inline">\(s\)</span>, leading to misleading confidence intervals. When outliers are present, consider whether they represent data errors. If the outliers are genuine, a bootstrap confidence interval (Chapter 8) may be more reliable.</p>
+</div>
+</section>
+<section id="worked-example-mercury-levels-in-rissos-dolphins" class="level3" data-number="12.2.3">
+<h3 data-number="12.2.3" class="anchored" data-anchor-id="worked-example-mercury-levels-in-rissos-dolphins"><span class="header-section-number">12.2.3</span> Worked example: Mercury levels in Risso’s dolphins</h3>
+<div class="workedexample">
+<p>Researchers measured mercury concentrations (in <span class="math inline">\(\mu\)</span>g/g) in the muscle tissue of 19 Risso’s dolphins from the Adriatic Sea. The sample mean was <span class="math inline">\(\bar{x} = 4.4\)</span> <span class="math inline">\(\mu\)</span>g/g and the sample standard deviation was <span class="math inline">\(s = 2.3\)</span> <span class="math inline">\(\mu\)</span>g/g. Construct a 95% confidence interval for the mean mercury level in the population of Risso’s dolphins.</p>
+<hr>
+<p><strong>Check conditions.</strong></p>
+<ol type="1">
+<li><em>Independence.</em> The dolphins were sampled from different locations, so it is reasonable to treat the measurements as independent.</li>
+<li><em>Normality.</em> With <span class="math inline">\(n = 19\)</span>, we need to check for strong skewness or outliers. Suppose a histogram of the data shows a roughly symmetric distribution with no extreme outliers. The condition is satisfied.</li>
+</ol>
+<p><strong>Compute the interval.</strong> With <span class="math inline">\(df = 19 - 1 = 18\)</span>, the critical value for a 95% CI is <span class="math inline">\(t^*_{18} = 2.101\)</span>.</p>
+<p><span class="math display">\[SE = \frac{s}{\sqrt{n}} = \frac{2.3}{\sqrt{19}} = \frac{2.3}{4.359} = 0.528\]</span></p>
+<p><span class="math display">\[\bar{x} \pm t^*_{18} \times SE = 4.4 \pm 2.101 \times 0.528 = 4.4 \pm 1.109 = (3.29, 5.51)\]</span></p>
+<p>We are 95% confident that the mean mercury concentration in Risso’s dolphins is between 3.29 and 5.51 <span class="math inline">\(\mu\)</span>g/g.</p>
+</div>
+<div class="guidedpractice">
+<p>A sample of 35 UW-La Crosse students reported their weekly study hours. The sample mean is <span class="math inline">\(\bar{x} = 15.2\)</span> hours and <span class="math inline">\(s = 6.8\)</span> hours. Construct a 90% confidence interval for the mean weekly study hours of all UW-La Crosse students. (Use <span class="math inline">\(t^*_{34} = 1.691\)</span> for a 90% CI.)<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+</div>
+</section>
+</section>
+<section id="sec-two-sample-t-ci" class="level2" data-number="12.3">
+<h2 data-number="12.3" class="anchored" data-anchor-id="sec-two-sample-t-ci"><span class="header-section-number">12.3</span> Two-sample <span class="math inline">\(t\)</span> confidence interval</h2>
+<section id="the-setup-1" class="level3" data-number="12.3.1">
+<h3 data-number="12.3.1" class="anchored" data-anchor-id="the-setup-1"><span class="header-section-number">12.3.1</span> The setup</h3>
+<p>When comparing the means of two independent groups, we estimate the difference <span class="math inline">\(\mu_1 - \mu_2\)</span> using <span class="math inline">\(\bar{x}_1 - \bar{x}_2\)</span>.</p>
+<div class="important">
+<p><strong>Two-sample <span class="math inline">\(t\)</span> confidence interval for <span class="math inline">\(\mu_1 - \mu_2\)</span>.</strong></p>
+<p><span class="math display">\[(\bar{x}_1 - \bar{x}_2) \pm t^*_{df} \times \sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}\]</span></p>
+<p><strong>Degrees of freedom:</strong> The exact formula for <span class="math inline">\(df\)</span> is complex and typically computed by software. A conservative (safe) approximation is:</p>
+<p><span class="math display">\[df = \min(n_1 - 1,\ n_2 - 1)\]</span></p>
+<p><strong>Conditions:</strong></p>
+<ol type="1">
+<li><strong>Independence (extended).</strong> Observations are independent within each group <em>and</em> between groups (e.g., from two independent random samples or a randomized experiment).</li>
+<li><strong>Normality / sample size.</strong> Each group’s data should be approximately normal or have <span class="math inline">\(n \geq 30\)</span>. Check each group separately for strong skewness or extreme outliers.</li>
+</ol>
+</div>
+</section>
+<section id="worked-example-embryonic-stem-cells-and-heart-function" class="level3" data-number="12.3.2">
+<h3 data-number="12.3.2" class="anchored" data-anchor-id="worked-example-embryonic-stem-cells-and-heart-function"><span class="header-section-number">12.3.2</span> Worked example: Embryonic stem cells and heart function</h3>
+<div class="workedexample">
+<p>Researchers studied whether embryonic stem cell (ESC) treatment improves heart function in sheep after a heart attack. Nine sheep received the ESC treatment and nine were in the control group. The change in pumping capacity was measured:</p>
+<table class="table-striped caption-top table">
+<caption>Summary statistics for the stem cell study.</caption>
+<thead>
+<tr class="header">
+<th>Group</th>
+<th><span class="math inline">\(n\)</span></th>
+<th><span class="math inline">\(\bar{x}\)</span></th>
+<th><span class="math inline">\(s\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ESC</td>
+<td>9</td>
+<td>3.50</td>
+<td>5.17</td>
+</tr>
+<tr class="even">
+<td>Control</td>
+<td>9</td>
+<td><span class="math inline">\(-4.33\)</span></td>
+<td>2.76</td>
+</tr>
+</tbody>
+</table>
+<p>Construct a 95% confidence interval for the difference in mean change in pumping capacity, <span class="math inline">\(\mu_{ESC} - \mu_{Control}\)</span>.</p>
+<hr>
+<p><strong>Check conditions.</strong></p>
+<ol type="1">
+<li><em>Independence.</em> The sheep were randomly assigned to groups, so independence within and between groups is satisfied.</li>
+<li><em>Normality.</em> With <span class="math inline">\(n = 9\)</span> per group (small samples), we check histograms. Suppose they show no extreme outliers in either group. The condition is reasonably met.</li>
+</ol>
+<p><strong>Compute the interval.</strong></p>
+<p><span class="math display">\[SE = \sqrt{\frac{5.17^2}{9} + \frac{2.76^2}{9}} = \sqrt{\frac{26.73}{9} + \frac{7.62}{9}} = \sqrt{2.970 + 0.847} = \sqrt{3.817} = 1.954\]</span></p>
+<p>Using <span class="math inline">\(df = \min(9-1, 9-1) = 8\)</span>, the critical value for a 95% CI is <span class="math inline">\(t^*_8 = 2.306\)</span>.</p>
+<p><span class="math display">\[\text{Point estimate} = 3.50 - (-4.33) = 7.83\]</span></p>
+<p><span class="math display">\[7.83 \pm 2.306 \times 1.954 = 7.83 \pm 4.506 = (3.32, 12.34)\]</span></p>
+<p>We are 95% confident that the ESC treatment increases heart pumping capacity by between 3.32% and 12.34% compared to the control. Because the interval is entirely above zero, we have evidence that the ESC treatment improves heart function. Since this was a randomized experiment, we can attribute the improvement to the treatment.</p>
+</div>
+<div class="guidedpractice">
+<p>Researchers collected birth weight data from a random sample of 1,000 US births. Nonsmoker mothers (<span class="math inline">\(n = 867\)</span>) had babies with <span class="math inline">\(\bar{x}_n = 7.27\)</span> lbs (<span class="math inline">\(s_n = 1.23\)</span>), and smoker mothers (<span class="math inline">\(n = 114\)</span>) had babies with <span class="math inline">\(\bar{x}_s = 6.68\)</span> lbs (<span class="math inline">\(s_s = 1.60\)</span>). Is there evidence that babies born to nonsmoker mothers weigh more on average? Compute a 95% confidence interval for the difference <span class="math inline">\(\mu_n - \mu_s\)</span>.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+</div>
+</section>
+</section>
+<section id="sec-paired-ci" class="level2" data-number="12.4">
+<h2 data-number="12.4" class="anchored" data-anchor-id="sec-paired-ci"><span class="header-section-number">12.4</span> Paired data confidence interval</h2>
+<section id="what-makes-data-paired" class="level3" data-number="12.4.1">
+<h3 data-number="12.4.1" class="anchored" data-anchor-id="what-makes-data-paired"><span class="header-section-number">12.4.1</span> What makes data “paired”?</h3>
+<p>Sometimes two measurements are made on the same individual (e.g., before and after a treatment) or on naturally matched pairs (e.g., the same textbook priced at two stores). In these cases, the two groups are <strong>not independent</strong> – they are <strong>paired</strong>.</p>
+<div class="definition">
+<p><strong>Paired data.</strong> Two sets of observations are <strong>paired</strong> if each observation in one set has a special correspondence or connection with exactly one observation in the other set. Common examples include:</p>
+<ul>
+<li>Before/after measurements on the same individual</li>
+<li>Two treatments applied to the same subject (e.g., tires on the same car)</li>
+<li>Matched pairs in an experiment (e.g., twins assigned to different treatments)</li>
+<li>The same item measured under two conditions (e.g., textbook prices at two stores)</li>
+</ul>
+</div>
+<table class="table-striped caption-top table">
+<caption>Examples of paired designs.</caption>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Observational unit</th>
+<th>Comparison groups</th>
+<th>Measurement</th>
+<th>Value of interest</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Car</td>
+<td>Smooth Turn vs.&nbsp;Quick Spin</td>
+<td>Tire tread after 1,000 miles</td>
+<td>Difference in tread</td>
+</tr>
+<tr class="even">
+<td>Textbook</td>
+<td>UCLA Bookstore vs.&nbsp;Amazon</td>
+<td>Price of new textbook</td>
+<td>Difference in price</td>
+</tr>
+<tr class="odd">
+<td>Individual</td>
+<td>Pre-course vs.&nbsp;Post-course</td>
+<td>Exam score</td>
+<td>Difference in score</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="the-key-idea-analyze-the-differences" class="level3" data-number="12.4.2">
+<h3 data-number="12.4.2" class="anchored" data-anchor-id="the-key-idea-analyze-the-differences"><span class="header-section-number">12.4.2</span> The key idea: analyze the differences</h3>
+<p>The key to working with paired data is simple: <strong>compute the difference for each pair, then analyze those differences as a single sample.</strong> This converts a two-sample problem into a one-sample problem.</p>
+<div class="important">
+<p><strong>Paired <span class="math inline">\(t\)</span> confidence interval for <span class="math inline">\(\mu_{diff}\)</span>.</strong></p>
+<p>For paired data, compute the difference <span class="math inline">\(d_i = x_{1,i} - x_{2,i}\)</span> for each pair. Then the confidence interval for the mean difference <span class="math inline">\(\mu_{diff}\)</span> is:</p>
+<p><span class="math display">\[\bar{x}_{diff} \pm t^*_{df} \times \frac{s_{diff}}{\sqrt{n_{diff}}}\]</span></p>
+<p>where <span class="math inline">\(\bar{x}_{diff}\)</span> is the sample mean of the differences, <span class="math inline">\(s_{diff}\)</span> is the sample standard deviation of the differences, <span class="math inline">\(n_{diff}\)</span> is the number of pairs, and <span class="math inline">\(df = n_{diff} - 1\)</span>.</p>
+<p><strong>Conditions:</strong></p>
+<ol type="1">
+<li><strong>Independence of pairs.</strong> The pairs themselves are independent (e.g., different cars, different textbooks).</li>
+<li><strong>Normality of differences.</strong> The distribution of the <em>differences</em> should be approximately normal, or the number of pairs should be large (<span class="math inline">\(n_{diff} \geq 30\)</span>). Check for extreme outliers.</li>
+</ol>
+</div>
+</section>
+<section id="worked-example-textbook-prices" class="level3" data-number="12.4.3">
+<h3 data-number="12.4.3" class="anchored" data-anchor-id="worked-example-textbook-prices"><span class="header-section-number">12.4.3</span> Worked example: Textbook prices</h3>
+<div class="workedexample">
+<p>Researchers sampled 68 UCLA courses and compared textbook prices at the UCLA Bookstore to prices on Amazon. Summary statistics for the price differences (UCLA <span class="math inline">\(-\)</span> Amazon) are:</p>
+<table class="table-striped caption-top table">
+<caption>Summary statistics for the 68 price differences.</caption>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(n_{diff}\)</span></th>
+<th><span class="math inline">\(\bar{x}_{diff}\)</span></th>
+<th><span class="math inline">\(s_{diff}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>68</td>
+<td>$3.58</td>
+<td>$13.42</td>
+</tr>
+</tbody>
+</table>
+<p>Construct a 95% confidence interval for the mean price difference.</p>
+<hr>
+<p><strong>Check conditions.</strong></p>
+<ol type="1">
+<li><em>Independence of pairs.</em> The textbooks were randomly sampled, so the pairs are independent.</li>
+<li><em>Normality of differences.</em> With <span class="math inline">\(n_{diff} = 68\)</span>, the CLT ensures the sampling distribution of <span class="math inline">\(\bar{x}_{diff}\)</span> is approximately normal. Though the distribution of individual differences is right-skewed, the large sample size and absence of extreme outliers make the <span class="math inline">\(t\)</span>-methods reasonable.</li>
+</ol>
+<p><strong>Compute the interval.</strong></p>
+<p><span class="math display">\[SE = \frac{s_{diff}}{\sqrt{n_{diff}}} = \frac{13.42}{\sqrt{68}} = \frac{13.42}{8.246} = 1.628\]</span></p>
+<p>With <span class="math inline">\(df = 68 - 1 = 67\)</span>, the critical value for a 95% CI is <span class="math inline">\(t^*_{67} \approx 2.00\)</span>.</p>
+<p><span class="math display">\[3.58 \pm 2.00 \times 1.628 = 3.58 \pm 3.256 = (0.32, 6.84)\]</span></p>
+<p>We are 95% confident that UCLA Bookstore prices are, on average, between $0.32 and $6.84 higher than Amazon prices for UCLA course books.</p>
+</div>
+<div class="guidedpractice">
+<p>A fitness program enrolled 25 participants and measured their resting heart rates before and after 8 weeks of training. The mean difference (before <span class="math inline">\(-\)</span> after) was <span class="math inline">\(\bar{x}_{diff} = 4.2\)</span> beats per minute with <span class="math inline">\(s_{diff} = 6.1\)</span> bpm. Construct a 90% confidence interval for the mean decrease in resting heart rate. (Use <span class="math inline">\(t^*_{24} = 1.711\)</span>.)<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+</div>
+</section>
+<section id="why-not-use-a-two-sample-t-interval-for-paired-data" class="level3" data-number="12.4.4">
+<h3 data-number="12.4.4" class="anchored" data-anchor-id="why-not-use-a-two-sample-t-interval-for-paired-data"><span class="header-section-number">12.4.4</span> Why not use a two-sample <span class="math inline">\(t\)</span> interval for paired data?</h3>
+<div class="caution">
+<p><strong>Never use a two-sample procedure for paired data.</strong> A two-sample <span class="math inline">\(t\)</span> interval treats the two groups as independent, which they are not. Ignoring the pairing throws away valuable information about the within-pair relationship and typically produces a wider (less precise) confidence interval. Always compute the differences first and then use the one-sample (paired) <span class="math inline">\(t\)</span> procedure.</p>
+</div>
+</section>
+</section>
+<section id="sec-t-vs-bootstrap" class="level2" data-number="12.5">
+<h2 data-number="12.5" class="anchored" data-anchor-id="sec-t-vs-bootstrap"><span class="header-section-number">12.5</span> Connecting <span class="math inline">\(t\)</span>-based and bootstrap confidence intervals</h2>
+<div class="original">
+<p>The <span class="math inline">\(t\)</span>-based confidence intervals in this chapter and the bootstrap confidence intervals from Chapter 8 are answering the same question: “What is a plausible range for the population parameter?” When conditions are met, they give similar results.</p>
+<p><strong>When do they agree?</strong></p>
+<ul>
+<li>Large samples with no extreme outliers: the <span class="math inline">\(t\)</span>-interval and bootstrap interval will be nearly identical.</li>
+<li>Moderate samples from approximately normal populations: close agreement.</li>
+</ul>
+<p><strong>When might they differ?</strong></p>
+<ul>
+<li>Small samples from skewed populations: the bootstrap can capture asymmetry in the sampling distribution, while the <span class="math inline">\(t\)</span>-interval is always symmetric around <span class="math inline">\(\bar{x}\)</span>.</li>
+<li>Presence of outliers: the bootstrap is somewhat more robust because it does not rely on <span class="math inline">\(s\)</span> being a good estimate of <span class="math inline">\(\sigma\)</span>.</li>
+</ul>
+<p><strong>Which should you use?</strong></p>
+<ul>
+<li>If conditions are met, the <span class="math inline">\(t\)</span>-interval is simpler to compute and has well-understood properties.</li>
+<li>If conditions are questionable (small sample, skewness, outliers), prefer the bootstrap.</li>
+<li>In practice, reporting both and noting any discrepancies is informative.</li>
+</ul>
+</div>
+</section>
+<section id="sec-ch11-review" class="level2" data-number="12.6">
+<h2 data-number="12.6" class="anchored" data-anchor-id="sec-ch11-review"><span class="header-section-number">12.6</span> Chapter review</h2>
 <section id="summary" class="level3" data-number="12.6.1">
 <h3 data-number="12.6.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">12.6.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+<p>This chapter developed formula-based confidence intervals for means using the <span class="math inline">\(t\)</span>-distribution.</p>
+<ul>
+<li>The <strong><span class="math inline">\(t\)</span>-distribution</strong> accounts for the extra uncertainty from estimating <span class="math inline">\(\sigma\)</span> with <span class="math inline">\(s\)</span>. It has heavier tails than the normal distribution, especially for small degrees of freedom.</li>
+<li><strong>One-sample <span class="math inline">\(t\)</span> CI</strong>: <span class="math inline">\(\bar{x} \pm t^*_{n-1} \times \frac{s}{\sqrt{n}}\)</span>. Requires independent observations and approximate normality (or large <span class="math inline">\(n\)</span>).</li>
+<li><strong>Two-sample <span class="math inline">\(t\)</span> CI</strong>: <span class="math inline">\((\bar{x}_1 - \bar{x}_2) \pm t^*_{df} \times \sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}\)</span>. Requires independence within and between groups, and approximate normality or large samples in each group.</li>
+<li><strong>Paired <span class="math inline">\(t\)</span> CI</strong>: Compute differences for each pair, then apply the one-sample <span class="math inline">\(t\)</span> CI to the differences: <span class="math inline">\(\bar{x}_{diff} \pm t^*_{n_{diff}-1} \times \frac{s_{diff}}{\sqrt{n_{diff}}}\)</span>.</li>
+<li>Always check conditions before using <span class="math inline">\(t\)</span>-methods: independence, normality/sample size, and absence of extreme outliers.</li>
+<li>When conditions are met, <span class="math inline">\(t\)</span>-based and bootstrap confidence intervals give similar results. When conditions are questionable, the bootstrap may be more reliable.</li>
+</ul>
 </section>
-<section id="exercises" class="level3 exercises" data-number="12.6.2">
-<h3 class="exercises anchored" data-number="12.6.2" data-anchor-id="exercises"><span class="header-section-number">12.6.2</span> Exercises</h3>
-<div class="underconstruction">
+<section id="key-terms" class="level3" data-number="12.6.2">
+<h3 data-number="12.6.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">12.6.2</span> Key terms</h3>
+<p><span class="math inline">\(t\)</span>-distribution, degrees of freedom (<span class="math inline">\(df\)</span>), critical value (<span class="math inline">\(t^*\)</span>), one-sample <span class="math inline">\(t\)</span> confidence interval, two-sample <span class="math inline">\(t\)</span> confidence interval, paired data, paired <span class="math inline">\(t\)</span> confidence interval, standard error of the mean, independence condition, normality condition.</p>
+</section>
+<section id="exercises" class="level3 exercises" data-number="12.6.3">
+<h3 class="exercises anchored" data-number="12.6.3" data-anchor-id="exercises"><span class="header-section-number">12.6.3</span> Exercises</h3>
 <p>Exercises for this chapter are under development.</p>
-</div>
 
 
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>When <span class="math inline">\(df = 2\)</span>, the <span class="math inline">\(t\)</span>-distribution has very heavy tails – values far from 0 are much more likely than under the normal curve. When <span class="math inline">\(df = 100\)</span>, the <span class="math inline">\(t\)</span>-distribution is nearly identical to the standard normal. In general, the <span class="math inline">\(t\)</span>-distribution becomes more like the normal as degrees of freedom increase.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>With only <span class="math inline">\(df = 5\)</span>, there is substantial uncertainty in estimating <span class="math inline">\(\sigma\)</span> with <span class="math inline">\(s\)</span>. The <span class="math inline">\(t\)</span>-distribution accounts for this by having heavier tails, which pushes the critical values further from zero. This results in a wider confidence interval, reflecting the greater uncertainty.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>First check conditions: the sample is a random sample (independence), and <span class="math inline">\(n = 35 \geq 30\)</span> (normality via CLT). Then <span class="math inline">\(SE = 6.8/\sqrt{35} = 1.149\)</span>. The 90% CI is <span class="math inline">\(15.2 \pm 1.691 \times 1.149 = 15.2 \pm 1.943 = (13.26, 17.14)\)</span>. We are 90% confident the mean weekly study hours for all UW-La Crosse students is between 13.26 and 17.14 hours.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>The point estimate is <span class="math inline">\(7.27 - 6.68 = 0.59\)</span> lbs. The SE is <span class="math inline">\(\sqrt{1.23^2/867 + 1.60^2/114} = \sqrt{0.001745 + 0.02246} = \sqrt{0.02420} = 0.156\)</span>. Using <span class="math inline">\(df = \min(866, 113) = 113\)</span> and <span class="math inline">\(t^*_{113} \approx 1.981\)</span>, the CI is <span class="math inline">\(0.59 \pm 1.981 \times 0.156 = 0.59 \pm 0.309 = (0.28, 0.90)\)</span>. We are 95% confident that babies born to nonsmoker mothers weigh between 0.28 and 0.90 lbs more on average than babies born to smoker mothers.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>First check conditions: pairs (individuals) were randomly selected (independence), and with <span class="math inline">\(n = 25\)</span> and no extreme outliers reported, the normality condition is reasonable. Then <span class="math inline">\(SE = 6.1/\sqrt{25} = 6.1/5 = 1.22\)</span>. The 90% CI is <span class="math inline">\(4.2 \pm 1.711 \times 1.22 = 4.2 \pm 2.09 = (2.11, 6.29)\)</span>. We are 90% confident the training program reduces resting heart rate by between 2.11 and 6.29 bpm on average.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
@@ -943,6 +1327,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

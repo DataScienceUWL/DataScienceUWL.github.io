@@ -40,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +68,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,14 +448,22 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#parameters-vs-statistics" id="toc-parameters-vs-statistics" class="nav-link active" data-scroll-target="#parameters-vs-statistics"><span class="header-section-number">7.1</span> Parameters vs statistics</a></li>
-  <li><a href="#sampling-distributions" id="toc-sampling-distributions" class="nav-link" data-scroll-target="#sampling-distributions"><span class="header-section-number">7.2</span> Sampling distributions</a></li>
-  <li><a href="#variability-of-sample-statistics" id="toc-variability-of-sample-statistics" class="nav-link" data-scroll-target="#variability-of-sample-statistics"><span class="header-section-number">7.3</span> Variability of sample statistics</a></li>
-  <li><a href="#standard-error" id="toc-standard-error" class="nav-link" data-scroll-target="#standard-error"><span class="header-section-number">7.4</span> Standard error</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">7.5</span> Chapter review</a>
+  <li><a href="#sec-parameters-vs-statistics" id="toc-sec-parameters-vs-statistics" class="nav-link active" data-scroll-target="#sec-parameters-vs-statistics"><span class="header-section-number">7.1</span> Parameters vs.&nbsp;statistics</a></li>
+  <li><a href="#sec-sampling-distributions" id="toc-sec-sampling-distributions" class="nav-link" data-scroll-target="#sec-sampling-distributions"><span class="header-section-number">7.2</span> Sampling distributions</a></li>
+  <li><a href="#sec-variability-statistics" id="toc-sec-variability-statistics" class="nav-link" data-scroll-target="#sec-variability-statistics"><span class="header-section-number">7.3</span> Variability of sample statistics</a>
   <ul class="collapse">
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">7.5.1</span> Summary</a></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">7.5.2</span> Exercises</a></li>
+  <li><a href="#what-determines-how-much-a-statistic-varies" id="toc-what-determines-how-much-a-statistic-varies" class="nav-link" data-scroll-target="#what-determines-how-much-a-statistic-varies"><span class="header-section-number">7.3.1</span> What determines how much a statistic varies?</a></li>
+  </ul></li>
+  <li><a href="#sec-standard-error" id="toc-sec-standard-error" class="nav-link" data-scroll-target="#sec-standard-error"><span class="header-section-number">7.4</span> Standard error</a>
+  <ul class="collapse">
+  <li><a href="#why-the-standard-error-matters" id="toc-why-the-standard-error-matters" class="nav-link" data-scroll-target="#why-the-standard-error-matters"><span class="header-section-number">7.4.1</span> Why the standard error matters</a></li>
+  </ul></li>
+  <li><a href="#sec-ch06-looking-ahead" id="toc-sec-ch06-looking-ahead" class="nav-link" data-scroll-target="#sec-ch06-looking-ahead"><span class="header-section-number">7.5</span> Looking ahead</a></li>
+  <li><a href="#sec-ch06-review" id="toc-sec-ch06-review" class="nav-link" data-scroll-target="#sec-ch06-review"><span class="header-section-number">7.6</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">7.6.1</span> Summary</a></li>
+  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">7.6.2</span> Key terms</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">7.6.3</span> Exercises</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -453,45 +490,314 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: IMS <code>foundations-randomization.qmd</code> intro — 85% coverage</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Sampling Variability</em> will go here.</p>
+<p>So far in this course, you have learned how to collect data, visualize it, and compute summary statistics. But statistics is about more than describing the data you have — it is about using data to learn about a larger population. The central challenge is this: <strong>every sample is different</strong>. If you took another sample from the same population, you would get different results. This chapter introduces the foundational ideas that make statistical inference possible: the distinction between parameters and statistics, the concept of a sampling distribution, and the standard error as a measure of how much sample statistics vary. These ideas are the bridge from describing data to drawing conclusions about the world.</p>
 </div>
+<section id="sec-parameters-vs-statistics" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="sec-parameters-vs-statistics"><span class="header-section-number">7.1</span> Parameters vs.&nbsp;statistics</h2>
+<p>When we collect data, we typically have a larger group in mind. A political poll surveys 1,000 likely voters, but the real interest is in all voters. A quality engineer measures 50 widgets from an assembly line, but the real interest is in all widgets the line produces. The larger group is the <strong>population</strong>; the subset we actually observe is the <strong>sample</strong>.</p>
+<div class="definition">
+<p>A <strong>population parameter</strong> is a numerical summary of the entire population. It is a fixed number, but it is almost always unknown because we cannot observe the whole population.</p>
+<p>A <strong>sample statistic</strong> (also called a <strong>point estimate</strong>) is a numerical summary computed from sample data. It is our best guess at the population parameter. Because the statistic is computed from a sample, it is known — but it changes from sample to sample.</p>
+</div>
+<p>We use specific notation to distinguish parameters from statistics:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Quantity</th>
+<th style="text-align: center;">Parameter (population)</th>
+<th style="text-align: center;">Statistic (sample)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Proportion</td>
+<td style="text-align: center;"><span class="math inline">\(p\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\hat{p}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mean</td>
+<td style="text-align: center;"><span class="math inline">\(\mu\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\bar{x}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Standard deviation</td>
+<td style="text-align: center;"><span class="math inline">\(\sigma\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(s\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Difference in proportions</td>
+<td style="text-align: center;"><span class="math inline">\(p_1 - p_2\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\hat{p}_1 - \hat{p}_2\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Difference in means</td>
+<td style="text-align: center;"><span class="math inline">\(\mu_1 - \mu_2\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\bar{x}_1 - \bar{x}_2\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The “hat” notation (<span class="math inline">\(\hat{p}\)</span>) is a common convention: it signals that we are estimating the corresponding parameter.</p>
+<div class="workedexample">
+<p>A medical consultant has facilitated 62 liver donor surgeries, and 3 of her patients experienced complications. She uses this track record to attract new patients.</p>
+<p>Let <span class="math inline">\(p\)</span> represent the true complication rate for liver donors working with this consultant. What is the point estimate <span class="math inline">\(\hat{p}\)</span>?</p>
+<hr>
+<p>The sample proportion is <span class="math inline">\(\hat{p} = 3/62 = 0.048\)</span>. That is, about 4.8% of her patients experienced complications. This is our point estimate of the true complication rate <span class="math inline">\(p\)</span>.</p>
+</div>
+<div class="guidedpractice">
+<p>A Stanford University graduate student recruited 120 tappers and 120 listeners for a study on communication. Only 3 out of 120 listeners were able to guess the tune being tapped. What is the point estimate <span class="math inline">\(\hat{p}\)</span> for the true proportion of listeners who can guess correctly?<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
+<div class="workedexample">
+<p>In a study of sex discrimination, 48 male bank supervisors each reviewed a personnel file and decided whether the candidate should be promoted. The files were identical except that half listed the candidate as male and half as female. The results are summarized below:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: center;">Promoted</th>
+<th style="text-align: center;">Not promoted</th>
+<th style="text-align: center;">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Male</td>
+<td style="text-align: center;">21</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">24</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Female</td>
+<td style="text-align: center;">14</td>
+<td style="text-align: center;">10</td>
+<td style="text-align: center;">24</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Total</td>
+<td style="text-align: center;">35</td>
+<td style="text-align: center;">13</td>
+<td style="text-align: center;">48</td>
+</tr>
+</tbody>
+</table>
+<p>What is the point estimate for the difference in promotion rates between male and female candidates?</p>
+<hr>
+<p>The promotion rate for male candidates is <span class="math inline">\(\hat{p}_M = 21/24 = 0.875\)</span> and for female candidates is <span class="math inline">\(\hat{p}_F = 14/24 = 0.583\)</span>. The point estimate of the difference is:</p>
+<p><span class="math display">\[\hat{p}_M - \hat{p}_F = 0.875 - 0.583 = 0.292\]</span></p>
+<p>The observed difference is 29.2 percentage points in favor of male candidates.</p>
+</div>
+<div class="important">
+<p>A point estimate is almost never exactly equal to the population parameter. This is not because we did anything wrong — it is an inherent consequence of working with a subset of the population. The critical question is: <em>how far off might the estimate be?</em></p>
+</div>
+</section>
+<section id="sec-sampling-distributions" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="sec-sampling-distributions"><span class="header-section-number">7.2</span> Sampling distributions</h2>
+<p>To understand how far a statistic might be from its parameter, we need to understand what happens when we take <strong>many samples</strong> from the same population.</p>
+<div class="original">
+<p>Imagine a large bowl containing thousands of beads, 60% red and 40% white. The proportion of red beads in the bowl is the population parameter: <span class="math inline">\(p = 0.60\)</span>. Now suppose you reach in and scoop out a sample of <span class="math inline">\(n = 50\)</span> beads. You count 28 red beads, giving <span class="math inline">\(\hat{p} = 28/50 = 0.56\)</span>. Your friend scoops a different sample of 50 and counts 32 red, giving <span class="math inline">\(\hat{p} = 32/50 = 0.64\)</span>. Another friend gets 30 red for <span class="math inline">\(\hat{p} = 0.60\)</span>.</p>
+<p>Each person got a different sample proportion. No one did anything wrong — this is <strong>sampling variability</strong> in action.</p>
+<p>Now imagine hundreds of people each scooping their own sample of 50 beads. If we recorded every <span class="math inline">\(\hat{p}\)</span> and made a histogram of all those values, we would see the <strong>sampling distribution</strong> of <span class="math inline">\(\hat{p}\)</span>.</p>
+</div>
+<div class="definition">
+<p>The <strong>sampling distribution</strong> of a statistic is the distribution of all possible values of that statistic computed from all possible samples of a given size from a given population.</p>
+<p>A sampling distribution is <em>not</em> the distribution of individual data values. It is the distribution of a <em>summary statistic</em> (like <span class="math inline">\(\hat{p}\)</span> or <span class="math inline">\(\bar{x}\)</span>) across many hypothetical samples.</p>
+</div>
+<div class="important">
+<p><strong>Key properties of sampling distributions.</strong> For many common statistics, the sampling distribution has three important features:</p>
+<ol type="1">
+<li><strong>Center</strong>: The sampling distribution is centered at the population parameter. On average, the sample statistic equals the parameter.</li>
+<li><strong>Spread</strong>: The sampling distribution has a measurable spread that decreases as sample size increases. Larger samples give more precise estimates.</li>
+<li><strong>Shape</strong>: For many statistics, the sampling distribution is approximately bell-shaped (normal) when the sample size is large enough.</li>
+</ol>
+</div>
+<div class="original">
+<p>Here is an analogy that may help. Imagine you are trying to determine the average depth of a lake. You drop a weighted line at a random spot and measure the depth — that is one sample. If you did this at many random spots and recorded all those measurements, you would get a distribution of individual depth measurements (the <em>data distribution</em>). But if instead, for each spot you visited, you dropped the line 30 times in a small cluster and computed the average of those 30 measurements, then moved to a new random spot and did it again, the collection of those averages would form a <em>sampling distribution</em> of the mean.</p>
+<p>The two distributions are fundamentally different:</p>
+<ul>
+<li>The <strong>data distribution</strong> shows how individual observations vary.</li>
+<li>The <strong>sampling distribution</strong> shows how a <em>statistic</em> (like the mean) varies from sample to sample.</li>
+</ul>
+</div>
+</section>
+<section id="sec-variability-statistics" class="level2" data-number="7.3">
+<h2 data-number="7.3" class="anchored" data-anchor-id="sec-variability-statistics"><span class="header-section-number">7.3</span> Variability of sample statistics</h2>
+<p>Different samples from the same population produce different statistics. This variability is not a flaw — it is a fundamental feature of sampling that we must understand and quantify.</p>
+<div class="workedexample">
+<p>Suppose the true proportion of all US adults who support a particular policy is <span class="math inline">\(p = 0.52\)</span>. Three polling organizations each take a random sample of <span class="math inline">\(n = 1{,}000\)</span> adults and compute <span class="math inline">\(\hat{p}\)</span>. Their results might look like:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Poll</th>
+<th style="text-align: center;">Sample proportion <span class="math inline">\(\hat{p}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Poll A</td>
+<td style="text-align: center;">0.49</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Poll B</td>
+<td style="text-align: center;">0.54</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Poll C</td>
+<td style="text-align: center;">0.51</td>
+</tr>
+</tbody>
+</table>
+<p>All three polls were conducted correctly, yet they produced different results. Poll A even shows less than 50% support! This is sampling variability: the unavoidable variation that occurs when we estimate a population parameter from a sample.</p>
+</div>
+<div class="guidedpractice">
+<p>If the three polls above each used a sample of <span class="math inline">\(n = 10{,}000\)</span> instead of <span class="math inline">\(n = 1{,}000\)</span>, would you expect the three <span class="math inline">\(\hat{p}\)</span> values to be closer together or farther apart? Why?<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
+<section id="what-determines-how-much-a-statistic-varies" class="level3 original" data-number="7.3.1">
+<h3 data-number="7.3.1" class="anchored" data-anchor-id="what-determines-how-much-a-statistic-varies"><span class="header-section-number">7.3.1</span> What determines how much a statistic varies?</h3>
+<p>Two factors control how much a sample statistic bounces around from sample to sample:</p>
+<ol type="1">
+<li><p><strong>Sample size (<span class="math inline">\(n\)</span>)</strong>: Larger samples produce statistics that are closer to the parameter. This is intuitive — a sample of 1,000 tells you more about the population than a sample of 10.</p></li>
+<li><p><strong>Population variability</strong>: If the population is very homogeneous (everyone is similar), then any sample will look like any other sample, and the statistic won’t vary much. If the population is very heterogeneous (lots of individual differences), then different samples can look quite different, and the statistic will vary more.</p></li>
+</ol>
+<p>Of these two, sample size is the one we can control, and it turns out to be very powerful. Quadrupling the sample size cuts the variability of most statistics roughly in half.</p>
+</section>
 <div class="simkit">
-<p><strong>SimKit tools for this chapter</strong>: <strong>Sampling Distribution Simulator</strong> (Phase 1)</p>
+<p><strong>Explore sampling variability!</strong> Use SimKit’s Sampling Distribution Simulator to see this in action:</p>
+<p><a href="https://datascienceuwl.github.io/simkit/explore/sampling-distribution/" target="_blank">Launch Sampling Distribution Simulator</a></p>
+<ol type="1">
+<li>Set the population proportion to <span class="math inline">\(p = 0.60\)</span> and the sample size to <span class="math inline">\(n = 25\)</span>.</li>
+<li>Draw 500 samples and observe the resulting sampling distribution.</li>
+<li>Now change the sample size to <span class="math inline">\(n = 100\)</span> and draw 500 more samples.</li>
+<li>Compare the two sampling distributions. How do their centers compare? Their spreads? Their shapes?</li>
+</ol>
 </div>
-<section id="parameters-vs-statistics" class="level2" data-number="7.1">
-<h2 data-number="7.1" class="anchored" data-anchor-id="parameters-vs-statistics"><span class="header-section-number">7.1</span> Parameters vs statistics</h2>
-<p>Content under development.</p>
 </section>
-<section id="sampling-distributions" class="level2" data-number="7.2">
-<h2 data-number="7.2" class="anchored" data-anchor-id="sampling-distributions"><span class="header-section-number">7.2</span> Sampling distributions</h2>
-<p>Content under development.</p>
+<section id="sec-standard-error" class="level2" data-number="7.4">
+<h2 data-number="7.4" class="anchored" data-anchor-id="sec-standard-error"><span class="header-section-number">7.4</span> Standard error</h2>
+<p>We need a single number that quantifies how much a statistic varies from sample to sample. That number is the <strong>standard error</strong>.</p>
+<div class="definition">
+<p>The <strong>standard error</strong> (SE) of a statistic is the standard deviation of its sampling distribution. It measures the typical distance between a sample statistic and the population parameter.</p>
+<p>A small standard error means the statistic tends to fall close to the parameter (precise estimate). A large standard error means the statistic could plausibly fall far from the parameter (imprecise estimate).</p>
+</div>
+<div class="important">
+<p>Do not confuse the standard error with the standard deviation of the data:</p>
+<ul>
+<li>The <strong>standard deviation</strong> (<span class="math inline">\(s\)</span> or <span class="math inline">\(\sigma\)</span>) measures how much <em>individual observations</em> vary around the mean.</li>
+<li>The <strong>standard error</strong> (SE) measures how much a <em>sample statistic</em> varies around the population parameter from sample to sample.</li>
+</ul>
+<p>The standard error is always smaller than the standard deviation (for samples larger than <span class="math inline">\(n = 1\)</span>) because averaging reduces variability.</p>
+</div>
+<div class="workedexample">
+<p>In the medical consultant example, <span class="math inline">\(\hat{p} = 3/62 = 0.048\)</span>. If we could take many samples of 62 patients from this consultant’s true patient population and compute <span class="math inline">\(\hat{p}\)</span> each time, the standard deviation of all those <span class="math inline">\(\hat{p}\)</span> values would be the standard error of <span class="math inline">\(\hat{p}\)</span>.</p>
+<p>While we usually cannot literally take repeated samples, simulation methods (which we will explore in Chapters 7 and 8) allow us to approximate the standard error. In this case, bootstrap simulations suggest that the standard error of <span class="math inline">\(\hat{p}\)</span> is approximately 0.027. This means that if we could repeat the study many times, the sample complication rate would typically differ from the true complication rate by about 2.7 percentage points.</p>
+</div>
+<section id="why-the-standard-error-matters" class="level3 original" data-number="7.4.1">
+<h3 data-number="7.4.1" class="anchored" data-anchor-id="why-the-standard-error-matters"><span class="header-section-number">7.4.1</span> Why the standard error matters</h3>
+<p>The standard error is the engine of statistical inference. Here is why:</p>
+<ul>
+<li><p><strong>Confidence intervals</strong> are built by going a certain number of standard errors above and below the point estimate. A rough 95% confidence interval is:</p>
+<p><span class="math display">\[\text{statistic} \pm 2 \times SE\]</span></p></li>
+<li><p><strong>Hypothesis tests</strong> compare an observed statistic to what we would expect under the null hypothesis. The comparison is made in units of standard errors: “Is the observed result more than 2 standard errors from the null value?”</p></li>
+<li><p><strong>Sample size planning</strong> uses the standard error to determine how many observations are needed to achieve a desired level of precision.</p></li>
+</ul>
+<p>In the coming chapters, we will use simulation to <em>estimate</em> the standard error. In later chapters (Part III), we will use mathematical formulas to <em>calculate</em> it directly.</p>
 </section>
-<section id="variability-of-sample-statistics" class="level2" data-number="7.3">
-<h2 data-number="7.3" class="anchored" data-anchor-id="variability-of-sample-statistics"><span class="header-section-number">7.3</span> Variability of sample statistics</h2>
-<p>Content under development.</p>
+<div class="guidedpractice">
+<p>Two researchers both estimate the proportion of college students who prefer online textbooks. Researcher A surveys 100 students and finds <span class="math inline">\(\hat{p}_A = 0.62\)</span> with <span class="math inline">\(SE_A = 0.049\)</span>. Researcher B surveys 400 students and finds <span class="math inline">\(\hat{p}_B = 0.58\)</span> with <span class="math inline">\(SE_B = 0.025\)</span>.</p>
+<ol type="a">
+<li>Whose estimate is more precise? How do you know?</li>
+<li>Why is Researcher B’s standard error smaller?<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></li>
+</ol>
+</div>
 </section>
-<section id="standard-error" class="level2" data-number="7.4">
-<h2 data-number="7.4" class="anchored" data-anchor-id="standard-error"><span class="header-section-number">7.4</span> Standard error</h2>
-<p>Content under development.</p>
+<section id="sec-ch06-looking-ahead" class="level2" data-number="7.5">
+<h2 data-number="7.5" class="anchored" data-anchor-id="sec-ch06-looking-ahead"><span class="header-section-number">7.5</span> Looking ahead</h2>
+<div class="original">
+<p>This chapter has established the core vocabulary and ideas that drive all of statistical inference:</p>
+<ul>
+<li>We want to know about <strong>parameters</strong> but can only observe <strong>statistics</strong>.</li>
+<li>Statistics vary from sample to sample — this is <strong>sampling variability</strong>.</li>
+<li>The pattern of this variation is described by the <strong>sampling distribution</strong>.</li>
+<li>The <strong>standard error</strong> quantifies the typical amount of sampling variability.</li>
+</ul>
+<p>The fundamental question of inference is: <em>Given the sampling variability we expect, is the pattern in our data real, or could it have happened by chance?</em></p>
+<p>In the next three chapters, we will answer this question using three different approaches — all rooted in simulation:</p>
+<ul>
+<li><strong>Chapter 7 (Randomization Tests)</strong>: Shuffle the data to see what differences look like when there is no real effect. If the observed difference is extreme compared to the shuffled results, we have evidence of a real effect.</li>
+<li><strong>Chapter 8 (Bootstrap Confidence Intervals)</strong>: Resample from the data to approximate the sampling distribution, and use it to construct a range of plausible values for the parameter.</li>
+<li><strong>Chapter 9 (Sampling Distributions via Simulation)</strong>: Connect the simulation results from Chapters 7 and 8 to mathematical theory, setting the stage for the formula-based methods in Part III.</li>
+</ul>
+<p>The goal of Part II is to build your <em>intuition</em> for inference. The formulas will come later; the ideas come first.</p>
+</div>
 </section>
-<section id="chapter-review" class="level2" data-number="7.5">
-<h2 data-number="7.5" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">7.5</span> Chapter review</h2>
-<section id="summary" class="level3" data-number="7.5.1">
-<h3 data-number="7.5.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">7.5.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+<section id="sec-ch06-review" class="level2" data-number="7.6">
+<h2 data-number="7.6" class="anchored" data-anchor-id="sec-ch06-review"><span class="header-section-number">7.6</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="7.6.1">
+<h3 data-number="7.6.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">7.6.1</span> Summary</h3>
+<ul>
+<li>A <strong>population parameter</strong> is a fixed but unknown numerical summary of the population. A <strong>sample statistic</strong> (point estimate) is computed from data and serves as our best guess of the parameter.</li>
+<li>Different samples from the same population yield different statistics. This is <strong>sampling variability</strong> — it is not a mistake, but a fundamental feature of working with samples.</li>
+<li>The <strong>sampling distribution</strong> of a statistic describes how the statistic varies across all possible samples of a given size. It is typically centered at the parameter, and its spread decreases as sample size increases.</li>
+<li>The <strong>standard error</strong> is the standard deviation of the sampling distribution. It measures the precision of the statistic as an estimate of the parameter.</li>
+<li>The standard error is not the same as the standard deviation of the data. The standard deviation measures variability of individual observations; the standard error measures variability of a statistic.</li>
+<li>Larger samples produce smaller standard errors, meaning more precise estimates.</li>
+</ul>
 </section>
-<section id="exercises" class="level3 exercises" data-number="7.5.2">
-<h3 class="exercises anchored" data-number="7.5.2" data-anchor-id="exercises"><span class="header-section-number">7.5.2</span> Exercises</h3>
+<section id="key-terms" class="level3" data-number="7.6.2">
+<h3 data-number="7.6.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">7.6.2</span> Key terms</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 66%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Term</th>
+<th style="text-align: left;">Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Population parameter</td>
+<td style="text-align: left;">A fixed numerical summary of the entire population (e.g., <span class="math inline">\(p\)</span>, <span class="math inline">\(\mu\)</span>)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sample statistic</td>
+<td style="text-align: left;">A numerical summary computed from sample data (e.g., <span class="math inline">\(\hat{p}\)</span>, <span class="math inline">\(\bar{x}\)</span>)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Point estimate</td>
+<td style="text-align: left;">Another name for sample statistic; our best guess at the parameter</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sampling variability</td>
+<td style="text-align: left;">The fact that different samples produce different statistics</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sampling distribution</td>
+<td style="text-align: left;">The distribution of a statistic over all possible samples of a given size</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Standard error (SE)</td>
+<td style="text-align: left;">The standard deviation of the sampling distribution</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="exercises" class="level3 exercises" data-number="7.6.3">
+<h3 class="exercises anchored" data-number="7.6.3" data-anchor-id="exercises"><span class="header-section-number">7.6.3</span> Exercises</h3>
 <div class="underconstruction">
 <p>Exercises for this chapter are under development.</p>
 </div>
 
 
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>The point estimate is <span class="math inline">\(\hat{p} = 3/120 = 0.025\)</span>, or 2.5%. This is our best single estimate of the true proportion <span class="math inline">\(p\)</span> of listeners who can guess the tune.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>We would expect them to be closer together. Larger samples contain more information about the population, so the statistic is more precise — meaning less variability from sample to sample.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>(a) Researcher B’s estimate is more precise because the standard error is smaller (0.025 &lt; 0.049), meaning the sample statistic is expected to be closer to the true parameter. (b) Researcher B surveyed four times as many students, and increasing the sample size reduces the standard error.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->

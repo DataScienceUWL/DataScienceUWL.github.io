@@ -40,7 +40,10 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +71,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,11 +451,29 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#the-normal-distribution-as-a-probability-model" id="toc-the-normal-distribution-as-a-probability-model" class="nav-link active" data-scroll-target="#the-normal-distribution-as-a-probability-model"><span class="header-section-number">19.1</span> The normal distribution as a probability model</a></li>
-  <li><a href="#finding-probabilities" id="toc-finding-probabilities" class="nav-link" data-scroll-target="#finding-probabilities"><span class="header-section-number">19.2</span> Finding probabilities</a></li>
-  <li><a href="#finding-percentiles" id="toc-finding-percentiles" class="nav-link" data-scroll-target="#finding-percentiles"><span class="header-section-number">19.3</span> Finding percentiles</a></li>
-  <li><a href="#qq-plots-and-checking-normality" id="toc-qq-plots-and-checking-normality" class="nav-link" data-scroll-target="#qq-plots-and-checking-normality"><span class="header-section-number">19.4</span> QQ plots and checking normality</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">19.5</span> Chapter review</a>
+  <li><a href="#sec-normal-model" id="toc-sec-normal-model" class="nav-link active" data-scroll-target="#sec-normal-model"><span class="header-section-number">19.1</span> The normal distribution as a probability model</a>
+  <ul class="collapse">
+  <li><a href="#parameters-mean-and-standard-deviation" id="toc-parameters-mean-and-standard-deviation" class="nav-link" data-scroll-target="#parameters-mean-and-standard-deviation"><span class="header-section-number">19.1.1</span> Parameters: mean and standard deviation</a></li>
+  <li><a href="#the-68-95-99.7-rule" id="toc-the-68-95-99.7-rule" class="nav-link" data-scroll-target="#the-68-95-99.7-rule"><span class="header-section-number">19.1.2</span> The 68-95-99.7 rule</a></li>
+  <li><a href="#scope-note-chapter-18-vs.-chapter-10" id="toc-scope-note-chapter-18-vs.-chapter-10" class="nav-link" data-scroll-target="#scope-note-chapter-18-vs.-chapter-10"><span class="header-section-number">19.1.3</span> Scope note: Chapter 18 vs.&nbsp;Chapter 10</a></li>
+  </ul></li>
+  <li><a href="#sec-normal-probabilities" id="toc-sec-normal-probabilities" class="nav-link" data-scroll-target="#sec-normal-probabilities"><span class="header-section-number">19.2</span> Finding probabilities: <span class="math inline">\(P(X &lt; a)\)</span></a>
+  <ul class="collapse">
+  <li><a href="#z-scores-standardizing-observations" id="toc-z-scores-standardizing-observations" class="nav-link" data-scroll-target="#z-scores-standardizing-observations"><span class="header-section-number">19.2.1</span> Z-scores: standardizing observations</a></li>
+  <li><a href="#computing-tail-areas" id="toc-computing-tail-areas" class="nav-link" data-scroll-target="#computing-tail-areas"><span class="header-section-number">19.2.2</span> Computing tail areas</a></li>
+  <li><a href="#finding-probabilities-between-two-values" id="toc-finding-probabilities-between-two-values" class="nav-link" data-scroll-target="#finding-probabilities-between-two-values"><span class="header-section-number">19.2.3</span> Finding probabilities between two values</a></li>
+  </ul></li>
+  <li><a href="#sec-normal-percentiles" id="toc-sec-normal-percentiles" class="nav-link" data-scroll-target="#sec-normal-percentiles"><span class="header-section-number">19.3</span> Finding percentiles (inverse normal)</a>
+  <ul class="collapse">
+  <li><a href="#using-simkit-for-normal-probabilities-and-percentiles" id="toc-using-simkit-for-normal-probabilities-and-percentiles" class="nav-link" data-scroll-target="#using-simkit-for-normal-probabilities-and-percentiles"><span class="header-section-number">19.3.1</span> Using SimKit for normal probabilities and percentiles</a></li>
+  </ul></li>
+  <li><a href="#sec-qq-plots" id="toc-sec-qq-plots" class="nav-link" data-scroll-target="#sec-qq-plots"><span class="header-section-number">19.4</span> QQ plots and checking normality</a>
+  <ul class="collapse">
+  <li><a href="#method-1-histogram-with-normal-curve-overlay" id="toc-method-1-histogram-with-normal-curve-overlay" class="nav-link" data-scroll-target="#method-1-histogram-with-normal-curve-overlay"><span class="header-section-number">19.4.1</span> Method 1: Histogram with normal curve overlay</a></li>
+  <li><a href="#method-2-normal-probability-plots-qq-plots" id="toc-method-2-normal-probability-plots-qq-plots" class="nav-link" data-scroll-target="#method-2-normal-probability-plots-qq-plots"><span class="header-section-number">19.4.2</span> Method 2: Normal probability plots (QQ plots)</a></li>
+  <li><a href="#when-is-the-normal-model-appropriate" id="toc-when-is-the-normal-model-appropriate" class="nav-link" data-scroll-target="#when-is-the-normal-model-appropriate"><span class="header-section-number">19.4.4</span> When is the normal model appropriate?</a></li>
+  </ul></li>
+  <li><a href="#sec-ch18-review" id="toc-sec-ch18-review" class="nav-link" data-scroll-target="#sec-ch18-review"><span class="header-section-number">19.5</span> Chapter review</a>
   <ul class="collapse">
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">19.5.1</span> Summary</a></li>
   <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">19.5.2</span> Exercises</a></li>
@@ -453,45 +503,290 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: OS <code>ch_distributions</code> (normal section) — 85% coverage. Scope carefully vs Ch 10.</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Normal Distribution</em> will go here.</p>
+<p>The normal distribution is the most important probability model in statistics. Its familiar bell shape appears in an extraordinary range of settings — from SAT scores and adult heights to measurement errors and stock returns. In this chapter, we study the normal distribution as a <strong>probability model</strong> for individual observations: we learn to compute probabilities, find percentiles, and assess whether data plausibly come from a normal distribution. This complements Chapter 10, which uses the normal distribution as an approximation for <strong>sampling distributions</strong> in inference. Here, the focus is squarely on probability.</p>
 </div>
 <div class="simkit">
-<p><strong>SimKit tools for this chapter</strong>: Normal Distribution Explorer (Phase 2)</p>
+<p><strong>SimKit tools for this chapter</strong>: <strong>Normal Distribution Explorer</strong> (Phase 2)</p>
 </div>
-<section id="the-normal-distribution-as-a-probability-model" class="level2" data-number="19.1">
-<h2 data-number="19.1" class="anchored" data-anchor-id="the-normal-distribution-as-a-probability-model"><span class="header-section-number">19.1</span> The normal distribution as a probability model</h2>
-<p>Content under development.</p>
+<section id="sec-normal-model" class="level2" data-number="19.1">
+<h2 data-number="19.1" class="anchored" data-anchor-id="sec-normal-model"><span class="header-section-number">19.1</span> The normal distribution as a probability model</h2>
+<p>Among all distributions we encounter in practice, one is overwhelmingly the most common. The symmetric, unimodal, bell-shaped curve known as the <strong>normal distribution</strong> (also called the <strong>Gaussian distribution</strong>) arises in a remarkable variety of settings.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="A standard normal curve — symmetric, unimodal, and bell-shaped."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A smooth, symmetric, bell-shaped curve centered at zero, with tails extending in both directions but approaching zero height far from the center."></a></p>
+<figcaption>A standard normal curve — symmetric, unimodal, and bell-shaped.</figcaption>
+</figure>
+</div>
+<div class="important">
+<p>Many variables are <em>nearly</em> normal, but none are <em>exactly</em> normal. The normal distribution, while not a perfect description of any single real-world variable, is an extraordinarily useful model for a wide variety of problems.</p>
+</div>
+<section id="parameters-mean-and-standard-deviation" class="level3" data-number="19.1.1">
+<h3 data-number="19.1.1" class="anchored" data-anchor-id="parameters-mean-and-standard-deviation"><span class="header-section-number">19.1.1</span> Parameters: mean and standard deviation</h3>
+<p>The normal distribution is completely specified by two <strong>parameters</strong>:</p>
+<ul>
+<li>The <strong>mean</strong> <span class="math inline">\(\mu\)</span> determines the center (location) of the bell curve.</li>
+<li>The <strong>standard deviation</strong> <span class="math inline">\(\sigma\)</span> determines the spread (width) of the bell curve.</li>
+</ul>
+<p>If a random variable <span class="math inline">\(X\)</span> follows a normal distribution with mean <span class="math inline">\(\mu\)</span> and standard deviation <span class="math inline">\(\sigma\)</span>, we write:</p>
+<p><span class="math display">\[X \sim N(\mu, \sigma)\]</span></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Two normal distributions: N(0, 1) and N(19, 4). Changing \mu shifts the curve; changing \sigma stretches or compresses it."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Two normal distribution curves plotted on the same axis. The first is centered at 0 and is tall and narrow (standard deviation 1). The second is centered at 19 and is shorter and wider (standard deviation 4)."></a></p>
+<figcaption>Two normal distributions: <span class="math inline">\(N(0, 1)\)</span> and <span class="math inline">\(N(19, 4)\)</span>. Changing <span class="math inline">\(\mu\)</span> shifts the curve; changing <span class="math inline">\(\sigma\)</span> stretches or compresses it.</figcaption>
+</figure>
+</div>
+<div class="definition">
+<p>The normal distribution with mean <span class="math inline">\(\mu = 0\)</span> and standard deviation <span class="math inline">\(\sigma = 1\)</span> is called the <strong>standard normal distribution</strong>. It is often denoted <span class="math inline">\(Z \sim N(0, 1)\)</span>.</p>
+</div>
+<div class="guidedpractice">
+<p>Write the shorthand notation for normal distributions with: (a) mean 5 and standard deviation 3, (b) mean <span class="math inline">\(-100\)</span> and standard deviation 10, (c) mean 2 and standard deviation 9.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
 </section>
-<section id="finding-probabilities" class="level2" data-number="19.2">
-<h2 data-number="19.2" class="anchored" data-anchor-id="finding-probabilities"><span class="header-section-number">19.2</span> Finding probabilities</h2>
-<p>Content under development.</p>
+<section id="the-68-95-99.7-rule" class="level3" data-number="19.1.2">
+<h3 data-number="19.1.2" class="anchored" data-anchor-id="the-68-95-99.7-rule"><span class="header-section-number">19.1.2</span> The 68-95-99.7 rule</h3>
+<p>A useful rule of thumb describes how probability is distributed within a normal distribution:</p>
+<div class="important">
+<p><strong>The 68-95-99.7 rule.</strong> For a normal distribution:</p>
+<ul>
+<li>About <strong>68%</strong> of observations fall within 1 standard deviation of the mean (<span class="math inline">\(\mu \pm \sigma\)</span>).</li>
+<li>About <strong>95%</strong> of observations fall within 2 standard deviations of the mean (<span class="math inline">\(\mu \pm 2\sigma\)</span>).</li>
+<li>About <strong>99.7%</strong> of observations fall within 3 standard deviations of the mean (<span class="math inline">\(\mu \pm 3\sigma\)</span>).</li>
+</ul>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="The 68-95-99.7 rule illustrated on a normal distribution."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A normal distribution with three shaded regions. The innermost region (within 1 standard deviation) is labeled 68%, the middle region (within 2 standard deviations) is labeled 95%, and the outermost region (within 3 standard deviations) is labeled 99.7%."></a></p>
+<figcaption>The 68-95-99.7 rule illustrated on a normal distribution.</figcaption>
+</figure>
+</div>
+<p>It is possible for a normal random variable to fall 4, 5, or even more standard deviations from the mean, but such events are extremely rare. The probability of being more than 4 standard deviations from the mean is about 1 in 15,000.</p>
+<div class="guidedpractice">
+<p>SAT scores closely follow <span class="math inline">\(N(\mu = 1100, \sigma = 200)\)</span>. (a) About what percent of test takers score between 700 and 1500? (b) What percent score between 1100 and 1500?<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
 </section>
-<section id="finding-percentiles" class="level2" data-number="19.3">
-<h2 data-number="19.3" class="anchored" data-anchor-id="finding-percentiles"><span class="header-section-number">19.3</span> Finding percentiles</h2>
-<p>Content under development.</p>
+<section id="scope-note-chapter-18-vs.-chapter-10" class="level3 original" data-number="19.1.3">
+<h3 data-number="19.1.3" class="anchored" data-anchor-id="scope-note-chapter-18-vs.-chapter-10"><span class="header-section-number">19.1.3</span> Scope note: Chapter 18 vs.&nbsp;Chapter 10</h3>
+<p>This chapter covers the normal distribution as a <strong>probability model for individual observations</strong>. You use it to answer questions like:</p>
+<ul>
+<li>What proportion of adults are taller than 6 feet?</li>
+<li>What SAT score puts a student in the 95th percentile?</li>
+<li>Is it plausible that this data set came from a normal distribution?</li>
+</ul>
+<p><strong>Chapter 10</strong> uses the normal distribution in a different role: as an approximation for <strong>sampling distributions</strong> to perform inference. There, the normal curve describes the behavior of statistics like <span class="math inline">\(\bar{x}\)</span> and <span class="math inline">\(\hat{p}\)</span> across many samples.</p>
+<p>The same mathematical object — the normal distribution — serves both purposes, but the <em>interpretation</em> is different. Here, we are modeling data; in Chapter 10, we are modeling the behavior of sample statistics.</p>
 </section>
-<section id="qq-plots-and-checking-normality" class="level2" data-number="19.4">
-<h2 data-number="19.4" class="anchored" data-anchor-id="qq-plots-and-checking-normality"><span class="header-section-number">19.4</span> QQ plots and checking normality</h2>
-<p>Content under development.</p>
 </section>
-<section id="chapter-review" class="level2" data-number="19.5">
-<h2 data-number="19.5" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">19.5</span> Chapter review</h2>
+<section id="sec-normal-probabilities" class="level2" data-number="19.2">
+<h2 data-number="19.2" class="anchored" data-anchor-id="sec-normal-probabilities"><span class="header-section-number">19.2</span> Finding probabilities: <span class="math inline">\(P(X &lt; a)\)</span></h2>
+<section id="z-scores-standardizing-observations" class="level3" data-number="19.2.1">
+<h3 data-number="19.2.1" class="anchored" data-anchor-id="z-scores-standardizing-observations"><span class="header-section-number">19.2.1</span> Z-scores: standardizing observations</h3>
+<p>To find probabilities from a normal distribution, we first convert the observation to a <strong>Z-score</strong>, which measures how many standard deviations it falls above or below the mean.</p>
+<div class="definition">
+<p>The <strong>Z-score</strong> of an observation <span class="math inline">\(x\)</span> from a distribution with mean <span class="math inline">\(\mu\)</span> and standard deviation <span class="math inline">\(\sigma\)</span> is:</p>
+<p><span class="math display">\[Z = \frac{x - \mu}{\sigma}\]</span></p>
+<p>Observations above the mean have positive Z-scores; observations below the mean have negative Z-scores; an observation equal to the mean has a Z-score of 0.</p>
+</div>
+<div class="workedexample">
+<p>SAT scores follow <span class="math inline">\(N(1100, 200)\)</span> and ACT scores follow <span class="math inline">\(N(21, 6)\)</span>. Ann scored 1300 on the SAT and Tom scored 24 on the ACT. Who performed better relative to their peers?</p>
+<p><span class="math display">\[Z_{\text{Ann}} = \frac{1300 - 1100}{200} = 1.0 \qquad Z_{\text{Tom}} = \frac{24 - 21}{6} = 0.5\]</span></p>
+<p>Ann is 1 standard deviation above the SAT mean, while Tom is only 0.5 standard deviations above the ACT mean. Ann performed relatively better.</p>
+</div>
+<div class="guidedpractice">
+<p>Head lengths of brushtail possums follow <span class="math inline">\(N(92.6, 3.6)\)</span> mm. Compute the Z-scores for possums with head lengths of 95.4 mm and 85.8 mm. Which is more unusual?<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+</div>
+</section>
+<section id="computing-tail-areas" class="level3" data-number="19.2.2">
+<h3 data-number="19.2.2" class="anchored" data-anchor-id="computing-tail-areas"><span class="header-section-number">19.2.2</span> Computing tail areas</h3>
+<p>Once we have a Z-score, we can find the probability of observing a value at least that extreme. This is called a <strong>tail area</strong> or <strong>tail probability</strong>.</p>
+<div class="important">
+<p><strong>Always draw a picture first.</strong> For any normal probability problem, draw and label the normal curve, shade the area of interest, and then find the Z-score. The picture provides a visual estimate and helps avoid errors.</p>
+</div>
+<p>There are several ways to find the area under the normal curve:</p>
+<ol type="1">
+<li><strong>Statistical software</strong> (most common in practice): In R, <code>pnorm(z)</code> returns the area to the left of <span class="math inline">\(z\)</span>. For example, <code>pnorm(1)</code> returns 0.8413.</li>
+<li><strong>Calculator</strong>: Most graphing calculators have a <code>normalcdf</code> function.</li>
+<li><strong>Probability tables</strong>: Tables of standard normal areas are provided in many textbooks (see Appendix).</li>
+</ol>
+<div class="workedexample">
+<p>Shannon is a randomly selected SAT taker. What is the probability she scores at least 1190?</p>
+<p><strong>Step 1</strong>: Draw the picture — shade the area above 1190 on <span class="math inline">\(N(1100, 200)\)</span>.</p>
+<p><strong>Step 2</strong>: Compute the Z-score.</p>
+<p><span class="math display">\[Z = \frac{1190 - 1100}{200} = \frac{90}{200} = 0.45\]</span></p>
+<p><strong>Step 3</strong>: Find the area. Using software, the area to the <em>left</em> of <span class="math inline">\(Z = 0.45\)</span> is 0.6736. Since we want the area to the <em>right</em>:</p>
+<p><span class="math display">\[P(X \geq 1190) = 1 - 0.6736 = 0.3264\]</span></p>
+<p>The probability Shannon scores at least 1190 is about 32.6%.</p>
+</div>
+<div class="important">
+<p><strong>Finding areas to the right.</strong> Most software returns the area to the <em>left</em> of a Z-score. To find the area to the <em>right</em>, subtract from 1:</p>
+<p><span class="math display">\[P(X &gt; a) = 1 - P(X \leq a)\]</span></p>
+</div>
+<div class="workedexample">
+<p>Edward scored 1030 on his SAT. What is his percentile?</p>
+<p>The <strong>percentile</strong> is the proportion of scores <em>below</em> his. Compute the Z-score:</p>
+<p><span class="math display">\[Z = \frac{1030 - 1100}{200} = -0.35\]</span></p>
+<p>Using software: <span class="math inline">\(P(Z \leq -0.35) = 0.3632\)</span>. Edward is at the 36th percentile.</p>
+</div>
+<div class="guidedpractice">
+<p>Stuart scored 1500 on the SAT. (a) What is his percentile? (b) What percent of test takers scored higher?<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+</div>
+</section>
+<section id="finding-probabilities-between-two-values" class="level3" data-number="19.2.3">
+<h3 data-number="19.2.3" class="anchored" data-anchor-id="finding-probabilities-between-two-values"><span class="header-section-number">19.2.3</span> Finding probabilities between two values</h3>
+<p>To find the probability between two values, compute the area between them by subtracting tail areas.</p>
+<div class="workedexample">
+<p>Adult male heights in the US follow <span class="math inline">\(N(70.0'', 3.3'')\)</span>. What is the probability a randomly selected adult male is between 5’9’’ (69’‘) and 6’2’’ (74’’)?</p>
+<p><strong>Z-scores</strong>:</p>
+<p><span class="math display">\[Z_{69} = \frac{69 - 70}{3.3} = -0.30 \qquad Z_{74} = \frac{74 - 70}{3.3} = 1.21\]</span></p>
+<p><strong>Areas</strong>:</p>
+<ul>
+<li><span class="math inline">\(P(Z \leq -0.30) = 0.3821\)</span> (area to the left of 69’’)</li>
+<li><span class="math inline">\(P(Z \leq 1.21) = 0.8869\)</span> (area to the left of 74’’)</li>
+</ul>
+<p><strong>Area between</strong>:</p>
+<p><span class="math display">\[P(69 \leq X \leq 74) = 0.8869 - 0.3821 = 0.5048\]</span></p>
+<p>About 50.5% of adult males are between 5’9’’ and 6’2’’.</p>
+</div>
+<div class="guidedpractice">
+<p>SAT scores follow <span class="math inline">\(N(1100, 200)\)</span>. What percent of test takers score between 1100 and 1400?<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+</div>
+</section>
+</section>
+<section id="sec-normal-percentiles" class="level2" data-number="19.3">
+<h2 data-number="19.3" class="anchored" data-anchor-id="sec-normal-percentiles"><span class="header-section-number">19.3</span> Finding percentiles (inverse normal)</h2>
+<p>Sometimes we know a tail probability (or percentile) and need to find the corresponding observation value. This is the <em>inverse</em> of the normal probability problem.</p>
+<p><strong>Strategy:</strong></p>
+<ol type="1">
+<li>Draw the picture and identify the tail area.</li>
+<li>Find the Z-score corresponding to that tail area (using software, a calculator, or a table).</li>
+<li>Use the Z-score formula to solve for <span class="math inline">\(x\)</span>: <span class="math inline">\(x = \mu + Z \cdot \sigma\)</span>.</li>
+</ol>
+<div class="workedexample">
+<p>Erik’s height is at the 40th percentile of the US adult male height distribution <span class="math inline">\(N(70.0, 3.3)\)</span>. How tall is he?</p>
+<p><strong>Step 1</strong>: The lower tail has area 0.40.</p>
+<p><strong>Step 2</strong>: Using software, the Z-score corresponding to the 40th percentile is <span class="math inline">\(Z = -0.25\)</span>.</p>
+<p><strong>Step 3</strong>: Solve for Erik’s height:</p>
+<p><span class="math display">\[x = \mu + Z \cdot \sigma = 70.0 + (-0.25)(3.3) = 70.0 - 0.825 = 69.18 \text{ inches}\]</span></p>
+<p>Erik is about 5’9’’.</p>
+</div>
+<div class="workedexample">
+<p>What is the height at the 82nd percentile for adult males?</p>
+<p>Using software, the Z-score at the 82nd percentile is <span class="math inline">\(Z = 0.92\)</span>. Then:</p>
+<p><span class="math display">\[x = 70.0 + 0.92 \times 3.3 = 70.0 + 3.04 = 73.04 \text{ inches}\]</span></p>
+<p>The 82nd percentile corresponds to about 6’1’’.</p>
+</div>
+<div class="guidedpractice">
+<p>SAT scores follow <span class="math inline">\(N(1100, 200)\)</span>. (a) What is the 95th percentile for SAT scores? (b) What is the 97.5th percentile?<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+</div>
+<section id="using-simkit-for-normal-probabilities-and-percentiles" class="level3 original" data-number="19.3.1">
+<h3 data-number="19.3.1" class="anchored" data-anchor-id="using-simkit-for-normal-probabilities-and-percentiles"><span class="header-section-number">19.3.1</span> Using SimKit for normal probabilities and percentiles</h3>
+<p>The SimKit Normal Distribution Explorer provides an interactive way to work with the normal distribution. You can:</p>
+<ul>
+<li>Set <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma\)</span> to define the distribution</li>
+<li>Shade regions to find probabilities (left tail, right tail, or between two values)</li>
+<li>Enter a probability to find the corresponding cutoff value (inverse normal)</li>
+<li>Toggle between showing the Z-score and the original scale</li>
+</ul>
+<div class="simkit">
+<p><strong>Try it in SimKit</strong>: Open the Normal Distribution Explorer and set <span class="math inline">\(\mu = 1100\)</span>, <span class="math inline">\(\sigma = 200\)</span> for SAT scores. Shade the region above 1300 to find the probability of scoring above 1300. Then switch to “find value” mode and enter 0.95 to find the 95th percentile.</p>
+</div>
+</section>
+</section>
+<section id="sec-qq-plots" class="level2" data-number="19.4">
+<h2 data-number="19.4" class="anchored" data-anchor-id="sec-qq-plots"><span class="header-section-number">19.4</span> QQ plots and checking normality</h2>
+<p>Before using the normal distribution as a model, we should check whether the assumption of normality is reasonable. Two visual methods are commonly used.</p>
+<section id="method-1-histogram-with-normal-curve-overlay" class="level3" data-number="19.4.1">
+<h3 data-number="19.4.1" class="anchored" data-anchor-id="method-1-histogram-with-normal-curve-overlay"><span class="header-section-number">19.4.1</span> Method 1: Histogram with normal curve overlay</h3>
+<p>The simplest approach is to plot a histogram of the data and overlay the best-fitting normal curve (using <span class="math inline">\(\bar{x}\)</span> for <span class="math inline">\(\mu\)</span> and <span class="math inline">\(s\)</span> for <span class="math inline">\(\sigma\)</span>). If the histogram closely matches the curve, the normal model is reasonable.</p>
+</section>
+<section id="method-2-normal-probability-plots-qq-plots" class="level3" data-number="19.4.2">
+<h3 data-number="19.4.2" class="anchored" data-anchor-id="method-2-normal-probability-plots-qq-plots"><span class="header-section-number">19.4.2</span> Method 2: Normal probability plots (QQ plots)</h3>
+<div class="definition">
+<p>A <strong>normal probability plot</strong> (also called a <strong>QQ plot</strong>, short for “quantile-quantile plot”) plots the observed data values against the values we would expect if the data were perfectly normal. If the data are approximately normal, the points will fall close to a straight line.</p>
+</div>
+<div class="original">
+<p><strong>How to read a QQ plot:</strong></p>
+<ul>
+<li><strong>Points on or near the line</strong>: The data are consistent with a normal distribution.</li>
+<li><strong>Systematic curve (S-shape or other)</strong>: The data deviate from normality in a specific way.</li>
+<li><strong>Points curving up at both ends</strong>: The distribution has heavier tails than normal (more extreme values).</li>
+<li><strong>Points curving down at both ends</strong>: The distribution has lighter tails than normal.</li>
+<li><strong>Points curving up at the right</strong>: The distribution is right-skewed.</li>
+<li><strong>Points curving down at the left</strong>: The distribution is left-skewed.</li>
+</ul>
+<section id="interpreting-qq-plots-examples" class="level3" data-number="19.4.3">
+<h3 data-number="19.4.3" class="anchored" data-anchor-id="interpreting-qq-plots-examples"><span class="header-section-number">19.4.3</span> Interpreting QQ plots: Examples</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Three QQ plots: (a) approximately normal data with n = 400 — points fall close to the line; (b) right-skewed data — points curve upward at the right; (c) heavy-tailed data — points curve away from the line at both ends."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Three QQ plots side by side. The first shows points falling very close to a straight diagonal line. The second shows points curving above the line at the right end. The third shows points curving away from the line at both ends."></a></p>
+<figcaption>Three QQ plots: (a) approximately normal data with <span class="math inline">\(n = 400\)</span> — points fall close to the line; (b) right-skewed data — points curve upward at the right; (c) heavy-tailed data — points curve away from the line at both ends.</figcaption>
+</figure>
+</div>
+<p><strong>Sample size matters.</strong> With small sample sizes (<span class="math inline">\(n &lt; 30\)</span>), we should expect more variability in the QQ plot even when the data truly come from a normal distribution. Deviations must be more severe to be considered evidence against normality when <span class="math inline">\(n\)</span> is small.</p>
+</section>
+</div>
+<div class="guidedpractice">
+<p>A researcher collects the following data and creates a QQ plot. The points follow the diagonal line closely in the middle of the distribution but curve upward at the right end. What does this suggest about the shape of the data?<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a></p>
+</div>
+</section>
+<section id="when-is-the-normal-model-appropriate" class="level3 original" data-number="19.4.4">
+<h3 data-number="19.4.4" class="anchored" data-anchor-id="when-is-the-normal-model-appropriate"><span class="header-section-number">19.4.4</span> When is the normal model appropriate?</h3>
+<p>The normal distribution is a good model for data that are:</p>
+<ul>
+<li><strong>Symmetric</strong>: The histogram is roughly mirror-image around the center.</li>
+<li><strong>Unimodal</strong>: There is a single peak.</li>
+<li><strong>Bell-shaped</strong>: The histogram has the characteristic tapered shape of the normal curve.</li>
+<li><strong>No extreme outliers</strong>: Outliers can distort both the mean and standard deviation, making the normal model a poor fit.</li>
+</ul>
+<p>Many variables are approximately normal:</p>
+<ul>
+<li>Standardized test scores (SAT, ACT, GRE)</li>
+<li>Heights of adults (within a sex)</li>
+<li>Measurement errors in scientific instruments</li>
+<li>Many biological measurements (blood pressure, cholesterol levels)</li>
+</ul>
+<p>Many variables are <strong>not</strong> normal:</p>
+<ul>
+<li>Income distributions (right-skewed)</li>
+<li>Waiting times (often right-skewed)</li>
+<li>Count data (often Poisson or binomial)</li>
+<li>Variables with natural boundaries (proportions, ages)</li>
+</ul>
+<p>When the normal model is not appropriate, other distributions may be used, or nonparametric methods may be applied.</p>
+</section>
+</section>
+<section id="sec-ch18-review" class="level2" data-number="19.5">
+<h2 data-number="19.5" class="anchored" data-anchor-id="sec-ch18-review"><span class="header-section-number">19.5</span> Chapter review</h2>
 <section id="summary" class="level3" data-number="19.5.1">
 <h3 data-number="19.5.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">19.5.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+<ul>
+<li>The <strong>normal distribution</strong> <span class="math inline">\(N(\mu, \sigma)\)</span> is a continuous probability model defined by its mean <span class="math inline">\(\mu\)</span> (center) and standard deviation <span class="math inline">\(\sigma\)</span> (spread).</li>
+<li>The <strong>68-95-99.7 rule</strong> provides quick estimates: 68% of values fall within 1 SD, 95% within 2 SDs, and 99.7% within 3 SDs of the mean.</li>
+<li>The <strong>Z-score</strong> <span class="math inline">\(Z = (x - \mu)/\sigma\)</span> standardizes an observation by measuring how many standard deviations it falls from the mean.</li>
+<li><strong>Finding probabilities</strong>: Convert to a Z-score, then use software, a calculator, or a table to find the area under the standard normal curve.</li>
+<li><strong>Finding percentiles</strong> (inverse normal): Look up the Z-score corresponding to the desired area, then solve <span class="math inline">\(x = \mu + Z\sigma\)</span>.</li>
+<li><strong>QQ plots</strong> assess whether data are approximately normal by plotting observed values against expected normal values. Points near a straight line indicate normality.</li>
+<li>Chapter 18 treats the normal distribution as a <strong>probability model</strong> for individual observations; Chapter 10 uses it for <strong>sampling distributions</strong> in inference.</li>
+</ul>
 </section>
 <section id="exercises" class="level3 exercises" data-number="19.5.2">
 <h3 class="exercises anchored" data-number="19.5.2" data-anchor-id="exercises"><span class="header-section-number">19.5.2</span> Exercises</h3>
-<div class="underconstruction">
 <p>Exercises for this chapter are under development.</p>
-</div>
 
 
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>(a) <span class="math inline">\(N(\mu = 5, \sigma = 3)\)</span>. (b) <span class="math inline">\(N(\mu = -100, \sigma = 10)\)</span>. (c) <span class="math inline">\(N(\mu = 2, \sigma = 9)\)</span>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>(a) 700 and 1500 are each 2 standard deviations from the mean, so about 95% of test takers score in this range. (b) By symmetry, half of the 95% falls above the mean: <span class="math inline">\(95\%/2 = 47.5\%\)</span>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><span class="math inline">\(Z_1 = (95.4 - 92.6)/3.6 = 0.78\)</span> and <span class="math inline">\(Z_2 = (85.8 - 92.6)/3.6 = -1.89\)</span>. Since <span class="math inline">\(|{-1.89}| &gt; |0.78|\)</span>, the 85.8 mm head length is more unusual.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>(a) <span class="math inline">\(Z = (1500 - 1100)/200 = 2.0\)</span>. <span class="math inline">\(P(Z \leq 2) = 0.9772\)</span>. Stuart is at the 97.7th percentile. (b) <span class="math inline">\(1 - 0.9772 = 0.0228\)</span>, or about 2.3%.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p><span class="math inline">\(Z_{1100} = 0 \to P(Z \leq 0) = 0.5000\)</span>. <span class="math inline">\(Z_{1400} = 1.5 \to P(Z \leq 1.5) = 0.9332\)</span>. Area between: <span class="math inline">\(0.9332 - 0.5000 = 0.4332\)</span>, or about 43.3%.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>(a) <span class="math inline">\(Z_{0.95} = 1.645\)</span>, so <span class="math inline">\(x = 1100 + 1.645 \times 200 = 1429\)</span>. (b) <span class="math inline">\(Z_{0.975} = 1.96\)</span>, so <span class="math inline">\(x = 1100 + 1.96 \times 200 = 1492\)</span>.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>The QQ plot suggests the data are right-skewed. The bulk of the data are approximately normal, but there are larger values in the upper tail than the normal distribution would predict.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
@@ -938,6 +1233,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

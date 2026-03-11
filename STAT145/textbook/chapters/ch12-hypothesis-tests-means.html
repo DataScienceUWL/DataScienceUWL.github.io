@@ -40,7 +40,10 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +71,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,15 +451,33 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#one-sample-t-test" id="toc-one-sample-t-test" class="nav-link active" data-scroll-target="#one-sample-t-test"><span class="header-section-number">13.1</span> One-sample t-test</a></li>
-  <li><a href="#two-sample-t-test" id="toc-two-sample-t-test" class="nav-link" data-scroll-target="#two-sample-t-test"><span class="header-section-number">13.2</span> Two-sample t-test</a></li>
-  <li><a href="#paired-t-test" id="toc-paired-t-test" class="nav-link" data-scroll-target="#paired-t-test"><span class="header-section-number">13.3</span> Paired t-test</a></li>
-  <li><a href="#connecting-simulation-and-t-test-results" id="toc-connecting-simulation-and-t-test-results" class="nav-link" data-scroll-target="#connecting-simulation-and-t-test-results"><span class="header-section-number">13.4</span> Connecting simulation and t-test results</a></li>
-  <li><a href="#practical-vs-statistical-significance" id="toc-practical-vs-statistical-significance" class="nav-link" data-scroll-target="#practical-vs-statistical-significance"><span class="header-section-number">13.5</span> Practical vs statistical significance</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">13.6</span> Chapter review</a>
+  <li><a href="#sec-t-test-framework" id="toc-sec-t-test-framework" class="nav-link active" data-scroll-target="#sec-t-test-framework"><span class="header-section-number">13.1</span> The <span class="math inline">\(t\)</span>-test framework</a></li>
+  <li><a href="#sec-one-sample-t-test" id="toc-sec-one-sample-t-test" class="nav-link" data-scroll-target="#sec-one-sample-t-test"><span class="header-section-number">13.2</span> One-sample <span class="math inline">\(t\)</span>-test</a>
   <ul class="collapse">
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">13.6.1</span> Summary</a></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">13.6.2</span> Exercises</a></li>
+  <li><a href="#setup-and-hypotheses" id="toc-setup-and-hypotheses" class="nav-link" data-scroll-target="#setup-and-hypotheses"><span class="header-section-number">13.2.1</span> Setup and hypotheses</a></li>
+  <li><a href="#worked-example-cherry-blossom-race-times" id="toc-worked-example-cherry-blossom-race-times" class="nav-link" data-scroll-target="#worked-example-cherry-blossom-race-times"><span class="header-section-number">13.2.2</span> Worked example: Cherry Blossom race times</a></li>
+  </ul></li>
+  <li><a href="#sec-two-sample-t-test" id="toc-sec-two-sample-t-test" class="nav-link" data-scroll-target="#sec-two-sample-t-test"><span class="header-section-number">13.3</span> Two-sample <span class="math inline">\(t\)</span>-test</a>
+  <ul class="collapse">
+  <li><a href="#setup-and-hypotheses-1" id="toc-setup-and-hypotheses-1" class="nav-link" data-scroll-target="#setup-and-hypotheses-1"><span class="header-section-number">13.3.1</span> Setup and hypotheses</a></li>
+  <li><a href="#worked-example-birth-weights-and-smoking" id="toc-worked-example-birth-weights-and-smoking" class="nav-link" data-scroll-target="#worked-example-birth-weights-and-smoking"><span class="header-section-number">13.3.2</span> Worked example: Birth weights and smoking</a></li>
+  <li><a href="#worked-example-exam-versions" id="toc-worked-example-exam-versions" class="nav-link" data-scroll-target="#worked-example-exam-versions"><span class="header-section-number">13.3.3</span> Worked example: Exam versions</a></li>
+  </ul></li>
+  <li><a href="#sec-paired-t-test" id="toc-sec-paired-t-test" class="nav-link" data-scroll-target="#sec-paired-t-test"><span class="header-section-number">13.4</span> Paired <span class="math inline">\(t\)</span>-test</a>
+  <ul class="collapse">
+  <li><a href="#setup-and-hypotheses-2" id="toc-setup-and-hypotheses-2" class="nav-link" data-scroll-target="#setup-and-hypotheses-2"><span class="header-section-number">13.4.1</span> Setup and hypotheses</a></li>
+  <li><a href="#worked-example-textbook-prices" id="toc-worked-example-textbook-prices" class="nav-link" data-scroll-target="#worked-example-textbook-prices"><span class="header-section-number">13.4.2</span> Worked example: Textbook prices</a></li>
+  </ul></li>
+  <li><a href="#sec-sim-vs-t" id="toc-sec-sim-vs-t" class="nav-link" data-scroll-target="#sec-sim-vs-t"><span class="header-section-number">13.5</span> Connecting simulation-based and <span class="math inline">\(t\)</span>-based tests</a></li>
+  <li><a href="#sec-practical-significance" id="toc-sec-practical-significance" class="nav-link" data-scroll-target="#sec-practical-significance"><span class="header-section-number">13.6</span> Practical vs.&nbsp;statistical significance</a>
+  <ul class="collapse">
+  <li><a href="#effect-sizes" id="toc-effect-sizes" class="nav-link" data-scroll-target="#effect-sizes"><span class="header-section-number">13.6.1</span> Effect sizes</a></li>
+  </ul></li>
+  <li><a href="#sec-ch12-review" id="toc-sec-ch12-review" class="nav-link" data-scroll-target="#sec-ch12-review"><span class="header-section-number">13.7</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">13.7.1</span> Summary</a></li>
+  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">13.7.2</span> Key terms</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">13.7.3</span> Exercises</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -454,46 +504,375 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: IMS <code>inference-one-mean.qmd</code> + <code>inference-two-means.qmd</code> + <code>inference-paired-means.qmd</code> — 100% coverage</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Hypothesis Tests for Means</em> will go here.</p>
+<p>In Chapter 7, we developed the logic of hypothesis testing using simulation: shuffle the data under the null hypothesis, build a null distribution, and measure how extreme the observed statistic is. In Chapter 11, we introduced the <span class="math inline">\(t\)</span>-distribution as a mathematical model for the sampling distribution of means. Now we bring these ideas together. In this chapter, we use the <span class="math inline">\(t\)</span>-distribution to conduct hypothesis tests for a single mean, the difference between two independent means, and the mean of paired differences. Along the way, we will see that the <span class="math inline">\(t\)</span>-test and simulation-based tests generally agree when conditions are met, and we will discuss what to do when they disagree.</p>
 </div>
-<section id="one-sample-t-test" class="level2" data-number="13.1">
-<h2 data-number="13.1" class="anchored" data-anchor-id="one-sample-t-test"><span class="header-section-number">13.1</span> One-sample t-test</h2>
-<p>Content under development.</p>
+<section id="sec-t-test-framework" class="level2" data-number="13.1">
+<h2 data-number="13.1" class="anchored" data-anchor-id="sec-t-test-framework"><span class="header-section-number">13.1</span> The <span class="math inline">\(t\)</span>-test framework</h2>
+<div class="original">
+<p>Every hypothesis test follows the same four-step structure, whether we use simulation or a mathematical model:</p>
+<ol type="1">
+<li><strong>State hypotheses.</strong> Write <span class="math inline">\(H_0\)</span> (null hypothesis) and <span class="math inline">\(H_A\)</span> (alternative hypothesis) in both words and symbols.</li>
+<li><strong>Check conditions.</strong> Verify that the mathematical model is appropriate.</li>
+<li><strong>Compute the test statistic and p-value.</strong> Calculate how far the observed data are from what <span class="math inline">\(H_0\)</span> predicts, and determine how unusual that distance is.</li>
+<li><strong>Draw a conclusion.</strong> Compare the p-value to the significance level <span class="math inline">\(\alpha\)</span> and state the conclusion in context.</li>
+</ol>
+<p>For means, the test statistic is a <strong><span class="math inline">\(T\)</span> score</strong> – the standardized distance from the observed sample mean to the hypothesized value, measured in units of standard errors.</p>
+</div>
 </section>
-<section id="two-sample-t-test" class="level2" data-number="13.2">
-<h2 data-number="13.2" class="anchored" data-anchor-id="two-sample-t-test"><span class="header-section-number">13.2</span> Two-sample t-test</h2>
-<p>Content under development.</p>
+<section id="sec-one-sample-t-test" class="level2" data-number="13.2">
+<h2 data-number="13.2" class="anchored" data-anchor-id="sec-one-sample-t-test"><span class="header-section-number">13.2</span> One-sample <span class="math inline">\(t\)</span>-test</h2>
+<section id="setup-and-hypotheses" class="level3" data-number="13.2.1">
+<h3 data-number="13.2.1" class="anchored" data-anchor-id="setup-and-hypotheses"><span class="header-section-number">13.2.1</span> Setup and hypotheses</h3>
+<p>The one-sample <span class="math inline">\(t\)</span>-test is used when we have a single sample of numerical data and want to test a claim about the population mean <span class="math inline">\(\mu\)</span>.</p>
+<div class="important">
+<p><strong>The test statistic for a single mean is a <span class="math inline">\(T\)</span>.</strong></p>
+<p><span class="math display">\[T = \frac{\bar{x} - \mu_0}{s / \sqrt{n}}\]</span></p>
+<p>where <span class="math inline">\(\bar{x}\)</span> is the sample mean, <span class="math inline">\(\mu_0\)</span> is the hypothesized value from <span class="math inline">\(H_0\)</span>, <span class="math inline">\(s\)</span> is the sample standard deviation, and <span class="math inline">\(n\)</span> is the sample size.</p>
+<p>When the null hypothesis is true and the conditions are met, <span class="math inline">\(T\)</span> follows a <span class="math inline">\(t\)</span>-distribution with <span class="math inline">\(df = n - 1\)</span>.</p>
+<p><strong>Conditions:</strong></p>
+<ul>
+<li><strong>Independent observations</strong> (e.g., random sample).</li>
+<li><strong>Normality / sample size:</strong> The population distribution should be approximately normal, or <span class="math inline">\(n\)</span> should be large enough (<span class="math inline">\(n \geq 30\)</span>). Check for strong skewness or extreme outliers.</li>
+</ul>
+</div>
 </section>
-<section id="paired-t-test" class="level2" data-number="13.3">
-<h2 data-number="13.3" class="anchored" data-anchor-id="paired-t-test"><span class="header-section-number">13.3</span> Paired t-test</h2>
-<p>Content under development.</p>
+<section id="worked-example-cherry-blossom-race-times" class="level3" data-number="13.2.2">
+<h3 data-number="13.2.2" class="anchored" data-anchor-id="worked-example-cherry-blossom-race-times"><span class="header-section-number">13.2.2</span> Worked example: Cherry Blossom race times</h3>
+<div class="workedexample">
+<p>The average finishing time for all runners in the Cherry Blossom 10-mile race in 2006 was <span class="math inline">\(\mu = 93.29\)</span> minutes. A random sample of 100 runners from a more recent year had a mean finishing time of <span class="math inline">\(\bar{x} = 97.32\)</span> minutes with <span class="math inline">\(s = 16.98\)</span> minutes. Is there evidence that the average finishing time has changed?</p>
+<hr>
+<p><strong>Step 1: State hypotheses.</strong></p>
+<ul>
+<li><span class="math inline">\(H_0\)</span>: <span class="math inline">\(\mu = 93.29\)</span> (the average finishing time has not changed)</li>
+<li><span class="math inline">\(H_A\)</span>: <span class="math inline">\(\mu \neq 93.29\)</span> (the average finishing time has changed)</li>
+</ul>
+<p>This is a two-sided test because we are looking for a change in either direction.</p>
+<p><strong>Step 2: Check conditions.</strong></p>
+<ul>
+<li><em>Independence.</em> The sample is a random sample of runners, so observations are independent.</li>
+<li><em>Sample size.</em> With <span class="math inline">\(n = 100 \geq 30\)</span>, the CLT guarantees the sampling distribution of <span class="math inline">\(\bar{x}\)</span> is approximately normal, even if the population distribution of finishing times is skewed.</li>
+</ul>
+<p><strong>Step 3: Compute the test statistic and p-value.</strong></p>
+<p><span class="math display">\[SE = \frac{s}{\sqrt{n}} = \frac{16.98}{\sqrt{100}} = 1.698\]</span></p>
+<p><span class="math display">\[T = \frac{\bar{x} - \mu_0}{SE} = \frac{97.32 - 93.29}{1.698} = \frac{4.03}{1.698} = 2.37\]</span></p>
+<p>With <span class="math inline">\(df = 100 - 1 = 99\)</span>, we find the area to the right of <span class="math inline">\(T = 2.37\)</span> on the <span class="math inline">\(t\)</span>-distribution: approximately 0.0099. Since this is a two-sided test, the p-value is <span class="math inline">\(2 \times 0.0099 = 0.0198\)</span>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="A t-distribution with df = 99 showing the two-sided p-value. The shaded areas in both tails represent the probability of observing a test statistic at least as extreme as 2.37 in either direction."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A t-distribution curve with 99 degrees of freedom. Both tails are shaded beyond T equals negative 2.37 and T equals positive 2.37. The combined shaded area represents the two-sided p-value."></a></p>
+<figcaption>A <span class="math inline">\(t\)</span>-distribution with <span class="math inline">\(df = 99\)</span> showing the two-sided p-value. The shaded areas in both tails represent the probability of observing a test statistic at least as extreme as 2.37 in either direction.</figcaption>
+</figure>
+</div>
+<p><strong>Step 4: Conclusion.</strong> The p-value of 0.0198 is less than <span class="math inline">\(\alpha = 0.05\)</span>, so we reject <span class="math inline">\(H_0\)</span>. The data provide statistically significant evidence that the average finishing time has changed from the 2006 average of 93.29 minutes. Based on the sample, runners appear to be finishing more slowly on average.</p>
+</div>
+<div class="guidedpractice">
+<p>A nutrition study claims that the average American adult consumes 2,000 mg of sodium per day. A random sample of 45 adults shows <span class="math inline">\(\bar{x} = 3,120\)</span> mg and <span class="math inline">\(s = 1,100\)</span> mg. Test whether the data provide evidence that the true average sodium intake differs from 2,000 mg. Use <span class="math inline">\(\alpha = 0.05\)</span>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
 </section>
-<section id="connecting-simulation-and-t-test-results" class="level2" data-number="13.4">
-<h2 data-number="13.4" class="anchored" data-anchor-id="connecting-simulation-and-t-test-results"><span class="header-section-number">13.4</span> Connecting simulation and t-test results</h2>
-<p>Content under development.</p>
 </section>
-<section id="practical-vs-statistical-significance" class="level2" data-number="13.5">
-<h2 data-number="13.5" class="anchored" data-anchor-id="practical-vs-statistical-significance"><span class="header-section-number">13.5</span> Practical vs statistical significance</h2>
-<p>Content under development.</p>
+<section id="sec-two-sample-t-test" class="level2" data-number="13.3">
+<h2 data-number="13.3" class="anchored" data-anchor-id="sec-two-sample-t-test"><span class="header-section-number">13.3</span> Two-sample <span class="math inline">\(t\)</span>-test</h2>
+<section id="setup-and-hypotheses-1" class="level3" data-number="13.3.1">
+<h3 data-number="13.3.1" class="anchored" data-anchor-id="setup-and-hypotheses-1"><span class="header-section-number">13.3.1</span> Setup and hypotheses</h3>
+<p>The two-sample <span class="math inline">\(t\)</span>-test compares the means of two independent groups. The parameter of interest is <span class="math inline">\(\mu_1 - \mu_2\)</span>, and the null hypothesis typically claims no difference.</p>
+<div class="important">
+<p><strong>The test statistic for comparing two independent means is a <span class="math inline">\(T\)</span>.</strong></p>
+<p><span class="math display">\[T = \frac{(\bar{x}_1 - \bar{x}_2) - 0}{\sqrt{s_1^2/n_1 + s_2^2/n_2}}\]</span></p>
+<p>When the null hypothesis is true and conditions are met, <span class="math inline">\(T\)</span> follows a <span class="math inline">\(t\)</span>-distribution with <span class="math inline">\(df = \min(n_1 - 1, n_2 - 1)\)</span> (conservative approximation; software computes the exact <span class="math inline">\(df\)</span>).</p>
+<p><strong>Conditions:</strong></p>
+<ul>
+<li><strong>Independence (extended).</strong> Observations are independent within and between the two groups.</li>
+<li><strong>Normality / sample size.</strong> Each group should be approximately normal or have a large enough sample size. Check each group separately for strong skewness or extreme outliers.</li>
+</ul>
+</div>
 </section>
-<section id="chapter-review" class="level2" data-number="13.6">
-<h2 data-number="13.6" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">13.6</span> Chapter review</h2>
-<section id="summary" class="level3" data-number="13.6.1">
-<h3 data-number="13.6.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">13.6.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+<section id="worked-example-birth-weights-and-smoking" class="level3" data-number="13.3.2">
+<h3 data-number="13.3.2" class="anchored" data-anchor-id="worked-example-birth-weights-and-smoking"><span class="header-section-number">13.3.2</span> Worked example: Birth weights and smoking</h3>
+<div class="workedexample">
+<p>Is there evidence that newborns of mothers who smoke during pregnancy have a different average birth weight than newborns of non-smoking mothers? Data from a random sample of 1,000 US births in 2014:</p>
+<table class="table-striped caption-top table">
+<caption>Summary statistics for birth weights by smoking status.</caption>
+<thead>
+<tr class="header">
+<th>Group</th>
+<th><span class="math inline">\(n\)</span></th>
+<th>Mean (lbs)</th>
+<th>SD (lbs)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Nonsmoker</td>
+<td>867</td>
+<td>7.27</td>
+<td>1.23</td>
+</tr>
+<tr class="even">
+<td>Smoker</td>
+<td>114</td>
+<td>6.68</td>
+<td>1.60</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><strong>Step 1: State hypotheses.</strong></p>
+<ul>
+<li><span class="math inline">\(H_0\)</span>: <span class="math inline">\(\mu_n - \mu_s = 0\)</span> (no difference in average birth weight)</li>
+<li><span class="math inline">\(H_A\)</span>: <span class="math inline">\(\mu_n - \mu_s \neq 0\)</span> (there is a difference in average birth weight)</li>
+</ul>
+<p><strong>Step 2: Check conditions.</strong></p>
+<ul>
+<li><em>Independence.</em> The data come from a simple random sample, so observations are independent within and between groups.</li>
+<li><em>Normality.</em> Both groups have large sample sizes (<span class="math inline">\(n_n = 867\)</span> and <span class="math inline">\(n_s = 114\)</span>), both well above 30. Histograms of the data show no extreme outliers. Conditions are met.</li>
+</ul>
+<p><strong>Step 3: Compute the test statistic and p-value.</strong></p>
+<p><span class="math display">\[\bar{x}_n - \bar{x}_s = 7.27 - 6.68 = 0.59\]</span></p>
+<p><span class="math display">\[SE = \sqrt{\frac{1.23^2}{867} + \frac{1.60^2}{114}} = \sqrt{\frac{1.5129}{867} + \frac{2.56}{114}} = \sqrt{0.001745 + 0.02246} = \sqrt{0.02420} = 0.156\]</span></p>
+<p><span class="math display">\[T = \frac{0.59 - 0}{0.156} = 3.78\]</span></p>
+<p>Using the conservative <span class="math inline">\(df = \min(867 - 1, 114 - 1) = 113\)</span>, the one-tail area for <span class="math inline">\(T = 3.78\)</span> is approximately 0.00012. The two-tailed p-value is <span class="math inline">\(2 \times 0.00012 = 0.00024\)</span>.</p>
+<p><strong>Step 4: Conclusion.</strong> With a p-value of 0.00024, which is far less than <span class="math inline">\(\alpha = 0.05\)</span>, we reject <span class="math inline">\(H_0\)</span>. The data provide strong evidence that there is a difference in average birth weight between babies born to smoking and non-smoking mothers. Specifically, babies born to non-smoking mothers weigh about 0.59 lbs more on average.</p>
+</div>
 </section>
-<section id="exercises" class="level3 exercises" data-number="13.6.2">
-<h3 class="exercises anchored" data-number="13.6.2" data-anchor-id="exercises"><span class="header-section-number">13.6.2</span> Exercises</h3>
-<div class="underconstruction">
+<section id="worked-example-exam-versions" class="level3" data-number="13.3.3">
+<h3 data-number="13.3.3" class="anchored" data-anchor-id="worked-example-exam-versions"><span class="header-section-number">13.3.3</span> Worked example: Exam versions</h3>
+<div class="workedexample">
+<p>An instructor created two versions of an exam and randomly distributed them. Summary statistics:</p>
+<table class="table-striped caption-top table">
+<caption>Summary statistics for exam versions.</caption>
+<thead>
+<tr class="header">
+<th>Version</th>
+<th><span class="math inline">\(n\)</span></th>
+<th>Mean</th>
+<th>SD</th>
+<th>Min</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A</td>
+<td>58</td>
+<td>75.1</td>
+<td>13.9</td>
+<td>44</td>
+<td>100</td>
+</tr>
+<tr class="even">
+<td>B</td>
+<td>55</td>
+<td>72.0</td>
+<td>13.8</td>
+<td>38</td>
+<td>100</td>
+</tr>
+</tbody>
+</table>
+<p>Test whether there is convincing evidence that one version is more difficult. Use <span class="math inline">\(\alpha = 0.01\)</span>.</p>
+<hr>
+<p><strong>Step 1: State hypotheses.</strong></p>
+<ul>
+<li><span class="math inline">\(H_0\)</span>: <span class="math inline">\(\mu_A - \mu_B = 0\)</span> (the exams are equally difficult)</li>
+<li><span class="math inline">\(H_A\)</span>: <span class="math inline">\(\mu_A - \mu_B \neq 0\)</span> (one exam is more difficult)</li>
+</ul>
+<p><strong>Step 2: Check conditions.</strong></p>
+<ul>
+<li><em>Independence.</em> Exams were randomly assigned, so independence is satisfied.</li>
+<li><em>Normality.</em> Both groups have <span class="math inline">\(n &gt; 30\)</span> and the summary statistics suggest roughly symmetric distributions. Conditions are met.</li>
+</ul>
+<p><strong>Step 3: Compute the test statistic and p-value.</strong></p>
+<p><span class="math display">\[\bar{x}_A - \bar{x}_B = 75.1 - 72.0 = 3.1\]</span></p>
+<p><span class="math display">\[SE = \sqrt{\frac{13.9^2}{58} + \frac{13.8^2}{55}} = \sqrt{\frac{193.21}{58} + \frac{190.44}{55}} = \sqrt{3.331 + 3.463} = \sqrt{6.794} = 2.607\]</span></p>
+<p><span class="math display">\[T = \frac{3.1}{2.607} = 1.19\]</span></p>
+<p>Using <span class="math inline">\(df = \min(57, 54) = 54\)</span>, the one-tail area for <span class="math inline">\(T = 1.19\)</span> is about 0.12. The two-tailed p-value is approximately 0.24.</p>
+<p><strong>Step 4: Conclusion.</strong> The p-value of 0.24 is much larger than <span class="math inline">\(\alpha = 0.01\)</span>, so we fail to reject <span class="math inline">\(H_0\)</span>. The data do not provide convincing evidence that one exam version is more difficult than the other.</p>
+</div>
+<div class="guidedpractice">
+<p>Does the conclusion above mean that the two exams are equally difficult?<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
+</section>
+</section>
+<section id="sec-paired-t-test" class="level2" data-number="13.4">
+<h2 data-number="13.4" class="anchored" data-anchor-id="sec-paired-t-test"><span class="header-section-number">13.4</span> Paired <span class="math inline">\(t\)</span>-test</h2>
+<section id="setup-and-hypotheses-2" class="level3" data-number="13.4.1">
+<h3 data-number="13.4.1" class="anchored" data-anchor-id="setup-and-hypotheses-2"><span class="header-section-number">13.4.1</span> Setup and hypotheses</h3>
+<p>When data are paired (see Chapter 11 for what makes data “paired”), we compute the difference within each pair and test whether the mean difference is zero.</p>
+<div class="important">
+<p><strong>The test statistic for a paired mean difference is a <span class="math inline">\(T\)</span>.</strong></p>
+<p><span class="math display">\[T = \frac{\bar{x}_{diff} - 0}{s_{diff} / \sqrt{n_{diff}}}\]</span></p>
+<p>When the null hypothesis is true and conditions are met, <span class="math inline">\(T\)</span> follows a <span class="math inline">\(t\)</span>-distribution with <span class="math inline">\(df = n_{diff} - 1\)</span>.</p>
+<p><strong>Conditions:</strong></p>
+<ul>
+<li><strong>Independently sampled pairs.</strong></li>
+<li><strong>Normality of differences.</strong> The differences should be approximately normal, or <span class="math inline">\(n_{diff}\)</span> should be large. Check for extreme outliers in the differences.</li>
+</ul>
+</div>
+</section>
+<section id="worked-example-textbook-prices" class="level3" data-number="13.4.2">
+<h3 data-number="13.4.2" class="anchored" data-anchor-id="worked-example-textbook-prices"><span class="header-section-number">13.4.2</span> Worked example: Textbook prices</h3>
+<div class="workedexample">
+<p>Is there evidence that UCLA Bookstore prices differ from Amazon prices, on average? Summary statistics for the 68 price differences (UCLA <span class="math inline">\(-\)</span> Amazon):</p>
+<table class="table-striped caption-top table">
+<caption>Summary statistics for the 68 price differences.</caption>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(n_{diff}\)</span></th>
+<th><span class="math inline">\(\bar{x}_{diff}\)</span></th>
+<th><span class="math inline">\(s_{diff}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>68</td>
+<td>$3.58</td>
+<td>$13.42</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><strong>Step 1: State hypotheses.</strong></p>
+<ul>
+<li><span class="math inline">\(H_0\)</span>: <span class="math inline">\(\mu_{diff} = 0\)</span> (no difference in average textbook price)</li>
+<li><span class="math inline">\(H_A\)</span>: <span class="math inline">\(\mu_{diff} \neq 0\)</span> (there is a difference in average price)</li>
+</ul>
+<p><strong>Step 2: Check conditions.</strong></p>
+<ul>
+<li><em>Independence.</em> The textbooks were a simple random sample of courses; pairs are independent.</li>
+<li><em>Normality.</em> With <span class="math inline">\(n_{diff} = 68\)</span>, the CLT applies. While some outliers exist (a few textbooks with large price differences), none are extreme enough to invalidate the approach given the large sample size.</li>
+</ul>
+<p><strong>Step 3: Compute the test statistic and p-value.</strong></p>
+<p><span class="math display">\[SE = \frac{s_{diff}}{\sqrt{n_{diff}}} = \frac{13.42}{\sqrt{68}} = 1.628\]</span></p>
+<p><span class="math display">\[T = \frac{3.58 - 0}{1.628} = 2.20\]</span></p>
+<p>With <span class="math inline">\(df = 68 - 1 = 67\)</span>, the one-tail area for <span class="math inline">\(T = 2.20\)</span> is approximately 0.0156. The two-tailed p-value is <span class="math inline">\(2 \times 0.0156 = 0.0312\)</span>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="A t-distribution with df = 67 showing the two-sided p-value. The shaded areas in both tails represent the p-value of 0.0312."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A t-distribution curve with 67 degrees of freedom. Both tails beyond T equals negative 2.20 and T equals positive 2.20 are shaded. The combined shaded area represents the two-sided p-value of 0.0312."></a></p>
+<figcaption>A <span class="math inline">\(t\)</span>-distribution with <span class="math inline">\(df = 67\)</span> showing the two-sided p-value. The shaded areas in both tails represent the p-value of 0.0312.</figcaption>
+</figure>
+</div>
+<p><strong>Step 4: Conclusion.</strong> The p-value of 0.0312 is less than <span class="math inline">\(\alpha = 0.05\)</span>, so we reject <span class="math inline">\(H_0\)</span>. The data provide evidence that UCLA Bookstore prices are different from Amazon prices on average. Based on the positive mean difference, the UCLA Bookstore tends to charge more.</p>
+</div>
+<div class="guidedpractice">
+<p>Researchers measured tire tread (in cm) for 25 cars, each equipped with one Smooth Turn and one Quick Spin tire. The mean tread difference (Smooth Turn <span class="math inline">\(-\)</span> Quick Spin) was <span class="math inline">\(\bar{x}_{diff} = 0.002\)</span> cm with <span class="math inline">\(s_{diff} = 0.004\)</span> cm. Test whether there is a difference in average tread wear between the two brands. Use <span class="math inline">\(\alpha = 0.05\)</span>.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+</div>
+</section>
+</section>
+<section id="sec-sim-vs-t" class="level2" data-number="13.5">
+<h2 data-number="13.5" class="anchored" data-anchor-id="sec-sim-vs-t"><span class="header-section-number">13.5</span> Connecting simulation-based and <span class="math inline">\(t\)</span>-based tests</h2>
+<div class="original">
+<p>An important theme throughout this course is that simulation-based methods and mathematical models are complementary approaches to the same questions. When conditions are met, they should give similar answers. Here we compare the two approaches explicitly.</p>
+<section id="when-they-agree" class="level3" data-number="13.5.1">
+<h3 data-number="13.5.1" class="anchored" data-anchor-id="when-they-agree"><span class="header-section-number">13.5.1</span> When they agree</h3>
+<p>For the birth weights example:</p>
+<ul>
+<li><strong>Randomization test:</strong> Shuffle smoking/nonsmoking labels 10,000 times, compute the difference in means each time, and find the proportion of shuffled differences as extreme as 0.59 lbs. This gives a p-value around 0.001.</li>
+<li><strong><span class="math inline">\(t\)</span>-test:</strong> The p-value was 0.00024.</li>
+</ul>
+<p>Both approaches lead to the same conclusion (reject <span class="math inline">\(H_0\)</span>) by a wide margin. This agreement is typical when sample sizes are moderate to large and conditions are met.</p>
+</section>
+<section id="when-they-might-disagree" class="level3" data-number="13.5.2">
+<h3 data-number="13.5.2" class="anchored" data-anchor-id="when-they-might-disagree"><span class="header-section-number">13.5.2</span> When they might disagree</h3>
+<p>Disagreement arises primarily in two situations:</p>
+<ol type="1">
+<li><strong>Small samples from skewed populations.</strong> The <span class="math inline">\(t\)</span>-test assumes the sampling distribution is symmetric, which may not hold for small samples from skewed distributions. A simulation-based approach can capture the asymmetry.</li>
+<li><strong>Extreme outliers.</strong> The <span class="math inline">\(t\)</span>-test relies on <span class="math inline">\(\bar{x}\)</span> and <span class="math inline">\(s\)</span>, both of which are sensitive to outliers. A randomization test, which works with ranks and permutations, can be more robust.</li>
+</ol>
+</section>
+<section id="practical-guidance" class="level3" data-number="13.5.3">
+<h3 data-number="13.5.3" class="anchored" data-anchor-id="practical-guidance"><span class="header-section-number">13.5.3</span> Practical guidance</h3>
+<ul>
+<li><strong>When conditions are clearly met</strong> (large samples, no extreme outliers), use the <span class="math inline">\(t\)</span>-test – it is simpler and faster.</li>
+<li><strong>When conditions are borderline</strong> (moderate samples, mild skewness), consider running both approaches. If they agree, report the <span class="math inline">\(t\)</span>-test. If they disagree, investigate why and consider the simulation-based result more trustworthy.</li>
+<li><strong>When conditions are clearly violated</strong> (small samples, strong skewness, extreme outliers), prefer the simulation-based approach.</li>
+</ul>
+</section>
+</div>
+</section>
+<section id="sec-practical-significance" class="level2" data-number="13.6">
+<h2 data-number="13.6" class="anchored" data-anchor-id="sec-practical-significance"><span class="header-section-number">13.6</span> Practical vs.&nbsp;statistical significance</h2>
+<div class="important">
+<p><strong>Statistical significance <span class="math inline">\(\neq\)</span> practical significance.</strong></p>
+<p>A result is <strong>statistically significant</strong> if the p-value is below the chosen significance level <span class="math inline">\(\alpha\)</span>. But statistical significance only means the observed effect is unlikely to be due to chance alone. It says nothing about whether the effect is <em>large enough to matter in practice</em>.</p>
+<p>With very large samples, even trivially small differences can be statistically significant. With very small samples, even large differences may not be statistically significant (due to low power).</p>
+</div>
+<div class="workedexample">
+<p>A large study of 50,000 students found that students who eat breakfast score an average of 0.5 points higher on a 100-point exam than students who skip breakfast (<span class="math inline">\(p &lt; 0.001\)</span>). Is this result practically significant?</p>
+<hr>
+<p>The result is statistically significant (the p-value is very small), but the effect size of 0.5 points on a 100-point exam is tiny. A teacher or student would likely not consider half a point to be a meaningful difference. This is an example where statistical significance does not imply practical significance.</p>
+</div>
+<section id="effect-sizes" class="level3" data-number="13.6.1">
+<h3 data-number="13.6.1" class="anchored" data-anchor-id="effect-sizes"><span class="header-section-number">13.6.1</span> Effect sizes</h3>
+<div class="original">
+<p>To bridge the gap between statistical and practical significance, researchers often report <strong>effect sizes</strong> – standardized measures of how large the observed effect is.</p>
+<div class="definition">
+<p><strong>Cohen’s <span class="math inline">\(d\)</span></strong> is a common measure of effect size for comparing two means. It expresses the difference in means as a multiple of the pooled standard deviation:</p>
+<p><span class="math display">\[d = \frac{\bar{x}_1 - \bar{x}_2}{s_p}\]</span></p>
+<p>where <span class="math inline">\(s_p\)</span> is the pooled standard deviation. General guidelines for interpreting <span class="math inline">\(d\)</span>:</p>
+<table class="table-striped caption-top table">
+<caption>Guidelines for interpreting Cohen’s <span class="math inline">\(d\)</span>.</caption>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(|d|\)</span></th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.2</td>
+<td>Small effect</td>
+</tr>
+<tr class="even">
+<td>0.5</td>
+<td>Medium effect</td>
+</tr>
+<tr class="odd">
+<td>0.8</td>
+<td>Large effect</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>These guidelines are rough benchmarks. What constitutes a “meaningful” effect depends on the context. In medicine, even a small effect size might be important if it concerns a life-threatening condition. In education, a medium effect might be required for a costly intervention to be worthwhile.</p>
+</div>
+<div class="guidedpractice">
+<p>In the birth weights study, the difference was 0.59 lbs with a pooled standard deviation of approximately 1.30 lbs. Compute Cohen’s <span class="math inline">\(d\)</span> and interpret it.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+</div>
+</section>
+</section>
+<section id="sec-ch12-review" class="level2" data-number="13.7">
+<h2 data-number="13.7" class="anchored" data-anchor-id="sec-ch12-review"><span class="header-section-number">13.7</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="13.7.1">
+<h3 data-number="13.7.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">13.7.1</span> Summary</h3>
+<p>This chapter presented hypothesis tests for means using the <span class="math inline">\(t\)</span>-distribution:</p>
+<ul>
+<li><strong>One-sample <span class="math inline">\(t\)</span>-test</strong>: Tests whether a population mean <span class="math inline">\(\mu\)</span> equals a hypothesized value <span class="math inline">\(\mu_0\)</span>. Test statistic: <span class="math inline">\(T = \frac{\bar{x} - \mu_0}{s/\sqrt{n}}\)</span> with <span class="math inline">\(df = n - 1\)</span>.</li>
+<li><strong>Two-sample <span class="math inline">\(t\)</span>-test</strong>: Tests whether two population means are equal. Test statistic: <span class="math inline">\(T = \frac{(\bar{x}_1 - \bar{x}_2)}{\sqrt{s_1^2/n_1 + s_2^2/n_2}}\)</span> with <span class="math inline">\(df = \min(n_1 - 1, n_2 - 1)\)</span>.</li>
+<li><strong>Paired <span class="math inline">\(t\)</span>-test</strong>: Tests whether the mean of paired differences equals zero. Compute differences first, then apply the one-sample <span class="math inline">\(t\)</span>-test to the differences: <span class="math inline">\(T = \frac{\bar{x}_{diff}}{s_{diff}/\sqrt{n_{diff}}}\)</span> with <span class="math inline">\(df = n_{diff} - 1\)</span>.</li>
+<li>All three tests require <strong>independence</strong> and <strong>approximate normality or large sample size</strong>.</li>
+<li><strong>Simulation-based and <span class="math inline">\(t\)</span>-based tests</strong> generally agree when conditions are met. When conditions are questionable, simulation is more reliable.</li>
+<li><strong>Statistical significance</strong> (small p-value) does not imply <strong>practical significance</strong> (large enough to matter). Effect sizes like <strong>Cohen’s <span class="math inline">\(d\)</span></strong> help assess practical importance.</li>
+</ul>
+</section>
+<section id="key-terms" class="level3" data-number="13.7.2">
+<h3 data-number="13.7.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">13.7.2</span> Key terms</h3>
+<p><span class="math inline">\(T\)</span> test statistic, one-sample <span class="math inline">\(t\)</span>-test, two-sample <span class="math inline">\(t\)</span>-test, paired <span class="math inline">\(t\)</span>-test, degrees of freedom, p-value, significance level (<span class="math inline">\(\alpha\)</span>), statistical significance, practical significance, effect size, Cohen’s <span class="math inline">\(d\)</span>.</p>
+</section>
+<section id="exercises" class="level3 exercises" data-number="13.7.3">
+<h3 class="exercises anchored" data-number="13.7.3" data-anchor-id="exercises"><span class="header-section-number">13.7.3</span> Exercises</h3>
 <p>Exercises for this chapter are under development.</p>
-</div>
 
 
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>Hypotheses: <span class="math inline">\(H_0: \mu = 2000\)</span>, <span class="math inline">\(H_A: \mu \neq 2000\)</span>. Conditions: random sample (independence), <span class="math inline">\(n = 45 \geq 30\)</span> (normality via CLT). Test statistic: <span class="math inline">\(SE = 1100/\sqrt{45} = 163.9\)</span>, <span class="math inline">\(T = (3120 - 2000)/163.9 = 6.83\)</span>. With <span class="math inline">\(df = 44\)</span>, the two-tailed p-value is essentially 0 (far less than 0.05). We reject <span class="math inline">\(H_0\)</span>. There is very strong evidence that the average sodium intake is different from (and appears much higher than) 2,000 mg per day.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>No.&nbsp;Failing to reject <span class="math inline">\(H_0\)</span> does not prove that <span class="math inline">\(H_0\)</span> is true. The data are consistent with the exams being equally difficult, but they are also consistent with exam A being about 3.1 points easier. The test simply did not find strong enough evidence to distinguish these possibilities.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Hypotheses: <span class="math inline">\(H_0: \mu_{diff} = 0\)</span>, <span class="math inline">\(H_A: \mu_{diff} \neq 0\)</span>. Conditions: cars are independent, <span class="math inline">\(n = 25\)</span> and no extreme outliers reported. <span class="math inline">\(SE = 0.004/\sqrt{25} = 0.0008\)</span>. <span class="math inline">\(T = 0.002/0.0008 = 2.50\)</span>. With <span class="math inline">\(df = 24\)</span>, the two-tailed p-value is approximately 0.020. Since <span class="math inline">\(0.020 &lt; 0.05\)</span>, we reject <span class="math inline">\(H_0\)</span> and conclude there is evidence of a difference in tread wear between the two tire brands.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p><span class="math inline">\(d = 0.59 / 1.30 = 0.45\)</span>. This is between a small and medium effect. While the difference is statistically significant, the practical impact is moderate – about half a standard deviation in birth weight.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
@@ -940,6 +1319,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

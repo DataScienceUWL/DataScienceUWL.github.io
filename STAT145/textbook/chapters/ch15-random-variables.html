@@ -40,7 +40,10 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +71,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,11 +451,22 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#discrete-random-variables" id="toc-discrete-random-variables" class="nav-link active" data-scroll-target="#discrete-random-variables"><span class="header-section-number">16.1</span> Discrete random variables</a></li>
-  <li><a href="#probability-distributions" id="toc-probability-distributions" class="nav-link" data-scroll-target="#probability-distributions"><span class="header-section-number">16.2</span> Probability distributions</a></li>
-  <li><a href="#continuous-random-variables" id="toc-continuous-random-variables" class="nav-link" data-scroll-target="#continuous-random-variables"><span class="header-section-number">16.3</span> Continuous random variables</a></li>
-  <li><a href="#cumulative-distribution-functions" id="toc-cumulative-distribution-functions" class="nav-link" data-scroll-target="#cumulative-distribution-functions"><span class="header-section-number">16.4</span> Cumulative distribution functions</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">16.5</span> Chapter review</a>
+  <li><a href="#sec-random-variables-defined" id="toc-sec-random-variables-defined" class="nav-link active" data-scroll-target="#sec-random-variables-defined"><span class="header-section-number">16.1</span> Random variables</a></li>
+  <li><a href="#sec-discrete-rvs" id="toc-sec-discrete-rvs" class="nav-link" data-scroll-target="#sec-discrete-rvs"><span class="header-section-number">16.2</span> Discrete random variables</a>
+  <ul class="collapse">
+  <li><a href="#why-the-distinction-matters" id="toc-why-the-distinction-matters" class="nav-link" data-scroll-target="#why-the-distinction-matters"><span class="header-section-number">16.2.1</span> Why the distinction matters</a></li>
+  <li><a href="#probability-mass-functions" id="toc-probability-mass-functions" class="nav-link" data-scroll-target="#probability-mass-functions"><span class="header-section-number">16.2.2</span> Probability mass functions</a></li>
+  <li><a href="#visualizing-discrete-distributions" id="toc-visualizing-discrete-distributions" class="nav-link" data-scroll-target="#visualizing-discrete-distributions"><span class="header-section-number">16.2.3</span> Visualizing discrete distributions</a></li>
+  <li><a href="#building-intuition-with-simulation" id="toc-building-intuition-with-simulation" class="nav-link" data-scroll-target="#building-intuition-with-simulation"><span class="header-section-number">16.2.4</span> Building intuition with simulation</a></li>
+  </ul></li>
+  <li><a href="#sec-cdf" id="toc-sec-cdf" class="nav-link" data-scroll-target="#sec-cdf"><span class="header-section-number">16.3</span> Cumulative distribution functions</a></li>
+  <li><a href="#sec-continuous-rvs" id="toc-sec-continuous-rvs" class="nav-link" data-scroll-target="#sec-continuous-rvs"><span class="header-section-number">16.4</span> Continuous random variables</a>
+  <ul class="collapse">
+  <li><a href="#from-histograms-to-density-curves" id="toc-from-histograms-to-density-curves" class="nav-link" data-scroll-target="#from-histograms-to-density-curves"><span class="header-section-number">16.4.1</span> From histograms to density curves</a></li>
+  <li><a href="#probabilities-from-continuous-distributions" id="toc-probabilities-from-continuous-distributions" class="nav-link" data-scroll-target="#probabilities-from-continuous-distributions"><span class="header-section-number">16.4.2</span> Probabilities from continuous distributions</a></li>
+  <li><a href="#discrete-vs.-continuous-a-summary" id="toc-discrete-vs.-continuous-a-summary" class="nav-link" data-scroll-target="#discrete-vs.-continuous-a-summary"><span class="header-section-number">16.4.3</span> Discrete vs.&nbsp;continuous: a summary</a></li>
+  </ul></li>
+  <li><a href="#sec-ch15-review" id="toc-sec-ch15-review" class="nav-link" data-scroll-target="#sec-ch15-review"><span class="header-section-number">16.5</span> Chapter review</a>
   <ul class="collapse">
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">16.5.1</span> Summary</a></li>
   <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">16.5.2</span> Exercises</a></li>
@@ -453,42 +496,311 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: OS <code>ch_probability</code> (partial) — ~70% coverage. ~30% original writing.</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Random Variables</em> will go here.</p>
+<p>In the previous chapter, we developed rules for computing probabilities of events. Now we shift our focus to <strong>random variables</strong> — numerical summaries of random processes. A random variable assigns a number to each outcome of a random process, which allows us to apply mathematical tools for prediction and analysis. We distinguish between discrete and continuous random variables, introduce probability distributions, and build the foundation for the specific distributions (binomial and normal) that follow in later chapters.</p>
 </div>
-<section id="discrete-random-variables" class="level2" data-number="16.1">
-<h2 data-number="16.1" class="anchored" data-anchor-id="discrete-random-variables"><span class="header-section-number">16.1</span> Discrete random variables</h2>
-<p>Content under development.</p>
+<section id="sec-random-variables-defined" class="level2" data-number="16.1">
+<h2 data-number="16.1" class="anchored" data-anchor-id="sec-random-variables-defined"><span class="header-section-number">16.1</span> Random variables</h2>
+<p>It is often useful to model a random process by assigning a number to each outcome. This numerical model is called a <strong>random variable</strong>.</p>
+<div class="definition">
+<p>A <strong>random variable</strong> is a numerical outcome of a random process. We typically denote random variables with capital letters such as <span class="math inline">\(X\)</span>, <span class="math inline">\(Y\)</span>, or <span class="math inline">\(Z\)</span>, and their observed values with the corresponding lowercase letters <span class="math inline">\(x\)</span>, <span class="math inline">\(y\)</span>, or <span class="math inline">\(z\)</span>.</p>
+</div>
+<div class="workedexample">
+<p>Two books are assigned for a statistics class: a textbook ($137) and a study guide ($33). The university bookstore has determined that 20% of enrolled students buy neither book, 55% buy the textbook only, and 25% buy both books. If <span class="math inline">\(X\)</span> represents the amount a single student spends on books, then <span class="math inline">\(X\)</span> is a random variable with possible values $0, $137, and $170.</p>
+</div>
+<p>Random variables come in two types — discrete and continuous — and the distinction matters because they require different mathematical tools.</p>
 </section>
-<section id="probability-distributions" class="level2" data-number="16.2">
-<h2 data-number="16.2" class="anchored" data-anchor-id="probability-distributions"><span class="header-section-number">16.2</span> Probability distributions</h2>
-<p>Content under development.</p>
+<section id="sec-discrete-rvs" class="level2" data-number="16.2">
+<h2 data-number="16.2" class="anchored" data-anchor-id="sec-discrete-rvs"><span class="header-section-number">16.2</span> Discrete random variables</h2>
+<div class="definition">
+<p>A <strong>discrete random variable</strong> takes on a finite or countably infinite number of distinct values. These values can be listed (even if the list is infinitely long).</p>
+</div>
+<p>Examples of discrete random variables:</p>
+<ul>
+<li>The number showing when you roll a die: <span class="math inline">\(X \in \{1, 2, 3, 4, 5, 6\}\)</span></li>
+<li>The number of heads in 10 coin flips: <span class="math inline">\(X \in \{0, 1, 2, \ldots, 10\}\)</span></li>
+<li>The number of customers arriving at a store in an hour: <span class="math inline">\(X \in \{0, 1, 2, 3, \ldots\}\)</span></li>
+</ul>
+<section id="why-the-distinction-matters" class="level3 original" data-number="16.2.1">
+<h3 data-number="16.2.1" class="anchored" data-anchor-id="why-the-distinction-matters"><span class="header-section-number">16.2.1</span> Why the distinction matters</h3>
+<p>In Parts II and III, we worked extensively with sample statistics like the sample mean <span class="math inline">\(\bar{x}\)</span> and the sample proportion <span class="math inline">\(\hat{p}\)</span>. These are actually <em>observed values</em> of random variables. The sampling distribution of <span class="math inline">\(\bar{x}\)</span> that we studied in Chapter 9 is really the probability distribution of a random variable. Formalizing the language of random variables helps us state results more precisely and connect our earlier simulation-based reasoning to mathematical theory.</p>
 </section>
-<section id="continuous-random-variables" class="level2" data-number="16.3">
-<h2 data-number="16.3" class="anchored" data-anchor-id="continuous-random-variables"><span class="header-section-number">16.3</span> Continuous random variables</h2>
-<p>Content under development.</p>
+<section id="probability-mass-functions" class="level3" data-number="16.2.2">
+<h3 data-number="16.2.2" class="anchored" data-anchor-id="probability-mass-functions"><span class="header-section-number">16.2.2</span> Probability mass functions</h3>
+<p>The complete description of a discrete random variable is given by its <strong>probability mass function</strong> (PMF), which specifies the probability of each possible value.</p>
+<div class="definition">
+<p>The <strong>probability mass function</strong> (PMF) of a discrete random variable <span class="math inline">\(X\)</span> is the function <span class="math inline">\(P(X = x)\)</span> that gives the probability that <span class="math inline">\(X\)</span> takes on each possible value <span class="math inline">\(x\)</span>. A valid PMF must satisfy:</p>
+<ol type="1">
+<li><span class="math inline">\(P(X = x) \geq 0\)</span> for every value <span class="math inline">\(x\)</span>.</li>
+<li>The sum of all probabilities equals 1: <span class="math inline">\(\sum_{\text{all } x} P(X = x) = 1\)</span>.</li>
+</ol>
+</div>
+<p>The bookstore example from the previous section has the following PMF:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"><span class="math inline">\(x_i\)</span></th>
+<th style="text-align: center;">$0</th>
+<th style="text-align: center;">$137</th>
+<th style="text-align: center;">$170</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(P(X = x_i)\)</span></td>
+<td style="text-align: center;">0.20</td>
+<td style="text-align: center;">0.55</td>
+<td style="text-align: center;">0.25</td>
+</tr>
+</tbody>
+</table>
+<p>We can verify this is a valid PMF: all probabilities are between 0 and 1, and <span class="math inline">\(0.20 + 0.55 + 0.25 = 1.00\)</span>.</p>
+<div class="guidedpractice">
+<p>Suppose a campus shuttle arrives every 10 minutes. The number of students who board the shuttle at a particular stop can be modeled with the following distribution:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Number of students (<span class="math inline">\(x\)</span>)</th>
+<th style="text-align: center;">0</th>
+<th style="text-align: center;">1</th>
+<th style="text-align: center;">2</th>
+<th style="text-align: center;">3</th>
+<th style="text-align: center;">4</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(P(X = x)\)</span></td>
+<td style="text-align: center;">0.10</td>
+<td style="text-align: center;">0.25</td>
+<td style="text-align: center;">0.35</td>
+<td style="text-align: center;">0.20</td>
+<td style="text-align: center;">0.10</td>
+</tr>
+</tbody>
+</table>
+<ol type="a">
+<li>Verify this is a valid probability distribution. (b) What is the probability that 2 or fewer students board? (c) What is the probability that more than 2 students board?<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></li>
+</ol>
+</div>
 </section>
-<section id="cumulative-distribution-functions" class="level2" data-number="16.4">
-<h2 data-number="16.4" class="anchored" data-anchor-id="cumulative-distribution-functions"><span class="header-section-number">16.4</span> Cumulative distribution functions</h2>
-<p>Content under development.</p>
+<section id="visualizing-discrete-distributions" class="level3" data-number="16.2.3">
+<h3 data-number="16.2.3" class="anchored" data-anchor-id="visualizing-discrete-distributions"><span class="header-section-number">16.2.3</span> Visualizing discrete distributions</h3>
+<p>Discrete probability distributions are often displayed as bar plots where the height of each bar represents the probability of that outcome. When the outcomes are numerical, we place the bars at their numerical locations, creating a plot that resembles a histogram.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Probability distribution for the sum of two dice displayed as a bar plot."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Bar plot showing the probability distribution for the sum of two dice. The horizontal axis shows sums from 2 to 12, and the bar heights form a symmetric triangular shape peaking at 7 with probability 6/36."></a></p>
+<figcaption>Probability distribution for the sum of two dice displayed as a bar plot.</figcaption>
+</figure>
+</div>
 </section>
-<section id="chapter-review" class="level2" data-number="16.5">
-<h2 data-number="16.5" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">16.5</span> Chapter review</h2>
+<section id="building-intuition-with-simulation" class="level3 original" data-number="16.2.4">
+<h3 data-number="16.2.4" class="anchored" data-anchor-id="building-intuition-with-simulation"><span class="header-section-number">16.2.4</span> Building intuition with simulation</h3>
+<p>We can also <em>estimate</em> a probability distribution by simulating the random process many times and recording the relative frequencies of each outcome. For example, if we simulate rolling two dice 10,000 times and record the sum each time, the histogram of those 10,000 sums will closely approximate the theoretical probability distribution. As the number of simulations increases, the approximation improves — this is the Law of Large Numbers in action.</p>
+<p>This connection between simulation and theory is one of the most important ideas in the course. Every time we used simulation in Parts II and III to build a null distribution or a bootstrap distribution, we were approximating a theoretical probability distribution.</p>
+</section>
+</section>
+<section id="sec-cdf" class="level2" data-number="16.3">
+<h2 data-number="16.3" class="anchored" data-anchor-id="sec-cdf"><span class="header-section-number">16.3</span> Cumulative distribution functions</h2>
+<div class="definition">
+<p>The <strong>cumulative distribution function</strong> (CDF) of a random variable <span class="math inline">\(X\)</span> is the function:</p>
+<p><span class="math display">\[F(x) = P(X \leq x)\]</span></p>
+<p>The CDF gives the probability that <span class="math inline">\(X\)</span> takes a value less than or equal to <span class="math inline">\(x\)</span>.</p>
+</div>
+<div class="original">
+<p>The CDF is a useful alternative to the PMF for answering “at most” or “at least” types of questions. For a discrete random variable, the CDF is a step function that jumps at each possible value of <span class="math inline">\(X\)</span>.</p>
+<p>Consider the sum of two dice. The CDF at a few key values:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><span class="math inline">\(x\)</span></th>
+<th style="text-align: center;">2</th>
+<th style="text-align: center;">3</th>
+<th style="text-align: center;">4</th>
+<th style="text-align: center;">5</th>
+<th style="text-align: center;">6</th>
+<th style="text-align: center;">7</th>
+<th style="text-align: center;">8</th>
+<th style="text-align: center;">9</th>
+<th style="text-align: center;">10</th>
+<th style="text-align: center;">11</th>
+<th style="text-align: center;">12</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(F(x) = P(X \leq x)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\frac{1}{36}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\frac{3}{36}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\frac{6}{36}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\frac{10}{36}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\frac{15}{36}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\frac{21}{36}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\frac{26}{36}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\frac{30}{36}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\frac{33}{36}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\frac{35}{36}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\frac{36}{36}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Key properties of any CDF:</p>
+<ul>
+<li><span class="math inline">\(F(x)\)</span> is non-decreasing: if <span class="math inline">\(a &lt; b\)</span>, then <span class="math inline">\(F(a) \leq F(b)\)</span>.</li>
+<li><span class="math inline">\(F(x) \to 0\)</span> as <span class="math inline">\(x \to -\infty\)</span> and <span class="math inline">\(F(x) \to 1\)</span> as <span class="math inline">\(x \to +\infty\)</span>.</li>
+<li><span class="math inline">\(P(a &lt; X \leq b) = F(b) - F(a)\)</span>.</li>
+</ul>
+<p>The CDF becomes especially important for continuous random variables, where individual values have zero probability and we must always work with intervals.</p>
+</div>
+<div class="guidedpractice">
+<p>Using the CDF for the sum of two dice above, find: (a) <span class="math inline">\(P(X \leq 5)\)</span>. (b) <span class="math inline">\(P(X &gt; 9)\)</span>. (c) <span class="math inline">\(P(4 &lt; X \leq 8)\)</span>.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
+</section>
+<section id="sec-continuous-rvs" class="level2" data-number="16.4">
+<h2 data-number="16.4" class="anchored" data-anchor-id="sec-continuous-rvs"><span class="header-section-number">16.4</span> Continuous random variables</h2>
+<div class="definition">
+<p>A <strong>continuous random variable</strong> can take any value in some interval of real numbers. Its probability distribution is described by a smooth curve called a <strong>probability density function</strong> (PDF).</p>
+</div>
+<p>Examples of continuous random variables:</p>
+<ul>
+<li>The height of a randomly selected adult</li>
+<li>The time until the next bus arrives</li>
+<li>The temperature at noon tomorrow</li>
+</ul>
+<section id="from-histograms-to-density-curves" class="level3" data-number="16.4.1">
+<h3 data-number="16.4.1" class="anchored" data-anchor-id="from-histograms-to-density-curves"><span class="header-section-number">16.4.1</span> From histograms to density curves</h3>
+<p>When we have a very large sample and use very narrow bins in a histogram, the outline of the histogram starts to look like a smooth curve. This smooth curve is a probability density function.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="The transition from a histogram to a smooth density curve as the bin width decreases and sample size increases."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Four histograms of US adult heights with decreasing bin widths. As bins get narrower, the histogram outline becomes smoother and approaches a continuous bell-shaped curve."></a></p>
+<figcaption>The transition from a histogram to a smooth density curve as the bin width decreases and sample size increases.</figcaption>
+</figure>
+</div>
+<div class="important">
+<p><strong>Properties of a probability density function (PDF):</strong></p>
+<ol type="1">
+<li>The density curve is always on or above the horizontal axis: <span class="math inline">\(f(x) \geq 0\)</span> for all <span class="math inline">\(x\)</span>.</li>
+<li>The total area under the curve equals 1.</li>
+<li>The probability that <span class="math inline">\(X\)</span> falls between <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> equals the area under the curve between <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span>: <span class="math inline">\(P(a \leq X \leq b) = \text{area between } a \text{ and } b\)</span>.</li>
+</ol>
+</div>
+</section>
+<section id="probabilities-from-continuous-distributions" class="level3" data-number="16.4.2">
+<h3 data-number="16.4.2" class="anchored" data-anchor-id="probabilities-from-continuous-distributions"><span class="header-section-number">16.4.2</span> Probabilities from continuous distributions</h3>
+<p>For a continuous random variable, probabilities are <em>areas</em> under the density curve.</p>
+<div class="workedexample">
+<p>The heights of US adults follow a continuous distribution. What proportion of the population has heights between 180 cm and 185 cm?</p>
+<p>Using the density curve, we find the area under the curve between 180 and 185:</p>
+<p><span class="math display">\[P(180 \leq X \leq 185) = \text{area between 180 and 185} \approx 0.1157\]</span></p>
+<p>About 11.6% of US adults are between 180 and 185 cm tall.</p>
+</div>
+<div class="important">
+<p><strong>A key difference: the probability of an exact value is zero for continuous random variables.</strong></p>
+<p>For a continuous random variable, <span class="math inline">\(P(X = c) = 0\)</span> for any specific value <span class="math inline">\(c\)</span>. There is no area under the curve at a single point. This means:</p>
+<p><span class="math display">\[P(X \leq a) = P(X &lt; a)\]</span></p>
+<p>This is <em>not</em> true for discrete random variables, where individual outcomes carry positive probability.</p>
+</div>
+<div class="guidedpractice">
+<p>If <span class="math inline">\(P(180 \leq \text{height} \leq 185) = 0.1157\)</span> for a randomly selected US adult, and three adults are selected at random: (a) What is the probability all three have heights between 180 and 185 cm? (b) What is the probability none of them do?<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+</div>
+</section>
+<section id="discrete-vs.-continuous-a-summary" class="level3 original" data-number="16.4.3">
+<h3 data-number="16.4.3" class="anchored" data-anchor-id="discrete-vs.-continuous-a-summary"><span class="header-section-number">16.4.3</span> Discrete vs.&nbsp;continuous: a summary</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 29%">
+<col style="width: 32%">
+<col style="width: 38%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">Discrete</th>
+<th style="text-align: left;">Continuous</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Values</td>
+<td style="text-align: left;">Finite or countable list</td>
+<td style="text-align: left;">Any value in an interval</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Described by</td>
+<td style="text-align: left;">Probability mass function (PMF)</td>
+<td style="text-align: left;">Probability density function (PDF)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(P(X = c)\)</span></td>
+<td style="text-align: left;">Can be positive</td>
+<td style="text-align: left;">Always equals 0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Probabilities</td>
+<td style="text-align: left;">Sum probabilities of individual values</td>
+<td style="text-align: left;">Find areas under the curve</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Visualization</td>
+<td style="text-align: left;">Bar plot</td>
+<td style="text-align: left;">Smooth curve</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Example</td>
+<td style="text-align: left;">Number of coin flips until heads</td>
+<td style="text-align: left;">Height of a randomly selected person</td>
+</tr>
+</tbody>
+</table>
+<p>In this course, we will work primarily with two specific distributions:</p>
+<ul>
+<li>The <strong>binomial distribution</strong> (Chapter 17) — a discrete distribution</li>
+<li>The <strong>normal distribution</strong> (Chapter 18) — a continuous distribution</li>
+</ul>
+<p>Understanding the general concepts from this chapter will make those specific distributions much easier to work with.</p>
+</section>
+</section>
+<section id="sec-ch15-review" class="level2" data-number="16.5">
+<h2 data-number="16.5" class="anchored" data-anchor-id="sec-ch15-review"><span class="header-section-number">16.5</span> Chapter review</h2>
 <section id="summary" class="level3" data-number="16.5.1">
 <h3 data-number="16.5.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">16.5.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+<ul>
+<li>A <strong>random variable</strong> assigns a numerical value to each outcome of a random process.</li>
+<li><strong>Discrete random variables</strong> take on a finite or countable set of values. Their distributions are described by probability mass functions (PMFs).</li>
+<li><strong>Continuous random variables</strong> can take any value in an interval. Their distributions are described by probability density functions (PDFs), and probabilities are calculated as areas under the curve.</li>
+<li>The <strong>cumulative distribution function</strong> (CDF) gives <span class="math inline">\(P(X \leq x)\)</span> and works for both discrete and continuous random variables.</li>
+<li>For continuous random variables, <span class="math inline">\(P(X = c) = 0\)</span> for any specific value <span class="math inline">\(c\)</span>.</li>
+<li>A valid probability distribution has non-negative probabilities that sum (or integrate) to 1.</li>
+</ul>
 </section>
 <section id="exercises" class="level3 exercises" data-number="16.5.2">
 <h3 class="exercises anchored" data-number="16.5.2" data-anchor-id="exercises"><span class="header-section-number">16.5.2</span> Exercises</h3>
-<div class="underconstruction">
 <p>Exercises for this chapter are under development.</p>
-</div>
 
 
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>(a) All probabilities are between 0 and 1, and <span class="math inline">\(0.10 + 0.25 + 0.35 + 0.20 + 0.10 = 1.00\)</span>. (b) <span class="math inline">\(P(X \leq 2) = 0.10 + 0.25 + 0.35 = 0.70\)</span>. (c) <span class="math inline">\(P(X &gt; 2) = 1 - P(X \leq 2) = 1 - 0.70 = 0.30\)</span>, or equivalently <span class="math inline">\(0.20 + 0.10 = 0.30\)</span>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>(a) <span class="math inline">\(F(5) = 10/36\)</span>. (b) <span class="math inline">\(P(X &gt; 9) = 1 - F(9) = 1 - 30/36 = 6/36 = 1/6\)</span>. (c) <span class="math inline">\(P(4 &lt; X \leq 8) = F(8) - F(4) = 26/36 - 6/36 = 20/36 = 5/9\)</span>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>(a) Since the selections are independent: <span class="math inline">\(0.1157^3 \approx 0.0015\)</span>. (b) <span class="math inline">\((1 - 0.1157)^3 = 0.8843^3 \approx 0.692\)</span>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
@@ -935,6 +1247,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

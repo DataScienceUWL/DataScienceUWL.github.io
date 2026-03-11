@@ -40,7 +40,10 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +71,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,15 +451,33 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#the-normal-distribution" id="toc-the-normal-distribution" class="nav-link active" data-scroll-target="#the-normal-distribution"><span class="header-section-number">11.1</span> The normal distribution</a></li>
-  <li><a href="#the-68-95-99.7-rule" id="toc-the-68-95-99.7-rule" class="nav-link" data-scroll-target="#the-68-95-99.7-rule"><span class="header-section-number">11.2</span> The 68-95-99.7 rule</a></li>
-  <li><a href="#z-scores-and-standardizing" id="toc-z-scores-and-standardizing" class="nav-link" data-scroll-target="#z-scores-and-standardizing"><span class="header-section-number">11.3</span> Z-scores and standardizing</a></li>
-  <li><a href="#finding-probabilities-from-the-normal-distribution" id="toc-finding-probabilities-from-the-normal-distribution" class="nav-link" data-scroll-target="#finding-probabilities-from-the-normal-distribution"><span class="header-section-number">11.4</span> Finding probabilities from the normal distribution</a></li>
-  <li><a href="#the-normal-approximation-to-sampling-distributions" id="toc-the-normal-approximation-to-sampling-distributions" class="nav-link" data-scroll-target="#the-normal-approximation-to-sampling-distributions"><span class="header-section-number">11.5</span> The normal approximation to sampling distributions</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">11.6</span> Chapter review</a>
+  <li><a href="#sec-normal-dist" id="toc-sec-normal-dist" class="nav-link active" data-scroll-target="#sec-normal-dist"><span class="header-section-number">11.1</span> The normal distribution</a>
   <ul class="collapse">
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">11.6.1</span> Summary</a></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">11.6.2</span> Exercises</a></li>
+  <li><a href="#the-standard-normal-distribution" id="toc-the-standard-normal-distribution" class="nav-link" data-scroll-target="#the-standard-normal-distribution"><span class="header-section-number">11.1.1</span> The standard normal distribution</a></li>
+  </ul></li>
+  <li><a href="#sec-68-95-997" id="toc-sec-68-95-997" class="nav-link" data-scroll-target="#sec-68-95-997"><span class="header-section-number">11.2</span> The 68-95-99.7 rule</a></li>
+  <li><a href="#sec-z-scores" id="toc-sec-z-scores" class="nav-link" data-scroll-target="#sec-z-scores"><span class="header-section-number">11.3</span> Z-scores and standardizing</a></li>
+  <li><a href="#sec-normal-probs" id="toc-sec-normal-probs" class="nav-link" data-scroll-target="#sec-normal-probs"><span class="header-section-number">11.4</span> Finding probabilities from the normal distribution</a>
+  <ul class="collapse">
+  <li><a href="#left-tail-probabilities-percentiles" id="toc-left-tail-probabilities-percentiles" class="nav-link" data-scroll-target="#left-tail-probabilities-percentiles"><span class="header-section-number">11.4.1</span> Left-tail probabilities (percentiles)</a></li>
+  <li><a href="#right-tail-probabilities" id="toc-right-tail-probabilities" class="nav-link" data-scroll-target="#right-tail-probabilities"><span class="header-section-number">11.4.2</span> Right-tail probabilities</a></li>
+  <li><a href="#probabilities-between-two-values" id="toc-probabilities-between-two-values" class="nav-link" data-scroll-target="#probabilities-between-two-values"><span class="header-section-number">11.4.3</span> Probabilities between two values</a></li>
+  <li><a href="#finding-values-from-percentiles" id="toc-finding-values-from-percentiles" class="nav-link" data-scroll-target="#finding-values-from-percentiles"><span class="header-section-number">11.4.4</span> Finding values from percentiles</a></li>
+  <li><a href="#the-normal-probability-table" id="toc-the-normal-probability-table" class="nav-link" data-scroll-target="#the-normal-probability-table"><span class="header-section-number">11.4.5</span> The normal probability table</a></li>
+  </ul></li>
+  <li><a href="#sec-normal-approx-sampling" id="toc-sec-normal-approx-sampling" class="nav-link" data-scroll-target="#sec-normal-approx-sampling"><span class="header-section-number">11.5</span> The normal approximation to sampling distributions</a>
+  <ul class="collapse">
+  <li><a href="#the-central-limit-theorem" id="toc-the-central-limit-theorem" class="nav-link" data-scroll-target="#the-central-limit-theorem"><span class="header-section-number">11.5.1</span> The Central Limit Theorem</a></li>
+  <li><a href="#standard-error-quantifying-the-variability-of-a-statistic" id="toc-standard-error-quantifying-the-variability-of-a-statistic" class="nav-link" data-scroll-target="#standard-error-quantifying-the-variability-of-a-statistic"><span class="header-section-number">11.5.2</span> Standard error: quantifying the variability of a statistic</a></li>
+  <li><a href="#connecting-simulation-and-normal-approximation" id="toc-connecting-simulation-and-normal-approximation" class="nav-link" data-scroll-target="#connecting-simulation-and-normal-approximation"><span class="header-section-number">11.5.3</span> Connecting simulation and normal approximation</a></li>
+  <li><a href="#confidence-intervals-using-the-normal-model" id="toc-confidence-intervals-using-the-normal-model" class="nav-link" data-scroll-target="#confidence-intervals-using-the-normal-model"><span class="header-section-number">11.5.4</span> Confidence intervals using the normal model</a></li>
+  </ul></li>
+  <li><a href="#sec-normal-when" id="toc-sec-normal-when" class="nav-link" data-scroll-target="#sec-normal-when"><span class="header-section-number">11.6</span> When does the normal model apply – and when doesn’t it?</a></li>
+  <li><a href="#sec-ch10-review" id="toc-sec-ch10-review" class="nav-link" data-scroll-target="#sec-ch10-review"><span class="header-section-number">11.7</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">11.7.1</span> Summary</a></li>
+  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">11.7.2</span> Key terms</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">11.7.3</span> Exercises</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -454,49 +504,483 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: IMS <code>foundations-mathematical.qmd</code> + OS <code>ch_distributions</code> — 65% combined. Merge needed.</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Normal Approximation</em> will go here.</p>
+<p>In Chapters 7–9, we used simulation-based methods – randomization tests and bootstrapping – to make inferences about population parameters. Those methods are powerful and flexible, but they share a limitation: every new problem requires running thousands of simulations. In this chapter, we introduce the <strong>normal distribution</strong>, a mathematical model that describes the bell-shaped pattern we keep seeing in our sampling distributions. When certain conditions are met, the normal distribution lets us calculate probabilities and construct confidence intervals using formulas instead of simulations. This is not a replacement for simulation-based thinking – it is a complement. The normal model provides the theoretical justification for <em>why</em> those simulations work the way they do.</p>
 </div>
 <div class="simkit">
-<p><strong>SimKit tools for this chapter</strong>: <strong>Normal Distribution Explorer</strong> (Phase 2)</p>
+<p><strong>SimKit tools for this chapter</strong>: <strong>Normal Distribution Explorer</strong> – Use it to visualize different normal curves, shade areas, compute probabilities, and see how changing <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma\)</span> affects the distribution.</p>
+<p><a href="https://datascienceuwl.github.io/simkit/explore/normal/" target="_blank">Launch Normal Distribution Explorer</a></p>
 </div>
-<section id="the-normal-distribution" class="level2" data-number="11.1">
-<h2 data-number="11.1" class="anchored" data-anchor-id="the-normal-distribution"><span class="header-section-number">11.1</span> The normal distribution</h2>
-<p>Content under development.</p>
+<section id="sec-normal-dist" class="level2" data-number="11.1">
+<h2 data-number="11.1" class="anchored" data-anchor-id="sec-normal-dist"><span class="header-section-number">11.1</span> The normal distribution</h2>
+<p>Among all the distributions encountered in statistics, one is overwhelmingly the most common. The symmetric, unimodal, bell-shaped curve is so ubiquitous that it goes by many names: the <strong>normal curve</strong>, the <strong>normal model</strong>, or the <strong>normal distribution</strong>.</p>
+<div class="definition">
+<p>The <strong>normal distribution</strong> is a symmetric, unimodal, bell-shaped distribution described by two <strong>parameters</strong>: the mean <span class="math inline">\(\mu\)</span> (which determines the center) and the standard deviation <span class="math inline">\(\sigma\)</span> (which determines the spread). We write the distribution in shorthand as <span class="math inline">\(N(\mu, \sigma)\)</span>.</p>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Two normal distributions with different parameters. The left curve has \mu = 0 and \sigma = 1; the right curve has \mu = 19 and \sigma = 4. Changing \mu shifts the curve left or right; changing \sigma stretches or compresses it."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Two bell-shaped normal distribution curves side by side. The left curve is centered at 0 with a narrow spread (standard deviation 1). The right curve is centered at 19 with a wider spread (standard deviation 4). Both curves are symmetric and unimodal."></a></p>
+<figcaption>Two normal distributions with different parameters. The left curve has <span class="math inline">\(\mu = 0\)</span> and <span class="math inline">\(\sigma = 1\)</span>; the right curve has <span class="math inline">\(\mu = 19\)</span> and <span class="math inline">\(\sigma = 4\)</span>. Changing <span class="math inline">\(\mu\)</span> shifts the curve left or right; changing <span class="math inline">\(\sigma\)</span> stretches or compresses it.</figcaption>
+</figure>
+</div>
+<p>Key properties of the normal distribution:</p>
+<ul>
+<li>The curve is perfectly symmetric about the mean <span class="math inline">\(\mu\)</span>.</li>
+<li>The total area under the curve is exactly 1 (representing 100% of observations).</li>
+<li>The tails extend infinitely in both directions but get very close to zero far from the center.</li>
+<li>Changing <span class="math inline">\(\mu\)</span> shifts the entire curve left or right without changing its shape.</li>
+<li>Increasing <span class="math inline">\(\sigma\)</span> makes the curve wider and shorter; decreasing <span class="math inline">\(\sigma\)</span> makes it narrower and taller.</li>
+</ul>
+<div class="important">
+<p><strong>Normal distribution facts.</strong> Many variables are <em>nearly</em> normal, but none are <em>exactly</em> normal. The normal distribution, while not perfect for any single problem, is extremely useful for a wide variety of problems. Variables like SAT scores, adult heights, and blood pressure measurements closely follow the normal distribution.</p>
+</div>
+<section id="the-standard-normal-distribution" class="level3" data-number="11.1.1">
+<h3 data-number="11.1.1" class="anchored" data-anchor-id="the-standard-normal-distribution"><span class="header-section-number">11.1.1</span> The standard normal distribution</h3>
+<p>The normal distribution with mean <span class="math inline">\(\mu = 0\)</span> and standard deviation <span class="math inline">\(\sigma = 1\)</span> is called the <strong>standard normal distribution</strong>, written <span class="math inline">\(N(0, 1)\)</span>. It serves as a reference distribution that we will use throughout the course.</p>
+<div class="workedexample">
+<p>Write down the shorthand for a normal distribution with each set of parameters.</p>
+<ol type="a">
+<li>Mean 5 and standard deviation 3</li>
+<li>Mean <span class="math inline">\(-100\)</span> and standard deviation 10</li>
+<li>Mean 2 and standard deviation 9</li>
+</ol>
+<hr>
+<ol type="a">
+<li><span class="math inline">\(N(\mu = 5, \sigma = 3)\)</span></li>
+<li><span class="math inline">\(N(\mu = -100, \sigma = 10)\)</span></li>
+<li><span class="math inline">\(N(\mu = 2, \sigma = 9)\)</span></li>
+</ol>
+</div>
 </section>
-<section id="the-68-95-99.7-rule" class="level2" data-number="11.2">
-<h2 data-number="11.2" class="anchored" data-anchor-id="the-68-95-99.7-rule"><span class="header-section-number">11.2</span> The 68-95-99.7 rule</h2>
-<p>Content under development.</p>
 </section>
-<section id="z-scores-and-standardizing" class="level2" data-number="11.3">
-<h2 data-number="11.3" class="anchored" data-anchor-id="z-scores-and-standardizing"><span class="header-section-number">11.3</span> Z-scores and standardizing</h2>
-<p>Content under development.</p>
+<section id="sec-68-95-997" class="level2" data-number="11.2">
+<h2 data-number="11.2" class="anchored" data-anchor-id="sec-68-95-997"><span class="header-section-number">11.2</span> The 68-95-99.7 rule</h2>
+<p>One of the most useful facts about the normal distribution is how observations spread out around the mean. This relationship is captured by the <strong>68-95-99.7 rule</strong> (sometimes called the <strong>empirical rule</strong>).</p>
+<div class="definition">
+<p><strong>The 68-95-99.7 rule.</strong> For any normal distribution <span class="math inline">\(N(\mu, \sigma)\)</span>:</p>
+<ul>
+<li>About <strong>68%</strong> of observations fall within <strong>1 standard deviation</strong> of the mean: between <span class="math inline">\(\mu - \sigma\)</span> and <span class="math inline">\(\mu + \sigma\)</span>.</li>
+<li>About <strong>95%</strong> of observations fall within <strong>2 standard deviations</strong> of the mean: between <span class="math inline">\(\mu - 2\sigma\)</span> and <span class="math inline">\(\mu + 2\sigma\)</span>.</li>
+<li>About <strong>99.7%</strong> of observations fall within <strong>3 standard deviations</strong> of the mean: between <span class="math inline">\(\mu - 3\sigma\)</span> and <span class="math inline">\(\mu + 3\sigma\)</span>.</li>
+</ul>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="The 68-95-99.7 rule illustrated on a normal curve. The innermost shaded region (68%) extends from \mu - \sigma to \mu + \sigma. The middle region (95%) extends from \mu - 2\sigma to \mu + 2\sigma. The outermost region (99.7%) extends from \mu - 3\sigma to \mu + 3\sigma."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A normal distribution curve with three nested shaded regions. The innermost region covers 68 percent of the area and extends one standard deviation on each side of the mean. The middle region covers 95 percent and extends two standard deviations on each side. The outermost region covers 99.7 percent and extends three standard deviations on each side."></a></p>
+<figcaption>The 68-95-99.7 rule illustrated on a normal curve. The innermost shaded region (68%) extends from <span class="math inline">\(\mu - \sigma\)</span> to <span class="math inline">\(\mu + \sigma\)</span>. The middle region (95%) extends from <span class="math inline">\(\mu - 2\sigma\)</span> to <span class="math inline">\(\mu + 2\sigma\)</span>. The outermost region (99.7%) extends from <span class="math inline">\(\mu - 3\sigma\)</span> to <span class="math inline">\(\mu + 3\sigma\)</span>.</figcaption>
+</figure>
+</div>
+<p>This rule gives quick, approximate answers without needing a calculator or software.</p>
+<div class="workedexample">
+<p>SAT scores closely follow the normal distribution with mean <span class="math inline">\(\mu = 1500\)</span> and standard deviation <span class="math inline">\(\sigma = 300\)</span>.</p>
+<ol type="a">
+<li>About what percent of test takers score between 1200 and 1800?</li>
+<li>About what percent score between 1500 and 2100?</li>
+</ol>
+<hr>
+<ol type="a">
+<li><p>1200 is one standard deviation below the mean (<span class="math inline">\(1500 - 300 = 1200\)</span>), and 1800 is one standard deviation above the mean (<span class="math inline">\(1500 + 300 = 1800\)</span>). By the 68-95-99.7 rule, about <strong>68%</strong> of test takers score between 1200 and 1800.</p></li>
+<li><p>The range from 900 to 2100 covers <span class="math inline">\(\mu \pm 2\sigma\)</span>, which contains about 95% of scores. Since the normal distribution is symmetric, the range from 1500 to 2100 (the upper half) contains about <span class="math inline">\(\frac{95\%}{2} = 47.5\%\)</span> of scores.</p></li>
+</ol>
+</div>
+<div class="guidedpractice">
+<p>Adult male heights in the US follow approximately a normal distribution with mean 70 inches and standard deviation 3.3 inches. Using the 68-95-99.7 rule, approximately what percentage of adult males are between 63.4 and 76.6 inches tall?<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
+<div class="guidedpractice">
+<p>Continuing with SAT scores (<span class="math inline">\(\mu = 1500\)</span>, <span class="math inline">\(\sigma = 300\)</span>), about what percent of test takers score above 2100?<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
 </section>
-<section id="finding-probabilities-from-the-normal-distribution" class="level2" data-number="11.4">
-<h2 data-number="11.4" class="anchored" data-anchor-id="finding-probabilities-from-the-normal-distribution"><span class="header-section-number">11.4</span> Finding probabilities from the normal distribution</h2>
-<p>Content under development.</p>
+<section id="sec-z-scores" class="level2" data-number="11.3">
+<h2 data-number="11.3" class="anchored" data-anchor-id="sec-z-scores"><span class="header-section-number">11.3</span> Z-scores and standardizing</h2>
+<p>When comparing observations from different distributions, raw values are not directly comparable. A score of 1800 on the SAT and a score of 24 on the ACT look very different, but we need a common scale to determine which performance is better relative to other test takers. The solution is <strong>standardizing</strong> the observations.</p>
+<div class="definition">
+<p>The <strong>Z-score</strong> of an observation <span class="math inline">\(x\)</span> from a distribution with mean <span class="math inline">\(\mu\)</span> and standard deviation <span class="math inline">\(\sigma\)</span> is the number of standard deviations it falls above or below the mean:</p>
+<p><span class="math display">\[Z = \frac{x - \mu}{\sigma}\]</span></p>
+<ul>
+<li>Positive Z-scores indicate observations <strong>above</strong> the mean.</li>
+<li>Negative Z-scores indicate observations <strong>below</strong> the mean.</li>
+<li>A Z-score of 0 means the observation equals the mean.</li>
+</ul>
+</div>
+<div class="important">
+<p>If the observation <span class="math inline">\(x\)</span> comes from a normal distribution <span class="math inline">\(N(\mu, \sigma)\)</span>, then its Z-score follows the standard normal distribution <span class="math inline">\(N(0, 1)\)</span>. Standardizing shifts the center to 0 and rescales the spread to 1, but preserves the normal shape.</p>
+</div>
+<div class="workedexample">
+<p>SAT scores follow <span class="math inline">\(N(\mu = 1500, \sigma = 300)\)</span> and ACT scores follow <span class="math inline">\(N(\mu = 21, \sigma = 5)\)</span>. Nel scored 1800 on the SAT and Sian scored 24 on the ACT. Who performed better relative to other test takers?</p>
+<hr>
+<p>We compute Z-scores for each student.</p>
+<p>Nel’s Z-score: <span class="math inline">\(Z_{\text{Nel}} = \frac{1800 - 1500}{300} = \frac{300}{300} = 1.00\)</span></p>
+<p>Sian’s Z-score: <span class="math inline">\(Z_{\text{Sian}} = \frac{24 - 21}{5} = \frac{3}{5} = 0.60\)</span></p>
+<p>Nel is 1 standard deviation above the SAT mean, while Sian is only 0.6 standard deviations above the ACT mean. Nel performed better relative to other test takers.</p>
+</div>
+<div class="guidedpractice">
+<p>Head lengths of brushtail possums follow a nearly normal distribution with mean 92.6 mm and standard deviation 3.6 mm. Compute the Z-scores for possums with head lengths of 95.4 mm and 85.8 mm. Which possum has the more unusual head length?<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+</div>
+<div class="workedexample">
+<p>Let <span class="math inline">\(X\)</span> represent a random variable from <span class="math inline">\(N(\mu = 3, \sigma = 2)\)</span>, and suppose we observe <span class="math inline">\(x = 5.19\)</span>.</p>
+<ol type="a">
+<li>Find the Z-score.</li>
+<li>How many standard deviations above or below the mean is this observation?</li>
+</ol>
+<hr>
+<ol type="a">
+<li><p><span class="math inline">\(Z = \frac{x - \mu}{\sigma} = \frac{5.19 - 3}{2} = \frac{2.19}{2} = 1.095\)</span></p></li>
+<li><p>The observation is 1.095 standard deviations <em>above</em> the mean. We know it is above because the Z-score is positive.</p></li>
+</ol>
+</div>
 </section>
-<section id="the-normal-approximation-to-sampling-distributions" class="level2" data-number="11.5">
-<h2 data-number="11.5" class="anchored" data-anchor-id="the-normal-approximation-to-sampling-distributions"><span class="header-section-number">11.5</span> The normal approximation to sampling distributions</h2>
-<p>Content under development.</p>
+<section id="sec-normal-probs" class="level2" data-number="11.4">
+<h2 data-number="11.4" class="anchored" data-anchor-id="sec-normal-probs"><span class="header-section-number">11.4</span> Finding probabilities from the normal distribution</h2>
+<p>One of the most important skills in statistics is finding the probability that a normally distributed variable falls in a specified range. This is equivalent to finding the <strong>area under the normal curve</strong> over that range.</p>
+<div class="important">
+<p><strong>Strategy for normal probability problems.</strong> Always follow these steps:</p>
+<ol type="1">
+<li><strong>Draw a picture.</strong> Sketch the normal curve, mark the mean, and shade the area you want to find.</li>
+<li><strong>Find the Z-score.</strong> Standardize the value(s) of interest using <span class="math inline">\(Z = \frac{x - \mu}{\sigma}\)</span>.</li>
+<li><strong>Look up the area.</strong> Use a normal probability table, statistical software, or the SimKit Normal Distribution Explorer to find the area to the <strong>left</strong> of the Z-score.</li>
+<li><strong>Adjust if needed.</strong> If you need a right-tail area, subtract the left-tail area from 1. For an area between two values, subtract the smaller left-tail area from the larger.</li>
+</ol>
+</div>
+<section id="left-tail-probabilities-percentiles" class="level3" data-number="11.4.1">
+<h3 data-number="11.4.1" class="anchored" data-anchor-id="left-tail-probabilities-percentiles"><span class="header-section-number">11.4.1</span> Left-tail probabilities (percentiles)</h3>
+<p>The area to the left of a value on the normal curve gives the <strong>percentile</strong> – the proportion of observations that fall below that value.</p>
+<div class="definition">
+<p>The <strong>percentile</strong> of an observation is the percentage of values in the distribution that fall at or below that observation.</p>
+</div>
+<div class="workedexample">
+<p>Nel scored 1800 on the SAT (<span class="math inline">\(Z = 1.00\)</span>). What percentile is this?</p>
+<hr>
+<p>We need the area to the left of <span class="math inline">\(Z = 1.00\)</span> on the standard normal curve.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="The standard normal curve with the area to the left of Z = 1.00 shaded. This area represents Nel’s percentile."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A standard normal distribution curve with the area to the left of z equals 1 shaded in blue. The shaded area represents approximately 84 percent of the distribution."></a></p>
+<figcaption>The standard normal curve with the area to the left of Z = 1.00 shaded. This area represents Nel’s percentile.</figcaption>
+</figure>
+</div>
+<p>Using a normal probability table or software, the area to the left of <span class="math inline">\(Z = 1.00\)</span> is <strong>0.8413</strong>. Nel is at the <strong>84th percentile</strong> – 84.13% of SAT takers scored lower.</p>
+</div>
 </section>
-<section id="chapter-review" class="level2" data-number="11.6">
-<h2 data-number="11.6" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">11.6</span> Chapter review</h2>
-<section id="summary" class="level3" data-number="11.6.1">
-<h3 data-number="11.6.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">11.6.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+<section id="right-tail-probabilities" class="level3" data-number="11.4.2">
+<h3 data-number="11.4.2" class="anchored" data-anchor-id="right-tail-probabilities"><span class="header-section-number">11.4.2</span> Right-tail probabilities</h3>
+<div class="workedexample">
+<p>Shannon is a randomly selected SAT taker. What is the probability Shannon scores at least 1630?</p>
+<hr>
+<p><strong>Step 1: Draw a picture.</strong> We shade the area above 1630 on the <span class="math inline">\(N(1500, 300)\)</span> curve.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="A normal curve with mean 1500 and standard deviation 300. The area to the right of 1630 is shaded."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A normal distribution curve centered at 1500 with a standard deviation of 300. The area to the right of 1630 is shaded, representing the probability of scoring at least 1630."></a></p>
+<figcaption>A normal curve with mean 1500 and standard deviation 300. The area to the right of 1630 is shaded.</figcaption>
+</figure>
+</div>
+<p><strong>Step 2: Find the Z-score.</strong></p>
+<p><span class="math display">\[Z = \frac{1630 - 1500}{300} = \frac{130}{300} = 0.43\]</span></p>
+<p><strong>Step 3: Look up the left-tail area.</strong> The area to the left of <span class="math inline">\(Z = 0.43\)</span> is 0.6664.</p>
+<p><strong>Step 4: Adjust.</strong> The area to the <em>right</em> is <span class="math inline">\(1 - 0.6664 = 0.3336\)</span>.</p>
+<p>The probability Shannon scores at least 1630 is <strong>0.3336</strong>, or about 33.4%.</p>
+</div>
+<div class="guidedpractice">
+<p>If the probability of Shannon scoring at least 1630 is 0.3336, what is the probability Shannon scores <em>less than</em> 1630?<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+</div>
 </section>
-<section id="exercises" class="level3 exercises" data-number="11.6.2">
-<h3 class="exercises anchored" data-number="11.6.2" data-anchor-id="exercises"><span class="header-section-number">11.6.2</span> Exercises</h3>
-<div class="underconstruction">
+<section id="probabilities-between-two-values" class="level3" data-number="11.4.3">
+<h3 data-number="11.4.3" class="anchored" data-anchor-id="probabilities-between-two-values"><span class="header-section-number">11.4.3</span> Probabilities between two values</h3>
+<div class="workedexample">
+<p>Adult male heights follow <span class="math inline">\(N(\mu = 70, \sigma = 3.3)\)</span> inches. What is the probability that a randomly selected adult male is between 5’9” (69 inches) and 6’2” (74 inches)?</p>
+<hr>
+<p><strong>Step 1: Draw a picture.</strong> Shade the area between 69 and 74 on the normal curve.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="A normal curve centered at 70 with standard deviation 3.3. The area between 69 and 74 is shaded."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A normal distribution curve centered at 70 inches with standard deviation 3.3 inches. The area between 69 and 74 inches is shaded, representing the probability of being between those two heights."></a></p>
+<figcaption>A normal curve centered at 70 with standard deviation 3.3. The area between 69 and 74 is shaded.</figcaption>
+</figure>
+</div>
+<p><strong>Step 2: Find both Z-scores.</strong></p>
+<p><span class="math display">\[Z_1 = \frac{69 - 70}{3.3} = -0.30 \qquad Z_2 = \frac{74 - 70}{3.3} = 1.21\]</span></p>
+<p><strong>Step 3: Look up both left-tail areas.</strong></p>
+<ul>
+<li>Area to the left of <span class="math inline">\(Z_1 = -0.30\)</span>: 0.3821</li>
+<li>Area to the left of <span class="math inline">\(Z_2 = 1.21\)</span>: 0.8869</li>
+</ul>
+<p><strong>Step 4: Subtract.</strong></p>
+<p><span class="math display">\[P(69 &lt; X &lt; 74) = 0.8869 - 0.3821 = 0.5048\]</span></p>
+<p>About <strong>50.5%</strong> of adult males are between 5’9” and 6’2”.</p>
+</div>
+<div class="guidedpractice">
+<p>What percent of SAT takers score between 1500 and 2000? (SAT scores follow <span class="math inline">\(N(1500, 300)\)</span>.)<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+</div>
+</section>
+<section id="finding-values-from-percentiles" class="level3" data-number="11.4.4">
+<h3 data-number="11.4.4" class="anchored" data-anchor-id="finding-values-from-percentiles"><span class="header-section-number">11.4.4</span> Finding values from percentiles</h3>
+<p>Sometimes we want to work backwards: given a percentile, find the observation.</p>
+<div class="workedexample">
+<p>Adult male heights follow <span class="math inline">\(N(70, 3.3)\)</span>. Yousef’s height is at the 40th percentile. How tall is Yousef?</p>
+<hr>
+<p><strong>Step 1: Draw a picture.</strong> The 40th percentile means 40% of the area is to the left.</p>
+<p><strong>Step 2: Find the Z-score for the 40th percentile.</strong> Using a normal probability table (look for 0.40 in the body of the table) or software, <span class="math inline">\(Z = -0.25\)</span>.</p>
+<p><strong>Step 3: Solve for <span class="math inline">\(x\)</span>.</strong> Using the Z-score formula:</p>
+<p><span class="math display">\[-0.25 = \frac{x - 70}{3.3}\]</span></p>
+<p><span class="math display">\[x = 70 + (-0.25)(3.3) = 70 - 0.825 = 69.2 \text{ inches}\]</span></p>
+<p>Yousef is approximately 69.2 inches (about 5’9”) tall.</p>
+</div>
+<div class="guidedpractice">
+<p>What is the 95th percentile for SAT scores?<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+</div>
+</section>
+<section id="the-normal-probability-table" class="level3" data-number="11.4.5">
+<h3 data-number="11.4.5" class="anchored" data-anchor-id="the-normal-probability-table"><span class="header-section-number">11.4.5</span> The normal probability table</h3>
+<p>A <strong>normal probability table</strong> (also called a Z-table) lists areas to the left of Z-scores for the standard normal distribution. The table is organized with the ones and tenths digits of the Z-score in the rows, and the hundredths digit in the columns.</p>
+<p><strong>Common Z-scores and areas worth remembering:</strong></p>
+<table class="table-striped caption-top table">
+<caption>Commonly used Z-scores and their corresponding left-tail areas.</caption>
+<thead>
+<tr class="header">
+<th>Z-score</th>
+<th>Left-tail area</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(-1.96\)</span></td>
+<td>0.0250</td>
+<td>2.5th percentile</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(-1.645\)</span></td>
+<td>0.0500</td>
+<td>5th percentile</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(-1.00\)</span></td>
+<td>0.1587</td>
+<td>15.87th percentile</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(0.00\)</span></td>
+<td>0.5000</td>
+<td>50th percentile (the mean)</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(1.00\)</span></td>
+<td>0.8413</td>
+<td>84.13th percentile</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(1.645\)</span></td>
+<td>0.9500</td>
+<td>95th percentile</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(1.96\)</span></td>
+<td>0.9750</td>
+<td>97.5th percentile</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(2.576\)</span></td>
+<td>0.9950</td>
+<td>99.5th percentile</td>
+</tr>
+</tbody>
+</table>
+<div class="simkit">
+<p><strong>Practice with the Normal Distribution Explorer.</strong> Use SimKit to verify the table entries above. Enter a Z-score and check that the shaded area matches. Then try working backwards: enter a percentile and find the corresponding Z-score.</p>
+<p><a href="https://datascienceuwl.github.io/simkit/explore/normal/" target="_blank">Launch Normal Distribution Explorer</a></p>
+</div>
+</section>
+</section>
+<section id="sec-normal-approx-sampling" class="level2" data-number="11.5">
+<h2 data-number="11.5" class="anchored" data-anchor-id="sec-normal-approx-sampling"><span class="header-section-number">11.5</span> The normal approximation to sampling distributions</h2>
+<p>In Chapter 9, we used simulation to explore sampling distributions – the distributions of sample statistics computed from many repeated samples. A striking pattern emerged: regardless of whether we were looking at sample means, sample proportions, or differences in means or proportions, the sampling distributions tended to be <strong>bell-shaped and symmetric</strong>. This is not a coincidence.</p>
+<section id="the-central-limit-theorem" class="level3" data-number="11.5.1">
+<h3 data-number="11.5.1" class="anchored" data-anchor-id="the-central-limit-theorem"><span class="header-section-number">11.5.1</span> The Central Limit Theorem</h3>
+<div class="definition">
+<p><strong>The Central Limit Theorem (CLT).</strong> When observations are independent and the sample size is sufficiently large, the sampling distribution of many common statistics (sample means, sample proportions, and their differences) is approximately normal, regardless of the shape of the population distribution.</p>
+<p>Specifically:</p>
+<ul>
+<li>The sampling distribution of <span class="math inline">\(\bar{x}\)</span> is approximately <span class="math inline">\(N\!\left(\mu, \frac{\sigma}{\sqrt{n}}\right)\)</span>.</li>
+<li>The sampling distribution of <span class="math inline">\(\hat{p}\)</span> is approximately <span class="math inline">\(N\!\left(p, \sqrt{\frac{p(1-p)}{n}}\right)\)</span>.</li>
+</ul>
+</div>
+<p>The CLT is one of the most remarkable results in all of mathematics. It explains why simulation-based null distributions and bootstrap distributions looked bell-shaped: they were approximating the normal distribution all along.</p>
+<div class="important">
+<p><strong>Two conditions for the CLT to apply:</strong></p>
+<ol type="1">
+<li><strong>Independence.</strong> The observations must be independent of one another. This is satisfied when data come from a random sample or a randomized experiment.</li>
+<li><strong>Sample size.</strong> The sample must be large enough. What counts as “large enough” depends on the context:
+<ul>
+<li>For <strong>proportions</strong>: at least 10 expected successes and 10 expected failures (<span class="math inline">\(np \geq 10\)</span> and <span class="math inline">\(n(1-p) \geq 10\)</span>). This is called the <strong>success-failure condition</strong>.</li>
+<li>For <strong>means</strong>: <span class="math inline">\(n \geq 30\)</span> is a common guideline, though smaller samples can work if the population is not strongly skewed.</li>
+</ul></li>
+</ol>
+</div>
+</section>
+<section id="standard-error-quantifying-the-variability-of-a-statistic" class="level3" data-number="11.5.2">
+<h3 data-number="11.5.2" class="anchored" data-anchor-id="standard-error-quantifying-the-variability-of-a-statistic"><span class="header-section-number">11.5.2</span> Standard error: quantifying the variability of a statistic</h3>
+<p>The CLT tells us the sampling distribution is approximately normal. But how wide is that normal distribution? The answer is given by the <strong>standard error</strong>.</p>
+<div class="definition">
+<p>The <strong>standard error (SE)</strong> of a statistic is the standard deviation of its sampling distribution. It measures how much the statistic varies from sample to sample.</p>
+</div>
+<p>The standard error depends on the parameter of interest:</p>
+<table class="table-striped caption-top table">
+<caption>Standard error formulas for common parameters.</caption>
+<colgroup>
+<col style="width: 26%">
+<col style="width: 35%">
+<col style="width: 38%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Point estimate</th>
+<th>Standard error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Population mean <span class="math inline">\(\mu\)</span></td>
+<td><span class="math inline">\(\bar{x}\)</span></td>
+<td><span class="math inline">\(SE = \frac{s}{\sqrt{n}}\)</span></td>
+</tr>
+<tr class="even">
+<td>Population proportion <span class="math inline">\(p\)</span></td>
+<td><span class="math inline">\(\hat{p}\)</span></td>
+<td><span class="math inline">\(SE = \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}\)</span></td>
+</tr>
+<tr class="odd">
+<td>Difference in means <span class="math inline">\(\mu_1 - \mu_2\)</span></td>
+<td><span class="math inline">\(\bar{x}_1 - \bar{x}_2\)</span></td>
+<td><span class="math inline">\(SE = \sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}\)</span></td>
+</tr>
+<tr class="even">
+<td>Difference in proportions <span class="math inline">\(p_1 - p_2\)</span></td>
+<td><span class="math inline">\(\hat{p}_1 - \hat{p}_2\)</span></td>
+<td><span class="math inline">\(SE = \sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}\)</span></td>
+</tr>
+</tbody>
+</table>
+<div class="important">
+<p><strong>Margin of error.</strong> The distance <span class="math inline">\(z^* \times SE\)</span> is called the <strong>margin of error</strong>. For a 95% confidence interval, <span class="math inline">\(z^* = 1.96\)</span> (often rounded to 2), giving a margin of error of approximately <span class="math inline">\(2 \times SE\)</span>. This is directly connected to the 68-95-99.7 rule: 95% of sample statistics fall within about 2 standard errors of the true parameter value.</p>
+</div>
+</section>
+<section id="connecting-simulation-and-normal-approximation" class="level3" data-number="11.5.3">
+<h3 data-number="11.5.3" class="anchored" data-anchor-id="connecting-simulation-and-normal-approximation"><span class="header-section-number">11.5.3</span> Connecting simulation and normal approximation</h3>
+<div class="original">
+<p>Let’s see the connection between simulation-based methods and the normal approximation in a concrete example.</p>
+<p>In Chapter 7, we tested whether opportunity cost reminders reduce spending. We simulated 10,000 randomization samples and found a null distribution that was bell-shaped with a center of 0 and a spread described by <span class="math inline">\(SE \approx 0.078\)</span>. The observed difference was 0.20.</p>
+<p><strong>Simulation approach:</strong> Count how many of the 10,000 simulated differences were at least as extreme as 0.20. The proportion gives the p-value: approximately 0.006.</p>
+<p><strong>Normal approximation approach:</strong> Model the null distribution as <span class="math inline">\(N(0, 0.078)\)</span>. Compute the Z-score:</p>
+<p><span class="math display">\[Z = \frac{0.20 - 0}{0.078} = 2.56\]</span></p>
+<p>The area to the right of <span class="math inline">\(Z = 2.56\)</span> is 0.0052.</p>
+<p>Both approaches give nearly the same p-value (0.006 vs.&nbsp;0.0052) and the same conclusion: reject <span class="math inline">\(H_0\)</span>. The normal approximation works because the conditions are met – independent observations and a sufficiently large sample.</p>
+</div>
+</section>
+<section id="confidence-intervals-using-the-normal-model" class="level3" data-number="11.5.4">
+<h3 data-number="11.5.4" class="anchored" data-anchor-id="confidence-intervals-using-the-normal-model"><span class="header-section-number">11.5.4</span> Confidence intervals using the normal model</h3>
+<p>The normal approximation also lets us build confidence intervals without bootstrapping.</p>
+<div class="important">
+<p><strong>General confidence interval formula.</strong> When the sampling distribution of a statistic is approximately normal with standard error <span class="math inline">\(SE\)</span>, a confidence interval takes the form:</p>
+<p><span class="math display">\[\text{point estimate} \pm z^* \times SE\]</span></p>
+<p>where <span class="math inline">\(z^*\)</span> is chosen based on the desired confidence level:</p>
+<table class="table-striped caption-top table">
+<caption>Critical values <span class="math inline">\(z^*\)</span> for common confidence levels.</caption>
+<thead>
+<tr class="header">
+<th>Confidence level</th>
+<th><span class="math inline">\(z^*\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>90%</td>
+<td>1.645</td>
+</tr>
+<tr class="even">
+<td>95%</td>
+<td>1.960</td>
+</tr>
+<tr class="odd">
+<td>99%</td>
+<td>2.576</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="workedexample">
+<p>A study examined whether stents reduce stroke risk. The observed difference in 30-day stroke rates (treatment minus control) was <span class="math inline">\(\hat{p}_T - \hat{p}_C = 0.090\)</span>, with <span class="math inline">\(SE = 0.028\)</span>. Construct a 95% confidence interval.</p>
+<hr>
+<p>The conditions for the normal model have been verified. Using <span class="math inline">\(z^* = 1.96\)</span>:</p>
+<p><span class="math display">\[0.090 \pm 1.96 \times 0.028 = 0.090 \pm 0.055 = (0.035, 0.145)\]</span></p>
+<p>We are 95% confident that implanting a stent increased the 30-day stroke rate by between 3.5 and 14.5 percentage points. Since the interval does not contain 0, we have evidence of a real difference.</p>
+</div>
+</section>
+</section>
+<section id="sec-normal-when" class="level2" data-number="11.6">
+<h2 data-number="11.6" class="anchored" data-anchor-id="sec-normal-when"><span class="header-section-number">11.6</span> When does the normal model apply – and when doesn’t it?</h2>
+<p>The normal distribution is powerful but not universal. Here we summarize when it is and is not appropriate.</p>
+<div class="important">
+<p><strong>When the normal model is a good approximation:</strong></p>
+<ul>
+<li>Sample proportions <span class="math inline">\(\hat{p}\)</span>, when the success-failure condition is met (<span class="math inline">\(np \geq 10\)</span> and <span class="math inline">\(n(1-p) \geq 10\)</span>).</li>
+<li>Sample means <span class="math inline">\(\bar{x}\)</span>, when the sample size is at least 30 or the population is approximately normal (we will use the <span class="math inline">\(t\)</span>-distribution for means – see Chapter 11).</li>
+<li>Differences in proportions or means, when both groups satisfy the above conditions.</li>
+</ul>
+<p><strong>When the normal model is NOT a good approximation:</strong></p>
+<ul>
+<li>Small samples with a skewed population distribution.</li>
+<li>Proportions near 0 or 1 with small sample sizes (the success-failure condition fails).</li>
+<li>Data with strong dependence between observations.</li>
+</ul>
+</div>
+<div class="workedexample">
+<p>A medical consultant claims that only 3 of their 62 liver transplant clients had complications, compared to the national rate of 10%. Is it appropriate to use the normal approximation to test whether this consultant’s rate is lower?</p>
+<hr>
+<p>Under the null hypothesis (<span class="math inline">\(p_0 = 0.10\)</span>), we check the success-failure condition:</p>
+<ul>
+<li>Expected successes (complications): <span class="math inline">\(np_0 = 62 \times 0.10 = 6.2\)</span></li>
+<li>Expected failures (no complications): <span class="math inline">\(n(1 - p_0) = 62 \times 0.90 = 55.8\)</span></li>
+</ul>
+<p>Since the expected number of successes (6.2) is less than 10, the <strong>success-failure condition is not met</strong>. The normal approximation would underestimate the variability and give an inaccurate p-value. A simulation-based approach (as in Chapter 7) would be more appropriate here.</p>
+</div>
+<div class="caution">
+<p><strong>When conditions fail, use simulation.</strong> If the success-failure condition is not met or the sample size is too small for the normal approximation, we should fall back on the simulation-based methods from Chapters 7 and 8. The bootstrap and randomization approaches work well even when the normal model does not. This is one of the great advantages of simulation-based inference: it is more broadly applicable.</p>
+</div>
+</section>
+<section id="sec-ch10-review" class="level2" data-number="11.7">
+<h2 data-number="11.7" class="anchored" data-anchor-id="sec-ch10-review"><span class="header-section-number">11.7</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="11.7.1">
+<h3 data-number="11.7.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">11.7.1</span> Summary</h3>
+<p>This chapter introduced the normal distribution, the most commonly encountered distribution in statistics. Key concepts include:</p>
+<ul>
+<li>The normal distribution is described by two parameters: the mean <span class="math inline">\(\mu\)</span> (center) and standard deviation <span class="math inline">\(\sigma\)</span> (spread), written as <span class="math inline">\(N(\mu, \sigma)\)</span>.</li>
+<li>The <strong>68-95-99.7 rule</strong> provides quick estimates: about 68%, 95%, and 99.7% of observations fall within 1, 2, and 3 standard deviations of the mean.</li>
+<li>A <strong>Z-score</strong> standardizes an observation by measuring how many standard deviations it lies from the mean: <span class="math inline">\(Z = \frac{x - \mu}{\sigma}\)</span>.</li>
+<li>Normal probabilities are found by computing Z-scores and looking up areas under the standard normal curve using tables, software, or SimKit.</li>
+<li>The <strong>Central Limit Theorem</strong> guarantees that sampling distributions of means and proportions are approximately normal when the sample is large enough and observations are independent.</li>
+<li>The <strong>standard error</strong> measures how much a statistic varies from sample to sample and is the key ingredient in confidence intervals and hypothesis tests.</li>
+<li>The normal approximation and simulation-based methods give similar results when conditions are met, but simulation is more flexible when conditions fail.</li>
+</ul>
+</section>
+<section id="key-terms" class="level3" data-number="11.7.2">
+<h3 data-number="11.7.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">11.7.2</span> Key terms</h3>
+<p>Normal distribution, standard normal distribution, parameters (<span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma\)</span>), 68-95-99.7 rule, Z-score, standardizing, percentile, Central Limit Theorem (CLT), standard error (SE), margin of error, success-failure condition.</p>
+</section>
+<section id="exercises" class="level3 exercises" data-number="11.7.3">
+<h3 class="exercises anchored" data-number="11.7.3" data-anchor-id="exercises"><span class="header-section-number">11.7.3</span> Exercises</h3>
 <p>Exercises for this chapter are under development.</p>
-</div>
 
 
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>63.4 inches is <span class="math inline">\(70 - 2(3.3) = 63.4\)</span> and 76.6 inches is <span class="math inline">\(70 + 2(3.3) = 76.6\)</span>. These are each 2 standard deviations from the mean, so by the 68-95-99.7 rule, approximately 95% of adult males have heights in this range.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>2100 is 2 standard deviations above the mean. By the 68-95-99.7 rule, about 95% of scores are within 2 standard deviations, leaving about 5% outside. Since the distribution is symmetric, about 2.5% are above 2100.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>For <span class="math inline">\(x_1 = 95.4\)</span> mm: <span class="math inline">\(Z_1 = \frac{95.4 - 92.6}{3.6} = \frac{2.8}{3.6} = 0.78\)</span>. For <span class="math inline">\(x_2 = 85.8\)</span> mm: <span class="math inline">\(Z_2 = \frac{85.8 - 92.6}{3.6} = \frac{-6.8}{3.6} = -1.89\)</span>. The second possum has a more unusual head length because <span class="math inline">\(|{-1.89}| &gt; |0.78|\)</span>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>The probability of scoring less than 1630 is the area to the left: 0.6664, or about 66.6%. The left-tail and right-tail areas always sum to 1.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>First find the Z-scores: <span class="math inline">\(Z_1 = \frac{1500 - 1500}{300} = 0.00\)</span> and <span class="math inline">\(Z_2 = \frac{2000 - 1500}{300} = 1.67\)</span>. The left-tail areas are 0.5000 and 0.9525. The area between them is <span class="math inline">\(0.9525 - 0.5000 = 0.4525\)</span>, so about 45.25% score between 1500 and 2000.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>The Z-score for the 95th percentile is <span class="math inline">\(Z = 1.645\)</span>. Then <span class="math inline">\(x = 1500 + 1.645 \times 300 = 1500 + 493.5 = 1993.5\)</span>. The 95th percentile for SAT scores is approximately 1994.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
@@ -943,6 +1427,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

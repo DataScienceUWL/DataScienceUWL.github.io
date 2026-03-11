@@ -40,7 +40,10 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +71,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,15 +451,39 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#measures-of-center" id="toc-measures-of-center" class="nav-link active" data-scroll-target="#measures-of-center"><span class="header-section-number">5.1</span> Measures of center</a></li>
-  <li><a href="#measures-of-spread" id="toc-measures-of-spread" class="nav-link" data-scroll-target="#measures-of-spread"><span class="header-section-number">5.2</span> Measures of spread</a></li>
-  <li><a href="#describing-shape" id="toc-describing-shape" class="nav-link" data-scroll-target="#describing-shape"><span class="header-section-number">5.3</span> Describing shape</a></li>
-  <li><a href="#outliers-and-robust-statistics" id="toc-outliers-and-robust-statistics" class="nav-link" data-scroll-target="#outliers-and-robust-statistics"><span class="header-section-number">5.4</span> Outliers and robust statistics</a></li>
-  <li><a href="#transformations" id="toc-transformations" class="nav-link" data-scroll-target="#transformations"><span class="header-section-number">5.5</span> Transformations</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">5.6</span> Chapter review</a>
+  <li><a href="#sec-measures-center" id="toc-sec-measures-center" class="nav-link active" data-scroll-target="#sec-measures-center"><span class="header-section-number">5.1</span> Measures of center</a>
+  <ul class="collapse">
+  <li><a href="#the-mean" id="toc-the-mean" class="nav-link" data-scroll-target="#the-mean"><span class="header-section-number">5.1.1</span> The mean</a></li>
+  <li><a href="#the-median" id="toc-the-median" class="nav-link" data-scroll-target="#the-median"><span class="header-section-number">5.1.2</span> The median</a></li>
+  <li><a href="#the-mode" id="toc-the-mode" class="nav-link" data-scroll-target="#the-mode"><span class="header-section-number">5.1.3</span> The mode</a></li>
+  <li><a href="#when-to-use-the-mean-vs.-the-median" id="toc-when-to-use-the-mean-vs.-the-median" class="nav-link" data-scroll-target="#when-to-use-the-mean-vs.-the-median"><span class="header-section-number">5.1.4</span> When to use the mean vs.&nbsp;the median</a></li>
+  </ul></li>
+  <li><a href="#sec-measures-spread" id="toc-sec-measures-spread" class="nav-link" data-scroll-target="#sec-measures-spread"><span class="header-section-number">5.2</span> Measures of spread</a>
+  <ul class="collapse">
+  <li><a href="#range" id="toc-range" class="nav-link" data-scroll-target="#range"><span class="header-section-number">5.2.1</span> Range</a></li>
+  <li><a href="#the-interquartile-range-iqr" id="toc-the-interquartile-range-iqr" class="nav-link" data-scroll-target="#the-interquartile-range-iqr"><span class="header-section-number">5.2.2</span> The interquartile range (IQR)</a></li>
+  <li><a href="#sec-variance-sd" id="toc-sec-variance-sd" class="nav-link" data-scroll-target="#sec-variance-sd"><span class="header-section-number">5.2.3</span> Variance and standard deviation</a></li>
+  </ul></li>
+  <li><a href="#sec-describing-shape" id="toc-sec-describing-shape" class="nav-link" data-scroll-target="#sec-describing-shape"><span class="header-section-number">5.3</span> Describing shape</a>
+  <ul class="collapse">
+  <li><a href="#how-skewness-affects-the-mean-and-median" id="toc-how-skewness-affects-the-mean-and-median" class="nav-link" data-scroll-target="#how-skewness-affects-the-mean-and-median"><span class="header-section-number">5.3.1</span> How skewness affects the mean and median</a></li>
+  <li><a href="#writing-a-good-description" id="toc-writing-a-good-description" class="nav-link" data-scroll-target="#writing-a-good-description"><span class="header-section-number">5.3.2</span> Writing a good description</a></li>
+  </ul></li>
+  <li><a href="#sec-outliers-robust" id="toc-sec-outliers-robust" class="nav-link" data-scroll-target="#sec-outliers-robust"><span class="header-section-number">5.4</span> Outliers and robust statistics</a>
+  <ul class="collapse">
+  <li><a href="#identifying-outliers" id="toc-identifying-outliers" class="nav-link" data-scroll-target="#identifying-outliers"><span class="header-section-number">5.4.1</span> Identifying outliers</a></li>
+  <li><a href="#robust-statistics" id="toc-robust-statistics" class="nav-link" data-scroll-target="#robust-statistics"><span class="header-section-number">5.4.2</span> Robust statistics</a></li>
+  </ul></li>
+  <li><a href="#sec-empirical-rule" id="toc-sec-empirical-rule" class="nav-link" data-scroll-target="#sec-empirical-rule"><span class="header-section-number">5.5</span> The empirical rule and Chebyshev’s theorem</a>
+  <ul class="collapse">
+  <li><a href="#the-empirical-rule-68-95-99.7-rule" id="toc-the-empirical-rule-68-95-99.7-rule" class="nav-link" data-scroll-target="#the-empirical-rule-68-95-99.7-rule"><span class="header-section-number">5.5.1</span> The empirical rule (68-95-99.7 rule)</a></li>
+  <li><a href="#chebyshevs-theorem" id="toc-chebyshevs-theorem" class="nav-link" data-scroll-target="#chebyshevs-theorem"><span class="header-section-number">5.5.2</span> Chebyshev’s theorem</a></li>
+  </ul></li>
+  <li><a href="#sec-ch04-review" id="toc-sec-ch04-review" class="nav-link" data-scroll-target="#sec-ch04-review"><span class="header-section-number">5.6</span> Chapter review</a>
   <ul class="collapse">
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">5.6.1</span> Summary</a></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">5.6.2</span> Exercises</a></li>
+  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">5.6.2</span> Key terms</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">5.6.3</span> Exercises</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -454,49 +510,401 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: IMS <code>explore-numerical.qmd</code> — 90% coverage</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Describing Distributions</em> will go here.</p>
+<p>In Chapter 3 we learned to <em>visualize</em> distributions. Now we develop the numerical tools to <em>describe</em> them. A histogram or box plot gives a picture, but we also need precise numbers to summarize center, spread, and unusual features. This chapter covers the mean and median (measures of center), the standard deviation and IQR (measures of spread), and the concept of robust statistics. We close with the empirical rule, which connects the standard deviation to the shape of a distribution.</p>
 </div>
 <div class="simkit">
-<p><strong>SimKit tools for this chapter</strong>: Descriptive Statistics Explorer (Phase 5)</p>
+<p><strong>SimKit tools for this chapter</strong>: Use the Descriptive Statistics Explorer to compute means, medians, standard deviations, IQR, and quartiles for any dataset. Experiment with adding or removing outliers and watch how the statistics change.</p>
 </div>
-<section id="measures-of-center" class="level2" data-number="5.1">
-<h2 data-number="5.1" class="anchored" data-anchor-id="measures-of-center"><span class="header-section-number">5.1</span> Measures of center</h2>
-<p>Content under development.</p>
+<section id="sec-measures-center" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="sec-measures-center"><span class="header-section-number">5.1</span> Measures of center</h2>
+<p>When we look at a distribution, one of the first questions is: <em>where is the center?</em> Two statistics give us an answer.</p>
+<section id="the-mean" class="level3" data-number="5.1.1">
+<h3 data-number="5.1.1" class="anchored" data-anchor-id="the-mean"><span class="header-section-number">5.1.1</span> The mean</h3>
+<p>The <strong>mean</strong> (also called the <strong>average</strong>) is computed by adding up all the observed values and dividing by the number of observations. If we denote our observations as <span class="math inline">\(x_1, x_2, \ldots, x_n\)</span>, the sample mean is:</p>
+<div class="important">
+<p><strong>Mean.</strong></p>
+<p>The sample mean can be calculated as the sum of the observed values divided by the number of observations:</p>
+<p><span class="math display">\[\bar{x} = \frac{x_1 + x_2 + \cdots + x_n}{n}\]</span></p>
+</div>
+<p>The notation <span class="math inline">\(\bar{x}\)</span> (read “x-bar”) represents the sample mean. The letter <span class="math inline">\(x\)</span> is a placeholder for the variable of interest, and the bar indicates we are computing an average.</p>
+<div class="workedexample">
+<p>Consider the interest rates (in percent) for 50 loans. After adding up all 50 values and dividing by 50, the sample mean is <span class="math inline">\(\bar{x} = 11.57\%\)</span>. What does this number tell us?</p>
+<hr>
+<p>The mean interest rate of 11.57% represents the “balancing point” of the distribution. If we think of the dot plot as a seesaw, placing a fulcrum at 11.57% would balance it. The mean gives us a single number to represent the center of the interest rate distribution.</p>
+</div>
+<p>It’s useful to think of the mean as the balancing point of a distribution. On a dot plot, the mean is the position where the data would balance if placed on a seesaw.</p>
+<div class="guidedpractice">
+<p>In the formula for the mean, what does <span class="math inline">\(x_1\)</span> correspond to? And <span class="math inline">\(x_2\)</span>? What does <span class="math inline">\(x_i\)</span> represent in general?<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
+<p>The population mean is denoted by the Greek letter <span class="math inline">\(\mu\)</span> (pronounced “mew”). We often cannot measure <span class="math inline">\(\mu\)</span> directly because we rarely have access to every member of the population. Instead, we estimate <span class="math inline">\(\mu\)</span> using the sample mean <span class="math inline">\(\bar{x}\)</span>.</p>
+<div class="workedexample">
+<p>Suppose we want to compute the average income per person in the US. We might think to take the mean of per capita incomes across all 3,142 counties. What is wrong with this approach?</p>
+<hr>
+<p>Each county represents a different number of people. If we simply average the county-level incomes, we treat a county with 5,000 residents the same as one with 5,000,000 residents. Instead, we should compute the total income for each county, add up all counties’ totals, and divide by the total population. This is called a <strong>weighted mean</strong>. Failing to weight by population would underestimate the true average because larger, higher-income urban counties would be underrepresented.</p>
+</div>
 </section>
-<section id="measures-of-spread" class="level2" data-number="5.2">
-<h2 data-number="5.2" class="anchored" data-anchor-id="measures-of-spread"><span class="header-section-number">5.2</span> Measures of spread</h2>
-<p>Content under development.</p>
+<section id="the-median" class="level3" data-number="5.1.2">
+<h3 data-number="5.1.2" class="anchored" data-anchor-id="the-median"><span class="header-section-number">5.1.2</span> The median</h3>
+<p>The <strong>median</strong> is the value in the middle of the ordered data. It divides the dataset in half: 50% of the observations fall below the median and 50% fall above it.</p>
+<div class="important">
+<p><strong>Median: the number in the middle.</strong></p>
+<p>If the data are ordered from smallest to largest, the <strong>median</strong> is the observation right in the middle. If there are an even number of observations, the median is the average of the two middle values.</p>
+</div>
+<div class="workedexample">
+<p>Consider the interest rates for 50 loans arranged in order from smallest to largest. Since there are 50 observations (an even number), the median is the average of the 25th and 26th values. Both of these values happen to be 9.93%, so the median is 9.93%.</p>
+<p>How does this compare to the mean of 11.57%?</p>
+<hr>
+<p>The median (9.93%) is lower than the mean (11.57%). This makes sense because the distribution is right skewed — a few loans with very high interest rates pull the mean upward. The median is less affected by these extreme values.</p>
+</div>
+<div class="guidedpractice">
+<p>For a dataset with 7 observations arranged in order, which observation is the median?<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
 </section>
-<section id="describing-shape" class="level2" data-number="5.3">
-<h2 data-number="5.3" class="anchored" data-anchor-id="describing-shape"><span class="header-section-number">5.3</span> Describing shape</h2>
-<p>Content under development.</p>
+<section id="the-mode" class="level3" data-number="5.1.3">
+<h3 data-number="5.1.3" class="anchored" data-anchor-id="the-mode"><span class="header-section-number">5.1.3</span> The mode</h3>
+<div class="original">
+<p>The <strong>mode</strong> is the most frequently occurring value in a dataset. While useful for categorical data (e.g., the most common eye color), the mode is less useful for continuous numerical data because many values may occur only once.</p>
+<p>In practice, when we refer to the “mode” of a numerical distribution, we usually mean the location of a prominent <em>peak</em> in a histogram or density plot (as discussed in <a href="ch03-data-visualization.html#sec-distribution-shape" class="quarto-xref"><span>Section 4.3</span></a>), rather than a single repeated value.</p>
+</div>
 </section>
-<section id="outliers-and-robust-statistics" class="level2" data-number="5.4">
-<h2 data-number="5.4" class="anchored" data-anchor-id="outliers-and-robust-statistics"><span class="header-section-number">5.4</span> Outliers and robust statistics</h2>
-<p>Content under development.</p>
+<section id="when-to-use-the-mean-vs.-the-median" class="level3" data-number="5.1.4">
+<h3 data-number="5.1.4" class="anchored" data-anchor-id="when-to-use-the-mean-vs.-the-median"><span class="header-section-number">5.1.4</span> When to use the mean vs.&nbsp;the median</h3>
+<p>The mean and median measure different things. The choice between them depends on the context:</p>
+<div class="workedexample">
+<p>A company wants to understand its profit per customer. Should it use the mean or the median?</p>
+<hr>
+<p>It depends on the question:</p>
+<ul>
+<li>If the concern is overall profitability (total profit divided by number of customers), the <strong>mean</strong> is the right statistic. A company could have a positive median profit per customer and still be unprofitable if a few customers generate large losses.</li>
+<li>If the concern is understanding what the <em>typical</em> customer experience looks like, the <strong>median</strong> tells you more about the profit from a representative customer.</li>
+</ul>
+</div>
+<div class="important">
+<p><strong>Mean vs.&nbsp;median: which to choose?</strong></p>
+<ul>
+<li>The <strong>mean</strong> is best when you care about the <em>total</em> or <em>aggregate</em> (e.g., total revenue, total time spent).</li>
+<li>The <strong>median</strong> is best when you care about the <em>typical</em> observation, especially when the distribution is skewed or contains outliers.</li>
+<li>For symmetric distributions without extreme outliers, the mean and median are approximately equal and either is appropriate.</li>
+</ul>
+</div>
+<div class="guidedpractice">
+<p>The distribution of home prices in a city is strongly right skewed. If you wanted to describe the price of a typical home, should you report the mean or the median? Why?<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+</div>
 </section>
-<section id="transformations" class="level2" data-number="5.5">
-<h2 data-number="5.5" class="anchored" data-anchor-id="transformations"><span class="header-section-number">5.5</span> Transformations</h2>
-<p>Content under development.</p>
 </section>
-<section id="chapter-review" class="level2" data-number="5.6">
-<h2 data-number="5.6" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">5.6</span> Chapter review</h2>
+<section id="sec-measures-spread" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="sec-measures-spread"><span class="header-section-number">5.2</span> Measures of spread</h2>
+<p>Knowing the center of a distribution is important, but it tells only part of the story. Two distributions can have the same center but look very different if one is tightly clustered and the other is widely dispersed. We need measures of <strong>variability</strong> (also called spread or dispersion).</p>
+<section id="range" class="level3" data-number="5.2.1">
+<h3 data-number="5.2.1" class="anchored" data-anchor-id="range"><span class="header-section-number">5.2.1</span> Range</h3>
+<p>The simplest measure of spread is the <strong>range</strong>: the difference between the maximum and minimum values.</p>
+<p><span class="math display">\[\text{Range} = \text{Maximum} - \text{Minimum}\]</span></p>
+<div class="original">
+<p>While easy to compute, the range has a major weakness: it depends entirely on the two most extreme observations. A single outlier can dramatically increase the range, giving a misleading impression of the overall variability. For this reason, we usually prefer the IQR or standard deviation.</p>
+</div>
+</section>
+<section id="the-interquartile-range-iqr" class="level3" data-number="5.2.2">
+<h3 data-number="5.2.2" class="anchored" data-anchor-id="the-interquartile-range-iqr"><span class="header-section-number">5.2.2</span> The interquartile range (IQR)</h3>
+<p>The <strong>interquartile range</strong> measures the spread of the middle 50% of the data:</p>
+<div class="important">
+<p><strong>Interquartile range (IQR).</strong></p>
+<p>The IQR is the length of the box in a box plot. It is computed as:</p>
+<p><span class="math display">\[\text{IQR} = Q_3 - Q_1\]</span></p>
+<p>where <span class="math inline">\(Q_1\)</span> is the first quartile (25th percentile) and <span class="math inline">\(Q_3\)</span> is the third quartile (75th percentile).</p>
+</div>
+<p>The IQR tells us how spread out the middle half of the data is. A larger IQR indicates more variability among the “typical” observations.</p>
+<div class="workedexample">
+<p>For the 50-loan interest rate data, <span class="math inline">\(Q_1 \approx 8\%\)</span> and <span class="math inline">\(Q_3 \approx 14\%\)</span>. What is the IQR, and what does it tell us?</p>
+<hr>
+<p><span class="math inline">\(\text{IQR} = 14\% - 8\% = 6\)</span> percentage points. This means the middle 50% of loans have interest rates spanning a range of 6 percentage points. Half of all loans have rates between about 8% and 14%.</p>
+</div>
+</section>
+<section id="sec-variance-sd" class="level3" data-number="5.2.3">
+<h3 data-number="5.2.3" class="anchored" data-anchor-id="sec-variance-sd"><span class="header-section-number">5.2.3</span> Variance and standard deviation</h3>
+<p>The <strong>standard deviation</strong> is the most commonly used measure of spread. It roughly describes how far the typical observation is from the mean.</p>
+<p>We start with the concept of a <strong>deviation</strong>: the distance of an observation from the mean.</p>
+<p><span class="math display">\[\text{deviation of } x_i = x_i - \bar{x}\]</span></p>
+<p>Some deviations are positive (observations above the mean) and some are negative (observations below the mean). If we simply averaged the deviations, the positives and negatives would cancel out, giving us zero. To avoid this, we <em>square</em> each deviation before averaging.</p>
+<div class="definition">
+<p>The <strong>variance</strong> (denoted <span class="math inline">\(s^2\)</span>) is the average of the squared deviations, using <span class="math inline">\(n-1\)</span> in the denominator:</p>
+<p><span class="math display">\[s^2 = \frac{\sum_{i=1}^{n}(x_i - \bar{x})^2}{n-1} = \frac{(x_1 - \bar{x})^2 + (x_2 - \bar{x})^2 + \cdots + (x_n - \bar{x})^2}{n-1}\]</span></p>
+<p>The <strong>standard deviation</strong> (denoted <span class="math inline">\(s\)</span>) is the square root of the variance:</p>
+<p><span class="math display">\[s = \sqrt{s^2} = \sqrt{\frac{\sum_{i=1}^{n}(x_i - \bar{x})^2}{n-1}}\]</span></p>
+</div>
+<p>We divide by <span class="math inline">\(n - 1\)</span> rather than <span class="math inline">\(n\)</span> when computing a sample’s variance. The mathematical reasons are beyond this course, but the practical effect is that this makes the statistic slightly more reliable as an estimate of the population variance.</p>
+<div class="guidedpractice">
+<p>Why do we square the deviations instead of just taking the absolute value? What are the two consequences of squaring?<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+</div>
+<div class="workedexample">
+<p>For the 50-loan interest rate data, the variance is <span class="math inline">\(s^2 = 25.52\)</span> and the standard deviation is <span class="math inline">\(s = \sqrt{25.52} = 5.05\)</span> percentage points.</p>
+<p>What does a standard deviation of 5.05 percentage points mean in context?</p>
+<hr>
+<p>The standard deviation tells us that interest rates typically deviate about 5 percentage points from the mean (11.57%). Most loans have rates that are within one standard deviation of the mean — roughly between 6.5% and 16.6%.</p>
+</div>
+<p>Like the mean, the population values for variance and standard deviation have special symbols: <span class="math inline">\(\sigma^2\)</span> for the variance and <span class="math inline">\(\sigma\)</span> for the standard deviation. The Greek letter <span class="math inline">\(\sigma\)</span> is pronounced “sigma.”</p>
+<div class="important">
+<p><strong>Variance and standard deviation.</strong></p>
+<p>The variance is the average squared distance from the mean. The standard deviation is the square root of the variance. The standard deviation is useful when considering how far the data are distributed from the mean.</p>
+<p>The standard deviation represents the <em>typical</em> deviation of observations from the mean. Often about 68% of the data will be within one standard deviation of the mean and about 95% will be within two standard deviations. However, these percentages are not strict rules.</p>
+</div>
+</section>
+</section>
+<section id="sec-describing-shape" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="sec-describing-shape"><span class="header-section-number">5.3</span> Describing shape</h2>
+<p>A complete description of a distribution should address three things: <strong>shape</strong>, <strong>center</strong>, and <strong>spread</strong>. We introduced shape terminology in <a href="ch03-data-visualization.html#sec-distribution-shape" class="quarto-xref"><span>Section 4.3</span></a>. Here we connect shape to our measures of center and spread.</p>
+<section id="how-skewness-affects-the-mean-and-median" class="level3" data-number="5.3.1">
+<h3 data-number="5.3.1" class="anchored" data-anchor-id="how-skewness-affects-the-mean-and-median"><span class="header-section-number">5.3.1</span> How skewness affects the mean and median</h3>
+<p>In a <strong>symmetric</strong> distribution, the mean and median are approximately equal.</p>
+<p>In a <strong>right-skewed</strong> distribution, the mean is pulled toward the right tail and is larger than the median.</p>
+<p>In a <strong>left-skewed</strong> distribution, the mean is pulled toward the left tail and is smaller than the median.</p>
+<div class="important">
+<p><strong>Relationship between mean, median, and skewness.</strong></p>
+<ul>
+<li>Right skewed: <span class="math inline">\(\text{mean} &gt; \text{median}\)</span></li>
+<li>Symmetric: <span class="math inline">\(\text{mean} \approx \text{median}\)</span></li>
+<li>Left skewed: <span class="math inline">\(\text{mean} &lt; \text{median}\)</span></li>
+</ul>
+<p>The direction of skew pulls the mean toward the tail. The median is more resistant to this pull.</p>
+</div>
+<div class="workedexample">
+<p>A complete description of the interest rate distribution from the loan dataset:</p>
+<hr>
+<p>The distribution of interest rates is <strong>unimodal</strong> and <strong>right skewed</strong>. The <strong>center</strong> is around 10-12% (median = 9.93%, mean = 11.57%). The <strong>spread</strong> is moderate: the standard deviation is 5.05 percentage points and the IQR is about 6 percentage points. There are a few <strong>unusually high</strong> interest rates above 20%, which contribute to the right skew and the gap between the mean and median.</p>
+</div>
+</section>
+<section id="writing-a-good-description" class="level3" data-number="5.3.2">
+<h3 data-number="5.3.2" class="anchored" data-anchor-id="writing-a-good-description"><span class="header-section-number">5.3.2</span> Writing a good description</h3>
+<div class="original">
+<p>A good description of a distribution should always:</p>
+<ol type="1">
+<li>Name the <strong>shape</strong>: symmetric or skewed (and direction), and the number of modes</li>
+<li>Give the <strong>center</strong>: report the mean and/or median with units</li>
+<li>Give the <strong>spread</strong>: report the standard deviation and/or IQR with units</li>
+<li>Note any <strong>unusual features</strong>: outliers, gaps, clusters</li>
+<li>Use <strong>context</strong>: refer to the actual variable and its units, not just abstract numbers</li>
+</ol>
+<p><strong>Example</strong>: “The distribution of commute times is unimodal and right skewed, with a median of 22 minutes and an IQR of 15 minutes. A few commuters have commute times exceeding 90 minutes.”</p>
+</div>
+<div class="guidedpractice">
+<p>A description says: “The mean is 15 and the standard deviation is 3.” What is missing from this description?<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+</div>
+</section>
+</section>
+<section id="sec-outliers-robust" class="level2" data-number="5.4">
+<h2 data-number="5.4" class="anchored" data-anchor-id="sec-outliers-robust"><span class="header-section-number">5.4</span> Outliers and robust statistics</h2>
+<section id="identifying-outliers" class="level3" data-number="5.4.1">
+<h3 data-number="5.4.1" class="anchored" data-anchor-id="identifying-outliers"><span class="header-section-number">5.4.1</span> Identifying outliers</h3>
+<div class="definition">
+<p>An <strong>outlier</strong> is an observation that appears extreme relative to the rest of the data.</p>
+</div>
+<p>Examining data for outliers serves several purposes:</p>
+<ul>
+<li>Identifying strong skew in the distribution</li>
+<li>Identifying possible data collection or data entry errors</li>
+<li>Providing insight into interesting or unusual properties of the data</li>
+</ul>
+<div class="caution">
+<p>Not all outliers are errors, and not all errors are outliers. Some datasets naturally have long tails and outlying points are legitimate observations. <strong>Never remove an outlier without a substantive reason</strong> (e.g., confirmed data entry error). Blindly removing outliers can lead to misleading conclusions.</p>
+</div>
+<p>A common rule for identifying outliers in the context of box plots is the <strong>1.5 IQR rule</strong>: any observation more than <span class="math inline">\(1.5 \times \text{IQR}\)</span> below <span class="math inline">\(Q_1\)</span> or above <span class="math inline">\(Q_3\)</span> is flagged as a potential outlier. This is the rule used to determine which points appear as dots beyond the whiskers of a box plot.</p>
+</section>
+<section id="robust-statistics" class="level3" data-number="5.4.2">
+<h3 data-number="5.4.2" class="anchored" data-anchor-id="robust-statistics"><span class="header-section-number">5.4.2</span> Robust statistics</h3>
+<div class="definition">
+<p>A statistic is called <strong>robust</strong> (or <strong>resistant</strong>) if extreme observations have little effect on its value.</p>
+</div>
+<p>Consider what happens when we change a single extreme observation in the interest rate data. The table below shows how the median, IQR, mean, and standard deviation respond when the most extreme value (26.3%) is moved:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Scenario</th>
+<th style="text-align: right;">Median</th>
+<th style="text-align: right;">IQR</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">SD</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Original data</td>
+<td style="text-align: right;">9.93</td>
+<td style="text-align: right;">5.75</td>
+<td style="text-align: right;">11.57</td>
+<td style="text-align: right;">5.05</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Move 26.3% to 15%</td>
+<td style="text-align: right;">9.93</td>
+<td style="text-align: right;">5.75</td>
+<td style="text-align: right;">11.34</td>
+<td style="text-align: right;">4.61</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Move 26.3% to 35%</td>
+<td style="text-align: right;">9.93</td>
+<td style="text-align: right;">5.75</td>
+<td style="text-align: right;">11.74</td>
+<td style="text-align: right;">5.68</td>
+</tr>
+</tbody>
+</table>
+<div class="workedexample">
+<p>In the table above, the median and IQR are unchanged across all three scenarios, but the mean and standard deviation shift. Why?</p>
+<hr>
+<p>The median and IQR are determined by the values near the middle of the ordered data (<span class="math inline">\(Q_1\)</span>, the median, and <span class="math inline">\(Q_3\)</span>). Moving a single extreme value does not change the positions of these middle values. The mean and standard deviation, however, use every data value in their calculations. The mean adds up all values, so changing one extreme value changes the sum. The standard deviation squares deviations from the mean, so extreme values have an outsized effect.</p>
+</div>
+<div class="important">
+<p><strong>Robust vs.&nbsp;non-robust statistics.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 47%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Robust (resistant to outliers)</th>
+<th style="text-align: left;">Not robust (sensitive to outliers)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Median</td>
+<td style="text-align: left;">Mean</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">IQR</td>
+<td style="text-align: left;">Standard deviation</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Range</td>
+</tr>
+</tbody>
+</table>
+<p>When a distribution is skewed or contains outliers, robust statistics (median and IQR) often give a more representative summary of the “typical” observation. When a distribution is roughly symmetric with no extreme outliers, the mean and standard deviation work well and carry additional mathematical advantages.</p>
+</div>
+<div class="guidedpractice">
+<p>The distribution of salaries at a company is right skewed because a few executives earn much more than most employees. Which pair of summary statistics would better represent the “typical” salary and its variability: (mean, standard deviation) or (median, IQR)?<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+</div>
+<div class="guidedpractice">
+<p>The distribution of loan amounts is right skewed. If you wanted to understand the typical loan size, should you be more interested in the mean or the median?<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a></p>
+</div>
+</section>
+</section>
+<section id="sec-empirical-rule" class="level2" data-number="5.5">
+<h2 data-number="5.5" class="anchored" data-anchor-id="sec-empirical-rule"><span class="header-section-number">5.5</span> The empirical rule and Chebyshev’s theorem</h2>
+<section id="the-empirical-rule-68-95-99.7-rule" class="level3" data-number="5.5.1">
+<h3 data-number="5.5.1" class="anchored" data-anchor-id="the-empirical-rule-68-95-99.7-rule"><span class="header-section-number">5.5.1</span> The empirical rule (68-95-99.7 rule)</h3>
+<p>For distributions that are approximately <strong>bell-shaped</strong> (symmetric and unimodal), the standard deviation provides a useful ruler:</p>
+<div class="important">
+<p><strong>The empirical rule.</strong></p>
+<p>For a roughly bell-shaped distribution:</p>
+<ul>
+<li>About <strong>68%</strong> of the data fall within 1 standard deviation of the mean: <span class="math inline">\((\bar{x} - s, \ \bar{x} + s)\)</span></li>
+<li>About <strong>95%</strong> of the data fall within 2 standard deviations of the mean: <span class="math inline">\((\bar{x} - 2s, \ \bar{x} + 2s)\)</span></li>
+<li>About <strong>99.7%</strong> of the data fall within 3 standard deviations of the mean: <span class="math inline">\((\bar{x} - 3s, \ \bar{x} + 3s)\)</span></li>
+</ul>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="A bell-shaped distribution with shaded regions showing 68%, 95%, and 99.7% of the data within 1, 2, and 3 standard deviations of the mean, respectively."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A symmetric bell-shaped curve with the mean at the center. The region within one standard deviation of the mean is shaded darkly and labeled 68%. The region within two standard deviations is shaded more lightly and labeled 95%. The region within three standard deviations covers nearly the entire curve and is labeled 99.7%."></a></p>
+<figcaption>A bell-shaped distribution with shaded regions showing 68%, 95%, and 99.7% of the data within 1, 2, and 3 standard deviations of the mean, respectively.</figcaption>
+</figure>
+</div>
+<div class="workedexample">
+<p>The heights of adult women in the US are approximately bell-shaped with a mean of 64.5 inches and a standard deviation of 2.5 inches. Use the empirical rule to estimate the range of heights for the middle 95% of women.</p>
+<hr>
+<p>By the empirical rule, about 95% of the data fall within 2 standard deviations of the mean:</p>
+<p><span class="math display">\[64.5 - 2(2.5) = 59.5 \text{ inches} \quad \text{to} \quad 64.5 + 2(2.5) = 69.5 \text{ inches}\]</span></p>
+<p>So about 95% of adult women in the US are between 59.5 inches (4’11.5”) and 69.5 inches (5’9.5”) tall.</p>
+</div>
+<div class="guidedpractice">
+<p>Using the same height distribution (mean = 64.5 inches, SD = 2.5 inches), what percentage of women are shorter than 59.5 inches?<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a></p>
+</div>
+<div class="caution">
+<p>The empirical rule is only an approximation, and it works best for distributions that are roughly bell-shaped. For skewed or multimodal distributions, the percentages can be quite different. For example, in a right-skewed distribution, more than 68% of the data may fall within one standard deviation of the mean because the bulk of the data is concentrated on one side.</p>
+</div>
+<div class="guidedpractice">
+<p>Three distributions all have the same mean (0) and the same standard deviation (1), but one is bimodal, one is bell-shaped, and one is right skewed. Would the empirical rule work well for all three? Why or why not?<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a></p>
+</div>
+</section>
+<section id="chebyshevs-theorem" class="level3" data-number="5.5.2">
+<h3 data-number="5.5.2" class="anchored" data-anchor-id="chebyshevs-theorem"><span class="header-section-number">5.5.2</span> Chebyshev’s theorem</h3>
+<div class="original">
+<p>While the empirical rule applies only to bell-shaped distributions, <strong>Chebyshev’s theorem</strong> provides a guarantee that works for <em>any</em> distribution, regardless of shape:</p>
+<div class="important">
+<p><strong>Chebyshev’s theorem.</strong></p>
+<p>For <strong>any</strong> distribution (regardless of shape), at least <span class="math inline">\(\left(1 - \frac{1}{k^2}\right) \times 100\%\)</span> of the data fall within <span class="math inline">\(k\)</span> standard deviations of the mean, for any <span class="math inline">\(k &gt; 1\)</span>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Standard deviations (<span class="math inline">\(k\)</span>)</th>
+<th style="text-align: center;">At least this % of data</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">2</td>
+<td style="text-align: center;">75%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">3</td>
+<td style="text-align: center;">89%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">4</td>
+<td style="text-align: center;">93.75%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Chebyshev’s theorem is weaker than the empirical rule (it guarantees “at least 75%” within 2 standard deviations, while the empirical rule says “about 95%” for bell-shaped data), but it has the advantage of applying to every distribution. It is most useful when you cannot assume the distribution is bell-shaped.</p>
+</div>
+</section>
+</section>
+<section id="sec-ch04-review" class="level2" data-number="5.6">
+<h2 data-number="5.6" class="anchored" data-anchor-id="sec-ch04-review"><span class="header-section-number">5.6</span> Chapter review</h2>
 <section id="summary" class="level3" data-number="5.6.1">
 <h3 data-number="5.6.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">5.6.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+<p>This chapter introduced the numerical tools for describing distributions. The <strong>mean</strong> and <strong>median</strong> measure center, with the mean being the balancing point and the median being the middle value. The <strong>standard deviation</strong> and <strong>IQR</strong> measure spread, with the standard deviation roughly representing the typical deviation from the mean and the IQR representing the range of the middle 50%. The <strong>median</strong> and <strong>IQR</strong> are robust to outliers, while the <strong>mean</strong> and <strong>standard deviation</strong> are sensitive to extreme values. The <strong>empirical rule</strong> connects the standard deviation to the distribution shape for bell-shaped data: about 68%, 95%, and 99.7% of observations fall within 1, 2, and 3 standard deviations of the mean. For any distribution, Chebyshev’s theorem guarantees at least 75% of data within 2 standard deviations.</p>
 </section>
-<section id="exercises" class="level3 exercises" data-number="5.6.2">
-<h3 class="exercises anchored" data-number="5.6.2" data-anchor-id="exercises"><span class="header-section-number">5.6.2</span> Exercises</h3>
+<section id="key-terms" class="level3" data-number="5.6.2">
+<h3 data-number="5.6.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">5.6.2</span> Key terms</h3>
+<ul>
+<li>Mean (<span class="math inline">\(\bar{x}\)</span>), median, mode</li>
+<li>Population mean (<span class="math inline">\(\mu\)</span>), weighted mean</li>
+<li>Deviation, variance (<span class="math inline">\(s^2\)</span>), standard deviation (<span class="math inline">\(s\)</span>)</li>
+<li>Population variance (<span class="math inline">\(\sigma^2\)</span>), population standard deviation (<span class="math inline">\(\sigma\)</span>)</li>
+<li>Range, interquartile range (IQR)</li>
+<li>First quartile (<span class="math inline">\(Q_1\)</span>), third quartile (<span class="math inline">\(Q_3\)</span>), percentile</li>
+<li>Outlier, robust statistic (resistant statistic)</li>
+<li>Empirical rule (68-95-99.7 rule), Chebyshev’s theorem</li>
+<li>Variability, data density</li>
+</ul>
+</section>
+<section id="exercises" class="level3 exercises" data-number="5.6.3">
+<h3 class="exercises anchored" data-number="5.6.3" data-anchor-id="exercises"><span class="header-section-number">5.6.3</span> Exercises</h3>
 <div class="underconstruction">
 <p>Exercises for this chapter are under development.</p>
 </div>
 
 
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p><span class="math inline">\(x_1\)</span> is the value of the variable for the first observation in the dataset, <span class="math inline">\(x_2\)</span> is the value for the second observation, and <span class="math inline">\(x_i\)</span> is the value for the <span class="math inline">\(i\)</span>th observation. For example, if the variable is interest rate, <span class="math inline">\(x_4\)</span> is the interest rate of the fourth loan.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>The 4th observation. With an odd number of observations, the median is the single middle value. There are 3 observations below it and 3 above it.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>The median. In a right-skewed distribution, a few very expensive homes pull the mean upward, making it unrepresentative of a typical home price. The median is not affected by these extreme values and better represents what a typical buyer would encounter.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Squaring the deviations does two things: (1) it eliminates negative signs (since any number squared is non-negative), and (2) it makes large deviations relatively <em>much</em> larger than small ones. An observation that is 10 units from the mean contributes 100 to the sum of squared deviations, while one that is 2 units away contributes only 4. This means the variance and standard deviation are especially sensitive to outliers.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>The description lacks context (what variable? what units?), shape information (symmetric? skewed? unimodal?), and any mention of unusual features. A better version might be: “The distribution of wait times (in minutes) is approximately symmetric and unimodal, with a mean of 15 minutes and a standard deviation of 3 minutes. There are no obvious outliers.”<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>The median and IQR. In a right-skewed distribution, the mean is pulled upward by the high executive salaries, making it unrepresentative of the typical employee. The median is not affected by these extreme values, and the IQR captures the spread of the middle 50% of salaries.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>If the goal is to understand what a typical individual loan looks like, the median is probably more useful. However, if the goal is to understand something that scales — such as the total amount of money needed on hand to fund 1,000 loans — then the mean would be more useful.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>By the empirical rule, about 95% of women are between 59.5 and 69.5 inches. That means about 5% are outside this range. Since the distribution is symmetric, about half of that 5% (i.e., about 2.5%) are below 59.5 inches.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>No.&nbsp;The empirical rule works well only for the bell-shaped distribution. The bimodal distribution would have more data near the edges (near the two peaks) and less in the middle. The right-skewed distribution would have more data close to the mean on one side and a long tail on the other. In both cases, the 68-95-99.7 percentages would be poor approximations.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
@@ -943,6 +1351,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

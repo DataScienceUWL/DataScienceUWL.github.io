@@ -40,7 +40,10 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +71,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,15 +451,36 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#the-hypothesis-testing-framework" id="toc-the-hypothesis-testing-framework" class="nav-link active" data-scroll-target="#the-hypothesis-testing-framework"><span class="header-section-number">8.1</span> The hypothesis testing framework</a></li>
-  <li><a href="#null-and-alternative-hypotheses" id="toc-null-and-alternative-hypotheses" class="nav-link" data-scroll-target="#null-and-alternative-hypotheses"><span class="header-section-number">8.2</span> Null and alternative hypotheses</a></li>
-  <li><a href="#randomization-distributions" id="toc-randomization-distributions" class="nav-link" data-scroll-target="#randomization-distributions"><span class="header-section-number">8.3</span> Randomization distributions</a></li>
-  <li><a href="#p-values" id="toc-p-values" class="nav-link" data-scroll-target="#p-values"><span class="header-section-number">8.4</span> P-values</a></li>
-  <li><a href="#statistical-significance" id="toc-statistical-significance" class="nav-link" data-scroll-target="#statistical-significance"><span class="header-section-number">8.5</span> Statistical significance</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">8.6</span> Chapter review</a>
+  <li><a href="#sec-hypothesis-framework" id="toc-sec-hypothesis-framework" class="nav-link active" data-scroll-target="#sec-hypothesis-framework"><span class="header-section-number">8.1</span> The hypothesis testing framework</a></li>
+  <li><a href="#sec-null-alternative" id="toc-sec-null-alternative" class="nav-link" data-scroll-target="#sec-null-alternative"><span class="header-section-number">8.2</span> Null and alternative hypotheses</a></li>
+  <li><a href="#sec-sex-discrimination" id="toc-sec-sex-discrimination" class="nav-link" data-scroll-target="#sec-sex-discrimination"><span class="header-section-number">8.3</span> Case study: sex discrimination</a>
   <ul class="collapse">
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">8.6.1</span> Summary</a></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">8.6.2</span> Exercises</a></li>
+  <li><a href="#observed-data" id="toc-observed-data" class="nav-link" data-scroll-target="#observed-data"><span class="header-section-number">8.3.1</span> Observed data</a></li>
+  </ul></li>
+  <li><a href="#sec-randomization-distribution" id="toc-sec-randomization-distribution" class="nav-link" data-scroll-target="#sec-randomization-distribution"><span class="header-section-number">8.4</span> Building a randomization distribution</a>
+  <ul class="collapse">
+  <li><a href="#the-card-shuffling-metaphor" id="toc-the-card-shuffling-metaphor" class="nav-link" data-scroll-target="#the-card-shuffling-metaphor"><span class="header-section-number">8.4.1</span> The card-shuffling metaphor</a></li>
+  <li><a href="#one-simulation" id="toc-one-simulation" class="nav-link" data-scroll-target="#one-simulation"><span class="header-section-number">8.4.2</span> One simulation</a></li>
+  <li><a href="#many-simulations" id="toc-many-simulations" class="nav-link" data-scroll-target="#many-simulations"><span class="header-section-number">8.4.3</span> Many simulations</a></li>
+  <li><a href="#the-conclusion" id="toc-the-conclusion" class="nav-link" data-scroll-target="#the-conclusion"><span class="header-section-number">8.4.4</span> The conclusion</a></li>
+  </ul></li>
+  <li><a href="#sec-opportunity-cost" id="toc-sec-opportunity-cost" class="nav-link" data-scroll-target="#sec-opportunity-cost"><span class="header-section-number">8.5</span> Case study: opportunity cost</a>
+  <ul class="collapse">
+  <li><a href="#observed-data-1" id="toc-observed-data-1" class="nav-link" data-scroll-target="#observed-data-1"><span class="header-section-number">8.5.1</span> Observed data</a></li>
+  <li><a href="#simulating-under-the-null" id="toc-simulating-under-the-null" class="nav-link" data-scroll-target="#simulating-under-the-null"><span class="header-section-number">8.5.2</span> Simulating under the null</a></li>
+  </ul></li>
+  <li><a href="#sec-p-values" id="toc-sec-p-values" class="nav-link" data-scroll-target="#sec-p-values"><span class="header-section-number">8.6</span> P-values</a></li>
+  <li><a href="#sec-statistical-significance" id="toc-sec-statistical-significance" class="nav-link" data-scroll-target="#sec-statistical-significance"><span class="header-section-number">8.7</span> Statistical significance</a>
+  <ul class="collapse">
+  <li><a href="#decision-framework" id="toc-decision-framework" class="nav-link" data-scroll-target="#decision-framework"><span class="header-section-number">8.7.1</span> Decision framework</a></li>
+  </ul></li>
+  <li><a href="#sec-two-sided-tests" id="toc-sec-two-sided-tests" class="nav-link" data-scroll-target="#sec-two-sided-tests"><span class="header-section-number">8.8</span> Two-sided tests</a></li>
+  <li><a href="#sec-randomization-summary" id="toc-sec-randomization-summary" class="nav-link" data-scroll-target="#sec-randomization-summary"><span class="header-section-number">8.9</span> The randomization test procedure: a summary</a></li>
+  <li><a href="#sec-ch07-review" id="toc-sec-ch07-review" class="nav-link" data-scroll-target="#sec-ch07-review"><span class="header-section-number">8.10</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">8.10.1</span> Summary</a></li>
+  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">8.10.2</span> Key terms</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">8.10.3</span> Exercises</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -454,49 +507,489 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: IMS <code>foundations-randomization.qmd</code> — 100% coverage</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Randomization Tests</em> will go here.</p>
+<p>Statistical inference is primarily concerned with understanding and quantifying the uncertainty of parameter estimates. While the equations and details change depending on the setting, the foundations for inference are the same throughout all of statistics. In this chapter, we introduce the <strong>hypothesis testing framework</strong> — a formal method for evaluating competing claims about a population using data. We learn how to build <strong>randomization distributions</strong> by shuffling data under the assumption that there is no effect, and we use these distributions to compute <strong>p-values</strong> that quantify the strength of the evidence.</p>
 </div>
+<section id="sec-hypothesis-framework" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="sec-hypothesis-framework"><span class="header-section-number">8.1</span> The hypothesis testing framework</h2>
+<p>Throughout this course so far, you have worked with data in a variety of contexts. You have learned how to summarize and visualize data as well as how to describe relationships between variables. But more often than not, data have been collected to answer a research question about a larger group — and the data are a (hopefully) representative subset.</p>
+<p>There is almost always variability in data — one dataset will not be identical to a second dataset even if they are both collected from the same population using the same methods. However, quantifying the variability in the data is neither obvious nor easy. Answering the question “<em>how</em> different is one dataset from another?” is not trivial.</p>
+<div class="workedexample">
+<p>Suppose your professor splits the students in your class into two groups: students who sit on the left side of the classroom and students who sit on the right side. If <span class="math inline">\(\hat{p}_{L}\)</span> represents the proportion of left-side students who prefer reading on a screen and <span class="math inline">\(\hat{p}_{R}\)</span> represents the proportion of right-side students who prefer reading on a screen, would you be surprised if <span class="math inline">\(\hat{p}_{L}\)</span> did not <em>exactly</em> equal <span class="math inline">\(\hat{p}_{R}\)</span>?</p>
+<hr>
+<p>While the proportions <span class="math inline">\(\hat{p}_{L}\)</span> and <span class="math inline">\(\hat{p}_{R}\)</span> would probably be close to each other, it would be unusual for them to be exactly the same. We would probably observe a small difference due to <em>chance</em>.</p>
+</div>
+<div class="guidedpractice">
+<p>If we do not think the side of the room a person sits on in class is related to whether they prefer to read books on a screen, what assumption are we making about the relationship between these two variables?<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
+<p>The question at the heart of hypothesis testing is: <em>Could the pattern we observe in the data have arisen from chance alone, or is there something real going on?</em></p>
+<div class="important">
+<p><strong>Hypothesis testing.</strong></p>
+<p>A <strong>hypothesis test</strong> is a statistical technique used to evaluate competing claims using data. The process involves:</p>
+<ol type="1">
+<li><strong>State the hypotheses</strong>: Define a null hypothesis (<span class="math inline">\(H_0\)</span>) and an alternative hypothesis (<span class="math inline">\(H_A\)</span>).</li>
+<li><strong>Collect data</strong>: Gather evidence that bears on the hypotheses.</li>
+<li><strong>Assess the evidence</strong>: Determine how likely the observed data would be if the null hypothesis were true.</li>
+<li><strong>Draw a conclusion</strong>: Decide whether the evidence is strong enough to reject the null hypothesis.</li>
+</ol>
+<p>If the null hypothesis and the data notably disagree, then we reject the null hypothesis in favor of the alternative hypothesis. There are many nuances to hypothesis testing, and we will discuss these ideas throughout this chapter and those that follow.</p>
+</div>
+</section>
+<section id="sec-null-alternative" class="level2" data-number="8.2">
+<h2 data-number="8.2" class="anchored" data-anchor-id="sec-null-alternative"><span class="header-section-number">8.2</span> Null and alternative hypotheses</h2>
+<div class="definition">
+<p>The <strong>null hypothesis</strong> (<span class="math inline">\(H_0\)</span>) often represents a skeptical perspective or a claim of “no difference” or “no effect.” It assumes that any observed pattern in the data is due to chance alone.</p>
+<p>The <strong>alternative hypothesis</strong> (<span class="math inline">\(H_A\)</span>) represents the claim under investigation — typically that there <em>is</em> a real difference, a real effect, or a real relationship. The alternative hypothesis is usually the reason the research was conducted in the first place.</p>
+</div>
+<div class="workedexample">
+<p>The US court system considers two possible claims about a defendant: they are either innocent or guilty. If we set these claims up in a hypothesis framework, which would be the null hypothesis and which the alternative?</p>
+<hr>
+<p>The jury considers whether the evidence is so convincing that there is no reasonable doubt regarding the person’s guilt. The skeptical perspective (null hypothesis) is that the person is innocent until evidence is presented that convinces the jury the person is guilty (alternative hypothesis).</p>
+<p><span class="math display">\[H_0: \text{The defendant is innocent.}\]</span> <span class="math display">\[H_A: \text{The defendant is guilty.}\]</span></p>
+</div>
+<div class="caution">
+<p>Notice that if a jury finds a defendant <em>not guilty</em>, this does not necessarily mean the jury is confident in the person’s innocence. They are simply not convinced of the alternative. This is also the case with hypothesis testing: <strong>even if we fail to reject the null hypothesis, we do not accept the null hypothesis as truth.</strong> Failing to find evidence in favor of the alternative is not the same as finding evidence that the null hypothesis is true.</p>
+</div>
+</section>
+<section id="sec-sex-discrimination" class="level2" data-number="8.3">
+<h2 data-number="8.3" class="anchored" data-anchor-id="sec-sex-discrimination"><span class="header-section-number">8.3</span> Case study: sex discrimination</h2>
+<p>We consider a study investigating sex discrimination in the 1970s, set in the context of personnel decisions within a bank. The research question: “Are individuals who identify as female discriminated against in promotion decisions made by their managers who identify as male?”</p>
+<section id="observed-data" class="level3" data-number="8.3.1">
+<h3 data-number="8.3.1" class="anchored" data-anchor-id="observed-data"><span class="header-section-number">8.3.1</span> Observed data</h3>
+<p>The participants were 48 bank supervisors who identified as male, attending a management institute at the University of North Carolina in 1972. They were asked to assume the role of personnel director of a bank and were given a personnel file to judge whether the person should be promoted to a branch manager position. The files were identical, except that half indicated the candidate identified as male and the other half indicated the candidate identified as female. These files were randomly assigned to the bank managers.</p>
+<div class="guidedpractice">
+<p>Is this an observational study or an experiment? How does the type of study impact what can be inferred from the results?<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
+<p>The results are summarized in the table below:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: center;">Promoted</th>
+<th style="text-align: center;">Not promoted</th>
+<th style="text-align: center;">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Male</td>
+<td style="text-align: center;">21</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">24</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Female</td>
+<td style="text-align: center;">14</td>
+<td style="text-align: center;">10</td>
+<td style="text-align: center;">24</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Total</td>
+<td style="text-align: center;">35</td>
+<td style="text-align: center;">13</td>
+<td style="text-align: center;">48</td>
+</tr>
+</tbody>
+</table>
+<div class="workedexample">
+<p>When looking at the rates of promotion in this study, why might we be tempted to immediately conclude that individuals identifying as female are being discriminated against?</p>
+<hr>
+<p>The large difference in promotion rates (58.3% for female personnel versus 87.5% for male personnel) suggests there might be discrimination against women in promotion decisions. However, we cannot yet be sure if the observed difference represents discrimination or is just due to random chance when there is no discrimination occurring. Since we wouldn’t expect the sample proportions to be <em>exactly</em> equal, even if the truth was that the promotion decisions were independent of sex, we can’t rule out random chance as a possible explanation.</p>
+</div>
+<p>The observed difference in promotion rates is:</p>
+<p><span class="math display">\[\hat{p}_M - \hat{p}_F = \frac{21}{24} - \frac{14}{24} = 0.875 - 0.583 = 0.292\]</span></p>
+<p>This is 29.2 percentage points. The point estimate is large, but the sample size is small, making it unclear if this represents real discrimination or simply chance variation. We label two competing claims:</p>
+<ul>
+<li><span class="math inline">\(H_0\)</span>: <strong>Null hypothesis.</strong> The variables <code>sex</code> and <code>decision</code> are independent. The difference in promotion rates of 29.2% was due to natural variability inherent in the random assignment.</li>
+<li><span class="math inline">\(H_A\)</span>: <strong>Alternative hypothesis.</strong> The variables <code>sex</code> and <code>decision</code> are <em>not</em> independent. The difference in promotion rates of 29.2% was not due to natural variability, and equally qualified female personnel are less likely to be promoted than male personnel.</li>
+</ul>
+</section>
+</section>
+<section id="sec-randomization-distribution" class="level2" data-number="8.4">
+<h2 data-number="8.4" class="anchored" data-anchor-id="sec-randomization-distribution"><span class="header-section-number">8.4</span> Building a randomization distribution</h2>
+<p>What would it mean if the null hypothesis were true? It would mean each banker would decide whether to promote the candidate without regard to the sex indicated on the file. The 35 promotions and 13 non-promotions were determined by factors <em>other than sex</em>, and the difference we observed was just bad luck in how the files happened to be assigned.</p>
+<p>We can test this by performing a <strong>randomization</strong> — simulating what would have happened if the bankers’ decisions had been independent of sex but the files had been distributed differently.</p>
+<section id="the-card-shuffling-metaphor" class="level3" data-number="8.4.1">
+<h3 data-number="8.4.1" class="anchored" data-anchor-id="the-card-shuffling-metaphor"><span class="header-section-number">8.4.1</span> The card-shuffling metaphor</h3>
+<p>Think of the data as 48 cards:</p>
+<ul>
+<li>35 red cards (promoted)</li>
+<li>13 white cards (not promoted)</li>
+</ul>
+<p>In the actual study, 24 cards were dealt to the “male” pile and 24 to the “female” pile. Under the null hypothesis, the color of each card (the promotion decision) has nothing to do with which pile it lands in.</p>
+<p>To simulate what the null hypothesis looks like, we:</p>
+<ol type="1">
+<li><strong>Thoroughly shuffle</strong> all 48 cards together.</li>
+<li><strong>Deal</strong> 24 into a “male” pile and 24 into a “female” pile.</li>
+<li><strong>Count</strong> the number of red (promoted) cards in each pile and compute the difference in proportions.</li>
+</ol>
+<p>This gives us one simulated difference <em>under the null hypothesis</em> — a difference that arose purely from the random shuffle, not from any real discrimination.</p>
+</section>
+<section id="one-simulation" class="level3" data-number="8.4.2">
+<h3 data-number="8.4.2" class="anchored" data-anchor-id="one-simulation"><span class="header-section-number">8.4.2</span> One simulation</h3>
+<p>Suppose after shuffling and dealing, we get the following result:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: center;">Promoted</th>
+<th style="text-align: center;">Not promoted</th>
+<th style="text-align: center;">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Male</td>
+<td style="text-align: center;">18</td>
+<td style="text-align: center;">6</td>
+<td style="text-align: center;">24</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Female</td>
+<td style="text-align: center;">17</td>
+<td style="text-align: center;">7</td>
+<td style="text-align: center;">24</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Total</td>
+<td style="text-align: center;">35</td>
+<td style="text-align: center;">13</td>
+<td style="text-align: center;">48</td>
+</tr>
+</tbody>
+</table>
+<p>The simulated difference is <span class="math inline">\(18/24 - 17/24 = 0.042\)</span>, or about 4.2% — much smaller than the observed 29.2%.</p>
+<div class="guidedpractice">
+<p>What is the difference in promotion rates in the simulated data above? How does this compare to the observed difference of 29.2% from the actual study?<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+</div>
+</section>
+<section id="many-simulations" class="level3" data-number="8.4.3">
+<h3 data-number="8.4.3" class="anchored" data-anchor-id="many-simulations"><span class="header-section-number">8.4.3</span> Many simulations</h3>
+<p>One simulation is not enough. We need to repeat the shuffle-and-deal process many times to build up a picture of what <em>chance alone</em> looks like. Using a computer, we can do this hundreds or thousands of times.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="A stacked dot plot of differences from 100 simulations produced under the null hypothesis. The simulated sex and decision are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A stacked dot plot of 100 simulated differences in promotion rates between male and female candidates. The distribution is centered at zero. Two dots at or beyond 0.292 are highlighted, showing they are rare under the null hypothesis."></a></p>
+<figcaption>A stacked dot plot of differences from 100 simulations produced under the null hypothesis. The simulated sex and decision are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study.</figcaption>
+</figure>
+</div>
+<p>The distribution of these simulated differences is centered around 0. This makes sense: under the null hypothesis, which makes no distinction between male and female files, we would expect the difference to be near zero with some random fluctuation.</p>
+<div class="workedexample">
+<p>How often would you observe a difference of at least 29.2% according to the randomization distribution? Often, sometimes, rarely, or never?</p>
+<hr>
+<p>It appears that a difference of at least 29.2% under the null hypothesis would only happen about 2% of the time. Such a low probability indicates that observing such a large difference from chance alone is rare.</p>
+</div>
+</section>
+<section id="the-conclusion" class="level3" data-number="8.4.4">
+<h3 data-number="8.4.4" class="anchored" data-anchor-id="the-conclusion"><span class="header-section-number">8.4.4</span> The conclusion</h3>
+<p>The difference of 29.2% is a rare event if there really is no effect of sex on promotion decisions. This provides us with two possible interpretations:</p>
+<ul>
+<li>If <span class="math inline">\(H_0\)</span> is true: Sex has no effect on promotion decisions, and we observed a difference that is so large it would only happen rarely by chance.</li>
+<li>If <span class="math inline">\(H_A\)</span> is true: Sex has an effect on promotion decisions, and what we observed was actually due to equally qualified female candidates being discriminated against.</li>
+</ul>
+<p>When we conduct formal studies, we reject a null position if the data strongly conflict with it. Since there was only about a 2% probability of obtaining a difference at least as large as 29.2% under the null hypothesis, we conclude that the data provide strong evidence of sex discrimination. We reject the null hypothesis in favor of the alternative.</p>
 <div class="simkit">
-<p><strong>SimKit tools for this chapter</strong>: <strong>Permutation Test Simulator</strong> (Phase 1)</p>
+<p><strong>Try it yourself!</strong> Use SimKit’s Permutation Test Simulator to replicate the sex discrimination analysis:</p>
+<p><a href="https://datascienceuwl.github.io/simkit/simulate/permutation-test/" target="_blank">Launch Permutation Test Simulator</a></p>
+<ol type="1">
+<li>Enter the sex discrimination data (or use the built-in dataset).</li>
+<li>Generate 1,000 shuffled differences.</li>
+<li>Find how many simulated differences are at least as large as 0.292.</li>
+<li>What proportion of simulations produced a difference this extreme or more?</li>
+</ol>
 </div>
-<section id="the-hypothesis-testing-framework" class="level2" data-number="8.1">
-<h2 data-number="8.1" class="anchored" data-anchor-id="the-hypothesis-testing-framework"><span class="header-section-number">8.1</span> The hypothesis testing framework</h2>
-<p>Content under development.</p>
 </section>
-<section id="null-and-alternative-hypotheses" class="level2" data-number="8.2">
-<h2 data-number="8.2" class="anchored" data-anchor-id="null-and-alternative-hypotheses"><span class="header-section-number">8.2</span> Null and alternative hypotheses</h2>
-<p>Content under development.</p>
 </section>
-<section id="randomization-distributions" class="level2" data-number="8.3">
-<h2 data-number="8.3" class="anchored" data-anchor-id="randomization-distributions"><span class="header-section-number">8.3</span> Randomization distributions</h2>
-<p>Content under development.</p>
+<section id="sec-opportunity-cost" class="level2" data-number="8.5">
+<h2 data-number="8.5" class="anchored" data-anchor-id="sec-opportunity-cost"><span class="header-section-number">8.5</span> Case study: opportunity cost</h2>
+<p>How rational and consistent is the behavior of the typical American college student? Here, we explore whether reminding students that money not spent now can be spent later causes them to be thriftier.</p>
+<p>One hundred and fifty students were recruited for the study. All were given a scenario about purchasing a video on sale for $14.99. Half (the control group) were given these options:</p>
+<blockquote class="blockquote">
+<ol type="A">
+<li>Buy this entertaining video.</li>
+<li>Not buy this entertaining video.</li>
+</ol>
+</blockquote>
+<p>The other half (the treatment group) saw a slightly modified option (B):</p>
+<blockquote class="blockquote">
+<ol type="A">
+<li>Buy this entertaining video.</li>
+<li>Not buy this entertaining video. Keep the $14.99 for other purchases.</li>
+</ol>
+</blockquote>
+<p>The hypotheses are:</p>
+<ul>
+<li><span class="math inline">\(H_0\)</span>: Reminding students that they can save money for later purchases will not have any impact on their spending decisions.</li>
+<li><span class="math inline">\(H_A\)</span>: Reminding students that they can save money for later purchases will reduce the chance they will continue with a purchase.</li>
+</ul>
+<section id="observed-data-1" class="level3" data-number="8.5.1">
+<h3 data-number="8.5.1" class="anchored" data-anchor-id="observed-data-1"><span class="header-section-number">8.5.1</span> Observed data</h3>
+<p>The results are summarized below:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: center;">Buy video</th>
+<th style="text-align: center;">Not buy video</th>
+<th style="text-align: center;">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Control</td>
+<td style="text-align: center;">56</td>
+<td style="text-align: center;">19</td>
+<td style="text-align: center;">75</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Treatment</td>
+<td style="text-align: center;">41</td>
+<td style="text-align: center;">34</td>
+<td style="text-align: center;">75</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Total</td>
+<td style="text-align: center;">97</td>
+<td style="text-align: center;">53</td>
+<td style="text-align: center;">150</td>
+</tr>
+</tbody>
+</table>
+<p>We define a “success” as a student who chooses <em>not</em> to buy the video. The difference in the proportion choosing not to buy is:</p>
+<p><span class="math display">\[\hat{p}_{T} - \hat{p}_{C} = \frac{34}{75} - \frac{19}{75} = 0.453 - 0.253 = 0.200\]</span></p>
+<p>The proportion of students who chose not to buy was 20 percentage points higher in the treatment group. Is this 20% difference so prominent that it is unlikely to have occurred from chance alone?</p>
 </section>
-<section id="p-values" class="level2" data-number="8.4">
-<h2 data-number="8.4" class="anchored" data-anchor-id="p-values"><span class="header-section-number">8.4</span> P-values</h2>
-<p>Content under development.</p>
+<section id="simulating-under-the-null" class="level3" data-number="8.5.2">
+<h3 data-number="8.5.2" class="anchored" data-anchor-id="simulating-under-the-null"><span class="header-section-number">8.5.2</span> Simulating under the null</h3>
+<p>Using the same randomization technique, we start with 150 index cards: 53 labeled “not buy video” and 97 labeled “buy video.” We shuffle all cards together and deal them into two stacks of 75.</p>
+<div class="workedexample">
+<p>If we randomly assign the cards into simulated treatment and control groups, how many “not buy video” cards would we expect in each group? What would be the expected difference in proportions?</p>
+<hr>
+<p>Since the groups are equal in size, we would expect about <span class="math inline">\(53/2 \approx 26\)</span> or 27 “not buy video” cards in each group, yielding a difference of roughly 0%. Due to random chance, we might sometimes observe a little more or fewer than 26–27.</p>
+</div>
+<p>After running 1,000 simulations, the results show that the distribution of simulated differences is centered at 0, as expected under the null hypothesis.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="A histogram of 1,000 simulated differences produced under the null hypothesis. Six of the 1,000 simulations had a difference of at least 20%, the difference observed in the study."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A histogram of 1000 simulated differences between the proportion of students choosing not to buy the video in the treatment and control groups. The distribution is centered at zero. A small number of simulations at or beyond 0.20 are highlighted in blue."></a></p>
+<figcaption>A histogram of 1,000 simulated differences produced under the null hypothesis. Six of the 1,000 simulations had a difference of at least 20%, the difference observed in the study.</figcaption>
+</figure>
+</div>
+<p>Under the null hypothesis, we would observe a difference of at least +20% about 0.6% of the time. That is very rare! We conclude the data provide strong evidence there is a treatment effect: reminding students that they could spend money later lowers their chance of making a purchase. Because this is an experiment (with random assignment), we can make a causal claim.</p>
 </section>
-<section id="statistical-significance" class="level2" data-number="8.5">
-<h2 data-number="8.5" class="anchored" data-anchor-id="statistical-significance"><span class="header-section-number">8.5</span> Statistical significance</h2>
-<p>Content under development.</p>
 </section>
-<section id="chapter-review" class="level2" data-number="8.6">
-<h2 data-number="8.6" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">8.6</span> Chapter review</h2>
-<section id="summary" class="level3" data-number="8.6.1">
-<h3 data-number="8.6.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">8.6.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+<section id="sec-p-values" class="level2" data-number="8.6">
+<h2 data-number="8.6" class="anchored" data-anchor-id="sec-p-values"><span class="header-section-number">8.6</span> P-values</h2>
+<p>The probability we computed in the previous sections — the chance of observing a result as extreme as or more extreme than the one actually observed, <em>if the null hypothesis were true</em> — has a name.</p>
+<div class="definition">
+<p>The <strong>p-value</strong> is the probability of observing data at least as favorable to the alternative hypothesis as our current dataset, if the null hypothesis were true. We typically use a summary statistic of the data, such as a difference in proportions, to compute the p-value. This summary value is called the <strong>test statistic</strong>.</p>
+</div>
+<div class="workedexample">
+<p>In the sex discrimination study, the test statistic was the difference in promotion rates. What was the test statistic in the opportunity cost study?</p>
+<hr>
+<p>The test statistic in the opportunity cost study was the difference in the proportion of students who decided against the video purchase in the treatment and control groups: <span class="math inline">\(\hat{p}_T - \hat{p}_C = 0.200\)</span>.</p>
+</div>
+<div class="important">
+<p><strong>Interpreting the p-value.</strong></p>
+<ul>
+<li>A <strong>small p-value</strong> (e.g., below 0.05) means that the observed result would be rare if the null hypothesis were true. This is evidence <em>against</em> the null hypothesis.</li>
+<li>A <strong>large p-value</strong> (e.g., above 0.10) means that the observed result is not particularly unusual under the null hypothesis. The data do not provide strong evidence against the null hypothesis.</li>
+<li>The p-value is <strong>not</strong> the probability that the null hypothesis is true. It is the probability of the observed data (or more extreme data) <em>given that</em> the null hypothesis is true.</li>
+</ul>
+</div>
+<div class="caution">
+<p>A common mistake is to interpret the p-value as the probability that the null hypothesis is true (e.g., “there is a 2% chance that sex has no effect on promotions”). This is incorrect. The p-value tells us how <em>surprising</em> the data would be <em>if</em> the null hypothesis were true, not how likely the null hypothesis is to be true.</p>
+</div>
 </section>
-<section id="exercises" class="level3 exercises" data-number="8.6.2">
-<h3 class="exercises anchored" data-number="8.6.2" data-anchor-id="exercises"><span class="header-section-number">8.6.2</span> Exercises</h3>
+<section id="sec-statistical-significance" class="level2" data-number="8.7">
+<h2 data-number="8.7" class="anchored" data-anchor-id="sec-statistical-significance"><span class="header-section-number">8.7</span> Statistical significance</h2>
+<div class="definition">
+<p>We say that the data provide <strong>statistically significant</strong> evidence against the null hypothesis if the p-value is less than a predetermined threshold called the <strong>significance level</strong>, denoted <span class="math inline">\(\alpha\)</span> (the Greek letter alpha).</p>
+</div>
+<p>The most commonly used significance level is <span class="math inline">\(\alpha = 0.05\)</span>, meaning we reject the null hypothesis when the p-value is less than 5%. However, there is nothing magical about 0.05 — it is a convention, and in some fields or applications a stricter (e.g., 0.01) or more lenient (e.g., 0.10) threshold may be appropriate.</p>
+<div class="workedexample">
+<p>In the opportunity cost study, we found that a difference of at least 20% would occur only about 6-in-1,000 times if the reminder had no influence on student decisions. The p-value is approximately 0.006. Would you classify this as statistically significant?</p>
+<hr>
+<p>Yes. Since <span class="math inline">\(p\text{-value} = 0.006 &lt; 0.05 = \alpha\)</span>, the data provide statistically significant evidence that US college students were actually influenced by the reminder.</p>
+</div>
+<div class="important">
+<p><strong>What “statistically significant” does and does not mean.</strong></p>
+<p>“Statistically significant” means the p-value fell below the chosen significance level. It does <strong>not</strong> necessarily mean the effect is large or practically important. A very large sample can detect a tiny difference as “statistically significant” even if the difference is too small to matter in practice.</p>
+<p>Conversely, “not statistically significant” does not mean there is no effect. It may simply mean the sample was too small to detect the effect.</p>
+</div>
+<section id="decision-framework" class="level3" data-number="8.7.1">
+<h3 data-number="8.7.1" class="anchored" data-anchor-id="decision-framework"><span class="header-section-number">8.7.1</span> Decision framework</h3>
+<p>The logic of hypothesis testing follows a consistent pattern:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">If the p-value is…</th>
+<th style="text-align: left;">Then we…</th>
+<th style="text-align: left;">Because…</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Less than <span class="math inline">\(\alpha\)</span></td>
+<td style="text-align: left;"><strong>Reject</strong> <span class="math inline">\(H_0\)</span></td>
+<td style="text-align: left;">The data are unlikely under <span class="math inline">\(H_0\)</span>; evidence supports <span class="math inline">\(H_A\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Greater than or equal to <span class="math inline">\(\alpha\)</span></td>
+<td style="text-align: left;"><strong>Fail to reject</strong> <span class="math inline">\(H_0\)</span></td>
+<td style="text-align: left;">The data are not sufficiently unusual under <span class="math inline">\(H_0\)</span></td>
+</tr>
+</tbody>
+</table>
+<div class="guidedpractice">
+<p>A researcher tests whether a new teaching method improves exam scores compared to the standard method. The p-value from the randomization test is 0.12. Using <span class="math inline">\(\alpha = 0.05\)</span>, what conclusion should the researcher draw?<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+</div>
+</section>
+</section>
+<section id="sec-two-sided-tests" class="level2" data-number="8.8">
+<h2 data-number="8.8" class="anchored" data-anchor-id="sec-two-sided-tests"><span class="header-section-number">8.8</span> Two-sided tests</h2>
+<p>In the sex discrimination study, we looked for differences in <em>one direction only</em> — whether female candidates were promoted at a lower rate. This is called a <strong>one-sided</strong> (or one-tailed) test. The alternative hypothesis specified a direction:</p>
+<p><span class="math display">\[H_A: p_M - p_F &gt; 0 \quad \text{(males promoted at a higher rate)}\]</span></p>
+<p>Sometimes, however, we are interested in detecting a difference in <em>either direction</em>. For example, if we are studying whether a new drug changes blood pressure (it could increase it <em>or</em> decrease it), we would use a <strong>two-sided</strong> (or two-tailed) test:</p>
+<p><span class="math display">\[H_A: p_1 \neq p_2 \quad \text{(the proportions are different, in either direction)}\]</span></p>
+<div class="definition">
+<p>In a <strong>one-sided test</strong>, the alternative hypothesis specifies a direction (greater than or less than). The p-value is computed as the proportion of the randomization distribution in one tail.</p>
+<p>In a <strong>two-sided test</strong>, the alternative hypothesis does not specify a direction (just “different”). The p-value is computed as the proportion of the randomization distribution in <em>both</em> tails — values at least as extreme as the observed statistic in either direction.</p>
+</div>
+<div class="workedexample">
+<p>Suppose we are testing whether a coin is fair. We flip it 100 times and get 60 heads.</p>
+<ul>
+<li><strong>One-sided</strong> (<span class="math inline">\(H_A: p &gt; 0.5\)</span>): The p-value counts only simulations with 60 or more heads.</li>
+<li><strong>Two-sided</strong> (<span class="math inline">\(H_A: p \neq 0.5\)</span>): The p-value counts simulations with 60 or more heads <em>and</em> simulations with 40 or fewer heads (equally extreme in the other direction).</li>
+</ul>
+<hr>
+<p>For a symmetric randomization distribution, the two-sided p-value is approximately twice the one-sided p-value. If the one-sided p-value is 0.03, the two-sided p-value is approximately 0.06.</p>
+</div>
+<div class="guidedpractice">
+<p>A researcher wants to know if a new fertilizer changes plant growth compared to no fertilizer. Should this be a one-sided or two-sided test? Write the hypotheses using appropriate notation, where <span class="math inline">\(\mu_T\)</span> is the mean growth with fertilizer and <span class="math inline">\(\mu_C\)</span> is the mean growth without.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+</div>
+<div class="important">
+<p><strong>Choosing one-sided vs.&nbsp;two-sided.</strong></p>
+<ul>
+<li>Use a <strong>one-sided test</strong> when you have a specific directional hypothesis <em>before looking at the data</em>. For example, “we believe this drug <em>lowers</em> blood pressure.”</li>
+<li>Use a <strong>two-sided test</strong> when you want to detect a difference in either direction, or when you are not sure which direction the difference might go.</li>
+<li>When in doubt, use a two-sided test. It is the more conservative choice and is less susceptible to bias from choosing the direction after seeing the data.</li>
+</ul>
+</div>
+</section>
+<section id="sec-randomization-summary" class="level2" data-number="8.9">
+<h2 data-number="8.9" class="anchored" data-anchor-id="sec-randomization-summary"><span class="header-section-number">8.9</span> The randomization test procedure: a summary</h2>
+<p>We can summarize the randomization test procedure as follows:</p>
+<ol type="1">
+<li><p><strong>Frame the research question in terms of hypotheses.</strong> The null hypothesis (<span class="math inline">\(H_0\)</span>) usually represents no difference or no effect. The alternative hypothesis (<span class="math inline">\(H_A\)</span>) represents the claim of interest.</p></li>
+<li><p><strong>Collect data.</strong> If the research question focuses on associations but not causation, use an observational study. If you want to establish a causal connection, use an experiment with random assignment.</p></li>
+<li><p><strong>Model what would happen under the null hypothesis.</strong> Shuffle (randomize) the data to break any association between the explanatory and response variables. Compute the test statistic for each shuffle. Repeat many times to build the <strong>randomization distribution</strong> (also called the null distribution).</p></li>
+<li><p><strong>Compute the p-value.</strong> Determine what proportion of the randomization distribution is at least as extreme as the observed test statistic.</p></li>
+<li><p><strong>Draw a conclusion.</strong> If the p-value is small (less than <span class="math inline">\(\alpha\)</span>), reject <span class="math inline">\(H_0\)</span> and conclude there is evidence for <span class="math inline">\(H_A\)</span>. If the p-value is not small, fail to reject <span class="math inline">\(H_0\)</span>. Write the conclusion in context, in plain language.</p></li>
+</ol>
+<div class="simkit">
+<p><strong>Practice the full procedure!</strong> Use SimKit’s Permutation Test Simulator for different scenarios:</p>
+<p><a href="https://datascienceuwl.github.io/simkit/simulate/permutation-test/" target="_blank">Launch Permutation Test Simulator</a></p>
+<p>Try entering your own data and running the full randomization test. Observe how the p-value changes when you adjust the sample size or the magnitude of the observed difference.</p>
+</div>
+</section>
+<section id="sec-ch07-review" class="level2" data-number="8.10">
+<h2 data-number="8.10" class="anchored" data-anchor-id="sec-ch07-review"><span class="header-section-number">8.10</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="8.10.1">
+<h3 data-number="8.10.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">8.10.1</span> Summary</h3>
+<ul>
+<li>A <strong>hypothesis test</strong> evaluates two competing claims: the null hypothesis (<span class="math inline">\(H_0\)</span>), which represents no effect or no difference, and the alternative hypothesis (<span class="math inline">\(H_A\)</span>), which represents the claim under investigation.</li>
+<li>A <strong>randomization test</strong> (or permutation test) assesses the null hypothesis by shuffling the data to simulate what would happen if there were truly no effect. The collection of simulated test statistics forms the <strong>randomization distribution</strong>.</li>
+<li>The <strong>test statistic</strong> is the summary value computed from the data (e.g., a difference in proportions) that we use to evaluate the hypotheses.</li>
+<li>The <strong>p-value</strong> is the probability of observing a test statistic at least as extreme as the one observed, assuming the null hypothesis is true. It quantifies the strength of the evidence against <span class="math inline">\(H_0\)</span>.</li>
+<li>We reject <span class="math inline">\(H_0\)</span> when the p-value is less than the <strong>significance level</strong> <span class="math inline">\(\alpha\)</span> (commonly 0.05). This is called a <strong>statistically significant</strong> result.</li>
+<li>A <strong>one-sided test</strong> looks for effects in a specified direction; a <strong>two-sided test</strong> looks for effects in either direction.</li>
+<li>Failing to reject <span class="math inline">\(H_0\)</span> is not the same as proving <span class="math inline">\(H_0\)</span> is true.</li>
+<li>Statistical significance does not imply practical importance.</li>
+</ul>
+</section>
+<section id="key-terms" class="level3" data-number="8.10.2">
+<h3 data-number="8.10.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">8.10.2</span> Key terms</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 66%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Term</th>
+<th style="text-align: left;">Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Hypothesis test</td>
+<td style="text-align: left;">A formal procedure for evaluating competing claims using data</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Null hypothesis (<span class="math inline">\(H_0\)</span>)</td>
+<td style="text-align: left;">The claim of no effect or no difference; the skeptical position</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Alternative hypothesis (<span class="math inline">\(H_A\)</span>)</td>
+<td style="text-align: left;">The claim that there is an effect or difference</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Randomization test</td>
+<td style="text-align: left;">A hypothesis test that builds a null distribution by shuffling data</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Randomization distribution</td>
+<td style="text-align: left;">The distribution of the test statistic under repeated randomizations</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Test statistic</td>
+<td style="text-align: left;">The summary value (e.g., difference in proportions) used to evaluate hypotheses</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P-value</td>
+<td style="text-align: left;">Probability of observing a result as extreme as or more extreme than the data, if <span class="math inline">\(H_0\)</span> is true</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Significance level (<span class="math inline">\(\alpha\)</span>)</td>
+<td style="text-align: left;">The threshold below which the p-value leads us to reject <span class="math inline">\(H_0\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Statistically significant</td>
+<td style="text-align: left;">A result whose p-value falls below <span class="math inline">\(\alpha\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">One-sided test</td>
+<td style="text-align: left;">Alternative hypothesis specifies a direction</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Two-sided test</td>
+<td style="text-align: left;">Alternative hypothesis does not specify a direction</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="exercises" class="level3 exercises" data-number="8.10.3">
+<h3 class="exercises anchored" data-number="8.10.3" data-anchor-id="exercises"><span class="header-section-number">8.10.3</span> Exercises</h3>
 <div class="underconstruction">
 <p>Exercises for this chapter are under development.</p>
 </div>
 
 
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>We would be assuming that these two variables are <strong>independent</strong> — knowing which side of the room someone sits on tells us nothing about their reading preference.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>The study is an experiment, as subjects were randomly assigned a “male” file or a “female” file (remember, all the files were actually identical in content). Since this is an experiment, the results can be used to evaluate a causal relationship between the sex of a candidate and the promotion decision.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>The simulated difference is <span class="math inline">\(18/24 - 17/24 = 0.042\)</span> or about 4.2% in favor of male personnel. This difference due to chance is much smaller than the 29.2% difference observed in the actual groups.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Since <span class="math inline">\(p\text{-value} = 0.12 &gt; 0.05 = \alpha\)</span>, the researcher fails to reject the null hypothesis. The data do not provide sufficient evidence that the new teaching method improves exam scores. This does not mean the new method is ineffective — only that this study did not produce enough evidence to conclude it is effective.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>This should be a two-sided test because the fertilizer could either increase or decrease growth (perhaps it has a toxic effect in some soils). The hypotheses are: <span class="math inline">\(H_0: \mu_T - \mu_C = 0\)</span> (no difference in mean growth) and <span class="math inline">\(H_A: \mu_T - \mu_C \neq 0\)</span> (the fertilizer changes mean growth, in either direction).<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
@@ -943,6 +1436,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

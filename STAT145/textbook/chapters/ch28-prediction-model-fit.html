@@ -40,7 +40,10 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-855916542817ac84da3c21653fba0b96.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8516382779693841795b18304a02d14e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -68,6 +71,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -419,15 +451,28 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#making-predictions" id="toc-making-predictions" class="nav-link active" data-scroll-target="#making-predictions"><span class="header-section-number">29.1</span> Making predictions</a></li>
-  <li><a href="#extrapolation" id="toc-extrapolation" class="nav-link" data-scroll-target="#extrapolation"><span class="header-section-number">29.2</span> Extrapolation</a></li>
-  <li><a href="#residual-diagnostics" id="toc-residual-diagnostics" class="nav-link" data-scroll-target="#residual-diagnostics"><span class="header-section-number">29.3</span> Residual diagnostics</a></li>
-  <li><a href="#leverage-and-influential-points" id="toc-leverage-and-influential-points" class="nav-link" data-scroll-target="#leverage-and-influential-points"><span class="header-section-number">29.4</span> Leverage and influential points</a></li>
-  <li><a href="#confidence-and-prediction-intervals" id="toc-confidence-and-prediction-intervals" class="nav-link" data-scroll-target="#confidence-and-prediction-intervals"><span class="header-section-number">29.5</span> Confidence and prediction intervals</a></li>
-  <li><a href="#chapter-review" id="toc-chapter-review" class="nav-link" data-scroll-target="#chapter-review"><span class="header-section-number">29.6</span> Chapter review</a>
+  <li><a href="#sec-making-predictions" id="toc-sec-making-predictions" class="nav-link active" data-scroll-target="#sec-making-predictions"><span class="header-section-number">29.1</span> Making predictions</a></li>
+  <li><a href="#sec-extrapolation" id="toc-sec-extrapolation" class="nav-link" data-scroll-target="#sec-extrapolation"><span class="header-section-number">29.2</span> Extrapolation</a></li>
+  <li><a href="#sec-residual-diagnostics" id="toc-sec-residual-diagnostics" class="nav-link" data-scroll-target="#sec-residual-diagnostics"><span class="header-section-number">29.3</span> Residual diagnostics</a>
+  <ul class="collapse">
+  <li><a href="#patterns-in-residual-plots" id="toc-patterns-in-residual-plots" class="nav-link" data-scroll-target="#patterns-in-residual-plots"><span class="header-section-number">29.3.1</span> Patterns in residual plots</a></li>
+  <li><a href="#non-constant-variability-heteroscedasticity" id="toc-non-constant-variability-heteroscedasticity" class="nav-link" data-scroll-target="#non-constant-variability-heteroscedasticity"><span class="header-section-number">29.3.2</span> Non-constant variability (heteroscedasticity)</a></li>
+  </ul></li>
+  <li><a href="#sec-leverage-influential" id="toc-sec-leverage-influential" class="nav-link" data-scroll-target="#sec-leverage-influential"><span class="header-section-number">29.4</span> Leverage and influential points</a>
+  <ul class="collapse">
+  <li><a href="#leverage" id="toc-leverage" class="nav-link" data-scroll-target="#leverage"><span class="header-section-number">29.4.1</span> Leverage</a></li>
+  <li><a href="#influential-points" id="toc-influential-points" class="nav-link" data-scroll-target="#influential-points"><span class="header-section-number">29.4.2</span> Influential points</a></li>
+  </ul></li>
+  <li><a href="#sec-ci-pi" id="toc-sec-ci-pi" class="nav-link" data-scroll-target="#sec-ci-pi"><span class="header-section-number">29.5</span> Confidence and prediction intervals</a>
+  <ul class="collapse">
+  <li><a href="#confidence-intervals-for-the-mean-response" id="toc-confidence-intervals-for-the-mean-response" class="nav-link" data-scroll-target="#confidence-intervals-for-the-mean-response"><span class="header-section-number">29.5.1</span> Confidence intervals for the mean response</a></li>
+  <li><a href="#prediction-intervals-for-individual-observations" id="toc-prediction-intervals-for-individual-observations" class="nav-link" data-scroll-target="#prediction-intervals-for-individual-observations"><span class="header-section-number">29.5.2</span> Prediction intervals for individual observations</a></li>
+  <li><a href="#comparing-the-two-intervals" id="toc-comparing-the-two-intervals" class="nav-link" data-scroll-target="#comparing-the-two-intervals"><span class="header-section-number">29.5.3</span> Comparing the two intervals</a></li>
+  </ul></li>
+  <li><a href="#sec-ch28-review" id="toc-sec-ch28-review" class="nav-link" data-scroll-target="#sec-ch28-review"><span class="header-section-number">29.6</span> Chapter review</a>
   <ul class="collapse">
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">29.6.1</span> Summary</a></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">29.6.2</span> Exercises</a></li>
+  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">29.6.2</span> Key terms</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -454,46 +499,189 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="underconstruction">
-<p>This chapter is under development. Source material: IMS <code>model-slr.qmd</code> + <code>inf-model-slr.qmd</code> — 80% coverage. ~20% original.</p>
-</div>
 <div class="chapterintro">
-<p>Chapter introduction for <em>Prediction and Model Fit</em> will go here.</p>
+<p>In the previous chapter, we developed the least squares regression line, interpreted its slope and intercept, and performed inference to test whether a linear relationship exists. In this chapter, we focus on using the regression model for prediction and assessing how well it fits the data. We discuss the dangers of extrapolation, introduce residual diagnostics for identifying problems with the model, examine leverage and influential points, and briefly introduce confidence intervals and prediction intervals for forecasts.</p>
 </div>
-<div class="simkit">
-<p><strong>SimKit tools for this chapter</strong>: Regression Intuition Tool</p>
+<section id="sec-making-predictions" class="level2" data-number="29.1">
+<h2 data-number="29.1" class="anchored" data-anchor-id="sec-making-predictions"><span class="header-section-number">29.1</span> Making predictions</h2>
+<p>One of the primary uses of a regression model is to predict the value of the response variable <span class="math inline">\(y\)</span> for a given value of the explanatory variable <span class="math inline">\(x\)</span>. To make a prediction, we simply plug the value of <span class="math inline">\(x\)</span> into the regression equation.</p>
+<div class="workedexample">
+<p>The least squares line for predicting gift aid from family income at Elmhurst College is:</p>
+<p><span class="math display">\[\widehat{\text{aid}} = 24.3 - 0.0431 \times \text{family\_income}\]</span></p>
+<p>Predict the gift aid for a student whose family income is $80,000 (i.e., <span class="math inline">\(x = 80\)</span> in $1,000s).</p>
+<hr>
+<p><span class="math display">\[\widehat{\text{aid}} = 24.3 - 0.0431 \times 80 = 24.3 - 3.45 = 20.85\]</span></p>
+<p>The model predicts this student will receive approximately $20,850 in gift aid.</p>
 </div>
-<section id="making-predictions" class="level2" data-number="29.1">
-<h2 data-number="29.1" class="anchored" data-anchor-id="making-predictions"><span class="header-section-number">29.1</span> Making predictions</h2>
-<p>Content under development.</p>
+<div class="workedexample">
+<p>Suppose a high school senior is considering Elmhurst College. Can they simply use the linear equation to calculate their financial aid?</p>
+<hr>
+<p>They may use it as an estimate, but with important qualifiers. First, the data come from a single year, and aid policies may change. Second, the equation provides an imperfect estimate – while the linear model captures the overall trend, individual students’ aid will vary around the predicted value.</p>
+</div>
 </section>
-<section id="extrapolation" class="level2" data-number="29.2">
-<h2 data-number="29.2" class="anchored" data-anchor-id="extrapolation"><span class="header-section-number">29.2</span> Extrapolation</h2>
-<p>Content under development.</p>
+<section id="sec-extrapolation" class="level2" data-number="29.2">
+<h2 data-number="29.2" class="anchored" data-anchor-id="sec-extrapolation"><span class="header-section-number">29.2</span> Extrapolation</h2>
+<div class="workedexample">
+<p>Use the Elmhurst model to estimate the aid for a student whose family has an income of $1 million (i.e., <span class="math inline">\(x = 1000\)</span>).</p>
+<hr>
+<p><span class="math display">\[\widehat{\text{aid}} = 24.3 - 0.0431 \times 1000 = -18.8\]</span></p>
+<p>The model predicts <span class="math inline">\(-\$18,800\)</span> in aid! Elmhurst College does not charge extra tuition to wealthy students. This nonsensical prediction illustrates the danger of <strong>extrapolation</strong>.</p>
+</div>
+<div class="important">
+<p><strong>Extrapolation is treacherous.</strong></p>
+<p><strong>Extrapolation</strong> means applying a model to make predictions outside the range of the observed data. A linear model is only an approximation of the true relationship, and that approximation may break down badly outside the range of the data used to build it.</p>
+<p>Generally, predictions should only be made within the range of the observed predictor values. Predictions far outside this range are unreliable and should be treated with great skepticism.</p>
+</div>
+<div class="caution">
+<p>Before making a prediction, always check whether the value of <span class="math inline">\(x\)</span> falls within the range of the data used to build the model. If it does not, acknowledge that you are extrapolating and that the prediction may be unreliable.</p>
+</div>
 </section>
-<section id="residual-diagnostics" class="level2" data-number="29.3">
-<h2 data-number="29.3" class="anchored" data-anchor-id="residual-diagnostics"><span class="header-section-number">29.3</span> Residual diagnostics</h2>
-<p>Content under development.</p>
+<section id="sec-residual-diagnostics" class="level2" data-number="29.3">
+<h2 data-number="29.3" class="anchored" data-anchor-id="sec-residual-diagnostics"><span class="header-section-number">29.3</span> Residual diagnostics</h2>
+<p>In the previous chapter, we introduced residual plots as a way to assess whether a linear model is appropriate. In this section, we examine residual diagnostics in more detail.</p>
+<section id="patterns-in-residual-plots" class="level3" data-number="29.3.1">
+<h3 data-number="29.3.1" class="anchored" data-anchor-id="patterns-in-residual-plots"><span class="header-section-number">29.3.1</span> Patterns in residual plots</h3>
+<p>A well-fitting linear model produces residuals that appear randomly scattered around zero. Systematic patterns in the residuals indicate problems:</p>
+<div class="workedexample">
+<p>Consider the three pairs of scatterplots and residual plots below.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Three scatterplots with linear models in the top row and their corresponding residual plots in the bottom row. The first shows a good linear fit with random residuals. The second shows a curved relationship with a U-shaped residual pattern. The third shows a weak trend with random residuals."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A grid of 2 by 3 plots. Top row: three scatterplots with regression lines. Bottom row: the corresponding residual plots. The first shows random scatter (good). The second shows a U-shape (bad -- nonlinearity). The third shows random scatter (good, but weak trend)."></a></p>
+<figcaption>Three scatterplots with linear models in the top row and their corresponding residual plots in the bottom row. The first shows a good linear fit with random residuals. The second shows a curved relationship with a U-shaped residual pattern. The third shows a weak trend with random residuals.</figcaption>
+</figure>
+</div>
+<p>Describe any patterns in the residuals.</p>
+<hr>
+<p><strong>Dataset 1:</strong> The residuals show no obvious patterns. They are scattered randomly around zero. The linear model is appropriate.</p>
+<p><strong>Dataset 2:</strong> There is a curved pattern in the residuals – they are negative at the edges and positive in the middle. This indicates a nonlinear relationship. A straight line is not a good model for these data.</p>
+<p><strong>Dataset 3:</strong> The residuals show no patterns, but the trend is very weak. The linear model is technically appropriate, but the relationship may not be practically meaningful.</p>
+</div>
 </section>
-<section id="leverage-and-influential-points" class="level2" data-number="29.4">
-<h2 data-number="29.4" class="anchored" data-anchor-id="leverage-and-influential-points"><span class="header-section-number">29.4</span> Leverage and influential points</h2>
-<p>Content under development.</p>
+<section id="non-constant-variability-heteroscedasticity" class="level3" data-number="29.3.2">
+<h3 data-number="29.3.2" class="anchored" data-anchor-id="non-constant-variability-heteroscedasticity"><span class="header-section-number">29.3.2</span> Non-constant variability (heteroscedasticity)</h3>
+<p>When the spread of the residuals changes as the predicted value increases, we have <strong>non-constant variability</strong> (also called <strong>heteroscedasticity</strong>). This often appears as a “fan shape” in the residual plot – residuals spread out (or narrow) as the predicted values increase.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="A scatterplot and residual plot showing increasing variability as x increases. The residual plot shows a fan shape."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A scatterplot showing increasing spread in y as x increases, and its residual plot showing a fan-shaped pattern."></a></p>
+<figcaption>A scatterplot and residual plot showing increasing variability as x increases. The residual plot shows a fan shape.</figcaption>
+</figure>
+</div>
+<p>Non-constant variability does not bias the regression line itself, but it does affect inference: standard errors, confidence intervals, and p-values may be unreliable.</p>
 </section>
-<section id="confidence-and-prediction-intervals" class="level2" data-number="29.5">
-<h2 data-number="29.5" class="anchored" data-anchor-id="confidence-and-prediction-intervals"><span class="header-section-number">29.5</span> Confidence and prediction intervals</h2>
-<p>Content under development.</p>
 </section>
-<section id="chapter-review" class="level2" data-number="29.6">
-<h2 data-number="29.6" class="anchored" data-anchor-id="chapter-review"><span class="header-section-number">29.6</span> Chapter review</h2>
+<section id="sec-leverage-influential" class="level2" data-number="29.4">
+<h2 data-number="29.4" class="anchored" data-anchor-id="sec-leverage-influential"><span class="header-section-number">29.4</span> Leverage and influential points</h2>
+<p>Not all observations have the same impact on the regression line. Some points, by virtue of their position, can exert a disproportionate influence on the model.</p>
+<section id="leverage" class="level3" data-number="29.4.1">
+<h3 data-number="29.4.1" class="anchored" data-anchor-id="leverage"><span class="header-section-number">29.4.1</span> Leverage</h3>
+<div class="definition">
+<p><strong>Leverage.</strong></p>
+<p>A point has <strong>high leverage</strong> if its <span class="math inline">\(x\)</span>-value is far from <span class="math inline">\(\bar{x}\)</span> (the mean of the predictor variable). High-leverage points have the <em>potential</em> to strongly influence the slope and intercept of the regression line.</p>
+</div>
+<p>High leverage does not automatically mean the point is problematic. If a high-leverage point falls close to the trend established by the other data, it may actually strengthen the model. A high-leverage point is only problematic if its <span class="math inline">\(y\)</span>-value does not follow the pattern of the rest of the data.</p>
+</section>
+<section id="influential-points" class="level3" data-number="29.4.2">
+<h3 data-number="29.4.2" class="anchored" data-anchor-id="influential-points"><span class="header-section-number">29.4.2</span> Influential points</h3>
+<div class="definition">
+<p><strong>Influential point.</strong></p>
+<p>A point is <strong>influential</strong> if removing it would substantially change the regression line (i.e., the estimated slope or intercept). Influential points are typically high-leverage points that do not follow the pattern of the rest of the data.</p>
+</div>
+<div class="workedexample">
+<p>Consider three scenarios:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Three scatterplots with regression lines. In the first, a point in the corner has high leverage but follows the trend (not influential). In the second, a point far from the trend has high leverage and is influential – removing it changes the slope substantially. In the third, a point near \bar{x} is an outlier in the y-direction but has low leverage and is not very influential."><img src="images/placeholder.png" class="img-fluid figure-img" alt="Three scatterplots demonstrating leverage and influence. The first shows a high-leverage point that is not influential. The second shows an influential point. The third shows an outlier with low leverage."></a></p>
+<figcaption>Three scatterplots with regression lines. In the first, a point in the corner has high leverage but follows the trend (not influential). In the second, a point far from the trend has high leverage and is influential – removing it changes the slope substantially. In the third, a point near <span class="math inline">\(\bar{x}\)</span> is an outlier in the <span class="math inline">\(y\)</span>-direction but has low leverage and is not very influential.</figcaption>
+</figure>
+</div>
+<hr>
+<p><strong>Scenario 1:</strong> The point in the far right corner has high leverage (it is far from <span class="math inline">\(\bar{x}\)</span>), but it falls along the trend of the other data. Removing it would barely change the regression line. It is <em>not</em> influential.</p>
+<p><strong>Scenario 2:</strong> The point in the far right corner has high leverage <em>and</em> falls far from the trend. Removing it would substantially change the slope. It <em>is</em> influential.</p>
+<p><strong>Scenario 3:</strong> The point near the center of the <span class="math inline">\(x\)</span>-values is an outlier in the <span class="math inline">\(y\)</span>-direction. It has low leverage because its <span class="math inline">\(x\)</span>-value is near <span class="math inline">\(\bar{x}\)</span>. Removing it would change the intercept slightly but not the slope very much. It has limited influence.</p>
+</div>
+<div class="important">
+<p><strong>Dealing with influential points.</strong></p>
+<p>When you identify an influential point:</p>
+<ol type="1">
+<li>Verify that it is not a data entry error.</li>
+<li>Run the analysis with and without the point and report both results.</li>
+<li>Do not automatically remove it – if it is a legitimate observation, it contains real information.</li>
+<li>Be transparent about its effect on the conclusions.</li>
+</ol>
+</div>
+</section>
+</section>
+<section id="sec-ci-pi" class="level2 original" data-number="29.5">
+<h2 data-number="29.5" class="anchored" data-anchor-id="sec-ci-pi"><span class="header-section-number">29.5</span> Confidence and prediction intervals</h2>
+<p>When we use a regression model to make predictions, there are two types of uncertainty to consider:</p>
+<section id="confidence-intervals-for-the-mean-response" class="level3" data-number="29.5.1">
+<h3 data-number="29.5.1" class="anchored" data-anchor-id="confidence-intervals-for-the-mean-response"><span class="header-section-number">29.5.1</span> Confidence intervals for the mean response</h3>
+<p>A <strong>confidence interval for the mean response</strong> estimates the average value of <span class="math inline">\(y\)</span> for all individuals with a particular value of <span class="math inline">\(x\)</span>. This interval captures the uncertainty in estimating the population regression line.</p>
+<p>For example, we might ask: “What is the average gift aid for all Elmhurst students with a family income of $80,000?” The confidence interval for the mean response at <span class="math inline">\(x = 80\)</span> would give a range of plausible values for this population average.</p>
+<p>The formula for a <span class="math inline">\((1-\alpha) \times 100\%\)</span> confidence interval for the mean response at <span class="math inline">\(x = x^*\)</span> is:</p>
+<p><span class="math display">\[\hat{y} \pm t_{n-2}^* \cdot SE_{\hat{y}}\]</span></p>
+<p>where the standard error depends on the distance of <span class="math inline">\(x^*\)</span> from <span class="math inline">\(\bar{x}\)</span>:</p>
+<p><span class="math display">\[SE_{\hat{y}} = s_e \sqrt{\frac{1}{n} + \frac{(x^* - \bar{x})^2}{\sum (x_i - \bar{x})^2}}\]</span></p>
+<p>Here <span class="math inline">\(s_e = \sqrt{MSE}\)</span> is the residual standard error.</p>
+</section>
+<section id="prediction-intervals-for-individual-observations" class="level3" data-number="29.5.2">
+<h3 data-number="29.5.2" class="anchored" data-anchor-id="prediction-intervals-for-individual-observations"><span class="header-section-number">29.5.2</span> Prediction intervals for individual observations</h3>
+<p>A <strong>prediction interval</strong> estimates the value of <span class="math inline">\(y\)</span> for a <em>single</em> new individual with a particular value of <span class="math inline">\(x\)</span>. This interval is always wider than the confidence interval for the mean response because it must account for both:</p>
+<ol type="1">
+<li>The uncertainty in estimating the regression line (same as the confidence interval).</li>
+<li>The natural variability of individual observations around the line.</li>
+</ol>
+<p>The prediction interval at <span class="math inline">\(x = x^*\)</span> is:</p>
+<p><span class="math display">\[\hat{y} \pm t_{n-2}^* \cdot s_e \sqrt{1 + \frac{1}{n} + \frac{(x^* - \bar{x})^2}{\sum (x_i - \bar{x})^2}}\]</span></p>
+<p>Notice the extra “<span class="math inline">\(1 +\)</span>” under the square root compared to the confidence interval formula. This is what makes the prediction interval wider.</p>
+</section>
+<section id="comparing-the-two-intervals" class="level3" data-number="29.5.3">
+<h3 data-number="29.5.3" class="anchored" data-anchor-id="comparing-the-two-intervals"><span class="header-section-number">29.5.3</span> Comparing the two intervals</h3>
+<div class="workedexample">
+<p>For the possum data, suppose we want to predict the head length for possums with a total length of 85 cm.</p>
+<p>The point prediction is <span class="math inline">\(\hat{y} = 41 + 0.59 \times 85 = 91.15\)</span> mm.</p>
+<ul>
+<li>A 95% <strong>confidence interval for the mean</strong> head length of all possums with total length 85 cm might be (89.8, 92.5) mm.</li>
+<li>A 95% <strong>prediction interval</strong> for the head length of a single possum with total length 85 cm might be (83.2, 99.1) mm.</li>
+</ul>
+<hr>
+<p>The confidence interval is relatively narrow because it estimates an average, which is estimated with moderate precision. The prediction interval is much wider because it must also account for the natural variation among individual possums – even possums with the same total length have different head lengths.</p>
+</div>
+<div class="important">
+<p><strong>Confidence interval vs.&nbsp;prediction interval.</strong></p>
+<ul>
+<li>A <strong>confidence interval for the mean response</strong> estimates the average <span class="math inline">\(y\)</span> for a given <span class="math inline">\(x\)</span>. It accounts for uncertainty in the regression line.</li>
+<li>A <strong>prediction interval</strong> estimates the <span class="math inline">\(y\)</span> for a single new observation at a given <span class="math inline">\(x\)</span>. It accounts for both the uncertainty in the regression line and the variability of individual observations.</li>
+<li>Prediction intervals are always wider than confidence intervals.</li>
+<li>Both intervals are narrowest at <span class="math inline">\(x = \bar{x}\)</span> and widen as <span class="math inline">\(x\)</span> moves away from <span class="math inline">\(\bar{x}\)</span>.</li>
+</ul>
+</div>
+<p>The fact that both intervals widen as <span class="math inline">\(x\)</span> moves away from <span class="math inline">\(\bar{x}\)</span> connects back to the danger of extrapolation: predictions become increasingly uncertain farther from the center of the data.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/placeholder.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="A scatterplot with a regression line and both 95% confidence bands (narrow) and 95% prediction bands (wide). Both bands are narrowest near \bar{x} and flare outward."><img src="images/placeholder.png" class="img-fluid figure-img" alt="A scatterplot with a regression line and two sets of bands. The inner, narrower bands represent the 95% confidence interval for the mean response. The outer, wider bands represent the 95% prediction interval. Both are narrowest at the center of the data."></a></p>
+<figcaption>A scatterplot with a regression line and both 95% confidence bands (narrow) and 95% prediction bands (wide). Both bands are narrowest near <span class="math inline">\(\bar{x}\)</span> and flare outward.</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="sec-ch28-review" class="level2" data-number="29.6">
+<h2 data-number="29.6" class="anchored" data-anchor-id="sec-ch28-review"><span class="header-section-number">29.6</span> Chapter review</h2>
 <section id="summary" class="level3" data-number="29.6.1">
 <h3 data-number="29.6.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">29.6.1</span> Summary</h3>
-<p>Key concepts summary will go here.</p>
+<p>In this chapter, we focused on using regression models for prediction and evaluating their fit. We learned that extrapolation – predicting outside the range of the observed data – is dangerous and can lead to nonsensical predictions. Residual diagnostics help us identify violations of the model assumptions, including nonlinearity, non-constant variance, and the influence of unusual points. Leverage measures how far a point’s <span class="math inline">\(x\)</span>-value is from the center of the data; influential points are high-leverage observations that do not follow the overall trend and substantially affect the regression line when removed. Finally, we distinguished between confidence intervals for the mean response and prediction intervals for individual observations, noting that prediction intervals are always wider because they account for individual variability.</p>
 </section>
-<section id="exercises" class="level3 exercises" data-number="29.6.2">
-<h3 class="exercises anchored" data-number="29.6.2" data-anchor-id="exercises"><span class="header-section-number">29.6.2</span> Exercises</h3>
-<div class="underconstruction">
-<p>Exercises for this chapter are under development.</p>
-</div>
+<section id="key-terms" class="level3" data-number="29.6.2">
+<h3 data-number="29.6.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">29.6.2</span> Key terms</h3>
+<ul>
+<li>Extrapolation</li>
+<li>Residual diagnostics</li>
+<li>Non-constant variability (heteroscedasticity)</li>
+<li>Leverage</li>
+<li>Influential point</li>
+<li>Confidence interval for the mean response</li>
+<li>Prediction interval</li>
+</ul>
 
 
 </section>
@@ -943,6 +1131,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 
