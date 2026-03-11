@@ -815,6 +815,96 @@ input[aria-invalid="true"] {
   accent-color: var(--ims-blue);
 }
 
+/* ===== Two-Column App Layout ===== */
+/* Desktop: wide chart/main panel left, narrow sidebar right.
+   Mobile: single column, sidebar content below main. */
+
+.app-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin: 0.5rem 0;
+}
+
+@media (min-width: 768px) {
+  main:has(.app-body) {
+    max-width: 1100px;
+  }
+  .app-body {
+    grid-template-columns: 1fr 280px;
+    gap: 1rem;
+    align-items: start;
+  }
+  .app-sidebar {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+.app-main {
+  min-width: 0;   /* prevent SVG overflow */
+}
+
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Chart selector (radio toggle for chart type in explore pages) */
+.chart-selector {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.chart-selector label {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 400;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.chart-selector input[type="radio"] {
+  accent-color: var(--accent);
+  margin: 0;
+}
+
+/* Chart-specific controls bar (bins stepper, outlier toggle) */
+.chart-controls-bar {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  min-height: 1.5rem;
+}
+
+.chart-controls-bar label {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+/* Sidebar stats compact table */
+.sidebar-stats {
+  width: 100%;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.sidebar-stats td:last-child {
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
 /* ===== Chart Section ===== */
 
 .chart-type-toggle {

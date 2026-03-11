@@ -26,63 +26,9 @@
     </script>
 
     <style>
-        /* Descriptive stats page layout */
-        .stats-table {
-            width: auto;
-            min-width: 280px;
-            margin: 0.75rem 0;
-        }
-        .stats-table td:last-child {
-            text-align: right;
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
-        }
-        .chart-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.5rem;
-            margin: 1rem 0;
-        }
-        .chart-panel {
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 0.5rem;
-        }
-        .chart-panel h3 {
-            font-size: 0.9rem;
-            margin: 0 0 0.25rem;
-            color: var(--ims-gray-text);
-        }
-        .chart-panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.5rem;
-        }
-        .chart-panel-header h3 {
-            margin-bottom: 0;
-        }
-        #bin-control {
-            margin-bottom: 0;
-        }
-        #bin-control input {
-            padding: 0.15rem 0.3rem;
-            font-size: 0.85rem;
-        }
-        .chart-panel svg {
-            font-family: var(--font-body);
-            font-size: var(--font-size-chart);
-        }
+        /* Descriptive stats page overrides */
         #variable-selector {
-            margin-bottom: 0.75rem;
-        }
-        .chart-option {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            font-size: 0.85rem;
-            color: var(--ims-gray-text);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
         }
         #variable-selector label {
             display: inline-flex;
@@ -92,6 +38,15 @@
         }
         #variable-selector select {
             width: auto;
+        }
+        #chart-area svg {
+            font-family: var(--font-body);
+            font-size: var(--font-size-chart);
+        }
+        #bin-count {
+            width: 3.5rem;
+            padding: 0.15rem 0.3rem;
+            font-size: 0.85rem;
         }
     </style>
 </head>
@@ -162,48 +117,38 @@
             </label>
         </div>
 
-        <section id="stats-section" aria-label="Summary statistics" hidden>
-            <h2>Summary Statistics</h2>
-            <table class="stats-table" aria-label="Descriptive statistics">
-                <tbody>
-                    <tr><th scope="row">n</th><td id="stat-n">&mdash;</td></tr>
-                    <tr><th scope="row">Mean</th><td id="stat-mean">&mdash;</td></tr>
-                    <tr><th scope="row">Median</th><td id="stat-median">&mdash;</td></tr>
-                    <tr><th scope="row">Std Dev</th><td id="stat-sd">&mdash;</td></tr>
-                    <tr><th scope="row">Min</th><td id="stat-min">&mdash;</td></tr>
-                    <tr><th scope="row">Q1</th><td id="stat-q1">&mdash;</td></tr>
-                    <tr><th scope="row">Q3</th><td id="stat-q3">&mdash;</td></tr>
-                    <tr><th scope="row">Max</th><td id="stat-max">&mdash;</td></tr>
-                    <tr><th scope="row">IQR</th><td id="stat-iqr">&mdash;</td></tr>
-                    <tr><th scope="row">Range</th><td id="stat-range">&mdash;</td></tr>
-                </tbody>
-            </table>
-        </section>
-
-        <section id="charts-section" aria-label="Charts" hidden>
-            <h2>Charts</h2>
-            <div class="chart-grid">
-                <div class="chart-panel">
-                    <div class="chart-panel-header">
-                        <h3>Histogram</h3>
-                        <label class="chart-option" id="bin-control">
-                            Bins:
-                            <input type="number" id="bin-count" min="3" max="50" step="1" style="width:3.5rem">
-                        </label>
+        <section id="results-section" aria-label="Charts and statistics" hidden>
+            <div class="app-body">
+                <!-- Left: Chart area -->
+                <div class="app-main">
+                    <div class="chart-selector" role="radiogroup" aria-label="Chart type">
+                        <label><input type="radio" name="chart-type" value="histogram" checked> Histogram</label>
+                        <label><input type="radio" name="chart-type" value="dotplot"> Dotplot</label>
+                        <label><input type="radio" name="chart-type" value="boxplot"> Boxplot</label>
                     </div>
-                    <div id="histogram-container"></div>
+                    <div class="chart-controls-bar" id="chart-controls">
+                        <!-- Contextual controls injected by JS -->
+                    </div>
+                    <div id="chart-area"></div>
                 </div>
-                <div class="chart-panel">
-                    <h3>Dotplot</h3>
-                    <div id="dotplot-container"></div>
-                </div>
-                <div class="chart-panel">
-                    <h3>Boxplot</h3>
-                    <label class="chart-option">
-                        <input type="checkbox" id="show-outliers" checked>
-                        Show outliers
-                    </label>
-                    <div id="boxplot-container"></div>
+
+                <!-- Right: Summary statistics sidebar -->
+                <div class="app-sidebar" id="stats-sidebar">
+                    <h2 style="font-size:1rem; margin:0;">Summary Statistics</h2>
+                    <table class="sidebar-stats" aria-label="Descriptive statistics">
+                        <tbody>
+                            <tr><th scope="row">n</th><td id="stat-n">&mdash;</td></tr>
+                            <tr><th scope="row">Mean</th><td id="stat-mean">&mdash;</td></tr>
+                            <tr><th scope="row">Median</th><td id="stat-median">&mdash;</td></tr>
+                            <tr><th scope="row">Std Dev</th><td id="stat-sd">&mdash;</td></tr>
+                            <tr><th scope="row">Min</th><td id="stat-min">&mdash;</td></tr>
+                            <tr><th scope="row">Q1</th><td id="stat-q1">&mdash;</td></tr>
+                            <tr><th scope="row">Q3</th><td id="stat-q3">&mdash;</td></tr>
+                            <tr><th scope="row">Max</th><td id="stat-max">&mdash;</td></tr>
+                            <tr><th scope="row">IQR</th><td id="stat-iqr">&mdash;</td></tr>
+                            <tr><th scope="row">Range</th><td id="stat-range">&mdash;</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
