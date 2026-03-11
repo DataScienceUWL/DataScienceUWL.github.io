@@ -251,47 +251,103 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
       .attr('cy', d => innerHeight - (d.stackIndex + 0.5) * radius * 2);
   }
 
-  // Highlight new dots, then revert after delay.
-  // Uses .style() (not .attr()) so CSS transitions fire on SVG presentation properties.
+  // Highlight new dots, then animate revert.
+  // Uses direct DOM setAttribute + requestAnimationFrame for reliable cross-browser SVG animation.
   if (highlightIndex >= 0) {
-    const single = circles.filter((d, i) => i === highlightIndex);
-    single
-      .style('fill', HIGHLIGHT_FILL)
-      .style('stroke', '#000')
-      .style('stroke-width', 2)
-      .style('r', `${radius * 1.5}px`);
-    const reduceMotion = prefersReducedMotion();
-    setTimeout(() => {
-      single.each(function(d) {
+    const selected = circles.filter((d, i) => i === highlightIndex);
+    selected
+      .attr('fill', HIGHLIGHT_FILL)
+      .attr('stroke', '#000')
+      .attr('stroke-width', 2)
+      .attr('r', radius * 1.5);
+    if (!prefersReducedMotion()) {
+      setTimeout(() => {
+        selected.each(function(d) {
+          animateDotRevert(this, normalFill(d), radius, 400);
+        });
+      }, 800);
+    } else {
+      selected.each(function(d) {
         const el = d3Selection.select(this);
-        if (!reduceMotion) el.style('transition', 'fill 0.4s, stroke 0.4s, r 0.3s, stroke-width 0.3s');
-        el.style('fill', normalFill(d))
-          .style('stroke', normalFill(d))
-          .style('stroke-width', 1)
-          .style('r', `${radius}px`);
-        if (!reduceMotion) setTimeout(() => el.style('transition', null), 500);
+        el.attr('fill', normalFill(d)).attr('stroke', normalFill(d))
+          .attr('stroke-width', 1).attr('r', radius);
       });
-    }, reduceMotion ? 0 : 800);
+    }
   } else if (highlightIndices && highlightIndices.size > 0) {
-    const batch = circles.filter((d, i) => highlightIndices.has(i));
-    batch
-      .style('fill', HIGHLIGHT_FILL)
-      .style('stroke', '#000')
-      .style('stroke-width', 1.5)
-      .style('r', `${radius * 1.2}px`);
-    const reduceMotion = prefersReducedMotion();
-    setTimeout(() => {
-      batch.each(function(d) {
+    const selected = circles.filter((d, i) => highlightIndices.has(i));
+    selected
+      .attr('fill', HIGHLIGHT_FILL)
+      .attr('stroke', '#000')
+      .attr('stroke-width', 1.5)
+      .attr('r', radius * 1.2);
+    if (!prefersReducedMotion()) {
+      setTimeout(() => {
+        selected.each(function(d) {
+          animateDotRevert(this, normalFill(d), radius, 400);
+        });
+      }, 800);
+    } else {
+      selected.each(function(d) {
         const el = d3Selection.select(this);
-        if (!reduceMotion) el.style('transition', 'fill 0.4s, stroke 0.4s, stroke-width 0.3s, r 0.3s');
-        el.style('fill', normalFill(d))
-          .style('stroke', normalFill(d))
-          .style('stroke-width', 1)
-          .style('r', `${radius}px`);
-        if (!reduceMotion) setTimeout(() => el.style('transition', null), 500);
+        el.attr('fill', normalFill(d)).attr('stroke', normalFill(d))
+          .attr('stroke-width', 1).attr('r', radius);
       });
-    }, reduceMotion ? 0 : 800);
+    }
   }
+}
+
+/**
+ * Parse a hex color (#RRGGBB) to [r, g, b].
+ * @param {string} hex
+ * @returns {[number, number, number]}
+ */
+function hexToRGB(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+/**
+ * Interpolate [r,g,b] and format as hex.
+ * @param {[number,number,number]} a
+ * @param {[number,number,number]} b
+ * @param {number} t - 0..1
+ * @returns {string}
+ */
+function lerpColor(a, b, t) {
+  const r = Math.round(a[0] + (b[0] - a[0]) * t);
+  const g = Math.round(a[1] + (b[1] - a[1]) * t);
+  const bl = Math.round(a[2] + (b[2] - a[2]) * t);
+  return `#${((1 << 24) | (r << 16) | (g << 8) | bl).toString(16).slice(1)}`;
+}
+
+/**
+ * Animate a highlighted dot back to its normal fill/stroke/radius.
+ * Uses requestAnimationFrame for reliable cross-browser SVG animation.
+ * @param {SVGCircleElement} el - The circle DOM element
+ * @param {string} targetFill - Normal fill color (hex)
+ * @param {number} targetRadius - Normal radius
+ * @param {number} duration - Animation duration in ms
+ */
+function animateDotRevert(el, targetFill, targetRadius, duration) {
+  const startFill = hexToRGB(el.getAttribute('fill') ?? HIGHLIGHT_FILL);
+  const startStroke = hexToRGB(el.getAttribute('stroke') ?? '#000000');
+  const endFill = hexToRGB(targetFill);
+  const endStroke = hexToRGB(targetFill);
+  const startR = parseFloat(el.getAttribute('r') ?? String(targetRadius));
+  const startSW = parseFloat(el.getAttribute('stroke-width') ?? '1');
+  const start = performance.now();
+
+  function tick(now) {
+    const t = Math.min((now - start) / duration, 1);
+    // Ease-out quad
+    const e = 1 - (1 - t) * (1 - t);
+    el.setAttribute('fill', lerpColor(startFill, endFill, e));
+    el.setAttribute('stroke', lerpColor(startStroke, endStroke, e));
+    el.setAttribute('r', String(startR + (targetRadius - startR) * e));
+    el.setAttribute('stroke-width', String(startSW + (1 - startSW) * e));
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 }
 
 /**
