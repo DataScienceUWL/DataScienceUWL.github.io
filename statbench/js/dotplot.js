@@ -251,8 +251,10 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
       .attr('cy', d => innerHeight - (d.stackIndex + 0.5) * radius * 2);
   }
 
-  // Highlight new dots, then animate revert.
-  // Uses direct DOM setAttribute + requestAnimationFrame for reliable cross-browser SVG animation.
+  // Highlight new dots, then revert.
+  // Color highlights always apply (color change is not motion).
+  // Smooth fade-back uses rAF animation; reduced-motion gets instant revert after delay.
+  const reducedMotion = prefersReducedMotion();
   if (highlightIndex >= 0) {
     const selected = circles.filter((d, i) => i === highlightIndex);
     selected
@@ -260,19 +262,18 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
       .attr('stroke', '#000')
       .attr('stroke-width', 2)
       .attr('r', radius * 1.5);
-    if (!prefersReducedMotion()) {
-      setTimeout(() => {
-        selected.each(function(d) {
-          animateDotRevert(this, normalFill(d), radius, 400);
-        });
-      }, 800);
-    } else {
+    setTimeout(() => {
       selected.each(function(d) {
-        const el = d3Selection.select(this);
-        el.attr('fill', normalFill(d)).attr('stroke', normalFill(d))
-          .attr('stroke-width', 1).attr('r', radius);
+        if (reducedMotion) {
+          this.setAttribute('fill', normalFill(d));
+          this.setAttribute('stroke', normalFill(d));
+          this.setAttribute('stroke-width', '1');
+          this.setAttribute('r', String(radius));
+        } else {
+          animateDotRevert(this, normalFill(d), radius, 400);
+        }
       });
-    }
+    }, 800);
   } else if (highlightIndices && highlightIndices.size > 0) {
     const selected = circles.filter((d, i) => highlightIndices.has(i));
     selected
@@ -280,19 +281,18 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
       .attr('stroke', '#000')
       .attr('stroke-width', 1.5)
       .attr('r', radius * 1.2);
-    if (!prefersReducedMotion()) {
-      setTimeout(() => {
-        selected.each(function(d) {
-          animateDotRevert(this, normalFill(d), radius, 400);
-        });
-      }, 800);
-    } else {
+    setTimeout(() => {
       selected.each(function(d) {
-        const el = d3Selection.select(this);
-        el.attr('fill', normalFill(d)).attr('stroke', normalFill(d))
-          .attr('stroke-width', 1).attr('r', radius);
+        if (reducedMotion) {
+          this.setAttribute('fill', normalFill(d));
+          this.setAttribute('stroke', normalFill(d));
+          this.setAttribute('stroke-width', '1');
+          this.setAttribute('r', String(radius));
+        } else {
+          animateDotRevert(this, normalFill(d), radius, 400);
+        }
       });
-    }
+    }, 800);
   }
 }
 
