@@ -37,11 +37,9 @@ const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
 
 // ─── Population definitions ───
 
-/** Population size for the "population" histogram */
 const POP_SIZE = 10000;
 
 /**
- * Generate population values for each shape.
  * @param {string} shape
  * @param {() => number} rng
  * @returns {number[]}
@@ -53,24 +51,18 @@ function generatePopulation(shape, rng) {
       for (let i = 0; i < POP_SIZE; i++) vals.push(randNormal(50, 10, rng));
       break;
     case 'right-skewed':
-      // Exponential(λ=0.1) shifted to center around 10
       for (let i = 0; i < POP_SIZE; i++) vals.push(-Math.log(1 - rng()) / 0.1);
       break;
     case 'left-skewed':
-      // Reflect the right-skewed: max - exponential
       for (let i = 0; i < POP_SIZE; i++) vals.push(50 - (-Math.log(1 - rng()) / 0.1));
       break;
     case 'uniform':
       for (let i = 0; i < POP_SIZE; i++) vals.push(rng() * 100);
       break;
     case 'bimodal':
-      // Mixture of two normals
       for (let i = 0; i < POP_SIZE; i++) {
-        if (rng() < 0.5) {
-          vals.push(randNormal(30, 5, rng));
-        } else {
-          vals.push(randNormal(70, 5, rng));
-        }
+        if (rng() < 0.5) vals.push(randNormal(30, 5, rng));
+        else vals.push(randNormal(70, 5, rng));
       }
       break;
     default:
@@ -138,7 +130,6 @@ function drawSamples(count) {
   const prevLength = sampleMeans.length;
 
   for (let i = 0; i < count; i++) {
-    // Draw a random sample of size n from the population
     const sample = [];
     for (let j = 0; j < n; j++) {
       const idx = Math.floor(rng() * population.length);
@@ -164,7 +155,6 @@ function drawSamples(count) {
 
   // Pre-compute bins for the full dataset to lock in bin edges
   const { bins: fullBins } = computeBins(sampleMeans, { domain: sharedDomain });
-  // D3 thresholds are interior edges only (not domain endpoints)
   const thresholds = fullBins.slice(1).map(b => b.x0);
 
   // Cache for checkbox toggle re-render
@@ -183,7 +173,7 @@ function drawSamples(count) {
 }
 
 /**
- * Normal PDF: f(x) = (1 / (σ√(2π))) * exp(-0.5 * ((x-μ)/σ)²)
+ * Normal PDF
  * @param {number} x
  * @param {number} mu
  * @param {number} sigma
@@ -196,14 +186,13 @@ function normalPdf(x, mu, sigma) {
 
 /**
  * Overlay a N(mu, se) curve on a histogram chart.
- * Scales the PDF so the curve's area matches the histogram (count × binWidth).
- * @param {SVGGElement} inner - the chart's .chart-inner <g> element
+ * @param {SVGGElement} inner
  * @param {number} mu
- * @param {number} se - empirical standard error
+ * @param {number} se
  * @param {Function} xScale
- * @param {Function} yScale - the histogram's actual yScale
- * @param {number} totalCount - number of sample means
- * @param {number} binWidth - histogram bin width
+ * @param {Function} yScale
+ * @param {number} totalCount
+ * @param {number} binWidth - average bin width
  */
 function overlayNormalCurve(inner, mu, se, xScale, yScale, totalCount, binWidth) {
   const overlays = d3Selection.select(inner).select('.overlays');
@@ -215,7 +204,7 @@ function overlayNormalCurve(inner, mu, se, xScale, yScale, totalCount, binWidth)
   const steps = 150;
   const dx = (xMax - xMin) / steps;
 
-  // Scale PDF density → count: area under curve = totalCount * binWidth
+  // Scale PDF density → frequency count
   const scaleFactor = totalCount * binWidth;
 
   /** @type {[number, number][]} */
@@ -236,8 +225,7 @@ function overlayNormalCurve(inner, mu, se, xScale, yScale, totalCount, binWidth)
     .attr('fill', 'none')
     .attr('stroke', '#114B5F')
     .attr('stroke-width', 2.5)
-    .attr('stroke-dasharray', '8,4')
-    .attr('aria-label', `Normal curve: N(${mu.toFixed(2)}, ${se.toFixed(4)})`);
+    .attr('stroke-dasharray', '8,4');
 }
 
 /**
@@ -253,10 +241,8 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
   const n = sampleMeans.length;
   if (n === 0) return;
 
-  // Use histogram when we have enough samples (or when normal overlay is on)
-  const useHistogram = n > 200 || (showNormalCheckbox?.checked && n > 30);
-
-  if (!useHistogram) {
+  // Dotplot for small counts, histogram for large — checkbox does NOT force histogram
+  if (n <= 200) {
     drawDotplot(samplingContainer, sampleMeans, {
       id: 'sampling-dist',
       xLabel: 'Sample Mean (x̄)',
@@ -278,11 +264,14 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
       thresholds,
     });
     if (showNormalCheckbox?.checked && result?.bins?.length > 0) {
-      const binWidth = result.bins[0].x1 - result.bins[0].x0;
+      // Use AVERAGE bin width — edge bins may differ due to padded domain
+      const firstX0 = result.bins[0].x0;
+      const lastX1 = result.bins[result.bins.length - 1].x1;
+      const avgBinWidth = (lastX1 - firstX0) / result.bins.length;
       const empiricalMu = mean(sampleMeans);
       const empiricalSE = sd(sampleMeans);
       overlayNormalCurve(result.frame.inner, empiricalMu, empiricalSE,
-        result.xScale, result.yScale, n, binWidth);
+        result.xScale, result.yScale, n, avgBinWidth);
     }
   }
 }
@@ -303,7 +292,7 @@ function displayInterpretation() {
   const theorySE = popSigma / Math.sqrt(n);
 
   let html = `<p><strong>Sampling Distribution</strong> — ${k} samples of size \\(n = ${n}\\)</p>`;
-  html += `<p>Population: \\(\\mu = ${popMu.toFixed(2)}\\), \\(\\sigma = ${popSigma.toFixed(2)}\\)</p>`;
+  html += `<p>Population: \\(\\mu = ${popMu.toFixed(2)}\\), &ensp;\\(\\sigma = ${popSigma.toFixed(2)}\\)</p>`;
   html += `<p>Mean of \\(\\bar{x}\\)'s \\(= ${xbarMean.toFixed(4)}\\) &ensp;(should be close to \\(\\mu = ${popMu.toFixed(2)}\\))</p>`;
   html += `<p>SD of \\(\\bar{x}\\)'s \\(= ${xbarSd.toFixed(4)}\\) &ensp;(theory: \\(\\sigma/\\sqrt{n} = ${theorySE.toFixed(4)}\\))</p>`;
 
@@ -319,7 +308,6 @@ function displayInterpretation() {
   }
 
   resultDiv.innerHTML = html;
-  // Tell MathJax to typeset the new content
   if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
     MathJax.typesetPromise([resultDiv]);
   }
