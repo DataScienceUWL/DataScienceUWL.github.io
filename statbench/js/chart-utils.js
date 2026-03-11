@@ -19,7 +19,7 @@ const VIEW_HEIGHT = 371;
 const DEFAULT_MARGIN = { top: 28, right: 20, bottom: 50, left: 60 };
 
 /** Phone margins (viewport < 480px). */
-const PHONE_MARGIN = { top: 15, right: 10, bottom: 40, left: 45 };
+const PHONE_MARGIN = { top: 30, right: 15, bottom: 50, left: 55 };
 
 /**
  * Standard transition duration (ms). Use for D3 transitions on explore tools.
@@ -184,6 +184,13 @@ export function createChart(container, options = {}) {
 export function addAxes(frame, xAxis, yAxis, xLabel, yLabel) {
   const inner = d3Selection.select(frame.inner);
   const axes = inner.select('.axes');
+
+  // On phone viewports, reduce tick counts to avoid overlap
+  const isPhone = detectPhoneMargin();
+  if (isPhone) {
+    if (typeof xAxis.ticks === 'function') xAxis.ticks(6);
+    if (typeof yAxis.ticks === 'function') yAxis.ticks(5);
+  }
 
   // X axis
   axes.append('g')

@@ -1713,8 +1713,9 @@ export function initSimPage(config) {
    */
   function _addSimPill(group, text, cx, cy, isComplement) {
     const g = group.append('g').attr('class', 'sim-pill');
-    const textWidth = text.length * 8.5 + 16;
-    const pillH = 24;
+    const isPhone = typeof matchMedia === 'function' && matchMedia('(max-width: 480px)').matches;
+    const textWidth = text.length * (isPhone ? 13 : 8.5) + 16;
+    const pillH = isPhone ? 34 : 24;
     g.append('rect')
       .attr('x', cx - textWidth / 2)
       .attr('y', cy - pillH / 2)
