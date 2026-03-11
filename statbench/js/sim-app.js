@@ -101,6 +101,9 @@ export function initSimPage(config) {
   /** Track current data source name for save filename. */
   let currentSourceName = 'data';
 
+  /** Track selected variable name for interpretation text. */
+  let selectedVarName = '';
+
   /** Decimal places in source data (for formatStat). */
   let dataPrecision = 0;
 
@@ -396,6 +399,8 @@ export function initSimPage(config) {
           if (numIdx >= 0) {
             const numericCols = parsed.headers.filter((h, i) => parsed.types[i] === 'numeric');
             const colName = numericCols[0];
+            selectedVarName = colName;
+            datasetContext.parameter = colName;
             data1 = parsed.data
               .map(row => parseFloat(row[colName]))
               .filter(v => isFinite(v));
@@ -404,6 +409,8 @@ export function initSimPage(config) {
             if (numericCols.length > 1 && !config.twoGroup && !config.paired) {
               parsedCSVCache = parsed;
               showVarSelector(numericCols, (selected) => {
+                selectedVarName = selected;
+                datasetContext.parameter = selected;
                 data1 = parsedCSVCache.data
                   .map(row => parseFloat(row[selected]))
                   .filter(v => isFinite(v));
@@ -521,7 +528,8 @@ export function initSimPage(config) {
         const n = data1.length;
         const m = mean(data1);
         const s = sd(data1);
-        dataSummary.textContent = `n = ${n}, mean = ${formatStat(m, dataPrecision)}, SD = ${formatStat(s, dataPrecision)}`;
+        const varPrefix = selectedVarName ? `${selectedVarName}: ` : '';
+        dataSummary.textContent = `${varPrefix}n = ${n}, mean = ${formatStat(m, dataPrecision)}, SD = ${formatStat(s, dataPrecision)}`;
       }
     }
     for (const btn of genBtns) btn.disabled = false;
@@ -731,6 +739,7 @@ export function initSimPage(config) {
       .then((ds) => {
         resetSimulation();
         hideVarSelector();
+        selectedVarName = '';
         datasetContext = ds.context || {};
 
         if (config.paired) {
