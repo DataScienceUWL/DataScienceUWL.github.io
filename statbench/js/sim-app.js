@@ -156,6 +156,7 @@ export function initSimPage(config) {
       const radio = /** @type {HTMLInputElement} */ (e.target);
       if (!radio.value) return;
       chartType = radio.value;
+      syncToggleActive();
       // Re-render if we have data
       if (allStats.length > 0) {
         lastStatIndex = -1;
@@ -175,11 +176,20 @@ export function initSimPage(config) {
   function buildToggleHTML(types, selected) {
     const labels = { dotplot: 'Dotplot', spike: 'Spike', histogram: 'Histogram' };
     return types.map(t =>
-      `<label class="chart-toggle-option">
+      `<label class="chart-toggle-option${t === selected ? ' active' : ''}">
         <input type="radio" name="chart-type" value="${t}"${t === selected ? ' checked' : ''}>
         <span>${labels[t] ?? t}</span>
       </label>`
     ).join('');
+  }
+
+  /** Sync the .active class on toggle labels to match the checked radio. */
+  function syncToggleActive() {
+    if (!toggleFieldset) return;
+    for (const label of toggleFieldset.querySelectorAll('.chart-toggle-option')) {
+      const radio = /** @type {HTMLInputElement} */ (label.querySelector('input'));
+      label.classList.toggle('active', radio?.checked ?? false);
+    }
   }
 
   /**
@@ -1552,6 +1562,7 @@ export function initSimPage(config) {
       const radio = /** @type {HTMLInputElement|null} */ (
         toggleFieldset.querySelector(`input[value="${activeChart}"]`));
       if (radio) radio.checked = true;
+      syncToggleActive();
     }
     // Build region-of-interest predicate
     // Randomization: extreme values (tail) are the region of interest
