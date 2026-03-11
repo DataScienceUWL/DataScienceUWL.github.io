@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Categorical Data | StatBench</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+    <style>
+        .contingency-table {
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin: 0.75rem 0;
+        }
+        .contingency-table th,
+        .contingency-table td {
+            border: 1px solid var(--border);
+            padding: 0.3rem 0.6rem;
+            text-align: right;
+        }
+        .contingency-table th {
+            background: var(--bg-alt, #f5f5f5);
+            text-align: center;
+            font-weight: 700;
+        }
+        .contingency-table th[scope="row"] {
+            text-align: left;
+        }
+        .contingency-table .total-row td,
+        .contingency-table .total-row th {
+            font-weight: 700;
+            border-top: 2px solid var(--border);
+        }
+        .contingency-table .total-col {
+            font-weight: 700;
+            border-left: 2px solid var(--border);
+        }
+        .proportion-note {
+            font-size: 0.8rem;
+            color: var(--ims-gray-text);
+            margin: 0.25rem 0 0.75rem;
+        }
+        .display-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            margin: 1rem 0;
+        }
+        .display-controls label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+        }
+        .chart-panel {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem;
+            margin: 1rem 0;
+        }
+        .chart-panel svg {
+            font-family: var(--font-body);
+            font-size: var(--font-size-chart);
+        }
+        .var-selectors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 0.5rem 0 1rem;
+        }
+        .var-selectors label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .var-selectors select {
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#data-panel">Skip to Data</a>
+        <a href="#table-section">Skip to Table</a>
+        <a href="#chart-section">Skip to Chart</a>
+    </nav>
+
+    <header>
+        <nav aria-label="Navigation">
+            <a class="home-link" href="../../">
+                <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg>
+                StatBench
+            </a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Categorical Data</h1>
+
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-dataset" aria-selected="true"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Paste Data</button>
+            </div>
+
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset">
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </label>
+                <p id="dataset-desc" class="hint"></p>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <label for="paste-area">Paste data (CSV with categorical columns):
+                    <textarea id="paste-area" rows="6"
+                              placeholder="group,outcome&#10;treatment,survived&#10;control,died&#10;treatment,survived"></textarea>
+                </label>
+                <div class="btn-row">
+                    <button type="button" id="load-pasted">Load Data</button>
+                    <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+
+            <div id="data-preview" hidden>
+                <p><strong>Loaded:</strong> <output id="data-summary">&mdash;</output></p>
+            </div>
+        </section>
+
+        <div id="variable-controls" class="var-selectors" hidden>
+            <label for="row-var-select">Row variable:
+                <select id="row-var-select"></select>
+            </label>
+            <label for="col-var-select">Column variable:
+                <select id="col-var-select"></select>
+            </label>
+            <button type="button" id="swap-vars" class="btn-secondary" title="Swap row and column variables">Swap</button>
+        </div>
+
+        <section id="table-section" aria-label="Contingency table" hidden>
+            <h2>Contingency Table</h2>
+            <div class="display-controls">
+                <label for="table-mode">Show:
+                    <select id="table-mode">
+                        <option value="counts">Counts</option>
+                        <option value="row">Row proportions</option>
+                        <option value="col">Column proportions</option>
+                        <option value="cell">Cell proportions</option>
+                    </select>
+                </label>
+            </div>
+            <div id="table-container"></div>
+            <p id="proportion-note" class="proportion-note" hidden></p>
+        </section>
+
+        <section id="chart-section" aria-label="Bar chart" hidden>
+            <h2>Bar Chart</h2>
+            <div class="display-controls">
+                <label for="chart-mode">Chart type:
+                    <select id="chart-mode">
+                        <option value="frequency">Frequency (side-by-side)</option>
+                        <option value="stacked">Stacked</option>
+                        <option value="filled">100% Stacked</option>
+                        <option value="relative">Relative frequency (one variable)</option>
+                    </select>
+                </label>
+            </div>
+            <div class="chart-panel">
+                <div id="chart-container"></div>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

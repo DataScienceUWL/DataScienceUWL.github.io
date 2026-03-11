@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Two-Variable / Regression | StatBench</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+
+    <style>
+        /* Page-specific styles for regression tool */
+        .var-selectors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-top: 0.75rem;
+        }
+
+        .var-selectors select {
+            width: 12rem;
+        }
+
+        .toggle-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            margin: 0.75rem 0;
+        }
+
+        .toggle-row label {
+            flex-direction: row;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 400;
+            cursor: pointer;
+        }
+
+        .toggle-row input[type="checkbox"] {
+            accent-color: var(--ims-blue);
+            width: 1.1rem;
+            height: 1.1rem;
+        }
+
+        .equation-display {
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            text-align: center;
+            padding: 0.75rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin: 0.75rem 0;
+            color: var(--ims-green);
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.5rem;
+            margin: 0.75rem 0;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            text-align: center;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--ims-gray-text);
+            margin-bottom: 0.15rem;
+        }
+
+        .stat-card .stat-value {
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--ims-green);
+        }
+
+        #residual-container {
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 480px) {
+            .var-selectors {
+                flex-direction: column;
+            }
+            .var-selectors select {
+                width: 100%;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#data-panel">Skip to Data</a>
+        <a href="#chart">Skip to Chart</a>
+        <a href="#results">Skip to Results</a>
+    </nav>
+
+    <header>
+        <nav aria-label="Navigation">
+            <a class="home-link" href="../../">
+                <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg>
+                StatBench
+            </a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Two-Variable / Regression</h1>
+
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-dataset" aria-selected="true"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Paste Data</button>
+            </div>
+
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset">
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </label>
+                <p id="dataset-desc" class="hint"></p>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <label for="paste-area">Paste two-column data (CSV with headers):
+                    <textarea id="paste-area" rows="8"
+                              placeholder="x,y&#10;1.2,3.4&#10;2.5,5.1&#10;3.8,7.2&#10;4.1,8.0"></textarea>
+                </label>
+                <div class="btn-row">
+                    <button type="button" id="load-pasted">Load Data</button>
+                    <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+
+            <div id="var-panel" hidden>
+                <div class="var-selectors">
+                    <label for="x-var">X variable (predictor):
+                        <select id="x-var"></select>
+                    </label>
+                    <label for="y-var">Y variable (response):
+                        <select id="y-var"></select>
+                    </label>
+                </div>
+            </div>
+
+            <div id="data-preview" hidden>
+                <p><strong>Loaded:</strong> <output id="data-summary">&mdash;</output></p>
+            </div>
+        </section>
+
+        <section id="chart" aria-label="Scatterplot">
+            <div class="toggle-row">
+                <label>
+                    <input type="checkbox" id="show-line" checked>
+                    Show regression line
+                </label>
+                <label>
+                    <input type="checkbox" id="show-residuals">
+                    Show residual plot
+                </label>
+            </div>
+            <figure>
+                <div id="chart-container"></div>
+            </figure>
+            <div id="residual-container" hidden>
+                <h2>Residual Plot</h2>
+                <figure>
+                    <div id="residual-chart-container"></div>
+                </figure>
+            </div>
+        </section>
+
+        <section id="results" aria-label="Regression results">
+            <div id="equation-display" class="equation-display" hidden></div>
+            <div id="stats-display" class="stats-grid" hidden></div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
