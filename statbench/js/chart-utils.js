@@ -44,24 +44,30 @@ const OKABE_ITO = [
 ];
 
 /**
- * Check if the user prefers reduced motion.
+ * Check if the user prefers reduced motion (OS/browser setting only).
  * @returns {boolean}
  */
 export function prefersReducedMotion() {
   if (typeof globalThis.matchMedia !== 'function') return false;
-  if (globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
-  // Also suppress animation if d3-transition isn't loaded
+  return globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * Check if d3-transition is available on selections.
+ * When false, code must not call selection.transition().
+ * @returns {boolean}
+ */
+export function hasD3Transition() {
   try {
     const tmp = d3Selection.select(
       typeof document !== 'undefined'
         ? document.createElementNS('http://www.w3.org/2000/svg', 'g')
         : null
     );
-    if (typeof tmp.transition !== 'function') return true;
+    return typeof tmp.transition === 'function';
   } catch {
-    return true;
+    return false;
   }
-  return false;
 }
 
 /**

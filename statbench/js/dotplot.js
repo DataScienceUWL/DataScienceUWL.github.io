@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, prefersReducedMotion, TRANSITION_MS } from './chart-utils.js';
+import { createChart, addAxes, formatTick, prefersReducedMotion, hasD3Transition, TRANSITION_MS } from './chart-utils.js';
 
 /** Default dot fill (non-extreme). */
 const DOT_FILL = '#808080';
@@ -223,7 +223,7 @@ const HIGHLIGHT_FILL = '#E07020';
  * @param {Set<number>} [highlightIndices] - Batch new dots (+10): accent pulse
  */
 function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate, highlightIndex = -1, highlightIndices) {
-  const shouldAnimate = animate && !prefersReducedMotion();
+  const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
   /** Normal fill for a dot at index i. */
   function normalFill(d) {
@@ -270,7 +270,7 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
           this.setAttribute('stroke-width', '1');
           this.setAttribute('r', String(radius));
         } else {
-          animateDotRevert(this, normalFill(d), radius, 400);
+          animateDotRevert(this, normalFill(d), radius, 600);
         }
       });
     }, 800);
@@ -289,7 +289,7 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
           this.setAttribute('stroke-width', '1');
           this.setAttribute('r', String(radius));
         } else {
-          animateDotRevert(this, normalFill(d), radius, 400);
+          animateDotRevert(this, normalFill(d), radius, 600);
         }
       });
     }, 800);

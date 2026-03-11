@@ -11,7 +11,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import { quantile } from './stats.js';
-import { createChart, addAxes, formatTick, prefersReducedMotion, TRANSITION_MS } from './chart-utils.js';
+import { createChart, addAxes, formatTick, prefersReducedMotion, hasD3Transition, TRANSITION_MS } from './chart-utils.js';
 
 /** IMS blue for strokes and fills. */
 const IMS_BLUE = '#569BBD';
@@ -149,7 +149,7 @@ export function drawBoxplot(container, data, options = {}) {
   }
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
-  const shouldAnimate = animate && !prefersReducedMotion();
+  const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
   for (const name of groupNames) {
     const s = stats[name];

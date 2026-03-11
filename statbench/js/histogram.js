@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, prefersReducedMotion, TRANSITION_MS } from './chart-utils.js';
+import { createChart, addAxes, formatTick, prefersReducedMotion, hasD3Transition, TRANSITION_MS } from './chart-utils.js';
 
 /** Default bar fill (IMS blue at 50% opacity) — used when no isTail predicate. */
 const BAR_FILL = '#569BBD80';
@@ -300,7 +300,7 @@ function renderDeltaBars(group, bins, xScale, yScale, innerHeight, prevCounts) {
  * @param {boolean} animate
  */
 function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate) {
-  const shouldAnimate = animate && !prefersReducedMotion();
+  const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
   const bars = group.selectAll('rect')
     .data(bins)

@@ -11,7 +11,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, TRANSITION_MS } from './chart-utils.js';
+import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS } from './chart-utils.js';
 
 /** Bar stroke (white separator). */
 const BAR_STROKE = '#FFFFFF';
@@ -108,7 +108,7 @@ export function drawBarChart(container, values, options = {}) {
 
   const isGrouped = groupValues != null && (mode === 'stacked' || mode === 'dodged' || mode === 'filled');
   const frame = createChart(container, { titleText, descText, id, margin });
-  const shouldAnimate = animate && !prefersReducedMotion();
+  const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
   if (isGrouped) {
     drawGroupedBars(frame, values, groupValues, mode, { xLabel, categoryOrder, shouldAnimate });
