@@ -8,9 +8,10 @@
 import { createRng, randNormal } from '../../js/prng.js';
 import { mean, sd } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
-import { drawDotplot } from '../../js/dotplot.js';
+import { drawDotplot, computeDots, computeDotRadius } from '../../js/dotplot.js';
 import { announce, initKeyboardShortcuts, initPlayPause, computeHighlights } from '../../js/page-utils.js';
 import * as d3Shape from 'd3-shape';
+import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 
 // ─── DOM ───
@@ -229,6 +230,39 @@ function overlayNormalCurve(inner, mu, se, xScale, yScale, totalCount, binWidth)
 }
 
 /**
+ * Overlay a N(mu, se) curve on a dotplot chart.
+ * Builds a virtual yScale from the dotplot's stacking geometry so the
+ * curve height matches the tallest dot stack.
+ *
+ * @param {{ frame: import('../../js/types.js').ChartFrame, dots: Array<{value: number, binCenter: number, stackIndex: number}>, xScale: d3Scale.ScaleLinear<number,number> }} result
+ * @param {number[]} values
+ */
+function overlayNormalOnDotplot(result, values) {
+  const { frame, xScale } = result;
+  const n = values.length;
+  const empiricalMu = mean(values);
+  const empiricalSE = sd(values);
+  if (empiricalSE <= 0 || n < 10) return;
+
+  // Recompute dot geometry to get maxStack and binWidth
+  const dotInfo = computeDots(values);
+  const { maxStack, binWidth } = dotInfo;
+  const effectiveBins = Math.min(n, 40);
+  const dotRadius = computeDotRadius(frame.width, frame.height, maxStack, effectiveBins);
+
+  // Build a virtual yScale: dotplot stacks go from 0 to maxStack,
+  // mapping to pixel positions [innerHeight, innerHeight - maxStack * 2 * dotRadius]
+  // The peak of the normal curve (in "count" units) should match ~maxStack
+  const maxY = maxStack * 1.1; // small headroom
+  const yScale = d3Scale.scaleLinear()
+    .domain([0, maxY])
+    .range([frame.height, frame.height - maxY * dotRadius * 2]);
+
+  overlayNormalCurve(frame.inner, empiricalMu, empiricalSE,
+    xScale, yScale, n, binWidth);
+}
+
+/**
  * @param {number} [highlightIndex]
  * @param {Set<number>} [highlightIndices]
  * @param {number[]} [prevBinCounts]
@@ -241,9 +275,9 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
   const n = sampleMeans.length;
   if (n === 0) return;
 
-  // Dotplot for small counts, histogram for large — checkbox does NOT force histogram
+  // Dotplot for small counts, histogram for large
   if (n <= 200) {
-    drawDotplot(samplingContainer, sampleMeans, {
+    const result = drawDotplot(samplingContainer, sampleMeans, {
       id: 'sampling-dist',
       xLabel: 'Sample Mean (x̄)',
       titleText: 'Sampling Distribution of x̄',
@@ -252,6 +286,9 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
       highlightIndex,
       highlightIndices,
     });
+    if (showNormalCheckbox?.checked && n >= 10) {
+      overlayNormalOnDotplot(result, sampleMeans);
+    }
   } else {
     const result = drawHistogram(samplingContainer, sampleMeans, {
       id: 'sampling-dist',
@@ -308,8 +345,10 @@ function displayInterpretation() {
   }
 
   resultDiv.innerHTML = html;
-  if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
-    MathJax.typesetPromise([resultDiv]);
+  if (typeof renderMathInElement === 'function') {
+    renderMathInElement(resultDiv, {
+      delimiters: [{ left: '\\(', right: '\\)', display: false }],
+    });
   }
 }
 
