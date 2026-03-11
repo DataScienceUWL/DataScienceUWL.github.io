@@ -200,14 +200,25 @@ export function addAxes(frame, xAxis, yAxis, xLabel, yLabel) {
       .text(xLabel);
   }
 
-  // Y-axis label (rotated)
+  // Y-axis label (rotated) — positioned dynamically based on tick width
   if (yLabel) {
+    // Measure widest y-axis tick label
+    let maxTickWidth = 0;
+    axes.select('.y-axis').selectAll('.tick text').each(function () {
+      try {
+        const w = /** @type {SVGTextElement} */ (this).getBBox().width;
+        if (w > maxTickWidth) maxTickWidth = w;
+      } catch { /* getBBox fails in JSDOM */ }
+    });
+    // Place label just outside the tick labels with a small gap
+    const labelY = -(maxTickWidth + 14);
+
     axes.append('text')
       .attr('class', 'y-label')
       .attr('text-anchor', 'middle')
       .attr('transform', 'rotate(-90)')
       .attr('x', -frame.height / 2)
-      .attr('y', -frame.margin.left + 12)
+      .attr('y', labelY)
       .text(yLabel);
   }
 }

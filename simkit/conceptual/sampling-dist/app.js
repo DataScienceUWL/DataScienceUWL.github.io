@@ -288,7 +288,7 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
   if (n <= 200) {
     const result = drawDotplot(samplingContainer, sampleMeans, {
       id: 'sampling-dist',
-      xLabel: 'Sample Mean (x̄)',
+      xLabel: 'Sample Mean',
       titleText: 'Sampling Distribution of x̄',
       observedStat: popMu,
       animate: false,
@@ -301,7 +301,7 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
   } else {
     const result = drawHistogram(samplingContainer, sampleMeans, {
       id: 'sampling-dist',
-      xLabel: 'Sample Mean (x̄)',
+      xLabel: 'Sample Mean',
       titleText: 'Sampling Distribution of x̄',
       observedStat: popMu,
       animate: false,
