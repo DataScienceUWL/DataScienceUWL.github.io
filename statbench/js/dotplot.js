@@ -270,7 +270,7 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
           this.setAttribute('stroke-width', '1');
           this.setAttribute('r', String(radius));
         } else {
-          animateDotRevert(this, normalFill(d), radius, 600);
+          animateDotRevert(this, normalFill(d), radius, 400);
         }
       });
     }, 800);
@@ -289,7 +289,7 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
           this.setAttribute('stroke-width', '1');
           this.setAttribute('r', String(radius));
         } else {
-          animateDotRevert(this, normalFill(d), radius, 600);
+          animateDotRevert(this, normalFill(d), radius, 400);
         }
       });
     }, 800);
