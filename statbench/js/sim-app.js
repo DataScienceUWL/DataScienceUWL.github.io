@@ -15,6 +15,7 @@ import { drawDotplot } from './dotplot.js';
 import { drawSpike } from './spike.js';
 // renderPValueAnnotation replaced by inline renderSimPills
 import { initPlayPause, setupFileInput } from './page-utils.js';
+import { rowsToCSV, downloadCSV } from './csv-parser.js';
 /**
  * @typedef {object} SimConfig
  * @property {'bootstrap'|'randomization'} mode
@@ -44,6 +45,7 @@ export function initSimPage(config) {
   const pasteArea = /** @type {HTMLTextAreaElement} */ (document.getElementById('paste-area'));
   const loadPastedBtn = document.getElementById('load-pasted');
   const clearBtn = document.getElementById('clear-btn');
+  const saveBtn = document.getElementById('save-btn');
   const datasetSelect = /** @type {HTMLSelectElement} */ (document.getElementById('dataset-select'));
   const datasetDesc = document.getElementById('dataset-desc');
   const bootStatSelect = /** @type {HTMLSelectElement} */ (document.getElementById('boot-stat'));
@@ -95,6 +97,9 @@ export function initSimPage(config) {
   /** Dataset context for natural-language interpretations. */
   /** @type {{population?:string, parameter?:string, unit?:string, nullClaim?:string, successLabel?:string}} */
   let datasetContext = {};
+
+  /** Track current data source name for save filename. */
+  let currentSourceName = 'data';
 
   /** Decimal places in source data (for formatStat). */
   let dataPrecision = 0;
@@ -437,7 +442,9 @@ export function initSimPage(config) {
 
   const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
   if (fileInput) {
-    setupFileInput(fileInput, (text) => {
+    setupFileInput(fileInput, (text, filename) => {
+      if (pasteArea) pasteArea.value = text;
+      currentSourceName = (filename || 'data').replace(/\.\w+$/, '');
       loadTextData(text);
     });
   }
@@ -458,6 +465,20 @@ export function initSimPage(config) {
       const groupOrderEl = document.getElementById('group-order');
       if (groupOrderEl) groupOrderEl.hidden = true;
       announce('Data cleared.');
+    });
+  }
+
+  // ── Save ──
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      const text = pasteArea?.value?.trim();
+      if (!text) {
+        announce('No data to save.');
+        return;
+      }
+      const safeName = currentSourceName.replace(/[^a-zA-Z0-9_-]/g, '_');
+      downloadCSV(text, `${safeName}.csv`);
+      announce('Data saved.');
     });
   }
 
@@ -775,6 +796,14 @@ export function initSimPage(config) {
         }
 
         showDataLoaded();
+
+        // Populate editor with dataset as CSV
+        if (pasteArea && ds.rows && ds.variables) {
+          const cols = ds.variables.map(/** @param {any} v */ v => v.name);
+          pasteArea.value = rowsToCSV(ds.rows, cols);
+          currentSourceName = ds.name || id;
+        }
+
         announce(`${ds.name}.`);
       })
       .catch(() => {

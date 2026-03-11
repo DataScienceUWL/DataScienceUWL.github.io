@@ -164,3 +164,41 @@ export function inferType(data, col) {
     if (nonMissingCount === 0) return 'categorical';
     return (numericCount / nonMissingCount) >= 0.8 ? 'numeric' : 'categorical';
 }
+
+/**
+ * Serialize an array of row objects to CSV text.
+ * @param {Array<Record<string, any>>} rows - Array of row objects
+ * @param {string[]} columns - Column names (header order)
+ * @returns {string} CSV text with header row
+ */
+export function rowsToCSV(rows, columns) {
+    if (!rows.length || !columns.length) return '';
+    const lines = [columns.join(',')];
+    for (const row of rows) {
+        lines.push(columns.map(c => {
+            const v = row[c];
+            if (v == null) return '';
+            const s = String(v);
+            if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+                return `"${s.replace(/"/g, '""')}"`;
+            }
+            return s;
+        }).join(','));
+    }
+    return lines.join('\n');
+}
+
+/**
+ * Trigger a CSV file download in the browser.
+ * @param {string} text - CSV text content
+ * @param {string} [filename='data.csv'] - Download filename
+ */
+export function downloadCSV(text, filename = 'data.csv') {
+    const blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}

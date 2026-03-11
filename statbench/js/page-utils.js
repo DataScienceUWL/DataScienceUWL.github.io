@@ -5,7 +5,7 @@
  * @module page-utils
  */
 
-import { parseCSV } from './csv-parser.js';
+import { parseCSV, rowsToCSV, downloadCSV } from './csv-parser.js';
 
 /**
  * Resolve the path to the data/ directory from any page.
@@ -331,10 +331,24 @@ export function initDataPanel(config) {
   const pasteArea = /** @type {HTMLTextAreaElement|null} */ (document.getElementById('paste-area'));
   const loadPastedBtn = document.getElementById('load-pasted');
   const clearBtn = document.getElementById('clear-btn');
+  const saveBtn = document.getElementById('save-btn');
   const fileInput = /** @type {HTMLInputElement|null} */ (document.getElementById('file-input'));
 
   /** @type {Array<{id:string,name:string,description:string,type:string,n:number}>} */
   let datasetIndex = [];
+
+  /** Track the current data source name for save filename. */
+  let currentSourceName = 'data';
+
+  /**
+   * Populate the edit textarea with CSV text from loaded data.
+   * @param {string} csvText
+   * @param {string} sourceName
+   */
+  function populateEditor(csvText, sourceName) {
+    if (pasteArea) pasteArea.value = csvText;
+    currentSourceName = sourceName.replace(/\.\w+$/, ''); // strip extension
+  }
 
   // ── Dataset dropdown ──
   if (datasetSelect) {
@@ -351,7 +365,14 @@ export function initDataPanel(config) {
       if (meta && datasetDesc) datasetDesc.textContent = meta.description;
 
       fetchDataset(id)
-        .then(ds => onDataset(ds, meta))
+        .then(ds => {
+          onDataset(ds, meta);
+          // Populate editor with dataset as CSV
+          if (ds.rows && ds.variables) {
+            const cols = ds.variables.map(/** @param {any} v */ v => v.name);
+            populateEditor(rowsToCSV(ds.rows, cols), meta?.name ?? id);
+          }
+        })
         .catch(() => announce('Failed to load dataset.'));
     });
   }
@@ -367,18 +388,36 @@ export function initDataPanel(config) {
     }
   });
 
-  // ── Paste ──
+  // ── Apply (paste/edit) ──
   if (loadPastedBtn && pasteArea) {
     loadPastedBtn.addEventListener('click', () => {
       const text = pasteArea.value.trim();
       if (!text) return;
-      handleText(text, 'Pasted data');
+      currentSourceName = 'edited_data';
+      handleText(text, 'Edited data');
     });
   }
 
   // ── File input ──
   if (fileInput) {
-    setupFileInput(fileInput, (text, filename) => handleText(text, filename));
+    setupFileInput(fileInput, (text, filename) => {
+      handleText(text, filename);
+      populateEditor(text, filename);
+    });
+  }
+
+  // ── Save ──
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      const text = pasteArea?.value?.trim();
+      if (!text) {
+        announce('No data to save.');
+        return;
+      }
+      const safeName = currentSourceName.replace(/[^a-zA-Z0-9_-]/g, '_');
+      downloadCSV(text, `${safeName}.csv`);
+      announce('Data saved.');
+    });
   }
 
   // ── Clear ──
@@ -391,5 +430,6 @@ export function initDataPanel(config) {
 
   return {
     getDatasetIndex: () => datasetIndex,
+    populateEditor,
   };
 }
