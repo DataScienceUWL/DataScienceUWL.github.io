@@ -93,6 +93,12 @@ let sampleMeans = [];
 let rng = null;
 let seed = Math.random().toString(36).slice(2, 10);
 
+// Cached chart params for checkbox toggle re-render
+/** @type {[number,number]|undefined} */
+let lastDomain;
+/** @type {number[]|undefined} */
+let lastThresholds;
+
 // ─── Initialize ───
 
 function initPopulation() {
@@ -150,17 +156,20 @@ function drawSamples(count) {
   }
   if (seTheoryEl) seTheoryEl.textContent = (popSigma / Math.sqrt(n)).toFixed(4);
 
-  // Compute shared domain + numBins so prev/current bin edges align exactly
+  // Compute shared domain + thresholds so prev/current bin edges align exactly
   const smLo = Math.min(...sampleMeans);
   const smHi = Math.max(...sampleMeans);
   const smPad = (smHi - smLo) * 0.05 || 0.5;
   const sharedDomain = /** @type {[number,number]} */ ([smLo - smPad, smHi + smPad]);
-  const sharedNumBins = undefined; // let Sturges decide from full data
 
   // Pre-compute bins for the full dataset to lock in bin edges
-  const { bins: fullBins } = computeBins(sampleMeans, { domain: sharedDomain, numBins: sharedNumBins });
+  const { bins: fullBins } = computeBins(sampleMeans, { domain: sharedDomain });
   // D3 thresholds are interior edges only (not domain endpoints)
   const thresholds = fullBins.slice(1).map(b => b.x0);
+
+  // Cache for checkbox toggle re-render
+  lastDomain = sharedDomain;
+  lastThresholds = thresholds;
 
   const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(
     sampleMeans, prevLength, count, computeBins,
@@ -188,26 +197,28 @@ function normalPdf(x, mu, sigma) {
 /**
  * Overlay a N(mu, se) curve on a histogram chart.
  * Scales the PDF so the curve's area matches the histogram (count × binWidth).
- * @param {import('../../js/types.js').ChartFrame} frame
+ * @param {SVGGElement} inner - the chart's .chart-inner <g> element
  * @param {number} mu
- * @param {number} se - standard error (σ/√n)
- * @param {import('d3-scale').ScaleLinear<number,number>} xScale
- * @param {import('d3-scale').ScaleLinear<number,number>} yScale - the histogram's actual yScale
+ * @param {number} se - empirical standard error
+ * @param {Function} xScale
+ * @param {Function} yScale - the histogram's actual yScale
  * @param {number} totalCount - number of sample means
  * @param {number} binWidth - histogram bin width
  */
-function overlayNormalCurve(frame, mu, se, xScale, yScale, totalCount, binWidth) {
-  const overlays = d3Selection.select(frame.inner).select('.overlays');
+function overlayNormalCurve(inner, mu, se, xScale, yScale, totalCount, binWidth) {
+  const overlays = d3Selection.select(inner).select('.overlays');
   overlays.selectAll('.normal-curve').remove();
 
   if (se <= 0 || totalCount < 10) return;
 
   const [xMin, xMax] = xScale.domain();
-  const steps = 120;
+  const steps = 150;
   const dx = (xMax - xMin) / steps;
 
-  // Scale PDF density → count so area under curve ≈ histogram area
+  // Scale PDF density → count: area under curve = totalCount * binWidth
   const scaleFactor = totalCount * binWidth;
+
+  /** @type {[number, number][]} */
   const points = [];
   for (let i = 0; i <= steps; i++) {
     const x = xMin + i * dx;
@@ -242,10 +253,6 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
   const n = sampleMeans.length;
   if (n === 0) return;
 
-  // Use empirical mean/SD for the curve — matches the actual data better
-  const empiricalMu = mean(sampleMeans);
-  const empiricalSE = sd(sampleMeans);
-
   // Use histogram when we have enough samples (or when normal overlay is on)
   const useHistogram = n > 200 || (showNormalCheckbox?.checked && n > 30);
 
@@ -272,7 +279,10 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
     });
     if (showNormalCheckbox?.checked && result?.bins?.length > 0) {
       const binWidth = result.bins[0].x1 - result.bins[0].x0;
-      overlayNormalCurve(result.frame, empiricalMu, empiricalSE, result.xScale, result.yScale, n, binWidth);
+      const empiricalMu = mean(sampleMeans);
+      const empiricalSE = sd(sampleMeans);
+      overlayNormalCurve(result.frame.inner, empiricalMu, empiricalSE,
+        result.xScale, result.yScale, n, binWidth);
     }
   }
 }
@@ -292,25 +302,27 @@ function displayInterpretation() {
   const xbarSd = sd(sampleMeans);
   const theorySE = popSigma / Math.sqrt(n);
 
-  const m = (s) => `<span class="math">${s}</span>`;
-
-  let html = `<p><strong>Sampling Distribution</strong> — ${k} samples of size ${m('n')} = ${n}</p>`;
-  html += `<p>Population: ${m('μ')} = ${popMu.toFixed(2)}, \u2003${m('σ')} = ${popSigma.toFixed(2)}</p>`;
-  html += `<p>Mean of ${m('x̄')}'s = ${xbarMean.toFixed(4)} \u2003(should be close to ${m('μ')} = ${popMu.toFixed(2)})</p>`;
-  html += `<p>SD of ${m('x̄')}'s = ${xbarSd.toFixed(4)} \u2003(theory: ${m('σ')}/√${m('n')} = ${theorySE.toFixed(4)})</p>`;
+  let html = `<p><strong>Sampling Distribution</strong> — ${k} samples of size \\(n = ${n}\\)</p>`;
+  html += `<p>Population: \\(\\mu = ${popMu.toFixed(2)}\\), \\(\\sigma = ${popSigma.toFixed(2)}\\)</p>`;
+  html += `<p>Mean of \\(\\bar{x}\\)'s \\(= ${xbarMean.toFixed(4)}\\) &ensp;(should be close to \\(\\mu = ${popMu.toFixed(2)}\\))</p>`;
+  html += `<p>SD of \\(\\bar{x}\\)'s \\(= ${xbarSd.toFixed(4)}\\) &ensp;(theory: \\(\\sigma/\\sqrt{n} = ${theorySE.toFixed(4)}\\))</p>`;
 
   if (k >= 100) {
-    html += `<p class="interpretation">The Central Limit Theorem says the sampling distribution of ${m('x̄')} is approximately normal with mean ${m('μ')} and standard deviation ${m('σ')}/√${m('n')}, regardless of the population shape — as long as ${m('n')} is large enough. `;
+    html += `<p class="interpretation">The Central Limit Theorem says the sampling distribution of \\(\\bar{x}\\) is approximately normal with mean \\(\\mu\\) and standard deviation \\(\\sigma/\\sqrt{n}\\), regardless of the population shape — as long as \\(n\\) is large enough. `;
     if (n >= 30) {
-      html += `With ${m('n')} = ${n}, notice how the distribution of sample means is roughly bell-shaped, even though the population may not be.</p>`;
+      html += `With \\(n = ${n}\\), notice how the distribution of sample means is roughly bell-shaped, even though the population may not be.</p>`;
     } else {
-      html += `With ${m('n')} = ${n}, the shape depends more on the population. Try increasing ${m('n')} to see the distribution become more normal.</p>`;
+      html += `With \\(n = ${n}\\), the shape depends more on the population. Try increasing \\(n\\) to see the distribution become more normal.</p>`;
     }
   } else {
     html += `<p class="hint">Draw more samples (at least 100) to see the pattern clearly.</p>`;
   }
 
   resultDiv.innerHTML = html;
+  // Tell MathJax to typeset the new content
+  if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+    MathJax.typesetPromise([resultDiv]);
+  }
 }
 
 // ─── Event listeners ───
@@ -326,7 +338,9 @@ popShapeSelect.addEventListener('change', () => initPopulation());
 
 if (showNormalCheckbox) {
   showNormalCheckbox.addEventListener('change', () => {
-    if (sampleMeans.length > 0) renderSamplingDist();
+    if (sampleMeans.length > 0) {
+      renderSamplingDist(-1, undefined, undefined, lastDomain, lastThresholds);
+    }
   });
 }
 
@@ -351,6 +365,8 @@ function resetSimulation() {
   sampleMeans = [];
   rng = null;
   seed = Math.random().toString(36).slice(2, 10);
+  lastDomain = undefined;
+  lastThresholds = undefined;
   if (samplingContainer) samplingContainer.innerHTML = '';
   if (samplingStats) samplingStats.hidden = true;
   if (resultDiv) resultDiv.innerHTML = '<p class="placeholder">Choose a population shape and click a button to draw samples.</p>';
