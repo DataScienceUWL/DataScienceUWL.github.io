@@ -217,7 +217,7 @@ clearBtn?.addEventListener('click', () => {
     .filter(v => isFinite(v));
 
   if (values.length > 0) {
-    if (urlInfo) urlInfo.textContent = `Loaded ${values.length} values from URL.`;
+    if (urlInfo) urlInfo.textContent = `${values.length} values from URL.`;
     // Switch to URL tab
     for (const t of document.querySelectorAll('[role="tab"]')) t.setAttribute('aria-selected', 'false');
     for (const p of document.querySelectorAll('[role="tabpanel"]')) /** @type {HTMLElement} */ (p).hidden = true;
@@ -247,7 +247,7 @@ function setData(values, varLabel, sourceName) {
 
   computeAndDisplay(values);
   renderCharts(values, varLabel);
-  announce(`Loaded ${values.length} values. Statistics and charts updated.`);
+  announce(`${values.length} values. Statistics and charts updated.`);
 }
 
 /**

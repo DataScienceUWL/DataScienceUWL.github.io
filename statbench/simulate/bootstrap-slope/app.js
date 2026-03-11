@@ -88,7 +88,7 @@ if (datasetSelect) {
         xData = xData.slice(0, minLen);
         yData = yData.slice(0, minLen);
         showDataLoaded();
-        announce(`Loaded dataset: ${ds.name}`);
+        announce(`${ds.name}: ${minLen} observations.`);
       })
       .catch(() => announce('Failed to load dataset.'));
   });

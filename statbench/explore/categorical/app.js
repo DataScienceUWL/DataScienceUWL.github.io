@@ -184,7 +184,7 @@ function showDataLoaded(sourceName) {
   if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) dataSummary.textContent = `${sourceName} (n = ${rawRows.length})`;
   updateDisplay();
-  announce(`Loaded ${rawRows.length} observations.`);
+  announce(`${rawRows.length} observations.`);
 }
 
 function updateDisplay() {

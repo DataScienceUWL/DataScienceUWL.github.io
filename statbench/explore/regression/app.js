@@ -78,7 +78,7 @@ async function loadDataset(id) {
     dataSummary.textContent = `${currentRows.length} observations, ${numericColumns.length} numeric variables`;
     dataPreview.hidden = false;
 
-    announce(`Loaded ${data.name}: ${currentRows.length} observations`);
+    announce(`${data.name}: ${currentRows.length} observations.`);
     updateChart();
 }
 
@@ -118,7 +118,7 @@ function loadPastedData() {
         dataSummary.textContent = `${currentRows.length} observations, ${numericColumns.length} numeric variables`;
         dataPreview.hidden = false;
 
-        announce(`Loaded pasted data: ${currentRows.length} observations`);
+        announce(`Pasted data: ${currentRows.length} observations.`);
         updateChart();
     } catch (e) {
         announce(`Error parsing data: ${e instanceof Error ? e.message : String(e)}`);

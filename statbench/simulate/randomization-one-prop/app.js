@@ -127,7 +127,7 @@ if (datasetSelect) {
           successSelector.hidden = false;
           applyDatasetOutcome();
         }
-        announce(`Loaded dataset: ${ds.name}`);
+        announce(`${ds.name}.`);
       })
       .catch(() => announce('Failed to load dataset.'));
   });
