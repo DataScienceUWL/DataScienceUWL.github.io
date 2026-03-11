@@ -9,7 +9,7 @@ import { mean, median, sd, quantile, iqr, range } from '../../js/stats.js';
 import { drawHistogram } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
-import { announce, initTabs, loadDatasetIndex, fetchDataset } from '../../js/page-utils.js';
+import { announce, initTabs, loadDatasetIndex, fetchDataset, setupFileInput } from '../../js/page-utils.js';
 
 // ── DOM elements ──────────────────────────────────────────────────────
 
@@ -203,32 +203,74 @@ clearBtn?.addEventListener('click', () => {
 
 // ── URL data ──────────────────────────────────────────────────────────
 
+// ── URL data (silent load, no visible tab) ───────────────────────────
+
 (function checkUrlData() {
   const params = new URLSearchParams(window.location.search);
   const dataParam = params.get('data');
   if (!dataParam) return;
 
-  const urlInfo = document.getElementById('url-data-info');
-
-  // Try to parse as comma-separated numbers
   const values = dataParam.split(',')
     .map(s => s.trim())
     .map(Number)
     .filter(v => isFinite(v));
 
   if (values.length > 0) {
-    if (urlInfo) urlInfo.textContent = `${values.length} values from URL.`;
-    // Switch to URL tab
-    for (const t of document.querySelectorAll('[role="tab"]')) t.setAttribute('aria-selected', 'false');
-    for (const p of document.querySelectorAll('[role="tabpanel"]')) /** @type {HTMLElement} */ (p).hidden = true;
-    document.getElementById('tab-url')?.setAttribute('aria-selected', 'true');
-    document.getElementById('panel-url')?.removeAttribute('hidden');
-
     loadedDataset = null;
     variableSelector.hidden = true;
     setData(values, params.get('label') || 'Value', 'URL data');
   }
 })();
+
+// ── File input ───────────────────────────────────────────────────────
+
+const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
+if (fileInput) {
+  setupFileInput(fileInput, (text, filename) => {
+    try {
+      const parsed = parseCSV(text);
+      const numIdx = parsed.types.indexOf('numeric');
+      if (numIdx < 0) {
+        announce('No numeric columns found in file.');
+        return;
+      }
+
+      const numericCols = parsed.headers.filter((h, i) => parsed.types[i] === 'numeric');
+      const colName = numericCols[0];
+      const values = parsed.data
+        .map(row => parseFloat(row[colName]))
+        .filter(v => isFinite(v));
+
+      if (numericCols.length > 1) {
+        varSelect.innerHTML = '';
+        for (const col of numericCols) {
+          const opt = document.createElement('option');
+          opt.value = col;
+          opt.textContent = col;
+          varSelect.appendChild(opt);
+        }
+        variableSelector.hidden = false;
+        loadedDataset = {
+          variables: numericCols.map(c => ({ name: c, label: c, type: 'numeric' })),
+          rows: parsed.data.map(row => {
+            const obj = {};
+            for (const col of numericCols) {
+              obj[col] = parseFloat(row[col]);
+            }
+            return obj;
+          }),
+        };
+      } else {
+        variableSelector.hidden = true;
+        loadedDataset = null;
+      }
+
+      setData(values, colName, filename);
+    } catch (e) {
+      announce(`Error reading file: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  });
+}
 
 // ── Core: set data, compute stats, render ─────────────────────────────
 

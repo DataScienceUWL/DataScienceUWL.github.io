@@ -47,6 +47,7 @@ export function sturgesBins(n) {
  * @returns {number[]} Threshold values snapped to k/n grid
  */
 export function snappedPropThresholds(sampleSize, domain, dataLength) {
+  if (sampleSize <= 0) return [];
   const step = 1 / sampleSize;
   const range = domain[1] - domain[0];
   // How many discrete values fit in the domain?
@@ -273,13 +274,17 @@ function renderDeltaBars(group, bins, xScale, yScale, innerHeight, prevCounts) {
     .attr('stroke-width', 1)
     .style('pointer-events', 'none');
 
-  // Fade out delta bars after 800ms
+  // Fade out delta bars after 800ms (skip animation if reduced motion)
   setTimeout(() => {
     deltaRects.each(function() {
       const el = d3Selection.select(this);
-      el.style('transition', 'opacity 0.5s');
-      el.style('opacity', '0');
-      setTimeout(() => el.remove(), 600);
+      if (prefersReducedMotion()) {
+        el.remove();
+      } else {
+        el.style('transition', 'opacity 0.5s');
+        el.style('opacity', '0');
+        setTimeout(() => el.remove(), 600);
+      }
     });
   }, 800);
 }

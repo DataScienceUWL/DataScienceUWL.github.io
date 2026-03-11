@@ -14,7 +14,7 @@ import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.j
 import { drawDotplot } from './dotplot.js';
 import { drawSpike } from './spike.js';
 // renderPValueAnnotation replaced by inline renderSimPills
-import { initPlayPause } from './page-utils.js';
+import { initPlayPause, setupFileInput } from './page-utils.js';
 /**
  * @typedef {object} SimConfig
  * @property {'bootstrap'|'randomization'} mode
@@ -243,11 +243,13 @@ export function initSimPage(config) {
 
   // ─── Data loading ───
 
-  if (loadPastedBtn && pasteArea) {
-    loadPastedBtn.addEventListener('click', () => {
-      const text = pasteArea.value.trim();
-      if (!text) return;
-      datasetContext = {};
+  /**
+   * Parse text data (CSV or plain numbers) and load it into the simulation.
+   * @param {string} text - Raw text content
+   */
+  function loadTextData(text) {
+    if (!text.trim()) return;
+    datasetContext = {};
 
       try {
         const parsed = parseCSV(text);
@@ -356,7 +358,21 @@ export function initSimPage(config) {
       if (values.length > 0) {
         data1 = values;
         showDataLoaded();
+      } else {
+        announce('No numeric data found. Check your data format.');
       }
+  }
+
+  if (loadPastedBtn && pasteArea) {
+    loadPastedBtn.addEventListener('click', () => {
+      loadTextData(pasteArea.value);
+    });
+  }
+
+  const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
+  if (fileInput) {
+    setupFileInput(fileInput, (text) => {
+      loadTextData(text);
     });
   }
 

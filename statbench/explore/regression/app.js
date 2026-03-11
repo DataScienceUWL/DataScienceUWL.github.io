@@ -7,7 +7,7 @@
 import { drawScatterplot, drawResidualPlot } from '../../js/scatterplot.js';
 import { linreg } from '../../js/stats.js';
 import { parseCSV } from '../../js/csv-parser.js';
-import { announce, initTabs, loadDatasetIndex, fetchDataset } from '../../js/page-utils.js';
+import { announce, initTabs, loadDatasetIndex, fetchDataset, setupFileInput } from '../../js/page-utils.js';
 
 // ── State ──────────────────────────────────────────────────────────────────
 
@@ -316,3 +316,46 @@ xVarSelect.addEventListener('change', updateChart);
 yVarSelect.addEventListener('change', updateChart);
 showLineCheckbox.addEventListener('change', updateChart);
 showResidualsCheckbox.addEventListener('change', updateChart);
+
+// ── File input ────────────────────────────────────────────────────────
+
+const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
+if (fileInput) {
+    setupFileInput(fileInput, (text, filename) => {
+        try {
+            const parsed = parseCSV(text);
+            const numericHeaders = parsed.headers.filter((h, i) => parsed.types[i] === 'numeric');
+
+            if (numericHeaders.length < 2) {
+                announce('Need at least two numeric columns.');
+                return;
+            }
+
+            currentRows = parsed.data.map(row => {
+                /** @type {Object<string,any>} */
+                const out = {};
+                for (const h of parsed.headers) {
+                    const val = row[h];
+                    if (numericHeaders.includes(h)) {
+                        out[h] = val === '' || val === 'NA' ? NaN : Number(val);
+                    } else {
+                        out[h] = val;
+                    }
+                }
+                return out;
+            });
+
+            numericColumns = numericHeaders;
+            populateVarSelectors();
+
+            datasetDesc.textContent = '';
+            dataSummary.textContent = `${currentRows.length} observations, ${numericColumns.length} numeric variables`;
+            dataPreview.hidden = false;
+
+            announce(`${filename}: ${currentRows.length} observations.`);
+            updateChart();
+        } catch (e) {
+            announce(`Error reading file: ${e instanceof Error ? e.message : String(e)}`);
+        }
+    });
+}

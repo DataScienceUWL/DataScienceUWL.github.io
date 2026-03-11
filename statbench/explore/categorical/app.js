@@ -6,7 +6,7 @@
 
 import { parseCSV } from '../../js/csv-parser.js';
 import { drawBarChart, computeGroupedFrequencies } from '../../js/barchart.js';
-import { announce, initTabs, loadDatasetIndex, fetchDataset } from '../../js/page-utils.js';
+import { announce, initTabs, loadDatasetIndex, fetchDataset, setupFileInput } from '../../js/page-utils.js';
 
 // ── DOM ──────────────────────────────────────────────────────────────
 
@@ -385,5 +385,34 @@ function renderChart(primaryValues, primaryLabel, secondaryValues, secondaryLabe
       animate: false,
     });
   }
+}
+
+// ── File input ────────────────────────────────────────────────────────
+
+const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
+if (fileInput) {
+  setupFileInput(fileInput, (text, filename) => {
+    try {
+      const parsed = parseCSV(text);
+      const catIndices = parsed.types
+        .map((t, i) => t === 'categorical' ? i : -1)
+        .filter(i => i >= 0);
+      if (catIndices.length < 1) {
+        announce('Need at least one categorical column.');
+        return;
+      }
+      catVarNames = catIndices.map(i => parsed.headers[i]);
+      rawRows = parsed.data.map(row => {
+        /** @type {Record<string, string>} */
+        const obj = {};
+        for (const col of catVarNames) obj[col] = String(row[col]);
+        return obj;
+      });
+      setupVariableSelectors(catVarNames);
+      showDataLoaded(filename);
+    } catch {
+      announce('Could not parse file.');
+    }
+  });
 }
 

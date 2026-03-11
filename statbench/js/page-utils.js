@@ -144,6 +144,36 @@ export async function fetchDataset(id) {
 }
 
 /**
+ * Wire up a file input to read CSV/TSV files via FileReader.
+ * Reads the file as text and passes it to the provided callback.
+ * @param {HTMLInputElement} fileInput - The file input element
+ * @param {(text: string, filename: string) => void} onLoad - Called with file text content
+ */
+export function setupFileInput(fileInput, onLoad) {
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    if (file.size > 10_000_000) {
+      announce('File too large (max 10 MB).');
+      fileInput.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        onLoad(reader.result, file.name);
+      }
+      fileInput.value = '';  // reset so same file can be re-selected
+    };
+    reader.onerror = () => {
+      announce(`Could not read file: ${file.name}`);
+      fileInput.value = '';
+    };
+    reader.readAsText(file);
+  });
+}
+
+/**
  * Create a play/pause button that auto-clicks the +1 generate button.
  * Inserts the button into the .generate-bar, before the .gen-label.
  * Stops automatically on reset or when the +1 button becomes disabled.

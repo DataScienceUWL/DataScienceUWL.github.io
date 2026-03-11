@@ -10,7 +10,8 @@ import { drawHistogram, computeBins, snappedPropThresholds } from '../../js/hist
 import { drawDotplot } from '../../js/dotplot.js';
 import { drawSpike } from '../../js/spike.js';
 import * as d3Select from 'd3-selection';
-import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, loadDatasetIndex, fetchDataset, computeHighlights } from '../../js/page-utils.js';
+import { parseCSV } from '../../js/csv-parser.js';
+import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, loadDatasetIndex, fetchDataset, computeHighlights, setupFileInput } from '../../js/page-utils.js';
 
 // DOM elements
 const chartContainer = document.getElementById('chart-container');
@@ -130,6 +131,39 @@ if (datasetSelect) {
         announce(`${ds.name}.`);
       })
       .catch(() => announce('Failed to load dataset.'));
+  });
+}
+
+// ── File input ────────────────────────────────────────────────────────
+
+const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
+if (fileInput) {
+  setupFileInput(fileInput, (text) => {
+    try {
+      const parsed = parseCSV(text);
+      const catIdx = parsed.types.indexOf('categorical');
+      if (catIdx < 0) {
+        announce('Need at least one categorical column.');
+        return;
+      }
+      const colName = parsed.headers[catIdx];
+      rawOutcomes = parsed.data.map(r => String(r[colName]));
+      const levels = [...new Set(rawOutcomes)];
+
+      if (successSelector && successOutcome) {
+        successOutcome.innerHTML = '';
+        for (const lev of levels) {
+          const opt = document.createElement('option');
+          opt.value = lev;
+          opt.textContent = lev;
+          successOutcome.appendChild(opt);
+        }
+        successSelector.hidden = false;
+        applyDatasetOutcome();
+      }
+    } catch {
+      announce('Could not parse file.');
+    }
   });
 }
 

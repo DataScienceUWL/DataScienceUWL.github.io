@@ -10,7 +10,7 @@ import { chisqStat } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import * as d3Select from 'd3-selection';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, loadDatasetIndex, fetchDataset, computeHighlights } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, loadDatasetIndex, fetchDataset, computeHighlights, setupFileInput } from '../../js/page-utils.js';
 
 // ─── DOM elements ───
 
@@ -74,6 +74,14 @@ if (loadPastedBtn && pasteArea) {
   loadPastedBtn.addEventListener('click', () => {
     const text = pasteArea.value.trim();
     if (!text) return;
+    datasetContext = {};
+    loadFromCSV(text);
+  });
+}
+
+const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
+if (fileInput) {
+  setupFileInput(fileInput, (text) => {
     datasetContext = {};
     loadFromCSV(text);
   });

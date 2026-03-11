@@ -260,17 +260,18 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
       .attr('stroke', '#000')
       .attr('stroke-width', 2)
       .attr('r', radius * 1.5);
+    const reduceMotion = prefersReducedMotion();
     setTimeout(() => {
       single.each(function(d) {
         const el = d3Selection.select(this);
-        el.style('transition', 'fill 0.4s, stroke 0.4s, r 0.3s, stroke-width 0.3s');
+        if (!reduceMotion) el.style('transition', 'fill 0.4s, stroke 0.4s, r 0.3s, stroke-width 0.3s');
         el.attr('fill', normalFill(d))
           .attr('stroke', normalFill(d))
           .attr('stroke-width', 1)
           .attr('r', radius);
-        setTimeout(() => el.style('transition', null), 500);
+        if (!reduceMotion) setTimeout(() => el.style('transition', null), 500);
       });
-    }, 800);
+    }, reduceMotion ? 0 : 800);
   } else if (highlightIndices && highlightIndices.size > 0) {
     const batch = circles.filter((d, i) => highlightIndices.has(i));
     batch
@@ -278,17 +279,18 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
       .attr('stroke', '#000')
       .attr('stroke-width', 1.5)
       .attr('r', radius * 1.2);
+    const reduceMotion = prefersReducedMotion();
     setTimeout(() => {
       batch.each(function(d) {
         const el = d3Selection.select(this);
-        el.style('transition', 'fill 0.4s, stroke 0.4s, stroke-width 0.3s, r 0.3s');
+        if (!reduceMotion) el.style('transition', 'fill 0.4s, stroke 0.4s, stroke-width 0.3s, r 0.3s');
         el.attr('fill', normalFill(d))
           .attr('stroke', normalFill(d))
           .attr('stroke-width', 1)
           .attr('r', radius);
-        setTimeout(() => el.style('transition', null), 500);
+        if (!reduceMotion) setTimeout(() => el.style('transition', null), 500);
       });
-    }, 800);
+    }, reduceMotion ? 0 : 800);
   }
 }
 

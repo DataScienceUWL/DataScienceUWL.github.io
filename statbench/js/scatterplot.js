@@ -66,14 +66,14 @@ export function drawScatterplot(container, xValues, yValues, options = {}) {
     margin,
   } = options;
 
-  const n = xValues.length;
+  const n = Math.min(xValues.length, yValues.length);
   const frame = createChart(container, { titleText, descText, id, margin });
 
-  // Compute domains with 5% padding
-  const xExtent = d3Array.extent(xValues);
-  const yExtent = d3Array.extent(yValues);
-  const xPad = (xExtent[1] - xExtent[0]) * 0.05 || 0.5;
-  const yPad = (yExtent[1] - yExtent[0]) * 0.05 || 0.5;
+  // Compute domains with 5% padding (guard against empty/NaN data)
+  const xExtent = d3Array.extent(xValues.slice(0, n));
+  const yExtent = d3Array.extent(yValues.slice(0, n));
+  const xPad = isFinite(xExtent[1] - xExtent[0]) ? (xExtent[1] - xExtent[0]) * 0.05 || 0.5 : 0.5;
+  const yPad = isFinite(yExtent[1] - yExtent[0]) ? (yExtent[1] - yExtent[0]) * 0.05 || 0.5 : 0.5;
 
   const xScale = d3Scale.scaleLinear()
     .domain([xExtent[0] - xPad, xExtent[1] + xPad])
@@ -123,7 +123,7 @@ export function drawScatterplot(container, xValues, yValues, options = {}) {
 
   // Data points
   const r = pointRadius(n);
-  const points = xValues.map((x, i) => ({ x, y: yValues[i], i }));
+  const points = xValues.slice(0, n).map((x, i) => ({ x, y: yValues[i], i }));
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
   dataGroup.selectAll('circle')

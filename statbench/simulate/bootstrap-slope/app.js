@@ -13,7 +13,7 @@ import * as d3Select from 'd3-selection';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { parseCSV } from '../../js/csv-parser.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, loadDatasetIndex, fetchDataset, computeHighlights } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, loadDatasetIndex, fetchDataset, computeHighlights, setupFileInput } from '../../js/page-utils.js';
 
 // ─── DOM ───
 
@@ -94,31 +94,38 @@ if (datasetSelect) {
   });
 }
 
-if (loadPastedBtn && pasteArea) {
-  loadPastedBtn.addEventListener('click', () => {
-    const text = pasteArea.value.trim();
-    if (!text) return;
-    datasetContext = {};
-    try {
-      const parsed = parseCSV(text);
-      const numIndices = parsed.types
-        .map((t, i) => t === 'numeric' ? i : -1)
-        .filter(i => i >= 0);
-      if (numIndices.length >= 2) {
-        xLabel = parsed.headers[numIndices[0]];
-        yLabel = parsed.headers[numIndices[1]];
-        xData = parsed.data.map(r => parseFloat(r[xLabel])).filter(v => isFinite(v));
-        yData = parsed.data.map(r => parseFloat(r[yLabel])).filter(v => isFinite(v));
-        const minLen = Math.min(xData.length, yData.length);
-        xData = xData.slice(0, minLen);
-        yData = yData.slice(0, minLen);
-        resetSimulation();
-        showDataLoaded();
-      }
-    } catch {
-      announce('Could not parse data.');
+/** @param {string} text */
+function loadTextData(text) {
+  if (!text.trim()) return;
+  datasetContext = {};
+  try {
+    const parsed = parseCSV(text);
+    const numIndices = parsed.types
+      .map((t, i) => t === 'numeric' ? i : -1)
+      .filter(i => i >= 0);
+    if (numIndices.length >= 2) {
+      xLabel = parsed.headers[numIndices[0]];
+      yLabel = parsed.headers[numIndices[1]];
+      xData = parsed.data.map(r => parseFloat(r[xLabel])).filter(v => isFinite(v));
+      yData = parsed.data.map(r => parseFloat(r[yLabel])).filter(v => isFinite(v));
+      const minLen = Math.min(xData.length, yData.length);
+      xData = xData.slice(0, minLen);
+      yData = yData.slice(0, minLen);
+      resetSimulation();
+      showDataLoaded();
     }
-  });
+  } catch {
+    announce('Could not parse data.');
+  }
+}
+
+if (loadPastedBtn && pasteArea) {
+  loadPastedBtn.addEventListener('click', () => loadTextData(pasteArea.value));
+}
+
+const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
+if (fileInput) {
+  setupFileInput(fileInput, (text) => loadTextData(text));
 }
 
 if (clearBtn) {
