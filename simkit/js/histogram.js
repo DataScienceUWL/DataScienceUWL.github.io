@@ -192,6 +192,7 @@ export function drawHistogram(container, values, options = {}) {
     frame,
     bins,
     xScale,
+    yScale,
     update: (newValues, opts = {}) => {
       const newNumBins = opts.numBins ?? numBins;
       const result = computeBins(newValues, { numBins: newNumBins });

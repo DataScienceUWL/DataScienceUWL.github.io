@@ -10,7 +10,6 @@ import { mean, sd } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { announce, initKeyboardShortcuts, initPlayPause, computeHighlights } from '../../js/page-utils.js';
-import * as d3Scale from 'd3-scale';
 import * as d3Shape from 'd3-shape';
 import * as d3Selection from 'd3-selection';
 
@@ -151,15 +150,23 @@ function drawSamples(count) {
   }
   if (seTheoryEl) seTheoryEl.textContent = (popSigma / Math.sqrt(n)).toFixed(4);
 
-  // Pass domain from full data so prev bin edges align with current bins
+  // Compute shared domain + numBins so prev/current bin edges align exactly
   const smLo = Math.min(...sampleMeans);
   const smHi = Math.max(...sampleMeans);
   const smPad = (smHi - smLo) * 0.05 || 0.5;
+  const sharedDomain = /** @type {[number,number]} */ ([smLo - smPad, smHi + smPad]);
+  const sharedNumBins = undefined; // let Sturges decide from full data
+
+  // Pre-compute bins for the full dataset to lock in bin edges
+  const { bins: fullBins } = computeBins(sampleMeans, { domain: sharedDomain, numBins: sharedNumBins });
+  // D3 thresholds are interior edges only (not domain endpoints)
+  const thresholds = fullBins.slice(1).map(b => b.x0);
+
   const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(
     sampleMeans, prevLength, count, computeBins,
-    { domain: [smLo - smPad, smHi + smPad] });
+    { domain: sharedDomain, thresholds });
 
-  renderSamplingDist(hlIndex, hlIndices, prevBinCounts);
+  renderSamplingDist(hlIndex, hlIndices, prevBinCounts, sharedDomain, thresholds);
   displayInterpretation();
 
   if (resetBtn) resetBtn.hidden = false;
@@ -185,11 +192,11 @@ function normalPdf(x, mu, sigma) {
  * @param {number} mu
  * @param {number} se - standard error (σ/√n)
  * @param {import('d3-scale').ScaleLinear<number,number>} xScale
+ * @param {import('d3-scale').ScaleLinear<number,number>} yScale - the histogram's actual yScale
  * @param {number} totalCount - number of sample means
  * @param {number} binWidth - histogram bin width
- * @param {number} maxBinCount - tallest bin's count (pre-nice)
  */
-function overlayNormalCurve(frame, mu, se, xScale, totalCount, binWidth, maxBinCount) {
+function overlayNormalCurve(frame, mu, se, xScale, yScale, totalCount, binWidth) {
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   overlays.selectAll('.normal-curve').remove();
 
@@ -207,12 +214,6 @@ function overlayNormalCurve(frame, mu, se, xScale, totalCount, binWidth, maxBinC
     const y = normalPdf(x, mu, se) * scaleFactor;
     points.push([x, y]);
   }
-
-  // Reconstruct the histogram's yScale: [0, nice(maxBinCount)] → [height, 0]
-  const yScale = d3Scale.scaleLinear()
-    .domain([0, maxBinCount])
-    .nice()
-    .range([frame.height, 0]);
 
   const line = d3Shape.line()
     .x(d => xScale(d[0]))
@@ -232,8 +233,10 @@ function overlayNormalCurve(frame, mu, se, xScale, totalCount, binWidth, maxBinC
  * @param {number} [highlightIndex]
  * @param {Set<number>} [highlightIndices]
  * @param {number[]} [prevBinCounts]
+ * @param {[number,number]} [domain]
+ * @param {number[]} [thresholds]
  */
-function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts) {
+function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts, domain, thresholds) {
   if (!samplingContainer) return;
   samplingContainer.innerHTML = '';
   const n = sampleMeans.length;
@@ -263,11 +266,12 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
       observedStat: popMu,
       animate: false,
       prevBinCounts,
+      domain,
+      thresholds,
     });
     if (showNormalCheckbox?.checked && result?.bins?.length > 0) {
       const binWidth = result.bins[0].x1 - result.bins[0].x0;
-      const maxBinCount = Math.max(...result.bins.map(b => b.length));
-      overlayNormalCurve(result.frame, popMu, se, result.xScale, n, binWidth, maxBinCount);
+      overlayNormalCurve(result.frame, popMu, se, result.xScale, result.yScale, n, binWidth);
     }
   }
 }
