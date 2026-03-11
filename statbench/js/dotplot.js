@@ -252,42 +252,42 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
   }
 
   // Highlight new dots, then revert after delay.
-  // Color highlights always apply; only CSS transitions are skipped for reduced-motion.
+  // Uses .style() (not .attr()) so CSS transitions fire on SVG presentation properties.
   if (highlightIndex >= 0) {
     const single = circles.filter((d, i) => i === highlightIndex);
     single
-      .attr('fill', HIGHLIGHT_FILL)
-      .attr('stroke', '#000')
-      .attr('stroke-width', 2)
-      .attr('r', radius * 1.5);
+      .style('fill', HIGHLIGHT_FILL)
+      .style('stroke', '#000')
+      .style('stroke-width', 2)
+      .style('r', `${radius * 1.5}px`);
     const reduceMotion = prefersReducedMotion();
     setTimeout(() => {
       single.each(function(d) {
         const el = d3Selection.select(this);
         if (!reduceMotion) el.style('transition', 'fill 0.4s, stroke 0.4s, r 0.3s, stroke-width 0.3s');
-        el.attr('fill', normalFill(d))
-          .attr('stroke', normalFill(d))
-          .attr('stroke-width', 1)
-          .attr('r', radius);
+        el.style('fill', normalFill(d))
+          .style('stroke', normalFill(d))
+          .style('stroke-width', 1)
+          .style('r', `${radius}px`);
         if (!reduceMotion) setTimeout(() => el.style('transition', null), 500);
       });
     }, reduceMotion ? 0 : 800);
   } else if (highlightIndices && highlightIndices.size > 0) {
     const batch = circles.filter((d, i) => highlightIndices.has(i));
     batch
-      .attr('fill', HIGHLIGHT_FILL)
-      .attr('stroke', '#000')
-      .attr('stroke-width', 1.5)
-      .attr('r', radius * 1.2);
+      .style('fill', HIGHLIGHT_FILL)
+      .style('stroke', '#000')
+      .style('stroke-width', 1.5)
+      .style('r', `${radius * 1.2}px`);
     const reduceMotion = prefersReducedMotion();
     setTimeout(() => {
       batch.each(function(d) {
         const el = d3Selection.select(this);
         if (!reduceMotion) el.style('transition', 'fill 0.4s, stroke 0.4s, stroke-width 0.3s, r 0.3s');
-        el.attr('fill', normalFill(d))
-          .attr('stroke', normalFill(d))
-          .attr('stroke-width', 1)
-          .attr('r', radius);
+        el.style('fill', normalFill(d))
+          .style('stroke', normalFill(d))
+          .style('stroke-width', 1)
+          .style('r', `${radius}px`);
         if (!reduceMotion) setTimeout(() => el.style('transition', null), 500);
       });
     }, reduceMotion ? 0 : 800);
