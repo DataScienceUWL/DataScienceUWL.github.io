@@ -34,6 +34,13 @@ let catVarNames = [];
 let rowVar = '';
 let colVar = '';
 
+/**
+ * When true, the chart's x-axis and fill are swapped relative to the table's
+ * row/column layout. The table structure stays the same; only the chart
+ * perspective and table color-tinting change.
+ */
+let chartFlipped = false;
+
 // ── Data loading ─────────────────────────────────────────────────────
 
 /**
@@ -118,23 +125,23 @@ function setupVariableSelectors(varNames) {
 
 rowVarSelect.addEventListener('change', () => {
   rowVar = rowVarSelect.value;
+  chartFlipped = false;
   updateDisplay();
 });
 
 colVarSelect.addEventListener('change', () => {
   colVar = colVarSelect.value;
+  chartFlipped = false;
   updateDisplay();
 });
 
 if (swapBtn) {
   swapBtn.addEventListener('click', () => {
-    const temp = rowVar;
-    rowVar = colVar;
-    colVar = temp;
-    rowVarSelect.value = rowVar;
-    colVarSelect.value = colVar;
+    chartFlipped = !chartFlipped;
     updateDisplay();
-    announce('Variables swapped.');
+    announce(chartFlipped
+      ? `Chart: ${colVar} on x-axis, colored by ${rowVar}.`
+      : `Chart: ${rowVar} on x-axis, colored by ${colVar}.`);
   });
 }
 
@@ -168,9 +175,19 @@ function updateDisplay() {
   } else {
     const rowValues = rawRows.map(r => r[rowVar]);
     const colValues = rawRows.map(r => r[colVar]);
+
+    // Table always uses rowVar → rows, colVar → columns
     renderTwoVarTable(rowValues, colValues);
-    renderChart(rowValues, rowVar, colValues, colVar);
-    applyTableColors();
+
+    // Chart may flip which variable is x-axis vs fill
+    const chartPrimary = chartFlipped ? colValues : rowValues;
+    const chartPrimaryLabel = chartFlipped ? colVar : rowVar;
+    const chartSecondary = chartFlipped ? rowValues : colValues;
+    const chartSecondaryLabel = chartFlipped ? rowVar : colVar;
+    renderChart(chartPrimary, chartPrimaryLabel, chartSecondary, chartSecondaryLabel);
+
+    // Color the table dimension that matches the chart's fill variable
+    applyTableColors(chartFlipped ? 'row' : 'col');
   }
 
   if (resultsSection) resultsSection.hidden = false;
@@ -364,50 +381,70 @@ function renderChart(primaryValues, primaryLabel, secondaryValues, secondaryLabe
 // ── Table ↔ Chart color link ─────────────────────────────────────────
 
 /**
- * Apply light color tints to contingency table columns matching the chart legend.
- * Uses the color map from the most recent grouped bar chart render.
+ * Apply light color tints to the contingency table dimension that matches
+ * the chart's fill/group variable.
+ *
+ * @param {'row'|'col'} dimension - Which table dimension to color.
+ *   'col' = the chart fill variable is the table's column variable (default).
+ *   'row' = the chart fill variable is the table's row variable (flipped).
  */
-function applyTableColors() {
+function applyTableColors(dimension) {
   if (!lastColorMap || !tableContainer) return;
   const { categories, colors } = lastColorMap;
 
   const table = tableContainer.querySelector('table');
   if (!table) return;
 
-  // Build a map: column header text → color
+  // Build a map: category text → color
   /** @type {Map<string, string>} */
   const colorByCategory = new Map();
   for (let i = 0; i < categories.length; i++) {
     colorByCategory.set(categories[i], colors[i % colors.length]);
   }
 
-  // Find which column index corresponds to each secondary category
-  const headerRow = table.querySelector('thead tr');
-  if (!headerRow) return;
-  const ths = headerRow.querySelectorAll('th');
+  if (dimension === 'col') {
+    // Color table columns (column variable = chart fill variable)
+    const headerRow = table.querySelector('thead tr');
+    if (!headerRow) return;
+    const ths = headerRow.querySelectorAll('th');
 
-  // Map column index → color (skip first th which is the row variable label)
-  /** @type {Map<number, string>} */
-  const colIndexToColor = new Map();
-  ths.forEach((th, i) => {
-    if (i === 0) return; // row variable label
-    const text = th.textContent?.trim() ?? '';
-    const color = colorByCategory.get(text);
-    if (color) {
-      colIndexToColor.set(i, color);
-      th.style.borderBottom = `3px solid ${color}`;
-    }
-  });
-
-  // Tint data cells with a very light background
-  const bodyRows = table.querySelectorAll('tbody tr, tfoot tr');
-  bodyRows.forEach(row => {
-    const cells = row.querySelectorAll('th, td');
-    cells.forEach((cell, i) => {
-      const color = colIndexToColor.get(i);
+    /** @type {Map<number, string>} */
+    const colIndexToColor = new Map();
+    ths.forEach((th, i) => {
+      if (i === 0) return; // row variable label
+      const text = th.textContent?.trim() ?? '';
+      const color = colorByCategory.get(text);
       if (color) {
-        /** @type {HTMLElement} */ (cell).style.backgroundColor = color + '18'; // ~9% opacity
+        colIndexToColor.set(i, color);
+        th.style.borderBottom = `3px solid ${color}`;
       }
     });
-  });
+
+    const bodyRows = table.querySelectorAll('tbody tr, tfoot tr');
+    bodyRows.forEach(row => {
+      const cells = row.querySelectorAll('th, td');
+      cells.forEach((cell, i) => {
+        const color = colIndexToColor.get(i);
+        if (color) {
+          /** @type {HTMLElement} */ (cell).style.backgroundColor = color + '18';
+        }
+      });
+    });
+  } else {
+    // Color table rows (row variable = chart fill variable)
+    const bodyRows = table.querySelectorAll('tbody tr');
+    bodyRows.forEach(row => {
+      const th = row.querySelector('th[scope="row"]');
+      if (!th) return;
+      const text = th.textContent?.trim() ?? '';
+      const color = colorByCategory.get(text);
+      if (!color) return;
+
+      // Color the row header with a solid border and tint all cells in this row
+      /** @type {HTMLElement} */ (th).style.borderLeft = `3px solid ${color}`;
+      row.querySelectorAll('td').forEach(cell => {
+        /** @type {HTMLElement} */ (cell).style.backgroundColor = color + '18';
+      });
+    });
+  }
 }
