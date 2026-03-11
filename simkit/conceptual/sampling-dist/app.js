@@ -179,16 +179,17 @@ function normalPdf(x, mu, sigma) {
 }
 
 /**
- * Overlay a N(mu, se) curve on a histogram/dotplot chart.
- * Scales the PDF so area under the curve matches the histogram area (count × binWidth).
+ * Overlay a N(mu, se) curve on a histogram chart.
+ * Scales the PDF so the curve's area matches the histogram (count × binWidth).
  * @param {import('../../js/types.js').ChartFrame} frame
  * @param {number} mu
  * @param {number} se - standard error (σ/√n)
  * @param {import('d3-scale').ScaleLinear<number,number>} xScale
  * @param {number} totalCount - number of sample means
- * @param {number} binWidth
+ * @param {number} binWidth - histogram bin width
+ * @param {number} maxBinCount - tallest bin's count (pre-nice)
  */
-function overlayNormalCurve(frame, mu, se, xScale, totalCount, binWidth) {
+function overlayNormalCurve(frame, mu, se, xScale, totalCount, binWidth, maxBinCount) {
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   overlays.selectAll('.normal-curve').remove();
 
@@ -198,8 +199,7 @@ function overlayNormalCurve(frame, mu, se, xScale, totalCount, binWidth) {
   const steps = 120;
   const dx = (xMax - xMin) / steps;
 
-  // Build yScale to match histogram: max bar height = maxCount, so
-  // scale PDF by totalCount * binWidth to convert density → count
+  // Scale PDF density → count so area under curve ≈ histogram area
   const scaleFactor = totalCount * binWidth;
   const points = [];
   for (let i = 0; i <= steps; i++) {
@@ -208,28 +208,10 @@ function overlayNormalCurve(frame, mu, se, xScale, totalCount, binWidth) {
     points.push([x, y]);
   }
 
-  // We need a yScale that matches the histogram's yScale.
-  // The histogram yScale maps [0, maxCount] → [height, 0].
-  // We'll infer it from the existing y-axis.
-  const maxCount = Math.max(...points.map(p => p[1]));
-  // Get actual histogram max from the axis domain — read from the SVG
-  const yAxisTicks = d3Selection.select(frame.inner).select('.y-axis');
-  let yMax = maxCount;
-  // Use the frame height and build a matching scale
-  // The histogram yScale domain is [0, niced max], range [height, 0]
-  // We need to match it. Best approach: find the tallest bar's count from the data.
-  // Since we rebuild every render, we can compute from bins. But we don't have bins here.
-  // Instead, take the max y tick value from the axis.
-  const tickTexts = yAxisTicks.selectAll('.tick text');
-  if (!tickTexts.empty()) {
-    tickTexts.each(function () {
-      const v = parseFloat(/** @type {SVGTextElement} */ (this).textContent || '0');
-      if (v > yMax) yMax = v;
-    });
-  }
-
+  // Reconstruct the histogram's yScale: [0, nice(maxBinCount)] → [height, 0]
   const yScale = d3Scale.scaleLinear()
-    .domain([0, yMax])
+    .domain([0, maxBinCount])
+    .nice()
     .range([frame.height, 0]);
 
   const line = d3Shape.line()
@@ -260,8 +242,11 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
   const sampleN = parseInt(sampleSizeInput.value, 10) || 30;
   const se = popSigma / Math.sqrt(sampleN);
 
-  if (n <= 200) {
-    const result = drawDotplot(samplingContainer, sampleMeans, {
+  // Use histogram when we have enough samples (or when normal overlay is on)
+  const useHistogram = n > 200 || (showNormalCheckbox?.checked && n > 30);
+
+  if (!useHistogram) {
+    drawDotplot(samplingContainer, sampleMeans, {
       id: 'sampling-dist',
       xLabel: 'Sample Mean (x̄)',
       titleText: 'Sampling Distribution of x̄',
@@ -270,13 +255,6 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
       highlightIndex,
       highlightIndices,
     });
-    // Normal overlay on dotplot — approximate binWidth from dotplot range
-    if (showNormalCheckbox?.checked && result?.frame) {
-      const smLo = Math.min(...sampleMeans);
-      const smHi = Math.max(...sampleMeans);
-      const approxBinWidth = (smHi - smLo) / Math.max(10, Math.ceil(Math.sqrt(n)));
-      overlayNormalCurve(result.frame, popMu, se, result.xScale, n, approxBinWidth || 1);
-    }
   } else {
     const result = drawHistogram(samplingContainer, sampleMeans, {
       id: 'sampling-dist',
@@ -286,9 +264,10 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
       animate: false,
       prevBinCounts,
     });
-    if (showNormalCheckbox?.checked && result?.frame) {
-      const binWidth = result.bins.length > 0 ? result.bins[0].x1 - result.bins[0].x0 : 1;
-      overlayNormalCurve(result.frame, popMu, se, result.xScale, n, binWidth);
+    if (showNormalCheckbox?.checked && result?.bins?.length > 0) {
+      const binWidth = result.bins[0].x1 - result.bins[0].x0;
+      const maxBinCount = Math.max(...result.bins.map(b => b.length));
+      overlayNormalCurve(result.frame, popMu, se, result.xScale, n, binWidth, maxBinCount);
     }
   }
 }
