@@ -41,7 +41,7 @@ const statRange = document.getElementById('stat-range');
 initTabs();
 
 // Bin count change re-renders histogram only
-binCountInput?.addEventListener('change', () => {
+binCountInput?.addEventListener('input', () => {
   if (currentValues.length === 0) return;
   const varLabel = dataSummary?.textContent?.split(' - ')[1]?.split(' (')[0] || 'Value';
   histogramContainer.innerHTML = '';
