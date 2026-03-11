@@ -261,10 +261,13 @@ export function drawBoxplot(container, data, options = {}) {
       })
       .on('mouseleave', () => hideTooltip(frame.inner));
 
-    // Whisker cap hit zones (wider invisible rects for easy hover)
-    // Only show special labels when outliers are present
-    if (showOutliers && (s.mildOutliers.length > 0 || s.extremeOutliers.length > 0)) {
-      const capHitW = 16; // viewBox units wide
+    // Whisker cap hit zones — label depends on whether outliers exist on that side
+    if (showOutliers) {
+      const hasLowOutliers = s.mildOutliers.some(d => d < s.q1) || s.extremeOutliers.some(d => d < s.q1);
+      const hasHighOutliers = s.mildOutliers.some(d => d > s.q3) || s.extremeOutliers.some(d => d > s.q3);
+      const capHitW = 16;
+
+      const loLabel = hasLowOutliers ? ['Smallest non-outlier', String(wLo)] : [`Min = ${wLo}`];
       g.append('rect')
         .attr('class', 'cap-hit-lo')
         .attr('x', xScale(wLo) - capHitW / 2)
@@ -274,10 +277,11 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('fill', 'transparent')
         .style('cursor', 'pointer')
         .on('mouseenter', () => {
-          showTooltip(frame.inner, ['Smallest non-outlier', String(wLo)],
-            xScale(wLo), capY);
+          showTooltip(frame.inner, loLabel, xScale(wLo), capY);
         })
         .on('mouseleave', () => hideTooltip(frame.inner));
+
+      const hiLabel = hasHighOutliers ? ['Largest non-outlier', String(wHi)] : [`Max = ${wHi}`];
       g.append('rect')
         .attr('class', 'cap-hit-hi')
         .attr('x', xScale(wHi) - capHitW / 2)
@@ -287,8 +291,7 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('fill', 'transparent')
         .style('cursor', 'pointer')
         .on('mouseenter', () => {
-          showTooltip(frame.inner, ['Largest non-outlier', String(wHi)],
-            xScale(wHi), capY);
+          showTooltip(frame.inner, hiLabel, xScale(wHi), capY);
         })
         .on('mouseleave', () => hideTooltip(frame.inner));
     }
