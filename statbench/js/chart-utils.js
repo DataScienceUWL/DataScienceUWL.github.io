@@ -425,3 +425,31 @@ export function hideTooltip(innerNode) {
   const g = d3Selection.select(innerNode).select('.chart-tooltip');
   g.attr('visibility', 'hidden').selectAll('*').remove();
 }
+
+/**
+ * Attach tooltip show/hide to a D3 selection for both mouse and keyboard.
+ * Makes elements focusable (tabindex=0) and wires mouseenter/mouseleave
+ * plus focusin/focusout so keyboard users can trigger tooltips.
+ *
+ * @param {d3Selection.Selection} selection - D3 selection of elements
+ * @param {SVGGElement} innerNode - The chart-inner <g> node (frame.inner)
+ * @param {(d: any, i: number) => { lines: string[], x: number, y: number }} tooltipFn
+ *   Callback that returns tooltip content and position for each datum.
+ */
+export function attachTooltip(selection, innerNode, tooltipFn) {
+  selection
+    .attr('tabindex', '0')
+    .style('outline', 'none')
+    .on('mouseenter', function(event, d) {
+      const i = selection.nodes().indexOf(this);
+      const { lines, x, y } = tooltipFn(d, i);
+      showTooltip(innerNode, lines, x, y);
+    })
+    .on('mouseleave', () => hideTooltip(innerNode))
+    .on('focusin', function(event, d) {
+      const i = selection.nodes().indexOf(this);
+      const { lines, x, y } = tooltipFn(d, i);
+      showTooltip(innerNode, lines, x, y);
+    })
+    .on('focusout', () => hideTooltip(innerNode));
+}

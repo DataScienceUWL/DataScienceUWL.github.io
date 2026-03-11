@@ -11,7 +11,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import { quantile } from './stats.js';
-import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip } from './chart-utils.js';
+import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip } from './chart-utils.js';
 
 /** IMS blue for strokes and fills. */
 const IMS_BLUE = '#569BBD';
@@ -244,22 +244,28 @@ export function drawBoxplot(container, data, options = {}) {
     const dataMin = d3Array.min(vals);
     const dataMax = d3Array.max(vals);
 
-    // Invisible hit rect spanning full whisker-to-whisker range for easy hover
-    g.append('rect')
+    // Helper: attach mouse + keyboard tooltip to a single element
+    const tipEl = (el, lines, tx, ty) => {
+      el.attr('tabindex', '0').style('outline', 'none')
+        .style('cursor', 'pointer')
+        .on('mouseenter', () => showTooltip(frame.inner, lines, tx, ty))
+        .on('mouseleave', () => hideTooltip(frame.inner))
+        .on('focusin', () => showTooltip(frame.inner, lines, tx, ty))
+        .on('focusout', () => hideTooltip(frame.inner));
+    };
+
+    // Invisible hit rect spanning full whisker-to-whisker range for easy hover/focus
+    const hitRect = g.append('rect')
       .attr('class', 'boxplot-hit')
       .attr('x', xScale(wLo))
       .attr('y', bandY)
       .attr('width', xScale(wHi) - xScale(wLo))
       .attr('height', bandH)
       .attr('fill', 'transparent')
-      .style('cursor', 'pointer')
-      .on('mouseenter', () => {
-        showTooltip(frame.inner,
-          [`Min = ${dataMin}`, `Q1 = ${s.q1}`, `Median = ${s.median}`,
-           `Q3 = ${s.q3}`, `Max = ${dataMax}`],
-          (xScale(s.q1) + xScale(s.q3)) / 2, boxY);
-      })
-      .on('mouseleave', () => hideTooltip(frame.inner));
+      .attr('aria-label', `Five-number summary: Min ${dataMin}, Q1 ${s.q1}, Median ${s.median}, Q3 ${s.q3}, Max ${dataMax}`);
+    tipEl(hitRect,
+      [`Min = ${dataMin}`, `Q1 = ${s.q1}`, `Median = ${s.median}`, `Q3 = ${s.q3}`, `Max = ${dataMax}`],
+      (xScale(s.q1) + xScale(s.q3)) / 2, boxY);
 
     // Whisker cap hit zones — label depends on whether outliers exist on that side
     if (showOutliers) {
@@ -268,32 +274,26 @@ export function drawBoxplot(container, data, options = {}) {
       const capHitW = 16;
 
       const loLabel = hasLowOutliers ? ['Smallest non-outlier', String(wLo)] : [`Min = ${wLo}`];
-      g.append('rect')
+      const capLo = g.append('rect')
         .attr('class', 'cap-hit-lo')
         .attr('x', xScale(wLo) - capHitW / 2)
         .attr('y', bandY)
         .attr('width', capHitW)
         .attr('height', bandH)
         .attr('fill', 'transparent')
-        .style('cursor', 'pointer')
-        .on('mouseenter', () => {
-          showTooltip(frame.inner, loLabel, xScale(wLo), capY);
-        })
-        .on('mouseleave', () => hideTooltip(frame.inner));
+        .attr('aria-label', loLabel.join(': '));
+      tipEl(capLo, loLabel, xScale(wLo), capY);
 
       const hiLabel = hasHighOutliers ? ['Largest non-outlier', String(wHi)] : [`Max = ${wHi}`];
-      g.append('rect')
+      const capHi = g.append('rect')
         .attr('class', 'cap-hit-hi')
         .attr('x', xScale(wHi) - capHitW / 2)
         .attr('y', bandY)
         .attr('width', capHitW)
         .attr('height', bandH)
         .attr('fill', 'transparent')
-        .style('cursor', 'pointer')
-        .on('mouseenter', () => {
-          showTooltip(frame.inner, hiLabel, xScale(wHi), capY);
-        })
-        .on('mouseleave', () => hideTooltip(frame.inner));
+        .attr('aria-label', hiLabel.join(': '));
+      tipEl(capHi, hiLabel, xScale(wHi), capY);
     }
 
     if (showOutliers) {
@@ -328,21 +328,20 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('role', 'listitem')
         .attr('aria-label', d => `Extreme outlier: ${d}`);
 
-      // Invisible wider hit circles on top of each outlier for easier hover
-      g.selectAll('.outlier-hit')
+      // Invisible wider hit circles on top of each outlier for easier hover/focus
+      const outlierHits = g.selectAll('.outlier-hit')
         .data(allOutlierValues)
         .join('circle')
         .attr('class', 'outlier-hit')
         .attr('cx', d => xScale(d))
         .attr('cy', outlierCy)
         .attr('r', Math.max(OUTLIER_RADIUS * 3, 8))
-        .attr('fill', 'transparent')
-        .style('cursor', 'pointer')
-        .on('mouseenter', function(event, d) {
-          showTooltip(frame.inner, [`Outlier: ${d}`],
-            xScale(d), outlierCy - OUTLIER_RADIUS * 3);
-        })
-        .on('mouseleave', () => hideTooltip(frame.inner));
+        .attr('fill', 'transparent');
+      attachTooltip(outlierHits, frame.inner, (d) => ({
+        lines: [`Outlier: ${d}`],
+        x: xScale(d),
+        y: outlierCy - OUTLIER_RADIUS * 3,
+      }));
     }
   }
 

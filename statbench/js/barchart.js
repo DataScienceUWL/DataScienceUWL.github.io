@@ -11,7 +11,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip } from './chart-utils.js';
+import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip } from './chart-utils.js';
 
 /** Bar stroke (white separator). */
 const BAR_STROKE = '#FFFFFF';
@@ -209,16 +209,18 @@ function drawSimpleBars(frame, values, mode, opts) {
         ? `${c}: ${(count / total).toFixed(3)}`
         : `${c}: ${count}`;
     })
-    .on('mouseenter', function(event, c) {
-      const count = counts.get(c) ?? 0;
-      const val = mode === 'relative' ? count / total : count;
-      const label = mode === 'relative'
-        ? `${c}: ${(count / total).toFixed(3)}`
-        : `${c}: ${count}`;
-      const cx = /** @type {number} */ (xScale(c)) + xScale.bandwidth() / 2;
-      showTooltip(frame.inner, [label], cx, yScale(val));
-    })
-    .on('mouseleave', () => hideTooltip(frame.inner));
+  attachTooltip(bars, frame.inner, (c) => {
+    const count = counts.get(c) ?? 0;
+    const val = mode === 'relative' ? count / total : count;
+    const label = mode === 'relative'
+      ? `${c}: ${(count / total).toFixed(3)}`
+      : `${c}: ${count}`;
+    return {
+      lines: [label],
+      x: /** @type {number} */ (xScale(c)) + xScale.bandwidth() / 2,
+      y: yScale(val),
+    };
+  });
 
   if (opts.shouldAnimate) {
     bars
@@ -244,7 +246,11 @@ function drawSimpleBars(frame, values, mode, opts) {
  */
 function drawLegend(frame, categories, colors, title) {
   const overlays = d3Selection.select(frame.inner).select('.overlays');
-  const g = overlays.append('g').attr('class', 'chart-legend');
+  const legendLabel = title ? `Legend: ${title}` : 'Legend';
+  const g = overlays.append('g')
+    .attr('class', 'chart-legend')
+    .attr('role', 'img')
+    .attr('aria-label', `${legendLabel} — ${categories.join(', ')}`);
 
   const swatchSize = 12;
   const lineHeight = 18;
@@ -360,6 +366,8 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
         const count = table.get(p)?.get(s) ?? 0;
         const barX = /** @type {number} */ (xSubScale(s));
         const barY = yScale(count);
+        const tipX = gx + barX + xSubScale.bandwidth() / 2;
+        const tipLines = [`${s}: ${count}`];
         g.append('rect')
           .attr('x', barX)
           .attr('y', barY)
@@ -370,10 +378,12 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
           .attr('stroke-width', 1)
           .attr('role', 'listitem')
           .attr('aria-label', `${p}, ${s}: ${count}`)
-          .on('mouseenter', () => {
-            showTooltip(frame.inner, [`${s}: ${count}`], gx + barX + xSubScale.bandwidth() / 2, barY);
-          })
-          .on('mouseleave', () => hideTooltip(frame.inner));
+          .attr('tabindex', '0')
+          .style('outline', 'none')
+          .on('mouseenter', () => showTooltip(frame.inner, tipLines, tipX, barY))
+          .on('mouseleave', () => hideTooltip(frame.inner))
+          .on('focusin', () => showTooltip(frame.inner, tipLines, tipX, barY))
+          .on('focusout', () => hideTooltip(frame.inner));
       }
     }
   } else {
@@ -414,10 +424,12 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
           .attr('stroke-width', 1)
           .attr('role', 'listitem')
           .attr('aria-label', `${p}, ${s}: ${count}`)
-          .on('mouseenter', () => {
-            showTooltip(frame.inner, [label], barMidX, barY);
-          })
-          .on('mouseleave', () => hideTooltip(frame.inner));
+          .attr('tabindex', '0')
+          .style('outline', 'none')
+          .on('mouseenter', () => showTooltip(frame.inner, [label], barMidX, barY))
+          .on('mouseleave', () => hideTooltip(frame.inner))
+          .on('focusin', () => showTooltip(frame.inner, [label], barMidX, barY))
+          .on('focusout', () => hideTooltip(frame.inner));
 
         cumulative += count;
       }

@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip } from './chart-utils.js';
+import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
 
 /** Default bar fill (IMS blue at 50% opacity) — used when no isTail predicate. */
 const BAR_FILL = '#569BBD80';
@@ -352,17 +352,13 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, i
       .attr('height', d => innerHeight - yScale(d.length));
   }
 
-  // Hover tooltip: show bin range and frequency
+  // Hover/focus tooltip: show bin range and frequency
   if (innerNode) {
-    bars
-      .on('mouseenter', function(event, d) {
-        const cx = (xScale(d.x0) + xScale(d.x1)) / 2;
-        const cy = yScale(d.length);
-        showTooltip(innerNode,
-          [`${formatTick(d.x0)} to ${formatTick(d.x1)}`, `Frequency: ${d.length}`],
-          cx, cy);
-      })
-      .on('mouseleave', () => hideTooltip(innerNode));
+    attachTooltip(bars, innerNode, (d) => ({
+      lines: [`${formatTick(d.x0)} to ${formatTick(d.x1)}`, `Frequency: ${d.length}`],
+      x: (xScale(d.x0) + xScale(d.x1)) / 2,
+      y: yScale(d.length),
+    }));
   }
 
   // Click bar → show count label above it

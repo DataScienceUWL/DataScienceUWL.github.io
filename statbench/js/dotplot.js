@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip } from './chart-utils.js';
+import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
 
 /** Default dot fill (non-extreme). */
 const DOT_FILL = '#808080';
@@ -246,15 +246,13 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
     .attr('role', 'listitem')
     .attr('aria-label', d => String(d.value));
 
-  // Hover tooltip: show original value
+  // Hover/focus tooltip: show original value
   if (innerNode) {
-    circles
-      .on('mouseenter', function(event, d) {
-        const cx = xScale(d.binCenter);
-        const cy = innerHeight - (d.stackIndex + 0.5) * radius * 2 - radius;
-        showTooltip(innerNode, [String(d.value)], cx, cy);
-      })
-      .on('mouseleave', () => hideTooltip(innerNode));
+    attachTooltip(circles, innerNode, (d) => ({
+      lines: [String(d.value)],
+      x: xScale(d.binCenter),
+      y: innerHeight - (d.stackIndex + 0.5) * radius * 2 - radius,
+    }));
   }
 
   if (shouldAnimate) {
