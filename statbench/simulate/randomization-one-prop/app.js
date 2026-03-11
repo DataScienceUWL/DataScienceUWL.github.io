@@ -46,25 +46,28 @@ initPlayPause(genBtns, resetBtn);
 
 let chartType = 'auto';
 const chartFigure = chartContainer?.closest('figure');
-/** @type {HTMLDivElement|null} */
-let toggleDiv = null;
+/** @type {HTMLFieldSetElement|null} */
+let toggleFieldset = null;
 if (chartFigure) {
-  toggleDiv = document.createElement('div');
-  toggleDiv.className = 'chart-type-toggle';
-  toggleDiv.setAttribute('role', 'group');
-  toggleDiv.setAttribute('aria-label', 'Chart type');
-  toggleDiv.innerHTML = `
-    <button type="button" class="btn-sm" data-chart="dotplot" aria-pressed="true">Dotplot</button>
-    <button type="button" class="btn-sm" data-chart="spike" aria-pressed="false">Spike</button>
-    <button type="button" class="btn-sm" data-chart="histogram" aria-pressed="false">Histogram</button>`;
-  chartFigure.insertBefore(toggleDiv, chartContainer);
-  toggleDiv.addEventListener('click', (e) => {
-    const btn = /** @type {HTMLButtonElement} */ (e.target);
-    if (!btn.dataset.chart) return;
-    chartType = btn.dataset.chart;
-    for (const b of toggleDiv.querySelectorAll('button')) {
-      b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
-    }
+  toggleFieldset = document.createElement('fieldset');
+  toggleFieldset.className = 'chart-type-toggle';
+  const legend = document.createElement('legend');
+  legend.className = 'sr-only';
+  legend.textContent = 'Chart type';
+  toggleFieldset.appendChild(legend);
+  toggleFieldset.insertAdjacentHTML('beforeend', [
+    ['dotplot', 'Dotplot'], ['spike', 'Spike'], ['histogram', 'Histogram'],
+  ].map(([v, l]) =>
+    `<label class="chart-toggle-option">
+      <input type="radio" name="chart-type" value="${v}"${v === 'dotplot' ? ' checked' : ''}>
+      <span>${l}</span>
+    </label>`
+  ).join(''));
+  chartFigure.insertBefore(toggleFieldset, chartContainer);
+  toggleFieldset.addEventListener('change', (e) => {
+    const radio = /** @type {HTMLInputElement} */ (e.target);
+    if (!radio.value) return;
+    chartType = radio.value;
     if (allStats.length > 0) {
       const direction = getDirection();
       renderChart(allStats, observedPHat, direction);
@@ -349,10 +352,10 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
     activeChart = n <= 200 ? 'dotplot' : 'spike';
   }
   // Sync toggle
-  if (toggleDiv) {
-    for (const b of toggleDiv.querySelectorAll('button')) {
-      b.setAttribute('aria-pressed', String(b.dataset.chart === activeChart));
-    }
+  if (toggleFieldset) {
+    const radio = /** @type {HTMLInputElement|null} */ (
+      toggleFieldset.querySelector(`input[value="${activeChart}"]`));
+    if (radio) radio.checked = true;
   }
 
   /** @type {import('../../js/chart-utils.js').ChartFrame} */

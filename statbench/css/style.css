@@ -822,32 +822,58 @@ input[aria-invalid="true"] {
   gap: 0;
   justify-content: flex-end;
   margin-bottom: 0.25rem;
+  border: none;
+  padding: 0;
 }
 
-.chart-type-toggle button {
+.chart-type-toggle legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.chart-toggle-option {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
   border: 1px solid var(--color-border);
   background: var(--color-bg);
-  cursor: pointer;
-  font-size: 0.7rem;
-  padding: 0.15rem 0.5rem;
+  user-select: none;
 }
 
-.chart-type-toggle button:first-child {
+.chart-toggle-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.chart-toggle-option:first-of-type {
   border-radius: 4px 0 0 4px;
 }
 
-.chart-type-toggle button:not(:first-child) {
+.chart-toggle-option:not(:first-of-type) {
   border-left: none;
 }
 
-.chart-type-toggle button:last-child {
+.chart-toggle-option:last-of-type {
   border-radius: 0 4px 4px 0;
 }
 
-.chart-type-toggle button[aria-pressed="true"] {
+.chart-toggle-option:has(input:checked) {
   background: var(--color-primary);
   color: #fff;
   border-color: var(--color-primary);
+}
+
+.chart-toggle-option:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  z-index: 1;
 }
 
 #chart-container {

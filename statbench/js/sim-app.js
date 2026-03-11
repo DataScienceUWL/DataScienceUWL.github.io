@@ -138,27 +138,24 @@ export function initSimPage(config) {
   /** @type {[number,number]|null} */
   let preSimDomain = null;
 
-  // Chart type toggle (Dotplot / Spike / Histogram)
+  // Chart type toggle (Dotplot / Spike / Histogram) — radio-based segmented control
   const chartFigure = chartContainer?.closest('figure');
-  /** @type {HTMLDivElement|null} */
-  let toggleDiv = null;
+  /** @type {HTMLFieldSetElement|null} */
+  let toggleFieldset = null;
   if (chartFigure) {
-    toggleDiv = document.createElement('div');
-    toggleDiv.className = 'chart-type-toggle';
-    toggleDiv.setAttribute('role', 'group');
-    toggleDiv.setAttribute('aria-label', 'Chart type');
-    // Initial buttons — will be rebuilt when we know if data is discrete
-    toggleDiv.innerHTML = `
-      <button type="button" class="btn-sm" data-chart="dotplot" aria-pressed="true">Dotplot</button>
-      <button type="button" class="btn-sm" data-chart="histogram" aria-pressed="false">Histogram</button>`;
-    chartFigure.insertBefore(toggleDiv, chartContainer);
-    toggleDiv.addEventListener('click', (e) => {
-      const btn = /** @type {HTMLButtonElement} */ (e.target);
-      if (!btn.dataset.chart) return;
-      chartType = btn.dataset.chart;
-      for (const b of toggleDiv.querySelectorAll('button')) {
-        b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
-      }
+    toggleFieldset = document.createElement('fieldset');
+    toggleFieldset.className = 'chart-type-toggle';
+    const legend = document.createElement('legend');
+    legend.className = 'sr-only';
+    legend.textContent = 'Chart type';
+    toggleFieldset.appendChild(legend);
+    // Initial options — rebuilt when we know if data is discrete
+    toggleFieldset.innerHTML += buildToggleHTML(['dotplot', 'histogram'], 'dotplot');
+    chartFigure.insertBefore(toggleFieldset, chartContainer);
+    toggleFieldset.addEventListener('change', (e) => {
+      const radio = /** @type {HTMLInputElement} */ (e.target);
+      if (!radio.value) return;
+      chartType = radio.value;
       // Re-render if we have data
       if (allStats.length > 0) {
         lastStatIndex = -1;
@@ -170,30 +167,38 @@ export function initSimPage(config) {
   }
 
   /**
-   * Rebuild the chart toggle buttons based on whether data is discrete.
+   * Build HTML for chart type radio options.
+   * @param {string[]} types - e.g. ['dotplot', 'histogram'] or ['dotplot', 'spike', 'histogram']
+   * @param {string} selected - Currently selected type
+   * @returns {string}
+   */
+  function buildToggleHTML(types, selected) {
+    const labels = { dotplot: 'Dotplot', spike: 'Spike', histogram: 'Histogram' };
+    return types.map(t =>
+      `<label class="chart-toggle-option">
+        <input type="radio" name="chart-type" value="${t}"${t === selected ? ' checked' : ''}>
+        <span>${labels[t] ?? t}</span>
+      </label>`
+    ).join('');
+  }
+
+  /**
+   * Rebuild the chart toggle options based on whether data is discrete.
    * @param {boolean} isDiscrete
    */
   function updateToggleButtons(isDiscrete) {
-    if (!toggleDiv) return;
+    if (!toggleFieldset) return;
     const currentType = chartType;
-    if (isDiscrete) {
-      toggleDiv.innerHTML = `
-        <button type="button" class="btn-sm" data-chart="dotplot" aria-pressed="false">Dotplot</button>
-        <button type="button" class="btn-sm" data-chart="spike" aria-pressed="false">Spike</button>
-        <button type="button" class="btn-sm" data-chart="histogram" aria-pressed="false">Histogram</button>`;
-    } else {
-      toggleDiv.innerHTML = `
-        <button type="button" class="btn-sm" data-chart="dotplot" aria-pressed="false">Dotplot</button>
-        <button type="button" class="btn-sm" data-chart="histogram" aria-pressed="false">Histogram</button>`;
-      // If spike was selected but we switched to continuous data, reset to auto
-      if (currentType === 'spike') chartType = 'auto';
-    }
-    // Restore pressed state
-    for (const b of toggleDiv.querySelectorAll('button')) {
-      const match = b.dataset.chart === currentType ||
-        (currentType === 'auto' && b.dataset.chart === 'dotplot');
-      b.setAttribute('aria-pressed', String(match));
-    }
+    if (!isDiscrete && currentType === 'spike') chartType = 'auto';
+    const types = isDiscrete
+      ? ['dotplot', 'spike', 'histogram']
+      : ['dotplot', 'histogram'];
+    const selected = (chartType === 'auto' ? 'dotplot' : chartType);
+    // Keep the legend, replace everything else
+    const legend = toggleFieldset.querySelector('legend');
+    toggleFieldset.innerHTML = '';
+    if (legend) toggleFieldset.appendChild(legend);
+    toggleFieldset.insertAdjacentHTML('beforeend', buildToggleHTML(types, selected));
   }
 
   // Tab handling
@@ -1542,11 +1547,11 @@ export function initSimPage(config) {
       activeChart = n <= 200 ? 'dotplot' : (config.proportion ? 'spike' : 'histogram');
     }
 
-    // Sync toggle buttons to reflect actual chart type
-    if (toggleDiv) {
-      for (const b of toggleDiv.querySelectorAll('button')) {
-        b.setAttribute('aria-pressed', String(b.dataset.chart === activeChart));
-      }
+    // Sync toggle radios to reflect actual chart type
+    if (toggleFieldset) {
+      const radio = /** @type {HTMLInputElement|null} */ (
+        toggleFieldset.querySelector(`input[value="${activeChart}"]`));
+      if (radio) radio.checked = true;
     }
     // Build region-of-interest predicate
     // Randomization: extreme values (tail) are the region of interest
