@@ -16,8 +16,7 @@ const variableControls = document.getElementById('variable-controls');
 const rowVarSelect = /** @type {HTMLSelectElement} */ (document.getElementById('row-var-select'));
 const colVarSelect = /** @type {HTMLSelectElement} */ (document.getElementById('col-var-select'));
 const swapBtn = document.getElementById('swap-vars');
-const tableSection = document.getElementById('table-section');
-const chartSection = document.getElementById('chart-section');
+const resultsSection = document.getElementById('results-section');
 const tableContainer = document.getElementById('table-container');
 const chartContainer = document.getElementById('chart-container');
 const tableModeSelect = /** @type {HTMLSelectElement} */ (document.getElementById('table-mode'));
@@ -80,8 +79,7 @@ initDataPanel({
     catVarNames = [];
     if (dataPreview) dataPreview.hidden = true;
     if (variableControls) variableControls.hidden = true;
-    if (tableSection) tableSection.hidden = true;
-    if (chartSection) chartSection.hidden = true;
+    if (resultsSection) resultsSection.hidden = true;
     if (tableContainer) tableContainer.innerHTML = '';
     if (chartContainer) chartContainer.innerHTML = '';
     announce('Data cleared.');
@@ -174,8 +172,7 @@ function updateDisplay() {
     renderChart(rowValues, rowVar, colValues, colVar);
   }
 
-  if (tableSection) tableSection.hidden = false;
-  if (chartSection) chartSection.hidden = false;
+  if (resultsSection) resultsSection.hidden = false;
 }
 
 // ── Single-variable table ────────────────────────────────────────────

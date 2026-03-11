@@ -26,7 +26,6 @@
     </script>
 
     <style>
-        /* Page-specific styles for regression tool */
         .var-selectors {
             display: flex;
             flex-wrap: wrap;
@@ -34,27 +33,23 @@
             align-items: flex-end;
             margin-top: 0.75rem;
         }
-
-        .var-selectors select {
-            width: 12rem;
-        }
+        .var-selectors select { width: 12rem; }
 
         .toggle-row {
             display: flex;
             flex-wrap: wrap;
             gap: 1rem;
             align-items: center;
-            margin: 0.75rem 0;
+            margin: 0.5rem 0;
         }
-
         .toggle-row label {
             flex-direction: row;
             align-items: center;
             gap: 0.4rem;
             font-weight: 400;
             cursor: pointer;
+            font-size: 0.85rem;
         }
-
         .toggle-row input[type="checkbox"] {
             accent-color: var(--ims-blue);
             width: 1.1rem;
@@ -63,59 +58,46 @@
 
         .equation-display {
             font-family: var(--font-mono);
-            font-size: 1.1rem;
+            font-size: 1rem;
             text-align: center;
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 0.75rem;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 6px;
-            margin: 0.75rem 0;
+            margin: 0 0 0.5rem;
             color: var(--ims-green);
             font-weight: 600;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 0.5rem;
-            margin: 0.75rem 0;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.4rem;
         }
-
         .stat-card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 6px;
-            padding: 0.5rem 0.75rem;
+            padding: 0.4rem 0.5rem;
             text-align: center;
         }
-
         .stat-card .stat-label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--ims-gray-text);
-            margin-bottom: 0.15rem;
+            margin-bottom: 0.1rem;
         }
-
         .stat-card .stat-value {
             font-family: var(--font-mono);
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             font-weight: 700;
             color: var(--ims-green);
         }
 
-        #residual-container {
-            margin-top: 1rem;
-        }
+        #residual-container { margin-top: 0.75rem; }
 
         @media (max-width: 480px) {
-            .var-selectors {
-                flex-direction: column;
-            }
-            .var-selectors select {
-                width: 100%;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
+            .var-selectors { flex-direction: column; }
+            .var-selectors select { width: 100%; }
         }
     </style>
 </head>
@@ -192,31 +174,33 @@
             </div>
         </section>
 
-        <section id="chart" aria-label="Scatterplot">
-            <div class="toggle-row">
-                <label>
-                    <input type="checkbox" id="show-line" checked>
-                    Show regression line
-                </label>
-                <label>
-                    <input type="checkbox" id="show-residuals">
-                    Show residual plot
-                </label>
-            </div>
-            <figure>
-                <div id="chart-container"></div>
-            </figure>
-            <div id="residual-container" hidden>
-                <h2>Residual Plot</h2>
-                <figure>
-                    <div id="residual-chart-container"></div>
-                </figure>
-            </div>
-        </section>
+        <section id="results" aria-label="Scatterplot and regression results">
+            <div class="app-body">
+                <!-- Left: Charts -->
+                <div class="app-main">
+                    <div class="toggle-row">
+                        <label>
+                            <input type="checkbox" id="show-line" checked>
+                            Show regression line
+                        </label>
+                        <label>
+                            <input type="checkbox" id="show-residuals">
+                            Show residual plot
+                        </label>
+                    </div>
+                    <div id="chart-container"></div>
+                    <div id="residual-container" hidden>
+                        <h3 style="font-size:0.9rem;color:var(--ims-gray-text);">Residual Plot</h3>
+                        <div id="residual-chart-container"></div>
+                    </div>
+                </div>
 
-        <section id="results" aria-label="Regression results">
-            <div id="equation-display" class="equation-display" hidden></div>
-            <div id="stats-display" class="stats-grid" hidden></div>
+                <!-- Right: Equation + stats sidebar -->
+                <div class="app-sidebar">
+                    <div id="equation-display" class="equation-display" hidden></div>
+                    <div id="stats-display" class="stats-grid" hidden></div>
+                </div>
+            </div>
         </section>
 
         <div id="sr-announce" role="status" aria-live="polite"
