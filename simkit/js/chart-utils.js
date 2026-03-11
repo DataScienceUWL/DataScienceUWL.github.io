@@ -33,14 +33,14 @@ export const TRANSITION_MS = 300;
  * @type {readonly string[]}
  */
 const OKABE_ITO = [
-  '#0072B2',   // blue
-  '#E69F00',   // orange
-  '#009E73',   // teal
-  '#D55E00',   // vermillion
-  '#CC79A7',   // rose
-  '#56B4E9',   // sky blue
-  '#F0E442',   // yellow
-  '#999999',   // gray
+  '#0072B2',   // blue (5.19:1)
+  '#C08700',   // orange (3.13:1) — darkened from #E69F00 for WCAG 3:1
+  '#009E73',   // teal (3.42:1)
+  '#D55E00',   // vermillion (3.87:1)
+  '#CC79A7',   // rose (3.06:1)
+  '#2E8BC0',   // sky blue (3.77:1) — darkened from #56B4E9 for WCAG 3:1
+  '#9A8C00',   // gold (3.43:1) — darkened from #F0E442 for WCAG 3:1
+  '#767676',   // gray (4.54:1) — darkened from #999999 for WCAG 3:1
 ];
 
 /**

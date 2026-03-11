@@ -507,7 +507,7 @@ export function initDistCalculator(config) {
       .attr('y', labelY)
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'central')
-      .attr('fill', isComplement ? '#808080' : '#114B5F')
+      .attr('fill', isComplement ? '#6B6B6B' : '#114B5F')
       .attr('cursor', 'pointer')
       .text(labelText);
 

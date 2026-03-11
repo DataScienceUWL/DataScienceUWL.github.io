@@ -447,7 +447,7 @@ function _pill(g, text, cx, cy, isComp) {
     .attr('x', cx).attr('y', cy)
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'central')
-    .attr('fill', isComp ? '#808080' : '#114B5F')
+    .attr('fill', isComp ? '#6B6B6B' : '#114B5F')
     .style('pointer-events', 'none')
     .text(text);
 }

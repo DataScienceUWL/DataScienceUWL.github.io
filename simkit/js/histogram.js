@@ -15,8 +15,8 @@ import { createChart, addAxes, formatTick, prefersReducedMotion, TRANSITION_MS }
 /** Default bar fill (IMS blue at 50% opacity) — used when no isTail predicate. */
 const BAR_FILL = '#569BBD80';
 
-/** Body bar fill when isTail is active (subdued blue-gray). */
-const BODY_FILL = '#b0c4d080';
+/** Body bar fill when isTail is active (subdued blue-gray, darkened for WCAG). */
+const BODY_FILL = '#8aacbe80';
 
 /** Region-of-interest bar fill when isTail is active (bold IMS blue). */
 const REGION_FILL = '#569BBD';

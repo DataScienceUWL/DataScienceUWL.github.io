@@ -1576,7 +1576,7 @@ export function initSimPage(config) {
       .attr('y', cy)
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'central')
-      .attr('fill', isComplement ? '#808080' : '#114B5F')
+      .attr('fill', isComplement ? '#6B6B6B' : '#114B5F')
       .style('pointer-events', 'none')
       .text(text);
   }

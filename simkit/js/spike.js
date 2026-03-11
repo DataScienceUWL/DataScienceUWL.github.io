@@ -15,8 +15,8 @@ import { createChart, addAxes, formatTick } from './chart-utils.js';
 /** Default spike color (IMS blue) — used when no isTail predicate. */
 const SPIKE_COLOR = '#569BBD';
 
-/** Body spike color when isTail is active (subdued gray). */
-const BODY_SPIKE = '#a0a0a0';
+/** Body spike color when isTail is active (subdued gray, WCAG 3:1). */
+const BODY_SPIKE = '#8a8a8a';
 
 /** Region-of-interest spike color when isTail is active (bold IMS blue). */
 const REGION_SPIKE = '#569BBD';
