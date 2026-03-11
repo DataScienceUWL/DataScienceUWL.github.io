@@ -16,7 +16,7 @@ const VIEW_WIDTH = 600;
 const VIEW_HEIGHT = 371;
 
 /** Default margins (desktop). */
-const DEFAULT_MARGIN = { top: 32, right: 20, bottom: 65, left: 80 };
+const DEFAULT_MARGIN = { top: 28, right: 20, bottom: 50, left: 60 };
 
 /** Phone margins (viewport < 480px). */
 const PHONE_MARGIN = { top: 15, right: 10, bottom: 40, left: 45 };
