@@ -13,6 +13,10 @@ import { parseCSV } from '../../js/csv-parser.js';
 import { formatStat, detectPrecision } from '../../js/stats.js';
 import * as d3Selection from 'd3-selection';
 
+/** Render LaTeX to HTML string via KaTeX. */
+const tex = (/** @type {string} */ latex, display = false) =>
+  katex.renderToString(latex, { throwOnError: false, displayMode: display });
+
 // ── Initialize jStat before anything else ──────────────────────────
 const jstatMod = await import('jstat');
 setJStat(jstatMod.default || jstatMod);
@@ -276,70 +280,49 @@ function renderResults(r, d, mu0, alternative, confLevel) {
   // t* for CI
   const tStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
 
+  const V = '\\textcolor{#569BBD}';
+  const R = '\\textcolor{#2e7d32}';
+
+  const testFormula = tex(`\\begin{aligned}
+    t &= \\frac{\\bar{x} - \\mu_0}{s \\,/\\, \\sqrt{n}} \\\\[8pt]
+    &= \\frac{${V}{${formatStat(r.xbar, d)}} - ${V}{${mu0}}}{${V}{${formatStat(r.s, d)}} \\,/\\, \\sqrt{${V}{${r.n}}}} \\\\[8pt]
+    &= ${R}{${r.tStat.toFixed(4)}}
+  \\end{aligned}`, true);
+
+  const ciFormula = tex(`\\begin{aligned}
+    &\\bar{x} \\pm t^{\\!*} \\cdot \\frac{s}{\\sqrt{n}} \\\\[8pt]
+    &${V}{${formatStat(r.xbar, d)}} \\pm ${V}{${tStar}} \\cdot \\frac{${V}{${formatStat(r.s, d)}}}{\\sqrt{${V}{${r.n}}}} \\\\[8pt]
+    &= ${R}{(${formatStat(r.ciLower, d)},\\; ${formatStat(r.ciUpper, d)})}
+  \\end{aligned}`, true);
+
   resultsPanel.innerHTML = `
     <h3>Sample Summary</h3>
     <table class="results-table" aria-label="Sample summary">
       <tbody>
-        <tr><th scope="row">n</th><td>${r.n}</td></tr>
-        <tr><th scope="row">x&#772;</th><td>${formatStat(r.xbar, d)}</td></tr>
-        <tr><th scope="row">s</th><td>${formatStat(r.s, d)}</td></tr>
-        <tr><th scope="row">SE</th><td>${formatStat(r.se, d)}</td></tr>
+        <tr><th scope="row">${tex('n')}</th><td>${r.n}</td></tr>
+        <tr><th scope="row">${tex('\\bar{x}')}</th><td>${formatStat(r.xbar, d)}</td></tr>
+        <tr><th scope="row">${tex('s')}</th><td>${formatStat(r.s, d)}</td></tr>
+        <tr><th scope="row">${tex('SE')}</th><td>${formatStat(r.se, d)}</td></tr>
       </tbody>
     </table>
 
     <div class="formula-display">
       <h3>Test Statistic</h3>
-      <div class="formula-step">
-        <span>t =</span>
-        <span class="frac">
-          <span class="frac-num">x&#772; &minus; &mu;<sub>0</sub></span>
-          <span class="frac-den">s &frasl; &radic;n</span>
-        </span>
-      </div>
-      <div class="formula-step">
-        <span>&nbsp; =</span>
-        <span class="frac">
-          <span class="frac-num"><span class="formula-val">${formatStat(r.xbar, d)}</span> &minus; <span class="formula-val">${mu0}</span></span>
-          <span class="frac-den"><span class="formula-val">${formatStat(r.s, d)}</span> &frasl; &radic;<span class="formula-val">${r.n}</span></span>
-        </span>
-      </div>
-      <div class="formula-step">
-        <span>&nbsp; = <span class="formula-result">${r.tStat.toFixed(4)}</span></span>
-      </div>
-      <div class="formula-step" style="margin-top:0.15rem;">
-        <span>df = n &minus; 1 = ${r.n} &minus; 1 = <span class="formula-result">${r.df}</span></span>
-      </div>
-      <div class="formula-step">
-        <span>p-value = <span class="formula-result">${pStr}</span></span>
-      </div>
+      ${testFormula}
+      <p class="formula-detail">${tex(`\\text{df} = n - 1 = ${r.n} - 1 = ${R}{${r.df}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${pStr}}`)}</p>
     </div>
 
     <div class="formula-display formula-ci">
       <h3>${confPct}% Confidence Interval</h3>
-      <div class="formula-step">
-        <span>x&#772; &plusmn; t* &middot;</span>
-        <span class="frac">
-          <span class="frac-num">s</span>
-          <span class="frac-den">&radic;n</span>
-        </span>
-      </div>
-      <div class="formula-step">
-        <span><span class="formula-val">${formatStat(r.xbar, d)}</span> &plusmn; <span class="formula-val">${tStar}</span> &middot;</span>
-        <span class="frac">
-          <span class="frac-num"><span class="formula-val">${formatStat(r.s, d)}</span></span>
-          <span class="frac-den">&radic;<span class="formula-val">${r.n}</span></span>
-        </span>
-      </div>
-      <div class="formula-step">
-        <span>= <span class="formula-result">(${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)})</span></span>
-      </div>
+      ${ciFormula}
     </div>
 
     <div class="interpretation" aria-live="polite">
-      <p>The sample mean x&#772; = ${formatStat(r.xbar, d)} is ${Math.abs(r.tStat).toFixed(2)} standard errors
-        ${r.tStat >= 0 ? 'above' : 'below'} the null value &mu;<sub>0</sub> = ${mu0}.</p>
-      <p>p-value = ${pStr}: there is ${sigWord} evidence to ${rejectWord} H<sub>0</sub> at &alpha; = ${alpha}.</p>
-      <p>${confPct}% CI for &mu;: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>
+      <p>The sample mean ${tex('\\bar{x}')} = ${formatStat(r.xbar, d)} is ${Math.abs(r.tStat).toFixed(2)} standard errors
+        ${r.tStat >= 0 ? 'above' : 'below'} the null value ${tex('\\mu_0')} = ${mu0}.</p>
+      <p>p-value = ${pStr}: there is ${sigWord} evidence to ${rejectWord} ${tex('H_0')} at ${tex(`\\alpha = ${alpha}`)}.</p>
+      <p>${confPct}% CI for ${tex('\\mu')}: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>
     </div>
   `;
 }

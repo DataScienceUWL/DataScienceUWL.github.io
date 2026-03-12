@@ -13,6 +13,10 @@ import { formatStat } from '../../js/stats.js';
 import { announce, initTabs, initDataPanel, initKeyboardShortcuts } from '../../js/page-utils.js';
 import * as d3Selection from 'd3-selection';
 
+/** Render LaTeX to HTML string via KaTeX. */
+const tex = (/** @type {string} */ latex, display = false) =>
+  katex.renderToString(latex, { throwOnError: false, displayMode: display });
+
 // ── Initialize jStat ────────────────────────────────────────────────
 const jstatMod = await import('jstat');
 setJStat(jstatMod.default || jstatMod);
@@ -361,25 +365,17 @@ function showResults(observed, rowLabels, colLabels) {
   if (formulaEl) {
     const nR = rowLabels.length;
     const nC = colLabels.length;
+    const R = '\\textcolor{#2e7d32}';
+
+    const chiFormula = tex(`\\chi^2 = \\sum \\frac{(O - E)^2}{E}`, true);
+
     formulaEl.innerHTML = `
       <div class="formula-display">
         <h3>Test Statistic</h3>
-        <div class="formula-step">
-          <span>&chi;&sup2; = &Sigma;</span>
-          <span class="frac">
-            <span class="frac-num">(O &minus; E)&sup2;</span>
-            <span class="frac-den">E</span>
-          </span>
-        </div>
-        <div class="formula-step" style="margin-top:0.15rem;">
-          <span>df = (${nR} &minus; 1)(${nC} &minus; 1) = <span class="formula-result">${result.df}</span></span>
-        </div>
-        <div class="formula-step">
-          <span>&chi;&sup2; = <span class="formula-result">${result.chiSq.toFixed(4)}</span></span>
-        </div>
-        <div class="formula-step">
-          <span>p-value = <span class="formula-result">${formatStat(result.pValue, 0, 'pvalue')}</span></span>
-        </div>
+        ${chiFormula}
+        <p class="formula-detail">${tex(`\\text{df} = (${nR} - 1)(${nC} - 1) = ${R}{${result.df}}`)}</p>
+        <p class="formula-detail">${tex(`\\chi^2 = ${R}{${result.chiSq.toFixed(4)}}`)}</p>
+        <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${formatStat(result.pValue, 0, 'pvalue')}}`)}</p>
       </div>
     `;
     formulaEl.hidden = false;
@@ -531,13 +527,13 @@ function writeInterpretation(result, lowExpected) {
 
   let html = `
     <p><strong>Hypotheses:</strong>
-      H<sub>0</sub>: The row variable and column variable are independent.
-      H<sub>a</sub>: There is an association between the row and column variables.</p>
-    <p>The chi-square test statistic is &chi;&sup2; = ${chiSq.toFixed(4)} with
-      df = ${df} (${rowLabels.length} rows &minus; 1) &times; (${colLabels.length} columns &minus; 1).</p>
+      ${tex('H_0')}: The row variable and column variable are independent.
+      ${tex('H_a')}: There is an association between the row and column variables.</p>
+    <p>The chi-square test statistic is ${tex(`\\chi^2 = ${chiSq.toFixed(4)}`)} with
+      df = ${df} (${rowLabels.length} rows \u2212 1) \u00D7 (${colLabels.length} columns \u2212 1).</p>
     <p>If the variables were truly independent, we would see a test statistic this large
       or larger about ${pPct} of the time (p = ${formatStat(pValue, 0, 'pvalue')}).</p>
-    <p>At the &alpha; = 0.05 significance level, ${conclusion}.</p>
+    <p>At the ${tex('\\alpha = 0.05')} significance level, ${conclusion}.</p>
   `;
 
   if (lowExpected) {

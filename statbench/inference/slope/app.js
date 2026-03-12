@@ -13,6 +13,10 @@ import { parseCSV } from '../../js/csv-parser.js';
 import { formatStat, detectPrecision } from '../../js/stats.js';
 import * as d3Selection from 'd3-selection';
 
+/** Render LaTeX to HTML string via KaTeX. */
+const tex = (/** @type {string} */ latex, display = false) =>
+  katex.renderToString(latex, { throwOnError: false, displayMode: display });
+
 // ── Initialize jStat before anything else ──────────────────────────
 const jstatMod = await import('jstat');
 setJStat(jstatMod.default || jstatMod);
@@ -241,77 +245,64 @@ function renderResults(r, d, alternative, confLevel) {
   const xName = xVarSelect.value || 'x';
   const yName = yVarSelect.value || 'y';
 
+  const V = '\\textcolor{#569BBD}';
+  const R = '\\textcolor{#2e7d32}';
+
   let regressionRows = '';
   if (hasFullRegression) {
     regressionRows = `
-        <tr><th scope="row">Intercept (b&#8320;)</th><td>${formatStat(r.intercept, d)}</td></tr>
-        <tr><th scope="row">r</th><td>${formatStat(r.r, d, 'correlation')}</td></tr>
-        <tr><th scope="row">R&sup2;</th><td>${formatStat(r.rSquared, d, 'correlation')}</td></tr>`;
+        <tr><th scope="row">Intercept (${tex('b_0')})</th><td>${formatStat(r.intercept, d)}</td></tr>
+        <tr><th scope="row">${tex('r')}</th><td>${formatStat(r.r, d, 'correlation')}</td></tr>
+        <tr><th scope="row">${tex('R^2')}</th><td>${formatStat(r.rSquared, d, 'correlation')}</td></tr>`;
   }
 
   let regressionInterp = '';
   if (hasFullRegression) {
     const r2Pct = (r.rSquared * 100).toFixed(1);
     regressionInterp = `
-      <p>&#375; = ${formatStat(r.intercept, d)} + ${formatStat(r.slope, d)} &middot; ${xName}</p>
-      <p>r = ${formatStat(r.r, d, 'correlation')}, R&sup2; = ${r2Pct}%.</p>`;
+      <p>${tex(`\\hat{y} = ${formatStat(r.intercept, d)} + ${formatStat(r.slope, d)} \\cdot \\text{${xName}}`)}</p>
+      <p>${tex(`r = ${formatStat(r.r, d, 'correlation')}`)}, ${tex(`R^2 = ${r2Pct}\\%`)}.</p>`;
   }
+
+  const testFormula = tex(`\\begin{aligned}
+    t &= \\frac{b_1 - 0}{SE_{b_1}} \\\\[8pt]
+    &= \\frac{${V}{${formatStat(r.slope, d)}}}{${V}{${formatStat(r.se, d)}}} \\\\[8pt]
+    &= ${R}{${r.tStat.toFixed(4)}}
+  \\end{aligned}`, true);
+
+  const ciFormula = tex(`\\begin{aligned}
+    &b_1 \\pm t^{\\!*} \\cdot SE_{b_1} \\\\[8pt]
+    &${V}{${formatStat(r.slope, d)}} \\pm ${V}{${tStar}} \\cdot ${V}{${formatStat(r.se, d)}} \\\\[8pt]
+    &= ${R}{(${formatStat(r.ciLower, d)},\\; ${formatStat(r.ciUpper, d)})}
+  \\end{aligned}`, true);
 
   resultsPanel.innerHTML = `
     <h3>Regression Summary</h3>
     <table class="results-table" aria-label="Regression summary">
       <tbody>
-        <tr><th scope="row">n</th><td>${r.n}</td></tr>
-        <tr><th scope="row">Slope (b&#8321;)</th><td>${formatStat(r.slope, d)}</td></tr>
+        <tr><th scope="row">${tex('n')}</th><td>${r.n}</td></tr>
+        <tr><th scope="row">Slope (${tex('b_1')})</th><td>${formatStat(r.slope, d)}</td></tr>
         ${regressionRows}
       </tbody>
     </table>
 
     <div class="formula-display">
       <h3>Test Statistic</h3>
-      <div class="formula-step">
-        <span>t =</span>
-        <span class="frac">
-          <span class="frac-num">b<sub>1</sub> &minus; 0</span>
-          <span class="frac-den">SE<sub>b<sub>1</sub></sub></span>
-        </span>
-      </div>
-      <div class="formula-step">
-        <span>&nbsp; =</span>
-        <span class="frac">
-          <span class="frac-num"><span class="formula-val">${formatStat(r.slope, d)}</span></span>
-          <span class="frac-den"><span class="formula-val">${formatStat(r.se, d)}</span></span>
-        </span>
-      </div>
-      <div class="formula-step">
-        <span>&nbsp; = <span class="formula-result">${r.tStat.toFixed(4)}</span></span>
-      </div>
-      <div class="formula-step" style="margin-top:0.15rem;">
-        <span>df = n &minus; 2 = ${r.n} &minus; 2 = <span class="formula-result">${r.df}</span></span>
-      </div>
-      <div class="formula-step">
-        <span>p-value = <span class="formula-result">${pStr}</span></span>
-      </div>
+      ${testFormula}
+      <p class="formula-detail">${tex(`\\text{df} = n - 2 = ${r.n} - 2 = ${R}{${r.df}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${pStr}}`)}</p>
     </div>
 
     <div class="formula-display formula-ci">
-      <h3>${confPct}% CI for &beta;<sub>1</sub></h3>
-      <div class="formula-step">
-        <span>b<sub>1</sub> &plusmn; t* &middot; SE<sub>b<sub>1</sub></sub></span>
-      </div>
-      <div class="formula-step">
-        <span><span class="formula-val">${formatStat(r.slope, d)}</span> &plusmn; <span class="formula-val">${tStar}</span> &middot; <span class="formula-val">${formatStat(r.se, d)}</span></span>
-      </div>
-      <div class="formula-step">
-        <span>= <span class="formula-result">(${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)})</span></span>
-      </div>
+      <h3>${confPct}% CI for ${tex('\\beta_1')}</h3>
+      ${ciFormula}
     </div>
 
     <div class="interpretation" aria-live="polite">
       ${regressionInterp}
-      <p>Slope b<sub>1</sub> = ${formatStat(r.slope, d)} is ${Math.abs(r.tStat).toFixed(2)} SEs from zero.</p>
-      <p>p-value = ${pStr}: ${sigWord} evidence to ${rejectWord} H<sub>0</sub> at &alpha; = ${alpha}.</p>
-      <p>${confPct}% CI for &beta;<sub>1</sub>: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>
+      <p>Slope ${tex('b_1')} = ${formatStat(r.slope, d)} is ${Math.abs(r.tStat).toFixed(2)} SEs from zero.</p>
+      <p>p-value = ${pStr}: ${sigWord} evidence to ${rejectWord} ${tex('H_0')} at ${tex(`\\alpha = ${alpha}`)}.</p>
+      <p>${confPct}% CI for ${tex('\\beta_1')}: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>
     </div>
   `;
 }

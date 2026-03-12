@@ -12,6 +12,10 @@ import { drawCurve, computeDomain } from '../../js/curve.js';
 import { initTabs, initDataPanel, announce } from '../../js/page-utils.js';
 import { mean, detectPrecision, formatStat } from '../../js/stats.js';
 
+/** Render LaTeX to HTML string via KaTeX. */
+const tex = (/** @type {string} */ latex, display = false) =>
+  katex.renderToString(latex, { throwOnError: false, displayMode: display });
+
 // ── Initialize jStat ────────────────────────────────────────────────
 const jStat = jstatModule.default || jstatModule;
 setJStat(jStat);
@@ -367,11 +371,26 @@ function renderResults(r) {
   // t* for CI
   const tStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
 
+  const V = '\\textcolor{#569BBD}';
+  const R = '\\textcolor{#2e7d32}';
+
+  const testFormula = tex(`\\begin{aligned}
+    t &= \\frac{\\bar{x}_1 - \\bar{x}_2}{\\sqrt{\\dfrac{s_1^2}{n_1} + \\dfrac{s_2^2}{n_2}}} \\\\[10pt]
+    &= \\frac{${V}{${formatStat(r.xbar1, d)}} - ${V}{${formatStat(r.xbar2, d)}}}{\\sqrt{\\dfrac{${V}{${formatStat(r.s1, d)}}^2}{${V}{${r.n1}}} + \\dfrac{${V}{${formatStat(r.s2, d)}}^2}{${V}{${r.n2}}}}} \\\\[10pt]
+    &= ${R}{${r.tStat.toFixed(4)}}
+  \\end{aligned}`, true);
+
+  const ciFormula = tex(`\\begin{aligned}
+    &(\\bar{x}_1 - \\bar{x}_2) \\pm t^{\\!*} \\cdot SE \\\\[8pt]
+    &${V}{${formatStat(r.diff, d)}} \\pm ${V}{${tStar}} \\cdot ${V}{${formatStat(r.se, d)}} \\\\[8pt]
+    &= ${R}{(${formatStat(r.ciLower, d)},\\; ${formatStat(r.ciUpper, d)})}
+  \\end{aligned}`, true);
+
   resultDiv.innerHTML = `
     <h3>Group Summaries</h3>
     <table class="results-table" aria-label="Group summary statistics">
       <thead>
-        <tr><th>Group</th><th>n</th><th>x&#772;</th><th>s</th></tr>
+        <tr><th>Group</th><th>${tex('n')}</th><th>${tex('\\bar{x}')}</th><th>${tex('s')}</th></tr>
       </thead>
       <tbody>
         <tr>
@@ -391,47 +410,19 @@ function renderResults(r) {
 
     <div class="formula-display">
       <h3>Test Statistic</h3>
-      <div class="formula-step">
-        <span>t =</span>
-        <span class="frac">
-          <span class="frac-num">x&#772;<sub>1</sub> &minus; x&#772;<sub>2</sub></span>
-          <span class="frac-den">&radic;(s&#8321;&sup2;/n&#8321; + s&#8322;&sup2;/n&#8322;)</span>
-        </span>
-      </div>
-      <div class="formula-step">
-        <span>&nbsp; =</span>
-        <span class="frac">
-          <span class="frac-num"><span class="formula-val">${formatStat(r.xbar1, d)}</span> &minus; <span class="formula-val">${formatStat(r.xbar2, d)}</span></span>
-          <span class="frac-den">&radic;(<span class="formula-val">${formatStat(r.s1, d)}</span>&sup2;/<span class="formula-val">${r.n1}</span> + <span class="formula-val">${formatStat(r.s2, d)}</span>&sup2;/<span class="formula-val">${r.n2}</span>)</span>
-        </span>
-      </div>
-      <div class="formula-step">
-        <span>&nbsp; = <span class="formula-result">${r.tStat.toFixed(4)}</span></span>
-      </div>
-      <div class="formula-step" style="margin-top:0.15rem;">
-        <span>Welch df = <span class="formula-result">${r.df.toFixed(1)}</span></span>
-      </div>
-      <div class="formula-step">
-        <span>p-value = <span class="formula-result">${pStr}</span></span>
-      </div>
+      ${testFormula}
+      <p class="formula-detail">${tex(`\\text{Welch df} = ${R}{${r.df.toFixed(1)}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${pStr}}`)}</p>
     </div>
 
     <div class="formula-display formula-ci">
-      <h3>${confPct}% CI for &mu;<sub>1</sub> &minus; &mu;<sub>2</sub></h3>
-      <div class="formula-step">
-        <span>(x&#772;<sub>1</sub> &minus; x&#772;<sub>2</sub>) &plusmn; t* &middot; SE</span>
-      </div>
-      <div class="formula-step">
-        <span><span class="formula-val">${formatStat(r.diff, d)}</span> &plusmn; <span class="formula-val">${tStar}</span> &middot; <span class="formula-val">${formatStat(r.se, d)}</span></span>
-      </div>
-      <div class="formula-step">
-        <span>= <span class="formula-result">(${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)})</span></span>
-      </div>
+      <h3>${confPct}% CI for ${tex('\\mu_1 - \\mu_2')}</h3>
+      ${ciFormula}
     </div>
 
     <div class="interpretation">
-      <p>x&#772;<sub>${esc(group1Name)}</sub> &minus; x&#772;<sub>${esc(group2Name)}</sub> = ${formatStat(r.diff, d)}, Welch df = ${r.df.toFixed(1)}.</p>
-      <p>p-value = ${pStr}: ${sigWord} evidence to ${rejectWord} H<sub>0</sub> at &alpha; = ${alpha}.</p>
+      <p>${tex(`\\bar{x}_{\\text{${esc(group1Name)}}} - \\bar{x}_{\\text{${esc(group2Name)}}}`)} = ${formatStat(r.diff, d)}, Welch df = ${r.df.toFixed(1)}.</p>
+      <p>p-value = ${pStr}: ${sigWord} evidence to ${rejectWord} ${tex('H_0')} at ${tex(`\\alpha = ${alpha}`)}.</p>
       <p>${confPct}% CI: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}). ${ciInterpretation}</p>
     </div>
   `;

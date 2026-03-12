@@ -13,6 +13,10 @@ import { formatStat } from '../../js/stats.js';
 import { announce, initTabs, initDataPanel, initKeyboardShortcuts } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
 
+/** Render LaTeX to HTML string via KaTeX. */
+const tex = (/** @type {string} */ latex, display = false) =>
+  katex.renderToString(latex, { throwOnError: false, displayMode: display });
+
 setJStat(jstat);
 
 // ── DOM references ──────────────────────────────────────────────────
@@ -283,59 +287,44 @@ function displayResults(r, successLabel, conditionsMet) {
   // z* for CI
   const zStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
 
+  const V = '\\textcolor{#569BBD}';
+  const R = '\\textcolor{#2e7d32}';
+
+  const testFormula = tex(`\\begin{aligned}
+    z &= \\frac{\\hat{p} - p_0}{\\sqrt{\\dfrac{p_0(1-p_0)}{n}}} \\\\[10pt]
+    &= \\frac{${V}{${formatStat(r.pHat, 0, 'proportion')}} - ${V}{${formatStat(r.p0, 0, 'proportion')}}}{\\sqrt{\\dfrac{${V}{${formatStat(r.p0, 0, 'proportion')}} \\cdot ${V}{${formatStat(1 - r.p0, 0, 'proportion')}}}{${V}{${r.n}}}}} \\\\[10pt]
+    &= ${R}{${formatStat(r.zStat, 0, 'correlation')}}
+  \\end{aligned}`, true);
+
+  const ciFormula = tex(`\\begin{aligned}
+    &\\hat{p} \\pm z^* \\cdot \\sqrt{\\frac{\\hat{p}(1-\\hat{p})}{n}} \\\\[8pt]
+    &${V}{${formatStat(r.pHat, 0, 'proportion')}} \\pm ${V}{${zStar}} \\cdot ${V}{${formatStat(r.se, 0, 'proportion')}} \\\\[8pt]
+    &= ${R}{(${formatStat(r.ciLower, 0, 'proportion')},\\; ${formatStat(r.ciUpper, 0, 'proportion')})}
+  \\end{aligned}`, true);
+
   resultsPanel.innerHTML = `
     <h3>Sample Summary</h3>
     <table class="results-table" aria-label="Sample summary">
       <tbody>
-        <tr><th scope="row">n</th><td>${r.n}</td></tr>
+        <tr><th scope="row">${tex('n')}</th><td>${r.n}</td></tr>
         <tr><th scope="row">${escapeHTML(successLabel)}</th><td>${r.successes}</td></tr>
-        <tr><th scope="row">p\u0302</th><td>${formatStat(r.pHat, 0, 'proportion')}</td></tr>
+        <tr><th scope="row">${tex('\\hat{p}')}</th><td>${formatStat(r.pHat, 0, 'proportion')}</td></tr>
       </tbody>
     </table>
 
     <div class="formula-display">
       <h3>Test Statistic</h3>
-      <div class="formula-step">
-        <span>z =</span>
-        <span class="frac">
-          <span class="frac-num">p&#770; &minus; p<sub>0</sub></span>
-          <span class="frac-den">&radic;(p<sub>0</sub>(1 &minus; p<sub>0</sub>) &frasl; n)</span>
-        </span>
-      </div>
-      <div class="formula-step">
-        <span>&nbsp; =</span>
-        <span class="frac">
-          <span class="frac-num"><span class="formula-val">${formatStat(r.pHat, 0, 'proportion')}</span> &minus; <span class="formula-val">${formatStat(r.p0, 0, 'proportion')}</span></span>
-          <span class="frac-den">&radic;(<span class="formula-val">${formatStat(r.p0, 0, 'proportion')}</span> &middot; <span class="formula-val">${formatStat(1 - r.p0, 0, 'proportion')}</span> &frasl; <span class="formula-val">${r.n}</span>)</span>
-        </span>
-      </div>
-      <div class="formula-step">
-        <span>&nbsp; = <span class="formula-result">${formatStat(r.zStat, 0, 'correlation')}</span></span>
-      </div>
-      <div class="formula-step">
-        <span>p-value = <span class="formula-result">${formatStat(r.pValue, 0, 'pvalue')}</span></span>
-      </div>
+      ${testFormula}
+      <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${formatStat(r.pValue, 0, 'pvalue')}}`)}</p>
     </div>
 
     <div class="formula-display formula-ci">
       <h3>${confPct}% Confidence Interval</h3>
-      <div class="formula-step">
-        <span>p&#770; &plusmn; z* &middot;</span>
-        <span class="frac">
-          <span class="frac-num">&radic;(p&#770;(1 &minus; p&#770;))</span>
-          <span class="frac-den">&radic;n</span>
-        </span>
-      </div>
-      <div class="formula-step">
-        <span><span class="formula-val">${formatStat(r.pHat, 0, 'proportion')}</span> &plusmn; <span class="formula-val">${zStar}</span> &middot; <span class="formula-val">${formatStat(r.se, 0, 'proportion')}</span></span>
-      </div>
-      <div class="formula-step">
-        <span>= <span class="formula-result">(${formatStat(r.ciLower, 0, 'proportion')}, ${formatStat(r.ciUpper, 0, 'proportion')})</span></span>
-      </div>
+      ${ciFormula}
     </div>
 
     <div class="interpretation">
-      <p>p\u0302 = ${formatStat(r.pHat, 0, 'proportion')} is ${formatStat(seCount, 0, 'correlation')} SEs ${seDirection} p\u2080 = ${formatStat(r.p0, 0, 'proportion')}.</p>
+      <p>${tex('\\hat{p}')} = ${formatStat(r.pHat, 0, 'proportion')} is ${formatStat(seCount, 0, 'correlation')} SEs ${seDirection} ${tex('p_0')} = ${formatStat(r.p0, 0, 'proportion')}.</p>
       <p><strong>p-value = ${formatStat(r.pValue, 0, 'pvalue')}:</strong> ${pInterpretation}.</p>
       <p>${confPct}% CI: (${formatStat(r.ciLower, 0, 'proportion')}, ${formatStat(r.ciUpper, 0, 'proportion')}).</p>
       ${condWarning}
