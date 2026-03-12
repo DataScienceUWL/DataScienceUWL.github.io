@@ -192,7 +192,7 @@ export function drawHistogram(container, values, options = {}) {
   addAxes(frame, xAxis, yAxis, xLabel, yLabel);
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
-  renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate, frame.inner);
+  renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate, frame.inner, observedStat);
 
   // Stacked delta highlight: show new portions of bars in orange
   if (prevBinCounts) {
@@ -238,7 +238,7 @@ export function drawHistogram(container, values, options = {}) {
 
       // Re-render bars
       dataGroup.selectAll('rect').remove();
-      renderBars(dataGroup, result.bins, xScale, yScale, frame.height, newIsTail, animate, frame.inner);
+      renderBars(dataGroup, result.bins, xScale, yScale, frame.height, newIsTail, animate, frame.inner, newObserved);
 
       // Re-render overlays
       overlays.selectAll('*').remove();
@@ -310,6 +310,9 @@ function renderDeltaBars(group, bins, xScale, yScale, innerHeight, prevCounts) {
 
 /**
  * Render histogram bars into a D3 selection.
+ * When isTail is provided and the observed stat falls inside a bin,
+ * that bin is split into two rects at the boundary for accurate shading.
+ *
  * @param {d3Selection.Selection} group - The .data group
  * @param {d3Array.Bin<number, number>[]} bins
  * @param {d3Scale.ScaleLinear<number, number>} xScale
@@ -318,23 +321,58 @@ function renderDeltaBars(group, bins, xScale, yScale, innerHeight, prevCounts) {
  * @param {((value: number) => boolean)} [isTail]
  * @param {boolean} animate
  * @param {SVGGElement} [innerNode] - chart-inner node for custom tooltips
+ * @param {number} [observedStat] - Observed stat value for split-bar rendering
  */
-function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, innerNode) {
+function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, innerNode, observedStat) {
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
+  // Build bar data: split bins that contain the observed stat boundary
+  /** @type {Array<{x0: number, x1: number, length: number, fill: string, binIndex: number, isSplit: boolean}>} */
+  const barData = [];
+  for (let i = 0; i < bins.length; i++) {
+    const bin = bins[i];
+    if (bin.length === 0) continue;
+
+    if (!isTail) {
+      barData.push({ x0: bin.x0, x1: bin.x1, length: bin.length, fill: BAR_FILL, binIndex: i, isSplit: false });
+      continue;
+    }
+
+    // Check if observed stat splits this bin
+    const needsSplit = observedStat != null && observedStat > bin.x0 && observedStat < bin.x1;
+    if (needsSplit) {
+      // Split: left portion and right portion get different fills
+      const leftIsTail = isTail(bin.x0);
+      const rightIsTail = isTail(bin.x1);
+      barData.push({
+        x0: bin.x0, x1: observedStat, length: bin.length,
+        fill: leftIsTail ? REGION_FILL : BODY_FILL,
+        binIndex: i, isSplit: true,
+      });
+      barData.push({
+        x0: observedStat, x1: bin.x1, length: bin.length,
+        fill: rightIsTail ? REGION_FILL : BODY_FILL,
+        binIndex: i, isSplit: true,
+      });
+    } else {
+      // Whole bin: use left edge to classify (avoids midpoint ambiguity)
+      const mid = (bin.x0 + bin.x1) / 2;
+      barData.push({
+        x0: bin.x0, x1: bin.x1, length: bin.length,
+        fill: isTail(mid) ? REGION_FILL : BODY_FILL,
+        binIndex: i, isSplit: false,
+      });
+    }
+  }
+
   const bars = group.selectAll('rect')
-    .data(bins)
+    .data(barData)
     .join('rect')
-    .attr('x', d => xScale(d.x0) + 0.5)
-    .attr('width', d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 1))
-    .attr('fill', d => {
-      if (!isTail) return BAR_FILL;
-      // A bin is "region of interest" if its midpoint satisfies the predicate
-      const mid = (d.x0 + d.x1) / 2;
-      return isTail(mid) ? REGION_FILL : BODY_FILL;
-    })
-    .attr('stroke', BAR_STROKE)
-    .attr('stroke-width', 1)
+    .attr('x', d => xScale(d.x0) + (d.isSplit ? 0 : 0.5))
+    .attr('width', d => Math.max(0, xScale(d.x1) - xScale(d.x0) - (d.isSplit ? 0 : 1)))
+    .attr('fill', d => d.fill)
+    .attr('stroke', d => d.isSplit ? 'none' : BAR_STROKE)
+    .attr('stroke-width', d => d.isSplit ? 0 : 1)
     .attr('role', 'listitem')
     .attr('aria-label', d => `${d.x0} to ${d.x1}: ${d.length}`);
 
@@ -364,12 +402,10 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, i
   // Click bar → show count label above it
   bars.style('cursor', 'pointer')
     .on('click', function(event, d) {
-      // Remove any existing count label
       group.selectAll('.bar-count-label').remove();
-      // Highlight: reset all bars, then stroke this one
-      bars.attr('stroke', BAR_STROKE).attr('stroke-width', 1);
+      bars.attr('stroke', d2 => d2.isSplit ? 'none' : BAR_STROKE)
+        .attr('stroke-width', d2 => d2.isSplit ? 0 : 1);
       d3Selection.select(this).attr('stroke', '#000').attr('stroke-width', 2);
-      // Add count label above bar
       const barX = xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2;
       const barY = yScale(d.length);
       group.append('text')

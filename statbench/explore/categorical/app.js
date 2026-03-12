@@ -68,14 +68,14 @@ function loadParsedData(parsed, sourceName) {
 }
 
 initDataPanel({
-  datasetFilter: ds => ds.type === 'chisq' || ds.type === 'randomization_prop',
+  datasetFilter: (/** @type {any} */ ds) => ds.hasCategorical === true,
   onDataset: (ds) => {
-    const catVars = ds.variables.filter(v => v.type === 'categorical');
-    if (catVars.length < 2) {
-      announce('This dataset needs at least two categorical variables for a two-way table.');
+    const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
+    if (catVars.length === 0) {
+      announce('This dataset has no categorical variables.');
       return;
     }
-    catVarNames = catVars.map(v => v.name);
+    catVarNames = catVars.map(/** @param {any} v */ v => v.name);
     rawRows = ds.rows;
     setupVariableSelectors(catVarNames);
     showDataLoaded(ds.name);
@@ -206,6 +206,7 @@ function renderSingleVarTable(values, varName) {
   // Count frequencies
   /** @type {Map<string, number>} */
   const counts = new Map();
+  /** @type {string[]} */
   const cats = [];
   for (const v of values) {
     counts.set(v, (counts.get(v) ?? 0) + 1);
@@ -363,8 +364,8 @@ function renderChart(primaryValues, primaryLabel, secondaryValues, secondaryLabe
     });
   } else {
     // Grouped bar chart — use dodged for frequency, stacked/filled as selected
-    /** @type {import('../../js/barchart.js').BarMode} */
-    const barMode = chartMode === 'frequency' ? 'dodged' : chartMode;
+    const barMode = /** @type {import('../../js/barchart.js').BarMode} */ (
+      chartMode === 'frequency' ? 'dodged' : chartMode);
     const result = drawBarChart(chartContainer, primaryValues, {
       mode: barMode,
       groupValues: secondaryValues,

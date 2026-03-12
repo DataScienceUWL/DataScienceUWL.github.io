@@ -27,6 +27,15 @@ const MIN_RADIUS = 2;
 /** Maximum dot radius. */
 const MAX_RADIUS = 8;
 
+/** Spike color for collapsed stacks (IMS blue). */
+const SPIKE_FILL = '#569BBD';
+
+/** Spike color for extreme values in collapsed mode. */
+const SPIKE_EXTREME = '#569BBD';
+
+/** Spike color for body values in collapsed mode. */
+const SPIKE_BODY = '#8a8a8a';
+
 /**
  * Compute stacked dot positions from numeric data.
  *
@@ -143,26 +152,45 @@ export function drawDotplot(container, values, options = {}) {
 
   const dotRadius = computeDotRadius(frame.width, frame.height, maxStack, effectiveBins);
 
-  // Y axis is implicit (stacking height), no y-axis labels needed
+  // Detect if stacks overflow even at minimum radius
+  const wouldOverflow = maxStack > 0 && maxStack * MIN_RADIUS * 2 > frame.height;
+
+  // Y axis is implicit (stacking height) for dots; spike mode gets a y-axis
   const xAxis = d3Axis.axisBottom(xScale).tickFormat(formatTick);
   const axes = d3Selection.select(frame.inner).select('.axes');
-  const xAxisG = axes.append('g')
-    .attr('class', 'x-axis')
-    .attr('transform', `translate(0, ${frame.height})`)
-    .call(xAxis);
-  autoReduceTicks(xAxisG, xAxis);
 
-  if (xLabel) {
-    axes.append('text')
-      .attr('class', 'x-label')
-      .attr('text-anchor', 'middle')
-      .attr('x', frame.width / 2)
-      .attr('y', frame.height + frame.margin.bottom - 8)
-      .text(xLabel);
+  /** @type {d3Scale.ScaleLinear<number,number>|null} */
+  let yScale = null;
+  if (wouldOverflow) {
+    yScale = d3Scale.scaleLinear()
+      .domain([0, maxStack])
+      .nice()
+      .range([frame.height, 0]);
+    const yAxis = d3Axis.axisLeft(yScale).tickFormat(formatTick);
+    addAxes(frame, xAxis, yAxis, xLabel, 'Frequency');
+  } else {
+    const xAxisG = axes.append('g')
+      .attr('class', 'x-axis')
+      .attr('transform', `translate(0, ${frame.height})`)
+      .call(xAxis);
+    autoReduceTicks(xAxisG, xAxis);
+
+    if (xLabel) {
+      axes.append('text')
+        .attr('class', 'x-label')
+        .attr('text-anchor', 'middle')
+        .attr('x', frame.width / 2)
+        .attr('y', frame.height + frame.margin.bottom - 8)
+        .text(xLabel);
+    }
   }
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
-  renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex, highlightIndices, frame.inner);
+  if (wouldOverflow) {
+    renderSpikes(dataGroup, dots, xScale, /** @type {d3Scale.ScaleLinear<number,number>} */ (yScale), frame.height, isExtreme, highlightIndex, highlightIndices, frame.inner);
+  } else {
+    renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex, highlightIndices, frame.inner);
+  }
 
   // Observed statistic line
   const overlaysGroup = d3Selection.select(frame.inner).select('.overlays');
@@ -185,16 +213,56 @@ export function drawDotplot(container, values, options = {}) {
       const newCiLines = opts.ciLines ?? ciLines;
       const newResult = computeDots(newValues, { numBins: newNumBins });
       const newEffectiveBins = newNumBins ?? Math.min(newValues.length, 40);
+      const newOverflow = newResult.maxStack > 0 && newResult.maxStack * MIN_RADIUS * 2 > frame.height;
 
       xScale.domain(newResult.domain);
-      const xAxisSel = d3Selection.select(frame.inner).select('.x-axis').call(xAxis);
-      autoReduceTicks(xAxisSel, xAxis);
 
-      const newRadius = computeDotRadius(
-        frame.width, frame.height, newResult.maxStack, newEffectiveBins);
-
+      // Clear existing data
       dataGroup.selectAll('circle').remove();
-      renderDots(dataGroup, newResult.dots, xScale, frame.height, newRadius, newIsExtreme, animate, -1, undefined, frame.inner);
+      dataGroup.selectAll('.spike-line').remove();
+      dataGroup.selectAll('.spike-cap').remove();
+
+      if (newOverflow) {
+        // Switch to spike mode — need y-axis
+        if (!yScale) {
+          yScale = d3Scale.scaleLinear().range([frame.height, 0]);
+          // Remove dot-mode x-axis and add full axes
+          axes.selectAll('*').remove();
+        }
+        yScale.domain([0, newResult.maxStack]).nice();
+        const yAxisFn = d3Axis.axisLeft(yScale).tickFormat(formatTick);
+        // Re-render axes
+        axes.selectAll('*').remove();
+        addAxes(frame, xAxis, yAxisFn, xLabel, 'Frequency');
+
+        renderSpikes(dataGroup, newResult.dots, xScale, yScale, frame.height, newIsExtreme, -1, undefined, frame.inner);
+      } else {
+        // Dot mode — remove y-axis if it was added
+        if (yScale) {
+          yScale = null;
+          axes.selectAll('*').remove();
+          const xAxisG = axes.append('g')
+            .attr('class', 'x-axis')
+            .attr('transform', `translate(0, ${frame.height})`)
+            .call(xAxis);
+          autoReduceTicks(xAxisG, xAxis);
+          if (xLabel) {
+            axes.append('text')
+              .attr('class', 'x-label')
+              .attr('text-anchor', 'middle')
+              .attr('x', frame.width / 2)
+              .attr('y', frame.height + frame.margin.bottom - 8)
+              .text(xLabel);
+          }
+        } else {
+          const xAxisSel = d3Selection.select(frame.inner).select('.x-axis').call(xAxis);
+          autoReduceTicks(xAxisSel, xAxis);
+        }
+
+        const newRadius = computeDotRadius(
+          frame.width, frame.height, newResult.maxStack, newEffectiveBins);
+        renderDots(dataGroup, newResult.dots, xScale, frame.height, newRadius, newIsExtreme, animate, -1, undefined, frame.inner);
+      }
 
       const overlays = d3Selection.select(frame.inner).select('.overlays');
       overlays.selectAll('*').remove();
@@ -305,6 +373,109 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
         }
       });
     }, 800);
+  }
+}
+
+/**
+ * Render spike-style display when dotplot stacks overflow.
+ * Uses the same bin structure as dots but draws vertical lines + cap circles.
+ * The newest dot (highlightIndex) gets an orange cap on top.
+ *
+ * @param {d3Selection.Selection} group
+ * @param {Array<{value: number, binCenter: number, stackIndex: number}>} dots
+ * @param {d3Scale.ScaleLinear<number, number>} xScale
+ * @param {d3Scale.ScaleLinear<number, number>} yScale
+ * @param {number} innerHeight
+ * @param {((value: number) => boolean)} [isExtreme]
+ * @param {number} [highlightIndex] - Index of single newest dot
+ * @param {Set<number>} [highlightIndices] - Indices of batch-added dots
+ * @param {SVGGElement} [innerNode]
+ */
+function renderSpikes(group, dots, xScale, yScale, innerHeight, isExtreme, highlightIndex = -1, highlightIndices, innerNode) {
+  // Aggregate dots by binCenter → count
+  /** @type {Map<number, {count: number, values: number[]}>} */
+  const bins = new Map();
+  for (const d of dots) {
+    const entry = bins.get(d.binCenter);
+    if (entry) {
+      entry.count++;
+      entry.values.push(d.value);
+    } else {
+      bins.set(d.binCenter, { count: 1, values: [d.value] });
+    }
+  }
+
+  const spikeData = [...bins.entries()]
+    .map(([center, { count, values }]) => ({ center, count, values }))
+    .sort((a, b) => a.center - b.center);
+
+  /** Color for a spike based on its bin center value. */
+  function spikeColor(center) {
+    if (!isExtreme) return SPIKE_FILL;
+    return isExtreme(center) ? SPIKE_EXTREME : SPIKE_BODY;
+  }
+
+  // Lines
+  group.selectAll('.spike-line')
+    .data(spikeData)
+    .join('line')
+    .attr('class', 'spike-line')
+    .attr('x1', d => xScale(d.center))
+    .attr('x2', d => xScale(d.center))
+    .attr('y1', innerHeight)
+    .attr('y2', d => yScale(d.count))
+    .attr('stroke', d => spikeColor(d.center))
+    .attr('stroke-width', 2)
+    .attr('role', 'listitem')
+    .attr('aria-label', d => `${d.center}: ${d.count}`);
+
+  // Caps
+  group.selectAll('.spike-cap')
+    .data(spikeData)
+    .join('circle')
+    .attr('class', 'spike-cap')
+    .attr('cx', d => xScale(d.center))
+    .attr('cy', d => yScale(d.count))
+    .attr('r', 3)
+    .attr('fill', d => spikeColor(d.center));
+
+  // Highlight the newest spike cap(s) with orange
+  if (highlightIndex >= 0 || (highlightIndices && highlightIndices.size > 0)) {
+    // Find which bin centers have highlighted dots
+    /** @type {Set<number>} */
+    const highlightedCenters = new Set();
+    for (let i = 0; i < dots.length; i++) {
+      if (i === highlightIndex || (highlightIndices && highlightIndices.has(i))) {
+        highlightedCenters.add(dots[i].binCenter);
+      }
+    }
+    const caps = group.selectAll('.spike-cap')
+      .filter(d => highlightedCenters.has(d.center));
+    caps
+      .attr('fill', HIGHLIGHT_FILL)
+      .attr('r', 5)
+      .attr('stroke', '#000')
+      .attr('stroke-width', 1.5);
+
+    // Revert after delay
+    setTimeout(() => {
+      caps.each(function(d) {
+        const el = /** @type {SVGCircleElement} */ (this);
+        el.setAttribute('fill', spikeColor(d.center));
+        el.setAttribute('r', '3');
+        el.removeAttribute('stroke');
+        el.removeAttribute('stroke-width');
+      });
+    }, 800);
+  }
+
+  // Tooltips
+  if (innerNode) {
+    attachTooltip(group.selectAll('.spike-line'), innerNode, (d) => ({
+      lines: [`${formatTick(d.center)}`, `Frequency: ${d.count}`],
+      x: xScale(d.center),
+      y: yScale(d.count),
+    }));
   }
 }
 
