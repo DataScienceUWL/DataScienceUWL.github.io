@@ -2,12 +2,12 @@
 /**
  * Shared type definitions for StatBench.
  * This file contains no runtime code — only JSDoc typedefs.
- * Import types with: @import { SimKitParams } from './types.js'
+ * Import types with: @import { StatBenchParams } from './types.js'
  */
 
 /**
  * Parsed URL parameters for a StatBench page.
- * @typedef {object} SimKitParams
+ * @typedef {object} StatBenchParams
  * @property {number[]} [data]          - Inline numeric data from ?data=
  * @property {string}   [dataset]       - Bundled dataset name from ?dataset=
  * @property {string}   [csv]           - Remote CSV URL from ?csv=

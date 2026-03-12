@@ -2,7 +2,7 @@
 
 /**
  * URL parameter parsing module.
- * Parses query strings into SimKitParams objects with validation and sanitization.
+ * Parses query strings into StatBenchParams objects with validation and sanitization.
  * @module url-params
  */
 
@@ -38,9 +38,9 @@ function sanitize(s) {
 }
 
 /**
- * Parse URL query parameters into a SimKitParams object.
+ * Parse URL query parameters into a StatBenchParams object.
  * @param {string} [queryString] - URL query string to parse (defaults to location.search in browser)
- * @returns {import('./types.js').SimKitParams}
+ * @returns {import('./types.js').StatBenchParams}
  */
 export function parseParams(queryString) {
     if (queryString === undefined) {
@@ -57,7 +57,7 @@ export function parseParams(queryString) {
     }
 
     const urlParams = new URLSearchParams(queryString);
-    /** @type {import('./types.js').SimKitParams} */
+    /** @type {import('./types.js').StatBenchParams} */
     const params = {};
 
     // Parse inline data

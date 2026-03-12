@@ -1,7 +1,6 @@
-// StatBench Service Worker — offline-first caching strategy
-// Caches app shell and datasets for offline use.
-
-const CACHE_NAME = 'statbench-v1';
+// StatBench Service Worker — stale-while-revalidate with update notification.
+// DEPLOY_VERSION is replaced by deploy.sh on each deploy.
+const CACHE_NAME = 'statbench-89a42e06';
 
 // App shell — the core files needed for the app to work
 const APP_SHELL = [
@@ -34,6 +33,7 @@ const APP_SHELL = [
   '/statbench/js/conclusions.js',
   '/statbench/js/theory-overlay.js',
   '/statbench/js/chart-interactions.js',
+  '/statbench/js/spike.js',
   // Dataset index
   '/statbench/data/datasets.json',
 ];
@@ -41,38 +41,40 @@ const APP_SHELL = [
 // Install: cache app shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      // Use addAll for app shell, but don't fail install if CDN resources aren't available
-      return cache.addAll(APP_SHELL);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
   );
-  // Activate immediately
+  // Activate immediately — don't wait for old tabs to close
   self.skipWaiting();
 });
 
-// Activate: clean old caches
+// Activate: clean old caches, notify clients
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    ).then(() => {
+      // Tell all open pages that a new version is active
+      self.clients.matchAll({ type: 'window' }).then((clients) => {
+        for (const client of clients) {
+          client.postMessage({ type: 'SW_UPDATED' });
+        }
+      });
+    })
   );
   self.clients.claim();
 });
 
-// Fetch: network-first for HTML pages, cache-first for assets
+// Fetch: stale-while-revalidate for local, network-first for CDN
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
 
-  // Skip CDN requests (D3, jStat, KaTeX, fonts) — let browser handle normally
+  // CDN requests — network first, fall back to cache
   if (url.origin !== self.location.origin) {
-    // Try network, fall back to cache for CDN resources
     event.respondWith(
       fetch(event.request).then((response) => {
-        // Cache CDN resources on first successful fetch
         if (response.ok) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
@@ -83,8 +85,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For local resources: stale-while-revalidate
-  // Serve from cache immediately, update cache in background
+  // Local resources: stale-while-revalidate
   event.respondWith(
     caches.open(CACHE_NAME).then((cache) =>
       cache.match(event.request).then((cached) => {
