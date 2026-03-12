@@ -26,6 +26,37 @@
     </script>
 
     <style>
+        /* ── Mode switcher ─────────────────────────────── */
+        .mode-switcher {
+            display: flex;
+            gap: 0;
+            justify-content: center;
+            margin: 0.5rem 0 1rem;
+            border: none;
+            padding: 0;
+        }
+        .mode-switcher label {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            padding: 0.45rem 1.2rem;
+            border: 2px solid var(--border);
+            font-weight: 600;
+            min-height: 40px;
+        }
+        .mode-switcher label:first-of-type { border-radius: 6px 0 0 6px; }
+        .mode-switcher label:last-of-type { border-radius: 0 6px 6px 0; }
+        .mode-switcher label + label { border-left: none; }
+        .mode-switcher label:has(input:checked) {
+            border-color: var(--ims-blue);
+            background: var(--ims-blue);
+            color: white;
+        }
+        .mode-switcher input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+
+        /* ── Shared layout ─────────────────────────────── */
         .game-layout {
             display: grid;
             grid-template-columns: 1fr;
@@ -50,9 +81,7 @@
             display: block;
         }
 
-        .guess-controls {
-            text-align: center;
-        }
+        .guess-controls { text-align: center; }
 
         .slider-row {
             display: flex;
@@ -98,13 +127,8 @@
             min-height: 44px;
             min-width: 44px;
         }
-        .btn-primary:hover, .btn-primary:focus-visible {
-            background: var(--ims-dark);
-        }
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: default;
-        }
+        .btn-primary:hover, .btn-primary:focus-visible { background: var(--ims-dark); }
+        .btn-primary:disabled { opacity: 0.5; cursor: default; }
         .btn-secondary {
             background: transparent;
             color: var(--ims-blue);
@@ -118,9 +142,7 @@
             min-height: 44px;
             min-width: 44px;
         }
-        .btn-secondary:hover, .btn-secondary:focus-visible {
-            background: var(--ims-lightest);
-        }
+        .btn-secondary:hover, .btn-secondary:focus-visible { background: var(--ims-lightest); }
 
         /* ── Feedback ──────────────────────────────────── */
         .feedback {
@@ -137,26 +159,11 @@
             gap: 0.5rem;
         }
         .feedback.hidden { display: none; }
-        .feedback.excellent {
-            background: #e8f5e9;
-            color: #2e7d32;
-            border: 1px solid #a5d6a7;
-        }
-        .feedback.good {
-            background: #e3f2fd;
-            color: #1565c0;
-            border: 1px solid #90caf9;
-        }
-        .feedback.ok {
-            background: #fff8e1;
-            color: #e65100;
-            border: 1px solid #ffe082;
-        }
-        .feedback.miss {
-            background: #fce4ec;
-            color: #c62828;
-            border: 1px solid #ef9a9a;
-        }
+        .feedback.excellent { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+        .feedback.good { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+        .feedback.ok { background: #fff8e1; color: #e65100; border: 1px solid #ffe082; }
+        .feedback.miss { background: #fce4ec; color: #c62828; border: 1px solid #ef9a9a; }
+        .feedback.correct { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
 
         /* ── Scoreboard ────────────────────────────────── */
         .scoreboard {
@@ -166,9 +173,7 @@
             margin: 0.5rem 0;
             flex-wrap: wrap;
         }
-        .score-item {
-            text-align: center;
-        }
+        .score-item { text-align: center; }
         .score-label {
             font-size: 0.7rem;
             font-weight: 700;
@@ -183,7 +188,7 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* ── History ───────────────────────────────────── */
+        /* ── History bar ───────────────────────────────── */
         .history-bar {
             display: flex;
             gap: 3px;
@@ -202,6 +207,8 @@
         .history-dot.good { background: #1565c0; }
         .history-dot.ok { background: #e65100; }
         .history-dot.miss { background: #c62828; }
+        .history-dot.correct { background: #2e7d32; }
+        .history-dot.wrong { background: #c62828; }
 
         /* ── Difficulty selector ───────────────────────── */
         .difficulty-row {
@@ -227,8 +234,112 @@
             background: var(--ims-lightest);
             font-weight: 700;
         }
-        .difficulty-row input[type="radio"] {
-            margin: 0;
+        .difficulty-row input[type="radio"] { margin: 0; }
+
+        /* ═══ Match Mode ══════════════════════════════════ */
+        .match-layout {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .match-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin: 0.75rem 0;
+        }
+        @media (max-width: 480px) {
+            .match-grid { grid-template-columns: 1fr; }
+        }
+
+        .match-plot {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            position: relative;
+        }
+        .match-plot:hover, .match-plot:focus-visible {
+            border-color: var(--ims-blue);
+            box-shadow: 0 2px 8px rgba(86, 155, 189, 0.2);
+        }
+        .match-plot.selected {
+            border-color: var(--ims-blue);
+            box-shadow: 0 0 0 3px rgba(86, 155, 189, 0.3);
+        }
+        .match-plot.correct-reveal {
+            border-color: #2e7d32;
+            background: #f1f8f1;
+        }
+        .match-plot.wrong-reveal {
+            border-color: #c62828;
+            background: #fef1f1;
+        }
+        .match-plot svg { width: 100%; display: block; }
+        .match-plot .plot-label {
+            position: absolute;
+            top: 6px;
+            left: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--ims-gray-text);
+        }
+        .match-plot .reveal-r {
+            position: absolute;
+            bottom: 6px;
+            right: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #F05133;
+        }
+
+        .r-choices {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 0.75rem 0;
+        }
+        .r-choice {
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            background: white;
+            color: var(--fg);
+            font-family: inherit;
+            font-variant-numeric: tabular-nums;
+            min-height: 44px;
+            min-width: 60px;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .r-choice:hover, .r-choice:focus-visible {
+            border-color: var(--ims-blue);
+            background: var(--ims-lightest);
+        }
+        .r-choice.selected {
+            border-color: var(--ims-blue);
+            background: var(--ims-blue);
+            color: white;
+        }
+        .r-choice.used {
+            opacity: 0.4;
+            cursor: default;
+            text-decoration: line-through;
+        }
+        .r-choice.correct-reveal { border-color: #2e7d32; background: #e8f5e9; color: #2e7d32; }
+        .r-choice.wrong-reveal { border-color: #c62828; background: #fce4ec; color: #c62828; }
+
+        .match-instructions {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--ims-gray-text);
+            margin: 0.5rem 0;
+            min-height: 1.5rem;
         }
 
         /* ── Responsive ────────────────────────────────── */
@@ -256,66 +367,110 @@
 
     <main id="main-content">
         <h1>Guess the Correlation</h1>
-        <p>Look at the scatterplot and guess the correlation coefficient <em>r</em>.
-           How close can you get?</p>
+        <p>How well can you estimate the correlation coefficient <em>r</em> from a scatterplot?</p>
 
         <div aria-live="polite" id="sr-announce" class="sr-only"></div>
 
-        <div class="game-layout">
+        <!-- Mode switcher -->
+        <fieldset class="mode-switcher" aria-label="Game mode">
+            <legend class="sr-only">Game mode</legend>
+            <label><input type="radio" name="mode" value="slider" checked> Slider</label>
+            <label><input type="radio" name="mode" value="match"> Match</label>
+        </fieldset>
 
-            <!-- Scoreboard -->
-            <div class="scoreboard" aria-label="Score">
-                <div class="score-item">
-                    <div class="score-label">Round</div>
-                    <div class="score-num" id="round-num">0</div>
+        <!-- ═══ SLIDER MODE ═══════════════════════════════════ -->
+        <div id="slider-mode">
+            <div class="game-layout">
+                <div class="scoreboard" aria-label="Score">
+                    <div class="score-item">
+                        <div class="score-label">Round</div>
+                        <div class="score-num" id="round-num">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Avg Error</div>
+                        <div class="score-num" id="avg-error">&mdash;</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Best Streak</div>
+                        <div class="score-num" id="best-streak">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Score</div>
+                        <div class="score-num" id="total-score">0</div>
+                    </div>
                 </div>
-                <div class="score-item">
-                    <div class="score-label">Avg Error</div>
-                    <div class="score-num" id="avg-error">&mdash;</div>
+
+                <div class="history-bar" id="history-bar" aria-label="Round history"></div>
+
+                <div class="chart-area" id="chart-container" role="img"
+                     aria-label="Scatterplot — guess the correlation coefficient"></div>
+
+                <div class="feedback hidden" id="feedback" aria-live="assertive"></div>
+
+                <div class="guess-controls">
+                    <div class="slider-row">
+                        <label for="guess-slider">-1</label>
+                        <input type="range" id="guess-slider" min="-100" max="100" value="0" step="1"
+                               aria-label="Your guess for r">
+                        <label>+1</label>
+                        <span class="guess-value" id="guess-display" aria-live="polite">0.00</span>
+                    </div>
+                    <div class="btn-row">
+                        <button class="btn-primary" id="btn-submit">Submit Guess</button>
+                        <button class="btn-secondary" id="btn-next" style="display:none">Next</button>
+                    </div>
                 </div>
-                <div class="score-item">
-                    <div class="score-label">Best Streak</div>
-                    <div class="score-num" id="best-streak">0</div>
-                </div>
-                <div class="score-item">
-                    <div class="score-label">Score</div>
-                    <div class="score-num" id="total-score">0</div>
-                </div>
+
+                <fieldset class="difficulty-row" aria-label="Difficulty">
+                    <legend class="sr-only">Difficulty level</legend>
+                    <label><input type="radio" name="difficulty" value="easy"> Easy (n=50)</label>
+                    <label><input type="radio" name="difficulty" value="medium" checked> Medium (n=30)</label>
+                    <label><input type="radio" name="difficulty" value="hard"> Hard (n=15)</label>
+                </fieldset>
             </div>
+        </div>
 
-            <div class="history-bar" id="history-bar" aria-label="Round history"></div>
-
-            <!-- Chart -->
-            <div class="chart-area" id="chart-container" role="img"
-                 aria-label="Scatterplot — guess the correlation coefficient">
-            </div>
-
-            <!-- Feedback -->
-            <div class="feedback hidden" id="feedback" aria-live="assertive"></div>
-
-            <!-- Guess controls -->
-            <div class="guess-controls">
-                <div class="slider-row">
-                    <label for="guess-slider">-1</label>
-                    <input type="range" id="guess-slider" min="-100" max="100" value="0" step="1"
-                           aria-label="Your guess for r">
-                    <label>+1</label>
-                    <span class="guess-value" id="guess-display" aria-live="polite">0.00</span>
+        <!-- ═══ MATCH MODE ════════════════════════════════════ -->
+        <div id="match-mode" style="display:none">
+            <div class="match-layout">
+                <div class="scoreboard" aria-label="Match score">
+                    <div class="score-item">
+                        <div class="score-label">Round</div>
+                        <div class="score-num" id="match-round">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Correct</div>
+                        <div class="score-num" id="match-correct">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Total</div>
+                        <div class="score-num" id="match-total">0</div>
+                    </div>
                 </div>
+
+                <div class="history-bar" id="match-history" aria-label="Match history"></div>
+
+                <p class="match-instructions" id="match-instructions">
+                    Click a scatterplot, then click the matching <em>r</em> value.
+                </p>
+
+                <div class="match-grid" id="match-grid" role="group" aria-label="Four scatterplots to match"></div>
+
+                <div class="r-choices" id="r-choices" role="group" aria-label="Correlation values to match"></div>
+
+                <div class="feedback hidden" id="match-feedback" aria-live="assertive"></div>
 
                 <div class="btn-row">
-                    <button class="btn-primary" id="btn-submit">Submit Guess</button>
-                    <button class="btn-secondary" id="btn-next" style="display:none">Next</button>
+                    <button class="btn-primary" id="btn-match-next" style="display:none">Next Round</button>
                 </div>
-            </div>
 
-            <!-- Difficulty -->
-            <fieldset class="difficulty-row" aria-label="Difficulty">
-                <legend class="sr-only">Difficulty level</legend>
-                <label><input type="radio" name="difficulty" value="easy"> Easy (n=50)</label>
-                <label><input type="radio" name="difficulty" value="medium" checked> Medium (n=30)</label>
-                <label><input type="radio" name="difficulty" value="hard"> Hard (n=15)</label>
-            </fieldset>
+                <fieldset class="difficulty-row" aria-label="Match difficulty">
+                    <legend class="sr-only">Match difficulty</legend>
+                    <label><input type="radio" name="match-difficulty" value="easy"> Easy (n=50)</label>
+                    <label><input type="radio" name="match-difficulty" value="medium" checked> Medium (n=30)</label>
+                    <label><input type="radio" name="match-difficulty" value="hard"> Hard (n=15)</label>
+                </fieldset>
+            </div>
         </div>
     </main>
 
