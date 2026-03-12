@@ -133,34 +133,49 @@
         .spreadsheet tr.empty-row input {
             color: var(--ims-gray-text);
         }
-        /* Summary table (categorical) */
-        .summary-table-wrap {
-            margin-top: 0.5rem;
+        /* Categorical editor: side-by-side on desktop */
+        .cat-editors {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
         }
-        .summary-table-wrap label {
-            display: inline-flex;
+        .cat-editors > * {
+            flex: 1;
+            min-width: 0;
+        }
+        @media (max-width: 600px) {
+            .cat-editors {
+                flex-direction: column;
+            }
+        }
+        /* Summary table (categorical) */
+        .summary-table-wrap .summary-heading {
+            display: flex;
             align-items: center;
             gap: 0.4rem;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
+            margin: 0 0 0.25rem;
+            color: var(--ims-gray-text);
+            font-weight: 700;
         }
-        .summary-table-wrap input[type="number"] {
-            width: 3.5rem;
-            font-size: 0.85rem;
-            padding: 0.15rem 0.3rem;
+        .summary-table-wrap .summary-heading input[type="number"] {
+            width: 2.8rem;
+            font-size: 0.82rem;
+            padding: 0.1rem 0.2rem;
+            text-align: center;
         }
         #summary-table {
             border-collapse: collapse;
             width: 100%;
-            max-width: 20rem;
-            margin-top: 0.4rem;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
         }
         #summary-table th {
             background: var(--bg-alt, #f5f5f5);
             border: 1px solid var(--border);
-            padding: 0.25rem 0.5rem;
+            padding: 0.15rem 0.4rem;
             font-weight: 700;
             text-align: left;
+            font-size: 0.78rem;
         }
         #summary-table td {
             border: 1px solid var(--border);
@@ -169,8 +184,8 @@
         #summary-table input {
             width: 100%;
             border: none;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.85rem;
+            padding: 0.15rem 0.4rem;
+            font-size: 0.82rem;
             background: transparent;
             outline: none;
             box-sizing: border-box;
@@ -242,26 +257,27 @@
                     <textarea id="paste-area" hidden></textarea>
                 </div>
                 <div id="paste-categorical" hidden>
-                    <p class="hint" style="margin:0 0 0.3rem;">Enter raw values or a summary frequency table:</p>
-                    <div id="cat-spreadsheet" class="spreadsheet" aria-label="Category data editor">
-                        <table>
-                            <thead><tr><th class="row-num">#</th><th>Category</th></tr></thead>
-                            <tbody id="cat-sheet-body">
-                                <!-- Rows injected by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="summary-table-wrap">
-                        <label>Or enter summary table with
-                            <input type="number" id="num-categories" min="2" max="20" value="3" aria-label="Number of categories">
-                            categories
-                        </label>
-                        <table id="summary-table" aria-label="Summary frequency table">
-                            <thead><tr><th>Category</th><th>Count</th></tr></thead>
-                            <tbody id="summary-table-body">
-                                <!-- Rows injected by JS -->
-                            </tbody>
-                        </table>
+                    <div class="cat-editors">
+                        <div>
+                            <p class="hint" style="margin:0 0 0.25rem;">Raw values:</p>
+                            <div id="cat-spreadsheet" class="spreadsheet" aria-label="Category data editor">
+                                <table>
+                                    <thead><tr><th class="row-num">#</th><th>Category</th></tr></thead>
+                                    <tbody id="cat-sheet-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="summary-table-wrap">
+                            <div class="summary-heading">
+                                Summary table &mdash;
+                                <input type="number" id="num-categories" min="2" max="20" value="3" aria-label="Number of categories">
+                                categories
+                            </div>
+                            <table id="summary-table" aria-label="Summary frequency table">
+                                <thead><tr><th>Category</th><th>Count</th></tr></thead>
+                                <tbody id="summary-table-body"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
                 <div class="btn-row">
