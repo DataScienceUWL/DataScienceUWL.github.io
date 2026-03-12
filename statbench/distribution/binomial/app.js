@@ -217,7 +217,7 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma, prob, type) {
   visibleHi = hi;
   const visible = data.slice(lo, hi + 1);
 
-  const margin = { top: 25, right: 20, bottom: 45, left: 55 };
+  const margin = { top: 25, right: 20, bottom: 55, left: 60 };
   const width = 560;
   const height = 300;
   const innerW = width - margin.left - margin.right;
@@ -261,20 +261,20 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma, prob, type) {
     .domain([lo - 0.5, hi + 0.5])
     .range([0, innerW]);
 
-  // Axes
+  // Axes — thin out x ticks so they don't overlap on narrow screens
   const xAxis = d3Axis.axisBottom(xBand);
-  if (kValues.length > 30) {
-    const step = Math.ceil(kValues.length / 15);
+  if (kValues.length > 15) {
+    const step = Math.ceil(kValues.length / 10);
     xAxis.tickValues(kValues.filter((_, i) => i % step === 0).map(String));
   }
   g.append('g').attr('transform', `translate(0, ${innerH})`).call(xAxis);
-  g.append('g').call(d3Axis.axisLeft(yScale).tickFormat(formatTick));
+  g.append('g').call(d3Axis.axisLeft(yScale).ticks(5).tickFormat(formatTick));
 
   // X label
   g.append('text')
     .attr('class', 'x-label')
     .attr('x', innerW / 2)
-    .attr('y', innerH + 35)
+    .attr('y', innerH + 45)
     .attr('text-anchor', 'middle')
     .text('k (number of successes)');
 
@@ -284,7 +284,7 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma, prob, type) {
     .attr('text-anchor', 'middle')
     .attr('transform', 'rotate(-90)')
     .attr('x', -innerH / 2)
-    .attr('y', -40)
+    .attr('y', -45)
     .text('P(X = k)');
 
   // Bars
