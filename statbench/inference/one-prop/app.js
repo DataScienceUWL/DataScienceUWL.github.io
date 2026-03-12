@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * One-Proportion z-Test and Confidence Interval — StatBench
- * Parametric inference page using summary data input (successes + n).
+ * Supports dataset loading, paste/file input, and manual summary entry.
  */
 
 import * as jstat from 'jstat';
@@ -10,7 +10,8 @@ import { setJStat, pdfNormal } from '../../js/distributions.js';
 import { onePropZ } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
-import { announce } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initKeyboardShortcuts } from '../../js/page-utils.js';
+import { parseCSV } from '../../js/csv-parser.js';
 
 setJStat(jstat);
 
@@ -26,24 +27,168 @@ const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('c
 const resultBanner = /** @type {HTMLElement} */ (document.getElementById('result-summary'));
 const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('results-panel'));
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
+const dataPreview = document.getElementById('data-preview');
+const dataSummary = document.getElementById('data-summary');
+const variableSelector = document.getElementById('variable-selector');
+const varSelect = /** @type {HTMLSelectElement|null} */ (document.getElementById('var-select'));
+const successSelector = document.getElementById('success-selector');
+const successOutcome = /** @type {HTMLSelectElement|null} */ (document.getElementById('success-outcome'));
+const loadSummaryBtn = document.getElementById('load-summary');
 
-// ── Keyboard shortcut for help dialog ───────────────────────────────
-const helpDialog = /** @type {HTMLDialogElement|null} */ (document.getElementById('keyboard-help'));
-if (helpDialog) {
-  document.addEventListener('keydown', (e) => {
-    if (e.target !== document.body) return;
-    if (e.ctrlKey || e.metaKey) return;
-    if (e.key === '?') helpDialog.showModal();
+initTabs();
+initKeyboardShortcuts();
+
+// ── State ───────────────────────────────────────────────────────────
+/** @type {string[]} Raw categorical values from loaded data */
+let rawValues = [];
+/** Currently loaded successes count */
+let currentSuccesses = 0;
+/** Currently loaded sample size */
+let currentN = 0;
+/** Success label */
+let currentSuccessLabel = '';
+/** Whether data was loaded from a dataset/paste/file (vs. summary) */
+let fromRawData = false;
+
+// ── Data loading ────────────────────────────────────────────────────
+
+initDataPanel({
+  datasetFilter: (/** @type {any} */ ds) => ds.hasCategorical === true,
+  onDataset: (ds) => {
+    const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
+    if (catVars.length === 0) {
+      announce('This dataset has no categorical variables.');
+      return;
+    }
+
+    // If multiple categorical variables, show variable selector
+    if (catVars.length > 1 && varSelect && variableSelector) {
+      varSelect.innerHTML = '';
+      for (const v of catVars) {
+        const opt = document.createElement('option');
+        opt.value = v.name;
+        opt.textContent = v.label || v.name;
+        varSelect.appendChild(opt);
+      }
+      variableSelector.hidden = false;
+      varSelect.addEventListener('change', () => {
+        rawValues = ds.rows.map(/** @param {any} r */ r => String(r[varSelect.value]));
+        showSuccessSelector(rawValues, ds.name);
+      });
+    } else {
+      if (variableSelector) variableSelector.hidden = true;
+    }
+
+    const varName = catVars[0].name;
+    rawValues = ds.rows.map(/** @param {any} r */ r => String(r[varName]));
+    showSuccessSelector(rawValues, ds.name);
+  },
+  onText: (parsed, sourceName) => {
+    // Find first categorical column
+    const catIdx = parsed.types.findIndex(t => t === 'categorical');
+    if (catIdx < 0) {
+      announce('No categorical column found in the data.');
+      return;
+    }
+    const colName = parsed.headers[catIdx];
+    rawValues = parsed.data.map(row => String(row[colName]));
+    if (variableSelector) variableSelector.hidden = true;
+    showSuccessSelector(rawValues, sourceName);
+  },
+  onClear: () => {
+    rawValues = [];
+    currentSuccesses = 0;
+    currentN = 0;
+    fromRawData = false;
+    if (dataPreview) dataPreview.hidden = true;
+    if (successSelector) successSelector.hidden = true;
+    if (variableSelector) variableSelector.hidden = true;
+    chartContainer.innerHTML = '';
+    resultsPanel.innerHTML = '<p class="placeholder">Load data or enter summary statistics, then click Compute.</p>';
+    resultBanner.innerHTML = '';
+    announce('Data cleared.');
+  },
+});
+
+/**
+ * Show the success outcome selector and auto-count.
+ * @param {string[]} values
+ * @param {string} sourceName
+ */
+function showSuccessSelector(values, sourceName) {
+  const categories = [...new Set(values)];
+  fromRawData = true;
+
+  if (successOutcome && successSelector) {
+    successOutcome.innerHTML = '';
+    for (const cat of categories) {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      successOutcome.appendChild(opt);
+    }
+    successSelector.hidden = false;
+
+    // Auto-select and count
+    const selectedSuccess = categories[0];
+    countAndLoad(values, selectedSuccess, sourceName);
+
+    successOutcome.addEventListener('change', () => {
+      countAndLoad(values, successOutcome.value, sourceName);
+    });
+  }
+}
+
+/**
+ * Count successes from raw data and update the UI.
+ * @param {string[]} values
+ * @param {string} successValue
+ * @param {string} sourceName
+ */
+function countAndLoad(values, successValue, sourceName) {
+  currentN = values.length;
+  currentSuccesses = values.filter(v => v === successValue).length;
+  currentSuccessLabel = successValue;
+
+  if (dataPreview) dataPreview.hidden = false;
+  if (dataSummary) {
+    dataSummary.textContent = `${sourceName}: n = ${currentN}, ${successValue} = ${currentSuccesses} (p\u0302 = ${formatStat(currentSuccesses / currentN, 0, 'proportion')})`;
+  }
+
+  announce(`Loaded ${currentN} observations. ${currentSuccesses} "${successValue}" (p\u0302 = ${formatStat(currentSuccesses / currentN, 0, 'proportion')}).`);
+}
+
+// ── Summary input ───────────────────────────────────────────────────
+
+if (loadSummaryBtn) {
+  loadSummaryBtn.addEventListener('click', () => {
+    const successes = Math.round(Number(inputSuccesses.value));
+    const n = Math.round(Number(inputN.value));
+    if (!Number.isFinite(n) || n < 1) {
+      announce('Sample size must be at least 1.');
+      return;
+    }
+    if (!Number.isFinite(successes) || successes < 0 || successes > n) {
+      announce('Successes must be between 0 and n.');
+      return;
+    }
+    currentSuccesses = successes;
+    currentN = n;
+    currentSuccessLabel = inputSuccessLabel.value.trim() || 'successes';
+    fromRawData = false;
+
+    if (dataPreview) dataPreview.hidden = false;
+    if (dataSummary) {
+      dataSummary.textContent = `Summary: n = ${currentN}, ${currentSuccessLabel} = ${currentSuccesses} (p\u0302 = ${formatStat(currentSuccesses / currentN, 0, 'proportion')})`;
+    }
+    announce(`Loaded summary: n = ${n}, successes = ${successes}.`);
   });
-  const closeBtn = helpDialog.querySelector('button');
-  if (closeBtn) closeBtn.addEventListener('click', () => helpDialog.close());
 }
 
 // ── Event listeners ─────────────────────────────────────────────────
 computeBtn.addEventListener('click', compute);
 
-// Compute on Enter in any input field
-for (const el of [inputSuccesses, inputN, inputP0, inputConfLevel]) {
+for (const el of [inputP0, inputConfLevel]) {
   el.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); compute(); }
   });
@@ -56,26 +201,17 @@ inputAlt.addEventListener('change', () => {
 
 // ── Main computation ────────────────────────────────────────────────
 
-/**
- * Validate inputs, run the one-proportion z-test, display results, draw chart.
- */
 function compute() {
-  const successes = Math.round(Number(inputSuccesses.value));
-  const n = Math.round(Number(inputN.value));
+  if (currentN < 1) {
+    announce('Load data or enter summary statistics first.');
+    return;
+  }
+
   const p0 = Number(inputP0.value);
   const alternative = /** @type {'less'|'greater'|'two-sided'} */ (inputAlt.value);
   const confLevel = Number(inputConfLevel.value);
-  const successLabel = inputSuccessLabel.value.trim() || 'successes';
 
   // ── Validate ──
-  if (!Number.isFinite(n) || n < 1) {
-    announce('Sample size must be at least 1.');
-    return;
-  }
-  if (!Number.isFinite(successes) || successes < 0 || successes > n) {
-    announce('Successes must be between 0 and n.');
-    return;
-  }
   if (!Number.isFinite(p0) || p0 <= 0 || p0 >= 1) {
     announce('Null proportion must be between 0 and 1 (exclusive).');
     return;
@@ -86,16 +222,16 @@ function compute() {
   }
 
   // ── Check conditions ──
-  const np0 = n * p0;
-  const nq0 = n * (1 - p0);
+  const np0 = currentN * p0;
+  const nq0 = currentN * (1 - p0);
   const conditionsMet = np0 >= 10 && nq0 >= 10;
   conditionsWarning.hidden = conditionsMet;
 
   // ── Run test ──
-  const result = onePropZ(successes, n, { p0, alternative, confLevel });
+  const result = onePropZ(currentSuccesses, currentN, { p0, alternative, confLevel });
 
   // ── Display results ──
-  displayResults(result, successLabel, conditionsMet);
+  displayResults(result, currentSuccessLabel, conditionsMet);
 
   // ── Draw chart ──
   drawChart(result);
@@ -108,7 +244,6 @@ function compute() {
 // ── Display results ─────────────────────────────────────────────────
 
 /**
- * Render results in the sidebar panel.
  * @param {import('../../js/inference.js').OnePropResult} r
  * @param {string} successLabel
  * @param {boolean} conditionsMet
@@ -116,10 +251,7 @@ function compute() {
 function displayResults(r, successLabel, conditionsMet) {
   const altSymbol = r.alternative === 'two-sided' ? '\u2260'
     : r.alternative === 'less' ? '<' : '>';
-  const altWord = r.alternative === 'two-sided' ? 'different from'
-    : r.alternative === 'less' ? 'less than' : 'greater than';
 
-  // p-value interpretation
   let pInterpretation;
   if (r.pValue < 0.001) {
     pInterpretation = 'very strong evidence against H\u2080';
@@ -178,7 +310,6 @@ function displayResults(r, successLabel, conditionsMet) {
     </div>
   `;
 
-  // Result banner above chart
   resultBanner.innerHTML =
     `z = ${formatStat(r.zStat, 0, 'correlation')}, ${formatStat(r.pValue, 0, 'pvalue')} &nbsp;|&nbsp; ${confPct}% CI: (${formatStat(r.ciLower, 0, 'proportion')}, ${formatStat(r.ciUpper, 0, 'proportion')})`;
 }
@@ -195,7 +326,6 @@ function drawChart(r) {
   const domain = computeDomain('normal', { mu: 0, sigma: 1 });
   const pdfFn = (/** @type {number} */ x) => pdfNormal(x, 0, 1);
 
-  // Determine shading based on alternative
   /** @type {'left'|'right'|'both'|undefined} */
   let tail;
   /** @type {number|undefined} */
@@ -229,7 +359,6 @@ function drawChart(r) {
     critHigh,
   });
 
-  // Mark the z-statistic with a vertical dashed line
   if (chart && isFinite(r.zStat)) {
     const { xScale, yScale, frame } = chart;
     const overlays = d3Selection.select(frame.inner).select('.overlays');
@@ -256,7 +385,6 @@ function drawChart(r) {
       .attr('font-weight', '700')
       .text(`z = ${r.zStat.toFixed(3)}`);
 
-    // For two-sided, also mark the mirror z value
     if (r.alternative === 'two-sided' && r.zStat !== 0) {
       const mirrorZ = -r.zStat;
       const mirrorX = xScale(mirrorZ);
@@ -278,7 +406,6 @@ function drawChart(r) {
 // ── Helpers ─────────────────────────────────────────────────────────
 
 /**
- * Escape HTML special characters to prevent XSS in user-provided labels.
  * @param {string} str
  * @returns {string}
  */
