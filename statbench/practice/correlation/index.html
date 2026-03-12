@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Guess the Correlation | StatBench</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-scale": "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-array": "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-axis": "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape": "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+
+    <style>
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .chart-area {
+            aspect-ratio: 1;
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .chart-area svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .guess-controls {
+            text-align: center;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 0.5rem 0;
+        }
+        .slider-row label {
+            font-weight: 700;
+            font-size: 0.9rem;
+            min-width: 1.5rem;
+        }
+        .slider-row input[type="range"] {
+            flex: 1;
+            height: 8px;
+            accent-color: var(--ims-blue);
+        }
+        .guess-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--ims-blue);
+            font-variant-numeric: tabular-nums;
+            min-width: 5ch;
+            text-align: center;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-top: 0.75rem;
+        }
+        .btn-primary {
+            background: var(--ims-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.6rem 1.8rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            min-height: 44px;
+            min-width: 44px;
+        }
+        .btn-primary:hover, .btn-primary:focus-visible {
+            background: var(--ims-dark);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--ims-blue);
+            border: 2px solid var(--ims-blue);
+            border-radius: 6px;
+            padding: 0.6rem 1.4rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            min-height: 44px;
+            min-width: 44px;
+        }
+        .btn-secondary:hover, .btn-secondary:focus-visible {
+            background: var(--ims-lightest);
+        }
+
+        /* ── Feedback ──────────────────────────────────── */
+        .feedback {
+            text-align: center;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin: 0.75rem 0;
+            font-weight: 700;
+            font-size: 1rem;
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .feedback.hidden { display: none; }
+        .feedback.excellent {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+        .feedback.good {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #90caf9;
+        }
+        .feedback.ok {
+            background: #fff8e1;
+            color: #e65100;
+            border: 1px solid #ffe082;
+        }
+        .feedback.miss {
+            background: #fce4ec;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+
+        /* ── Scoreboard ────────────────────────────────── */
+        .scoreboard {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 0.5rem 0;
+            flex-wrap: wrap;
+        }
+        .score-item {
+            text-align: center;
+        }
+        .score-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--ims-gray-text);
+        }
+        .score-num {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--fg);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ── History ───────────────────────────────────── */
+        .history-bar {
+            display: flex;
+            gap: 3px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 0.5rem 0;
+            min-height: 20px;
+        }
+        .history-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        .history-dot.excellent { background: #2e7d32; }
+        .history-dot.good { background: #1565c0; }
+        .history-dot.ok { background: #e65100; }
+        .history-dot.miss { background: #c62828; }
+
+        /* ── Difficulty selector ───────────────────────── */
+        .difficulty-row {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin: 0.5rem 0;
+            flex-wrap: wrap;
+        }
+        .difficulty-row label {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            min-height: 36px;
+        }
+        .difficulty-row label:has(input:checked) {
+            border-color: var(--ims-blue);
+            background: var(--ims-lightest);
+            font-weight: 700;
+        }
+        .difficulty-row input[type="radio"] {
+            margin: 0;
+        }
+
+        /* ── Responsive ────────────────────────────────── */
+        @media (max-width: 480px) {
+            .chart-area { max-width: 100%; }
+            .guess-value { font-size: 1.4rem; }
+            .scoreboard { gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#main-content">Skip to content</a>
+    </nav>
+    <header>
+        <nav aria-label="Breadcrumb" class="breadcrumb">
+            <a href="../../">
+                <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg>
+                StatBench
+            </a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">Guess the Correlation</span>
+        </nav>
+    </header>
+
+    <main id="main-content">
+        <h1>Guess the Correlation</h1>
+        <p>Look at the scatterplot and guess the correlation coefficient <em>r</em>.
+           How close can you get?</p>
+
+        <div aria-live="polite" id="sr-announce" class="sr-only"></div>
+
+        <div class="game-layout">
+
+            <!-- Scoreboard -->
+            <div class="scoreboard" aria-label="Score">
+                <div class="score-item">
+                    <div class="score-label">Round</div>
+                    <div class="score-num" id="round-num">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Avg Error</div>
+                    <div class="score-num" id="avg-error">&mdash;</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Best Streak</div>
+                    <div class="score-num" id="best-streak">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Score</div>
+                    <div class="score-num" id="total-score">0</div>
+                </div>
+            </div>
+
+            <div class="history-bar" id="history-bar" aria-label="Round history"></div>
+
+            <!-- Chart -->
+            <div class="chart-area" id="chart-container" role="img"
+                 aria-label="Scatterplot — guess the correlation coefficient">
+            </div>
+
+            <!-- Feedback -->
+            <div class="feedback hidden" id="feedback" aria-live="assertive"></div>
+
+            <!-- Guess controls -->
+            <div class="guess-controls">
+                <div class="slider-row">
+                    <label for="guess-slider">-1</label>
+                    <input type="range" id="guess-slider" min="-100" max="100" value="0" step="1"
+                           aria-label="Your guess for r">
+                    <label>+1</label>
+                    <span class="guess-value" id="guess-display" aria-live="polite">0.00</span>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn-primary" id="btn-submit">Submit Guess</button>
+                    <button class="btn-secondary" id="btn-next" style="display:none">Next</button>
+                </div>
+            </div>
+
+            <!-- Difficulty -->
+            <fieldset class="difficulty-row" aria-label="Difficulty">
+                <legend class="sr-only">Difficulty level</legend>
+                <label><input type="radio" name="difficulty" value="easy"> Easy (n=50)</label>
+                <label><input type="radio" name="difficulty" value="medium" checked> Medium (n=30)</label>
+                <label><input type="radio" name="difficulty" value="hard"> Hard (n=15)</label>
+            </fieldset>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2025–2026 Jeffrey Baggett. All rights reserved.</p>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
