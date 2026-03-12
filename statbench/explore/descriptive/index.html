@@ -133,33 +133,55 @@
         .spreadsheet tr.empty-row input {
             color: var(--ims-gray-text);
         }
-        /* Summary entry (categorical) */
-        .summary-entry {
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
+        /* Summary table (categorical) */
+        .summary-table-wrap {
             margin-top: 0.5rem;
         }
-        .summary-entry .summary-row {
-            display: flex;
-            gap: 0.4rem;
+        .summary-table-wrap label {
+            display: inline-flex;
             align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
         }
-        .summary-entry input[type="text"] {
-            flex: 1;
-            min-width: 4rem;
+        .summary-table-wrap input[type="number"] {
+            width: 3.5rem;
+            font-size: 0.85rem;
+            padding: 0.15rem 0.3rem;
         }
-        .summary-entry input[type="number"] {
-            width: 5rem;
+        #summary-table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 20rem;
+            margin-top: 0.4rem;
+            font-size: 0.85rem;
         }
-        .summary-entry .remove-row {
-            background: none;
+        #summary-table th {
+            background: var(--bg-alt, #f5f5f5);
+            border: 1px solid var(--border);
+            padding: 0.25rem 0.5rem;
+            font-weight: 700;
+            text-align: left;
+        }
+        #summary-table td {
+            border: 1px solid var(--border);
+            padding: 0;
+        }
+        #summary-table input {
+            width: 100%;
             border: none;
-            color: var(--ims-gray-text);
-            cursor: pointer;
-            font-size: 1.1rem;
-            padding: 0.2rem;
-            line-height: 1;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.85rem;
+            background: transparent;
+            outline: none;
+            box-sizing: border-box;
+        }
+        #summary-table input:focus {
+            background: color-mix(in srgb, var(--accent) 8%, transparent);
+        }
+        #summary-table input[type="number"] {
+            width: 100%;
+            text-align: right;
+            font-family: var(--font-mono, 'Source Code Pro', monospace);
         }
     </style>
 </head>
@@ -220,7 +242,7 @@
                     <textarea id="paste-area" hidden></textarea>
                 </div>
                 <div id="paste-categorical" hidden>
-                    <p class="hint" style="margin:0 0 0.3rem;">Enter category values, or use summary counts:</p>
+                    <p class="hint" style="margin:0 0 0.3rem;">Enter raw values or a summary frequency table:</p>
                     <div id="cat-spreadsheet" class="spreadsheet" aria-label="Category data editor">
                         <table>
                             <thead><tr><th class="row-num">#</th><th>Category</th></tr></thead>
@@ -229,23 +251,18 @@
                             </tbody>
                         </table>
                     </div>
-                    <details style="margin-top:0.5rem;">
-                        <summary style="font-size:0.85rem;cursor:pointer;">Or enter summary counts</summary>
-                        <div id="summary-entry" class="summary-entry" aria-label="Summary data entry">
-                            <div class="summary-row">
-                                <input type="text" placeholder="Category" aria-label="Category name">
-                                <input type="number" placeholder="Count" min="0" aria-label="Count">
-                                <button type="button" class="remove-row" aria-label="Remove row">&times;</button>
-                            </div>
-                            <div class="summary-row">
-                                <input type="text" placeholder="Category" aria-label="Category name">
-                                <input type="number" placeholder="Count" min="0" aria-label="Count">
-                                <button type="button" class="remove-row" aria-label="Remove row">&times;</button>
-                            </div>
-                        </div>
-                        <button type="button" id="add-summary-row" class="btn-secondary" style="margin-top:0.3rem;font-size:0.8rem;">+ Add category</button>
-                    </details>
-                    <textarea id="paste-area-cat" hidden></textarea>
+                    <div class="summary-table-wrap">
+                        <label>Or enter summary table with
+                            <input type="number" id="num-categories" min="2" max="20" value="3" aria-label="Number of categories">
+                            categories
+                        </label>
+                        <table id="summary-table" aria-label="Summary frequency table">
+                            <thead><tr><th>Category</th><th>Count</th></tr></thead>
+                            <tbody id="summary-table-body">
+                                <!-- Rows injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="btn-row">
                     <button type="button" id="load-pasted">Apply</button>
@@ -275,10 +292,14 @@
             <div class="app-body">
                 <!-- Left: Chart area -->
                 <div class="app-main">
-                    <div class="chart-selector" role="radiogroup" aria-label="Chart type">
+                    <div class="chart-selector" id="quant-chart-selector" role="radiogroup" aria-label="Chart type">
                         <label><input type="radio" name="chart-type" value="histogram" checked> Histogram</label>
                         <label><input type="radio" name="chart-type" value="dotplot"> Dotplot</label>
                         <label><input type="radio" name="chart-type" value="boxplot"> Boxplot</label>
+                    </div>
+                    <div class="chart-selector" id="cat-chart-selector" role="radiogroup" aria-label="Bar chart display" hidden>
+                        <label><input type="radio" name="cat-chart-type" value="frequency" checked> Frequency</label>
+                        <label><input type="radio" name="cat-chart-type" value="relative"> Relative Frequency</label>
                     </div>
                     <div class="chart-controls-bar" id="chart-controls">
                         <!-- Contextual controls injected by JS -->

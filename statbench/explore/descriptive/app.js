@@ -34,8 +34,14 @@ const modeCatBtn = /** @type {HTMLButtonElement} */ (document.getElementById('mo
 // Paste panels
 const pasteQuant = document.getElementById('paste-quantitative');
 const pasteCat = document.getElementById('paste-categorical');
-const summaryEntry = document.getElementById('summary-entry');
-const addSummaryRowBtn = document.getElementById('add-summary-row');
+
+// Chart selectors (quantitative vs categorical)
+const quantChartSelector = document.getElementById('quant-chart-selector');
+const catChartSelector = document.getElementById('cat-chart-selector');
+
+// Summary table (categorical)
+const numCategoriesInput = /** @type {HTMLInputElement|null} */ (document.getElementById('num-categories'));
+const summaryTableBody = document.getElementById('summary-table-body');
 
 // Stat output cells
 const statN = document.getElementById('stat-n');
@@ -56,7 +62,7 @@ initTabs();
 /** @type {'quantitative'|'categorical'} */
 let varMode = 'quantitative';
 
-// ── Chart type toggle ─────────────────────────────────────────────────
+// ── Quantitative chart type toggle ──────────────────────────────────
 
 /** @type {'histogram'|'dotplot'|'boxplot'} */
 let activeChart = 'histogram';
@@ -109,8 +115,23 @@ function updateChartControls() {
       renderActiveChart();
     });
   }
-  // dotplot: no contextual controls
 }
+
+// ── Categorical chart type toggle ───────────────────────────────────
+
+/** @type {'frequency'|'relative'} */
+let catChartMode = 'frequency';
+
+const catChartRadios = /** @type {NodeListOf<HTMLInputElement>} */ (
+  document.querySelectorAll('input[name="cat-chart-type"]')
+);
+
+catChartRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    catChartMode = /** @type {'frequency'|'relative'} */ (radio.value);
+    renderCatChart();
+  });
+});
 
 // ── State ─────────────────────────────────────────────────────────────
 
@@ -161,42 +182,66 @@ function setMode(/** @type {'quantitative'|'categorical'} */ mode) {
 modeQuantBtn.addEventListener('click', () => setMode('quantitative'));
 modeCatBtn.addEventListener('click', () => setMode('categorical'));
 
-// ── Summary data entry ───────────────────────────────────────────────
+// ── Summary frequency table (categorical) ───────────────────────────
 
-function addSummaryRow() {
-  if (!summaryEntry) return;
-  const row = document.createElement('div');
-  row.className = 'summary-row';
-  row.innerHTML = `
-    <input type="text" placeholder="Category" aria-label="Category name">
-    <input type="number" placeholder="Count" min="0" aria-label="Count">
-    <button type="button" class="remove-row" aria-label="Remove row">&times;</button>`;
-  summaryEntry.appendChild(row);
-  row.querySelector('.remove-row')?.addEventListener('click', () => {
-    row.remove();
-  });
-}
+/**
+ * Build the summary table rows based on the number-of-categories input.
+ * @param {number} numCats
+ * @param {Array<{name:string, count:number}>} [prefill] - Optional prefill data
+ */
+function buildSummaryTable(numCats, prefill) {
+  if (!summaryTableBody) return;
+  summaryTableBody.innerHTML = '';
+  for (let i = 0; i < numCats; i++) {
+    const tr = document.createElement('tr');
+    const tdName = document.createElement('td');
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = `Category ${i + 1}`;
+    nameInput.setAttribute('aria-label', `Category ${i + 1} name`);
+    if (prefill && prefill[i]) nameInput.value = prefill[i].name;
+    tdName.appendChild(nameInput);
 
-if (addSummaryRowBtn) {
-  addSummaryRowBtn.addEventListener('click', addSummaryRow);
-}
+    const tdCount = document.createElement('td');
+    const countInput = document.createElement('input');
+    countInput.type = 'number';
+    countInput.min = '0';
+    countInput.placeholder = '0';
+    countInput.setAttribute('aria-label', `Category ${i + 1} count`);
+    if (prefill && prefill[i]) countInput.value = String(prefill[i].count);
+    tdCount.appendChild(countInput);
 
-// Wire up initial remove buttons
-if (summaryEntry) {
-  summaryEntry.querySelectorAll('.remove-row').forEach(btn => {
-    btn.addEventListener('click', () => {
-      /** @type {HTMLElement} */ (btn).closest('.summary-row')?.remove();
+    // Tab/Enter navigation between rows
+    countInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        const nextRow = tr.nextElementSibling;
+        if (nextRow) {
+          /** @type {HTMLInputElement|null} */ (nextRow.querySelector('input'))?.focus();
+        }
+      }
     });
-  });
+
+    tr.appendChild(tdName);
+    tr.appendChild(tdCount);
+    summaryTableBody.appendChild(tr);
+  }
 }
 
-/** Read summary entry rows and return expanded category values. */
+if (numCategoriesInput) {
+  numCategoriesInput.addEventListener('input', () => {
+    const n = parseInt(numCategoriesInput.value, 10);
+    if (isFinite(n) && n >= 1 && n <= 20) buildSummaryTable(n);
+  });
+  // Initialize with default
+  buildSummaryTable(parseInt(numCategoriesInput.value, 10) || 3);
+}
+
+/** Read summary table and return expanded category values. */
 function readSummaryData() {
-  if (!summaryEntry) return [];
+  if (!summaryTableBody) return [];
   /** @type {string[]} */
   const values = [];
-  const rows = summaryEntry.querySelectorAll('.summary-row');
-  for (const row of rows) {
+  for (const row of summaryTableBody.querySelectorAll('tr')) {
     const inputs = row.querySelectorAll('input');
     const cat = /** @type {HTMLInputElement} */ (inputs[0]).value.trim();
     const count = parseInt(/** @type {HTMLInputElement} */ (inputs[1]).value, 10);
@@ -247,12 +292,11 @@ function appendSheetRow(tbody, inputType, rowNum, value) {
 
   const tdVal = document.createElement('td');
   const input = document.createElement('input');
-  input.type = 'text'; // always text for paste flexibility
+  input.type = 'text';
   input.inputMode = inputType === 'number' ? 'decimal' : 'text';
   input.value = value;
   input.setAttribute('aria-label', `Row ${rowNum}`);
 
-  // Navigation: Enter/ArrowDown → next row, ArrowUp → prev row
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === 'ArrowDown') {
       e.preventDefault();
@@ -260,7 +304,6 @@ function appendSheetRow(tbody, inputType, rowNum, value) {
       if (nextRow) {
         /** @type {HTMLInputElement|null} */ (nextRow.querySelector('input'))?.focus();
       } else {
-        // Add a new row and focus it
         const newInput = appendSheetRow(tbody, inputType, rowNum + 1, '');
         newInput.focus();
       }
@@ -273,10 +316,8 @@ function appendSheetRow(tbody, inputType, rowNum, value) {
     }
   });
 
-  // Track empty/non-empty for styling
   input.addEventListener('input', () => {
     tr.className = input.value.trim() ? '' : 'empty-row';
-    // Auto-extend: if this is the last row and has content, add more
     if (!tr.nextElementSibling && input.value.trim()) {
       for (let i = 0; i < 3; i++) {
         appendSheetRow(tbody, inputType, getRowCount(tbody) + 1, '');
@@ -300,9 +341,8 @@ function handleSheetPaste(tbody, inputType, e) {
   const text = e.clipboardData?.getData('text');
   if (!text) return;
 
-  // Split by lines (or tabs for row of tab-separated values)
   const lines = text.split(/[\n\r]+/).map(s => s.trim()).filter(s => s.length > 0);
-  if (lines.length <= 1) return; // let default paste handle single values
+  if (lines.length <= 1) return;
 
   e.preventDefault();
 
@@ -325,7 +365,6 @@ function handleSheetPaste(tbody, inputType, e) {
     }
   }
 
-  // Add trailing empty rows
   const totalRows = getRowCount(tbody);
   for (let i = 0; i < 3; i++) {
     appendSheetRow(tbody, inputType, totalRows + i + 1, '');
@@ -353,7 +392,7 @@ function readSheetValues(tbody) {
 }
 
 /**
- * Populate a spreadsheet with values (e.g., from a loaded dataset).
+ * Populate a spreadsheet with values.
  * @param {HTMLElement} tbody
  * @param {'number'|'text'} inputType
  * @param {string[]} values
@@ -362,7 +401,7 @@ function populateSheet(tbody, inputType, values) {
   initSheet(tbody, inputType, values);
 }
 
-// Initialize both spreadsheets with empty rows
+// Initialize spreadsheets
 if (quantSheetBody) {
   initSheet(quantSheetBody, 'number');
   quantSheetBody.addEventListener('paste', (e) =>
@@ -390,7 +429,6 @@ function loadRawText(raw, sourceName) {
   loadedDataset = null;
   if (variableSelector) variableSelector.hidden = true;
 
-  // Try CSV parse first (has headers)
   try {
     const parsed = parseCSV(raw);
     const numIdx = parsed.types.indexOf('numeric');
@@ -427,10 +465,9 @@ function loadRawText(raw, sourceName) {
       return;
     }
   } catch {
-    // Not valid CSV, try as plain numbers
+    // Not valid CSV
   }
 
-  // Plain numbers, one per line
   const values = raw.split(/[\n,]+/)
     .map(s => s.trim())
     .filter(s => s.length > 0)
@@ -446,7 +483,7 @@ function loadRawText(raw, sourceName) {
 }
 
 /**
- * Load raw categorical text — one value per line or CSV with categorical columns.
+ * Load raw categorical text.
  * @param {string} raw
  * @param {string} sourceName
  */
@@ -454,7 +491,6 @@ function loadRawCategorical(raw, sourceName) {
   loadedDataset = null;
   if (variableSelector) variableSelector.hidden = true;
 
-  // Try CSV parse first
   try {
     const parsed = parseCSV(raw);
     const catCols = parsed.headers.filter((_h, i) => parsed.types[i] === 'categorical');
@@ -489,7 +525,6 @@ function loadRawCategorical(raw, sourceName) {
     // Not CSV
   }
 
-  // Plain text: one category per line
   const values = raw.split(/\n/)
     .map(s => s.trim())
     .filter(s => s.length > 0);
@@ -503,11 +538,11 @@ function loadRawCategorical(raw, sourceName) {
 }
 
 /**
- * Handle the Apply button — reads from spreadsheet or summary entry.
+ * Handle the Apply button — reads from spreadsheet or summary table.
  */
 function handleApply() {
   if (varMode === 'categorical') {
-    // Check summary entry first
+    // Check summary table first
     const summaryValues = readSummaryData();
     if (summaryValues.length > 0) {
       setCatData(summaryValues, 'Category', 'Summary data');
@@ -525,7 +560,7 @@ function handleApply() {
     return;
   }
 
-  // Quantitative mode — read from spreadsheet
+  // Quantitative mode
   if (quantSheetBody) {
     const raw = readSheetValues(quantSheetBody);
     const values = raw.map(Number).filter(v => isFinite(v));
@@ -546,7 +581,6 @@ const dataPanel = initDataPanel({
       /** @param {{type:string}} v */ v => v.type === typeFilter
     );
 
-    // Also include all variables of the matching type, but show the right ones
     const allVars = ds.variables.filter(
       /** @param {{type:string}} v */ v => v.type === 'numeric' || v.type === 'categorical'
     );
@@ -558,7 +592,6 @@ const dataPanel = initDataPanel({
 
     if (allVars.length > 1) {
       varSelect.innerHTML = '';
-      // Show matching-type variables first, then others
       for (const v of matchingVars) {
         const opt = document.createElement('option');
         opt.value = v.name;
@@ -588,10 +621,9 @@ const dataPanel = initDataPanel({
   onClear: clearDisplay,
 });
 
-// Override the default Apply button behavior to handle categorical mode
+// Override the default Apply button to handle categorical mode
 const loadPastedBtn = document.getElementById('load-pasted');
 if (loadPastedBtn) {
-  // Remove existing listener by cloning
   const newBtn = loadPastedBtn.cloneNode(true);
   loadPastedBtn.parentNode?.replaceChild(newBtn, loadPastedBtn);
   newBtn.addEventListener('click', handleApply);
@@ -663,8 +695,8 @@ function setData(values, varLabel, sourceName) {
   // Show numeric UI, hide categorical
   if (numericStats) numericStats.hidden = false;
   if (categoricalStats) categoricalStats.hidden = true;
-  const chartSel = document.querySelector('.chart-selector');
-  if (chartSel) /** @type {HTMLElement} */ (chartSel).hidden = false;
+  if (quantChartSelector) /** @type {HTMLElement} */ (quantChartSelector).hidden = false;
+  if (catChartSelector) /** @type {HTMLElement} */ (catChartSelector).hidden = true;
 
   // Show data preview
   if (dataPreview) dataPreview.hidden = false;
@@ -694,8 +726,8 @@ function setCatData(values, varLabel, sourceName) {
   // Show categorical UI, hide numeric
   if (numericStats) numericStats.hidden = true;
   if (categoricalStats) categoricalStats.hidden = false;
-  const chartSel = document.querySelector('.chart-selector');
-  if (chartSel) /** @type {HTMLElement} */ (chartSel).hidden = true;
+  if (quantChartSelector) /** @type {HTMLElement} */ (quantChartSelector).hidden = true;
+  if (catChartSelector) /** @type {HTMLElement} */ (catChartSelector).hidden = false;
 
   // Show data preview
   if (dataPreview) dataPreview.hidden = false;
@@ -729,7 +761,7 @@ function computeAndDisplay(values) {
 }
 
 /**
- * Render the currently selected chart type.
+ * Render the currently selected quantitative chart type.
  */
 function renderActiveChart() {
   if (!chartArea || currentValues.length === 0) return;
@@ -777,11 +809,14 @@ function renderActiveChart() {
 function renderCatChart() {
   if (!chartArea || currentCatValues.length === 0) return;
   chartArea.innerHTML = '';
+
+  const yLabel = catChartMode === 'relative' ? 'Relative Frequency' : 'Frequency';
   drawBarChart(chartArea, currentCatValues, {
-    mode: 'frequency',
+    mode: catChartMode,
     xLabel: currentVarLabel,
+    yLabel,
     titleText: `Bar chart of ${currentVarLabel}`,
-    descText: `Bar chart showing frequency of each category of ${currentVarLabel}`,
+    descText: `Bar chart showing ${yLabel.toLowerCase()} of each category of ${currentVarLabel}`,
     id: 'desc-bar',
     animate: false,
   });
