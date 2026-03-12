@@ -34,8 +34,6 @@ const modeCatBtn = /** @type {HTMLButtonElement} */ (document.getElementById('mo
 // Paste panels
 const pasteQuant = document.getElementById('paste-quantitative');
 const pasteCat = document.getElementById('paste-categorical');
-const pasteArea = /** @type {HTMLTextAreaElement|null} */ (document.getElementById('paste-area'));
-const pasteAreaCat = /** @type {HTMLTextAreaElement|null} */ (document.getElementById('paste-area-cat'));
 const summaryEntry = document.getElementById('summary-entry');
 const addSummaryRowBtn = document.getElementById('add-summary-row');
 
@@ -209,6 +207,173 @@ function readSummaryData() {
   return values;
 }
 
+// ── Spreadsheet editors ──────────────────────────────────────────────
+
+const quantSheetBody = document.getElementById('quant-sheet-body');
+const catSheetBody = document.getElementById('cat-sheet-body');
+const EMPTY_ROWS = 8;
+
+/**
+ * Create a spreadsheet editor in a tbody element.
+ * @param {HTMLElement} tbody
+ * @param {'number'|'text'} inputType
+ * @param {string[]} [initialValues]
+ */
+function initSheet(tbody, inputType, initialValues) {
+  tbody.innerHTML = '';
+  const vals = initialValues ?? [];
+  const rowCount = Math.max(vals.length + 3, EMPTY_ROWS);
+  for (let i = 0; i < rowCount; i++) {
+    appendSheetRow(tbody, inputType, i + 1, vals[i] ?? '');
+  }
+}
+
+/**
+ * Append a single row to a spreadsheet tbody.
+ * @param {HTMLElement} tbody
+ * @param {'number'|'text'} inputType
+ * @param {number} rowNum
+ * @param {string} value
+ * @returns {HTMLInputElement}
+ */
+function appendSheetRow(tbody, inputType, rowNum, value) {
+  const tr = document.createElement('tr');
+  if (!value) tr.className = 'empty-row';
+
+  const tdNum = document.createElement('td');
+  tdNum.className = 'row-num';
+  tdNum.textContent = String(rowNum);
+  tr.appendChild(tdNum);
+
+  const tdVal = document.createElement('td');
+  const input = document.createElement('input');
+  input.type = 'text'; // always text for paste flexibility
+  input.inputMode = inputType === 'number' ? 'decimal' : 'text';
+  input.value = value;
+  input.setAttribute('aria-label', `Row ${rowNum}`);
+
+  // Navigation: Enter/ArrowDown → next row, ArrowUp → prev row
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const nextRow = tr.nextElementSibling;
+      if (nextRow) {
+        /** @type {HTMLInputElement|null} */ (nextRow.querySelector('input'))?.focus();
+      } else {
+        // Add a new row and focus it
+        const newInput = appendSheetRow(tbody, inputType, rowNum + 1, '');
+        newInput.focus();
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prevRow = tr.previousElementSibling;
+      if (prevRow) {
+        /** @type {HTMLInputElement|null} */ (prevRow.querySelector('input'))?.focus();
+      }
+    }
+  });
+
+  // Track empty/non-empty for styling
+  input.addEventListener('input', () => {
+    tr.className = input.value.trim() ? '' : 'empty-row';
+    // Auto-extend: if this is the last row and has content, add more
+    if (!tr.nextElementSibling && input.value.trim()) {
+      for (let i = 0; i < 3; i++) {
+        appendSheetRow(tbody, inputType, getRowCount(tbody) + 1, '');
+      }
+    }
+  });
+
+  tdVal.appendChild(input);
+  tr.appendChild(tdVal);
+  tbody.appendChild(tr);
+  return input;
+}
+
+/**
+ * Handle paste into the spreadsheet — split lines across rows.
+ * @param {HTMLElement} tbody
+ * @param {'number'|'text'} inputType
+ * @param {ClipboardEvent} e
+ */
+function handleSheetPaste(tbody, inputType, e) {
+  const text = e.clipboardData?.getData('text');
+  if (!text) return;
+
+  // Split by lines (or tabs for row of tab-separated values)
+  const lines = text.split(/[\n\r]+/).map(s => s.trim()).filter(s => s.length > 0);
+  if (lines.length <= 1) return; // let default paste handle single values
+
+  e.preventDefault();
+
+  const target = /** @type {HTMLInputElement} */ (e.target);
+  const targetRow = target.closest('tr');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  let startIdx = targetRow ? rows.indexOf(targetRow) : rows.length;
+  if (startIdx < 0) startIdx = rows.length;
+
+  for (let i = 0; i < lines.length; i++) {
+    const rowIdx = startIdx + i;
+    if (rowIdx < rows.length) {
+      const input = /** @type {HTMLInputElement|null} */ (rows[rowIdx].querySelector('input'));
+      if (input) {
+        input.value = lines[i];
+        rows[rowIdx].className = lines[i] ? '' : 'empty-row';
+      }
+    } else {
+      appendSheetRow(tbody, inputType, rowIdx + 1, lines[i]);
+    }
+  }
+
+  // Add trailing empty rows
+  const totalRows = getRowCount(tbody);
+  for (let i = 0; i < 3; i++) {
+    appendSheetRow(tbody, inputType, totalRows + i + 1, '');
+  }
+}
+
+/** @param {HTMLElement} tbody */
+function getRowCount(tbody) {
+  return tbody.querySelectorAll('tr').length;
+}
+
+/**
+ * Read all non-empty values from a spreadsheet.
+ * @param {HTMLElement} tbody
+ * @returns {string[]}
+ */
+function readSheetValues(tbody) {
+  /** @type {string[]} */
+  const values = [];
+  for (const input of tbody.querySelectorAll('input')) {
+    const v = /** @type {HTMLInputElement} */ (input).value.trim();
+    if (v) values.push(v);
+  }
+  return values;
+}
+
+/**
+ * Populate a spreadsheet with values (e.g., from a loaded dataset).
+ * @param {HTMLElement} tbody
+ * @param {'number'|'text'} inputType
+ * @param {string[]} values
+ */
+function populateSheet(tbody, inputType, values) {
+  initSheet(tbody, inputType, values);
+}
+
+// Initialize both spreadsheets with empty rows
+if (quantSheetBody) {
+  initSheet(quantSheetBody, 'number');
+  quantSheetBody.addEventListener('paste', (e) =>
+    handleSheetPaste(quantSheetBody, 'number', /** @type {ClipboardEvent} */ (e)));
+}
+if (catSheetBody) {
+  initSheet(catSheetBody, 'text');
+  catSheetBody.addEventListener('paste', (e) =>
+    handleSheetPaste(catSheetBody, 'text', /** @type {ClipboardEvent} */ (e)));
+}
+
 // ── Data loading ──────────────────────────────────────────────────────
 
 /**
@@ -338,8 +503,7 @@ function loadRawCategorical(raw, sourceName) {
 }
 
 /**
- * Handle the Apply button — dispatches based on mode.
- * For categorical mode, checks summary entry first, then falls back to textarea.
+ * Handle the Apply button — reads from spreadsheet or summary entry.
  */
 function handleApply() {
   if (varMode === 'categorical') {
@@ -349,20 +513,28 @@ function handleApply() {
       setCatData(summaryValues, 'Category', 'Summary data');
       return;
     }
-    // Fall back to textarea
-    const text = pasteAreaCat?.value?.trim();
-    if (text) {
-      loadRawCategorical(text, 'Pasted data');
-      return;
+    // Fall back to spreadsheet
+    if (catSheetBody) {
+      const values = readSheetValues(catSheetBody);
+      if (values.length > 0) {
+        setCatData(values, 'Category', 'Edited data');
+        return;
+      }
     }
     announce('Enter category values or summary counts.');
     return;
   }
 
-  // Quantitative mode — use the standard textarea
-  const text = pasteArea?.value?.trim();
-  if (!text) return;
-  loadRawText(text, 'Edited data');
+  // Quantitative mode — read from spreadsheet
+  if (quantSheetBody) {
+    const raw = readSheetValues(quantSheetBody);
+    const values = raw.map(Number).filter(v => isFinite(v));
+    if (values.length > 0) {
+      setData(values, 'Value', 'Edited data');
+      return;
+    }
+  }
+  announce('Enter numeric values.');
 }
 
 const dataPanel = initDataPanel({
@@ -479,12 +651,14 @@ function loadVariable(varInfo, ds) {
  * @param {string} sourceName
  */
 function setData(values, varLabel, sourceName) {
-
   currentValues = values;
   currentCatValues = [];
   currentVarLabel = varLabel;
   dataPrecision = detectPrecision(values);
   currentBinCount = sturgesBins(values.length);
+
+  // Populate spreadsheet editor
+  if (quantSheetBody) populateSheet(quantSheetBody, 'number', values.map(String));
 
   // Show numeric UI, hide categorical
   if (numericStats) numericStats.hidden = false;
@@ -513,6 +687,9 @@ function setCatData(values, varLabel, sourceName) {
   currentCatValues = values;
   currentValues = [];
   currentVarLabel = varLabel;
+
+  // Populate spreadsheet editor
+  if (catSheetBody) populateSheet(catSheetBody, 'text', values);
 
   // Show categorical UI, hide numeric
   if (numericStats) numericStats.hidden = true;
