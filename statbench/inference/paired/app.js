@@ -6,7 +6,7 @@
  */
 
 import { setJStat, pdfT } from '../../js/distributions.js';
-import { pairedT } from '../../js/inference.js';
+import { pairedT, pairedTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { initTabs, initDataPanel, announce } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
@@ -64,6 +64,12 @@ let currentRows = null;
  * @type {string[]}
  */
 let numericCols = [];
+
+// Summary-input state
+let fromSummary = false;
+let summaryDbar = 0;
+let summarySd = 0;
+let summaryN = 0;
 
 // ── Keyboard help dialog ───────────────────────────────────────────
 const helpDialog = /** @type {HTMLDialogElement|null} */ (
@@ -209,6 +215,7 @@ initDataPanel({
     currentDiffs = null;
     currentRows = null;
     numericCols = [];
+    fromSummary = false;
     varSelectors.hidden = true;
     controlsSection.hidden = true;
     chartSection.hidden = true;
@@ -222,25 +229,58 @@ initDataPanel({
 var1Select.addEventListener('change', () => { if (currentRows) loadFromSelections(); });
 var2Select.addEventListener('change', () => { if (currentRows) loadFromSelections(); });
 
+// ── Summary input handler ────────────────────────────────────────
+const loadSummaryBtn = document.getElementById('load-summary');
+if (loadSummaryBtn) {
+  loadSummaryBtn.addEventListener('click', () => {
+    const dbarInput = /** @type {HTMLInputElement} */ (document.getElementById('input-dbar'));
+    const sdInput = /** @type {HTMLInputElement} */ (document.getElementById('input-sd'));
+    const nInput = /** @type {HTMLInputElement} */ (document.getElementById('input-n'));
+
+    const dbar = parseFloat(dbarInput?.value);
+    const sd = parseFloat(sdInput?.value);
+    const n = parseInt(nInput?.value, 10);
+
+    if (!isFinite(dbar)) { announce('Enter a valid mean difference.'); return; }
+    if (!isFinite(sd) || sd <= 0) { announce('Enter a valid positive standard deviation.'); return; }
+    if (!isFinite(n) || n < 2) { announce('Sample size must be at least 2.'); return; }
+
+    fromSummary = true;
+    summaryDbar = dbar;
+    summarySd = sd;
+    summaryN = n;
+    currentDiffs = null;
+    currentRows = null;
+    varSelectors.hidden = true;
+    showResults();
+    announce(`Loaded summary: d̄ = ${dbar}, s_d = ${sd}, n = ${n}.`);
+  });
+}
+
 // ── Parameter change listeners ─────────────────────────────────────
-inputMu0.addEventListener('input', () => { if (currentDiffs) showResults(); });
-inputAlt.addEventListener('change', () => { if (currentDiffs) showResults(); });
-inputConf.addEventListener('input', () => { if (currentDiffs) showResults(); });
+inputMu0.addEventListener('input', () => { if (currentDiffs || fromSummary) showResults(); });
+inputAlt.addEventListener('change', () => { if (currentDiffs || fromSummary) showResults(); });
+inputConf.addEventListener('input', () => { if (currentDiffs || fromSummary) showResults(); });
 
 // ── Core: compute and display ──────────────────────────────────────
 
 function showResults() {
-  if (!currentDiffs || currentDiffs.length < 2) return;
+  if (!currentDiffs && !fromSummary) return;
+  if (currentDiffs && currentDiffs.length < 2) return;
 
   const mu0 = Number(inputMu0.value) || 0;
   const alternative = /** @type {'less'|'greater'|'two-sided'} */ (inputAlt.value);
   const confLevel = Math.min(0.99, Math.max(0.80, Number(inputConf.value) || 0.95));
 
   // Compute
-  const result = pairedT(currentDiffs, { mu0, alternative, confLevel });
+  const result = fromSummary
+    ? pairedTSummary(summaryDbar, summarySd, summaryN, { mu0, alternative, confLevel })
+    : pairedT(currentDiffs, { mu0, alternative, confLevel });
 
   // Detect precision for formatting
-  const d = detectPrecision(currentDiffs);
+  const d = fromSummary
+    ? Math.max(detectPrecision([summaryDbar]), detectPrecision([summarySd]))
+    : detectPrecision(currentDiffs);
 
   // Show sections
   controlsSection.hidden = false;

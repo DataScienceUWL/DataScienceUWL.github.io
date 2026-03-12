@@ -66,6 +66,43 @@ export function oneMeanT(data, options = {}) {
   return { xbar, s, n, se, tStat, df, pValue, ciLower, ciUpper, alternative, mu0, confLevel };
 }
 
+/**
+ * One-sample t-test from summary statistics.
+ * @param {number} xbar - Sample mean
+ * @param {number} s - Sample standard deviation
+ * @param {number} n - Sample size
+ * @param {object} options
+ * @param {number} [options.mu0=0]
+ * @param {'less'|'greater'|'two-sided'} [options.alternative='two-sided']
+ * @param {number} [options.confLevel=0.95]
+ * @returns {OneMeanResult}
+ */
+export function oneMeanTSummary(xbar, s, n, options = {}) {
+  const mu0 = options.mu0 ?? 0;
+  const alternative = options.alternative ?? 'two-sided';
+  const confLevel = options.confLevel ?? 0.95;
+
+  const se = s / Math.sqrt(n);
+  const tStat = (xbar - mu0) / se;
+  const df = n - 1;
+
+  let pValue;
+  if (alternative === 'less') {
+    pValue = tCDF(tStat, df);
+  } else if (alternative === 'greater') {
+    pValue = 1 - tCDF(tStat, df);
+  } else {
+    pValue = 2 * (1 - tCDF(Math.abs(tStat), df));
+  }
+
+  const alpha = 1 - confLevel;
+  const tCrit = tInv(1 - alpha / 2, df);
+  const ciLower = xbar - tCrit * se;
+  const ciUpper = xbar + tCrit * se;
+
+  return { xbar, s, n, se, tStat, df, pValue, ciLower, ciUpper, alternative, mu0, confLevel };
+}
+
 // ── One-proportion z ─────────────────────────────────────────────────
 
 /**
@@ -184,6 +221,43 @@ export function twoMeanT(group1, group2, options = {}) {
   return { xbar1, xbar2, s1, s2, n1, n2, diff, se, tStat, df, pValue, ciLower, ciUpper, alternative, confLevel };
 }
 
+/**
+ * Two-sample Welch t-test from summary statistics.
+ * @param {number} xbar1 @param {number} s1 @param {number} n1
+ * @param {number} xbar2 @param {number} s2 @param {number} n2
+ * @param {object} options
+ * @param {'less'|'greater'|'two-sided'} [options.alternative='two-sided']
+ * @param {number} [options.confLevel=0.95]
+ * @returns {import('./inference.js').TwoMeanResult}
+ */
+export function twoMeanTSummary(xbar1, s1, n1, xbar2, s2, n2, options = {}) {
+  const alternative = options.alternative ?? 'two-sided';
+  const confLevel = options.confLevel ?? 0.95;
+
+  const diff = xbar1 - xbar2;
+  const v1 = s1 * s1 / n1, v2 = s2 * s2 / n2;
+  const se = Math.sqrt(v1 + v2);
+  const tStat = diff / se;
+
+  const df = (v1 + v2) ** 2 / (v1 * v1 / (n1 - 1) + v2 * v2 / (n2 - 1));
+
+  let pValue;
+  if (alternative === 'less') {
+    pValue = tCDF(tStat, df);
+  } else if (alternative === 'greater') {
+    pValue = 1 - tCDF(tStat, df);
+  } else {
+    pValue = 2 * (1 - tCDF(Math.abs(tStat), df));
+  }
+
+  const alpha = 1 - confLevel;
+  const tCrit = tInv(1 - alpha / 2, df);
+  const ciLower = diff - tCrit * se;
+  const ciUpper = diff + tCrit * se;
+
+  return { xbar1, xbar2, s1, s2, n1, n2, diff, se, tStat, df, pValue, ciLower, ciUpper, alternative, confLevel };
+}
+
 // ── Paired t ─────────────────────────────────────────────────────────
 
 /**
@@ -212,6 +286,34 @@ export function twoMeanT(group1, group2, options = {}) {
  */
 export function pairedT(diffs, options = {}) {
   const result = oneMeanT(diffs, { mu0: options.mu0 ?? 0, alternative: options.alternative, confLevel: options.confLevel });
+  return {
+    dbar: result.xbar,
+    sd: result.s,
+    n: result.n,
+    se: result.se,
+    tStat: result.tStat,
+    df: result.df,
+    pValue: result.pValue,
+    ciLower: result.ciLower,
+    ciUpper: result.ciUpper,
+    alternative: result.alternative,
+    confLevel: result.confLevel,
+  };
+}
+
+/**
+ * Paired t-test from summary statistics of the differences.
+ * @param {number} dbar - Mean of differences
+ * @param {number} sdVal - SD of differences
+ * @param {number} n - Number of pairs
+ * @param {object} options
+ * @param {number} [options.mu0=0]
+ * @param {'less'|'greater'|'two-sided'} [options.alternative='two-sided']
+ * @param {number} [options.confLevel=0.95]
+ * @returns {PairedResult}
+ */
+export function pairedTSummary(dbar, sdVal, n, options = {}) {
+  const result = oneMeanTSummary(dbar, sdVal, n, { mu0: options.mu0 ?? 0, alternative: options.alternative, confLevel: options.confLevel });
   return {
     dbar: result.xbar,
     sd: result.s,
@@ -400,4 +502,39 @@ export function slopeT(x, y, options = {}) {
   const rSquared = r * r;
 
   return { slope, intercept, se, tStat, df, pValue, ciLower, ciUpper, r, rSquared, n, alternative, confLevel };
+}
+
+/**
+ * Regression slope t-test from summary statistics.
+ * @param {number} slope - Estimated slope (b₁)
+ * @param {number} se - Standard error of slope
+ * @param {number} n - Sample size
+ * @param {object} options
+ * @param {'less'|'greater'|'two-sided'} [options.alternative='two-sided']
+ * @param {number} [options.confLevel=0.95]
+ * @returns {SlopeResult}
+ */
+export function slopeTSummary(slope, se, n, options = {}) {
+  const alternative = options.alternative ?? 'two-sided';
+  const confLevel = options.confLevel ?? 0.95;
+
+  const df = n - 2;
+  const tStat = slope / se;
+
+  let pValue;
+  if (alternative === 'less') {
+    pValue = tCDF(tStat, df);
+  } else if (alternative === 'greater') {
+    pValue = 1 - tCDF(tStat, df);
+  } else {
+    pValue = 2 * (1 - tCDF(Math.abs(tStat), df));
+  }
+
+  const alpha = 1 - confLevel;
+  const tCrit = tInv(1 - alpha / 2, df);
+  const ciLower = slope - tCrit * se;
+  const ciUpper = slope + tCrit * se;
+
+  // Can't compute intercept, r, rSquared from summary stats alone
+  return { slope, intercept: NaN, se, tStat, df, pValue, ciLower, ciUpper, r: NaN, rSquared: NaN, n, alternative, confLevel };
 }

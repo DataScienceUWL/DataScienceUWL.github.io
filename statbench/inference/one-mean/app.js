@@ -6,7 +6,7 @@
  */
 
 import { setJStat, pdfT } from '../../js/distributions.js';
-import { oneMeanT } from '../../js/inference.js';
+import { oneMeanT, oneMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { initTabs, initDataPanel, announce } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
@@ -49,6 +49,12 @@ let currentData = null;
 
 /** @type {Array<{headers: string[], types: string[], data: Array<Record<string,any>>}> | null} */
 let parsedDataset = null;
+
+// Summary-input state
+let fromSummary = false;
+let summaryXbar = 0;
+let summaryS = 0;
+let summaryN = 0;
 
 // ── Keyboard help dialog ───────────────────────────────────────────
 const helpDialog = /** @type {HTMLDialogElement|null} */ (
@@ -179,6 +185,7 @@ initDataPanel({
   onText: handleText,
   onClear: () => {
     currentData = null;
+    fromSummary = false;
     varSelector.hidden = true;
     controlsSection.hidden = true;
     chartSection.hidden = true;
@@ -188,25 +195,57 @@ initDataPanel({
   },
 });
 
+// ── Summary input handler ────────────────────────────────────────
+const loadSummaryBtn = document.getElementById('load-summary');
+if (loadSummaryBtn) {
+  loadSummaryBtn.addEventListener('click', () => {
+    const xbarInput = /** @type {HTMLInputElement} */ (document.getElementById('input-xbar'));
+    const sInput = /** @type {HTMLInputElement} */ (document.getElementById('input-s'));
+    const nInput = /** @type {HTMLInputElement} */ (document.getElementById('input-n'));
+
+    const xbar = parseFloat(xbarInput?.value);
+    const s = parseFloat(sInput?.value);
+    const n = parseInt(nInput?.value, 10);
+
+    if (!isFinite(xbar)) { announce('Enter a valid sample mean.'); return; }
+    if (!isFinite(s) || s <= 0) { announce('Enter a valid positive standard deviation.'); return; }
+    if (!isFinite(n) || n < 2) { announce('Sample size must be at least 2.'); return; }
+
+    fromSummary = true;
+    summaryXbar = xbar;
+    summaryS = s;
+    summaryN = n;
+    currentData = null;
+    varSelector.hidden = true;
+    showResults();
+    announce(`Loaded summary statistics: x̄ = ${xbar}, s = ${s}, n = ${n}.`);
+  });
+}
+
 // ── Parameter change listeners ─────────────────────────────────────
-inputMu0.addEventListener('input', () => { if (currentData) showResults(); });
-inputAlt.addEventListener('change', () => { if (currentData) showResults(); });
-inputConf.addEventListener('input', () => { if (currentData) showResults(); });
+inputMu0.addEventListener('input', () => { if (currentData || fromSummary) showResults(); });
+inputAlt.addEventListener('change', () => { if (currentData || fromSummary) showResults(); });
+inputConf.addEventListener('input', () => { if (currentData || fromSummary) showResults(); });
 
 // ── Core: compute and display ──────────────────────────────────────
 
 function showResults() {
-  if (!currentData || currentData.length < 2) return;
+  if (!currentData && !fromSummary) return;
+  if (currentData && currentData.length < 2) return;
 
   const mu0 = Number(inputMu0.value) || 0;
   const alternative = /** @type {'less'|'greater'|'two-sided'} */ (inputAlt.value);
   const confLevel = Math.min(0.99, Math.max(0.80, Number(inputConf.value) || 0.95));
 
   // Compute
-  const result = oneMeanT(currentData, { mu0, alternative, confLevel });
+  const result = fromSummary
+    ? oneMeanTSummary(summaryXbar, summaryS, summaryN, { mu0, alternative, confLevel })
+    : oneMeanT(currentData, { mu0, alternative, confLevel });
 
   // Detect precision for formatting
-  const d = detectPrecision(currentData);
+  const d = fromSummary
+    ? Math.max(detectPrecision([summaryXbar]), detectPrecision([summaryS]))
+    : detectPrecision(currentData);
 
   // Show sections
   controlsSection.hidden = false;

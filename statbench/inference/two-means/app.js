@@ -7,7 +7,7 @@
 
 import * as jstatModule from 'jstat';
 import { setJStat, pdfT } from '../../js/distributions.js';
-import { twoMeanT } from '../../js/inference.js';
+import { twoMeanT, twoMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { initTabs, initDataPanel, announce } from '../../js/page-utils.js';
 import { mean, detectPrecision, formatStat } from '../../js/stats.js';
@@ -37,6 +37,11 @@ let dataPrecision = 1;
 /** Cached parsed data for variable re-selection. @type {{ headers: string[], types: string[], data: Array<Record<string,any>> } | null} */
 let parsedCache = null;
 
+// Summary-input state
+let fromSummary = false;
+/** @type {import('../../js/inference.js').TwoMeanResult | null} */
+let summaryResult = null;
+
 // ── Initialization ──────────────────────────────────────────────────
 initTabs();
 initKeyboard();
@@ -58,6 +63,51 @@ confSelect?.addEventListener('change', runAnalysis);
 // Variable selector changes
 groupVarSelect?.addEventListener('change', reExtractGroups);
 responseVarSelect?.addEventListener('change', reExtractGroups);
+
+// ── Summary input handler ────────────────────────────────────────
+const loadSummaryBtn = document.getElementById('load-summary');
+if (loadSummaryBtn) {
+  loadSummaryBtn.addEventListener('click', () => {
+    const xbar1 = parseFloat(/** @type {HTMLInputElement} */ (document.getElementById('input-xbar1'))?.value);
+    const s1 = parseFloat(/** @type {HTMLInputElement} */ (document.getElementById('input-s1'))?.value);
+    const n1 = parseInt(/** @type {HTMLInputElement} */ (document.getElementById('input-n1'))?.value, 10);
+    const xbar2 = parseFloat(/** @type {HTMLInputElement} */ (document.getElementById('input-xbar2'))?.value);
+    const s2 = parseFloat(/** @type {HTMLInputElement} */ (document.getElementById('input-s2'))?.value);
+    const n2 = parseInt(/** @type {HTMLInputElement} */ (document.getElementById('input-n2'))?.value, 10);
+
+    if (!isFinite(xbar1)) { announce('Enter a valid mean for Group 1.'); return; }
+    if (!isFinite(s1) || s1 <= 0) { announce('Enter a valid positive SD for Group 1.'); return; }
+    if (!isFinite(n1) || n1 < 2) { announce('Group 1 sample size must be at least 2.'); return; }
+    if (!isFinite(xbar2)) { announce('Enter a valid mean for Group 2.'); return; }
+    if (!isFinite(s2) || s2 <= 0) { announce('Enter a valid positive SD for Group 2.'); return; }
+    if (!isFinite(n2) || n2 < 2) { announce('Group 2 sample size must be at least 2.'); return; }
+
+    const label1El = /** @type {HTMLInputElement} */ (document.getElementById('input-label1'));
+    const label2El = /** @type {HTMLInputElement} */ (document.getElementById('input-label2'));
+    group1Name = label1El?.value?.trim() || 'Group 1';
+    group2Name = label2El?.value?.trim() || 'Group 2';
+
+    fromSummary = true;
+    group1 = [];
+    group2 = [];
+    parsedCache = null;
+    if (varSelectorsDiv) varSelectorsDiv.hidden = true;
+    if (dataPreview) dataPreview.hidden = true;
+
+    dataPrecision = Math.max(
+      ...([xbar1, s1, xbar2, s2].map(v => {
+        const str = String(v);
+        const dot = str.indexOf('.');
+        return dot === -1 ? 0 : str.length - dot - 1;
+      }))
+    );
+
+    // Store summary values for re-analysis on parameter change
+    summaryResult = { xbar1, s1, n1, xbar2, s2, n2 };
+    runAnalysis();
+    announce(`Loaded summary: ${group1Name} (n=${n1}, x̄=${xbar1}) vs ${group2Name} (n=${n2}, x̄=${xbar2}).`);
+  });
+}
 
 // ── Data loading ────────────────────────────────────────────────────
 
@@ -194,6 +244,8 @@ function clearData() {
   group1 = [];
   group2 = [];
   parsedCache = null;
+  fromSummary = false;
+  summaryResult = null;
   if (dataPreview) dataPreview.hidden = true;
   if (varSelectorsDiv) varSelectorsDiv.hidden = true;
   if (chartContainer) chartContainer.innerHTML = '';
@@ -218,12 +270,19 @@ function getConfLevel() {
 
 /** Run the two-sample t-test and update chart + results. */
 function runAnalysis() {
-  if (group1.length === 0 || group2.length === 0) return;
-
   const alternative = getAlternative();
   const confLevel = getConfLevel();
 
-  const result = twoMeanT(group1, group2, { alternative, confLevel });
+  /** @type {import('../../js/inference.js').TwoMeanResult} */
+  let result;
+
+  if (fromSummary && summaryResult) {
+    const { xbar1, s1, n1, xbar2, s2, n2 } = summaryResult;
+    result = twoMeanTSummary(xbar1, s1, n1, xbar2, s2, n2, { alternative, confLevel });
+  } else {
+    if (group1.length === 0 || group2.length === 0) return;
+    result = twoMeanT(group1, group2, { alternative, confLevel });
+  }
 
   renderChart(result);
   renderResults(result);

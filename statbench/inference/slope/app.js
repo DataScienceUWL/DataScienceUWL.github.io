@@ -6,7 +6,7 @@
  */
 
 import { setJStat, pdfT } from '../../js/distributions.js';
-import { slopeT } from '../../js/inference.js';
+import { slopeT, slopeTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { initTabs, initDataPanel, announce } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
@@ -51,6 +51,12 @@ let currentRows = [];
 
 /** @type {string[]} */
 let numericColumns = [];
+
+// Summary-input state
+let fromSummary = false;
+let summarySlope = 0;
+let summarySE = 0;
+let summaryN = 0;
 
 // ── Keyboard help dialog ───────────────────────────────────────────
 const helpDialog = /** @type {HTMLDialogElement|null} */ (
@@ -196,6 +202,7 @@ initDataPanel({
   onClear: () => {
     currentRows = [];
     numericColumns = [];
+    fromSummary = false;
     varSelector.hidden = true;
     controlsSection.hidden = true;
     chartSection.hidden = true;
@@ -205,39 +212,72 @@ initDataPanel({
   },
 });
 
+// ── Summary input handler ────────────────────────────────────────
+const loadSummaryBtn = document.getElementById('load-summary');
+if (loadSummaryBtn) {
+  loadSummaryBtn.addEventListener('click', () => {
+    const slopeInput = /** @type {HTMLInputElement} */ (document.getElementById('input-slope'));
+    const seInput = /** @type {HTMLInputElement} */ (document.getElementById('input-se'));
+    const nInput = /** @type {HTMLInputElement} */ (document.getElementById('input-n'));
+
+    const slope = parseFloat(slopeInput?.value);
+    const se = parseFloat(seInput?.value);
+    const n = parseInt(nInput?.value, 10);
+
+    if (!isFinite(slope)) { announce('Enter a valid slope.'); return; }
+    if (!isFinite(se) || se <= 0) { announce('Enter a valid positive SE.'); return; }
+    if (!isFinite(n) || n < 3) { announce('Sample size must be at least 3.'); return; }
+
+    fromSummary = true;
+    summarySlope = slope;
+    summarySE = se;
+    summaryN = n;
+    currentRows = [];
+    varSelector.hidden = true;
+    showResults();
+    announce(`Loaded summary: slope = ${slope}, SE = ${se}, n = ${n}.`);
+  });
+}
+
 // ── Parameter + variable change listeners ──────────────────────────
-inputAlt.addEventListener('change', () => { if (currentRows.length) showResults(); });
-inputConf.addEventListener('input', () => { if (currentRows.length) showResults(); });
+inputAlt.addEventListener('change', () => { if (currentRows.length || fromSummary) showResults(); });
+inputConf.addEventListener('input', () => { if (currentRows.length || fromSummary) showResults(); });
 xVarSelect.addEventListener('change', () => { if (currentRows.length) showResults(); });
 yVarSelect.addEventListener('change', () => { if (currentRows.length) showResults(); });
 
 // ── Core: compute and display ──────────────────────────────────────
 
 function showResults() {
-  const pair = extractXY();
-
-  if (!pair) {
-    if (xVarSelect.value === yVarSelect.value && xVarSelect.value) {
-      announce('X and Y variables must be different.');
-    } else {
-      announce('Need at least 3 valid data points for regression.');
-    }
-    controlsSection.hidden = true;
-    chartSection.hidden = true;
-    resultsSection.hidden = true;
-    interpretationDiv.hidden = true;
-    return;
-  }
-
-  const { x, y } = pair;
   const alternative = /** @type {'less'|'greater'|'two-sided'} */ (inputAlt.value);
   const confLevel = Math.min(0.99, Math.max(0.80, Number(inputConf.value) || 0.95));
 
-  // Compute
-  const result = slopeT(x, y, { alternative, confLevel });
+  /** @type {import('../../js/inference.js').SlopeResult} */
+  let result;
+  let d;
 
-  // Detect precision from both variables
-  const d = Math.max(detectPrecision(x), detectPrecision(y));
+  if (fromSummary) {
+    result = slopeTSummary(summarySlope, summarySE, summaryN, { alternative, confLevel });
+    d = Math.max(detectPrecision([summarySlope]), detectPrecision([summarySE]));
+  } else {
+    const pair = extractXY();
+
+    if (!pair) {
+      if (xVarSelect.value === yVarSelect.value && xVarSelect.value) {
+        announce('X and Y variables must be different.');
+      } else {
+        announce('Need at least 3 valid data points for regression.');
+      }
+      controlsSection.hidden = true;
+      chartSection.hidden = true;
+      resultsSection.hidden = true;
+      interpretationDiv.hidden = true;
+      return;
+    }
+
+    const { x, y } = pair;
+    result = slopeT(x, y, { alternative, confLevel });
+    d = Math.max(detectPrecision(x), detectPrecision(y));
+  }
 
   // Show sections
   controlsSection.hidden = false;
@@ -248,9 +288,9 @@ function showResults() {
   // Populate results
   resN.textContent = String(result.n);
   resSlope.textContent = formatStat(result.slope, d);
-  resIntercept.textContent = formatStat(result.intercept, d);
-  resR.textContent = formatStat(result.r, d, 'correlation');
-  resR2.textContent = formatStat(result.rSquared, d, 'correlation');
+  resIntercept.textContent = isFinite(result.intercept) ? formatStat(result.intercept, d) : '\u2014';
+  resR.textContent = isFinite(result.r) ? formatStat(result.r, d, 'correlation') : '\u2014';
+  resR2.textContent = isFinite(result.rSquared) ? formatStat(result.rSquared, d, 'correlation') : '\u2014';
   resSE.textContent = formatStat(result.se, d);
   resT.textContent = result.tStat.toFixed(4);
   resDf.textContent = String(result.df);
@@ -370,8 +410,8 @@ function writeInterpretation(result, d) {
 
   const levelPct = (confLevel * 100).toFixed(0);
 
-  const xName = xVarSelect.value;
-  const yName = yVarSelect.value;
+  const xName = xVarSelect.value || 'x';
+  const yName = yVarSelect.value || 'y';
 
   // Hypothesis symbols
   let haSymbol;
@@ -379,24 +419,35 @@ function writeInterpretation(result, d) {
   else if (alternative === 'greater') haSymbol = '>';
   else haSymbol = '\u2260';
 
-  const r2Pct = (rSquared * 100).toFixed(1);
+  const hasFullRegression = isFinite(intercept) && isFinite(r);
+  const r2Pct = hasFullRegression ? (rSquared * 100).toFixed(1) : '';
 
-  interpretationDiv.innerHTML = `
+  let html = `
     <p><strong>Hypotheses:</strong>
       H<sub>0</sub>: &beta;<sub>1</sub> = 0 (no linear relationship) vs.
-      H<sub>a</sub>: &beta;<sub>1</sub> ${haSymbol} 0</p>
+      H<sub>a</sub>: &beta;<sub>1</sub> ${haSymbol} 0</p>`;
+
+  if (hasFullRegression) {
+    html += `
     <p><strong>Regression equation:</strong>
-      &#375; = ${formatStat(intercept, d)} + ${formatStat(slope, d)} &middot; ${xName}</p>
+      &#375; = ${formatStat(intercept, d)} + ${formatStat(slope, d)} &middot; ${xName}</p>`;
+  }
+
+  html += `
     <p>The sample slope b<sub>1</sub> = ${formatStat(slope, d)} is ${seCount} standard errors
-      from zero (SE = ${formatStat(se, d)}), indicating a ${direction} relationship
-      between ${xName} and ${yName}.</p>
+      from zero (SE = ${formatStat(se, d)}), indicating a ${direction} relationship.</p>
     <p>If there were no linear relationship (&beta;<sub>1</sub> = 0),
       we would see a slope this extreme about ${pPct} of the time
       (p = ${formatStat(pValue, d, 'pvalue')}).</p>
     <p>The ${levelPct}% confidence interval for the true slope &beta;<sub>1</sub> is
-      (${formatStat(ciLower, d)}, ${formatStat(ciUpper, d)}).</p>
+      (${formatStat(ciLower, d)}, ${formatStat(ciUpper, d)}).</p>`;
+
+  if (hasFullRegression) {
+    html += `
     <p>The correlation is r = ${formatStat(r, d, 'correlation')} and
       R&sup2; = ${r2Pct}%, meaning ${r2Pct}% of the variability in ${yName}
-      is explained by the linear relationship with ${xName}.</p>
-  `;
+      is explained by the linear relationship with ${xName}.</p>`;
+  }
+
+  interpretationDiv.innerHTML = html;
 }
