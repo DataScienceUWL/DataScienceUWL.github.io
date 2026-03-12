@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Two-Sample t-Test | StatBench</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm",
+            "jstat":        "https://cdn.jsdelivr.net/npm/jstat@1/+esm"
+        }
+    }
+    </script>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#data-panel">Skip to Data</a>
+        <a href="#controls">Skip to Controls</a>
+        <a href="#chart">Skip to Chart</a>
+        <a href="#results">Skip to Results</a>
+    </nav>
+
+    <header>
+        <nav aria-label="Navigation">
+            <a class="home-link" href="../../">
+                <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg>
+                StatBench
+            </a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Two-Sample t-Test and Confidence Interval</h1>
+
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-dataset" aria-selected="true"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Edit Data</button>
+                <button role="tab" id="tab-file" aria-selected="false"
+                    aria-controls="panel-file">Open File</button>
+            </div>
+
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset">
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </label>
+                <p id="dataset-desc" class="hint"></p>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <label for="paste-area">Edit or paste two columns (CSV with headers, group and value):
+                    <textarea id="paste-area" rows="6"
+                              placeholder="group,value&#10;A,23.1&#10;A,19.4&#10;B,27.8&#10;B,22.0"></textarea>
+                </label>
+                <div class="btn-row">
+                    <button type="button" id="load-pasted">Apply</button>
+                    <button type="button" id="save-btn" class="btn-secondary">Save</button>
+                    <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+
+            <div role="tabpanel" id="panel-file" aria-labelledby="tab-file" hidden>
+                <label for="file-input">Open a CSV or TSV file:
+                    <input type="file" id="file-input" accept=".csv,.tsv,.txt">
+                </label>
+            </div>
+
+            <div id="data-preview" hidden>
+                <output id="data-summary"></output>
+            </div>
+
+            <!-- Variable selectors (shown when dataset has multiple numeric/categorical vars) -->
+            <div id="var-selectors" hidden>
+                <label for="group-var-select">Grouping variable:
+                    <select id="group-var-select"></select>
+                </label>
+                <label for="response-var-select">Response variable:
+                    <select id="response-var-select"></select>
+                </label>
+            </div>
+        </section>
+
+        <section id="controls" aria-label="Test parameters">
+            <div class="compact-controls">
+                <div class="control-row-inline">
+                    <div class="tail-toggle" role="radiogroup" aria-label="Alternative hypothesis">
+                        <span class="param-label">H&#x2090;: &#x3BC;&#x2081; &#x2212; &#x3BC;&#x2082;</span>
+                        <label class="tail-btn">
+                            <input type="radio" name="alternative" value="two-sided" checked>
+                            <span>&#x2260; 0</span>
+                        </label>
+                        <label class="tail-btn">
+                            <input type="radio" name="alternative" value="less">
+                            <span>&lt; 0</span>
+                        </label>
+                        <label class="tail-btn">
+                            <input type="radio" name="alternative" value="greater">
+                            <span>&gt; 0</span>
+                        </label>
+                    </div>
+                    <label for="conf-level">Confidence level
+                        <select id="conf-level">
+                            <option value="0.90">90%</option>
+                            <option value="0.95" selected>95%</option>
+                            <option value="0.99">99%</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <section id="chart-and-results" aria-label="Chart and results">
+            <div class="app-body">
+                <div class="app-main" id="chart" aria-label="t-distribution chart">
+                    <div id="chart-container"></div>
+                </div>
+                <div class="app-sidebar" id="results">
+                    <div id="result-summary" tabindex="-1">
+                        <p class="placeholder">Load a dataset to see results.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <dialog id="keyboard-help" aria-label="Keyboard shortcuts">
+        <h2>Keyboard Shortcuts</h2>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
