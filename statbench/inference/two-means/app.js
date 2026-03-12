@@ -54,9 +54,8 @@ initDataPanel({
 });
 
 // Listen for parameter changes
-for (const radio of document.querySelectorAll('input[name="alternative"]')) {
-  radio.addEventListener('change', runAnalysis);
-}
+const altSelect = /** @type {HTMLSelectElement} */ (document.getElementById('input-alt'));
+altSelect?.addEventListener('change', runAnalysis);
 const confSelect = /** @type {HTMLSelectElement} */ (document.getElementById('conf-level'));
 confSelect?.addEventListener('change', runAnalysis);
 
@@ -258,9 +257,7 @@ function clearData() {
 
 /** Get current alternative hypothesis direction. */
 function getAlternative() {
-  const checked = /** @type {HTMLInputElement|null} */ (
-    document.querySelector('input[name="alternative"]:checked'));
-  return /** @type {'less'|'greater'|'two-sided'} */ (checked?.value ?? 'two-sided');
+  return /** @type {'less'|'greater'|'two-sided'} */ (altSelect?.value ?? 'two-sided');
 }
 
 /** Get current confidence level. */

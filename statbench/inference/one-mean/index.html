@@ -27,30 +27,6 @@
     </script>
 
     <style>
-        /* Parameter controls layout */
-        .param-controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            align-items: flex-end;
-            margin-bottom: 1rem;
-        }
-        .param-controls label {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        .param-controls input,
-        .param-controls select {
-            width: auto;
-            min-width: 6rem;
-        }
-        .param-controls select {
-            min-width: 10rem;
-        }
-
         /* Results table */
         .results-grid {
             display: grid;
@@ -225,21 +201,26 @@
         <!-- Parameters -->
         <section id="controls" aria-label="Test parameters" hidden>
             <h2 class="sr-only">Parameters</h2>
-            <div class="param-controls">
-                <label for="input-mu0">
-                    Null mean (&mu;<sub>0</sub>)
-                    <input type="number" id="input-mu0" value="0" step="any">
-                </label>
-                <label for="input-alt">
-                    Alternative hypothesis (H<sub>a</sub>)
-                    <select id="input-alt">
-                        <option value="two-sided">&ne; (two-sided)</option>
-                        <option value="less">&lt; (less than)</option>
-                        <option value="greater">&gt; (greater than)</option>
+            <div class="hypothesis-display">
+                <div class="hypothesis-row">
+                    <span class="hypothesis-label">H<sub>0</sub>:</span>
+                    <span>&mu; =</span>
+                    <input type="number" id="input-mu0" value="0" step="any"
+                           aria-label="Null hypothesis mean">
+                </div>
+                <div class="hypothesis-row">
+                    <span class="hypothesis-label">H<sub>a</sub>:</span>
+                    <span>&mu;</span>
+                    <select id="input-alt" aria-label="Alternative hypothesis direction">
+                        <option value="two-sided">&ne;</option>
+                        <option value="less">&lt;</option>
+                        <option value="greater">&gt;</option>
                     </select>
-                </label>
-                <label for="input-conf">
-                    Confidence level
+                    <span id="null-display" class="null-value-mirror">0</span>
+                </div>
+            </div>
+            <div class="controls-row">
+                <label for="input-conf">Confidence level
                     <input type="number" id="input-conf" value="0.95"
                            step="0.01" min="0.80" max="0.99">
                 </label>

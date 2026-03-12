@@ -222,6 +222,14 @@ if (loadSummaryBtn) {
   });
 }
 
+// ── Null value mirror (auto-fill Hₐ display) ─────────────────────
+const nullDisplay = document.getElementById('null-display');
+function syncNullDisplay() {
+  if (nullDisplay) nullDisplay.textContent = inputMu0.value || '0';
+}
+inputMu0.addEventListener('input', syncNullDisplay);
+syncNullDisplay();
+
 // ── Parameter change listeners ─────────────────────────────────────
 inputMu0.addEventListener('input', () => { if (currentData || fromSummary) showResults(); });
 inputAlt.addEventListener('change', () => { if (currentData || fromSummary) showResults(); });

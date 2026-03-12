@@ -185,6 +185,14 @@ if (loadSummaryBtn) {
   });
 }
 
+// ── Null value mirror (auto-fill Hₐ display) ─────────────────────
+const nullDisplay = document.getElementById('null-display');
+function syncNullDisplay() {
+  if (nullDisplay) nullDisplay.textContent = inputP0.value || '0.5';
+}
+inputP0.addEventListener('input', syncNullDisplay);
+syncNullDisplay();
+
 // ── Event listeners ─────────────────────────────────────────────────
 computeBtn.addEventListener('click', compute);
 
