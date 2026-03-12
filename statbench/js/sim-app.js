@@ -584,6 +584,87 @@ export function initSimPage(config) {
     });
   }
 
+  // ── Summary input (proportion pages) ──
+  const loadSummaryBtn = document.getElementById('load-summary');
+  if (loadSummaryBtn && config.proportion) {
+    loadSummaryBtn.addEventListener('click', () => {
+      resetSimulation();
+
+      if (config.twoGroup) {
+        // Two-proportion summary: two groups with successes + n
+        const x1El = /** @type {HTMLInputElement|null} */ (document.getElementById('input-x1'));
+        const n1El = /** @type {HTMLInputElement|null} */ (document.getElementById('input-n1'));
+        const x2El = /** @type {HTMLInputElement|null} */ (document.getElementById('input-x2'));
+        const n2El = /** @type {HTMLInputElement|null} */ (document.getElementById('input-n2'));
+        const lbl1El = /** @type {HTMLInputElement|null} */ (document.getElementById('input-label1'));
+        const lbl2El = /** @type {HTMLInputElement|null} */ (document.getElementById('input-label2'));
+
+        const x1 = Math.round(Number(x1El?.value));
+        const n1 = Math.round(Number(n1El?.value));
+        const x2 = Math.round(Number(x2El?.value));
+        const n2 = Math.round(Number(n2El?.value));
+
+        if (!Number.isFinite(n1) || n1 < 1 || !Number.isFinite(n2) || n2 < 1) {
+          announce('Enter valid sample sizes (at least 1).');
+          return;
+        }
+        if (!Number.isFinite(x1) || x1 < 0 || x1 > n1) {
+          announce('Group 1 successes must be between 0 and n\u2081.');
+          return;
+        }
+        if (!Number.isFinite(x2) || x2 < 0 || x2 > n2) {
+          announce('Group 2 successes must be between 0 and n\u2082.');
+          return;
+        }
+
+        group1Name = lbl1El?.value?.trim() || 'Group 1';
+        group2Name = lbl2El?.value?.trim() || 'Group 2';
+        successOutcome = 'success';
+
+        // Encode as 0/1 arrays
+        data1 = Array(n1).fill(0);
+        for (let i = 0; i < x1; i++) data1[i] = 1;
+        data2 = Array(n2).fill(0);
+        for (let i = 0; i < x2; i++) data2[i] = 1;
+
+        rawOutcomes1 = data1.map(v => v === 1 ? 'success' : 'failure');
+        rawOutcomes2 = data2.map(v => v === 1 ? 'success' : 'failure');
+
+        if (successSelector) successSelector.hidden = true;
+        showDataLoaded();
+        announce(`Loaded: ${group1Name} ${x1}/${n1}, ${group2Name} ${x2}/${n2}.`);
+      } else {
+        // One-proportion summary: successes + n
+        const nEl = /** @type {HTMLInputElement|null} */ (document.getElementById('input-n'));
+        const kEl = /** @type {HTMLInputElement|null} */ (document.getElementById('input-successes'));
+
+        const n = Math.round(Number(nEl?.value));
+        const k = Math.round(Number(kEl?.value));
+
+        if (!Number.isFinite(n) || n < 1) {
+          announce('Sample size must be at least 1.');
+          return;
+        }
+        if (!Number.isFinite(k) || k < 0 || k > n) {
+          announce('Successes must be between 0 and n.');
+          return;
+        }
+
+        successOutcome = 'success';
+        data1 = Array(n).fill(0);
+        for (let i = 0; i < k; i++) data1[i] = 1;
+        data2 = [];
+
+        rawOutcomes1 = data1.map(v => v === 1 ? 'success' : 'failure');
+        rawOutcomes2 = [];
+
+        if (successSelector) successSelector.hidden = true;
+        showDataLoaded();
+        announce(`Loaded: n = ${n}, successes = ${k}.`);
+      }
+    });
+  }
+
   function showDataLoaded() {
     // Set dataPrecision based on source data type
     if (config.proportion) {
