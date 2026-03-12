@@ -323,6 +323,9 @@ function displayResults(r, lbl1, lbl2, conditionsMet) {
   const condWarning = conditionsMet ? '' :
     `<p class="warning-text"><strong>Caution:</strong> Normal approximation conditions are not satisfied. Each group needs at least 5 successes and 5 failures. Results may be unreliable.</p>`;
 
+  // z* for CI
+  const zStar = r.se > 0 ? ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3) : '—';
+
   resultsPanel.innerHTML = `
     <h3>Sample Summary</h3>
     <table class="results-table" aria-label="Sample summary">
@@ -336,32 +339,50 @@ function displayResults(r, lbl1, lbl2, conditionsMet) {
       </tbody>
     </table>
 
-    <h3>Hypothesis Test</h3>
-    <p class="hypothesis-statement">H\u2080: p\u2081 \u2212 p\u2082 = 0<br>
-       H\u2090: p\u2081 \u2212 p\u2082 ${altSymbol} 0</p>
-    <table class="results-table" aria-label="Test results">
-      <tbody>
-        <tr><th scope="row">p\u0302\u2081 \u2212 p\u0302\u2082</th><td>${formatStat(r.diff, 0, 'proportion')}</td></tr>
-        <tr><th scope="row">Pooled p\u0302</th><td>${formatStat(r.pooledP, 0, 'proportion')}</td></tr>
-        <tr><th scope="row">SE (pooled)</th><td>${formatStat(r.sePooled, 0, 'proportion')}</td></tr>
-        <tr><th scope="row">z-statistic</th><td>${formatStat(r.zStat, 0, 'correlation')}</td></tr>
-        <tr><th scope="row">p-value</th><td>${formatStat(r.pValue, 0, 'pvalue')}</td></tr>
-      </tbody>
-    </table>
+    <div class="formula-display">
+      <h3>Test Statistic</h3>
+      <div class="formula-step">
+        <span>z =</span>
+        <span class="frac">
+          <span class="frac-num">p&#770;<sub>1</sub> &minus; p&#770;<sub>2</sub></span>
+          <span class="frac-den">&radic;(p&#770;(1&minus;p&#770;)(1/n<sub>1</sub> + 1/n<sub>2</sub>))</span>
+        </span>
+      </div>
+      <div class="formula-step">
+        <span>&nbsp; =</span>
+        <span class="frac">
+          <span class="frac-num"><span class="formula-val">${formatStat(r.pHat1, 0, 'proportion')}</span> &minus; <span class="formula-val">${formatStat(r.pHat2, 0, 'proportion')}</span></span>
+          <span class="frac-den"><span class="formula-val">${formatStat(r.sePooled, 0, 'proportion')}</span></span>
+        </span>
+      </div>
+      <div class="formula-step">
+        <span>&nbsp; = <span class="formula-result">${formatStat(r.zStat, 0, 'correlation')}</span></span>
+      </div>
+      <div class="formula-step" style="margin-top:0.15rem;">
+        <span>Pooled p&#770; = <span class="formula-val">${formatStat(r.pooledP, 0, 'proportion')}</span></span>
+      </div>
+      <div class="formula-step">
+        <span>p-value = <span class="formula-result">${formatStat(r.pValue, 0, 'pvalue')}</span></span>
+      </div>
+    </div>
 
-    <h3>${confPct}% Confidence Interval</h3>
-    <table class="results-table" aria-label="Confidence interval">
-      <tbody>
-        <tr><th scope="row">SE (unpooled)</th><td>${formatStat(r.se, 0, 'proportion')}</td></tr>
-        <tr><th scope="row">CI for p\u2081 \u2212 p\u2082</th><td>(${formatStat(r.ciLower, 0, 'proportion')}, ${formatStat(r.ciUpper, 0, 'proportion')})</td></tr>
-      </tbody>
-    </table>
+    <div class="formula-display formula-ci">
+      <h3>${confPct}% CI for p<sub>1</sub> &minus; p<sub>2</sub></h3>
+      <div class="formula-step">
+        <span>(p&#770;<sub>1</sub> &minus; p&#770;<sub>2</sub>) &plusmn; z* &middot; SE</span>
+      </div>
+      <div class="formula-step">
+        <span><span class="formula-val">${formatStat(r.diff, 0, 'proportion')}</span> &plusmn; <span class="formula-val">${zStar}</span> &middot; <span class="formula-val">${formatStat(r.se, 0, 'proportion')}</span></span>
+      </div>
+      <div class="formula-step">
+        <span>= <span class="formula-result">(${formatStat(r.ciLower, 0, 'proportion')}, ${formatStat(r.ciUpper, 0, 'proportion')})</span></span>
+      </div>
+    </div>
 
-    <h3>Interpretation</h3>
     <div class="interpretation">
-      <p>The difference in sample proportions p\u0302\u2081 \u2212 p\u0302\u2082 = ${formatStat(r.diff, 0, 'proportion')} is ${formatStat(seCount, 0, 'correlation')} standard errors ${seDirection} 0.</p>
-      <p><strong>p-value = ${formatStat(r.pValue, 0, 'pvalue')}:</strong> ${pInterpretation}. There is ${pInterpretation.replace('H\u2080', 'the null hypothesis that the two population proportions are equal')}.</p>
-      <p>We are ${confPct}% confident that the true difference in population proportions (p\u2081 \u2212 p\u2082) is between ${formatStat(r.ciLower, 0, 'proportion')} and ${formatStat(r.ciUpper, 0, 'proportion')}.</p>
+      <p>p&#770;<sub>1</sub> &minus; p&#770;<sub>2</sub> = ${formatStat(r.diff, 0, 'proportion')} is ${formatStat(seCount, 0, 'correlation')} SEs ${seDirection} 0.</p>
+      <p><strong>p-value = ${formatStat(r.pValue, 0, 'pvalue')}:</strong> ${pInterpretation}.</p>
+      <p>${confPct}% CI: (${formatStat(r.ciLower, 0, 'proportion')}, ${formatStat(r.ciUpper, 0, 'proportion')}).</p>
       ${condWarning}
     </div>
   `;

@@ -356,6 +356,35 @@ function showResults(observed, rowLabels, colLabels) {
   }
   warningBanner.hidden = !lowExpected;
 
+  // Render formula display
+  const formulaEl = document.getElementById('formula-container');
+  if (formulaEl) {
+    const nR = rowLabels.length;
+    const nC = colLabels.length;
+    formulaEl.innerHTML = `
+      <div class="formula-display">
+        <h3>Test Statistic</h3>
+        <div class="formula-step">
+          <span>&chi;&sup2; = &Sigma;</span>
+          <span class="frac">
+            <span class="frac-num">(O &minus; E)&sup2;</span>
+            <span class="frac-den">E</span>
+          </span>
+        </div>
+        <div class="formula-step" style="margin-top:0.15rem;">
+          <span>df = (${nR} &minus; 1)(${nC} &minus; 1) = <span class="formula-result">${result.df}</span></span>
+        </div>
+        <div class="formula-step">
+          <span>&chi;&sup2; = <span class="formula-result">${result.chiSq.toFixed(4)}</span></span>
+        </div>
+        <div class="formula-step">
+          <span>p-value = <span class="formula-result">${formatStat(result.pValue, 0, 'pvalue')}</span></span>
+        </div>
+      </div>
+    `;
+    formulaEl.hidden = false;
+  }
+
   renderResultTable(observedContainer, result.observed, rowLabels, colLabels,
     'Observed counts', false);
   renderResultTable(expectedContainer, result.expected, rowLabels, colLabels,

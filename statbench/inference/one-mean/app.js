@@ -19,10 +19,9 @@ setJStat(jstatMod.default || jstatMod);
 
 // ── DOM references ─────────────────────────────────────────────────
 const controlsSection = /** @type {HTMLElement} */ (document.getElementById('controls'));
-const chartSection = /** @type {HTMLElement} */ (document.getElementById('chart'));
-const resultsSection = /** @type {HTMLElement} */ (document.getElementById('results'));
+const chartAndResults = /** @type {HTMLElement} */ (document.getElementById('chart-and-results'));
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
-const interpretationDiv = /** @type {HTMLElement} */ (document.getElementById('interpretation'));
+const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('results-panel'));
 
 const inputMu0 = /** @type {HTMLInputElement} */ (document.getElementById('input-mu0'));
 const inputAlt = /** @type {HTMLSelectElement} */ (document.getElementById('input-alt'));
@@ -31,24 +30,9 @@ const inputConf = /** @type {HTMLInputElement} */ (document.getElementById('inpu
 const varSelector = /** @type {HTMLElement} */ (document.getElementById('variable-selector'));
 const varSelect = /** @type {HTMLSelectElement} */ (document.getElementById('var-select'));
 
-// Result cells
-const resN = /** @type {HTMLElement} */ (document.getElementById('res-n'));
-const resXbar = /** @type {HTMLElement} */ (document.getElementById('res-xbar'));
-const resS = /** @type {HTMLElement} */ (document.getElementById('res-s'));
-const resSE = /** @type {HTMLElement} */ (document.getElementById('res-se'));
-const resT = /** @type {HTMLElement} */ (document.getElementById('res-t'));
-const resDf = /** @type {HTMLElement} */ (document.getElementById('res-df'));
-const resP = /** @type {HTMLElement} */ (document.getElementById('res-p'));
-const resLevel = /** @type {HTMLElement} */ (document.getElementById('res-level'));
-const resCILower = /** @type {HTMLElement} */ (document.getElementById('res-ci-lower'));
-const resCIUpper = /** @type {HTMLElement} */ (document.getElementById('res-ci-upper'));
-
 // ── State ──────────────────────────────────────────────────────────
 /** @type {number[] | null} */
 let currentData = null;
-
-/** @type {Array<{headers: string[], types: string[], data: Array<Record<string,any>>}> | null} */
-let parsedDataset = null;
 
 // Summary-input state
 let fromSummary = false;
@@ -85,7 +69,6 @@ function handleDataset(ds, meta) {
     return;
   }
 
-  // Find numeric columns
   const numericCols = ds.variables
     .filter(/** @param {any} v */ v => v.type === 'numeric')
     .map(/** @param {any} v */ v => v.name);
@@ -95,7 +78,6 @@ function handleDataset(ds, meta) {
     return;
   }
 
-  // Show variable selector if multiple numeric columns
   if (numericCols.length > 1) {
     varSelector.hidden = false;
     varSelect.innerHTML = '';
@@ -109,7 +91,6 @@ function handleDataset(ds, meta) {
     varSelector.hidden = true;
   }
 
-  // Store rows for variable switching
   const rows = ds.rows;
   const loadColumn = (/** @type {string} */ col) => {
     const values = rows
@@ -123,13 +104,12 @@ function handleDataset(ds, meta) {
     }
 
     currentData = values;
+    fromSummary = false;
     showResults();
     announce(`Loaded ${values.length} values from "${col}".`);
   };
 
   loadColumn(numericCols[0]);
-
-  // Wire variable selector
   varSelect.onchange = () => loadColumn(varSelect.value);
 }
 
@@ -171,6 +151,7 @@ function handleText(parsed, sourceName) {
     }
 
     currentData = values;
+    fromSummary = false;
     showResults();
     announce(`Loaded ${values.length} values from "${sourceName}".`);
   };
@@ -188,10 +169,9 @@ initDataPanel({
     fromSummary = false;
     varSelector.hidden = true;
     controlsSection.hidden = true;
-    chartSection.hidden = true;
-    resultsSection.hidden = true;
-    interpretationDiv.hidden = true;
+    chartAndResults.hidden = true;
     chartContainer.innerHTML = '';
+    resultsPanel.innerHTML = '<p class="placeholder">Load data to see results.</p>';
   },
 });
 
@@ -257,27 +237,13 @@ function showResults() {
 
   // Show sections
   controlsSection.hidden = false;
-  chartSection.hidden = false;
-  resultsSection.hidden = false;
-  interpretationDiv.hidden = false;
-
-  // Populate results
-  resN.textContent = String(result.n);
-  resXbar.textContent = formatStat(result.xbar, d);
-  resS.textContent = formatStat(result.s, d);
-  resSE.textContent = formatStat(result.se, d);
-  resT.textContent = result.tStat.toFixed(4);
-  resDf.textContent = String(result.df);
-  resP.textContent = formatStat(result.pValue, d, 'pvalue');
-  resLevel.textContent = (result.confLevel * 100).toFixed(0) + '%';
-  resCILower.textContent = formatStat(result.ciLower, d);
-  resCIUpper.textContent = formatStat(result.ciUpper, d);
+  chartAndResults.hidden = false;
 
   // Draw chart
   drawChart(result);
 
-  // Plain language interpretation
-  writeInterpretation(result, d);
+  // Render sidebar results + formulas
+  renderResults(result, d, mu0, alternative, confLevel);
 
   // Screen reader announcement
   announce(
@@ -285,6 +251,97 @@ function showResults() {
     `p-value = ${formatStat(result.pValue, d, 'pvalue')}. ` +
     `${(confLevel * 100).toFixed(0)}% CI: (${formatStat(result.ciLower, d)}, ${formatStat(result.ciUpper, d)}).`
   );
+}
+
+/**
+ * Render results panel with formula display.
+ * @param {import('../../js/inference.js').OneMeanResult} r
+ * @param {number} d - Decimal precision
+ * @param {number} mu0
+ * @param {string} alternative
+ * @param {number} confLevel
+ */
+function renderResults(r, d, mu0, alternative, confLevel) {
+  const altSymbol = alternative === 'less' ? '&lt;' :
+                    alternative === 'greater' ? '&gt;' : '&ne;';
+  const confPct = (confLevel * 100).toFixed(0);
+  const pStr = formatStat(r.pValue, d, 'pvalue');
+
+  // Significance
+  const alpha = 1 - confLevel;
+  const sig = r.pValue < alpha;
+  const sigWord = sig ? 'sufficient' : 'insufficient';
+  const rejectWord = sig ? 'reject' : 'fail to reject';
+
+  // t* for CI
+  const tStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
+
+  resultsPanel.innerHTML = `
+    <h3>Sample Summary</h3>
+    <table class="results-table" aria-label="Sample summary">
+      <tbody>
+        <tr><th scope="row">n</th><td>${r.n}</td></tr>
+        <tr><th scope="row">x&#772;</th><td>${formatStat(r.xbar, d)}</td></tr>
+        <tr><th scope="row">s</th><td>${formatStat(r.s, d)}</td></tr>
+        <tr><th scope="row">SE</th><td>${formatStat(r.se, d)}</td></tr>
+      </tbody>
+    </table>
+
+    <div class="formula-display">
+      <h3>Test Statistic</h3>
+      <div class="formula-step">
+        <span>t =</span>
+        <span class="frac">
+          <span class="frac-num">x&#772; &minus; &mu;<sub>0</sub></span>
+          <span class="frac-den">s &frasl; &radic;n</span>
+        </span>
+      </div>
+      <div class="formula-step">
+        <span>&nbsp; =</span>
+        <span class="frac">
+          <span class="frac-num"><span class="formula-val">${formatStat(r.xbar, d)}</span> &minus; <span class="formula-val">${mu0}</span></span>
+          <span class="frac-den"><span class="formula-val">${formatStat(r.s, d)}</span> &frasl; &radic;<span class="formula-val">${r.n}</span></span>
+        </span>
+      </div>
+      <div class="formula-step">
+        <span>&nbsp; = <span class="formula-result">${r.tStat.toFixed(4)}</span></span>
+      </div>
+      <div class="formula-step" style="margin-top:0.15rem;">
+        <span>df = n &minus; 1 = ${r.n} &minus; 1 = <span class="formula-result">${r.df}</span></span>
+      </div>
+      <div class="formula-step">
+        <span>p-value = <span class="formula-result">${pStr}</span></span>
+      </div>
+    </div>
+
+    <div class="formula-display formula-ci">
+      <h3>${confPct}% Confidence Interval</h3>
+      <div class="formula-step">
+        <span>x&#772; &plusmn; t* &middot;</span>
+        <span class="frac">
+          <span class="frac-num">s</span>
+          <span class="frac-den">&radic;n</span>
+        </span>
+      </div>
+      <div class="formula-step">
+        <span><span class="formula-val">${formatStat(r.xbar, d)}</span> &plusmn; <span class="formula-val">${tStar}</span> &middot;</span>
+        <span class="frac">
+          <span class="frac-num"><span class="formula-val">${formatStat(r.s, d)}</span></span>
+          <span class="frac-den">&radic;<span class="formula-val">${r.n}</span></span>
+        </span>
+      </div>
+      <div class="formula-step">
+        <span>= <span class="formula-result">(${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)})</span></span>
+      </div>
+    </div>
+
+    <div class="interpretation" aria-live="polite">
+      <p>The sample mean x&#772; = ${formatStat(r.xbar, d)} is ${Math.abs(r.tStat).toFixed(2)} standard errors
+        ${r.tStat >= 0 ? 'above' : 'below'} the null value &mu;<sub>0</sub> = ${mu0}.</p>
+      <p>p-value = ${pStr}: there is ${sigWord} evidence to ${rejectWord} H<sub>0</sub> at &alpha; = ${alpha}.</p>
+      <p>${confPct}% CI for &mu;: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>
+    </div>
+  `;
 }
 
 /**
@@ -298,7 +355,6 @@ function drawChart(result) {
   const pdfFn = (/** @type {number} */ x) => pdfT(x, df);
   const domain = computeDomain('t', { df });
 
-  // Determine shading parameters
   /** @type {'left'|'right'|'both'|undefined} */
   let tail;
   /** @type {number|undefined} */
@@ -315,7 +371,6 @@ function drawChart(result) {
     tail = 'right';
     critValue = tStat;
   } else {
-    // two-sided: shade both tails at |t|
     tail = 'both';
     critLow = -Math.abs(tStat);
     critHigh = Math.abs(tStat);
@@ -341,7 +396,6 @@ function drawChart(result) {
   const tX = xScale(tStat);
   const yTop = yScale(pdfFn(tStat));
 
-  // Only draw marker if t-stat is within visible domain
   if (tStat >= domain[0] && tStat <= domain[1]) {
     overlays.append('line')
       .attr('class', 't-stat-line')
@@ -353,7 +407,6 @@ function drawChart(result) {
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', '6 3');
 
-    // Label
     const labelY = Math.max(yTop - 12, 4);
     overlays.append('text')
       .attr('class', 't-stat-label')
@@ -365,41 +418,4 @@ function drawChart(result) {
       .attr('font-weight', '700')
       .text(`t = ${tStat.toFixed(3)}`);
   }
-}
-
-/**
- * Write the plain-language interpretation.
- * @param {import('../../js/inference.js').OneMeanResult} result
- * @param {number} d - Decimal precision from source data
- */
-function writeInterpretation(result, d) {
-  const { xbar, mu0, tStat, pValue, se, confLevel, ciLower, ciUpper, alternative, n } = result;
-
-  const direction = tStat >= 0 ? 'above' : 'below';
-  const seCount = Math.abs(tStat).toFixed(2);
-
-  const pPct = pValue < 0.0001
-    ? 'less than 0.01%'
-    : (pValue * 100).toFixed(2) + '%';
-
-  const levelPct = (confLevel * 100).toFixed(0);
-
-  // Hypothesis symbols
-  let haSymbol;
-  if (alternative === 'less') haSymbol = '<';
-  else if (alternative === 'greater') haSymbol = '>';
-  else haSymbol = '\u2260';
-
-  interpretationDiv.innerHTML = `
-    <p><strong>Hypotheses:</strong>
-      H<sub>0</sub>: &mu; = ${mu0} vs.
-      H<sub>a</sub>: &mu; ${haSymbol} ${mu0}</p>
-    <p>The sample mean x&#772; = ${formatStat(xbar, d)} is ${seCount} standard errors
-      ${direction} the null value &mu;<sub>0</sub> = ${mu0}
-      (based on n = ${n}, SE = ${formatStat(se, d)}).</p>
-    <p>If the true mean were ${mu0}, we would see a result this extreme
-      about ${pPct} of the time (p = ${formatStat(pValue, d, 'pvalue')}).</p>
-    <p>The ${levelPct}% confidence interval for &mu; is
-      (${formatStat(ciLower, d)}, ${formatStat(ciUpper, d)}).</p>
-  `;
 }

@@ -19,10 +19,9 @@ setJStat(jstatMod.default || jstatMod);
 
 // ── DOM references ─────────────────────────────────────────────────
 const controlsSection = /** @type {HTMLElement} */ (document.getElementById('controls'));
-const chartSection = /** @type {HTMLElement} */ (document.getElementById('chart'));
-const resultsSection = /** @type {HTMLElement} */ (document.getElementById('results'));
+const chartAndResults = /** @type {HTMLElement} */ (document.getElementById('chart-and-results'));
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
-const interpretationDiv = /** @type {HTMLElement} */ (document.getElementById('interpretation'));
+const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('results-panel'));
 
 const inputAlt = /** @type {HTMLSelectElement} */ (document.getElementById('input-alt'));
 const inputConf = /** @type {HTMLInputElement} */ (document.getElementById('input-conf'));
@@ -31,24 +30,9 @@ const varSelector = /** @type {HTMLElement} */ (document.getElementById('variabl
 const xVarSelect = /** @type {HTMLSelectElement} */ (document.getElementById('x-var'));
 const yVarSelect = /** @type {HTMLSelectElement} */ (document.getElementById('y-var'));
 
-// Result cells
-const resN = /** @type {HTMLElement} */ (document.getElementById('res-n'));
-const resSlope = /** @type {HTMLElement} */ (document.getElementById('res-slope'));
-const resIntercept = /** @type {HTMLElement} */ (document.getElementById('res-intercept'));
-const resR = /** @type {HTMLElement} */ (document.getElementById('res-r'));
-const resR2 = /** @type {HTMLElement} */ (document.getElementById('res-r2'));
-const resSE = /** @type {HTMLElement} */ (document.getElementById('res-se'));
-const resT = /** @type {HTMLElement} */ (document.getElementById('res-t'));
-const resDf = /** @type {HTMLElement} */ (document.getElementById('res-df'));
-const resP = /** @type {HTMLElement} */ (document.getElementById('res-p'));
-const resLevel = /** @type {HTMLElement} */ (document.getElementById('res-level'));
-const resCILower = /** @type {HTMLElement} */ (document.getElementById('res-ci-lower'));
-const resCIUpper = /** @type {HTMLElement} */ (document.getElementById('res-ci-upper'));
-
 // ── State ──────────────────────────────────────────────────────────
 /** @type {Array<Record<string,any>>} */
 let currentRows = [];
-
 /** @type {string[]} */
 let numericColumns = [];
 
@@ -76,119 +60,70 @@ initTabs();
 
 // ── Variable selectors ─────────────────────────────────────────────
 
-/**
- * Populate X and Y dropdowns from the available numeric columns.
- */
 function populateVarSelectors() {
   xVarSelect.innerHTML = '';
   yVarSelect.innerHTML = '';
-
   for (const col of numericColumns) {
     const optX = document.createElement('option');
-    optX.value = col;
-    optX.textContent = col;
+    optX.value = col; optX.textContent = col;
     xVarSelect.appendChild(optX);
-
     const optY = document.createElement('option');
-    optY.value = col;
-    optY.textContent = col;
+    optY.value = col; optY.textContent = col;
     yVarSelect.appendChild(optY);
   }
-
-  // Default: first column = X, second = Y
   if (numericColumns.length >= 2) {
     xVarSelect.value = numericColumns[0];
     yVarSelect.value = numericColumns[1];
   }
-
   varSelector.hidden = false;
 }
 
 /**
- * Extract paired numeric arrays from current rows using selected variables.
- * Filters out rows with missing/non-finite values in either column.
+ * Extract paired numeric arrays from current rows.
  * @returns {{ x: number[], y: number[] } | null}
  */
 function extractXY() {
   const xCol = xVarSelect.value;
   const yCol = yVarSelect.value;
-
   if (!xCol || !yCol || xCol === yCol) return null;
 
-  /** @type {number[]} */
-  const x = [];
-  /** @type {number[]} */
-  const y = [];
-
+  const x = [], y = [];
   for (const row of currentRows) {
     const xv = Number(row[xCol]);
     const yv = Number(row[yCol]);
-    if (isFinite(xv) && isFinite(yv)) {
-      x.push(xv);
-      y.push(yv);
-    }
+    if (isFinite(xv) && isFinite(yv)) { x.push(xv); y.push(yv); }
   }
-
-  if (x.length < 3) return null;  // need at least 3 for df = n-2 >= 1
+  if (x.length < 3) return null;
   return { x, y };
 }
 
 // ── Data Panel ─────────────────────────────────────────────────────
 
-/**
- * Process a loaded dataset object (from JSON).
- * @param {any} ds - Dataset JSON with .variables and .rows
- * @param {any} _meta - Dataset metadata
- */
 function handleDataset(ds, _meta) {
-  if (!ds.variables || !ds.rows) {
-    announce('Dataset has no usable data.');
-    return;
-  }
-
+  if (!ds.variables || !ds.rows) { announce('Dataset has no usable data.'); return; }
   const numCols = ds.variables
     .filter(/** @param {any} v */ v => v.type === 'numeric')
     .map(/** @param {any} v */ v => v.name);
-
-  if (numCols.length < 2) {
-    announce('Need at least two numeric variables for regression.');
-    return;
-  }
-
+  if (numCols.length < 2) { announce('Need at least two numeric variables for regression.'); return; }
   currentRows = ds.rows;
   numericColumns = numCols;
   populateVarSelectors();
   showResults();
-  announce(`Loaded ${ds.rows.length} observations with ${numCols.length} numeric variables.`);
+  announce(`Loaded ${ds.rows.length} observations.`);
 }
 
-/**
- * Process parsed CSV text data.
- * @param {{headers: string[], types: string[], data: Array<Record<string,any>>}} parsed
- * @param {string} sourceName
- */
 function handleText(parsed, sourceName) {
   const numCols = parsed.headers.filter((h, i) => parsed.types[i] === 'numeric');
-
-  if (numCols.length < 2) {
-    announce('Need at least two numeric columns for regression.');
-    return;
-  }
-
+  if (numCols.length < 2) { announce('Need at least two numeric columns for regression.'); return; }
   currentRows = parsed.data.map(row => {
-    /** @type {Record<string,any>} */
     const out = {};
     for (const h of parsed.headers) {
-      const val = row[h];
-      if (numCols.includes(h)) {
-        out[h] = val === '' || val === 'NA' ? NaN : Number(val);
-      } else {
-        out[h] = val;
-      }
+      out[h] = numCols.includes(h)
+        ? (row[h] === '' || row[h] === 'NA' ? NaN : Number(row[h]))
+        : row[h];
     }
     return out;
   });
-
   numericColumns = numCols;
   populateVarSelectors();
   showResults();
@@ -205,10 +140,9 @@ initDataPanel({
     fromSummary = false;
     varSelector.hidden = true;
     controlsSection.hidden = true;
-    chartSection.hidden = true;
-    resultsSection.hidden = true;
-    interpretationDiv.hidden = true;
+    chartAndResults.hidden = true;
     chartContainer.innerHTML = '';
+    resultsPanel.innerHTML = '<p class="placeholder">Load data to see results.</p>';
   },
 });
 
@@ -260,7 +194,6 @@ function showResults() {
     d = Math.max(detectPrecision([summarySlope]), detectPrecision([summarySE]));
   } else {
     const pair = extractXY();
-
     if (!pair) {
       if (xVarSelect.value === yVarSelect.value && xVarSelect.value) {
         announce('X and Y variables must be different.');
@@ -268,53 +201,123 @@ function showResults() {
         announce('Need at least 3 valid data points for regression.');
       }
       controlsSection.hidden = true;
-      chartSection.hidden = true;
-      resultsSection.hidden = true;
-      interpretationDiv.hidden = true;
+      chartAndResults.hidden = true;
       return;
     }
-
-    const { x, y } = pair;
-    result = slopeT(x, y, { alternative, confLevel });
-    d = Math.max(detectPrecision(x), detectPrecision(y));
+    result = slopeT(pair.x, pair.y, { alternative, confLevel });
+    d = Math.max(detectPrecision(pair.x), detectPrecision(pair.y));
   }
 
-  // Show sections
   controlsSection.hidden = false;
-  chartSection.hidden = false;
-  resultsSection.hidden = false;
-  interpretationDiv.hidden = false;
+  chartAndResults.hidden = false;
 
-  // Populate results
-  resN.textContent = String(result.n);
-  resSlope.textContent = formatStat(result.slope, d);
-  resIntercept.textContent = isFinite(result.intercept) ? formatStat(result.intercept, d) : '\u2014';
-  resR.textContent = isFinite(result.r) ? formatStat(result.r, d, 'correlation') : '\u2014';
-  resR2.textContent = isFinite(result.rSquared) ? formatStat(result.rSquared, d, 'correlation') : '\u2014';
-  resSE.textContent = formatStat(result.se, d);
-  resT.textContent = result.tStat.toFixed(4);
-  resDf.textContent = String(result.df);
-  resP.textContent = formatStat(result.pValue, d, 'pvalue');
-  resLevel.textContent = (result.confLevel * 100).toFixed(0) + '%';
-  resCILower.textContent = formatStat(result.ciLower, d);
-  resCIUpper.textContent = formatStat(result.ciUpper, d);
-
-  // Draw chart
   drawChart(result);
+  renderResults(result, d, alternative, confLevel);
 
-  // Plain language interpretation
-  writeInterpretation(result, d);
-
-  // Screen reader announcement
   announce(
     `t = ${result.tStat.toFixed(3)}, df = ${result.df}, ` +
     `p-value = ${formatStat(result.pValue, d, 'pvalue')}. ` +
-    `${(confLevel * 100).toFixed(0)}% CI for slope: (${formatStat(result.ciLower, d)}, ${formatStat(result.ciUpper, d)}).`
+    `${(confLevel * 100).toFixed(0)}% CI: (${formatStat(result.ciLower, d)}, ${formatStat(result.ciUpper, d)}).`
   );
 }
 
 /**
- * Draw the t-distribution curve with shaded p-value region and t-statistic marker.
+ * Render results panel with formula display.
+ * @param {import('../../js/inference.js').SlopeResult} r
+ * @param {number} d
+ * @param {string} alternative
+ * @param {number} confLevel
+ */
+function renderResults(r, d, alternative, confLevel) {
+  const confPct = (confLevel * 100).toFixed(0);
+  const pStr = formatStat(r.pValue, d, 'pvalue');
+  const alpha = 1 - confLevel;
+  const sig = r.pValue < alpha;
+  const sigWord = sig ? 'sufficient' : 'insufficient';
+  const rejectWord = sig ? 'reject' : 'fail to reject';
+  const tStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
+
+  const hasFullRegression = isFinite(r.intercept) && isFinite(r.r);
+  const xName = xVarSelect.value || 'x';
+  const yName = yVarSelect.value || 'y';
+
+  let regressionRows = '';
+  if (hasFullRegression) {
+    regressionRows = `
+        <tr><th scope="row">Intercept (b&#8320;)</th><td>${formatStat(r.intercept, d)}</td></tr>
+        <tr><th scope="row">r</th><td>${formatStat(r.r, d, 'correlation')}</td></tr>
+        <tr><th scope="row">R&sup2;</th><td>${formatStat(r.rSquared, d, 'correlation')}</td></tr>`;
+  }
+
+  let regressionInterp = '';
+  if (hasFullRegression) {
+    const r2Pct = (r.rSquared * 100).toFixed(1);
+    regressionInterp = `
+      <p>&#375; = ${formatStat(r.intercept, d)} + ${formatStat(r.slope, d)} &middot; ${xName}</p>
+      <p>r = ${formatStat(r.r, d, 'correlation')}, R&sup2; = ${r2Pct}%.</p>`;
+  }
+
+  resultsPanel.innerHTML = `
+    <h3>Regression Summary</h3>
+    <table class="results-table" aria-label="Regression summary">
+      <tbody>
+        <tr><th scope="row">n</th><td>${r.n}</td></tr>
+        <tr><th scope="row">Slope (b&#8321;)</th><td>${formatStat(r.slope, d)}</td></tr>
+        ${regressionRows}
+      </tbody>
+    </table>
+
+    <div class="formula-display">
+      <h3>Test Statistic</h3>
+      <div class="formula-step">
+        <span>t =</span>
+        <span class="frac">
+          <span class="frac-num">b<sub>1</sub> &minus; 0</span>
+          <span class="frac-den">SE<sub>b<sub>1</sub></sub></span>
+        </span>
+      </div>
+      <div class="formula-step">
+        <span>&nbsp; =</span>
+        <span class="frac">
+          <span class="frac-num"><span class="formula-val">${formatStat(r.slope, d)}</span></span>
+          <span class="frac-den"><span class="formula-val">${formatStat(r.se, d)}</span></span>
+        </span>
+      </div>
+      <div class="formula-step">
+        <span>&nbsp; = <span class="formula-result">${r.tStat.toFixed(4)}</span></span>
+      </div>
+      <div class="formula-step" style="margin-top:0.15rem;">
+        <span>df = n &minus; 2 = ${r.n} &minus; 2 = <span class="formula-result">${r.df}</span></span>
+      </div>
+      <div class="formula-step">
+        <span>p-value = <span class="formula-result">${pStr}</span></span>
+      </div>
+    </div>
+
+    <div class="formula-display formula-ci">
+      <h3>${confPct}% CI for &beta;<sub>1</sub></h3>
+      <div class="formula-step">
+        <span>b<sub>1</sub> &plusmn; t* &middot; SE<sub>b<sub>1</sub></sub></span>
+      </div>
+      <div class="formula-step">
+        <span><span class="formula-val">${formatStat(r.slope, d)}</span> &plusmn; <span class="formula-val">${tStar}</span> &middot; <span class="formula-val">${formatStat(r.se, d)}</span></span>
+      </div>
+      <div class="formula-step">
+        <span>= <span class="formula-result">(${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)})</span></span>
+      </div>
+    </div>
+
+    <div class="interpretation" aria-live="polite">
+      ${regressionInterp}
+      <p>Slope b<sub>1</sub> = ${formatStat(r.slope, d)} is ${Math.abs(r.tStat).toFixed(2)} SEs from zero.</p>
+      <p>p-value = ${pStr}: ${sigWord} evidence to ${rejectWord} H<sub>0</sub> at &alpha; = ${alpha}.</p>
+      <p>${confPct}% CI for &beta;<sub>1</sub>: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>
+    </div>
+  `;
+}
+
+/**
+ * Draw the t-distribution curve with shaded p-value region.
  * @param {import('../../js/inference.js').SlopeResult} result
  */
 function drawChart(result) {
@@ -324,130 +327,40 @@ function drawChart(result) {
   const pdfFn = (/** @type {number} */ x) => pdfT(x, df);
   const domain = computeDomain('t', { df });
 
-  // Determine shading parameters
   /** @type {'left'|'right'|'both'|undefined} */
   let tail;
   /** @type {number|undefined} */
-  let critValue;
-  /** @type {number|undefined} */
-  let critLow;
-  /** @type {number|undefined} */
-  let critHigh;
+  let critValue, critLow, critHigh;
 
-  if (alternative === 'less') {
-    tail = 'left';
-    critValue = tStat;
-  } else if (alternative === 'greater') {
-    tail = 'right';
-    critValue = tStat;
-  } else {
-    // two-sided: shade both tails at |t|
-    tail = 'both';
-    critLow = -Math.abs(tStat);
-    critHigh = Math.abs(tStat);
-  }
-
-  const titleText = `t distribution (df = ${df})`;
-  const descText = `t-distribution curve with df = ${df}, shaded region showing p-value area for slope test`;
+  if (alternative === 'less') { tail = 'left'; critValue = tStat; }
+  else if (alternative === 'greater') { tail = 'right'; critValue = tStat; }
+  else { tail = 'both'; critLow = -Math.abs(tStat); critHigh = Math.abs(tStat); }
 
   const { xScale, yScale, frame } = drawCurve(chartContainer, pdfFn, domain, {
-    xLabel: 't',
-    yLabel: 'Density',
-    titleText,
-    descText,
+    xLabel: 't', yLabel: 'Density',
+    titleText: `t distribution (df = ${df})`,
+    descText: `t-distribution curve, shaded p-value area for slope test`,
     id: 'slope-t-chart',
-    tail,
-    critValue,
-    critLow,
-    critHigh,
+    tail, critValue, critLow, critHigh,
   });
 
-  // Add vertical line at the test statistic
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   const tX = xScale(tStat);
   const yTop = yScale(pdfFn(tStat));
 
-  // Only draw marker if t-stat is within visible domain
   if (tStat >= domain[0] && tStat <= domain[1]) {
     overlays.append('line')
       .attr('class', 't-stat-line')
-      .attr('x1', tX)
-      .attr('x2', tX)
-      .attr('y1', yScale(0))
-      .attr('y2', yTop)
-      .attr('stroke', '#F05133')
-      .attr('stroke-width', 2)
+      .attr('x1', tX).attr('x2', tX)
+      .attr('y1', yScale(0)).attr('y2', yTop)
+      .attr('stroke', '#F05133').attr('stroke-width', 2)
       .attr('stroke-dasharray', '6 3');
 
-    // Label
-    const labelY = Math.max(yTop - 12, 4);
     overlays.append('text')
       .attr('class', 't-stat-label')
-      .attr('x', tX)
-      .attr('y', labelY)
+      .attr('x', tX).attr('y', Math.max(yTop - 12, 4))
       .attr('text-anchor', 'middle')
-      .attr('fill', '#F05133')
-      .attr('font-size', '11px')
-      .attr('font-weight', '700')
+      .attr('fill', '#F05133').attr('font-size', '11px').attr('font-weight', '700')
       .text(`t = ${tStat.toFixed(3)}`);
   }
-}
-
-/**
- * Write the plain-language interpretation.
- * @param {import('../../js/inference.js').SlopeResult} result
- * @param {number} d - Decimal precision from source data
- */
-function writeInterpretation(result, d) {
-  const { slope, intercept, se, tStat, pValue, confLevel, ciLower, ciUpper, alternative, n, r, rSquared } = result;
-
-  const direction = slope >= 0 ? 'positive' : 'negative';
-  const seCount = Math.abs(tStat).toFixed(2);
-
-  const pPct = pValue < 0.0001
-    ? 'less than 0.01%'
-    : (pValue * 100).toFixed(2) + '%';
-
-  const levelPct = (confLevel * 100).toFixed(0);
-
-  const xName = xVarSelect.value || 'x';
-  const yName = yVarSelect.value || 'y';
-
-  // Hypothesis symbols
-  let haSymbol;
-  if (alternative === 'less') haSymbol = '<';
-  else if (alternative === 'greater') haSymbol = '>';
-  else haSymbol = '\u2260';
-
-  const hasFullRegression = isFinite(intercept) && isFinite(r);
-  const r2Pct = hasFullRegression ? (rSquared * 100).toFixed(1) : '';
-
-  let html = `
-    <p><strong>Hypotheses:</strong>
-      H<sub>0</sub>: &beta;<sub>1</sub> = 0 (no linear relationship) vs.
-      H<sub>a</sub>: &beta;<sub>1</sub> ${haSymbol} 0</p>`;
-
-  if (hasFullRegression) {
-    html += `
-    <p><strong>Regression equation:</strong>
-      &#375; = ${formatStat(intercept, d)} + ${formatStat(slope, d)} &middot; ${xName}</p>`;
-  }
-
-  html += `
-    <p>The sample slope b<sub>1</sub> = ${formatStat(slope, d)} is ${seCount} standard errors
-      from zero (SE = ${formatStat(se, d)}), indicating a ${direction} relationship.</p>
-    <p>If there were no linear relationship (&beta;<sub>1</sub> = 0),
-      we would see a slope this extreme about ${pPct} of the time
-      (p = ${formatStat(pValue, d, 'pvalue')}).</p>
-    <p>The ${levelPct}% confidence interval for the true slope &beta;<sub>1</sub> is
-      (${formatStat(ciLower, d)}, ${formatStat(ciUpper, d)}).</p>`;
-
-  if (hasFullRegression) {
-    html += `
-    <p>The correlation is r = ${formatStat(r, d, 'correlation')} and
-      R&sup2; = ${r2Pct}%, meaning ${r2Pct}% of the variability in ${yName}
-      is explained by the linear relationship with ${xName}.</p>`;
-  }
-
-  interpretationDiv.innerHTML = html;
 }

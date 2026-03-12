@@ -280,6 +280,9 @@ function displayResults(r, successLabel, conditionsMet) {
   const condWarning = conditionsMet ? '' :
     `<p class="warning-text"><strong>Caution:</strong> Normal approximation conditions are not satisfied (np\u2080 = ${formatStat(r.n * r.p0, 0, 'stat')} and n(1\u2212p\u2080) = ${formatStat(r.n * (1 - r.p0), 0, 'stat')}; both should be \u2265 10). Results may be unreliable.</p>`;
 
+  // z* for CI
+  const zStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
+
   resultsPanel.innerHTML = `
     <h3>Sample Summary</h3>
     <table class="results-table" aria-label="Sample summary">
@@ -290,30 +293,51 @@ function displayResults(r, successLabel, conditionsMet) {
       </tbody>
     </table>
 
-    <h3>Hypothesis Test</h3>
-    <p class="hypothesis-statement">H\u2080: p = ${formatStat(r.p0, 0, 'proportion')}<br>
-       H\u2090: p ${altSymbol} ${formatStat(r.p0, 0, 'proportion')}</p>
-    <table class="results-table" aria-label="Test results">
-      <tbody>
-        <tr><th scope="row">SE (null)</th><td>${formatStat(r.seNull, 0, 'proportion')}</td></tr>
-        <tr><th scope="row">z-statistic</th><td>${formatStat(r.zStat, 0, 'correlation')}</td></tr>
-        <tr><th scope="row">p-value</th><td>${formatStat(r.pValue, 0, 'pvalue')}</td></tr>
-      </tbody>
-    </table>
+    <div class="formula-display">
+      <h3>Test Statistic</h3>
+      <div class="formula-step">
+        <span>z =</span>
+        <span class="frac">
+          <span class="frac-num">p&#770; &minus; p<sub>0</sub></span>
+          <span class="frac-den">&radic;(p<sub>0</sub>(1 &minus; p<sub>0</sub>) &frasl; n)</span>
+        </span>
+      </div>
+      <div class="formula-step">
+        <span>&nbsp; =</span>
+        <span class="frac">
+          <span class="frac-num"><span class="formula-val">${formatStat(r.pHat, 0, 'proportion')}</span> &minus; <span class="formula-val">${formatStat(r.p0, 0, 'proportion')}</span></span>
+          <span class="frac-den">&radic;(<span class="formula-val">${formatStat(r.p0, 0, 'proportion')}</span> &middot; <span class="formula-val">${formatStat(1 - r.p0, 0, 'proportion')}</span> &frasl; <span class="formula-val">${r.n}</span>)</span>
+        </span>
+      </div>
+      <div class="formula-step">
+        <span>&nbsp; = <span class="formula-result">${formatStat(r.zStat, 0, 'correlation')}</span></span>
+      </div>
+      <div class="formula-step">
+        <span>p-value = <span class="formula-result">${formatStat(r.pValue, 0, 'pvalue')}</span></span>
+      </div>
+    </div>
 
-    <h3>${confPct}% Confidence Interval</h3>
-    <table class="results-table" aria-label="Confidence interval">
-      <tbody>
-        <tr><th scope="row">SE (Wald)</th><td>${formatStat(r.se, 0, 'proportion')}</td></tr>
-        <tr><th scope="row">CI</th><td>(${formatStat(r.ciLower, 0, 'proportion')}, ${formatStat(r.ciUpper, 0, 'proportion')})</td></tr>
-      </tbody>
-    </table>
+    <div class="formula-display formula-ci">
+      <h3>${confPct}% Confidence Interval</h3>
+      <div class="formula-step">
+        <span>p&#770; &plusmn; z* &middot;</span>
+        <span class="frac">
+          <span class="frac-num">&radic;(p&#770;(1 &minus; p&#770;))</span>
+          <span class="frac-den">&radic;n</span>
+        </span>
+      </div>
+      <div class="formula-step">
+        <span><span class="formula-val">${formatStat(r.pHat, 0, 'proportion')}</span> &plusmn; <span class="formula-val">${zStar}</span> &middot; <span class="formula-val">${formatStat(r.se, 0, 'proportion')}</span></span>
+      </div>
+      <div class="formula-step">
+        <span>= <span class="formula-result">(${formatStat(r.ciLower, 0, 'proportion')}, ${formatStat(r.ciUpper, 0, 'proportion')})</span></span>
+      </div>
+    </div>
 
-    <h3>Interpretation</h3>
     <div class="interpretation">
-      <p>The sample proportion p\u0302 = ${formatStat(r.pHat, 0, 'proportion')} is ${formatStat(seCount, 0, 'correlation')} standard errors ${seDirection} the null value p\u2080 = ${formatStat(r.p0, 0, 'proportion')}.</p>
+      <p>p\u0302 = ${formatStat(r.pHat, 0, 'proportion')} is ${formatStat(seCount, 0, 'correlation')} SEs ${seDirection} p\u2080 = ${formatStat(r.p0, 0, 'proportion')}.</p>
       <p><strong>p-value = ${formatStat(r.pValue, 0, 'pvalue')}:</strong> ${pInterpretation}.</p>
-      <p>We are ${confPct}% confident that the true population proportion is between ${formatStat(r.ciLower, 0, 'proportion')} and ${formatStat(r.ciUpper, 0, 'proportion')}.</p>
+      <p>${confPct}% CI: (${formatStat(r.ciLower, 0, 'proportion')}, ${formatStat(r.ciUpper, 0, 'proportion')}).</p>
       ${condWarning}
     </div>
   `;

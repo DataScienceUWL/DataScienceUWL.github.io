@@ -27,68 +27,6 @@
     </script>
 
     <style>
-        /* Results table */
-        .results-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-        @media (max-width: 600px) {
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        .result-card {
-            background: var(--bg-alt, #f5f5f5);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 0.75rem 1rem;
-        }
-        .result-card h3 {
-            font-size: 0.85rem;
-            margin: 0 0 0.5rem;
-            color: var(--ims-gray-text, #555);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-        .result-card table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-        .result-card th {
-            text-align: left;
-            font-weight: 600;
-            padding: 0.15rem 0.5rem 0.15rem 0;
-            white-space: nowrap;
-        }
-        .result-card td {
-            text-align: right;
-            font-family: var(--font-mono, 'Source Code Pro', monospace);
-            padding: 0.15rem 0;
-        }
-
-        /* Interpretation box */
-        .interpretation {
-            background: color-mix(in srgb, var(--accent, #569BBD) 8%, transparent);
-            border-left: 4px solid var(--accent, #569BBD);
-            border-radius: 0 6px 6px 0;
-            padding: 0.75rem 1rem;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-bottom: 1rem;
-        }
-        .interpretation p {
-            margin: 0.25rem 0;
-        }
-
-        /* Chart area */
-        #chart-container svg {
-            font-family: var(--font-body);
-            font-size: var(--font-size-chart);
-        }
-
         /* Variable selector */
         #variable-selector {
             margin-bottom: 0.5rem;
@@ -100,6 +38,12 @@
         }
         #variable-selector select {
             width: auto;
+        }
+
+        /* Chart area */
+        #chart-container svg {
+            font-family: var(--font-body);
+            font-size: var(--font-size-chart);
         }
 
         /* t-stat marker */
@@ -227,50 +171,17 @@
             </div>
         </section>
 
-        <!-- Chart -->
-        <section id="chart" aria-label="Distribution chart" hidden>
-            <figure>
-                <div id="chart-container"></div>
-            </figure>
-        </section>
-
-        <!-- Results -->
-        <section id="results" aria-label="Test results" hidden>
-            <div class="results-grid">
-                <div class="result-card">
-                    <h3>Sample Summary</h3>
-                    <table aria-label="Sample summary statistics">
-                        <tbody>
-                            <tr><th scope="row">n</th><td id="res-n">&mdash;</td></tr>
-                            <tr><th scope="row">x&#772;</th><td id="res-xbar">&mdash;</td></tr>
-                            <tr><th scope="row">s</th><td id="res-s">&mdash;</td></tr>
-                            <tr><th scope="row">SE</th><td id="res-se">&mdash;</td></tr>
-                        </tbody>
-                    </table>
+        <!-- Chart + Results (sidebar layout) -->
+        <section id="chart-and-results" aria-label="Chart and results" hidden>
+            <div class="app-body">
+                <div class="app-main" id="chart" aria-label="t-distribution chart">
+                    <div id="chart-container"></div>
                 </div>
-                <div class="result-card">
-                    <h3>Hypothesis Test</h3>
-                    <table aria-label="Hypothesis test results">
-                        <tbody>
-                            <tr><th scope="row">t</th><td id="res-t">&mdash;</td></tr>
-                            <tr><th scope="row">df</th><td id="res-df">&mdash;</td></tr>
-                            <tr><th scope="row">p-value</th><td id="res-p">&mdash;</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="result-card">
-                    <h3>Confidence Interval</h3>
-                    <table aria-label="Confidence interval">
-                        <tbody>
-                            <tr><th scope="row">Level</th><td id="res-level">&mdash;</td></tr>
-                            <tr><th scope="row">Lower</th><td id="res-ci-lower">&mdash;</td></tr>
-                            <tr><th scope="row">Upper</th><td id="res-ci-upper">&mdash;</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="interpretation" class="interpretation" aria-live="polite" hidden>
+                <aside class="app-sidebar" id="results">
+                    <div id="results-panel" tabindex="-1">
+                        <p class="placeholder">Load data to see results.</p>
+                    </div>
+                </aside>
             </div>
         </section>
 

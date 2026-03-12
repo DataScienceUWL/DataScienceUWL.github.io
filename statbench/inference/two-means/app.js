@@ -364,11 +364,12 @@ function renderResults(r) {
     ? 'The confidence interval contains 0, suggesting no significant difference.'
     : 'The confidence interval does not contain 0, suggesting a significant difference.';
 
-  resultDiv.innerHTML = `
-    <h2>Results</h2>
+  // t* for CI
+  const tStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
 
+  resultDiv.innerHTML = `
     <h3>Group Summaries</h3>
-    <table class="result-table" aria-label="Group summary statistics">
+    <table class="results-table" aria-label="Group summary statistics">
       <thead>
         <tr><th>Group</th><th>n</th><th>x&#772;</th><th>s</th></tr>
       </thead>
@@ -388,29 +389,50 @@ function renderResults(r) {
       </tbody>
     </table>
 
-    <h3>Hypothesis Test</h3>
-    <p class="hypothesis-display-inline">
-      H<sub>0</sub>: &mu;<sub>1</sub> &minus; &mu;<sub>2</sub> = 0 &nbsp;&nbsp;
-      H<sub>a</sub>: &mu;<sub>1</sub> &minus; &mu;<sub>2</sub> ${altSymbol} 0
-    </p>
-    <table class="result-table" aria-label="Test results">
-      <tbody>
-        <tr><td>Difference (x&#772;<sub>1</sub> &minus; x&#772;<sub>2</sub>)</td><td>${formatStat(r.diff, d)}</td></tr>
-        <tr><td>SE</td><td>${formatStat(r.se, d)}</td></tr>
-        <tr><td>t-statistic</td><td>${r.tStat.toFixed(3)}</td></tr>
-        <tr><td>Welch df</td><td>${r.df.toFixed(1)}</td></tr>
-        <tr><td>p-value</td><td>${pStr}</td></tr>
-      </tbody>
-    </table>
+    <div class="formula-display">
+      <h3>Test Statistic</h3>
+      <div class="formula-step">
+        <span>t =</span>
+        <span class="frac">
+          <span class="frac-num">x&#772;<sub>1</sub> &minus; x&#772;<sub>2</sub></span>
+          <span class="frac-den">&radic;(s&#8321;&sup2;/n&#8321; + s&#8322;&sup2;/n&#8322;)</span>
+        </span>
+      </div>
+      <div class="formula-step">
+        <span>&nbsp; =</span>
+        <span class="frac">
+          <span class="frac-num"><span class="formula-val">${formatStat(r.xbar1, d)}</span> &minus; <span class="formula-val">${formatStat(r.xbar2, d)}</span></span>
+          <span class="frac-den">&radic;(<span class="formula-val">${formatStat(r.s1, d)}</span>&sup2;/<span class="formula-val">${r.n1}</span> + <span class="formula-val">${formatStat(r.s2, d)}</span>&sup2;/<span class="formula-val">${r.n2}</span>)</span>
+        </span>
+      </div>
+      <div class="formula-step">
+        <span>&nbsp; = <span class="formula-result">${r.tStat.toFixed(4)}</span></span>
+      </div>
+      <div class="formula-step" style="margin-top:0.15rem;">
+        <span>Welch df = <span class="formula-result">${r.df.toFixed(1)}</span></span>
+      </div>
+      <div class="formula-step">
+        <span>p-value = <span class="formula-result">${pStr}</span></span>
+      </div>
+    </div>
 
-    <h3>${confPct}% Confidence Interval for &mu;<sub>1</sub> &minus; &mu;<sub>2</sub></h3>
-    <p class="ci-display">(${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)})</p>
+    <div class="formula-display formula-ci">
+      <h3>${confPct}% CI for &mu;<sub>1</sub> &minus; &mu;<sub>2</sub></h3>
+      <div class="formula-step">
+        <span>(x&#772;<sub>1</sub> &minus; x&#772;<sub>2</sub>) &plusmn; t* &middot; SE</span>
+      </div>
+      <div class="formula-step">
+        <span><span class="formula-val">${formatStat(r.diff, d)}</span> &plusmn; <span class="formula-val">${tStar}</span> &middot; <span class="formula-val">${formatStat(r.se, d)}</span></span>
+      </div>
+      <div class="formula-step">
+        <span>= <span class="formula-result">(${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)})</span></span>
+      </div>
+    </div>
 
-    <h3>Interpretation</h3>
     <div class="interpretation">
-      <p>The difference x&#772;<sub>${esc(group1Name)}</sub> &minus; x&#772;<sub>${esc(group2Name)}</sub> = ${formatStat(r.diff, d)} with Welch's df = ${r.df.toFixed(1)}.</p>
-      <p>p-value = ${pStr}. There is ${sigWord} evidence to ${rejectWord} H<sub>0</sub> at the &alpha; = ${alpha} level.</p>
-      <p>${confPct}% CI for &mu;<sub>1</sub> &minus; &mu;<sub>2</sub>: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}). ${ciInterpretation}</p>
+      <p>x&#772;<sub>${esc(group1Name)}</sub> &minus; x&#772;<sub>${esc(group2Name)}</sub> = ${formatStat(r.diff, d)}, Welch df = ${r.df.toFixed(1)}.</p>
+      <p>p-value = ${pStr}: ${sigWord} evidence to ${rejectWord} H<sub>0</sub> at &alpha; = ${alpha}.</p>
+      <p>${confPct}% CI: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}). ${ciInterpretation}</p>
     </div>
   `;
 }
