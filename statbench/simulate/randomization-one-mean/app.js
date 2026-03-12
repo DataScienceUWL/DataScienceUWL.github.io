@@ -55,7 +55,7 @@ if (chartFigure) {
   toggleFieldset = document.createElement('fieldset');
   toggleFieldset.className = 'chart-type-toggle';
   toggleFieldset.insertAdjacentHTML('beforeend', [
-    ['dotplot', 'Dotplot'], ['spike', 'Spike'], ['histogram', 'Histogram'],
+    ['dotplot', 'Dotplot'], ['histogram', 'Histogram'],
   ].map(([v, l]) =>
     `<label class="chart-toggle-option"><input type="radio" name="chart-type" value="${v}"${v === 'dotplot' ? ' checked' : ''}> ${l}</label>`
   ).join(''));
@@ -96,6 +96,9 @@ let sampleData = [];
 let observedMean = 0;
 let dataPrecision = 0;
 let theoryOverlayOn = false;
+
+/** @type {{ xScale: any, yScale: any, bins: any[], domain: [number,number] } | null} */
+let lastHistResult = null;
 
 /** @type {number[]} */
 let shiftedData = [];
@@ -316,6 +319,7 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
   if (activeChart === 'auto') {
     activeChart = n <= 200 ? 'dotplot' : 'histogram';
   }
+  if (activeChart === 'spike') activeChart = 'histogram'; // no spike for continuous
   // Sync toggle
   if (toggleFieldset) {
     const radio = /** @type {HTMLInputElement|null} */ (
@@ -327,6 +331,7 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
   let frame;
   /** @type {any} */
   let xScale;
+  lastHistResult = null;
 
   if (activeChart === 'dotplot') {
     const r = drawDotplot(chartContainer, stats, {
@@ -339,17 +344,6 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
       domain,
       highlightIndex,
       highlightIndices,
-    });
-    frame = r.frame;
-    xScale = r.xScale;
-  } else if (activeChart === 'spike') {
-    const r = drawSpike(chartContainer, stats, {
-      id: 'sim-chart',
-      xLabel: 'Simulated Mean (x\u0304*)',
-      titleText: 'Null Distribution',
-      isTail: (v) => isExtreme(v, observed, direction),
-      observedStat: observed,
-      domain,
     });
     frame = r.frame;
     xScale = r.xScale;
@@ -367,6 +361,7 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
     });
     frame = r.frame;
     xScale = r.xScale;
+    lastHistResult = { xScale: r.xScale, yScale: r.yScale, bins: r.bins, domain };
   }
 
   // P-value pills
@@ -510,22 +505,15 @@ function resetSimulation() {
  * centered at μ₀ with SE = s/√n.
  */
 function applyTheoryOverlay() {
-  if (!chartContainer || sampleData.length === 0 || allStats.length === 0) return;
+  if (!chartContainer || !lastHistResult || sampleData.length === 0) return;
   const mu0 = getNullMean();
   const sampleSD = sd(sampleData);
   const se = sampleSD / Math.sqrt(sampleData.length);
   if (!isFinite(se) || se <= 0) return;
 
-  const lo = Math.min(...allStats, observedMean);
-  const hi = Math.max(...allStats, observedMean);
-  const pad = (hi - lo) * 0.05 || 0.5;
-  /** @type {[number,number]} */
-  const dom = [lo - pad, hi + pad];
-
-  const { bins } = computeBins(allStats, { domain: dom });
+  const { xScale: hxScale, yScale: hyScale, bins, domain: dom } = lastHistResult;
   if (bins.length === 0) return;
   const binWidth = /** @type {number} */ (bins[0].x1) - /** @type {number} */ (bins[0].x0);
-  const maxY = Math.max(...bins.map(b => b.length));
 
   overlayTheoryCurve({
     container: chartContainer,
@@ -533,7 +521,8 @@ function applyTheoryOverlay() {
     xDomain: dom,
     totalN: allStats.length,
     binWidth,
-    maxY,
+    xScale: hxScale,
+    yScale: hyScale,
     label: `N(μ₀, SE)`,
   });
 }

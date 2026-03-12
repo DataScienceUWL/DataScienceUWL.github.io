@@ -10,7 +10,6 @@
 
 import * as d3Selection from 'd3-selection';
 import * as d3Shape from 'd3-shape';
-import * as d3Scale from 'd3-scale';
 
 /** Color for the theoretical curve (IMS red). */
 const THEORY_COLOR = '#F05133';
@@ -39,60 +38,36 @@ export function normalPdf(x, mu, sigma) {
  * The curve is scaled to match the histogram's frequency scale:
  *   frequency_y = n × binWidth × pdf(x)
  *
- * This function reads the chart's existing SVG structure (viewBox, axes,
- * bars) to reconstruct scales without needing the original D3 scale objects.
+ * Accepts the actual D3 scales and chart frame so we don't have to
+ * reverse-engineer SVG structure.
  *
  * @param {object} options
  * @param {HTMLElement} options.container - Chart container div (parent of the SVG)
  * @param {(x: number) => number} options.pdf - Probability density function
- * @param {[number, number]} options.xDomain - [min, max] x-domain of the histogram
  * @param {number} options.totalN - Total sample count in the histogram
  * @param {number} options.binWidth - Bin width in data units
- * @param {number} options.maxY - Maximum y-axis value (frequency)
+ * @param {(x: number) => number} options.xScale - D3 x scale function
+ * @param {(y: number) => number} options.yScale - D3 y scale function
+ * @param {[number, number]} options.xDomain - [min, max] x-domain
  * @param {string} [options.label] - Label for the curve (e.g., "N(50, 3.2)")
  * @param {string} [options.color] - Curve stroke color
  */
 export function overlayTheoryCurve(options) {
   const {
-    container, pdf, xDomain, totalN, binWidth, maxY,
+    container, pdf, totalN, binWidth, xScale, yScale, xDomain,
     label, color = THEORY_COLOR,
   } = options;
 
   const svg = container.querySelector('svg');
   if (!svg) return;
 
-  // Find the plot area <g> (first child group with a translate transform)
-  const plotG = svg.querySelector('g[transform]');
+  // Find the plot area <g> (the .chart-inner group)
+  const plotG = svg.querySelector('.chart-inner') || svg.querySelector('g[transform]');
   if (!plotG) return;
 
   // Remove any previous overlay
   const prev = plotG.querySelector('.theory-overlay');
   if (prev) prev.remove();
-
-  // Parse the plot area dimensions from the viewBox and transform
-  const vb = svg.getAttribute('viewBox');
-  if (!vb) return;
-  const [, , vbW, vbH] = vb.split(/\s+/).map(Number);
-  const transform = plotG.getAttribute('transform') || '';
-  const m = transform.match(/translate\(\s*([\d.]+)[,\s]+([\d.]+)\s*\)/);
-  const ml = m ? parseFloat(m[1]) : 40;
-  const mt = m ? parseFloat(m[2]) : 20;
-
-  // Find inner height from x-axis translate
-  let innerHeight = vbH - mt * 2;
-  const xAxis = plotG.querySelector('.x-axis');
-  if (xAxis) {
-    const xt = (xAxis.getAttribute('transform') || '').match(/translate\(0[,\s]+([\d.]+)\)/);
-    if (xt) innerHeight = parseFloat(xt[1]);
-  }
-
-  // Inner width: viewBox width minus left and right margins
-  // Approximate right margin same as left
-  const innerWidth = vbW - ml * 2;
-
-  // Build scales
-  const xScale = d3Scale.scaleLinear().domain(xDomain).range([0, innerWidth]);
-  const yScale = d3Scale.scaleLinear().domain([0, maxY]).range([innerHeight, 0]);
 
   // Scale factor: histogram shows frequency, so y = totalN * binWidth * pdf(x)
   const scaleFactor = totalN * binWidth;
@@ -102,8 +77,8 @@ export function overlayTheoryCurve(options) {
   const points = [];
   for (let i = 0; i <= N_POINTS; i++) {
     const x = xDomain[0] + (xDomain[1] - xDomain[0]) * i / N_POINTS;
-    const y = Math.min(scaleFactor * pdf(x), maxY);
-    points.push([xScale(x), yScale(y)]);
+    const freqY = scaleFactor * pdf(x);
+    points.push([xScale(x), yScale(freqY)]);
   }
 
   // Draw
@@ -123,9 +98,8 @@ export function overlayTheoryCurve(options) {
     .attr('stroke-dasharray', '6,3')
     .attr('opacity', 0.85);
 
-  // Label
+  // Label near the peak
   if (label) {
-    // Position label near the peak
     let peakX = (xDomain[0] + xDomain[1]) / 2;
     let peakY = 0;
     for (let i = 0; i <= 50; i++) {
@@ -134,7 +108,7 @@ export function overlayTheoryCurve(options) {
       if (y > peakY) { peakY = y; peakX = x; }
     }
     const lx = xScale(peakX);
-    const ly = yScale(Math.min(scaleFactor * peakY, maxY));
+    const ly = yScale(scaleFactor * peakY);
     g.append('text')
       .attr('x', lx + 10)
       .attr('y', Math.max(ly - 6, 14))

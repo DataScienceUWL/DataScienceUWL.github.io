@@ -92,6 +92,9 @@ let sampleSuccesses = 0;
 let observedPHat = 0;
 let theoryOverlayOn = false;
 
+/** @type {{ xScale: any, yScale: any, bins: any[], domain: [number,number] } | null} */
+let lastHistResult = null;
+
 /** @type {string[]} */
 let rawOutcomes = [];
 
@@ -369,6 +372,7 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
   let frame;
   /** @type {any} */
   let xScale;
+  lastHistResult = null;
 
   if (activeChart === 'dotplot') {
     const r = drawDotplot(chartContainer, stats, {
@@ -412,6 +416,7 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
     });
     frame = r.frame;
     xScale = r.xScale;
+    lastHistResult = { xScale: r.xScale, yScale: r.yScale, bins: r.bins, domain: histDomain };
   }
 
   // P-value pills
@@ -553,22 +558,14 @@ function resetSimulation() {
  * Overlay the normal approximation N(p₀, √(p₀(1−p₀)/n)) on the histogram.
  */
 function applyTheoryOverlay() {
-  if (!chartContainer || sampleN === 0 || allStats.length === 0) return;
+  if (!chartContainer || !lastHistResult || sampleN === 0) return;
   const p0 = getNullProp();
   const se = Math.sqrt(p0 * (1 - p0) / sampleN);
   if (!isFinite(se) || se <= 0) return;
 
-  const lo = Math.min(...allStats, observedPHat);
-  const hi = Math.max(...allStats, observedPHat);
-  const pad = (hi - lo) * 0.05 || 0.05;
-  /** @type {[number,number]} */
-  const dom = [lo - pad, hi + pad];
-
-  const thresholds = snappedPropThresholds(sampleN, dom, allStats.length);
-  const { bins } = computeBins(allStats, { domain: dom, thresholds });
+  const { xScale: hxScale, yScale: hyScale, bins, domain: dom } = lastHistResult;
   if (bins.length === 0) return;
   const binWidth = /** @type {number} */ (bins[0].x1) - /** @type {number} */ (bins[0].x0);
-  const maxY = Math.max(...bins.map(b => b.length));
 
   overlayTheoryCurve({
     container: chartContainer,
@@ -576,7 +573,8 @@ function applyTheoryOverlay() {
     xDomain: dom,
     totalN: allStats.length,
     binWidth,
-    maxY,
+    xScale: hxScale,
+    yScale: hyScale,
     label: `N(${p0}, ${se.toFixed(3)})`,
   });
 }

@@ -150,7 +150,7 @@ export function computeBins(values, options = {}) {
  * @param {[number,number]} [options.domain] - Override x-axis domain
  * @param {number[]} [options.thresholds] - Explicit bin threshold values (overrides numBins)
  * @param {number[]} [options.prevBinCounts] - Previous bin counts for stacked delta highlight
- * @returns {{ frame: ChartFrame, bins: d3Array.Bin<number, number>[], xScale: d3Scale.ScaleLinear<number,number>, update: (values: number[], opts?: object) => void }}
+ * @returns {{ frame: ChartFrame, bins: d3Array.Bin<number, number>[], xScale: d3Scale.ScaleLinear<number,number>, yScale: d3Scale.ScaleLinear<number,number>, update: (values: number[], opts?: object) => void }}
  */
 export function drawHistogram(container, values, options = {}) {
   const {

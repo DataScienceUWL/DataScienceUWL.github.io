@@ -138,6 +138,9 @@ export function initSimPage(config) {
   /** Pre-simulated domain for initial empty chart axis. */
   /** @type {[number,number]|null} */
   let preSimDomain = null;
+  /** Cached histogram result for theory overlay. */
+  /** @type {{ xScale: any, yScale: any, bins: any[], domain: [number,number] } | null} */
+  let lastHistResult = null;
 
   // Chart type toggle (Dotplot / Spike / Histogram) — radio-based segmented control
   const chartFigure = chartContainer?.closest('figure');
@@ -240,19 +243,11 @@ export function initSimPage(config) {
 
     if (!isFinite(se) || se <= 0) return;
 
-    // Compute bins to get binWidth and maxY
-    const vals = lastObserved != null ? [...stats, lastObserved] : stats;
-    let lo = Math.min(...vals);
-    let hi = Math.max(...vals);
-    const pad = (hi - lo) * 0.05 || 0.5;
-    lo -= pad; hi += pad;
-    if (preSimDomain) { lo = Math.min(lo, preSimDomain[0]); hi = Math.max(hi, preSimDomain[1]); }
-    /** @type {[number,number]} */
-    const dom = [lo, hi];
-    const { bins } = computeBins(stats, { domain: dom });
-    if (bins.length === 0) return;
+    // Use cached histogram scales for accurate overlay positioning
+    if (!lastHistResult) return;
+    const { xScale: hxScale, yScale: hyScale, bins, domain: dom } = lastHistResult;
+    if (!bins || bins.length === 0) return;
     const binWidth = /** @type {number} */ (bins[0].x1) - /** @type {number} */ (bins[0].x0);
-    const maxY = Math.max(...bins.map(b => b.length));
 
     overlayTheoryCurve({
       container: chartContainer,
@@ -260,7 +255,8 @@ export function initSimPage(config) {
       xDomain: dom,
       totalN: stats.length,
       binWidth,
-      maxY,
+      xScale: hxScale,
+      yScale: hyScale,
       label,
     });
   }
@@ -1707,6 +1703,7 @@ export function initSimPage(config) {
       });
       chartResult = r.frame;
       chartXScale = r.xScale;
+      lastHistResult = { xScale: r.xScale, yScale: r.yScale, bins: r.bins, domain: domain || [0, 1] };
     }
 
     // Add probability pills
