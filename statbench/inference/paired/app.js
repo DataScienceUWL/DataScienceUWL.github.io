@@ -8,7 +8,9 @@
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { pairedT, pairedTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
-import { initTabs, initDataPanel, announce } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp } from '../../js/page-utils.js';
+
+initHelp();
 import { parseCSV } from '../../js/csv-parser.js';
 import { formatStat, detectPrecision } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';

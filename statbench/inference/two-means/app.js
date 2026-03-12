@@ -9,7 +9,9 @@ import * as jstatModule from 'jstat';
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { twoMeanT, twoMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
-import { initTabs, initDataPanel, announce } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp } from '../../js/page-utils.js';
+
+initHelp();
 import { mean, detectPrecision, formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
 

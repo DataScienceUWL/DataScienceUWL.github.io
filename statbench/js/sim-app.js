@@ -14,7 +14,7 @@ import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.j
 import { drawDotplot } from './dotplot.js';
 import { drawSpike } from './spike.js';
 // renderPValueAnnotation replaced by inline renderSimPills
-import { initPlayPause, setupFileInput } from './page-utils.js';
+import { initPlayPause, setupFileInput, initHelp } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
 /**
@@ -32,6 +32,7 @@ import { rowsToCSV, downloadCSV } from './csv-parser.js';
  * @param {SimConfig} config
  */
 export function initSimPage(config) {
+  initHelp();
   const urlParams = parseParams(window.location.search);
 
   // DOM elements

@@ -41,15 +41,16 @@
         }
         .scenario-card .hypotheses {
             margin: 0.5rem 0;
-            font-size: 0.95rem;
+            font-size: 1rem;
+            line-height: 1.8;
         }
         .scenario-card .test-results {
             background: white;
             border-radius: 4px;
             padding: 0.6rem 1rem;
             margin: 0.5rem 0;
-            font-family: 'Source Code Pro', monospace;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
         }
         .practice-section {
             margin: 1rem 0;
@@ -79,14 +80,12 @@
         .model-answer {
             background: #f0f7f0;
             border-left: 4px solid var(--ims-green);
-            padding: 0.6rem 1rem;
+            padding: 0.8rem 1rem;
             margin: 0.5rem 0;
             border-radius: 0 6px 6px 0;
-            font-style: italic;
         }
-        .model-answer.hidden {
-            display: none;
-        }
+        .model-answer.hidden { display: none; }
+        .model-answer strong { display: block; margin-bottom: 0.3rem; }
         .btn-row {
             display: flex;
             gap: 0.75rem;
@@ -109,6 +108,10 @@
             outline: 2px solid var(--ims-green);
             outline-offset: 2px;
         }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
         .btn-secondary {
             background: white;
             color: var(--ims-blue);
@@ -120,13 +123,11 @@
             cursor: pointer;
             font-family: inherit;
         }
-        .btn-secondary:hover {
-            background: var(--ims-lightest);
-        }
+        .btn-secondary:hover { background: var(--ims-lightest); }
         .key-elements {
             background: #fff8e1;
             border-left: 4px solid #f9a825;
-            padding: 0.5rem 1rem;
+            padding: 0.6rem 1rem;
             margin: 0.5rem 0;
             border-radius: 0 6px 6px 0;
             font-size: 0.9rem;
@@ -136,11 +137,55 @@
             margin: 0.3rem 0;
             padding-left: 1.2rem;
         }
+        .key-elements li { margin: 0.2rem 0; }
         .scenario-counter {
             font-size: 0.85rem;
             color: #666;
             margin-bottom: 0.5rem;
         }
+        .self-assess {
+            margin: 1rem 0;
+        }
+        .self-assess.hidden { display: none; }
+        .self-assess p {
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        .self-assess .btn-row { margin: 0; }
+        .assess-btn {
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-family: inherit;
+            border: 2px solid;
+        }
+        .assess-btn.got-it {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+        .assess-btn.mostly {
+            background: #fff8e1;
+            border-color: #f9a825;
+            color: #f57f17;
+        }
+        .assess-btn.needs-work {
+            background: #fce4ec;
+            border-color: #e57373;
+            color: #c62828;
+        }
+        .assess-btn:hover { filter: brightness(0.95); }
+        .score-bar {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        .score-bar span { white-space: nowrap; }
     </style>
 </head>
 
@@ -149,13 +194,17 @@
         <nav class="breadcrumb" aria-label="Breadcrumb">
             <a href="../../">StatBench</a> &rsaquo;
             <span aria-current="page">Conclusion Practice</span>
+            <button class="help-btn" aria-label="Help" title="Help">?</button>
         </nav>
         <h1>Hypothesis Test Conclusion Practice</h1>
         <p class="page-subtitle">Practice writing formal and practical conclusions for hypothesis tests.</p>
     </header>
 
     <main>
-        <div id="scenario-counter" class="scenario-counter"></div>
+        <div class="score-bar">
+            <span id="scenario-counter"></span>
+            <span id="score-display"></span>
+        </div>
 
         <div id="scenario-card" class="scenario-card">
             <p class="placeholder">Loading scenarios...</p>
@@ -163,17 +212,23 @@
 
         <div class="practice-section">
             <label for="formal-input">Your formal conclusion:</label>
-            <textarea id="formal-input" placeholder="At α = ..., we [reject / fail to reject] H₀. There is [sufficient / insufficient] evidence that..."></textarea>
+            <textarea id="formal-input" placeholder='Example: "At the 5% significance level, we reject H₀. There is sufficient evidence that the mean weight differs from 5 lbs (t = 2.34, p = 0.021)."'></textarea>
         </div>
 
         <div class="practice-section">
             <label for="practical-input">Your practical conclusion:</label>
-            <textarea id="practical-input" placeholder="The data [provide / do not provide] [strength] evidence that [claim in context]..."></textarea>
+            <textarea id="practical-input" placeholder='Example: "The data provide strong evidence that the average birth weight differs from 5 pounds."'></textarea>
         </div>
 
-        <div class="btn-row">
-            <button id="show-answer" class="btn-primary">Show Model Answer</button>
+        <div class="btn-row" id="action-buttons">
+            <button id="check-answer" class="btn-primary">Check My Answer</button>
+            <button id="show-answer" class="btn-primary" disabled>Show Model Answer</button>
             <button id="next-scenario" class="btn-secondary">Next Scenario</button>
+        </div>
+
+        <div id="key-elements" class="key-elements hidden">
+            <strong>Key elements checklist:</strong>
+            <ul id="key-elements-list"></ul>
         </div>
 
         <div id="model-formal" class="model-answer hidden">
@@ -186,13 +241,39 @@
             <p id="model-practical-text"></p>
         </div>
 
-        <div id="key-elements" class="key-elements hidden">
-            <strong>Key elements of a good conclusion:</strong>
-            <ul id="key-elements-list"></ul>
+        <div id="self-assess" class="self-assess hidden">
+            <p>How did your answer compare?</p>
+            <div class="btn-row">
+                <button class="assess-btn got-it" data-rating="got-it">Got it</button>
+                <button class="assess-btn mostly" data-rating="mostly">Mostly</button>
+                <button class="assess-btn needs-work" data-rating="needs-work">Needs work</button>
+            </div>
         </div>
     </main>
 
     <div id="sr-announce" class="sr-only" aria-live="polite" role="status"></div>
+
+    <dialog id="page-help" aria-label="Help">
+        <h2>Help</h2>
+        <p class="help-intro">Practice writing formal and practical conclusions for hypothesis tests.</p>
+        <h3>How it works</h3>
+        <ol style="padding-left: 1.2rem; font-size: 0.9rem; line-height: 1.5;">
+            <li>Read the scenario: test type, hypotheses, and results</li>
+            <li>Write your formal and practical conclusions in the text boxes</li>
+            <li>Click <strong>Check My Answer</strong> to see a checklist of key elements</li>
+            <li>Click <strong>Show Model Answer</strong> to compare with model conclusions</li>
+            <li>Rate yourself and move to the next scenario</li>
+        </ol>
+        <h3>Formal conclusion template</h3>
+        <p style="font-size: 0.85rem; line-height: 1.5;">At the [&alpha;] significance level, we [reject / fail to reject] H&#8320;. There is [sufficient / insufficient] evidence that [claim] ([stat] = [value], p-value = [value]).</p>
+        <h3>Practical conclusion template</h3>
+        <p style="font-size: 0.85rem; line-height: 1.5;">The data [provide / do not provide] [strength] evidence that [claim in everyday language].</p>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
 
     <script type="module" src="app.js"></script>
 

@@ -72,29 +72,49 @@ export function initTabs() {
 }
 
 /**
- * Initialize keyboard shortcuts for generate buttons, reset, and help dialog.
- * Keys 1-4 map to gen-btn elements, 0 to reset, ? to keyboard-help dialog.
- * @param {NodeListOf<HTMLButtonElement>} genBtns - Generate buttons
- * @param {HTMLButtonElement|null} resetBtn - Reset button
+ * Initialize the help button and dialog.
+ * Wires the .help-btn click and ? key to open #page-help (or #keyboard-help fallback).
+ * Call this on any page that has a help dialog.
  */
-export function initKeyboardShortcuts(genBtns, resetBtn) {
+export function initHelp() {
   const helpDialog = /** @type {HTMLDialogElement|null} */ (
-    document.getElementById('keyboard-help'));
+    document.getElementById('page-help')
+    || document.getElementById('keyboard-help'));
   if (!helpDialog) return;
+
+  const helpBtn = document.querySelector('.help-btn');
+  if (helpBtn) {
+    helpBtn.addEventListener('click', () => helpDialog.showModal());
+  }
 
   document.addEventListener('keydown', (e) => {
     if (e.target !== document.body) return;
     if (e.ctrlKey || e.metaKey) return;
     if (e.key === '?') helpDialog.showModal();
+  });
+
+  const closeBtn = helpDialog.querySelector('button');
+  if (closeBtn) closeBtn.addEventListener('click', () => helpDialog.close());
+}
+
+/**
+ * Initialize keyboard shortcuts for generate buttons, reset, and help dialog.
+ * Keys 1-4 map to gen-btn elements, 0 to reset, ? to help dialog.
+ * @param {NodeListOf<HTMLButtonElement>} genBtns - Generate buttons
+ * @param {HTMLButtonElement|null} resetBtn - Reset button
+ */
+export function initKeyboardShortcuts(genBtns, resetBtn) {
+  initHelp();
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target !== document.body) return;
+    if (e.ctrlKey || e.metaKey) return;
     if (e.key === '1') genBtns[0]?.click();
     if (e.key === '2') genBtns[1]?.click();
     if (e.key === '3') genBtns[2]?.click();
     if (e.key === '4') genBtns[3]?.click();
     if (e.key === '0' && resetBtn && !resetBtn.hidden) resetBtn.click();
   });
-
-  const closeBtn = helpDialog.querySelector('button');
-  if (closeBtn) closeBtn.addEventListener('click', () => helpDialog.close());
 }
 
 /**

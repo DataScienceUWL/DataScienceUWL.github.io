@@ -10,7 +10,9 @@ import { mean, median, sd, quantile, iqr, range, detectPrecision, formatStat } f
 import { drawHistogram, computeBins, sturgesBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
-import { announce, initTabs, initDataPanel } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initHelp } from '../../js/page-utils.js';
+
+initHelp();
 
 // ── DOM elements ──────────────────────────────────────────────────────
 

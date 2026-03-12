@@ -6,7 +6,9 @@
 
 import { drawBarChart, computeGroupedFrequencies } from '../../js/barchart.js';
 import { formatStat } from '../../js/stats.js';
-import { announce, initTabs, initDataPanel } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initHelp } from '../../js/page-utils.js';
+
+initHelp();
 
 // ── DOM ──────────────────────────────────────────────────────────────
 

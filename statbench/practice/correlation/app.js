@@ -6,6 +6,9 @@
 import * as d3Selection from 'd3-selection';
 import * as d3Scale from 'd3-scale';
 import * as d3Array from 'd3-array';
+import { initHelp } from '../../js/page-utils.js';
+
+initHelp();
 
 // ── DOM references (shared) ─────────────────────────────────────
 const announceEl = /** @type {HTMLElement} */ (document.getElementById('sr-announce'));

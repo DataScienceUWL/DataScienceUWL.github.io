@@ -16,6 +16,7 @@ import { parseParams } from './url-params.js';
 import { drawCurve, computeDomain } from './curve.js';
 import { debounce } from './chart-utils.js';
 import { enableHorizontalDrag, showInlineEdit, formatEditValue } from './chart-interactions.js';
+import { initHelp } from './page-utils.js';
 import * as d3Selection from 'd3-selection';
 
 /**
@@ -35,6 +36,7 @@ import * as d3Selection from 'd3-selection';
  * @param {DistConfig} config
  */
 export function initDistCalculator(config) {
+  initHelp();
   const urlParams = parseParams(window.location.search);
 
   // --- DOM references ---

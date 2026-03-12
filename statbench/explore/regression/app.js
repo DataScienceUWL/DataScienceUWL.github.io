@@ -6,7 +6,9 @@
 
 import { drawScatterplot, drawResidualPlot } from '../../js/scatterplot.js';
 import { linreg, detectPrecision, formatStat } from '../../js/stats.js';
-import { announce, initTabs, initDataPanel } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initHelp } from '../../js/page-utils.js';
+
+initHelp();
 
 // ── State ──────────────────────────────────────────────────────────────────
 

@@ -10,6 +10,9 @@ import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import * as d3Shape from 'd3-shape';
 import { formatTick } from '../../js/chart-utils.js';
+import { initHelp } from '../../js/page-utils.js';
+
+initHelp();
 
 // ─── DOM ───
 
