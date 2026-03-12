@@ -15,6 +15,7 @@ import { drawDotplot } from './dotplot.js';
 import { drawSpike } from './spike.js';
 // renderPValueAnnotation replaced by inline renderSimPills
 import { initPlayPause, setupFileInput } from './page-utils.js';
+import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
 /**
  * @typedef {object} SimConfig
@@ -159,6 +160,108 @@ export function initSimPage(config) {
         prevBinCounts = null;
         renderChart(allStats, lastCI, lastObserved, lastDirection);
       }
+    });
+  }
+
+  // ─── Theory overlay toggle ───
+  /** @type {HTMLInputElement|null} */
+  let theoryCheckbox = null;
+  let theoryOverlayOn = false;
+  if (toggleFieldset && config.mode === 'bootstrap') {
+    theoryCheckbox = createTheoryToggle(toggleFieldset, (checked) => {
+      theoryOverlayOn = checked;
+      if (allStats.length > 0) {
+        if (checked && getActiveChartType() === 'histogram') {
+          applyTheoryOverlay(allStats);
+        } else if (chartContainer) {
+          removeTheoryOverlay(chartContainer);
+        }
+      }
+    });
+  }
+
+  /** Get the currently active chart type (resolving 'auto'). */
+  function getActiveChartType() {
+    if (chartType === 'auto') {
+      return allStats.length <= 200 ? 'dotplot' : (config.proportion ? 'spike' : 'histogram');
+    }
+    return chartType;
+  }
+
+  /**
+   * Overlay a normal theory curve on the current histogram.
+   * Computes the appropriate normal approximation depending on the mode:
+   *   - One mean: N(x̄, s/√n)
+   *   - Paired: N(d̄, s_d/√n)
+   *   - Two means: N(x̄₁ - x̄₂, SE) where SE = √(s₁²/n₁ + s₂²/n₂)
+   *   - One proportion: N(p̂, √(p̂(1−p̂)/n))
+   *   - Two proportions: N(p̂₁ - p̂₂, SE) where SE uses individual p̂'s
+   * @param {number[]} stats
+   */
+  function applyTheoryOverlay(stats) {
+    if (!chartContainer || data1.length === 0) return;
+
+    let center = 0;
+    let se = 0;
+    let label = 'N(est, SE)';
+
+    if (config.paired && data2.length > 0) {
+      // Paired: bootstrap the mean difference
+      const diffs = data2.map((v, i) => v - data1[i]);
+      center = mean(diffs);
+      se = sd(diffs) / Math.sqrt(diffs.length);
+      label = 'N(d\u0304, SE)';
+    } else if (config.proportion && config.twoGroup && data2.length > 0) {
+      // Two proportions: bootstrap the difference p̂₁ − p̂₂
+      const p1 = mean(data1);
+      const p2 = mean(data2);
+      center = p1 - p2;
+      se = Math.sqrt(p1 * (1 - p1) / data1.length + p2 * (1 - p2) / data2.length);
+      label = 'N(p\u0302₁−p\u0302₂, SE)';
+    } else if (config.proportion) {
+      // One proportion
+      const pHat = mean(data1);
+      center = pHat;
+      se = Math.sqrt(pHat * (1 - pHat) / data1.length);
+      label = `N(p\u0302, SE)`;
+    } else if (config.twoGroup && data2.length > 0) {
+      // Two means: bootstrap the difference x̄₁ − x̄₂
+      center = mean(data1) - mean(data2);
+      const s1 = sd(data1);
+      const s2 = sd(data2);
+      se = Math.sqrt(s1 * s1 / data1.length + s2 * s2 / data2.length);
+      label = 'N(x\u0304₁−x\u0304₂, SE)';
+    } else {
+      // One mean (default)
+      center = mean(data1);
+      se = sd(data1) / Math.sqrt(data1.length);
+      label = 'N(x\u0304, SE)';
+    }
+
+    if (!isFinite(se) || se <= 0) return;
+
+    // Compute bins to get binWidth and maxY
+    const vals = lastObserved != null ? [...stats, lastObserved] : stats;
+    let lo = Math.min(...vals);
+    let hi = Math.max(...vals);
+    const pad = (hi - lo) * 0.05 || 0.5;
+    lo -= pad; hi += pad;
+    if (preSimDomain) { lo = Math.min(lo, preSimDomain[0]); hi = Math.max(hi, preSimDomain[1]); }
+    /** @type {[number,number]} */
+    const dom = [lo, hi];
+    const { bins } = computeBins(stats, { domain: dom });
+    if (bins.length === 0) return;
+    const binWidth = /** @type {number} */ (bins[0].x1) - /** @type {number} */ (bins[0].x0);
+    const maxY = Math.max(...bins.map(b => b.length));
+
+    overlayTheoryCurve({
+      container: chartContainer,
+      pdf: (x) => normalPdf(x, center, se),
+      xDomain: dom,
+      totalN: stats.length,
+      binWidth,
+      maxY,
+      label,
     });
   }
 
@@ -1620,6 +1723,11 @@ export function initSimPage(config) {
           mode: 'bootstrap', proportion, ci,
         });
       }
+    }
+
+    // Theory overlay (only on histogram in bootstrap mode)
+    if (theoryOverlayOn && activeChart === 'histogram' && config.mode === 'bootstrap') {
+      applyTheoryOverlay(stats);
     }
 
     lastStatIndex = -1; // Reset after rendering

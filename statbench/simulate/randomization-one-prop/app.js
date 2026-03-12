@@ -11,6 +11,7 @@ import { drawDotplot } from '../../js/dotplot.js';
 import { drawSpike } from '../../js/spike.js';
 import * as d3Select from 'd3-selection';
 import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, initDataPanel, computeHighlights } from '../../js/page-utils.js';
+import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from '../../js/theory-overlay.js';
 
 // DOM elements
 const chartContainer = document.getElementById('chart-container');
@@ -66,6 +67,18 @@ if (chartFigure) {
       renderChart(allStats, observedPHat, direction);
     }
   });
+
+  // Theory overlay toggle
+  createTheoryToggle(toggleFieldset, (checked) => {
+    theoryOverlayOn = checked;
+    if (allStats.length > 0 && chartContainer) {
+      if (checked && chartType === 'histogram') {
+        applyTheoryOverlay();
+      } else {
+        removeTheoryOverlay(chartContainer);
+      }
+    }
+  });
 }
 
 /** @type {number[]} */
@@ -77,6 +90,7 @@ let seed = Math.random().toString(36).slice(2, 10);
 let sampleN = 0;
 let sampleSuccesses = 0;
 let observedPHat = 0;
+let theoryOverlayOn = false;
 
 /** @type {string[]} */
 let rawOutcomes = [];
@@ -405,6 +419,11 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
     const { pValue } = computePValue(stats, observed, direction);
     renderPValuePills(frame, xScale, pValue, observed, direction);
   }
+
+  // Theory overlay (only on histogram)
+  if (theoryOverlayOn && activeChart === 'histogram') {
+    applyTheoryOverlay();
+  }
 }
 
 /**
@@ -526,4 +545,38 @@ function resetSimulation() {
   chartContainer.innerHTML = '';
   resultDiv.innerHTML = '<p class="placeholder">Enter sample data and run a simulation to see results.</p>';
   if (resetBtn) resetBtn.hidden = true;
+}
+
+// ─── Theory overlay ───
+
+/**
+ * Overlay the normal approximation N(p₀, √(p₀(1−p₀)/n)) on the histogram.
+ */
+function applyTheoryOverlay() {
+  if (!chartContainer || sampleN === 0 || allStats.length === 0) return;
+  const p0 = getNullProp();
+  const se = Math.sqrt(p0 * (1 - p0) / sampleN);
+  if (!isFinite(se) || se <= 0) return;
+
+  const lo = Math.min(...allStats, observedPHat);
+  const hi = Math.max(...allStats, observedPHat);
+  const pad = (hi - lo) * 0.05 || 0.05;
+  /** @type {[number,number]} */
+  const dom = [lo - pad, hi + pad];
+
+  const thresholds = snappedPropThresholds(sampleN, dom, allStats.length);
+  const { bins } = computeBins(allStats, { domain: dom, thresholds });
+  if (bins.length === 0) return;
+  const binWidth = /** @type {number} */ (bins[0].x1) - /** @type {number} */ (bins[0].x0);
+  const maxY = Math.max(...bins.map(b => b.length));
+
+  overlayTheoryCurve({
+    container: chartContainer,
+    pdf: (x) => normalPdf(x, p0, se),
+    xDomain: dom,
+    totalN: allStats.length,
+    binWidth,
+    maxY,
+    label: `N(${p0}, ${se.toFixed(3)})`,
+  });
 }
