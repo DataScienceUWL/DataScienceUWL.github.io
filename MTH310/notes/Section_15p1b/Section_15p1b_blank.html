@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 15.1b: Integration Review &mdash; Handout</title>
+<style>
+@page { size: letter; margin: 0.4in 0.5in; }
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #b5850e;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    max-width: 7.5in; margin: 0 auto; padding: 0.3em;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.35; }
+.handout-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left h1 { font-size: 1.3em; color: var(--accent-cyan); margin: 0; }
+.header-left p { margin: 0.05em 0; color: #666; font-size: 0.85em; }
+.header-right { text-align: right; font-size: 0.85em; color: #333; }
+hr { border: none; border-top: 2px solid var(--accent-cyan); margin: 0.3em 0; }
+h2 { font-size: 1.1em; color: var(--accent-cyan); margin: 0.4em 0 0.15em 0;
+    border-bottom: 1px solid #ccc; padding-bottom: 0.05em; }
+h3, h4 { font-size: 0.95em; margin: 0.15em 0; }
+p { margin: 0.15em 0; }
+.defn-box { background: #f0f7ff; border-left: 3px solid var(--accent-cyan);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 3px solid var(--accent-green);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
+    padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
+.blank-space { margin: 0.2em 0; position: relative;
+    border: 1px dashed #ccc; border-radius: 3px; box-sizing: border-box; }
+.blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
+    color: #767676; font-style: italic; }
+.hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
+    padding: 0.3em 0.8em; text-align: center; margin: 0.5em 0; }
+.desmos-link { background: #f0f7ff; border-radius: 3px; padding: 0.2em 0.5em;
+    margin: 0.3em 0; font-size: 0.8em; }
+.desmos-link a { color: var(--accent-cyan); word-break: break-all; }
+.two-col-print { display: flex; gap: 0.6em; align-items: flex-start; }
+.two-col-print > * { flex: 1; }
+figure { margin: 0.1em 0; text-align: center; }
+figure img { max-width: 100%; max-height: 3.0in; }
+figcaption { font-size: 0.7em; color: #666; margin-top: 0.05em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 2px; border: 1px solid #ddd; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.image-grid { display: flex; gap: 0.4em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.2em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.8em; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 1.5in; max-width: 100%; }
+.image-grid .grid-cell.textbook-fig img { padding: 2px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+table { border-collapse: collapse; font-size: 0.85em; margin: 0.15em auto; }
+th, td { padding: 0.1em 0.4em; border: 1px solid #ccc; text-align: center; }
+th { background: #f0f7ff; }
+.small { font-size: 0.8em; }
+ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
+li { margin-bottom: 0.05em; }
+.pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
+.homework-section { page-break-before: auto; }
+.defn-box, .example-box, .key-point { page-break-inside: avoid; break-inside: avoid; }
+.example-group { page-break-inside: avoid; break-inside: avoid; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media print {
+    body { padding: 0; max-width: none; }
+    .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    a[href^="http"]::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="#"]::after { content: none; }
+    figure img { max-height: 2.8in; }
+    .skip-link { display: none; }
+}
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// After MathJax renders, adjust workspace boxes for better print pagination.
+// Two mechanisms:
+// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
+//    then remove the pagebreak div (the expanded workspace pushes content naturally).
+// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
+//    page, expand the preceding workspace to push the section to the next page.
+function adjustWorkspaces() {
+    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
+
+    function findPrecedingWorkspace(el) {
+        // Walk backwards through preceding siblings (and into them) to find .blank-space
+        var prev = el.previousElementSibling;
+        while (prev) {
+            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
+            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
+            if (ws) return ws;
+            prev = prev.previousElementSibling;
+        }
+        // Also check inside parent section (pagebreak might be inside a section)
+        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
+            var children = el.parentElement.children;
+            for (var j = children.length - 1; j >= 0; j--) {
+                if (children[j] === el) continue;
+                if (children[j].classList.contains('blank-space')) return children[j];
+                var inner = children[j].querySelector('.blank-space:last-of-type');
+                if (inner) return inner;
+            }
+        }
+        return null;
+    }
+
+    function expandWorkspace(ws, extraPx) {
+        var curH = ws.getBoundingClientRect().height;
+        ws.style.minHeight = (curH + extraPx + 4) + 'px';
+    }
+
+    // --- Pass A: Handle explicit \pagebreak markers ---
+    var pagebreaks = document.querySelectorAll('.pagebreak');
+    pagebreaks.forEach(function(pb) {
+        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
+        var remaining = PAGE_H - (pbTop % PAGE_H);
+        if (remaining > 0 && remaining < PAGE_H) {
+            var ws = findPrecedingWorkspace(pb);
+            if (ws) expandWorkspace(ws, remaining);
+        }
+        // Keep the div — its CSS page-break-before:always guarantees the break
+        // even if the workspace expansion calculation is slightly off.
+    });
+
+    // --- Pass B: Auto-detect orphaned section starts ---
+    // Skip sections preceded by an explicit .pagebreak (already handled by Pass A).
+    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
+    var sections = document.querySelectorAll('main > section');
+    for (var pass = 0; pass < 3; pass++) {
+        var changed = false;
+        for (var i = 1; i < sections.length; i++) {
+            var sec = sections[i];
+            var prev = sec.previousElementSibling;
+            if (prev && prev.classList && prev.classList.contains('pagebreak')) continue;
+            var secRect = sec.getBoundingClientRect();
+            var secTop = secRect.top + window.scrollY;
+            var secBot = secTop + secRect.height;
+            var pageOfTop = Math.floor(secTop / PAGE_H);
+            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
+            if (pageOfBot > pageOfTop) {
+                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
+                if (contentOnFirstPage < MIN_CONTENT) {
+                    var ws = findPrecedingWorkspace(sec);
+                    if (ws) {
+                        expandWorkspace(ws, contentOnFirstPage);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (!changed) break;
+    }
+}
+// Run after MathJax finishes so layout is finalized
+if (window.MathJax && window.MathJax.startup) {
+    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
+} else {
+    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
+}
+</script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <div class="handout-header">
+    <div class="header-left">
+      <h1>Section 15.1b: Integration Review</h1>
+      <p>Multiple Integrals</p>
+    </div>
+    <div class="header-right">
+      <p>MTH 310<br>Calculus III</p>
+    </div>
+  </div>
+</header>
+<hr aria-hidden="true">
+
+<section id="why-are-we-reviewing-integration" aria-label="Why Are We Reviewing Integration?">
+  <h2>Why Are We Reviewing Integration?</h2>
+  <div><p>Every double and triple integral you'll compute this semester eventually reduces to <strong>single-variable integrals</strong>. If you're rusty on these, the new ideas get buried under algebra struggles.</p></div>
+<div><p>Today's goal: <strong>practice your integration toolkit</strong> so the rest of Chapter 15 goes smoothly.</p></div>
+<div><p>You have a <strong>formula sheet</strong> with all the identities and formulas you'll need. Today is about learning to <em>use</em> them:</p>
+<ul>
+<li>\(u\)-substitution &mdash; the workhorse of integration</li>
+<li>Trig identities &mdash; for powers of sin/cos</li>
+<li>Integration by parts &mdash; for products of different function types</li>
+<li>Trig substitution &mdash; for square roots that resist \(u\)-sub</li>
+<li>Recognizing impossible integrands</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The formulas are on your sheet. The <strong>skill</strong> is knowing which one to reach for and how to apply it.</p></aside>
+</section>
+
+<section id="substitution-the-most-important-technique" aria-label="$u$-Substitution: The Most Important Technique">
+  <h2>\(u\)-Substitution: The Most Important Technique</h2>
+  <div><p><strong>When to use it:</strong> You see a composition \(f(g(x))\) and its derivative \(g'(x)\) nearby.</p></div>
+<div><p><strong>The steps:</strong></p>
+<ol>
+<li>Choose \(u = \) (the “inner function”)</li>
+<li>Compute \(du = g'(x)\,dx\)</li>
+<li>Rewrite <strong>everything</strong> in terms of \(u\) and \(du\)</li>
+<li>Integrate, then substitute back</li>
+</ol></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The key skill: <strong>spotting the chain rule in reverse</strong>. If you see \(g'(x)\) multiplied by a function of \(g(x)\), let \(u = g(x)\).</p></aside>
+</section>
+
+<section id="example-1-substitution-with-exponentials" class="example-group" aria-label="Example 1: $u$-Substitution with Exponentials">
+  <h2>Example 1: \(u\)-Substitution with Exponentials</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Evaluate \(\displaystyle\int y\,e^{y^2}\,dy\).</p>
+</section>
+<div><p><em>This exact integral appears when evaluating \(\iint_R e^{y^2}\,dA\) after reversing the order of integration (Section 15.2).</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Let $u = y^2$. What is $du$? Rewrite and integrate." style="min-height:2.5in;">
+  <div class="blank-prompt">Let \(u = y^2\). What is \(du\)? Rewrite and integrate.</div>
+</div>
+<div><p><strong>Choose \(u\):</strong> Let \(u = y^2\), so \(du = 2y\,dy\), which means \(y\,dy = \frac{1}{2}\,du\).</p></div>
+<div><p><strong>Substitute:</strong></p>
+<p>\[\int y\,e^{y^2}\,dy = \int e^u \cdot \frac{1}{2}\,du = \frac{1}{2}e^u + C = \frac{1}{2}e^{y^2} + C\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\displaystyle\int y\,e^{y^2}\,dy = \frac{1}{2}e^{y^2} + C\). Pattern: when you see \(f'(x)\,e^{f(x)}\), the answer is \(e^{f(x)} + C\).</p></aside>
+</section>
+
+<section id="example-2-substitution-with-radicals" class="example-group" aria-label="Example 2: $u$-Substitution with Radicals">
+  <h2>Example 2: \(u\)-Substitution with Radicals</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Evaluate \(\displaystyle\int r\sqrt{1 + r^2}\,dr\).</p>
+</section>
+<div><p><em>This integral appears in surface area calculations (Section 15.5) and cylindrical coordinates (Section 15.7).</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Let $u = 1 + r^2$. What is $du$? Rewrite $\sqrt{1+r^2}$ as $u^{1/2}$." style="min-height:2.5in;">
+  <div class="blank-prompt">Let \(u = 1 + r^2\). What is \(du\)? Rewrite \(\sqrt{1+r^2}\) as \(u^{1/2}\).</div>
+</div>
+<div><p><strong>Choose \(u\):</strong> Let \(u = 1 + r^2\), so \(du = 2r\,dr\), which means \(r\,dr = \frac{1}{2}\,du\).</p></div>
+<div><p><strong>Substitute:</strong></p>
+<p>\[\int r\sqrt{1 + r^2}\,dr = \int u^{1/2} \cdot \frac{1}{2}\,du = \frac{1}{2} \cdot \frac{u^{3/2}}{3/2} = \frac{1}{3}(1 + r^2)^{3/2} + C\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>When you see \(r\,dr\) paired with a function of \(r^2\), let \(u = \) the function of \(r^2\).</p></aside>
+</section>
+
+<section id="example-3-substitution-with-logarithms" class="example-group" aria-label="Example 3: $u$-Substitution with Logarithms">
+  <h2>Example 3: \(u\)-Substitution with Logarithms</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Evaluate \(\displaystyle\int \frac{\ln y}{y}\,dy\).</p>
+</section>
+<div><p><em>This shows up in iterated integrals involving \(\ln(y)\) (Section 15.2, homework).</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: What function has $\frac{1}{y}$ as its derivative? Let $u = \ln y$." style="min-height:2in;">
+  <div class="blank-prompt">What function has \(\frac{1}{y}\) as its derivative? Let \(u = \ln y\).</div>
+</div>
+<div><p><strong>Choose \(u\):</strong> Let \(u = \ln y\), so \(du = \frac{1}{y}\,dy\).</p></div>
+<div><p><strong>Substitute:</strong></p>
+<p>\[\int \frac{\ln y}{y}\,dy = \int u\,du = \frac{u^2}{2} + C = \frac{(\ln y)^2}{2} + C\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\displaystyle\int \frac{\ln y}{y}\,dy = \frac{(\ln y)^2}{2} + C\). The “\(\frac{1}{y}\)” is the derivative of \(\ln y\).</p></aside>
+</section>
+
+<section id="quick-check-substitution" aria-label="Quick Check: $u$-Substitution">
+  <h2>Quick Check: \(u\)-Substitution</h2>
+  <div><p><em>For each integral, identify \(u\), find \(du\), and evaluate.</em></p>
+<p>(a) \(\displaystyle\int \cos(3x)\,dx\)      (b) \(\displaystyle\int x^2 e^{x^3}\,dx\)</p>
+<p>(c) \(\displaystyle\int \frac{e^{\sqrt{t}}}{2\sqrt{t}}\,dt\)      (d) \(\displaystyle\int_0^1 \frac{2x}{(1 + x^2)^2}\,dx\)</p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Show $u$, $du$, rewritten integral, and final answer for each." style="min-height:3in;">
+  <div class="blank-prompt">Show \(u\), \(du\), rewritten integral, and final answer for each.</div>
+</div>
+<div><p>(a) \(u = 3x\): \(\frac{1}{3}\sin(3x) + C\)</p></div>
+<div><p>(b) \(u = x^3\): \(\frac{1}{3}e^{x^3} + C\)</p></div>
+<div><p>(c) \(u = \sqrt{t}\): \(e^{\sqrt{t}} + C\)</p></div>
+<div><p>(d) \(u = 1 + x^2\): \(\left[-\frac{1}{u}\right]_1^2 = -\frac{1}{2} + 1 = \frac{1}{2}\)</p></div>
+</section>
+
+<section id="trig-powers-using-your-formula-sheet" aria-label="Trig Powers: Using Your Formula Sheet">
+  <h2>Trig Powers: Using Your Formula Sheet</h2>
+  <div><p>In polar, cylindrical, and spherical coordinates, you'll constantly encounter powers of \(\sin\) and \(\cos\). Your formula sheet has the identities &mdash; here's how to <em>use</em> them.</p></div>
+<div><p><strong>Even powers</strong> (\(\sin^2\theta\), \(\cos^2\theta\)): Use the half-angle identities from your sheet:</p>
+<p>\[\sin^2\theta = \frac{1 - \cos(2\theta)}{2} \qquad \cos^2\theta = \frac{1 + \cos(2\theta)}{2}\]</p></div>
+<div><p><strong>Odd powers</strong> (\(\sin^3\theta\), \(\cos^3\theta\)): Peel off one factor and use \(\sin^2 + \cos^2 = 1\):</p>
+<p>\[\sin^3\theta = \sin\theta(1 - \cos^2\theta)\]</p>
+<p>Then \(u = \cos\theta\), \(du = -\sin\theta\,d\theta\) handles it.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Even powers \(\to\) half-angle identities. Odd powers \(\to\) peel off one factor + \(u\)-sub.</p></aside>
+</section>
+
+<section id="example-4-integrating" class="example-group" aria-label="Example 4: Integrating $\sin^2\theta$">
+  <h2>Example 4: Integrating \(\sin^2\theta\)</h2>
+  <section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>Evaluate \(\displaystyle\int_0^{2\pi} \sin^2\theta\,d\theta\).</p>
+</section>
+<div><p><em>This integral appears in almost every polar and cylindrical coordinate problem (Sections 15.3, 15.7).</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Look up the half-angle identity on your formula sheet, substitute, then integrate." style="min-height:2.5in;">
+  <div class="blank-prompt">Look up the half-angle identity on your formula sheet, substitute, then integrate.</div>
+</div>
+<div><p><strong>Apply the identity:</strong></p>
+<p>\[\int_0^{2\pi} \sin^2\theta\,d\theta = \int_0^{2\pi} \frac{1 - \cos(2\theta)}{2}\,d\theta = \frac{1}{2}\Big[\theta - \frac{\sin(2\theta)}{2}\Big]_0^{2\pi}\]</p></div>
+<div><p>\[= \frac{1}{2}(2\pi - 0) = \pi\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\displaystyle\int_0^{2\pi} \sin^2\theta\,d\theta = \pi\). Similarly, \(\displaystyle\int_0^{2\pi} \cos^2\theta\,d\theta = \pi\). These are worth memorizing!</p></aside>
+</section>
+
+<section id="example-5-integrating" class="example-group" aria-label="Example 5: Integrating $\sin^3\phi$">
+  <h2>Example 5: Integrating \(\sin^3\phi\)</h2>
+  <section class="example-box" role="region" aria-label="Example 5">
+  <h3 class="example-title">Example 5</h3>
+  <p>Evaluate \(\displaystyle\int_0^{\pi/2} \sin^3\phi\,d\phi\).</p>
+</section>
+<div><p><em>This integral appears in spherical coordinate problems (Section 15.8) where the volume element includes \(\sin\phi\).</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Write $\sin^3\phi = \sin\phi(1 - \cos^2\phi)$, then use $u = \cos\phi$." style="min-height:2.5in;">
+  <div class="blank-prompt">Write \(\sin^3\phi = \sin\phi(1 - \cos^2\phi)\), then use \(u = \cos\phi\).</div>
+</div>
+<div><p><strong>Peel off one factor:</strong></p>
+<p>\[\int_0^{\pi/2} \sin^3\phi\,d\phi = \int_0^{\pi/2} \sin\phi(1 - \cos^2\phi)\,d\phi\]</p></div>
+<div><p><strong>Substitute:</strong> \(u = \cos\phi\), \(du = -\sin\phi\,d\phi\). Limits: \(u(0) = 1\), \(u(\pi/2) = 0\).</p>
+<p>\[= -\int_1^0 (1 - u^2)\,du = \int_0^1 (1 - u^2)\,du = \Big[u - \frac{u^3}{3}\Big]_0^1 = \frac{2}{3}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\displaystyle\int_0^{\pi/2} \sin^3\phi\,d\phi = \frac{2}{3}\). “Peel and substitute” works for any odd power.</p></aside>
+</section>
+
+<section id="integration-by-parts" aria-label="Integration by Parts">
+  <h2>Integration by Parts</h2>
+  <div><p>The formula is on your sheet: \(\displaystyle\int u\,dv = uv - \int v\,du\)</p></div>
+<div><p><strong>When to use it:</strong> The integrand is a <strong>product of two different types</strong> of functions (polynomial \(\times\) exponential, polynomial \(\times\) trig, etc.).</p></div>
+<div><p><strong>Choosing \(u\) and \(dv\):</strong> Use <strong>LIATE</strong> priority (choose \(u\) from the first match):</p>
+<ol>
+<li><strong>L</strong>ogarithmic: \(\ln x\), \(\log x\)</li>
+<li><strong>I</strong>nverse trig: \(\arctan x\), \(\arcsin x\)</li>
+<li><strong>A</strong>lgebraic: \(x^2\), \(x\), \(3x + 1\)</li>
+<li><strong>T</strong>rigonometric: \(\sin x\), \(\cos x\)</li>
+<li><strong>E</strong>xponential: \(e^x\), \(2^x\)</li>
+</ol></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The function you pick for \(u\) gets <strong>differentiated</strong> (simpler). The rest (\(dv\)) gets <strong>integrated</strong>. LIATE works for 90% of problems you'll see.</p></aside>
+</section>
+
+<section id="example-6-integration-by-parts" class="example-group" aria-label="Example 6: Integration by Parts">
+  <h2>Example 6: Integration by Parts</h2>
+  <section class="example-box" role="region" aria-label="Example 6">
+  <h3 class="example-title">Example 6</h3>
+  <p>Evaluate \(\displaystyle\int x\,e^{2x}\,dx\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Use LIATE: $u = x$ (algebraic), $dv = e^{2x}\,dx$. Find $du$ and $v$, then apply the formula." style="min-height:2.5in;">
+  <div class="blank-prompt">Use LIATE: \(u = x\) (algebraic), \(dv = e^{2x}\,dx\). Find \(du\) and \(v\), then apply the formula.</div>
+</div>
+<div><p><strong>Set up:</strong> \(u = x\), \(dv = e^{2x}\,dx\) \(\Rightarrow\) \(du = dx\), \(v = \frac{1}{2}e^{2x}\).</p></div>
+<div><p><strong>Apply the formula:</strong></p>
+<p>\[\int x\,e^{2x}\,dx = \frac{x}{2}e^{2x} - \int \frac{1}{2}e^{2x}\,dx = \frac{x}{2}e^{2x} - \frac{1}{4}e^{2x} + C\]</p></div>
+<div><p>\[= \frac{e^{2x}}{4}(2x - 1) + C\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\displaystyle\int x\,e^{2x}\,dx = \frac{e^{2x}}{4}(2x - 1) + C\)</p></aside>
+</section>
+
+<section id="example-7-integration-by-parts-with" class="example-group" aria-label="Example 7: Integration by Parts with $\ln$">
+  <h2>Example 7: Integration by Parts with \(\ln\)</h2>
+  <section class="example-box" role="region" aria-label="Example 7">
+  <h3 class="example-title">Example 7</h3>
+  <p>Evaluate \(\displaystyle\int x\ln x\,dx\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: LIATE says $u = \ln x$ (logarithmic beats algebraic). What is $dv$?" style="min-height:2.5in;">
+  <div class="blank-prompt">LIATE says \(u = \ln x\) (logarithmic beats algebraic). What is \(dv\)?</div>
+</div>
+<div><p><strong>Set up:</strong> \(u = \ln x\), \(dv = x\,dx\) \(\Rightarrow\) \(du = \frac{1}{x}\,dx\), \(v = \frac{x^2}{2}\).</p></div>
+<div><p><strong>Apply the formula:</strong></p>
+<p>\[\int x\ln x\,dx = \frac{x^2}{2}\ln x - \int \frac{x^2}{2} \cdot \frac{1}{x}\,dx = \frac{x^2}{2}\ln x - \frac{x^2}{4} + C\]</p></div>
+<div><p>\[= \frac{x^2}{4}(2\ln x - 1) + C\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>When \(\ln\) is in the integrand, it's almost always \(u\). Even \(\int \ln x\,dx\) uses IBP with \(u = \ln x\), \(dv = dx\).</p></aside>
+</section>
+
+<section id="quick-check-integration-by-parts" aria-label="Quick Check: Integration by Parts">
+  <h2>Quick Check: Integration by Parts</h2>
+  <div><p><em>For each integral, identify \(u\) and \(dv\) using LIATE, then evaluate.</em></p>
+<p>(a) \(\displaystyle\int x\cos x\,dx\)      (b) \(\displaystyle\int \ln x\,dx\)</p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: For (b), try $u = \ln x$ and $dv = dx$. Yes, $dv$ can just be $dx$!" style="min-height:2.5in;">
+  <div class="blank-prompt">For (b), try \(u = \ln x\) and \(dv = dx\). Yes, \(dv\) can just be \(dx\)!</div>
+</div>
+<div><p>(a) \(u = x\), \(dv = \cos x\,dx\) \(\Rightarrow\) \(v = \sin x\)</p>
+<p>\[\int x\cos x\,dx = x\sin x - \int \sin x\,dx = x\sin x + \cos x + C\]</p></div>
+<div><p>(b) \(u = \ln x\), \(dv = dx\) \(\Rightarrow\) \(v = x\)</p>
+<p>\[\int \ln x\,dx = x\ln x - \int x \cdot \frac{1}{x}\,dx = x\ln x - x + C\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\int \ln x\,dx = x\ln x - x + C\) is worth remembering on its own.</p></aside>
+</section>
+
+<section id="trig-substitution-start-with-the-triangle" aria-label="Trig Substitution: Start with the Triangle">
+  <h2>Trig Substitution: Start with the Triangle</h2>
+  <div><p>When you see \(\sqrt{a^2 + x^2}\), \(\sqrt{a^2 - x^2}\), or \(\sqrt{x^2 - a^2}\), <strong>don't memorize substitutions</strong>. Instead, <strong>draw a right triangle</strong> that puts the square root on one side.</p></div>
+<div><p><strong>The idea:</strong> Place \(a\) and \(x\) on two sides of a right triangle so that the Pythagorean theorem gives you the square root expression on the third side. Then pick \(\theta\) and read off the substitution.</p></div>
+<div><p><strong>Example:</strong> \(\sqrt{4 + x^2}\).</p>
+<ul>
+<li>You need \(a^2 + x^2 = \) hypotenuse\({}^2\), so put \(2\) and \(x\) on the <strong>legs</strong> and \(\sqrt{4 + x^2}\) on the <strong>hypotenuse</strong>.</li>
+<li>Now read: \(\tan\theta = x/2\), so \(x = 2\tan\theta\), and \(\sec\theta = \sqrt{4+x^2}/2\).</li>
+</ul></div>
+<div><p><strong>Example:</strong> \(\sqrt{9 - x^2}\).</p>
+<ul>
+<li>You need \(a^2 - x^2\), so put \(3\) on the <strong>hypotenuse</strong> and \(x\) on a <strong>leg</strong>. The other leg is \(\sqrt{9-x^2}\).</li>
+<li>Now read: \(\sin\theta = x/3\), so \(x = 3\sin\theta\), and \(\cos\theta = \sqrt{9-x^2}/3\).</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The triangle <strong>tells you</strong> the substitution &mdash; you don't need to memorize anything. Just ask: where do \(a\) and \(x\) go so the third side is the square root I want?</p></aside>
+</section>
+
+<section id="example-8-trig-substitution" class="example-group" aria-label="Example 8: Trig Substitution">
+  <h2>Example 8: Trig Substitution</h2>
+  <section class="example-box" role="region" aria-label="Example 8">
+  <h3 class="example-title">Example 8</h3>
+  <p>Evaluate \(\displaystyle\int \frac{dx}{\sqrt{4 + x^2}}\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Draw the triangle: legs $2$ and $x$, hypotenuse $\sqrt{4+x^2}$. Read off $x$ in terms of $\theta$, find $dx$, and simplify." style="min-height:3in;">
+  <div class="blank-prompt">Draw the triangle: legs \(2\) and \(x\), hypotenuse \(\sqrt{4+x^2}\). Read off \(x\) in terms of \(\theta\), find \(dx\), and simplify.</div>
+</div>
+<div><p><strong>Draw the triangle:</strong> Legs \(= 2\) (adjacent) and \(x\) (opposite), hypotenuse \(= \sqrt{4+x^2}\).</p>
+<p>Reading off: \(\tan\theta = x/2\), so \(x = 2\tan\theta\) and \(dx = 2\sec^2\theta\,d\theta\). Also \(\sqrt{4+x^2} = 2\sec\theta\).</p></div>
+<div><p><strong>Substitute:</strong></p>
+<p>\[\int \frac{2\sec^2\theta\,d\theta}{2\sec\theta} = \int \sec\theta\,d\theta = \ln|\sec\theta + \tan\theta| + C\]</p>
+<p>(The result of \(\int\sec\theta\,d\theta\) is on your formula sheet.)</p></div>
+<div><p><strong>Back-substitute</strong> from the same triangle: \(\sec\theta = \frac{\sqrt{4+x^2}}{2}\), \(\tan\theta = \frac{x}{2}\).</p>
+<p>\[= \ln\left|\frac{\sqrt{4 + x^2}}{2} + \frac{x}{2}\right| + C = \ln\left|\sqrt{4 + x^2} + x\right| + C_1\]</p></div>
+</section>
+
+<section id="quick-check-trig-substitution-setup" aria-label="Quick Check: Trig Substitution Setup">
+  <h2>Quick Check: Trig Substitution Setup</h2>
+  <div><p><em>For each integral, draw the right triangle first. Then read off the substitution and simplify.</em></p>
+<p>(a) \(\displaystyle\int \frac{dx}{\sqrt{9 - x^2}}\)      (b) \(\displaystyle\int \sqrt{1 + 9x^2}\,dx\)</p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: For (a): hypotenuse $= 3$, one leg $= x$, other leg $= \sqrt{9-x^2}$. For (b): rewrite as $\sqrt{1 + (3x)^2}$, then draw the triangle." style="min-height:2.5in;">
+  <div class="blank-prompt">For (a): hypotenuse \(= 3\), one leg \(= x\), other leg \(= \sqrt{9-x^2}\). For (b): rewrite as \(\sqrt{1 + (3x)^2}\), then draw the triangle.</div>
+</div>
+<div><p>(a) Triangle: hypotenuse \(= 3\), leg \(= x\), other leg \(= \sqrt{9-x^2}\). Read: \(\sin\theta = x/3\), so \(x = 3\sin\theta\), \(dx = 3\cos\theta\,d\theta\), \(\sqrt{9-x^2} = 3\cos\theta\).</p>
+<p>\[\int \frac{3\cos\theta\,d\theta}{3\cos\theta} = \int d\theta = \theta + C = \arcsin\!\left(\frac{x}{3}\right) + C\]</p></div>
+<div><p>(b) Rewrite: \(\sqrt{1 + (3x)^2}\). Triangle: legs \(= 1\) and \(3x\), hypotenuse \(= \sqrt{1+9x^2}\). Read: \(\tan\theta = 3x\), so \(x = \frac{1}{3}\tan\theta\), \(dx = \frac{1}{3}\sec^2\theta\,d\theta\), \(\sqrt{1+9x^2} = \sec\theta\).</p>
+<p>\[\int \sec\theta \cdot \frac{1}{3}\sec^2\theta\,d\theta = \frac{1}{3}\int \sec^3\theta\,d\theta\]</p>
+<p>(Use the \(\int\sec^3\theta\,d\theta\) formula from your sheet.)</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>(a) gives \(\arcsin\) &mdash; that's where the inverse trig formulas <em>come from</em>. The triangle approach works every time without memorizing which substitution goes with which form.</p></aside>
+</section>
+
+<section id="your-turn-mixed-practice" aria-label="Your Turn: Mixed Practice">
+  <h2>Your Turn: Mixed Practice</h2>
+  <div><p><em>These are actual integrals from your upcoming homework and exams. Identify the technique and evaluate. Use your formula sheet!</em></p>
+<p>(a) \(\displaystyle\int_0^1 2x\,e^{x^2}\,dx\)    (b) \(\displaystyle\int_0^{\pi} \sin^2\theta\,d\theta\)    (c) \(\displaystyle\int_0^1 x\,e^{-x}\,dx\)</p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: For each: name the technique ($u$-sub, IBP, or trig identity), then evaluate." style="min-height:3in;">
+  <div class="blank-prompt">For each: name the technique (\(u\)-sub, IBP, or trig identity), then evaluate.</div>
+</div>
+<div><p>(a) <strong>\(u\)-sub</strong> (\(u = x^2\)): \(\left[e^{x^2}\right]_0^1 = e - 1\)</p></div>
+<div><p>(b) <strong>Half-angle</strong> (from sheet): \(\int_0^\pi \frac{1 - \cos(2\theta)}{2}\,d\theta = \frac{\pi}{2}\)</p></div>
+<div><p>(c) <strong>IBP</strong> (\(u = x\), \(dv = e^{-x}\,dx\)): \(\left[-xe^{-x}\right]_0^1 + \int_0^1 e^{-x}\,dx = -e^{-1} + (1 - e^{-1}) = 1 - \frac{2}{e}\)</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Step 1 is always: <strong>which technique?</strong> Look for compositions (\(u\)-sub), products of different types (IBP), or even powers of trig (identities).</p></aside>
+</section>
+
+<section id="your-turn-more-practice" aria-label="Your Turn: More Practice">
+  <h2>Your Turn: More Practice</h2>
+  <div><p><em>Keep going! These all appear in Chapters 15&ndash;16.</em></p>
+<p>(a) \(\displaystyle\int \frac{x}{\sqrt{1 + x^2}}\,dx\)    (b) \(\displaystyle\int_0^{\pi} \cos^2\theta\,d\theta\)    (c) \(\displaystyle\int \theta\sin\theta\,d\theta\)</p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Hint: (a) doesn't need trig sub &mdash; look for a $u$-sub first!" style="min-height:3in;">
+  <div class="blank-prompt">Hint: (a) doesn't need trig sub &mdash; look for a \(u\)-sub first!</div>
+</div>
+<div><p>(a) <strong>\(u\)-sub</strong> (\(u = 1 + x^2\), \(du = 2x\,dx\)):</p>
+<p>\[\int \frac{x}{\sqrt{1+x^2}}\,dx = \frac{1}{2}\int u^{-1/2}\,du = \sqrt{1+x^2} + C\]</p></div>
+<div><p>(b) <strong>Half-angle</strong> (from sheet): \(\int_0^\pi \frac{1 + \cos(2\theta)}{2}\,d\theta = \frac{\pi}{2}\)</p></div>
+<div><p>(c) <strong>IBP</strong> (\(u = \theta\), \(dv = \sin\theta\,d\theta\)):</p>
+<p>\[\theta(-\cos\theta) - \int -\cos\theta\,d\theta = -\theta\cos\theta + \sin\theta + C\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Notice (a): when \(x\,dx\) is present alongside \(\sqrt{1+x^2}\), \(u\)-sub works and trig sub is unnecessary. Always try \(u\)-sub first!</p></aside>
+</section>
+
+<section id="when-an-integral-can-t-be-evaluated" aria-label="When an Integral Can't Be Evaluated">
+  <h2>When an Integral Can't Be Evaluated</h2>
+  <div><p>Some functions have <strong>no elementary antiderivative</strong>. No technique on your formula sheet will work:</p>
+<p>\[\int e^{x^2}\,dx \qquad \int \cos(y^2)\,dy \qquad \int e^{x^4}\,dx \qquad \int \sqrt{y^3 + 1}\,dy\]</p></div>
+<div><p><strong>Why does this matter?</strong> In double integrals, you'll sometimes get one of these as an inner integral:</p>
+<p>\[\int_0^1 \int_x^1 e^{y^2}\,dy\,dx\]</p>
+<p>You <strong>cannot</strong> evaluate \(\int e^{y^2}\,dy\) &mdash; it's impossible!</p></div>
+<div><p><strong>The fix:</strong> Reverse the order of integration. After switching to \(dx\,dy\) and adjusting the limits, the impossible integral disappears and you get something you <em>can</em> do (like \(\int y\,e^{y^2}\,dy\) &mdash; Example 1 from today!).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>If an inner integral looks impossible, <strong>don't panic</strong> &mdash; reverse the order! We'll learn this technique in Section 15.2.</p></aside>
+</section>
+
+<section id="which-technique-a-decision-guide" aria-label="Which Technique? A Decision Guide">
+  <h2>Which Technique? A Decision Guide</h2>
+  <div><p>When you see a single-variable integral inside a double or triple integral:</p></div>
+<div><p><strong>1. Is it a basic antiderivative?</strong> (Check your formula sheet.) If yes, just integrate.</p></div>
+<div><p><strong>2. Is there a composition with its derivative nearby?</strong> \(\to\) \(u\)-substitution.</p></div>
+<div><p><strong>3. Are there even powers of \(\sin\) or \(\cos\)?</strong> \(\to\) Half-angle identities (formula sheet).</p></div>
+<div><p><strong>4. Are there odd powers of \(\sin\) or \(\cos\)?</strong> \(\to\) Peel one off, then \(u\)-sub.</p></div>
+<div><p><strong>5. Is it a product of different function types?</strong> \(\to\) Integration by parts (LIATE).</p></div>
+<div><p><strong>6. Is there \(\sqrt{a^2 \pm x^2}\) or \(\sqrt{x^2 - a^2}\) without a helpful \(x\,dx\)?</strong> \(\to\) Trig substitution (table on sheet).</p></div>
+<div><p><strong>7. None of the above work?</strong> \(\to\) The integral may be impossible. Reverse the order of integration!</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Always try \(u\)-sub first. It's the right move about 70% of the time.</p></aside>
+</section>
+
+<section class="homework-section" aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 15.1b:</strong> Practice the integrals on this handout!</div>
+</section>
+</main>
+</body>
+</html>
