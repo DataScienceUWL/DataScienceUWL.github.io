@@ -28,7 +28,7 @@
 </head>
 <body>
     <nav class="skip-links" aria-label="Skip links">
-        <a href="#data-input">Skip to Data Input</a>
+        <a href="#data-panel">Skip to Data</a>
         <a href="#controls">Skip to Parameters</a>
         <a href="#chart">Skip to Chart</a>
         <a href="#results">Skip to Results</a>
@@ -46,33 +46,86 @@
     <main>
         <h1>Two-Proportion z-Test and Confidence Interval</h1>
 
-        <section id="data-input" aria-label="Sample data input">
-            <h2>Sample Data</h2>
-            <div class="inference-inputs two-group-inputs">
-                <fieldset>
-                    <legend>Group 1</legend>
-                    <label for="input-label1">Group label:
-                        <input type="text" id="input-label1" value="Group 1" placeholder="e.g., Treatment">
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-dataset" aria-selected="true"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Edit Data</button>
+                <button role="tab" id="tab-file" aria-selected="false"
+                        aria-controls="panel-file">Open File</button>
+                <button role="tab" id="tab-summary" aria-selected="false"
+                        aria-controls="panel-summary">Enter Summary</button>
+            </div>
+
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset">
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </label>
+                <p id="dataset-desc" class="hint"></p>
+                <div id="variable-selectors" hidden>
+                    <label for="group-var-select">Grouping variable:
+                        <select id="group-var-select"></select>
                     </label>
-                    <label for="input-x1">Successes:
-                        <input type="number" id="input-x1" min="0" step="1" value="30">
+                    <label for="outcome-var-select">Outcome variable:
+                        <select id="outcome-var-select"></select>
                     </label>
-                    <label for="input-n1">Sample size (n&#8321;):
-                        <input type="number" id="input-n1" min="1" step="1" value="100">
+                </div>
+                <div id="success-selector" hidden>
+                    <label for="success-outcome">Count as success:
+                        <select id="success-outcome"></select>
                     </label>
-                </fieldset>
-                <fieldset>
-                    <legend>Group 2</legend>
-                    <label for="input-label2">Group label:
-                        <input type="text" id="input-label2" value="Group 2" placeholder="e.g., Control">
-                    </label>
-                    <label for="input-x2">Successes:
-                        <input type="number" id="input-x2" min="0" step="1" value="20">
-                    </label>
-                    <label for="input-n2">Sample size (n&#8322;):
-                        <input type="number" id="input-n2" min="1" step="1" value="100">
-                    </label>
-                </fieldset>
+                </div>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <label for="paste-area">Paste data (CSV with group and outcome columns):
+                    <textarea id="paste-area" rows="5" placeholder="group,outcome&#10;treatment,success&#10;treatment,failure&#10;control,success&#10;control,failure"></textarea>
+                </label>
+                <button type="button" id="load-paste" class="btn-primary">Load</button>
+                <button type="button" id="clear-data" class="btn-secondary">Clear</button>
+            </div>
+
+            <div role="tabpanel" id="panel-file" aria-labelledby="tab-file" hidden>
+                <label for="file-input">Open a CSV or TSV file:
+                    <input type="file" id="file-input" accept=".csv,.tsv,.txt">
+                </label>
+            </div>
+
+            <div role="tabpanel" id="panel-summary" aria-labelledby="tab-summary" hidden>
+                <div class="inference-inputs two-group-inputs">
+                    <fieldset>
+                        <legend>Group 1</legend>
+                        <label for="input-label1">Group label:
+                            <input type="text" id="input-label1" value="Group 1" placeholder="e.g., Treatment">
+                        </label>
+                        <label for="input-x1">Successes:
+                            <input type="number" id="input-x1" min="0" step="1" placeholder="30">
+                        </label>
+                        <label for="input-n1">Sample size (n&#8321;):
+                            <input type="number" id="input-n1" min="1" step="1" placeholder="100">
+                        </label>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Group 2</legend>
+                        <label for="input-label2">Group label:
+                            <input type="text" id="input-label2" value="Group 2" placeholder="e.g., Control">
+                        </label>
+                        <label for="input-x2">Successes:
+                            <input type="number" id="input-x2" min="0" step="1" placeholder="20">
+                        </label>
+                        <label for="input-n2">Sample size (n&#8322;):
+                            <input type="number" id="input-n2" min="1" step="1" placeholder="100">
+                        </label>
+                    </fieldset>
+                    <button type="button" id="load-summary" class="btn-primary">Load</button>
+                </div>
+            </div>
+
+            <div id="data-preview" hidden>
+                <output id="data-summary"></output>
             </div>
         </section>
 
@@ -118,7 +171,7 @@
                 </div>
                 <aside class="app-sidebar" id="results">
                     <div id="results-panel" tabindex="-1">
-                        <p class="placeholder">Enter sample data and click Compute to see results.</p>
+                        <p class="placeholder">Load data or enter summary statistics, then click Compute.</p>
                     </div>
                 </aside>
             </div>

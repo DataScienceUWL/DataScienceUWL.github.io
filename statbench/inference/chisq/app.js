@@ -1,16 +1,16 @@
 // @ts-check
 /**
  * Chi-Square Test of Independence page controller.
- * Reads an editable contingency table, computes the chi-square test,
- * displays observed/expected tables, and draws a chi-square distribution
- * curve with right-tail shading at the test statistic.
+ * Supports dataset loading, paste/file input, and manual contingency table entry.
+ * Computes the chi-square test, displays observed/expected tables, and draws
+ * a chi-square distribution curve with right-tail shading.
  */
 
 import { setJStat, pdfChisq, chisqInv } from '../../js/distributions.js';
 import { chisqTest } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
-import { announce } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initKeyboardShortcuts } from '../../js/page-utils.js';
 import * as d3Selection from 'd3-selection';
 
 // ── Initialize jStat ────────────────────────────────────────────────
@@ -21,8 +21,10 @@ setJStat(jstatMod.default || jstatMod);
 const inputRows = /** @type {HTMLInputElement} */ (document.getElementById('input-rows'));
 const inputCols = /** @type {HTMLInputElement} */ (document.getElementById('input-cols'));
 const tableInputContainer = /** @type {HTMLElement} */ (document.getElementById('table-input-container'));
+const loadTableBtn = /** @type {HTMLButtonElement} */ (document.getElementById('load-table'));
+const clearTableBtn = /** @type {HTMLButtonElement} */ (document.getElementById('clear-table'));
 const computeBtn = /** @type {HTMLButtonElement} */ (document.getElementById('compute-btn'));
-const clearBtn = /** @type {HTMLButtonElement} */ (document.getElementById('clear-btn'));
+const controlsSection = /** @type {HTMLElement} */ (document.getElementById('controls'));
 
 const chartSection = /** @type {HTMLElement} */ (document.getElementById('chart'));
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
@@ -37,6 +39,30 @@ const resP = /** @type {HTMLElement} */ (document.getElementById('res-p'));
 const observedContainer = /** @type {HTMLElement} */ (document.getElementById('observed-table-container'));
 const expectedContainer = /** @type {HTMLElement} */ (document.getElementById('expected-table-container'));
 
+const dataPreview = document.getElementById('data-preview');
+const dataSummary = document.getElementById('data-summary');
+const variableSelectors = document.getElementById('variable-selectors');
+const rowVarSelect = /** @type {HTMLSelectElement|null} */ (document.getElementById('row-var-select'));
+const colVarSelect = /** @type {HTMLSelectElement|null} */ (document.getElementById('col-var-select'));
+
+initTabs();
+initKeyboardShortcuts();
+
+// ── State ───────────────────────────────────────────────────────────
+/** @type {number[][] | null} Current observed table (from data or manual entry) */
+let currentObserved = null;
+/** @type {string[]} */
+let currentRowLabels = [];
+/** @type {string[]} */
+let currentColLabels = [];
+
+/** @type {Array<Record<string, string>>} Raw rows from loaded data */
+let rawRows = [];
+/** @type {string[]} Categorical variable names */
+let catVarNames = [];
+let rowVar = '';
+let colVar = '';
+
 // ── Keyboard help dialog ────────────────────────────────────────────
 const helpDialog = /** @type {HTMLDialogElement|null} */ (
   document.getElementById('keyboard-help'));
@@ -50,26 +76,149 @@ if (helpDialog) {
   });
 }
 
-// ── Build editable table ────────────────────────────────────────────
+// ── Data loading (datasets, paste, file) ────────────────────────────
 
-/** Current table dimensions. */
+initDataPanel({
+  datasetFilter: (/** @type {any} */ ds) => ds.hasCategorical === true,
+  onDataset: (ds) => {
+    const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
+    if (catVars.length < 2) {
+      announce('This dataset needs at least two categorical variables.');
+      return;
+    }
+    catVarNames = catVars.map(/** @param {any} v */ v => v.name);
+    rawRows = ds.rows.map(/** @param {any} r */ r => {
+      /** @type {Record<string, string>} */
+      const obj = {};
+      for (const col of catVarNames) obj[col] = String(r[col]);
+      return obj;
+    });
+    setupVariableSelectors(catVarNames, ds.name);
+  },
+  onText: (parsed, sourceName) => {
+    const catIndices = parsed.types
+      .map((t, i) => t === 'categorical' ? i : -1)
+      .filter(i => i >= 0);
+    if (catIndices.length < 2) {
+      announce('Need at least two categorical columns.');
+      return;
+    }
+    catVarNames = catIndices.map(i => parsed.headers[i]);
+    rawRows = parsed.data.map(row => {
+      /** @type {Record<string, string>} */
+      const obj = {};
+      for (const col of catVarNames) obj[col] = String(row[col]);
+      return obj;
+    });
+    setupVariableSelectors(catVarNames, sourceName);
+  },
+  onClear: () => {
+    rawRows = [];
+    catVarNames = [];
+    currentObserved = null;
+    currentRowLabels = [];
+    currentColLabels = [];
+    if (dataPreview) dataPreview.hidden = true;
+    if (variableSelectors) variableSelectors.hidden = true;
+    controlsSection.hidden = true;
+    chartSection.hidden = true;
+    resultsSection.hidden = true;
+    warningBanner.hidden = true;
+    interpretationDiv.hidden = true;
+    chartContainer.innerHTML = '';
+    observedContainer.innerHTML = '';
+    expectedContainer.innerHTML = '';
+    announce('Data cleared.');
+  },
+});
+
+/**
+ * Populate row and column variable selectors.
+ * @param {string[]} varNames
+ * @param {string} sourceName
+ */
+function setupVariableSelectors(varNames, sourceName) {
+  if (!rowVarSelect || !colVarSelect || !variableSelectors) return;
+
+  rowVarSelect.innerHTML = '';
+  colVarSelect.innerHTML = '';
+  for (const name of varNames) {
+    const opt1 = document.createElement('option');
+    opt1.value = name; opt1.textContent = name;
+    rowVarSelect.appendChild(opt1);
+
+    const opt2 = document.createElement('option');
+    opt2.value = name; opt2.textContent = name;
+    colVarSelect.appendChild(opt2);
+  }
+
+  rowVar = varNames[0];
+  colVar = varNames.length > 1 ? varNames[1] : varNames[0];
+  rowVarSelect.value = rowVar;
+  colVarSelect.value = colVar;
+  variableSelectors.hidden = false;
+
+  rowVarSelect.onchange = () => { rowVar = rowVarSelect.value; buildFromRawData(sourceName); };
+  colVarSelect.onchange = () => { colVar = colVarSelect.value; buildFromRawData(sourceName); };
+
+  buildFromRawData(sourceName);
+}
+
+/**
+ * Build contingency table from raw data using selected row/col variables.
+ * @param {string} sourceName
+ */
+function buildFromRawData(sourceName) {
+  if (rowVar === colVar) {
+    announce('Row and column variables must be different.');
+    return;
+  }
+
+  // Compute contingency table
+  const rowCats = /** @type {string[]} */ ([]);
+  const colCats = /** @type {string[]} */ ([]);
+  /** @type {Map<string, Map<string, number>>} */
+  const table = new Map();
+
+  for (const r of rawRows) {
+    const rv = r[rowVar];
+    const cv = r[colVar];
+    if (!rowCats.includes(rv)) rowCats.push(rv);
+    if (!colCats.includes(cv)) colCats.push(cv);
+    if (!table.has(rv)) table.set(rv, new Map());
+    const rowMap = /** @type {Map<string, number>} */ (table.get(rv));
+    rowMap.set(cv, (rowMap.get(cv) ?? 0) + 1);
+  }
+
+  // Convert to 2D array
+  currentRowLabels = rowCats;
+  currentColLabels = colCats;
+  currentObserved = rowCats.map(rv =>
+    colCats.map(cv => table.get(rv)?.get(cv) ?? 0)
+  );
+
+  if (dataPreview) dataPreview.hidden = false;
+  if (dataSummary) {
+    dataSummary.textContent =
+      `${sourceName}: ${rowVar} (${rowCats.length} levels) × ${colVar} (${colCats.length} levels), n = ${rawRows.length}`;
+  }
+  controlsSection.hidden = false;
+  announce(`Contingency table: ${rowCats.length} × ${colCats.length}, n = ${rawRows.length}.`);
+}
+
+// ── Editable table (Enter Table tab) ────────────────────────────────
+
 let nRows = 2;
 let nCols = 2;
 
-/**
- * Build the editable contingency table with label inputs and count inputs.
- */
 function buildInputTable() {
   nRows = Math.max(2, Math.min(10, parseInt(inputRows.value, 10) || 2));
   nCols = Math.max(2, Math.min(10, parseInt(inputCols.value, 10) || 2));
 
-  // Default labels
   const rowLabels = Array.from({ length: nRows }, (_, i) => `Row ${i + 1}`);
   const colLabels = Array.from({ length: nCols }, (_, j) => `Col ${j + 1}`);
 
   let html = '<table class="input-table" aria-label="Editable contingency table">';
-
-  // Header row: corner cell + column label inputs
   html += '<thead><tr>';
   html += '<td class="corner-cell"></td>';
   for (let j = 0; j < nCols; j++) {
@@ -77,7 +226,6 @@ function buildInputTable() {
   }
   html += '</tr></thead>';
 
-  // Body: row label input + count inputs
   html += '<tbody>';
   for (let i = 0; i < nRows; i++) {
     html += '<tr>';
@@ -94,14 +242,10 @@ function buildInputTable() {
 
 inputRows.addEventListener('change', buildInputTable);
 inputCols.addEventListener('change', buildInputTable);
-
-// Build initial table
 buildInputTable();
 
-// ── Read table data ─────────────────────────────────────────────────
-
 /**
- * Read the contingency table from the input elements.
+ * Read the contingency table from the editable input.
  * @returns {{ observed: number[][], rowLabels: string[], colLabels: string[] } | null}
  */
 function readTable() {
@@ -133,7 +277,6 @@ function readTable() {
     observed.push(row);
   }
 
-  // Check that total > 0
   const total = observed.flat().reduce((a, b) => a + b, 0);
   if (total === 0) {
     announce('All counts are zero. Enter at least some non-zero counts.');
@@ -143,34 +286,46 @@ function readTable() {
   return { observed, rowLabels, colLabels };
 }
 
-// ── Compute button ──────────────────────────────────────────────────
-
-computeBtn.addEventListener('click', () => {
+// Load table button
+loadTableBtn.addEventListener('click', () => {
   const data = readTable();
   if (!data) return;
-  showResults(data.observed, data.rowLabels, data.colLabels);
+  currentObserved = data.observed;
+  currentRowLabels = data.rowLabels;
+  currentColLabels = data.colLabels;
+
+  const total = data.observed.flat().reduce((a, b) => a + b, 0);
+  if (dataPreview) dataPreview.hidden = false;
+  if (dataSummary) {
+    dataSummary.textContent =
+      `Manual table: ${data.rowLabels.length} × ${data.colLabels.length}, n = ${total}`;
+  }
+  controlsSection.hidden = false;
+  announce(`Table loaded: ${data.rowLabels.length} × ${data.colLabels.length}, n = ${total}.`);
 });
 
-// Allow Enter key in count inputs to trigger compute
+// Allow Enter in count inputs to trigger load
 tableInputContainer.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && e.target instanceof HTMLInputElement && e.target.type === 'number') {
     e.preventDefault();
-    computeBtn.click();
+    loadTableBtn.click();
   }
 });
 
-// ── Clear button ────────────────────────────────────────────────────
-
-clearBtn.addEventListener('click', () => {
+// Clear table button
+clearTableBtn.addEventListener('click', () => {
   buildInputTable();
-  chartSection.hidden = true;
-  resultsSection.hidden = true;
-  warningBanner.hidden = true;
-  interpretationDiv.hidden = true;
-  chartContainer.innerHTML = '';
-  observedContainer.innerHTML = '';
-  expectedContainer.innerHTML = '';
   announce('Table cleared.');
+});
+
+// ── Compute ─────────────────────────────────────────────────────────
+
+computeBtn.addEventListener('click', () => {
+  if (!currentObserved || currentObserved.length === 0) {
+    announce('Load data or enter a contingency table first.');
+    return;
+  }
+  showResults(currentObserved, currentRowLabels, currentColLabels);
 });
 
 // ── Core: compute and display ───────────────────────────────────────
@@ -184,17 +339,14 @@ clearBtn.addEventListener('click', () => {
 function showResults(observed, rowLabels, colLabels) {
   const result = chisqTest(observed, rowLabels, colLabels);
 
-  // Show sections
   chartSection.hidden = false;
   resultsSection.hidden = false;
   interpretationDiv.hidden = false;
 
-  // Populate test stats
   resChisq.textContent = result.chiSq.toFixed(4);
   resDf.textContent = String(result.df);
   resP.textContent = formatStat(result.pValue, 0, 'pvalue');
 
-  // Check expected count condition
   let lowExpected = false;
   for (const row of result.expected) {
     for (const val of row) {
@@ -204,21 +356,14 @@ function showResults(observed, rowLabels, colLabels) {
   }
   warningBanner.hidden = !lowExpected;
 
-  // Render observed table
   renderResultTable(observedContainer, result.observed, rowLabels, colLabels,
     'Observed counts', false);
-
-  // Render expected table (with low-expected highlighting)
   renderResultTable(expectedContainer, result.expected, rowLabels, colLabels,
     'Expected counts', true);
 
-  // Draw chart
   drawChart(result);
-
-  // Interpretation
   writeInterpretation(result, lowExpected);
 
-  // Screen reader announcement
   announce(
     `Chi-square = ${result.chiSq.toFixed(3)}, df = ${result.df}, ` +
     `p-value = ${formatStat(result.pValue, 0, 'pvalue')}.` +
@@ -229,28 +374,24 @@ function showResults(observed, rowLabels, colLabels) {
 // ── Render result tables ────────────────────────────────────────────
 
 /**
- * Render an observed or expected table with row/column totals.
  * @param {HTMLElement} container
- * @param {number[][]} data - 2D array [row][col]
+ * @param {number[][]} data
  * @param {string[]} rowLabels
  * @param {string[]} colLabels
  * @param {string} ariaLabel
- * @param {boolean} highlightLow - Whether to highlight cells < 5
+ * @param {boolean} highlightLow
  */
 function renderResultTable(container, data, rowLabels, colLabels, ariaLabel, highlightLow) {
   const numRows = data.length;
   const numCols = data[0].length;
   const isExpected = highlightLow;
 
-  // Compute totals
   const rowTotals = data.map(row => row.reduce((a, b) => a + b, 0));
   const colTotals = Array.from({ length: numCols }, (_, j) =>
     data.reduce((sum, row) => sum + row[j], 0));
   const grandTotal = rowTotals.reduce((a, b) => a + b, 0);
 
   let html = `<table class="result-table" aria-label="${ariaLabel}">`;
-
-  // Header
   html += '<thead><tr><th></th>';
   for (let j = 0; j < numCols; j++) {
     html += `<th scope="col">${colLabels[j]}</th>`;
@@ -258,7 +399,6 @@ function renderResultTable(container, data, rowLabels, colLabels, ariaLabel, hig
   html += '<th scope="col" class="total-cell">Total</th>';
   html += '</tr></thead>';
 
-  // Body
   html += '<tbody>';
   for (let i = 0; i < numRows; i++) {
     html += `<tr><th scope="row">${rowLabels[i]}</th>`;
@@ -273,7 +413,6 @@ function renderResultTable(container, data, rowLabels, colLabels, ariaLabel, hig
     html += '</tr>';
   }
 
-  // Total row
   html += '<tr class="total-row"><th scope="row" class="total-cell">Total</th>';
   for (let j = 0; j < numCols; j++) {
     const ct = colTotals[j];
@@ -288,8 +427,6 @@ function renderResultTable(container, data, rowLabels, colLabels, ariaLabel, hig
 // ── Draw chi-square curve ───────────────────────────────────────────
 
 /**
- * Draw the chi-square distribution curve with right-tail shading at the
- * test statistic.
  * @param {import('../../js/inference.js').ChisqResult} result
  */
 function drawChart(result) {
@@ -299,7 +436,6 @@ function drawChart(result) {
   const pdfFn = (/** @type {number} */ x) => pdfChisq(x, df);
   const invCdf = (/** @type {number} */ p) => chisqInv(p, df);
 
-  // Compute domain, extending to include the test statistic if it's extreme
   let domain = computeDomain('chisq', { df, invCdf });
   if (chiSq > domain[1]) {
     domain = [0, chiSq * 1.15];
@@ -318,7 +454,6 @@ function drawChart(result) {
     critValue: chiSq,
   });
 
-  // Add vertical line at the test statistic
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   const statX = xScale(chiSq);
   const yTop = yScale(pdfFn(chiSq));
@@ -350,7 +485,6 @@ function drawChart(result) {
 // ── Interpretation ──────────────────────────────────────────────────
 
 /**
- * Write a plain-language interpretation of the chi-square test result.
  * @param {import('../../js/inference.js').ChisqResult} result
  * @param {boolean} lowExpected
  */

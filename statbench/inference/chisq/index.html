@@ -159,29 +159,10 @@
             padding: 0.15rem 0;
         }
 
-        /* Warning banner for expected count violations */
-        .warning-banner {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-left: 4px solid #ffc107;
-            border-radius: 0 6px 6px 0;
-            padding: 0.6rem 1rem;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Interpretation box */
-        .interpretation {
-            background: color-mix(in srgb, var(--accent, #569BBD) 8%, transparent);
-            border-left: 4px solid var(--accent, #569BBD);
-            border-radius: 0 6px 6px 0;
-            padding: 0.75rem 1rem;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-bottom: 1rem;
-        }
-        .interpretation p {
-            margin: 0.25rem 0;
+        /* Low expected cell highlight */
+        .low-expected {
+            background: #fff3cd !important;
+            font-weight: 700;
         }
 
         /* Chart */
@@ -202,17 +183,12 @@
             font-weight: 700;
             font-family: var(--font-mono, 'Source Code Pro', monospace);
         }
-
-        /* Low expected cell highlight */
-        .low-expected {
-            background: #fff3cd !important;
-            font-weight: 700;
-        }
     </style>
 </head>
 <body>
     <nav class="skip-links" aria-label="Skip links">
-        <a href="#input-section">Skip to Data Input</a>
+        <a href="#data-panel">Skip to Data</a>
+        <a href="#input-section">Skip to Table</a>
         <a href="#chart">Skip to Chart</a>
         <a href="#results">Skip to Results</a>
     </nav>
@@ -229,30 +205,84 @@
     <main>
         <h1>Chi-Square Test of Independence</h1>
 
-        <!-- Data input: editable contingency table -->
-        <section id="input-section" aria-label="Contingency table input">
-            <h2>Enter Observed Counts</h2>
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-dataset" aria-selected="true"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Edit Data</button>
+                <button role="tab" id="tab-file" aria-selected="false"
+                        aria-controls="panel-file">Open File</button>
+                <button role="tab" id="tab-table" aria-selected="false"
+                        aria-controls="panel-table">Enter Table</button>
+            </div>
 
-            <div class="dim-controls">
-                <label for="input-rows">
-                    Rows
-                    <input type="number" id="input-rows" value="2" min="2" max="10" step="1">
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset">
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
                 </label>
-                <label for="input-cols">
-                    Columns
-                    <input type="number" id="input-cols" value="2" min="2" max="10" step="1">
+                <p id="dataset-desc" class="hint"></p>
+                <div id="variable-selectors" hidden>
+                    <label for="row-var-select">Row variable:
+                        <select id="row-var-select"></select>
+                    </label>
+                    <label for="col-var-select">Column variable:
+                        <select id="col-var-select"></select>
+                    </label>
+                </div>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <label for="paste-area">Paste data (CSV with two categorical columns):
+                    <textarea id="paste-area" rows="5" placeholder="group,outcome&#10;treatment,success&#10;treatment,failure&#10;control,success&#10;control,failure"></textarea>
+                </label>
+                <button type="button" id="load-paste" class="btn-primary">Load</button>
+                <button type="button" id="clear-data" class="btn-secondary">Clear</button>
+            </div>
+
+            <div role="tabpanel" id="panel-file" aria-labelledby="tab-file" hidden>
+                <label for="file-input">Open a CSV or TSV file:
+                    <input type="file" id="file-input" accept=".csv,.tsv,.txt">
                 </label>
             </div>
 
-            <div id="table-input-container" aria-label="Editable contingency table">
-                <!-- Built by JS -->
+            <div role="tabpanel" id="panel-table" aria-labelledby="tab-table" hidden>
+                <h2>Enter Observed Counts</h2>
+                <div class="dim-controls">
+                    <label for="input-rows">
+                        Rows
+                        <input type="number" id="input-rows" value="2" min="2" max="10" step="1">
+                    </label>
+                    <label for="input-cols">
+                        Columns
+                        <input type="number" id="input-cols" value="2" min="2" max="10" step="1">
+                    </label>
+                </div>
+                <div id="table-input-container" aria-label="Editable contingency table">
+                    <!-- Built by JS -->
+                </div>
+                <div class="btn-row">
+                    <button type="button" id="load-table" class="btn-primary">Load</button>
+                    <button type="button" id="clear-table" class="btn-secondary">Clear Table</button>
+                </div>
             </div>
 
-            <div class="btn-row">
-                <button type="button" id="compute-btn">Compute</button>
-                <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
+            <div id="data-preview" hidden>
+                <output id="data-summary"></output>
             </div>
         </section>
+
+        <section id="controls" aria-label="Test parameters" hidden>
+            <button type="button" id="compute-btn" class="btn-primary">Compute</button>
+        </section>
+
+        <div id="warning-banner" class="warning-banner" hidden aria-live="polite">
+            <strong>Warning:</strong> Some expected counts are less than 5. The chi-square
+            approximation may not be reliable. Consider combining categories or using
+            a simulation-based test.
+        </div>
 
         <!-- Chart -->
         <section id="chart" aria-label="Distribution chart" hidden>
@@ -261,16 +291,8 @@
             </figure>
         </section>
 
-        <!-- Warning for expected < 5 -->
-        <div id="warning-banner" class="warning-banner" hidden aria-live="polite">
-            <strong>Warning:</strong> Some expected counts are less than 5. The chi-square
-            approximation may not be reliable. Consider combining categories or using
-            a simulation-based test.
-        </div>
-
         <!-- Results -->
         <section id="results" aria-label="Test results" hidden>
-            <!-- Test stats card -->
             <div class="results-grid">
                 <div class="result-card">
                     <h3>Test Results</h3>
@@ -284,19 +306,16 @@
                 </div>
             </div>
 
-            <!-- Observed table -->
             <div class="result-card">
                 <h3>Observed Counts</h3>
                 <div id="observed-table-container"></div>
             </div>
 
-            <!-- Expected table -->
             <div class="result-card" style="margin-top: 1rem;">
                 <h3>Expected Counts</h3>
                 <div id="expected-table-container"></div>
             </div>
 
-            <!-- Interpretation -->
             <div id="interpretation" class="interpretation" aria-live="polite" hidden>
             </div>
         </section>
