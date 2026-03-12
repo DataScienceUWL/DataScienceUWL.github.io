@@ -321,7 +321,7 @@ export function computeHighlights(allStats, prevLength, count, computeBins, opti
  * @param {(parsed: {headers:string[], types:string[], data:Array<Record<string,any>>}, sourceName: string) => void} [config.onText] - Called with parseCSV result for paste/file
  * @param {(text: string, sourceName: string) => void} [config.onRawText] - Receive raw text instead (overrides onText)
  * @param {() => void} config.onClear - Called when clear button clicked
- * @returns {{ getDatasetIndex: () => Array<{id:string,name:string,description:string,type:string,n:number}> }}
+ * @returns {{ getDatasetIndex: () => Array<{id:string,name:string,description:string,type:string,n:number}>, populateEditor: (csvText:string, sourceName:string) => void, refilterDatasets: (filterFn: (ds: any) => boolean) => void }}
  */
 export function initDataPanel(config) {
   const { datasetFilter, onDataset, onText, onRawText, onClear } = config;
@@ -350,10 +350,30 @@ export function initDataPanel(config) {
     currentSourceName = sourceName.replace(/\.\w+$/, ''); // strip extension
   }
 
+  /** Full unfiltered dataset index (loaded once). @type {Array<{id:string,name:string,description:string,type:string,n:number}>} */
+  let fullIndex = [];
+
+  /**
+   * Re-filter the dataset dropdown with a new filter function.
+   * @param {(ds: {id:string, type:string, hasNumeric?:boolean, hasCategorical?:boolean}) => boolean} filterFn
+   */
+  function refilterDatasets(filterFn) {
+    if (!datasetSelect) return;
+    datasetSelect.innerHTML = '<option value="">-- Select --</option>';
+    if (datasetDesc) datasetDesc.textContent = '';
+    datasetIndex = fullIndex.filter(filterFn);
+    for (const ds of datasetIndex) {
+      const opt = document.createElement('option');
+      opt.value = ds.id;
+      opt.textContent = `${ds.name} (n = ${ds.n})`;
+      datasetSelect.appendChild(opt);
+    }
+  }
+
   // ── Dataset dropdown ──
   if (datasetSelect) {
     loadDatasetIndex(datasetSelect, datasetFilter, datasetDesc)
-      .then(index => { datasetIndex = index; });
+      .then(index => { fullIndex = index; datasetIndex = index; });
 
     datasetSelect.addEventListener('change', () => {
       const id = datasetSelect.value;
@@ -431,5 +451,6 @@ export function initDataPanel(config) {
   return {
     getDatasetIndex: () => datasetIndex,
     populateEditor,
+    refilterDatasets,
   };
 }

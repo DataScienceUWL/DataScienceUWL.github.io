@@ -68,11 +68,11 @@ function loadParsedData(parsed, sourceName) {
 }
 
 initDataPanel({
-  datasetFilter: ds => ds.type === 'chisq' || ds.type === 'randomization_prop' || ds.type === 'randomization',
+  datasetFilter: ds => ds.type === 'chisq' || ds.type === 'randomization_prop',
   onDataset: (ds) => {
     const catVars = ds.variables.filter(v => v.type === 'categorical');
-    if (catVars.length < 1) {
-      announce('No categorical variables found.');
+    if (catVars.length < 2) {
+      announce('This dataset needs at least two categorical variables for a two-way table.');
       return;
     }
     catVarNames = catVars.map(v => v.name);
