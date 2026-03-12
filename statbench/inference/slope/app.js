@@ -11,6 +11,7 @@ import { drawCurve, computeDomain } from '../../js/curve.js';
 import { initTabs, initDataPanel, announce } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
 import { formatStat, detectPrecision } from '../../js/stats.js';
+import { generateConclusions, findContext } from '../../js/conclusions.js';
 import * as d3Selection from 'd3-selection';
 
 /** Render LaTeX to HTML string via KaTeX. */
@@ -45,6 +46,9 @@ let fromSummary = false;
 let summarySlope = 0;
 let summarySE = 0;
 let summaryN = 0;
+
+/** @type {import('../../js/conclusions.js').ConclusionContext|null} */
+let currentContext = null;
 
 // ── Keyboard help dialog ───────────────────────────────────────────
 const helpDialog = /** @type {HTMLDialogElement|null} */ (
@@ -105,6 +109,10 @@ function extractXY() {
 
 function handleDataset(ds, _meta) {
   if (!ds.variables || !ds.rows) { announce('Dataset has no usable data.'); return; }
+  const ctx = findContext(ds, 'slope');
+  currentContext = ctx;
+  if (ctx && ctx.alternative) inputAlt.value = ctx.alternative;
+
   const numCols = ds.variables
     .filter(/** @param {any} v */ v => v.type === 'numeric')
     .map(/** @param {any} v */ v => v.name);
@@ -117,6 +125,7 @@ function handleDataset(ds, _meta) {
 }
 
 function handleText(parsed, sourceName) {
+  currentContext = null;
   const numCols = parsed.headers.filter((h, i) => parsed.types[i] === 'numeric');
   if (numCols.length < 2) { announce('Need at least two numeric columns for regression.'); return; }
   currentRows = parsed.data.map(row => {
@@ -142,6 +151,7 @@ initDataPanel({
     currentRows = [];
     numericColumns = [];
     fromSummary = false;
+    currentContext = null;
     varSelector.hidden = true;
     controlsSection.hidden = true;
     chartAndResults.hidden = true;
@@ -171,6 +181,7 @@ if (loadSummaryBtn) {
     summarySE = se;
     summaryN = n;
     currentRows = [];
+    currentContext = null;
     varSelector.hidden = true;
     showResults();
     announce(`Loaded summary: slope = ${slope}, SE = ${se}, n = ${n}.`);
@@ -236,10 +247,19 @@ function renderResults(r, d, alternative, confLevel) {
   const confPct = (confLevel * 100).toFixed(0);
   const pStr = formatStat(r.pValue, d, 'pvalue');
   const alpha = 1 - confLevel;
-  const sig = r.pValue < alpha;
-  const sigWord = sig ? 'sufficient' : 'insufficient';
-  const rejectWord = sig ? 'reject' : 'fail to reject';
   const tStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
+
+  const conclusions = generateConclusions({
+    pValue: r.pValue, alpha, alternative,
+    testType: 'slope',
+    statName: 't',
+    statValue: r.tStat.toFixed(3),
+    context: {
+      parameter: currentContext?.parameter,
+      nullValue: 0,
+      claim: currentContext?.claim,
+    },
+  });
 
   const hasFullRegression = isFinite(r.intercept) && isFinite(r.r);
   const xName = xVarSelect.value || 'x';
@@ -301,7 +321,8 @@ function renderResults(r, d, alternative, confLevel) {
     <div class="interpretation" aria-live="polite">
       ${regressionInterp}
       <p>Slope ${tex('b_1')} = ${formatStat(r.slope, d)} is ${Math.abs(r.tStat).toFixed(2)} SEs from zero.</p>
-      <p>p-value = ${pStr}: ${sigWord} evidence to ${rejectWord} ${tex('H_0')} at ${tex(`\\alpha = ${alpha}`)}.</p>
+      <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
+      ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
       <p>${confPct}% CI for ${tex('\\beta_1')}: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>
     </div>
   `;

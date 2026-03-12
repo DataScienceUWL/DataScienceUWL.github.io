@@ -11,6 +11,7 @@ import { drawCurve, computeDomain } from '../../js/curve.js';
 import { initTabs, initDataPanel, announce } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
 import { formatStat, detectPrecision } from '../../js/stats.js';
+import { generateConclusions, findContext } from '../../js/conclusions.js';
 import * as d3Selection from 'd3-selection';
 
 /** Render LaTeX to HTML string via KaTeX. */
@@ -44,6 +45,9 @@ let summaryXbar = 0;
 let summaryS = 0;
 let summaryN = 0;
 
+/** @type {import('../../js/conclusions.js').ConclusionContext|null} */
+let currentContext = null;
+
 // ── Keyboard help dialog ───────────────────────────────────────────
 const helpDialog = /** @type {HTMLDialogElement|null} */ (
   document.getElementById('keyboard-help'));
@@ -67,7 +71,7 @@ initTabs();
  * @param {any} ds - Dataset JSON with .variables and .rows
  * @param {any} meta - Dataset metadata
  */
-function handleDataset(ds, meta) {
+function handleDataset(ds, _meta) {
   if (!ds.variables || !ds.rows) {
     announce('Dataset has no usable data.');
     return;
@@ -80,6 +84,15 @@ function handleDataset(ds, meta) {
   if (numericCols.length === 0) {
     announce('No numeric variables found in this dataset.');
     return;
+  }
+
+  // Load inference context if available
+  const ctx = findContext(ds, 'one-mean');
+  currentContext = ctx;
+  if (ctx) {
+    if (ctx.nullValue != null) inputMu0.value = String(ctx.nullValue);
+    if (ctx.alternative) inputAlt.value = ctx.alternative;
+    syncNullDisplay();
   }
 
   if (numericCols.length > 1) {
@@ -123,6 +136,7 @@ function handleDataset(ds, meta) {
  * @param {string} sourceName
  */
 function handleText(parsed, sourceName) {
+  currentContext = null;
   const numericCols = parsed.headers.filter((h, i) => parsed.types[i] === 'numeric');
 
   if (numericCols.length === 0) {
@@ -171,6 +185,7 @@ initDataPanel({
   onClear: () => {
     currentData = null;
     fromSummary = false;
+    currentContext = null;
     varSelector.hidden = true;
     controlsSection.hidden = true;
     chartAndResults.hidden = true;
@@ -200,6 +215,7 @@ if (loadSummaryBtn) {
     summaryS = s;
     summaryN = n;
     currentData = null;
+    currentContext = null;
     varSelector.hidden = true;
     showResults();
     announce(`Loaded summary statistics: x̄ = ${xbar}, s = ${s}, n = ${n}.`);
@@ -273,9 +289,19 @@ function renderResults(r, d, mu0, alternative, confLevel) {
 
   // Significance
   const alpha = 1 - confLevel;
-  const sig = r.pValue < alpha;
-  const sigWord = sig ? 'sufficient' : 'insufficient';
-  const rejectWord = sig ? 'reject' : 'fail to reject';
+
+  // Generate conclusions
+  const conclusions = generateConclusions({
+    pValue: r.pValue, alpha, alternative,
+    testType: 'one-mean',
+    statName: 't',
+    statValue: r.tStat.toFixed(3),
+    context: {
+      parameter: currentContext?.parameter,
+      nullValue: mu0,
+      claim: currentContext?.claim,
+    },
+  });
 
   // t* for CI
   const tStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
@@ -321,7 +347,8 @@ function renderResults(r, d, mu0, alternative, confLevel) {
     <div class="interpretation" aria-live="polite">
       <p>The sample mean ${tex('\\bar{x}')} = ${formatStat(r.xbar, d)} is ${Math.abs(r.tStat).toFixed(2)} standard errors
         ${r.tStat >= 0 ? 'above' : 'below'} the null value ${tex('\\mu_0')} = ${mu0}.</p>
-      <p>p-value = ${pStr}: there is ${sigWord} evidence to ${rejectWord} ${tex('H_0')} at ${tex(`\\alpha = ${alpha}`)}.</p>
+      <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
+      ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
       <p>${confPct}% CI for ${tex('\\mu')}: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>
     </div>
   `;

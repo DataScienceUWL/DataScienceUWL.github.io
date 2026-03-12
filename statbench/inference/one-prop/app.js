@@ -10,6 +10,7 @@ import { setJStat, pdfNormal } from '../../js/distributions.js';
 import { onePropZ } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
+import { generateConclusions, findContext } from '../../js/conclusions.js';
 import { announce, initTabs, initDataPanel, initKeyboardShortcuts } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
 
@@ -54,11 +55,21 @@ let currentSuccessLabel = '';
 /** Whether data was loaded from a dataset/paste/file (vs. summary) */
 let fromRawData = false;
 
+/** @type {import('../../js/conclusions.js').ConclusionContext|null} */
+let currentContext = null;
+
 // ── Data loading ────────────────────────────────────────────────────
 
 initDataPanel({
   datasetFilter: (/** @type {any} */ ds) => ds.hasCategorical === true,
   onDataset: (ds) => {
+    const ctx = findContext(ds, 'one-prop');
+    currentContext = ctx;
+    if (ctx) {
+      if (ctx.nullValue != null) inputP0.value = String(ctx.nullValue);
+      if (ctx.alternative) inputAlt.value = ctx.alternative;
+      syncNullDisplay();
+    }
     const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
     if (catVars.length === 0) {
       announce('This dataset has no categorical variables.');
@@ -88,6 +99,7 @@ initDataPanel({
     showSuccessSelector(rawValues, ds.name);
   },
   onText: (parsed, sourceName) => {
+    currentContext = null;
     // Find first categorical column
     const catIdx = parsed.types.findIndex(t => t === 'categorical');
     if (catIdx < 0) {
@@ -104,6 +116,7 @@ initDataPanel({
     currentSuccesses = 0;
     currentN = 0;
     fromRawData = false;
+    currentContext = null;
     if (dataPreview) dataPreview.hidden = true;
     if (successSelector) successSelector.hidden = true;
     if (variableSelector) variableSelector.hidden = true;
@@ -325,7 +338,16 @@ function displayResults(r, successLabel, conditionsMet) {
 
     <div class="interpretation">
       <p>${tex('\\hat{p}')} = ${formatStat(r.pHat, 0, 'proportion')} is ${formatStat(seCount, 0, 'correlation')} SEs ${seDirection} ${tex('p_0')} = ${formatStat(r.p0, 0, 'proportion')}.</p>
-      <p><strong>p-value = ${formatStat(r.pValue, 0, 'pvalue')}:</strong> ${pInterpretation}.</p>
+      <p><strong>Formal conclusion:</strong> ${(() => {
+        const alpha = 1 - r.confLevel;
+        const c = generateConclusions({
+          pValue: r.pValue, alpha, alternative: r.alternative,
+          testType: 'one-prop', statName: 'z',
+          statValue: formatStat(r.zStat, 0, 'correlation'),
+          context: { parameter: currentContext?.parameter, nullValue: r.p0, claim: currentContext?.claim },
+        });
+        return c.formal + (c.practical ? `</p><p><strong>Practical conclusion:</strong> ${c.practical}` : '');
+      })()}</p>
       <p>${confPct}% CI: (${formatStat(r.ciLower, 0, 'proportion')}, ${formatStat(r.ciUpper, 0, 'proportion')}).</p>
       ${condWarning}
     </div>

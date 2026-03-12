@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Conclusion Practice | StatBench</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.js"></script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "jstat": "https://cdn.jsdelivr.net/npm/jstat@1/+esm"
+        }
+    }
+    </script>
+
+    <style>
+        .scenario-card {
+            background: var(--ims-lightest);
+            border: 2px solid var(--ims-blue);
+            border-radius: 8px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .scenario-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: var(--ims-blue);
+            font-size: 1.1rem;
+        }
+        .scenario-card .hypotheses {
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+        }
+        .scenario-card .test-results {
+            background: white;
+            border-radius: 4px;
+            padding: 0.6rem 1rem;
+            margin: 0.5rem 0;
+            font-family: 'Source Code Pro', monospace;
+            font-size: 0.9rem;
+        }
+        .practice-section {
+            margin: 1rem 0;
+        }
+        .practice-section label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            color: var(--ims-green);
+        }
+        .practice-section textarea {
+            width: 100%;
+            min-height: 70px;
+            padding: 0.6rem;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            font-family: 'Atkinson Hyperlegible', sans-serif;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+        .practice-section textarea:focus {
+            border-color: var(--ims-blue);
+            outline: 2px solid var(--ims-blue);
+            outline-offset: 1px;
+        }
+        .model-answer {
+            background: #f0f7f0;
+            border-left: 4px solid var(--ims-green);
+            padding: 0.6rem 1rem;
+            margin: 0.5rem 0;
+            border-radius: 0 6px 6px 0;
+            font-style: italic;
+        }
+        .model-answer.hidden {
+            display: none;
+        }
+        .btn-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+        .btn-primary {
+            background: var(--ims-blue);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-primary:hover { background: var(--ims-green); }
+        .btn-primary:focus-visible {
+            outline: 2px solid var(--ims-green);
+            outline-offset: 2px;
+        }
+        .btn-secondary {
+            background: white;
+            color: var(--ims-blue);
+            border: 2px solid var(--ims-blue);
+            padding: 0.5rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-secondary:hover {
+            background: var(--ims-lightest);
+        }
+        .key-elements {
+            background: #fff8e1;
+            border-left: 4px solid #f9a825;
+            padding: 0.5rem 1rem;
+            margin: 0.5rem 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.9rem;
+        }
+        .key-elements.hidden { display: none; }
+        .key-elements ul {
+            margin: 0.3rem 0;
+            padding-left: 1.2rem;
+        }
+        .scenario-counter {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">StatBench</a> &rsaquo;
+            <span aria-current="page">Conclusion Practice</span>
+        </nav>
+        <h1>Hypothesis Test Conclusion Practice</h1>
+        <p class="page-subtitle">Practice writing formal and practical conclusions for hypothesis tests.</p>
+    </header>
+
+    <main>
+        <div id="scenario-counter" class="scenario-counter"></div>
+
+        <div id="scenario-card" class="scenario-card">
+            <p class="placeholder">Loading scenarios...</p>
+        </div>
+
+        <div class="practice-section">
+            <label for="formal-input">Your formal conclusion:</label>
+            <textarea id="formal-input" placeholder="At α = ..., we [reject / fail to reject] H₀. There is [sufficient / insufficient] evidence that..."></textarea>
+        </div>
+
+        <div class="practice-section">
+            <label for="practical-input">Your practical conclusion:</label>
+            <textarea id="practical-input" placeholder="The data [provide / do not provide] [strength] evidence that [claim in context]..."></textarea>
+        </div>
+
+        <div class="btn-row">
+            <button id="show-answer" class="btn-primary">Show Model Answer</button>
+            <button id="next-scenario" class="btn-secondary">Next Scenario</button>
+        </div>
+
+        <div id="model-formal" class="model-answer hidden">
+            <strong>Model formal conclusion:</strong>
+            <p id="model-formal-text"></p>
+        </div>
+
+        <div id="model-practical" class="model-answer hidden">
+            <strong>Model practical conclusion:</strong>
+            <p id="model-practical-text"></p>
+        </div>
+
+        <div id="key-elements" class="key-elements hidden">
+            <strong>Key elements of a good conclusion:</strong>
+            <ul id="key-elements-list"></ul>
+        </div>
+    </main>
+
+    <div id="sr-announce" class="sr-only" aria-live="polite" role="status"></div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

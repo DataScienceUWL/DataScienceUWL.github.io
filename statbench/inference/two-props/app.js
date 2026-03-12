@@ -10,6 +10,7 @@ import { setJStat, pdfNormal } from '../../js/distributions.js';
 import { twoPropZ } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
+import { generateConclusions, findContext } from '../../js/conclusions.js';
 import { announce, initTabs, initDataPanel, initKeyboardShortcuts } from '../../js/page-utils.js';
 
 /** Render LaTeX to HTML string via KaTeX. */
@@ -70,11 +71,16 @@ let currentN2 = 0;
 /** Whether data was loaded from a dataset/paste/file (vs. summary) */
 let fromRawData = false;
 
+/** @type {import('../../js/conclusions.js').ConclusionContext|null} */
+let currentContext = null;
+
 // ── Data loading ────────────────────────────────────────────────────
 
 initDataPanel({
   datasetFilter: (/** @type {any} */ ds) => ds.hasCategorical === true,
   onDataset: (ds) => {
+    const ctx = findContext(ds, 'two-props');
+    currentContext = ctx;
     const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
     if (catVars.length < 2) {
       announce('This dataset needs at least two categorical variables (group + outcome).');
@@ -91,6 +97,7 @@ initDataPanel({
     setupVariableSelectors(catVarNames, ds.name);
   },
   onText: (parsed, sourceName) => {
+    currentContext = null;
     const catIndices = parsed.types
       .map((t, i) => t === 'categorical' ? i : -1)
       .filter(i => i >= 0);
@@ -114,6 +121,7 @@ initDataPanel({
     currentX1 = 0; currentN1 = 0;
     currentX2 = 0; currentN2 = 0;
     fromRawData = false;
+    currentContext = null;
     if (dataPreview) dataPreview.hidden = true;
     if (variableSelectors) variableSelectors.hidden = true;
     if (successSelector) successSelector.hidden = true;
@@ -372,7 +380,18 @@ function displayResults(r, lbl1, lbl2, conditionsMet) {
 
     <div class="interpretation">
       <p>${tex('\\hat{p}_1 - \\hat{p}_2')} = ${formatStat(r.diff, 0, 'proportion')} is ${formatStat(seCount, 0, 'correlation')} SEs ${seDirection} 0.</p>
-      <p><strong>p-value = ${formatStat(r.pValue, 0, 'pvalue')}:</strong> ${pInterpretation}.</p>
+      ${(() => {
+        const alpha = 1 - r.confLevel;
+        const c = generateConclusions({
+          pValue: r.pValue, alpha, alternative: r.alternative,
+          testType: 'two-props', statName: 'z',
+          statValue: formatStat(r.zStat, 0, 'correlation'),
+          context: { parameter: currentContext?.parameter, nullValue: 0, claim: currentContext?.claim },
+        });
+        let html = `<p><strong>Formal conclusion:</strong> ${c.formal}</p>`;
+        if (c.practical) html += `<p><strong>Practical conclusion:</strong> ${c.practical}</p>`;
+        return html;
+      })()}
       <p>${confPct}% CI: (${formatStat(r.ciLower, 0, 'proportion')}, ${formatStat(r.ciUpper, 0, 'proportion')}).</p>
       ${condWarning}
     </div>

@@ -10,6 +10,7 @@ import { setJStat, pdfChisq, chisqInv } from '../../js/distributions.js';
 import { chisqTest } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
+import { generateConclusions, findContext } from '../../js/conclusions.js';
 import { announce, initTabs, initDataPanel, initKeyboardShortcuts } from '../../js/page-utils.js';
 import * as d3Selection from 'd3-selection';
 
@@ -67,6 +68,9 @@ let catVarNames = [];
 let rowVar = '';
 let colVar = '';
 
+/** @type {import('../../js/conclusions.js').ConclusionContext|null} */
+let currentContext = null;
+
 // ── Keyboard help dialog ────────────────────────────────────────────
 const helpDialog = /** @type {HTMLDialogElement|null} */ (
   document.getElementById('keyboard-help'));
@@ -85,6 +89,9 @@ if (helpDialog) {
 initDataPanel({
   datasetFilter: (/** @type {any} */ ds) => ds.hasCategorical === true,
   onDataset: (ds) => {
+    const ctx = findContext(ds, 'chisq');
+    currentContext = ctx;
+
     const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
     if (catVars.length < 2) {
       announce('This dataset needs at least two categorical variables.');
@@ -100,6 +107,7 @@ initDataPanel({
     setupVariableSelectors(catVarNames, ds.name);
   },
   onText: (parsed, sourceName) => {
+    currentContext = null;
     const catIndices = parsed.types
       .map((t, i) => t === 'categorical' ? i : -1)
       .filter(i => i >= 0);
@@ -122,6 +130,7 @@ initDataPanel({
     currentObserved = null;
     currentRowLabels = [];
     currentColLabels = [];
+    currentContext = null;
     if (dataPreview) dataPreview.hidden = true;
     if (variableSelectors) variableSelectors.hidden = true;
     controlsSection.hidden = true;
@@ -520,10 +529,16 @@ function writeInterpretation(result, lowExpected) {
     ? 'less than 0.01%'
     : (pValue * 100).toFixed(2) + '%';
 
-  const significant = pValue < 0.05;
-  const conclusion = significant
-    ? 'there is statistically significant evidence of an association between the row and column variables'
-    : 'there is not enough evidence to conclude an association between the row and column variables';
+  const conclusions = generateConclusions({
+    pValue, alpha: 0.05, alternative: 'greater',
+    testType: 'chisq',
+    statName: '\u03C7\u00B2',
+    statValue: chiSq.toFixed(3),
+    context: {
+      parameter: currentContext?.parameter,
+      claim: currentContext?.claim,
+    },
+  });
 
   let html = `
     <p><strong>Hypotheses:</strong>
@@ -533,7 +548,8 @@ function writeInterpretation(result, lowExpected) {
       df = ${df} (${rowLabels.length} rows \u2212 1) \u00D7 (${colLabels.length} columns \u2212 1).</p>
     <p>If the variables were truly independent, we would see a test statistic this large
       or larger about ${pPct} of the time (p = ${formatStat(pValue, 0, 'pvalue')}).</p>
-    <p>At the ${tex('\\alpha = 0.05')} significance level, ${conclusion}.</p>
+    <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
+    ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
   `;
 
   if (lowExpected) {

@@ -11,6 +11,7 @@ import { twoMeanT, twoMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { initTabs, initDataPanel, announce } from '../../js/page-utils.js';
 import { mean, detectPrecision, formatStat } from '../../js/stats.js';
+import { generateConclusions, findContext } from '../../js/conclusions.js';
 
 /** Render LaTeX to HTML string via KaTeX. */
 const tex = (/** @type {string} */ latex, display = false) =>
@@ -45,6 +46,9 @@ let parsedCache = null;
 let fromSummary = false;
 /** @type {import('../../js/inference.js').TwoMeanResult | null} */
 let summaryResult = null;
+
+/** @type {import('../../js/conclusions.js').ConclusionContext|null} */
+let currentContext = null;
 
 // ── Initialization ──────────────────────────────────────────────────
 initTabs();
@@ -94,6 +98,7 @@ if (loadSummaryBtn) {
     group1 = [];
     group2 = [];
     parsedCache = null;
+    currentContext = null;
     if (varSelectorsDiv) varSelectorsDiv.hidden = true;
     if (dataPreview) dataPreview.hidden = true;
 
@@ -122,6 +127,13 @@ if (loadSummaryBtn) {
 function loadFromDataset(ds, _meta) {
   if (!ds.rows || !ds.variables) return;
 
+  const ctx = findContext(ds, 'two-means');
+  currentContext = ctx;
+  if (ctx && ctx.alternative) {
+    const altEl = /** @type {HTMLSelectElement|null} */ (document.getElementById('input-alt'));
+    if (altEl) altEl.value = ctx.alternative;
+  }
+
   const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
   const numVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'numeric');
 
@@ -146,6 +158,7 @@ function loadFromDataset(ds, _meta) {
  * @param {string} _sourceName
  */
 function loadFromParsed(parsed, _sourceName) {
+  currentContext = null;
   const catCols = parsed.headers.filter((_, i) => parsed.types[i] === 'categorical');
   const numCols = parsed.headers.filter((_, i) => parsed.types[i] === 'numeric');
 
@@ -249,6 +262,7 @@ function clearData() {
   parsedCache = null;
   fromSummary = false;
   summaryResult = null;
+  currentContext = null;
   if (dataPreview) dataPreview.hidden = true;
   if (varSelectorsDiv) varSelectorsDiv.hidden = true;
   if (chartContainer) chartContainer.innerHTML = '';
@@ -358,15 +372,24 @@ function renderResults(r) {
 
   // Significance interpretation
   const alpha = 1 - r.confLevel;
-  const sig = r.pValue < alpha;
-  const sigWord = sig ? 'sufficient' : 'insufficient';
-  const rejectWord = sig ? 'reject' : 'fail to reject';
 
   // CI interpretation
   const ciContainsZero = r.ciLower <= 0 && r.ciUpper >= 0;
   const ciInterpretation = ciContainsZero
     ? 'The confidence interval contains 0, suggesting no significant difference.'
     : 'The confidence interval does not contain 0, suggesting a significant difference.';
+
+  const conclusions = generateConclusions({
+    pValue: r.pValue, alpha, alternative: r.alternative,
+    testType: 'two-means',
+    statName: 't',
+    statValue: r.tStat.toFixed(3),
+    context: {
+      parameter: currentContext?.parameter,
+      nullValue: 0,
+      claim: currentContext?.claim,
+    },
+  });
 
   // t* for CI
   const tStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
@@ -422,7 +445,8 @@ function renderResults(r) {
 
     <div class="interpretation">
       <p>${tex(`\\bar{x}_{\\text{${esc(group1Name)}}} - \\bar{x}_{\\text{${esc(group2Name)}}}`)} = ${formatStat(r.diff, d)}, Welch df = ${r.df.toFixed(1)}.</p>
-      <p>p-value = ${pStr}: ${sigWord} evidence to ${rejectWord} ${tex('H_0')} at ${tex(`\\alpha = ${alpha}`)}.</p>
+      <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
+      ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
       <p>${confPct}% CI: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}). ${ciInterpretation}</p>
     </div>
   `;
