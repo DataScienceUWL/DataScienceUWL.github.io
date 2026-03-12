@@ -113,7 +113,7 @@ export function overlayTheoryCurve(options) {
       .attr('x', lx + 10)
       .attr('y', Math.max(ly - 6, 14))
       .attr('fill', color)
-      .attr('font-size', '11px')
+      .attr('font-size', '13px')
       .attr('font-weight', '700')
       .attr('font-family', 'var(--font-body, sans-serif)')
       .text(label);

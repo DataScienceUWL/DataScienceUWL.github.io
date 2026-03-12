@@ -380,19 +380,20 @@ export function showTooltip(innerNode, lines, x, y) {
   const text = g.append('text')
     .attr('text-anchor', 'middle')
     .attr('fill', '#333')
-    .style('font-size', '11px');
+    .style('font-size', '14px')
+    .style('font-weight', '600');
 
   lines.forEach((line, i) => {
     text.append('tspan')
       .attr('x', 0)
-      .attr('dy', i === 0 ? '0' : '1.25em')
+      .attr('dy', i === 0 ? '0' : '1.3em')
       .text(line);
   });
 
   // Measure and add background rect behind text
   try {
     const bbox = /** @type {SVGTextElement} */ (text.node()).getBBox();
-    const pad = 4;
+    const pad = 6;
     g.insert('rect', 'text')
       .attr('x', bbox.x - pad)
       .attr('y', bbox.y - pad)
@@ -400,9 +401,9 @@ export function showTooltip(innerNode, lines, x, y) {
       .attr('height', bbox.height + pad * 2)
       .attr('fill', 'white')
       .attr('fill-opacity', 0.95)
-      .attr('stroke', '#bbb')
-      .attr('stroke-width', 0.5)
-      .attr('rx', 3);
+      .attr('stroke', '#999')
+      .attr('stroke-width', 0.75)
+      .attr('rx', 4);
 
     // Position centered above the target point
     let tooltipY = y - (-bbox.y) - pad - 6;
