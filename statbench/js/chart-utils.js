@@ -343,14 +343,14 @@ export function renderSimPills(frame, xScale, opts) {
           : Math.min(w - 60, Math.max(w * 0.65, obsX));
         const floatY = -4; // above the plot area (in the top margin)
         _addSimPill(annotations, pText, pillX, floatY, false);
-        // Leader line from pill down to tail midpoint at bar level
-        const lineTarget = Math.max(4, Math.min(w - 4, tailMid));
+        // Leader line from pill bottom down to the shaded tail bars
+        const lineTargetX = Math.max(4, Math.min(w - 4, tailMid));
         annotations.append('line')
           .attr('class', 'sim-pill')
           .attr('x1', pillX)
           .attr('y1', floatY + 14)
-          .attr('x2', lineTarget)
-          .attr('y2', pillY + 10)
+          .attr('x2', lineTargetX)
+          .attr('y2', h - 2)
           .attr('stroke', '#569BBD')
           .attr('stroke-width', 1)
           .attr('stroke-dasharray', '3,2')
