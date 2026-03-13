@@ -157,7 +157,7 @@ function loadNumericData(values) {
   if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
     const sampleSD = sd(sampleData);
-    dataSummary.innerHTML = `n = ${sampleData.length}, <span class="x-bar">x</span> = ${formatStat(observedMean, dataPrecision)}, s = ${formatStat(sampleSD, dataPrecision)}`;
+    dataSummary.innerHTML = `n = ${sampleData.length}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedMean, dataPrecision)}</span>, s = ${formatStat(sampleSD, dataPrecision)}`;
   }
   if (hypothesisDisplay) hypothesisDisplay.hidden = false;
   for (const btn of genBtns) btn.disabled = false;
@@ -437,10 +437,10 @@ function displayResults(stats, observed, pValue, extremeCount, direction) {
   const fmtS = (v) => formatStat(v, dataPrecision);
   resultDiv.innerHTML = `
     <p><strong>Null Distribution</strong> (${stats.length} simulations, \u03BC\u2080 = ${getNullMean()})</p>
-    <p>Observed <span class="x-bar">x</span> = ${fmtS(observed)}</p>
+    <p>Observed <span class="observed-highlight"><span class="x-bar">x</span> = ${fmtS(observed)}</span></p>
     <p>Extreme count: ${extremeCount} of ${stats.length} (${dirLabel})</p>
     <p><strong>p-value:</strong> ${formatStat(pValue, 0, 'pvalue')}</p>
-    <p class="interpretation">${extremeCount} of ${stats.length} simulated means were at least as extreme as the observed <span class="x-bar">x</span> = ${fmtS(observed)}. This provides ${strength} evidence against H\u2080: \u03BC = ${getNullMean()}.</p>
+    <p class="interpretation">${extremeCount} of ${stats.length} simulated means were at least as extreme as the observed <span class="observed-highlight"><span class="x-bar">x</span> = ${fmtS(observed)}</span>. This provides ${strength} evidence against H\u2080: \u03BC = ${getNullMean()}.</p>
   `;
 }
 
