@@ -308,7 +308,7 @@ export function initSimPage(config) {
 
   // Hypothesis display elements (randomization tests)
   const hypothesisDisplay = document.getElementById('hypothesis-display');
-  const altDirectionSelect = /** @type {HTMLSelectElement} */ (document.getElementById('alt-direction'));
+  const altDirectionBtn = /** @type {HTMLButtonElement} */ (document.getElementById('alt-direction'));
   const swapGroupsBtn = document.getElementById('swap-groups');
   const hGroup1 = document.getElementById('h-group1');
   const hGroup2 = document.getElementById('h-group2');
@@ -999,7 +999,7 @@ export function initSimPage(config) {
 
   /** Map alternative hypothesis selection to tail direction. */
   function getDirection() {
-    const alt = altDirectionSelect?.value ?? 'greater';
+    const alt = altDirectionBtn?.dataset.value ?? 'greater';
     if (alt === 'greater') return /** @type {const} */ ('right');
     if (alt === 'less') return /** @type {const} */ ('left');
     return /** @type {const} */ ('both');
@@ -1017,11 +1017,16 @@ export function initSimPage(config) {
     });
   }
 
-  // Alt hypothesis change → reset if simulation has run (tail changed)
-  if (altDirectionSelect) {
-    altDirectionSelect.addEventListener('change', () => {
+  // Alt hypothesis change → cycle button and re-render
+  if (altDirectionBtn) {
+    const vals = (altDirectionBtn.dataset.values || '').split(',');
+    const labels = (altDirectionBtn.dataset.labels || '').split(',');
+    altDirectionBtn.addEventListener('click', () => {
+      const cur = vals.indexOf(altDirectionBtn.dataset.value || 'greater');
+      const next = (cur + 1) % vals.length;
+      altDirectionBtn.dataset.value = vals[next];
+      altDirectionBtn.textContent = labels[next];
       if (allStats.length > 0) {
-        // Re-render chart with new tail shading without resetting
         const observedStat = config.testStat(data1, data2);
         const direction = getDirection();
         renderChart(allStats, null, observedStat, direction);

@@ -27,14 +27,8 @@ const MIN_RADIUS = 2;
 /** Maximum dot radius. */
 const MAX_RADIUS = 8;
 
-/** Spike color for collapsed stacks (IMS blue). */
-const SPIKE_FILL = '#569BBD';
-
-/** Spike color for extreme values in collapsed mode. */
-const SPIKE_EXTREME = '#569BBD';
-
-/** Spike color for body values in collapsed mode. */
-const SPIKE_BODY = '#8a8a8a';
+/** Maximum column stroke-width when in filled-column mode. */
+const COLUMN_MAX_WIDTH = 6;
 
 /**
  * Compute stacked dot positions from numeric data.
@@ -154,10 +148,10 @@ export function drawDotplot(container, values, options = {}) {
 
   const dotRadius = computeDotRadius(frame.width, frame.height, maxStack, effectiveBins);
 
-  // Detect if stacks overflow even at minimum radius
+  // Detect if stacks overflow even at minimum radius — switch to filled columns
   const wouldOverflow = maxStack > 0 && maxStack * MIN_RADIUS * 2 > frame.height;
 
-  // Y axis is implicit (stacking height) for dots; spike mode gets a y-axis
+  // Y axis is implicit (stacking height) for dots; column mode gets a y-axis
   const xAxis = d3Axis.axisBottom(xScale).tickFormat(formatTick);
   const axes = d3Selection.select(frame.inner).select('.axes');
 
@@ -189,7 +183,7 @@ export function drawDotplot(container, values, options = {}) {
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
   if (wouldOverflow) {
-    renderSpikes(dataGroup, dots, xScale, /** @type {d3Scale.ScaleLinear<number,number>} */ (yScale), frame.height, isExtreme, highlightIndex, highlightIndices, frame.inner);
+    renderColumns(dataGroup, dots, xScale, /** @type {d3Scale.ScaleLinear<number,number>} */ (yScale), frame.height, isExtreme, highlightIndex, highlightIndices, frame.inner);
   } else {
     renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex, highlightIndices, frame.inner);
   }
@@ -213,6 +207,8 @@ export function drawDotplot(container, values, options = {}) {
       const newIsExtreme = opts.isExtreme ?? isExtreme;
       const newObserved = opts.observedStat ?? observedStat;
       const newCiLines = opts.ciLines ?? ciLines;
+      const newHighlight = opts.highlightIndex ?? -1;
+      const newHighlightSet = opts.highlightIndices;
       const newResult = computeDots(newValues, { numBins: newNumBins });
       const newEffectiveBins = newNumBins ?? Math.min(newValues.length, 40);
       const newOverflow = newResult.maxStack > 0 && newResult.maxStack * MIN_RADIUS * 2 > frame.height;
@@ -221,23 +217,20 @@ export function drawDotplot(container, values, options = {}) {
 
       // Clear existing data
       dataGroup.selectAll('circle').remove();
-      dataGroup.selectAll('.spike-line').remove();
-      dataGroup.selectAll('.spike-cap').remove();
+      dataGroup.selectAll('.col-line').remove();
 
       if (newOverflow) {
-        // Switch to spike mode — need y-axis
+        // Switch to column mode — need y-axis
         if (!yScale) {
           yScale = d3Scale.scaleLinear().range([frame.height, 0]);
-          // Remove dot-mode x-axis and add full axes
           axes.selectAll('*').remove();
         }
         yScale.domain([0, newResult.maxStack]).nice();
         const yAxisFn = d3Axis.axisLeft(yScale).tickFormat(formatTick);
-        // Re-render axes
         axes.selectAll('*').remove();
         addAxes(frame, xAxis, yAxisFn, xLabel, 'Frequency');
 
-        renderSpikes(dataGroup, newResult.dots, xScale, yScale, frame.height, newIsExtreme, -1, undefined, frame.inner);
+        renderColumns(dataGroup, newResult.dots, xScale, yScale, frame.height, newIsExtreme, newHighlight, newHighlightSet, frame.inner);
       } else {
         // Dot mode — remove y-axis if it was added
         if (yScale) {
@@ -263,7 +256,7 @@ export function drawDotplot(container, values, options = {}) {
 
         const newRadius = computeDotRadius(
           frame.width, frame.height, newResult.maxStack, newEffectiveBins);
-        renderDots(dataGroup, newResult.dots, xScale, frame.height, newRadius, newIsExtreme, animate, -1, undefined, frame.inner);
+        renderDots(dataGroup, newResult.dots, xScale, frame.height, newRadius, newIsExtreme, animate, newHighlight, newHighlightSet, frame.inner);
       }
 
       const overlays = d3Selection.select(frame.inner).select('.overlays');
@@ -379,9 +372,9 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
 }
 
 /**
- * Render spike-style display when dotplot stacks overflow.
- * Uses the same bin structure as dots but draws vertical lines + cap circles.
- * The newest dot (highlightIndex) gets an orange cap on top.
+ * Render filled-column display when dotplot stacks overflow at minimum dot radius.
+ * Each bin becomes a narrow rounded-top column (line with stroke-linecap: round).
+ * Supports highlightIndex/highlightIndices for orange highlight animation.
  *
  * @param {d3Selection.Selection} group
  * @param {Array<{value: number, binCenter: number, stackIndex: number}>} dots
@@ -393,57 +386,52 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
  * @param {Set<number>} [highlightIndices] - Indices of batch-added dots
  * @param {SVGGElement} [innerNode]
  */
-function renderSpikes(group, dots, xScale, yScale, innerHeight, isExtreme, highlightIndex = -1, highlightIndices, innerNode) {
+function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, highlightIndex = -1, highlightIndices, innerNode) {
   // Aggregate dots by binCenter → count
-  /** @type {Map<number, {count: number, values: number[]}>} */
+  /** @type {Map<number, {count: number}>} */
   const bins = new Map();
   for (const d of dots) {
     const entry = bins.get(d.binCenter);
     if (entry) {
       entry.count++;
-      entry.values.push(d.value);
     } else {
-      bins.set(d.binCenter, { count: 1, values: [d.value] });
+      bins.set(d.binCenter, { count: 1 });
     }
   }
 
-  const spikeData = [...bins.entries()]
-    .map(([center, { count, values }]) => ({ center, count, values }))
+  const columnData = [...bins.entries()]
+    .map(([center, { count }]) => ({ center, count }))
     .sort((a, b) => a.center - b.center);
 
-  /** Color for a spike based on its bin center value. */
-  function spikeColor(center) {
-    if (!isExtreme) return SPIKE_FILL;
-    return isExtreme(center) ? SPIKE_EXTREME : SPIKE_BODY;
+  // Compute column width: fraction of bin pixel spacing, clamped
+  const binPixelWidth = columnData.length > 1
+    ? Math.abs(xScale(columnData[1].center) - xScale(columnData[0].center))
+    : 10;
+  const colWidth = Math.max(MIN_RADIUS * 2, Math.min(COLUMN_MAX_WIDTH, binPixelWidth * 0.6));
+
+  /** Color for a column based on its bin center value. */
+  function colColor(center) {
+    if (!isExtreme) return DOT_FILL;
+    return isExtreme(center) ? EXTREME_FILL : DOT_FILL;
   }
 
-  // Lines
-  group.selectAll('.spike-line')
-    .data(spikeData)
+  // Draw columns as lines with round linecap for rounded tops
+  const lines = group.selectAll('.col-line')
+    .data(columnData)
     .join('line')
-    .attr('class', 'spike-line')
+    .attr('class', 'col-line')
     .attr('x1', d => xScale(d.center))
     .attr('x2', d => xScale(d.center))
     .attr('y1', innerHeight)
     .attr('y2', d => yScale(d.count))
-    .attr('stroke', d => spikeColor(d.center))
-    .attr('stroke-width', 2)
+    .attr('stroke', d => colColor(d.center))
+    .attr('stroke-width', colWidth)
+    .attr('stroke-linecap', 'round')
     .attr('role', 'listitem')
-    .attr('aria-label', d => `${d.center}: ${d.count}`);
+    .attr('aria-label', d => `${formatTick(d.center)}: ${d.count}`);
 
-  // Caps
-  group.selectAll('.spike-cap')
-    .data(spikeData)
-    .join('circle')
-    .attr('class', 'spike-cap')
-    .attr('cx', d => xScale(d.center))
-    .attr('cy', d => yScale(d.count))
-    .attr('r', 3)
-    .attr('fill', d => spikeColor(d.center));
-
-  // Highlight the newest spike cap(s) with orange
+  // Highlight columns that contain new dots
   if (highlightIndex >= 0 || (highlightIndices && highlightIndices.size > 0)) {
-    // Find which bin centers have highlighted dots
     /** @type {Set<number>} */
     const highlightedCenters = new Set();
     for (let i = 0; i < dots.length; i++) {
@@ -451,34 +439,59 @@ function renderSpikes(group, dots, xScale, yScale, innerHeight, isExtreme, highl
         highlightedCenters.add(dots[i].binCenter);
       }
     }
-    const caps = group.selectAll('.spike-cap')
-      .filter(d => highlightedCenters.has(d.center));
-    caps
-      .attr('fill', HIGHLIGHT_FILL)
-      .attr('r', 5)
-      .attr('stroke', '#000')
-      .attr('stroke-width', 1.5);
+
+    const highlighted = lines.filter(d => highlightedCenters.has(d.center));
+    const isOneShot = highlightIndex >= 0 && (!highlightIndices || highlightIndices.size === 0);
+    highlighted
+      .attr('stroke', HIGHLIGHT_FILL)
+      .attr('stroke-width', isOneShot ? colWidth + 2 : colWidth + 1);
 
     // Revert after delay
+    const reducedMotion = prefersReducedMotion();
     setTimeout(() => {
-      caps.each(function(d) {
-        const el = /** @type {SVGCircleElement} */ (this);
-        el.setAttribute('fill', spikeColor(d.center));
-        el.setAttribute('r', '3');
-        el.removeAttribute('stroke');
-        el.removeAttribute('stroke-width');
+      highlighted.each(function(d) {
+        const el = /** @type {SVGLineElement} */ (this);
+        if (reducedMotion) {
+          el.setAttribute('stroke', colColor(d.center));
+          el.setAttribute('stroke-width', String(colWidth));
+        } else {
+          animateColumnRevert(el, colColor(d.center), colWidth, 400);
+        }
       });
     }, 800);
   }
 
   // Tooltips
   if (innerNode) {
-    attachTooltip(group.selectAll('.spike-line'), innerNode, (d) => ({
+    attachTooltip(lines, innerNode, (d) => ({
       lines: [`${formatTick(d.center)}`, `Frequency: ${d.count}`],
       x: xScale(d.center),
       y: yScale(d.count),
     }));
   }
+}
+
+/**
+ * Animate a highlighted column back to its normal stroke color and width.
+ * @param {SVGLineElement} el
+ * @param {string} targetColor - Normal stroke color (hex)
+ * @param {number} targetWidth - Normal stroke-width
+ * @param {number} duration - Animation duration in ms
+ */
+function animateColumnRevert(el, targetColor, targetWidth, duration) {
+  const startColor = hexToRGB(el.getAttribute('stroke') ?? HIGHLIGHT_FILL);
+  const endColor = hexToRGB(targetColor);
+  const startW = parseFloat(el.getAttribute('stroke-width') ?? String(targetWidth));
+  const start = performance.now();
+
+  function tick(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const e = 1 - (1 - t) * (1 - t); // ease-out quad
+    el.setAttribute('stroke', lerpColor(startColor, endColor, e));
+    el.setAttribute('stroke-width', String(startW + (targetWidth - startW) * e));
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 }
 
 /**

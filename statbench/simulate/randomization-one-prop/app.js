@@ -25,7 +25,8 @@ const inputN = /** @type {HTMLInputElement} */ (document.getElementById('input-n
 const inputSuccesses = /** @type {HTMLInputElement} */ (document.getElementById('input-successes'));
 const loadSummaryBtn = document.getElementById('load-summary');
 const nullPropInput = /** @type {HTMLInputElement} */ (document.getElementById('null-prop'));
-const altDirectionSelect = /** @type {HTMLSelectElement} */ (document.getElementById('alt-direction'));
+const altDirectionBtn = /** @type {HTMLButtonElement} */ (document.getElementById('alt-direction'));
+const altNullValue = document.getElementById('alt-null-value');
 const successSelector = document.getElementById('success-selector');
 const successOutcome = /** @type {HTMLSelectElement} */ (document.getElementById('success-outcome'));
 
@@ -167,7 +168,7 @@ function applyDatasetOutcome() {
   resetSimulation();
   if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
-    dataSummary.textContent = `n = ${sampleN}, successes = ${sampleSuccesses} ("${successVal}"), p̂ = ${formatStat(observedPHat, 0, 'proportion')}`;
+    dataSummary.innerHTML = `n = ${sampleN}, successes = ${sampleSuccesses} ("${successVal}"), <span class="observed-highlight">p̂ = ${formatStat(observedPHat, 0, 'proportion')}</span>`;
   }
   if (hypothesisDisplay) hypothesisDisplay.hidden = false;
   for (const btn of genBtns) btn.disabled = false;
@@ -206,7 +207,7 @@ function loadData() {
 
   if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
-    dataSummary.textContent = `n = ${n}, successes = ${k}, p̂ = ${formatStat(observedPHat, 0, 'proportion')}`;
+    dataSummary.innerHTML = `n = ${n}, successes = ${k}, <span class="observed-highlight">p̂ = ${formatStat(observedPHat, 0, 'proportion')}</span>`;
   }
   if (hypothesisDisplay) hypothesisDisplay.hidden = false;
   for (const btn of genBtns) btn.disabled = false;
@@ -234,24 +235,37 @@ function getNullProp() {
 }
 
 function getDirection() {
-  const alt = altDirectionSelect?.value ?? 'greater';
+  const alt = altDirectionBtn?.dataset.value ?? 'greater';
   if (alt === 'greater') return /** @type {const} */ ('right');
   if (alt === 'less') return /** @type {const} */ ('left');
   return /** @type {const} */ ('both');
 }
 
+/** Sync the alternative hypothesis display with the null prop input value. */
+function syncAltNullValue() {
+  if (altNullValue) altNullValue.textContent = nullPropInput?.value ?? '0.5';
+}
+
 if (nullPropInput) {
   nullPropInput.addEventListener('change', () => {
+    syncAltNullValue();
     if (allStats.length > 0) {
       resetSimulation();
       resultDiv.innerHTML = '<p class="hint">Null proportion changed. Run simulation again.</p>';
       announce('Null proportion changed. Simulation reset.');
     }
   });
+  nullPropInput.addEventListener('input', syncAltNullValue);
 }
 
-if (altDirectionSelect) {
-  altDirectionSelect.addEventListener('change', () => {
+if (altDirectionBtn) {
+  const vals = (altDirectionBtn.dataset.values || '').split(',');
+  const labels = (altDirectionBtn.dataset.labels || '').split(',');
+  altDirectionBtn.addEventListener('click', () => {
+    const cur = vals.indexOf(altDirectionBtn.dataset.value || 'greater');
+    const next = (cur + 1) % vals.length;
+    altDirectionBtn.dataset.value = vals[next];
+    altDirectionBtn.textContent = labels[next];
     if (allStats.length > 0) {
       const direction = getDirection();
       renderChart(allStats, observedPHat, direction);
@@ -476,10 +490,10 @@ function displayResults(stats, observed, pValue, extremeCount, direction) {
   const fmtP = (v) => formatStat(v, 0, 'proportion');
   resultDiv.innerHTML = `
     <p><strong>Null Distribution</strong> (${stats.length} simulations, p₀ = ${getNullProp()})</p>
-    <p>Observed p̂ = ${fmtP(observed)}</p>
+    <p>Observed <span class="observed-highlight">p̂ = ${fmtP(observed)}</span></p>
     <p>Extreme count: ${extremeCount} of ${stats.length} (${dirLabel})</p>
     <p><strong>p-value:</strong> ${formatStat(pValue, 0, 'pvalue')}</p>
-    <p class="interpretation">${extremeCount} of ${stats.length} simulated proportions were at least as extreme as the observed p̂ = ${fmtP(observed)}. This provides ${strength} evidence against H₀: p = ${getNullProp()}.</p>
+    <p class="interpretation">${extremeCount} of ${stats.length} simulated proportions were at least as extreme as the observed <span class="observed-highlight">p̂ = ${fmtP(observed)}</span>. This provides ${strength} evidence against H₀: p = ${getNullProp()}.</p>
   `;
 }
 
