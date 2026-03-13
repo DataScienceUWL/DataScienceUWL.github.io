@@ -6,7 +6,7 @@
  */
 
 import { parseCSV, rowsToCSV, downloadCSV } from './csv-parser.js';
-import { getSettings, setSettings, resetSettings, applySettings } from './settings.js';
+import { getSettings, setSettings, resetSettings, applySettings, getActivityMode } from './settings.js';
 
 /**
  * Resolve the path to the data/ directory from any page.
@@ -173,6 +173,16 @@ export function initSettings() {
         <option value="off"${s.reducedMotion === 'off' ? ' selected' : ''}>Off</option>
       </select>
     </div>
+    <div class="setting-row">
+      <div>
+        <label for="set-mode" class="setting-label">Activity mode</label>
+        <p class="setting-hint">Discovery: guided with questions. Presentation: all steps visible.</p>
+      </div>
+      <select id="set-mode">
+        <option value="discover"${s.activityMode === 'discover' ? ' selected' : ''}>Discovery</option>
+        <option value="present"${s.activityMode === 'present' ? ' selected' : ''}>Presentation</option>
+      </select>
+    </div>
     <div class="reset-row">
       <button type="button" class="reset-link" id="set-reset">Reset to defaults</button>
     </div>
@@ -200,6 +210,16 @@ export function initSettings() {
   wire('set-alpha', 'alpha', 'number');
   wire('set-ci', 'confidenceLevel', 'number');
   wire('set-motion', 'reducedMotion', 'string');
+
+  // Mode select — reload page on change since mode affects DOM structure
+  const modeSelect = /** @type {HTMLSelectElement|null} */ (document.getElementById('set-mode'));
+  if (modeSelect) {
+    modeSelect.addEventListener('change', () => {
+      setSettings({ activityMode: modeSelect.value });
+      applySettings();
+      location.reload();
+    });
+  }
 
   // Reset button
   const resetBtn = document.getElementById('set-reset');

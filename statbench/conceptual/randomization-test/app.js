@@ -1,15 +1,18 @@
 // @ts-check
 /**
- * Interactive Randomization Test Activity
+ * Interactive Randomization Test Activity — Dual Mode
+ *
+ * Discovery mode: progressive disclosure with gated questions.
+ * Presentation mode: all steps visible with presenter notes.
  *
  * Walks students through the IMS Ch. 11 randomization test procedure
- * using a card-shuffle metaphor. Students see data as colored cards,
- * shuffle to simulate the null hypothesis, and build a null distribution.
+ * using a card-shuffle metaphor.
  */
 
 import { drawHistogram } from '../../js/histogram.js';
 import { initHelp } from '../../js/page-utils.js';
 import { createRng, shuffle as prngShuffle } from '../../js/prng.js';
+import { getActivityMode } from '../../js/settings.js';
 
 // ─── Dataset Definitions ───────────────────────────────────────────
 
@@ -28,7 +31,23 @@ const DATASETS = {
     description: 'In 1972, 48 male bank supervisors each reviewed a personnel file and decided whether to promote the candidate. The files were identical except that half were randomly labeled "male" and half "female."',
     nullHyp: 'Sex has no effect on promotion decisions. Any difference is due to chance.',
     altHyp: 'Female candidates are less likely to be promoted (discrimination).',
-    direction: 'right', // p1 - p2 > 0 is extreme
+    direction: 'right',
+    // Gate questions (dataset-specific)
+    gate1Q: 'Which group had a higher promotion rate?',
+    gate1Choices: [
+      { text: 'Male (87.5%)', correct: true },
+      { text: 'Female (58.3%)', correct: false },
+      { text: 'About the same', correct: false },
+    ],
+    gate1Explain: 'Males were promoted at 87.5% vs 58.3% for females — a 29.2 percentage point difference.',
+    gate2Q: 'If sex truly had no effect on promotions, what would that mean about these 48 files?',
+    gate2Choices: [
+      { text: 'No one would be promoted', correct: false },
+      { text: 'Exactly 50% in each group would be promoted', correct: false },
+      { text: 'The same 35 people would have been promoted regardless of the label on their file', correct: true },
+      { text: 'We would need more data to tell', correct: false },
+    ],
+    gate2Explain: 'Under the null hypothesis, the outcomes are fixed — the same 35 promotions would have happened. Only the group labels are random.',
   },
   opportunity_cost: {
     file: '../../data/opportunity_cost.json',
@@ -45,6 +64,21 @@ const DATASETS = {
     nullHyp: 'The reminder has no effect on purchase decisions.',
     altHyp: 'The reminder reduces the chance of purchase (treatment group buys less).',
     direction: 'right',
+    gate1Q: 'Which group was less likely to buy the video?',
+    gate1Choices: [
+      { text: 'Treatment (received the reminder)', correct: true },
+      { text: 'Control (no reminder)', correct: false },
+      { text: 'About the same', correct: false },
+    ],
+    gate1Explain: 'The treatment group (with the reminder) chose not to buy more often than the control group.',
+    gate2Q: 'If the reminder truly had no effect, what would be true?',
+    gate2Choices: [
+      { text: 'Nobody would buy the video', correct: false },
+      { text: 'The same people would have made the same decisions regardless of which group they were in', correct: true },
+      { text: 'Exactly half would buy in each group', correct: false },
+      { text: 'The experiment would need to be repeated', correct: false },
+    ],
+    gate2Explain: 'Under the null hypothesis, the outcomes are fixed — the reminder didn\'t change anyone\'s mind. The group labels are the only random part.',
   },
   cpr: {
     file: '../../data/cpr.json',
@@ -61,8 +95,25 @@ const DATASETS = {
     nullHyp: 'The blood thinner has no effect on survival after CPR.',
     altHyp: 'The blood thinner improves survival rates.',
     direction: 'right',
+    gate1Q: 'Which group had a higher survival rate?',
+    gate1Choices: [
+      { text: 'Treatment (blood thinner)', correct: true },
+      { text: 'Control (no blood thinner)', correct: false },
+      { text: 'About the same', correct: false },
+    ],
+    gate1Explain: 'The treatment group had a higher survival rate, but is the difference large enough to rule out chance?',
+    gate2Q: 'If the blood thinner truly had no effect, what would that mean?',
+    gate2Choices: [
+      { text: 'Everyone would survive', correct: false },
+      { text: 'The same patients would have survived or died regardless of whether they received the blood thinner', correct: true },
+      { text: 'Exactly half would survive in each group', correct: false },
+      { text: 'We couldn\'t do a randomization test', correct: false },
+    ],
+    gate2Explain: 'Under the null hypothesis, the outcomes are fixed — the same patients would have survived either way. The treatment assignment is the only random part.',
   },
 };
+
+const TOTAL_STEPS = 5;
 
 // ─── State ─────────────────────────────────────────────────────────
 
@@ -74,10 +125,14 @@ let nullDiffs = [];
 let observedDiff = 0;
 let prng = createRng('randomization');
 let predictionLocked = false;
+let currentStep = 1;  // discovery mode: which step is active
+let hasShuffledOnce = false; // track if step 3 shuffle happened
+const mode = getActivityMode();
 
 // ─── DOM References ────────────────────────────────────────────────
 
 const datasetSelect = /** @type {HTMLSelectElement} */ (document.getElementById('dataset-select'));
+const stepCards = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.step-card'));
 
 // ─── Initialization ────────────────────────────────────────────────
 
@@ -86,6 +141,21 @@ initHelp();
 datasetSelect.addEventListener('change', () => {
   loadDataset(datasetSelect.value);
 });
+
+// Keyboard navigation for presentation mode
+if (mode === 'present') {
+  document.addEventListener('keydown', (e) => {
+    if (e.target !== document.body) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      focusNextStep(1);
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      focusNextStep(-1);
+    }
+  });
+}
 
 loadDataset('sex_discrimination');
 
@@ -107,6 +177,8 @@ async function loadDataset(id) {
   // Reset state
   nullDiffs = [];
   predictionLocked = false;
+  hasShuffledOnce = false;
+  currentStep = 1;
   prng = createRng('randomization-' + id);
 
   // Compute observed data
@@ -121,7 +193,135 @@ async function loadDataset(id) {
   renderStep4();
   renderStep5();
 
+  if (mode === 'discover') {
+    updateStepVisibility();
+    updateProgress();
+  }
+
   announce(`Loaded ${config.group1Label} vs ${config.group2Label} dataset`);
+}
+
+// ─── Discovery Mode: Step Management ──────────────────────────────
+
+function updateStepVisibility() {
+  for (const card of stepCards) {
+    const step = parseInt(card.dataset.step || '0');
+    if (step > currentStep) {
+      card.classList.add('locked');
+    } else {
+      card.classList.remove('locked');
+    }
+  }
+  // Hide all continue buttons, then show only the current step's
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    const btn = document.getElementById(`continue-${i}`);
+    if (btn) btn.hidden = true;
+  }
+}
+
+function updateProgress() {
+  const bar = document.getElementById('step-progress');
+  if (!bar) return;
+  bar.innerHTML = '';
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    const dot = document.createElement('span');
+    dot.className = 'step-dot';
+    if (i < currentStep) dot.classList.add('completed');
+    if (i === currentStep) dot.classList.add('active');
+    dot.setAttribute('aria-label', `Step ${i}${i < currentStep ? ' (completed)' : i === currentStep ? ' (current)' : ''}`);
+    bar.appendChild(dot);
+  }
+  const label = document.createElement('span');
+  label.textContent = `Step ${currentStep} of ${TOTAL_STEPS}`;
+  bar.appendChild(label);
+}
+
+function advanceToStep(step) {
+  if (step <= currentStep || step > TOTAL_STEPS) return;
+  currentStep = step;
+  updateStepVisibility();
+  updateProgress();
+  // Scroll the newly unlocked step into view
+  const card = document.querySelector(`[data-step="${step}"]`);
+  if (card) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  announce(`Step ${step} unlocked`);
+}
+
+function showContinueButton(step) {
+  const btn = document.getElementById(`continue-${step}`);
+  if (btn && mode === 'discover') {
+    btn.hidden = false;
+    btn.onclick = () => advanceToStep(step + 1);
+  }
+}
+
+// Presentation mode: arrow key step focus
+let focusedStepIndex = 0;
+function focusNextStep(dir) {
+  focusedStepIndex = Math.max(0, Math.min(stepCards.length - 1, focusedStepIndex + dir));
+  stepCards[focusedStepIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─── Gate Questions ───────────────────────────────────────────────
+
+/**
+ * Build a multiple-choice gate question.
+ * @param {number} gateNum - Gate number (1-4)
+ * @param {string} question - Question text
+ * @param {Array<{text: string, correct: boolean}>} choices
+ * @param {string} explanation - Shown after correct answer
+ * @param {() => void} onPass - Called when the student gets it right
+ */
+function buildGate(gateNum, question, choices, explanation, onPass) {
+  const qEl = document.getElementById(`gate${gateNum}-question`);
+  const choicesEl = document.getElementById(`gate${gateNum}-choices`);
+  const feedbackEl = document.getElementById(`gate${gateNum}-feedback`);
+  const gateEl = document.getElementById(`gate-${gateNum}`);
+  if (!qEl || !choicesEl || !feedbackEl || !gateEl) return;
+
+  qEl.textContent = question;
+  choicesEl.innerHTML = '';
+  feedbackEl.hidden = true;
+  gateEl.hidden = false;
+
+  let answered = false;
+
+  for (const choice of choices) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'gate-choice';
+    btn.textContent = choice.text;
+    btn.addEventListener('click', () => {
+      if (answered) return;
+      // Mark all as disabled
+      for (const b of choicesEl.querySelectorAll('.gate-choice')) {
+        b.classList.add('disabled');
+      }
+      if (choice.correct) {
+        answered = true;
+        btn.classList.add('correct');
+        feedbackEl.className = 'gate-feedback success';
+        feedbackEl.textContent = explanation;
+        feedbackEl.hidden = false;
+        onPass();
+      } else {
+        btn.classList.add('incorrect');
+        feedbackEl.className = 'gate-feedback retry';
+        feedbackEl.textContent = 'Not quite. Think about what "no effect" would mean and try again.';
+        feedbackEl.hidden = false;
+        // Allow retry after brief pause
+        setTimeout(() => {
+          btn.classList.remove('incorrect');
+          for (const b of choicesEl.querySelectorAll('.gate-choice')) {
+            b.classList.remove('disabled');
+          }
+        }, 1200);
+      }
+    });
+    choicesEl.appendChild(btn);
+  }
 }
 
 // ─── Data Helpers ──────────────────────────────────────────────────
@@ -136,22 +336,18 @@ function countSuccess(rows) {
   return rows.filter(r => r[config.response] === config.successValue).length;
 }
 
-/** Shuffle outcomes array in-place using Fisher-Yates with seeded PRNG */
 function shuffle(arr) {
   return prngShuffle(arr, prng);
 }
 
-/** Run one randomization: shuffle all outcomes, split into original group sizes, compute diff */
 function simulateOne() {
   const outcomes = rawData.map(r => r[config.response]);
   shuffle(outcomes);
   const { group1 } = splitGroups(rawData);
   const n1 = group1.length;
   const n2 = rawData.length - n1;
-
   const shuffledSuccesses1 = outcomes.slice(0, n1).filter(v => v === config.successValue).length;
   const shuffledSuccesses2 = outcomes.slice(n1).filter(v => v === config.successValue).length;
-
   const p1 = shuffledSuccesses1 / n1;
   const p2 = shuffledSuccesses2 / n2;
   return +(p1 - p2).toFixed(6);
@@ -185,7 +381,6 @@ function renderCards(container, rows) {
   container.appendChild(makeGroup(config.group1Label, group1Rows));
   container.appendChild(makeGroup(config.group2Label, group2Rows));
 
-  // Add legend below cards
   const legend = document.createElement('div');
   legend.className = 'card-legend';
   legend.innerHTML =
@@ -227,6 +422,13 @@ function renderStep1(group1, group2) {
   el('step1-difference').innerHTML =
     `<strong>Observed difference:</strong> ${p1}% − ${p2}% = <strong>${diff} percentage points</strong> ` +
     `(${config.group1Label} − ${config.group2Label})`;
+
+  // Discovery: build gate 1
+  if (mode === 'discover') {
+    buildGate(1, config.gate1Q, config.gate1Choices, config.gate1Explain, () => {
+      showContinueButton(1);
+    });
+  }
 }
 
 // Step 2: Hypotheses
@@ -234,6 +436,13 @@ function renderStep2() {
   el('step2-hypotheses').innerHTML =
     `<strong>H₀ (Null):</strong> ${config.nullHyp}<br>` +
     `<strong>Hₐ (Alternative):</strong> ${config.altHyp}`;
+
+  // Discovery: build gate 2
+  if (mode === 'discover') {
+    buildGate(2, config.gate2Q, config.gate2Choices, config.gate2Explain, () => {
+      showContinueButton(2);
+    });
+  }
 }
 
 // Step 3: Single shuffle
@@ -245,34 +454,37 @@ function renderStep3() {
   shuffledTable.hidden = true;
   shuffleResult.hidden = true;
   predictionLocked = false;
-  el('prediction-input').value = '';
+  hasShuffledOnce = false;
+
+  const predInput = /** @type {HTMLInputElement} */ (el('prediction-input'));
+  predInput.value = '';
   el('prediction-feedback').className = 'prediction-feedback hidden';
-  el('predict-btn').disabled = false;
+  /** @type {HTMLButtonElement} */ (el('predict-btn')).disabled = false;
+
+  // Hide gate 3 until shuffle happens
+  const gate3 = document.getElementById('gate-3');
+  if (gate3) gate3.hidden = true;
 
   el('predict-btn').onclick = () => {
     predictionLocked = true;
-    el('predict-btn').disabled = true;
-    const pred = parseFloat(el('prediction-input').value);
+    /** @type {HTMLButtonElement} */ (el('predict-btn')).disabled = true;
+    const pred = parseFloat(predInput.value);
     if (isNaN(pred)) {
       el('prediction-feedback').textContent = 'Enter a number first!';
       el('prediction-feedback').className = 'prediction-feedback off';
       predictionLocked = false;
-      el('predict-btn').disabled = false;
+      /** @type {HTMLButtonElement} */ (el('predict-btn')).disabled = false;
       return;
     }
-    // Save prediction, will compare after shuffle
     el('prediction-feedback').textContent = `Prediction locked: ${pred.toFixed(2)}. Now shuffle!`;
     el('prediction-feedback').className = 'prediction-feedback close';
   };
 
   el('shuffle-one').onclick = () => {
-    // Create shuffled version
     const outcomes = rawData.map(r => r[config.response]);
     shuffle(outcomes);
     const { group1, group2 } = splitGroups(rawData);
-    const n1 = group1.length;
 
-    // Create virtual shuffled rows
     const shuffledRows = rawData.map((r, i) => ({
       ...r,
       [config.response]: outcomes[i],
@@ -296,7 +508,7 @@ function renderStep3() {
 
     // Compare with prediction
     if (predictionLocked) {
-      const pred = parseFloat(el('prediction-input').value);
+      const pred = parseFloat(predInput.value);
       const actualDiff = Math.abs(pred - diff);
       if (actualDiff < 0.05) {
         el('prediction-feedback').textContent = `Your prediction (${pred.toFixed(2)}) was close to the simulated difference (${diff.toFixed(3)})!`;
@@ -308,6 +520,23 @@ function renderStep3() {
         el('prediction-feedback').textContent = `Your prediction (${pred.toFixed(2)}) was off. Simulated: ${diff.toFixed(3)}. Under H₀, differences are typically close to 0.`;
         el('prediction-feedback').className = 'prediction-feedback off';
       }
+    }
+
+    // Discovery: show gate 3 after first shuffle
+    if (mode === 'discover' && !hasShuffledOnce) {
+      hasShuffledOnce = true;
+      const obsDiffPct = (observedDiff * 100).toFixed(1);
+      const simDiffPct = (diff * 100).toFixed(1);
+      buildGate(3,
+        `This shuffle produced a difference of ${simDiffPct} pp. The observed difference was ${obsDiffPct} pp. What does this one shuffle suggest?`,
+        [
+          { text: `The observed difference (${obsDiffPct} pp) seems unusually large compared to this shuffle`, correct: Math.abs(diff) < Math.abs(observedDiff) * 0.7 },
+          { text: 'One shuffle isn\'t enough to tell — we need to repeat many times', correct: true },
+          { text: 'The null hypothesis must be true', correct: false },
+        ],
+        'Exactly right. One shuffle gives us one data point. We need many shuffles to see the full picture of what\'s typical under the null hypothesis.',
+        () => { showContinueButton(3); }
+      );
     }
 
     announce(`Shuffled: difference = ${(diff * 100).toFixed(1)} percentage points`);
@@ -322,6 +551,10 @@ function renderStep4() {
   updateHistogram();
   updateSimStats();
 
+  // Hide gate 4 until enough shuffles
+  const gate4 = document.getElementById('gate-4');
+  if (gate4) gate4.hidden = true;
+
   el('gen-1').onclick = () => addShuffles(1);
   el('gen-10').onclick = () => addShuffles(10);
   el('gen-100').onclick = () => addShuffles(100);
@@ -329,6 +562,7 @@ function renderStep4() {
   el('gen-reset').onclick = () => {
     nullDiffs = [];
     prng = createRng('randomization-' + datasetSelect.value);
+    if (gate4) gate4.hidden = true;
     updateHistogram();
     updateSimStats();
     renderStep5();
@@ -342,6 +576,38 @@ function addShuffles(n) {
   updateHistogram();
   updateSimStats();
   renderStep5();
+
+  // Discovery: show gate 4 once we have ≥100 shuffles
+  if (mode === 'discover' && nullDiffs.length >= 100) {
+    const gate4 = document.getElementById('gate-4');
+    if (gate4 && gate4.hidden) {
+      const extremeCount = nullDiffs.filter(isExtremeFn()).length;
+      const pValue = (extremeCount / nullDiffs.length).toFixed(3);
+      const obsPct = (observedDiff * 100).toFixed(1);
+
+      buildGate(4,
+        `You've run ${nullDiffs.length} simulations. The observed difference was ${obsPct} pp. Look at the histogram — where does the red line fall?`,
+        [
+          { text: 'The observed difference is in the middle of the distribution — it looks typical', correct: parseFloat(pValue) > 0.15 },
+          { text: 'The observed difference is in the tail — very few simulations were this extreme', correct: parseFloat(pValue) <= 0.15 },
+          { text: 'I can\'t tell from the histogram', correct: false },
+        ],
+        `The p-value is approximately ${pValue}. ${parseFloat(pValue) < 0.05
+          ? 'The observed difference falls far in the tail — it would be very unlikely under the null hypothesis.'
+          : 'The observed difference is not far from what we\'d expect by chance alone.'}`,
+        () => { showContinueButton(4); }
+      );
+    }
+  }
+}
+
+/** @returns {(v: number) => boolean} */
+function isExtremeFn() {
+  return config.direction === 'both'
+    ? (v) => Math.abs(v) >= Math.abs(observedDiff)
+    : config.direction === 'right'
+      ? (v) => v >= observedDiff
+      : (v) => v <= observedDiff;
 }
 
 function updateHistogram() {
@@ -353,17 +619,11 @@ function updateHistogram() {
     return;
   }
 
-  const isExtreme = config.direction === 'both'
-    ? (v) => Math.abs(v) >= Math.abs(observedDiff)
-    : config.direction === 'right'
-      ? (v) => v >= observedDiff
-      : (v) => v <= observedDiff;
-
   drawHistogram(container, nullDiffs, {
     xLabel: `Simulated difference in proportions (${config.group1Label} − ${config.group2Label})`,
     titleText: '',
     id: 'null-dist',
-    isTail: isExtreme,
+    isTail: isExtremeFn(),
     observedStat: observedDiff,
     animate: false,
   });
@@ -376,12 +636,7 @@ function updateSimStats() {
     return;
   }
 
-  const isExtreme = config.direction === 'both'
-    ? (v) => Math.abs(v) >= Math.abs(observedDiff)
-    : config.direction === 'right'
-      ? (v) => v >= observedDiff
-      : (v) => v <= observedDiff;
-
+  const isExtreme = isExtremeFn();
   const extremeCount = nullDiffs.filter(isExtreme).length;
   const pValue = extremeCount / count;
 
@@ -393,23 +648,24 @@ function updateSimStats() {
 
 // Step 5: Conclusion
 function renderStep5() {
+  const conclusionText = el('conclusion-text');
+  const interpretationText = el('interpretation-text');
+  const modelDiv = document.getElementById('model-conclusion');
+  const revealBtn = document.getElementById('reveal-conclusion');
+  const reflectionArea = /** @type {HTMLTextAreaElement|null} */ (document.getElementById('student-reflection'));
+
   if (nullDiffs.length === 0) {
-    el('conclusion-text').textContent = 'Run some simulations above to see a conclusion.';
-    el('interpretation-text').textContent = '';
+    conclusionText.textContent = 'Run some simulations above to see a conclusion.';
+    interpretationText.textContent = '';
     return;
   }
 
-  const isExtreme = config.direction === 'both'
-    ? (v) => Math.abs(v) >= Math.abs(observedDiff)
-    : config.direction === 'right'
-      ? (v) => v >= observedDiff
-      : (v) => v <= observedDiff;
-
+  const isExtreme = isExtremeFn();
   const extremeCount = nullDiffs.filter(isExtreme).length;
   const pValue = extremeCount / nullDiffs.length;
   const pct = (observedDiff * 100).toFixed(1);
 
-  el('conclusion-text').innerHTML =
+  conclusionText.innerHTML =
     `Out of <strong>${nullDiffs.length}</strong> simulations under the null hypothesis, ` +
     `<strong>${extremeCount}</strong> had a difference as extreme as the observed ${pct} percentage points. ` +
     `That gives a p-value of approximately <strong>${pValue.toFixed(3)}</strong>.`;
@@ -421,15 +677,30 @@ function renderStep5() {
   else { strength = 'little to no'; decision = 'fail to reject'; }
 
   if (decision === 'reject' || decision === 'might reject') {
-    el('interpretation-text').innerHTML =
+    interpretationText.innerHTML =
       `The data provide <strong>${strength}</strong> evidence against the null hypothesis (p ≈ ${pValue.toFixed(3)}). ` +
       `A difference of ${pct} percentage points would be very unusual if the null hypothesis were true, ` +
       `so we ${decision} H₀. The data suggest that ${config.altHyp.charAt(0).toLowerCase() + config.altHyp.slice(1)}`;
   } else {
-    el('interpretation-text').innerHTML =
+    interpretationText.innerHTML =
       `The data provide <strong>${strength}</strong> evidence against the null hypothesis (p ≈ ${pValue.toFixed(3)}). ` +
       `A difference of ${pct} percentage points is not unusual under the null hypothesis, ` +
       `so we fail to reject H₀. We do not have convincing evidence that ${config.altHyp.charAt(0).toLowerCase() + config.altHyp.slice(1)}`;
+  }
+
+  // Discovery mode: reveal button shows model conclusion
+  if (mode === 'discover' && revealBtn && modelDiv) {
+    modelDiv.classList.remove('present-only'); // remove so it can be toggled
+    modelDiv.hidden = true;
+    revealBtn.onclick = () => {
+      if (reflectionArea && !reflectionArea.value.trim()) {
+        reflectionArea.placeholder = 'Write something first — even a sentence is fine!';
+        reflectionArea.focus();
+        return;
+      }
+      modelDiv.hidden = false;
+      revealBtn.hidden = true;
+    };
   }
 }
 

@@ -34,6 +34,9 @@ const DEFAULTS = {
   // Accessibility & display
   reducedMotion:   'auto', // 'auto' (follow OS), 'on', 'off'
   chartFontScale:  1.0,    // multiplier applied to chart font sizes (1.0 = default)
+
+  // Activity mode
+  activityMode:    'discover', // 'discover' (guided, gated) or 'present' (open, all steps visible)
 };
 
 const STORAGE_KEY = 'statbench-settings';
@@ -115,12 +118,27 @@ export function prefersReducedMotion() {
 }
 
 /**
+ * Get the current activity mode, respecting URL param override.
+ * URL param ?mode=present or ?mode=discover overrides the saved setting.
+ * @returns {'discover'|'present'}
+ */
+export function getActivityMode() {
+  const urlMode = new URLSearchParams(window.location.search).get('mode');
+  if (urlMode === 'present' || urlMode === 'discover') return urlMode;
+  const saved = getSetting('activityMode');
+  return saved === 'present' ? 'present' : 'discover';
+}
+
+/**
  * Apply settings to the current page (CSS custom properties, etc.).
  * Call once on page load from each page's init code.
  */
 export function applySettings() {
   const s = loadSettings();
   const root = document.documentElement;
+
+  // Activity mode → data attribute on body (CSS can target [data-mode="present"])
+  document.body?.setAttribute('data-mode', getActivityMode());
 
   // Chart font scale → CSS custom property
   if (s.chartFontScale !== 1.0) {

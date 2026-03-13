@@ -1557,6 +1557,91 @@ kbd {
   border: 0;
 }
 
+/* ===== Activity Mode: Discovery / Presentation ===== */
+body[data-mode="present"] .discover-only { display: none !important; }
+body[data-mode="discover"] .present-only { display: none !important; }
+
+/* Presenter notes — visible only in presentation mode */
+.presenter-note {
+  background: #fff8e1;
+  border-left: 4px solid #f9a825;
+  padding: 0.5rem 0.8rem;
+  border-radius: 0 6px 6px 0;
+  margin: 0.5rem 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  font-style: italic;
+  color: #5d4037;
+}
+.presenter-note::before {
+  content: "💬 ";
+  font-style: normal;
+}
+
+/* Guided gate — question block that gates progress */
+.gate-question {
+  background: #e3f2fd;
+  border: 2px solid var(--ims-blue, #569BBD);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+}
+.gate-question p { margin: 0 0 0.5rem; font-size: 0.9rem; line-height: 1.5; }
+.gate-choices { display: flex; flex-direction: column; gap: 0.4rem; margin: 0.5rem 0; }
+.gate-choice {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 0.75rem; border-radius: 6px;
+  border: 1px solid var(--border, #ccc); background: #fff;
+  cursor: pointer; font-size: 0.9rem; font-family: inherit;
+  text-align: left;
+}
+.gate-choice:hover { background: #f0f7ff; }
+.gate-choice:focus-visible { outline: 2px solid var(--ims-blue); outline-offset: 2px; }
+.gate-choice.correct { background: #e8f5e9; border-color: #2e7d32; }
+.gate-choice.incorrect { background: #fce4ec; border-color: #c62828; }
+.gate-choice.disabled { pointer-events: none; opacity: 0.7; }
+.gate-feedback {
+  padding: 0.4rem 0.8rem; border-radius: 4px; margin: 0.5rem 0;
+  font-size: 0.85rem; line-height: 1.4;
+}
+.gate-feedback.success { background: #e8f5e9; color: #1b5e20; }
+.gate-feedback.retry { background: #fff8e1; color: #e65100; }
+
+/* Step progress bar */
+.step-progress {
+  display: flex; gap: 0.3rem; align-items: center;
+  margin: 0.75rem 0; font-size: 0.8rem; color: var(--ims-gray-text, #555);
+}
+.step-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--border, #ccc);
+}
+.step-dot.completed { background: var(--ims-green, #2e7d32); }
+.step-dot.active { background: var(--ims-blue, #569BBD); box-shadow: 0 0 0 2px #569BBD40; }
+
+/* Step card locked state */
+.step-card.locked {
+  opacity: 0.35;
+  pointer-events: none;
+  filter: grayscale(0.3);
+}
+.step-card.locked h2::after {
+  content: " 🔒";
+  font-size: 0.85em;
+}
+
+/* Continue button between steps */
+.continue-btn {
+  background: var(--ims-blue, #569BBD);
+  color: white; border: none;
+  padding: 0.5rem 1.2rem; border-radius: 6px;
+  font-weight: 700; font-size: 0.9rem;
+  cursor: pointer; font-family: inherit;
+  margin-top: 0.5rem;
+}
+.continue-btn:hover { filter: brightness(0.9); }
+.continue-btn:focus-visible { outline: 2px solid var(--ims-blue); outline-offset: 2px; }
+
 /* ===== Compact Controls (chart-first layout) ===== */
 
 .result-banner {
