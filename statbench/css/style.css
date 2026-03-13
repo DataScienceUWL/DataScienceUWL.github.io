@@ -61,7 +61,6 @@ h1 {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  flex-wrap: wrap;
 }
 h2 { font-size: 1.25rem; }
 
@@ -212,7 +211,7 @@ header nav[aria-label="Navigation"] {
 }
 #page-settings .setting-hint {
   font-size: 0.75rem;
-  color: #888;
+  color: #636363;
   margin: 0;
 }
 #page-settings select,
@@ -237,6 +236,65 @@ header nav[aria-label="Navigation"] {
   cursor: pointer;
   text-decoration: underline;
   font-family: inherit;
+}
+
+/* ===== Stepper Group (+/- buttons around number inputs) ===== */
+
+.stepper-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+.stepper-group input[type="number"] {
+  border-radius: 0;
+  -moz-appearance: textfield;
+  text-align: center;
+}
+.stepper-group input[type="number"]::-webkit-inner-spin-button,
+.stepper-group input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.stepper-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  user-select: none;
+}
+.stepper-btn:first-child {
+  border-radius: 4px 0 0 4px;
+  border-right: none;
+}
+.stepper-btn:last-child {
+  border-radius: 0 4px 4px 0;
+  border-left: none;
+}
+.stepper-btn:hover {
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg));
+}
+.stepper-btn:active {
+  background: color-mix(in srgb, var(--accent) 25%, var(--bg));
+}
+@media (max-width: 600px) {
+  .stepper-btn {
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 1.3rem;
+  }
+  .gen-btn, .play-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 
 /* ===== Help Dialog Content ===== */
@@ -1400,9 +1458,12 @@ kbd {
 }
 
 @media (max-width: 480px) {
+  .preset-bar {
+    gap: 0.25rem;
+  }
   .preset-btn {
     min-height: 44px;
-    padding: 0.3rem 0.6rem;
+    padding: 0.3rem 0.4rem;
     font-size: 0.8rem;
   }
 }
@@ -1634,6 +1695,7 @@ kbd {
 
   .control-row {
     flex-direction: column;
+    align-items: stretch;
     gap: 0.75rem;
   }
 

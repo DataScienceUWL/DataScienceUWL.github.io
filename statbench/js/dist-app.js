@@ -248,8 +248,10 @@ export function initDistCalculator(config) {
   /** Remove all interactive annotations from the chart. */
   function clearAnnotations() {
     if (!curveState) return;
-    const annotations = d3Selection.select(curveState.frame.inner).select('.annotations');
-    annotations.selectAll('*').remove();
+    const inner = d3Selection.select(curveState.frame.inner);
+    inner.select('.annotations').selectAll('*').remove();
+    // Restore any axis tick labels hidden by value label overlap detection
+    inner.select('.x-axis').selectAll('.tick text').attr('visibility', null);
   }
 
   /**
@@ -610,6 +612,25 @@ export function initDistCalculator(config) {
         .attr('cursor', 'pointer')
         .text(formatEditValue(-Math.abs(value)));
     }
+
+    // Hide axis tick labels that overlap with value label pills
+    const pillRanges = [[px - textWidth / 2, px + textWidth / 2]];
+    if (tail === 'both') {
+      const negPx = xScale(-Math.abs(value));
+      const negW = labelText.length * 8 + 16;
+      pillRanges.push([negPx - negW / 2, negPx + negW / 2]);
+    }
+    const inner = d3Selection.select(frame.inner);
+    inner.select('.x-axis').selectAll('.tick').each(function () {
+      const tick = d3Selection.select(this);
+      const tickX = parseFloat(tick.attr('transform')?.replace(/translate\(([^,]+).*/, '$1') || '0');
+      for (const [lo, hi] of pillRanges) {
+        if (tickX >= lo - 4 && tickX <= hi + 4) {
+          tick.select('text').attr('visibility', 'hidden');
+          break;
+        }
+      }
+    });
 
     // Click-to-edit on the label (and its background)
     const clickHandler = async () => {

@@ -10,7 +10,7 @@ import { mean, median, sd, quantile, iqr, range, detectPrecision, formatStat } f
 import { drawHistogram, computeBins, sturgesBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
-import { announce, initTabs, initDataPanel, initHelp } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper } from '../../js/page-utils.js';
 
 initHelp();
 
@@ -97,6 +97,7 @@ function updateChartControls() {
     if (allValues.length > 0) {
       input.value = String(currentBinCount);
     }
+    wrapWithStepper(input);
     input.addEventListener('input', () => {
       const n = parseInt(input.value, 10);
       if (!isFinite(n) || n < 3) return;

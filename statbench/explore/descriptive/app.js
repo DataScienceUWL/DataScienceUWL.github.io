@@ -11,7 +11,7 @@ import { drawHistogram, sturgesBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { drawBarChart } from '../../js/barchart.js';
-import { announce, initTabs, initDataPanel, initHelp } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper } from '../../js/page-utils.js';
 
 initHelp();
 
@@ -99,6 +99,7 @@ function updateChartControls() {
     if (currentValues.length > 0) {
       input.value = String(currentBinCount);
     }
+    wrapWithStepper(input);
     input.addEventListener('input', () => {
       const n = parseInt(input.value, 10);
       if (!isFinite(n) || n < 3) return;

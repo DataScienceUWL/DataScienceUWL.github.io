@@ -97,8 +97,9 @@ export function initHelp() {
   const closeBtn = helpDialog.querySelector('button');
   if (closeBtn) closeBtn.addEventListener('click', () => helpDialog.close());
 
-  // Also init settings on every page
+  // Also init settings and steppers on every page
   initSettings();
+  autoWrapSteppers();
 }
 
 /**
@@ -120,28 +121,28 @@ export function initSettings() {
     <h2>Settings</h2>
     <div class="setting-row">
       <div>
-        <div class="setting-label">P-value decimals</div>
+        <label for="set-dp-pvalue" class="setting-label">P-value decimals</label>
         <p class="setting-hint">Decimal places for p-values</p>
       </div>
       <input type="number" id="set-dp-pvalue" min="2" max="8" step="1" value="${s.decimalsPValue}">
     </div>
     <div class="setting-row">
       <div>
-        <div class="setting-label">Statistic decimals</div>
+        <label for="set-dp-stat" class="setting-label">Statistic decimals</label>
         <p class="setting-hint">Decimal places for t, z, χ², F</p>
       </div>
       <input type="number" id="set-dp-stat" min="1" max="6" step="1" value="${s.decimalsStat}">
     </div>
     <div class="setting-row">
       <div>
-        <div class="setting-label">Estimate decimals</div>
+        <label for="set-dp-estimate" class="setting-label">Estimate decimals</label>
         <p class="setting-hint">Decimal places for means, proportions</p>
       </div>
       <input type="number" id="set-dp-estimate" min="1" max="6" step="1" value="${s.decimalsEstimate}">
     </div>
     <div class="setting-row">
       <div>
-        <div class="setting-label">Significance level (α)</div>
+        <label for="set-alpha" class="setting-label">Significance level (α)</label>
         <p class="setting-hint">Default α for hypothesis tests</p>
       </div>
       <select id="set-alpha">
@@ -152,7 +153,7 @@ export function initSettings() {
     </div>
     <div class="setting-row">
       <div>
-        <div class="setting-label">Confidence level</div>
+        <label for="set-ci" class="setting-label">Confidence level</label>
         <p class="setting-hint">Default CI level for bootstrap</p>
       </div>
       <select id="set-ci">
@@ -163,7 +164,7 @@ export function initSettings() {
     </div>
     <div class="setting-row">
       <div>
-        <div class="setting-label">Reduce motion</div>
+        <label for="set-motion" class="setting-label">Reduce motion</label>
         <p class="setting-hint">Minimize animations</p>
       </div>
       <select id="set-motion">
@@ -593,4 +594,90 @@ export function initDataPanel(config) {
     populateEditor,
     refilterDatasets,
   };
+}
+
+/**
+ * Auto-wrap integer number inputs with +/- stepper buttons.
+ * Targets inputs with step="1" (or integer-step) that aren't already wrapped.
+ * Skips inputs inside dialogs (settings dialog handles its own) and inputs
+ * with step="any" (free-form decimal entry like means, SDs, slopes).
+ */
+function autoWrapSteppers() {
+  // Defer to let page-specific JS (dist-app.js etc.) create its own steppers first
+  queueMicrotask(() => {
+    const inputs = /** @type {NodeListOf<HTMLInputElement>} */ (
+      document.querySelectorAll('input[type="number"]'));
+    for (const input of inputs) {
+      // Skip if already wrapped by page-specific code
+      if (input.closest('.stepper-group')) continue;
+      // Skip inputs inside dialogs (settings, help)
+      if (input.closest('dialog')) continue;
+      // Skip free-form decimal inputs (step="any" or fractional step like 0.01)
+      const step = input.step || '1';
+      if (step === 'any') continue;
+      const stepNum = parseFloat(step);
+      if (stepNum < 1 && stepNum !== 0) continue;
+      // Skip inputs that have a companion range slider (dist calculators)
+      const row = input.closest('.df-inline-row, .param-row, .binom-controls');
+      if (row && row.querySelector('input[type="range"]')) continue;
+      // Wrap it
+      wrapWithStepper(input);
+    }
+  });
+}
+
+/**
+ * Wrap a number input with +/- stepper buttons for mobile-friendly interaction.
+ * Android Chrome (and some other mobile browsers) don't show native steppers
+ * for `<input type="number">`, making it hard to adjust values.
+ *
+ * @param {HTMLInputElement} input - The number input to wrap
+ * @param {object} [options]
+ * @param {number} [options.step] - Step size (default: uses input.step or 1)
+ * @param {() => void} [options.onChange] - Called after value changes
+ * @returns {HTMLElement} The wrapper element (already inserted around the input)
+ */
+export function wrapWithStepper(input, options = {}) {
+  const step = options.step ?? (parseFloat(input.step) || 1);
+  const onChange = options.onChange;
+
+  const wrapper = document.createElement('span');
+  wrapper.className = 'stepper-group';
+
+  const minusBtn = document.createElement('button');
+  minusBtn.type = 'button';
+  minusBtn.className = 'stepper-btn';
+  minusBtn.textContent = '\u2212'; // minus sign
+  minusBtn.setAttribute('aria-label', 'Decrease');
+  minusBtn.tabIndex = -1; // don't add to tab order — input is already there
+
+  const plusBtn = document.createElement('button');
+  plusBtn.type = 'button';
+  plusBtn.className = 'stepper-btn';
+  plusBtn.textContent = '+';
+  plusBtn.setAttribute('aria-label', 'Increase');
+  plusBtn.tabIndex = -1;
+
+  // Insert wrapper in place of input
+  input.parentNode?.insertBefore(wrapper, input);
+  wrapper.appendChild(minusBtn);
+  wrapper.appendChild(input);
+  wrapper.appendChild(plusBtn);
+
+  function adjust(/** @type {number} */ delta) {
+    const cur = parseFloat(input.value) || 0;
+    let next = +(cur + delta).toFixed(10); // avoid float drift
+    const min = input.min !== '' ? parseFloat(input.min) : -Infinity;
+    const max = input.max !== '' ? parseFloat(input.max) : Infinity;
+    next = Math.max(min, Math.min(max, next));
+    input.value = String(next);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    if (onChange) onChange();
+  }
+
+  minusBtn.addEventListener('click', () => adjust(-step));
+  plusBtn.addEventListener('click', () => adjust(step));
+
+  return wrapper;
 }

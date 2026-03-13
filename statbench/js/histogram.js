@@ -192,7 +192,7 @@ export function drawHistogram(container, values, options = {}) {
   addAxes(frame, xAxis, yAxis, xLabel, yLabel);
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
-  renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate, frame.inner, observedStat);
+  renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate, frame.inner, observedStat, ciLines);
 
   // Stacked delta highlight: show new portions of bars in orange
   if (prevBinCounts) {
@@ -238,7 +238,7 @@ export function drawHistogram(container, values, options = {}) {
 
       // Re-render bars
       dataGroup.selectAll('rect').remove();
-      renderBars(dataGroup, result.bins, xScale, yScale, frame.height, newIsTail, animate, frame.inner, newObserved);
+      renderBars(dataGroup, result.bins, xScale, yScale, frame.height, newIsTail, animate, frame.inner, newObserved, newCiLines);
 
       // Re-render overlays
       overlays.selectAll('*').remove();
@@ -322,11 +322,17 @@ function renderDeltaBars(group, bins, xScale, yScale, innerHeight, prevCounts) {
  * @param {boolean} animate
  * @param {SVGGElement} [innerNode] - chart-inner node for custom tooltips
  * @param {number} [observedStat] - Observed stat value for split-bar rendering
+ * @param {[number, number]} [ciLines] - CI bounds for split-bar rendering
  */
-function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, innerNode, observedStat) {
+function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, innerNode, observedStat, ciLines) {
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
-  // Build bar data: split bins that contain the observed stat boundary
+  // Collect all boundary values that can split bars
+  const boundaries = [];
+  if (observedStat != null) boundaries.push(observedStat);
+  if (ciLines) { boundaries.push(ciLines[0]); boundaries.push(ciLines[1]); }
+
+  // Build bar data: split bins at any boundary that falls strictly inside
   /** @type {Array<{x0: number, x1: number, length: number, fill: string, binIndex: number, isSplit: boolean}>} */
   const barData = [];
   for (let i = 0; i < bins.length; i++) {
@@ -338,24 +344,22 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, i
       continue;
     }
 
-    // Check if observed stat splits this bin
-    const needsSplit = observedStat != null && observedStat > bin.x0 && observedStat < bin.x1;
-    if (needsSplit) {
-      // Split: left portion and right portion get different fills
-      const leftIsTail = isTail(bin.x0);
-      const rightIsTail = isTail(bin.x1);
-      barData.push({
-        x0: bin.x0, x1: observedStat, length: bin.length,
-        fill: leftIsTail ? REGION_FILL : BODY_FILL,
-        binIndex: i, isSplit: true,
-      });
-      barData.push({
-        x0: observedStat, x1: bin.x1, length: bin.length,
-        fill: rightIsTail ? REGION_FILL : BODY_FILL,
-        binIndex: i, isSplit: true,
-      });
+    // Find boundaries that fall strictly inside this bin
+    const splits = boundaries.filter(b => b > bin.x0 && b < bin.x1);
+    splits.sort((a, b) => a - b);
+
+    if (splits.length > 0) {
+      // Build segments: [bin.x0, split1], [split1, split2], ..., [splitN, bin.x1]
+      const edges = [bin.x0, ...splits, bin.x1];
+      for (let j = 0; j < edges.length - 1; j++) {
+        const segMid = (edges[j] + edges[j + 1]) / 2;
+        barData.push({
+          x0: edges[j], x1: edges[j + 1], length: bin.length,
+          fill: isTail(segMid) ? REGION_FILL : BODY_FILL,
+          binIndex: i, isSplit: true,
+        });
+      }
     } else {
-      // Whole bin: use left edge to classify (avoids midpoint ambiguity)
       const mid = (bin.x0 + bin.x1) / 2;
       barData.push({
         x0: bin.x0, x1: bin.x1, length: bin.length,
