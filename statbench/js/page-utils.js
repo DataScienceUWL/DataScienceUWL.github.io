@@ -6,6 +6,7 @@
  */
 
 import { parseCSV, rowsToCSV, downloadCSV } from './csv-parser.js';
+import { getSettings, setSettings, resetSettings, applySettings } from './settings.js';
 
 /**
  * Resolve the path to the data/ directory from any page.
@@ -95,6 +96,125 @@ export function initHelp() {
 
   const closeBtn = helpDialog.querySelector('button');
   if (closeBtn) closeBtn.addEventListener('click', () => helpDialog.close());
+
+  // Also init settings on every page
+  initSettings();
+}
+
+/**
+ * Initialize the settings gear button and dialog.
+ * Creates the dialog dynamically so pages don't need to include it in HTML.
+ * Reads/writes via settings.js module (localStorage-backed).
+ */
+export function initSettings() {
+  applySettings();
+
+  // Create settings dialog if it doesn't exist
+  if (document.getElementById('page-settings')) return;
+
+  const s = getSettings();
+  const dialog = document.createElement('dialog');
+  dialog.id = 'page-settings';
+  dialog.setAttribute('aria-label', 'Settings');
+  dialog.innerHTML = `
+    <h2>Settings</h2>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">P-value decimals</div>
+        <p class="setting-hint">Decimal places for p-values</p>
+      </div>
+      <input type="number" id="set-dp-pvalue" min="2" max="8" step="1" value="${s.decimalsPValue}">
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Statistic decimals</div>
+        <p class="setting-hint">Decimal places for t, z, χ², F</p>
+      </div>
+      <input type="number" id="set-dp-stat" min="1" max="6" step="1" value="${s.decimalsStat}">
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Estimate decimals</div>
+        <p class="setting-hint">Decimal places for means, proportions</p>
+      </div>
+      <input type="number" id="set-dp-estimate" min="1" max="6" step="1" value="${s.decimalsEstimate}">
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Significance level (α)</div>
+        <p class="setting-hint">Default α for hypothesis tests</p>
+      </div>
+      <select id="set-alpha">
+        <option value="0.01"${s.alpha === 0.01 ? ' selected' : ''}>0.01</option>
+        <option value="0.05"${s.alpha === 0.05 ? ' selected' : ''}>0.05</option>
+        <option value="0.10"${s.alpha === 0.10 ? ' selected' : ''}>0.10</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Confidence level</div>
+        <p class="setting-hint">Default CI level for bootstrap</p>
+      </div>
+      <select id="set-ci">
+        <option value="0.90"${s.confidenceLevel === 0.90 ? ' selected' : ''}>90%</option>
+        <option value="0.95"${s.confidenceLevel === 0.95 ? ' selected' : ''}>95%</option>
+        <option value="0.99"${s.confidenceLevel === 0.99 ? ' selected' : ''}>99%</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Reduce motion</div>
+        <p class="setting-hint">Minimize animations</p>
+      </div>
+      <select id="set-motion">
+        <option value="auto"${s.reducedMotion === 'auto' ? ' selected' : ''}>Auto (OS)</option>
+        <option value="on"${s.reducedMotion === 'on' ? ' selected' : ''}>On</option>
+        <option value="off"${s.reducedMotion === 'off' ? ' selected' : ''}>Off</option>
+      </select>
+    </div>
+    <div class="reset-row">
+      <button type="button" class="reset-link" id="set-reset">Reset to defaults</button>
+    </div>
+    <button type="button" autofocus>Close</button>
+  `;
+  document.body.appendChild(dialog);
+
+  // Wire close
+  const closeBtn = /** @type {HTMLButtonElement} */ (dialog.querySelector('button[autofocus]'));
+  closeBtn.addEventListener('click', () => dialog.close());
+
+  // Wire settings changes — save on every input
+  const wire = (/** @type {string} */ id, /** @type {string} */ key, /** @type {string} */ type) => {
+    const el = /** @type {HTMLInputElement|HTMLSelectElement} */ (document.getElementById(id));
+    if (!el) return;
+    el.addEventListener('change', () => {
+      const val = type === 'number' ? Number(el.value) : el.value;
+      setSettings({ [key]: val });
+      applySettings();
+    });
+  };
+  wire('set-dp-pvalue', 'decimalsPValue', 'number');
+  wire('set-dp-stat', 'decimalsStat', 'number');
+  wire('set-dp-estimate', 'decimalsEstimate', 'number');
+  wire('set-alpha', 'alpha', 'number');
+  wire('set-ci', 'confidenceLevel', 'number');
+  wire('set-motion', 'reducedMotion', 'string');
+
+  // Reset button
+  const resetBtn = document.getElementById('set-reset');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      resetSettings();
+      dialog.close();
+      location.reload();
+    });
+  }
+
+  // Wire gear button
+  const gearBtn = document.querySelector('.settings-btn');
+  if (gearBtn) {
+    gearBtn.addEventListener('click', () => dialog.showModal());
+  }
 }
 
 /**

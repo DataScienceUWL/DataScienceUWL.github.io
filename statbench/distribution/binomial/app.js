@@ -296,9 +296,9 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma, prob, type) {
     .attr('y', d => yScale(d.pmf))
     .attr('width', xBand.bandwidth())
     .attr('height', d => innerH - yScale(d.pmf))
-    .attr('fill', d => shadedKs.has(d.k) ? '#569BBD' : '#7393a4')
-    .attr('stroke', '#fff')
-    .attr('stroke-width', 0.5);
+    .attr('fill', d => shadedKs.has(d.k) ? '#569BBD' : '#DCE5EC')
+    .attr('stroke', d => shadedKs.has(d.k) ? '#3A7CA5' : '#9BB0BF')
+    .attr('stroke-width', 1);
 
   // Probability pills
   addProbPills(g, xLinear, innerW, innerH, lo, hi, k, prob, type);
@@ -540,7 +540,8 @@ function addDraggableKLine(g, svg, data, n, k, innerW, innerH, margin) {
     // Update bar shading in-place
     const { prob, shadedKs } = computeShading(data, newK, n, type);
     g.selectAll('.pmf-bar')
-      .attr('fill', (/** @type {{k:number}} */ d) => shadedKs.has(d.k) ? '#569BBD' : '#7393a4');
+      .attr('fill', (/** @type {{k:number}} */ d) => shadedKs.has(d.k) ? '#569BBD' : '#DCE5EC')
+      .attr('stroke', (/** @type {{k:number}} */ d) => shadedKs.has(d.k) ? '#3A7CA5' : '#9BB0BF');
 
     // Update probability pills
     g.selectAll('.prob-label-bg, .prob-label').remove();
