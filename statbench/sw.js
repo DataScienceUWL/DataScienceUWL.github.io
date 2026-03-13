@@ -1,6 +1,6 @@
 // StatBench Service Worker — stale-while-revalidate with update notification.
 // DEPLOY_VERSION is replaced by deploy.sh on each deploy.
-const CACHE_NAME = 'statbench-151fa555';
+const CACHE_NAME = 'statbench-f6298c2c';
 
 // App shell — the core files needed for the app to work
 const APP_SHELL = [
