@@ -184,6 +184,14 @@ function renderCards(container, rows) {
 
   container.appendChild(makeGroup(config.group1Label, group1Rows));
   container.appendChild(makeGroup(config.group2Label, group2Rows));
+
+  // Add legend below cards
+  const legend = document.createElement('div');
+  legend.className = 'card-legend';
+  legend.innerHTML =
+    `<span><span class="swatch success" aria-hidden="true"></span> ${config.successLabel}</span>` +
+    `<span><span class="swatch failure" aria-hidden="true"></span> ${config.failureLabel}</span>`;
+  container.appendChild(legend);
 }
 
 function fillTable(prefix, group1, group2) {
