@@ -9,7 +9,7 @@
 
 import { drawHistogram } from '../../js/histogram.js';
 import { initHelp } from '../../js/page-utils.js';
-import { sfc32, cyrb128 } from '../../js/prng.js';
+import { createRng, shuffle as prngShuffle } from '../../js/prng.js';
 
 // ─── Dataset Definitions ───────────────────────────────────────────
 
@@ -72,7 +72,7 @@ let config = DATASETS.sex_discrimination;
 /** @type {number[]} */
 let nullDiffs = [];
 let observedDiff = 0;
-let prng = sfc32(...cyrb128('randomization'));
+let prng = createRng('randomization');
 let predictionLocked = false;
 
 // ─── DOM References ────────────────────────────────────────────────
@@ -107,7 +107,7 @@ async function loadDataset(id) {
   // Reset state
   nullDiffs = [];
   predictionLocked = false;
-  prng = sfc32(...cyrb128('randomization-' + id));
+  prng = createRng('randomization-' + id);
 
   // Compute observed data
   const { group1, group2 } = splitGroups(rawData);
@@ -138,11 +138,7 @@ function countSuccess(rows) {
 
 /** Shuffle outcomes array in-place using Fisher-Yates with seeded PRNG */
 function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(prng() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
+  return prngShuffle(arr, prng);
 }
 
 /** Run one randomization: shuffle all outcomes, split into original group sizes, compute diff */
@@ -324,7 +320,7 @@ function renderStep4() {
   el('gen-1000').onclick = () => addShuffles(1000);
   el('gen-reset').onclick = () => {
     nullDiffs = [];
-    prng = sfc32(...cyrb128('randomization-' + datasetSelect.value));
+    prng = createRng('randomization-' + datasetSelect.value);
     updateHistogram();
     updateSimStats();
     renderStep5();
