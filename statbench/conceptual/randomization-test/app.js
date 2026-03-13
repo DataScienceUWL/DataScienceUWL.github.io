@@ -214,11 +214,6 @@ function updateStepVisibility() {
       card.classList.remove('locked');
     }
   }
-  // Hide all continue buttons, then show only the current step's
-  for (let i = 1; i <= TOTAL_STEPS; i++) {
-    const btn = document.getElementById(`continue-${i}`);
-    if (btn) btn.hidden = true;
-  }
 }
 
 function updateProgress() {
@@ -251,12 +246,10 @@ function advanceToStep(step) {
   announce(`Step ${step} unlocked`);
 }
 
-function showContinueButton(step) {
-  const btn = document.getElementById(`continue-${step}`);
-  if (btn && mode === 'discover') {
-    btn.hidden = false;
-    btn.onclick = () => advanceToStep(step + 1);
-  }
+/** Auto-advance after a short delay so students can read the gate feedback. */
+function autoAdvance(step) {
+  if (mode !== 'discover') return;
+  setTimeout(() => advanceToStep(step + 1), 1200);
 }
 
 // Presentation mode: arrow key step focus
@@ -428,7 +421,7 @@ function renderStep1(group1, group2) {
   // Discovery: build gate 1
   if (mode === 'discover') {
     buildGate(1, config.gate1Q, config.gate1Choices, config.gate1Explain, () => {
-      showContinueButton(1);
+      autoAdvance(1);
     });
   }
 }
@@ -442,7 +435,7 @@ function renderStep2() {
   // Discovery: build gate 2
   if (mode === 'discover') {
     buildGate(2, config.gate2Q, config.gate2Choices, config.gate2Explain, () => {
-      showContinueButton(2);
+      autoAdvance(2);
     });
   }
 }
@@ -537,7 +530,7 @@ function renderStep3() {
           { text: 'The null hypothesis must be true', correct: false },
         ],
         'Exactly right. One shuffle gives us one data point. We need many shuffles to see the full picture of what\'s typical under the null hypothesis.',
-        () => { showContinueButton(3); }
+        () => { autoAdvance(3); }
       );
     }
 
@@ -597,7 +590,7 @@ function addShuffles(n) {
         `The p-value is approximately ${pValue}. ${parseFloat(pValue) < 0.05
           ? 'The observed difference falls far in the tail — it would be very unlikely under the null hypothesis.'
           : 'The observed difference is not far from what we\'d expect by chance alone.'}`,
-        () => { showContinueButton(4); }
+        () => { autoAdvance(4); }
       );
     }
   }
