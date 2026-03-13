@@ -44,7 +44,7 @@ const DATASETS = {
     gate2Choices: [
       { text: 'No one would be promoted', correct: false },
       { text: 'Exactly 50% in each group would be promoted', correct: false },
-      { text: 'The same 35 people would have been promoted regardless of the label on their file', correct: true },
+      { text: '35 people would have been promoted regardless of their gender', correct: true },
       { text: 'We would need more data to tell', correct: false },
     ],
     gate2Explain: 'Under the null hypothesis, the outcomes are fixed — the same 35 promotions would have happened. Only the group labels are random.',
