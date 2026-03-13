@@ -284,81 +284,133 @@ function detectPhoneMargin() {
 }
 
 /**
- * Render a p-value annotation on a hypothesis test chart.
- * Positions the label in the tail area(s) with a white background for contrast.
+ * Render probability pills on a simulation/test chart.
+ * For randomization: p-value pill in the tail, complement pill in the body.
+ * For bootstrap CI: proportion pill centered between CI bounds.
+ *
+ * When the tail region is narrow (< 25% of chart width), the p-value pill
+ * floats above the bars with a leader line pointing down to the tail.
  *
  * @param {ChartFrame} frame - Chart frame from createChart
- * @param {d3Selection.Selection|any} xScale - D3 linear scale for x-axis
- * @param {number} pValue - Computed p-value
- * @param {number} observedStat - Observed test statistic
- * @param {'left'|'right'|'both'} direction - Tail direction
+ * @param {any} xScale - D3 linear scale for x-axis
+ * @param {object} opts
+ * @param {'randomization'|'bootstrap'} opts.mode
+ * @param {number} [opts.pValue] - P-value (randomization mode)
+ * @param {number} [opts.observedStat] - Observed test statistic (randomization mode)
+ * @param {'left'|'right'|'both'} [opts.direction] - Tail direction (randomization mode)
+ * @param {string} [opts.pLabel] - Pre-formatted p-value text (overrides default formatting)
+ * @param {string} [opts.proportionLabel] - Pre-formatted proportion text (bootstrap mode)
+ * @param {[number,number]} [opts.ci] - CI bounds (bootstrap mode)
  */
-export function renderPValueAnnotation(frame, xScale, pValue, observedStat, direction) {
+export function renderSimPills(frame, xScale, opts) {
   const annotations = d3Selection.select(frame.inner).select('.annotations');
-  annotations.selectAll('.p-value-group').remove();
+  annotations.selectAll('.sim-pill').remove();
 
-  // Format p-value text
-  let pText;
-  if (pValue === 0) pText = 'p ≈ 0';
-  else if (pValue < 0.0001) pText = 'p < 0.0001';
-  else if (pValue < 0.001) pText = `p = ${pValue.toFixed(4)}`;
-  else pText = `p = ${pValue.toFixed(4)}`;
-
-  const obsX = xScale(observedStat);
-  const h = frame.height;
   const w = frame.width;
+  const h = frame.height;
+  const pillY = h * 0.22;
 
-  if (direction === 'both') {
-    // Two-sided: label near observed stat, slightly above mid-height
-    const labelX = Math.max(60, Math.min(w - 60, obsX));
-    _addPLabel(annotations, `${pText}  (two-tailed)`, labelX, h * 0.18);
-  } else if (direction === 'left') {
-    // Left tail: label between left edge and observed
-    const tailMidX = obsX / 2;
-    const labelX = Math.max(50, Math.min(obsX - 10, tailMidX));
-    _addPLabel(annotations, pText, labelX, h * 0.25);
-  } else {
-    // Right tail: label between observed and right edge
-    const tailMidX = (obsX + w) / 2;
-    const labelX = Math.min(w - 50, Math.max(obsX + 10, tailMidX));
-    _addPLabel(annotations, pText, labelX, h * 0.25);
+  if (opts.mode === 'randomization' && opts.pValue != null && opts.observedStat != null && opts.direction) {
+    const obsX = xScale(opts.observedStat);
+    const p = opts.pValue;
+    const comp = 1 - p;
+
+    // Format p-value text
+    let pText = opts.pLabel;
+    if (!pText) {
+      if (p === 0) pText = 'p ≈ 0';
+      else if (p < 0.0001) pText = 'p < 0.0001';
+      else pText = `p = ${p.toFixed(4)}`;
+    }
+    const compText = comp.toFixed(4);
+
+    if (opts.direction === 'both') {
+      const labelX = Math.max(60, Math.min(w - 60, obsX));
+      _addSimPill(annotations, `${pText}  (two-tailed)`, labelX, pillY, false);
+    } else {
+      // Determine tail and body regions
+      const isLeft = opts.direction === 'left';
+      const tailEdge = isLeft ? 0 : w;
+      const tailWidth = isLeft ? obsX : (w - obsX);
+      const narrow = tailWidth < w * 0.25;
+
+      if (narrow) {
+        // Float pill above with leader line pointing to tail midpoint
+        const tailMid = isLeft ? obsX / 2 : (obsX + w) / 2;
+        // Position pill so it doesn't clip, biased toward chart center
+        const pillX = isLeft
+          ? Math.max(60, Math.min(w * 0.35, obsX))
+          : Math.min(w - 60, Math.max(w * 0.65, obsX));
+        const floatY = -4; // above the plot area (in the top margin)
+        _addSimPill(annotations, pText, pillX, floatY, false);
+        // Leader line from pill down to tail midpoint at bar level
+        const lineTarget = Math.max(4, Math.min(w - 4, tailMid));
+        annotations.append('line')
+          .attr('class', 'sim-pill')
+          .attr('x1', pillX)
+          .attr('y1', floatY + 14)
+          .attr('x2', lineTarget)
+          .attr('y2', pillY + 10)
+          .attr('stroke', '#569BBD')
+          .attr('stroke-width', 1)
+          .attr('stroke-dasharray', '3,2')
+          .style('pointer-events', 'none');
+      } else {
+        // Normal: pill centered in tail region
+        const tailX = isLeft
+          ? Math.max(50, Math.min(obsX - 10, obsX / 2))
+          : Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2));
+        _addSimPill(annotations, pText, tailX, pillY, false);
+      }
+
+      // Complement pill in body (always has room)
+      const bodyX = isLeft
+        ? Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2))
+        : Math.max(50, Math.min(obsX - 10, obsX / 2));
+      _addSimPill(annotations, compText, bodyX, pillY, true);
+    }
+  } else if (opts.mode === 'bootstrap' && opts.proportionLabel && opts.ci) {
+    const [ciLo, ciHi] = opts.ci;
+    const loX = xScale(ciLo);
+    const hiX = xScale(ciHi);
+    const midX = Math.max(50, Math.min(w - 50, (loX + hiX) / 2));
+    _addSimPill(annotations, opts.proportionLabel, midX, pillY, false);
   }
 }
 
 /**
- * Add a p-value text label with white background rect.
+ * Render a single pill (rounded rect + text) on a chart annotation layer.
  * @param {d3Selection.Selection} group
  * @param {string} text
- * @param {number} x
- * @param {number} y
+ * @param {number} cx - Center x
+ * @param {number} cy - Center y
+ * @param {boolean} isComplement - If true, use subdued gray style
  */
-function _addPLabel(group, text, x, y) {
-  const g = group.append('g').attr('class', 'p-value-group');
-
-  // Add text first to measure, then add background rect
-  const textEl = g.append('text')
-    .attr('class', 'p-value-label')
-    .attr('x', x)
-    .attr('y', y)
+function _addSimPill(group, text, cx, cy, isComplement) {
+  const g = group.append('g').attr('class', 'sim-pill');
+  const isPhone = typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 480px)').matches;
+  const textWidth = text.length * (isPhone ? 13 : 8.5) + 16;
+  const pillH = isPhone ? 34 : 24;
+  g.append('rect')
+    .attr('x', cx - textWidth / 2)
+    .attr('y', cy - pillH / 2)
+    .attr('width', textWidth)
+    .attr('height', pillH)
+    .attr('rx', 4)
+    .attr('fill', isComplement ? '#f5f5f5' : '#e8f4f8')
+    .attr('stroke', isComplement ? '#ccc' : '#569BBD')
+    .attr('stroke-width', 1)
+    .style('pointer-events', 'none');
+  g.append('text')
+    .attr('class', isComplement ? 'prob-label prob-complement' : 'prob-label')
+    .attr('x', cx)
+    .attr('y', cy)
     .attr('text-anchor', 'middle')
-    .attr('fill', '#B71C1C')
+    .attr('dominant-baseline', 'central')
+    .attr('fill', isComplement ? '#6B6B6B' : '#114B5F')
+    .style('pointer-events', 'none')
     .text(text);
-
-  // Add background rect behind text for readability
-  try {
-    const bbox = /** @type {SVGTextElement} */ (textEl.node()).getBBox();
-    const pad = 4;
-    g.insert('rect', 'text')
-      .attr('x', bbox.x - pad)
-      .attr('y', bbox.y - pad)
-      .attr('width', bbox.width + pad * 2)
-      .attr('height', bbox.height + pad * 2)
-      .attr('fill', 'white')
-      .attr('fill-opacity', 0.85)
-      .attr('rx', 3);
-  } catch {
-    // getBBox may fail in test/JSDOM — skip background
-  }
 }
 
 /**

@@ -9,8 +9,8 @@
  * using a card-shuffle metaphor.
  */
 
-import * as d3Selection from 'd3-selection';
 import { drawHistogram } from '../../js/histogram.js';
+import { renderSimPills } from '../../js/chart-utils.js';
 import { initHelp } from '../../js/page-utils.js';
 import { createRng, shuffle as prngShuffle } from '../../js/prng.js';
 import { getActivityMode } from '../../js/settings.js';
@@ -630,72 +630,18 @@ function updateHistogram() {
     animate: false,
   });
 
-  // Add p-value pills (matches sim-app.js pattern)
+  // Add p-value pills (shared from chart-utils.js)
   if (r.frame && r.xScale) {
     const isExtreme = isExtremeFn();
     const extremeCount = nullDiffs.filter(isExtreme).length;
     const pValue = extremeCount / nullDiffs.length;
-    renderPills(r.frame, r.xScale, pValue);
+    renderSimPills(r.frame, r.xScale, {
+      mode: 'randomization',
+      pValue,
+      observedStat: observedDiff,
+      direction: config.direction,
+    });
   }
-}
-
-/**
- * Render p-value and complement pills on the null distribution chart.
- * @param {import('../../js/chart-utils.js').ChartFrame} frame
- * @param {d3Selection.ScaleLinear} xScale
- * @param {number} pValue
- */
-function renderPills(frame, xScale, pValue) {
-  const annotations = d3Selection.select(frame.inner).select('.annotations');
-  annotations.selectAll('.sim-pill').remove();
-
-  const w = frame.width;
-  const h = frame.height;
-  const pillY = h * 0.22;
-  const obsX = xScale(observedDiff);
-  const comp = 1 - pValue;
-
-  const pFormatted = formatStat(pValue, 0, 'pvalue');
-  const pText = pFormatted.startsWith('p') ? pFormatted : `p = ${pFormatted}`;
-
-  // All datasets use direction === 'right': p-value pill in right tail
-  const tailX = Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2));
-  addPill(annotations, pText, tailX, pillY, false);
-  const bodyX = Math.max(50, Math.min(obsX - 10, obsX / 2));
-  addPill(annotations, comp.toFixed(4), bodyX, pillY, true);
-}
-
-/**
- * @param {d3Selection.Selection} group
- * @param {string} text
- * @param {number} cx
- * @param {number} cy
- * @param {boolean} isComplement
- */
-function addPill(group, text, cx, cy, isComplement) {
-  const g = group.append('g').attr('class', 'sim-pill');
-  const isPhone = typeof matchMedia === 'function' && matchMedia('(max-width: 480px)').matches;
-  const textWidth = text.length * (isPhone ? 13 : 8.5) + 16;
-  const pillH = isPhone ? 34 : 24;
-  g.append('rect')
-    .attr('x', cx - textWidth / 2)
-    .attr('y', cy - pillH / 2)
-    .attr('width', textWidth)
-    .attr('height', pillH)
-    .attr('rx', 4)
-    .attr('fill', isComplement ? '#f5f5f5' : '#e8f4f8')
-    .attr('stroke', isComplement ? '#ccc' : '#569BBD')
-    .attr('stroke-width', 1)
-    .style('pointer-events', 'none');
-  g.append('text')
-    .attr('class', isComplement ? 'prob-label prob-complement' : 'prob-label')
-    .attr('x', cx)
-    .attr('y', cy)
-    .attr('text-anchor', 'middle')
-    .attr('dominant-baseline', 'central')
-    .attr('fill', isComplement ? '#6B6B6B' : '#114B5F')
-    .style('pointer-events', 'none')
-    .text(text);
 }
 
 function updateSimStats() {

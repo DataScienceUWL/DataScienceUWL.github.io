@@ -13,7 +13,7 @@ import * as d3Selection from 'd3-selection';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot } from './dotplot.js';
 import { drawSpike } from './spike.js';
-// renderPValueAnnotation replaced by inline renderSimPills
+import { renderSimPills } from './chart-utils.js';
 import { initPlayPause, setupFileInput, initHelp } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
@@ -1792,14 +1792,16 @@ export function initSimPage(config) {
     if (chartResult && chartXScale && stats.length > 0) {
       if (config.mode === 'randomization' && observedStat != null && direction) {
         const { pValue } = permutationPValue(stats, observedStat, direction);
-        renderSimPills(chartResult, chartXScale, stats, {
+        renderSimPills(chartResult, chartXScale, {
           mode: 'randomization', pValue, observedStat, direction,
         });
       } else if (config.mode === 'bootstrap' && ci) {
         const inside = stats.filter(v => v >= ci[0] && v <= ci[1]).length;
         const proportion = inside / stats.length;
-        renderSimPills(chartResult, chartXScale, stats, {
-          mode: 'bootstrap', proportion, ci,
+        renderSimPills(chartResult, chartXScale, {
+          mode: 'bootstrap',
+          proportionLabel: formatStat(proportion, dataPrecision, 'proportion'),
+          ci,
         });
       }
     }
@@ -1825,101 +1827,7 @@ export function initSimPage(config) {
     return v >= obs;
   }
 
-  /**
-   * Render probability pills on a simulation chart.
-   * For randomization: p-value in tail region, complement in body.
-   * For bootstrap CI: proportion inside CI, tail proportions outside.
-   * @param {import('./chart-utils.js').ChartFrame} frame
-   * @param {any} xScale
-   * @param {number[]} stats
-   * @param {object} opts
-   * @param {'randomization'|'bootstrap'} opts.mode
-   * @param {number} [opts.pValue]
-   * @param {number} [opts.observedStat]
-   * @param {'left'|'right'|'both'} [opts.direction]
-   * @param {number} [opts.proportion]
-   * @param {[number,number]} [opts.ci]
-   */
-  function renderSimPills(frame, xScale, stats, opts) {
-    const annotations = d3Selection.select(frame.inner).select('.annotations');
-    annotations.selectAll('.sim-pill').remove();
-
-    const w = frame.width;
-    const h = frame.height;
-    const pillY = h * 0.22;
-
-    if (opts.mode === 'randomization' && opts.pValue != null && opts.observedStat != null && opts.direction) {
-      const obsX = xScale(opts.observedStat);
-      const p = opts.pValue;
-      const comp = 1 - p;
-
-      const pFormatted = formatStat(p, 0, 'pvalue');
-      // formatStat('pvalue') returns 'p ≈ 0', 'p < 0.0001', or bare '0.0342'
-      const pText = pFormatted.startsWith('p') ? pFormatted : `p = ${pFormatted}`;
-
-      if (opts.direction === 'both') {
-        // Two-tailed: single pill near the observed stat
-        const labelX = Math.max(60, Math.min(w - 60, obsX));
-        _addSimPill(annotations, `${pText}  (two-tailed)`, labelX, pillY, false);
-      } else if (opts.direction === 'left') {
-        // P-value pill in left tail
-        const tailX = Math.max(50, Math.min(obsX - 10, obsX / 2));
-        _addSimPill(annotations, pText, tailX, pillY, false);
-        // Complement in body
-        const bodyX = Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2));
-        _addSimPill(annotations, comp.toFixed(4), bodyX, pillY, true);
-      } else {
-        // P-value pill in right tail
-        const tailX = Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2));
-        _addSimPill(annotations, pText, tailX, pillY, false);
-        // Complement in body
-        const bodyX = Math.max(50, Math.min(obsX - 10, obsX / 2));
-        _addSimPill(annotations, comp.toFixed(4), bodyX, pillY, true);
-      }
-    } else if (opts.mode === 'bootstrap' && opts.proportion != null && opts.ci) {
-      const [ciLo, ciHi] = opts.ci;
-      const loX = xScale(ciLo);
-      const hiX = xScale(ciHi);
-
-      // Single pill: proportion inside CI
-      const midX = Math.max(50, Math.min(w - 50, (loX + hiX) / 2));
-      _addSimPill(annotations, formatStat(opts.proportion, dataPrecision, 'proportion'), midX, pillY, false);
-    }
-  }
-
-  /**
-   * Render a single pill (background rect + text) on a chart.
-   * @param {d3Selection.Selection} group
-   * @param {string} text
-   * @param {number} cx
-   * @param {number} cy
-   * @param {boolean} isComplement
-   */
-  function _addSimPill(group, text, cx, cy, isComplement) {
-    const g = group.append('g').attr('class', 'sim-pill');
-    const isPhone = typeof matchMedia === 'function' && matchMedia('(max-width: 480px)').matches;
-    const textWidth = text.length * (isPhone ? 13 : 8.5) + 16;
-    const pillH = isPhone ? 34 : 24;
-    g.append('rect')
-      .attr('x', cx - textWidth / 2)
-      .attr('y', cy - pillH / 2)
-      .attr('width', textWidth)
-      .attr('height', pillH)
-      .attr('rx', 4)
-      .attr('fill', isComplement ? '#f5f5f5' : '#e8f4f8')
-      .attr('stroke', isComplement ? '#ccc' : '#569BBD')
-      .attr('stroke-width', 1)
-      .style('pointer-events', 'none');
-    g.append('text')
-      .attr('class', isComplement ? 'prob-label prob-complement' : 'prob-label')
-      .attr('x', cx)
-      .attr('y', cy)
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'central')
-      .attr('fill', isComplement ? '#6B6B6B' : '#114B5F')
-      .style('pointer-events', 'none')
-      .text(text);
-  }
+  // renderSimPills and _addSimPill are now in chart-utils.js
 
   function displayBootstrapResults(stats, ci, se, ciLevel) {
     const m = mean(stats);
