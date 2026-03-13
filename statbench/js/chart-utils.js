@@ -243,12 +243,12 @@ export function addAxes(frame, xAxis, yAxis, xLabel, yLabel) {
 
   // X-axis label
   if (xLabel) {
-    axes.append('text')
+    const xLabelEl = axes.append('text')
       .attr('class', 'x-label')
       .attr('text-anchor', 'middle')
       .attr('x', frame.width / 2)
-      .attr('y', frame.height + frame.margin.bottom - 8)
-      .text(xLabel);
+      .attr('y', frame.height + frame.margin.bottom - 8);
+    renderStatLabel(xLabelEl, xLabel);
   }
 
   // Y-axis label (rotated) — positioned dynamically based on tick width
@@ -281,6 +281,38 @@ export function addAxes(frame, xAxis, yAxis, xLabel, yLabel) {
 function detectPhoneMargin() {
   if (typeof globalThis.matchMedia !== 'function') return false;
   return globalThis.matchMedia('(max-width: 480px)').matches;
+}
+
+/**
+ * Render a statistical label in SVG, converting combining overline (U+0304)
+ * into proper SVG `<tspan text-decoration="overline">` for reliable rendering.
+ *
+ * Splits the input on sequences like "x̄" (char + \u0304) and wraps the base
+ * character in an overlined tspan. Everything else is appended as plain text.
+ *
+ * @param {d3Selection.Selection} textEl - SVG <text> element
+ * @param {string} label - Label text, may contain combining overline chars
+ */
+function renderStatLabel(textEl, label) {
+  // Pattern: any character followed by combining overline (U+0304)
+  const parts = label.split(/(.(?:\u0304))/u);
+  let hasOverline = false;
+  for (const part of parts) {
+    if (!part) continue;
+    if (part.includes('\u0304')) {
+      hasOverline = true;
+      const base = part.replace('\u0304', '');
+      textEl.append('tspan')
+        .attr('text-decoration', 'overline')
+        .text(base);
+    } else {
+      textEl.append('tspan').text(part);
+    }
+  }
+  // Fallback: if no combining chars found, just set text directly
+  if (!hasOverline) {
+    textEl.text(label);
+  }
 }
 
 /**
