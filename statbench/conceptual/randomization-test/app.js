@@ -5,7 +5,7 @@
  * Discovery mode: progressive disclosure with gated questions.
  * Presentation mode: all steps visible with presenter notes.
  *
- * Walks students through the IMS Ch. 11 randomization test procedure
+ * Walks students through the randomization test procedure
  * using a card-shuffle metaphor.
  */
 
