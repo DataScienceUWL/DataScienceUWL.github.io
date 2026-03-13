@@ -150,6 +150,7 @@ export function computeBins(values, options = {}) {
  * @param {[number,number]} [options.domain] - Override x-axis domain
  * @param {number[]} [options.thresholds] - Explicit bin threshold values (overrides numBins)
  * @param {number[]} [options.prevBinCounts] - Previous bin counts for stacked delta highlight
+ * @param {number} [options.precision] - Decimal places for overlay value labels (default: 2)
  * @returns {{ frame: ChartFrame, bins: d3Array.Bin<number, number>[], xScale: d3Scale.ScaleLinear<number,number>, yScale: d3Scale.ScaleLinear<number,number>, update: (values: number[], opts?: object) => void }}
  */
 export function drawHistogram(container, values, options = {}) {
@@ -168,6 +169,7 @@ export function drawHistogram(container, values, options = {}) {
     domain,
     thresholds,
     prevBinCounts,
+    precision = 2,
   } = options;
 
   const frame = createChart(container, { titleText, descText, id, margin });
@@ -203,13 +205,13 @@ export function drawHistogram(container, values, options = {}) {
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   if (observedStat != null) {
     renderOverlayLine(overlays, observedStat, xScale, frame.height,
-      '#F05133', 'Observed statistic');
+      '#F05133', 'Observed statistic', precision);
   }
   if (ciLines) {
     renderOverlayLine(overlays, ciLines[0], xScale, frame.height,
-      '#114B5F', 'CI lower bound');
+      '#114B5F', 'CI lower bound', precision);
     renderOverlayLine(overlays, ciLines[1], xScale, frame.height,
-      '#114B5F', 'CI upper bound');
+      '#114B5F', 'CI upper bound', precision);
   }
 
   return {
@@ -244,13 +246,13 @@ export function drawHistogram(container, values, options = {}) {
       overlays.selectAll('*').remove();
       if (newObserved != null) {
         renderOverlayLine(overlays, newObserved, xScale, frame.height,
-          '#F05133', 'Observed statistic');
+          '#F05133', 'Observed statistic', precision);
       }
       if (newCiLines) {
         renderOverlayLine(overlays, newCiLines[0], xScale, frame.height,
-          '#114B5F', 'CI lower bound');
+          '#114B5F', 'CI lower bound', precision);
         renderOverlayLine(overlays, newCiLines[1], xScale, frame.height,
-          '#114B5F', 'CI upper bound');
+          '#114B5F', 'CI upper bound', precision);
       }
     },
   };
@@ -430,8 +432,9 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, i
  * @param {number} innerHeight
  * @param {string} color
  * @param {string} label
+ * @param {number} [precision] - Decimal places for value label (default: 2)
  */
-function renderOverlayLine(overlays, value, xScale, innerHeight, color, label) {
+function renderOverlayLine(overlays, value, xScale, innerHeight, color, label, precision = 2) {
   const x = xScale(value);
   overlays.append('line')
     .attr('x1', x).attr('x2', x)
@@ -455,5 +458,5 @@ function renderOverlayLine(overlays, value, xScale, innerHeight, color, label) {
     .attr('x', x).attr('y', -4)
     .attr('text-anchor', 'middle')
     .attr('fill', color)
-    .text(value.toFixed(2));
+    .text(value.toFixed(precision));
 }

@@ -121,6 +121,7 @@ export function computeDotRadius(innerWidth, innerHeight, maxStack, numBins) {
  * @param {[number,number]} [options.domain] - Override x-axis domain
  * @param {number} [options.highlightIndex] - Index of single newest dot to highlight (yellow pulse)
  * @param {Set<number>} [options.highlightIndices] - Indices of batch-added dots to highlight (accent pulse)
+ * @param {number} [options.precision] - Decimal places for overlay value labels (default: 2)
  * @returns {{ frame: ChartFrame, dots: Array<{value: number, binCenter: number, stackIndex: number}>, xScale: d3Scale.ScaleLinear<number,number>, update: (values: number[], opts?: object) => void }}
  */
 export function drawDotplot(container, values, options = {}) {
@@ -138,6 +139,7 @@ export function drawDotplot(container, values, options = {}) {
     domain,
     highlightIndex = -1,
     highlightIndices,
+    precision = 2,
   } = options;
 
   const result = computeDots(values, { numBins, domain });
@@ -195,7 +197,7 @@ export function drawDotplot(container, values, options = {}) {
   // Observed statistic line
   const overlaysGroup = d3Selection.select(frame.inner).select('.overlays');
   if (observedStat != null) {
-    renderObservedLine(overlaysGroup, observedStat, xScale, frame.height);
+    renderObservedLine(overlaysGroup, observedStat, xScale, frame.height, precision);
   }
   if (ciLines) {
     renderCILine(overlaysGroup, ciLines[0], xScale, frame.height);
@@ -267,7 +269,7 @@ export function drawDotplot(container, values, options = {}) {
       const overlays = d3Selection.select(frame.inner).select('.overlays');
       overlays.selectAll('*').remove();
       if (newObserved != null) {
-        renderObservedLine(overlays, newObserved, xScale, frame.height);
+        renderObservedLine(overlays, newObserved, xScale, frame.height, precision);
       }
       if (newCiLines) {
         renderCILine(overlays, newCiLines[0], xScale, frame.height);
@@ -540,7 +542,7 @@ function animateDotRevert(el, targetFill, targetRadius, duration) {
  * @param {d3Scale.ScaleLinear<number, number>} xScale
  * @param {number} innerHeight
  */
-function renderObservedLine(overlays, value, xScale, innerHeight) {
+function renderObservedLine(overlays, value, xScale, innerHeight, precision = 2) {
   const x = xScale(value);
   overlays.append('line')
     .attr('x1', x)
@@ -563,7 +565,7 @@ function renderObservedLine(overlays, value, xScale, innerHeight) {
     .attr('x', x).attr('y', -4)
     .attr('text-anchor', 'middle')
     .attr('fill', OBSERVED_COLOR)
-    .text(value.toFixed(2));
+    .text(value.toFixed(precision));
 }
 
 /** CI line color (green). */

@@ -358,6 +358,7 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
       domain,
       highlightIndex,
       highlightIndices,
+      precision: dataPrecision,
     });
     frame = r.frame;
     xScale = r.xScale;
@@ -372,6 +373,7 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
       domain: domain,
       thresholds: hlThresholds,
       prevBinCounts,
+      precision: dataPrecision,
     });
     frame = r.frame;
     xScale = r.xScale;
