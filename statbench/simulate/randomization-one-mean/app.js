@@ -30,6 +30,7 @@ const hypothesisDisplay = document.getElementById('hypothesis-display');
 
 const nullMeanInput = /** @type {HTMLInputElement} */ (document.getElementById('null-mean'));
 const altDirectionSelect = /** @type {HTMLSelectElement} */ (document.getElementById('alt-direction'));
+const altNullValue = document.getElementById('alt-null-value');
 
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
   document.querySelectorAll('.gen-btn'));
@@ -201,8 +202,14 @@ function getDirection() {
   return /** @type {const} */ ('both');
 }
 
+/** Sync the alternative hypothesis display with the null mean input value. */
+function syncAltNullValue() {
+  if (altNullValue) altNullValue.textContent = nullMeanInput?.value ?? '0';
+}
+
 if (nullMeanInput) {
   nullMeanInput.addEventListener('change', () => {
+    syncAltNullValue();
     computeShiftedData();
     if (allStats.length > 0) {
       resetSimulation();
@@ -210,6 +217,7 @@ if (nullMeanInput) {
       announce('Null mean changed. Simulation reset.');
     }
   });
+  nullMeanInput.addEventListener('input', syncAltNullValue);
 }
 
 if (altDirectionSelect) {
