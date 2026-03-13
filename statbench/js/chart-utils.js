@@ -335,20 +335,18 @@ export function renderSimPills(frame, xScale, opts) {
       const narrow = tailWidth < w * 0.25;
 
       if (narrow) {
-        // Float pill above with leader line pointing to tail midpoint
+        // Pill stays at normal height, offset toward chart center so it doesn't clip
         const tailMid = isLeft ? obsX / 2 : (obsX + w) / 2;
-        // Position pill so it doesn't clip, biased toward chart center
         const pillX = isLeft
           ? Math.max(60, Math.min(w * 0.35, obsX))
           : Math.min(w - 60, Math.max(w * 0.65, obsX));
-        const floatY = -4; // above the plot area (in the top margin)
-        _addSimPill(annotations, pText, pillX, floatY, false);
+        _addSimPill(annotations, pText, pillX, pillY, false);
         // Leader line from pill bottom down to the shaded tail bars
         const lineTargetX = Math.max(4, Math.min(w - 4, tailMid));
         annotations.append('line')
           .attr('class', 'sim-pill')
           .attr('x1', pillX)
-          .attr('y1', floatY + 14)
+          .attr('y1', pillY + 14)
           .attr('x2', lineTargetX)
           .attr('y2', h - 2)
           .attr('stroke', '#569BBD')
