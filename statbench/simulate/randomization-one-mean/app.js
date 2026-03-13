@@ -29,7 +29,7 @@ const dataPreview = document.getElementById('data-preview');
 const hypothesisDisplay = document.getElementById('hypothesis-display');
 
 const nullMeanInput = /** @type {HTMLInputElement} */ (document.getElementById('null-mean'));
-const altDirectionSelect = /** @type {HTMLSelectElement} */ (document.getElementById('alt-direction'));
+const altDirectionBtn = /** @type {HTMLButtonElement} */ (document.getElementById('alt-direction'));
 const altNullValue = document.getElementById('alt-null-value');
 
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
@@ -196,7 +196,7 @@ function getNullMean() {
 }
 
 function getDirection() {
-  const alt = altDirectionSelect?.value ?? 'greater';
+  const alt = altDirectionBtn?.dataset.value ?? 'greater';
   if (alt === 'greater') return /** @type {const} */ ('right');
   if (alt === 'less') return /** @type {const} */ ('left');
   return /** @type {const} */ ('both');
@@ -220,8 +220,14 @@ if (nullMeanInput) {
   nullMeanInput.addEventListener('input', syncAltNullValue);
 }
 
-if (altDirectionSelect) {
-  altDirectionSelect.addEventListener('change', () => {
+if (altDirectionBtn) {
+  const vals = (altDirectionBtn.dataset.values || '').split(',');
+  const labels = (altDirectionBtn.dataset.labels || '').split(',');
+  altDirectionBtn.addEventListener('click', () => {
+    const cur = vals.indexOf(altDirectionBtn.dataset.value || 'greater');
+    const next = (cur + 1) % vals.length;
+    altDirectionBtn.dataset.value = vals[next];
+    altDirectionBtn.textContent = labels[next];
     if (allStats.length > 0) {
       const direction = getDirection();
       renderChart(allStats, observedMean, direction);

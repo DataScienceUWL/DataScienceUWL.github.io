@@ -336,13 +336,12 @@ export function renderSimPills(frame, xScale, opts) {
 
       if (narrow) {
         // Pill stays at normal height, offset toward chart center so it doesn't clip
-        const tailMid = isLeft ? obsX / 2 : (obsX + w) / 2;
         const pillX = isLeft
           ? Math.max(60, Math.min(w * 0.35, obsX))
           : Math.min(w - 60, Math.max(w * 0.65, obsX));
         _addSimPill(annotations, pText, pillX, pillY, false);
-        // Leader line from pill bottom down to the shaded tail bars
-        const lineTargetX = Math.max(4, Math.min(w - 4, tailMid));
+        // Leader line from pill down to the observed stat line (always visible)
+        const lineTargetX = Math.max(4, Math.min(w - 4, obsX));
         annotations.append('line')
           .attr('class', 'sim-pill')
           .attr('x1', pillX)
