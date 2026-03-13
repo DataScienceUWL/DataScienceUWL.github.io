@@ -15,7 +15,7 @@ import { mean, sd, detectPrecision, formatStat } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { drawSpike } from '../../js/spike.js';
-import * as d3Select from 'd3-selection';
+import { renderSimPills } from '../../js/chart-utils.js';
 import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, initDataPanel, computeHighlights } from '../../js/page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from '../../js/theory-overlay.js';
 
@@ -375,64 +375,15 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
   // P-value pills
   if (stats.length > 0) {
     const { pValue } = computePValue(stats, observed, direction);
-    renderPValuePills(frame, xScale, pValue, observed, direction);
+    renderSimPills(frame, xScale, {
+      mode: 'randomization', pValue, observedStat: observed, direction,
+    });
   }
 
   // Theory overlay (only on histogram)
   if (theoryOverlayOn && activeChart === 'histogram') {
     applyTheoryOverlay();
   }
-}
-
-/**
- * Render p-value pills on the chart.
- * @param {import('../../js/chart-utils.js').ChartFrame} frame
- * @param {any} xScale
- * @param {number} pValue
- * @param {number} observed
- * @param {'left'|'right'|'both'} direction
- */
-function renderPValuePills(frame, xScale, pValue, observed, direction) {
-  const annotations = d3Select.select(frame.inner).select('.annotations');
-  const w = frame.width;
-  const pillY = frame.height * 0.22;
-  const obsX = xScale(observed);
-  const comp = 1 - pValue;
-
-  const pText = formatStat(pValue, 0, 'pvalue');
-
-  if (direction === 'both') {
-    const labelX = Math.max(60, Math.min(w - 60, obsX));
-    _pill(annotations, `${pText}  (two-tailed)`, labelX, pillY, false);
-  } else if (direction === 'left') {
-    _pill(annotations, pText, Math.max(50, obsX / 2), pillY, false);
-    _pill(annotations, formatStat(comp, 0, 'proportion'), Math.min(w - 50, (obsX + w) / 2), pillY, true);
-  } else {
-    _pill(annotations, pText, Math.min(w - 50, (obsX + w) / 2), pillY, false);
-    _pill(annotations, formatStat(comp, 0, 'proportion'), Math.max(50, obsX / 2), pillY, true);
-  }
-}
-
-/** @param {any} g @param {string} text @param {number} cx @param {number} cy @param {boolean} isComp */
-function _pill(g, text, cx, cy, isComp) {
-  const group = g.append('g').attr('class', 'sim-pill');
-  const tw = text.length * 8.5 + 16;
-  const ph = 24;
-  group.append('rect')
-    .attr('x', cx - tw / 2).attr('y', cy - ph / 2)
-    .attr('width', tw).attr('height', ph).attr('rx', 4)
-    .attr('fill', isComp ? '#f5f5f5' : '#e8f4f8')
-    .attr('stroke', isComp ? '#ccc' : '#569BBD')
-    .attr('stroke-width', 1)
-    .style('pointer-events', 'none');
-  group.append('text')
-    .attr('class', isComp ? 'prob-label prob-complement' : 'prob-label')
-    .attr('x', cx).attr('y', cy)
-    .attr('text-anchor', 'middle')
-    .attr('dominant-baseline', 'central')
-    .attr('fill', isComp ? '#6B6B6B' : '#114B5F')
-    .style('pointer-events', 'none')
-    .text(text);
 }
 
 /**

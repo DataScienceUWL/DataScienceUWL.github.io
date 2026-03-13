@@ -9,7 +9,7 @@ import { createRng, shuffle } from '../../js/prng.js';
 import { chisqStat, formatStat } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
-import * as d3Select from 'd3-selection';
+import { renderSimPills } from '../../js/chart-utils.js';
 import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, initDataPanel, computeHighlights } from '../../js/page-utils.js';
 
 // ─── DOM elements ───
@@ -388,54 +388,8 @@ function renderChart(stats, observed, highlightIndex = -1, highlightIndices, pre
   // P-value pills (always right-tailed)
   if (stats.length > 0) {
     const { pValue } = computePValue(stats, observed);
-    renderPValuePills(frame, xScale, pValue, observed);
+    renderSimPills(frame, xScale, { mode: 'randomization', pValue, observedStat: observed, direction: 'right' });
   }
-}
-
-/**
- * Render p-value pills (right-tail only for chi-square).
- * @param {import('../../js/chart-utils.js').ChartFrame} frame
- * @param {any} xScale
- * @param {number} pValue
- * @param {number} observed
- */
-function renderPValuePills(frame, xScale, pValue, observed) {
-  const annotations = d3Select.select(frame.inner).select('.annotations');
-  const w = frame.width;
-  const pillY = frame.height * 0.22;
-  const obsX = xScale(observed);
-  const comp = 1 - pValue;
-
-  const pText = formatStat(pValue, 0, 'pvalue');
-
-  // Right tail pill
-  const tailX = Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2));
-  _pill(annotations, pText, tailX, pillY, false);
-  // Body pill
-  const bodyX = Math.max(50, Math.min(obsX - 10, obsX / 2));
-  _pill(annotations, formatStat(comp, 0, 'proportion'), bodyX, pillY, true);
-}
-
-/** @param {any} g @param {string} text @param {number} cx @param {number} cy @param {boolean} isComp */
-function _pill(g, text, cx, cy, isComp) {
-  const group = g.append('g').attr('class', 'sim-pill');
-  const tw = text.length * 8.5 + 16;
-  const ph = 24;
-  group.append('rect')
-    .attr('x', cx - tw / 2).attr('y', cy - ph / 2)
-    .attr('width', tw).attr('height', ph).attr('rx', 4)
-    .attr('fill', isComp ? '#f5f5f5' : '#e8f4f8')
-    .attr('stroke', isComp ? '#ccc' : '#569BBD')
-    .attr('stroke-width', 1)
-    .style('pointer-events', 'none');
-  group.append('text')
-    .attr('class', isComp ? 'prob-label prob-complement' : 'prob-label')
-    .attr('x', cx).attr('y', cy)
-    .attr('text-anchor', 'middle')
-    .attr('dominant-baseline', 'central')
-    .attr('fill', isComp ? '#6B6B6B' : '#114B5F')
-    .style('pointer-events', 'none')
-    .text(text);
 }
 
 /**
