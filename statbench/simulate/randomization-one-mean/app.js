@@ -168,7 +168,7 @@ function loadNumericData(values) {
 
   if (mechanismStrip && mechObservedStat) {
     mechanismStrip.hidden = false;
-    mechObservedStat.textContent = `n = ${sampleData.length}, x\u0304 = ${formatStat(observedMean, dataPrecision)}`;
+    mechObservedStat.innerHTML = `n = ${sampleData.length}, <span class="observed-highlight">x\u0304 = ${formatStat(observedMean, dataPrecision)}</span>`;
   }
 
   setTimeout(() => {

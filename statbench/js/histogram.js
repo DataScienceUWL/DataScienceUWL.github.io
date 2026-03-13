@@ -440,6 +440,16 @@ function renderOverlayLine(overlays, value, xScale, innerHeight, color, label) {
     .attr('stroke-width', 2)
     .attr('stroke-dasharray', '6,3')
     .attr('aria-label', `${label}: ${value}`);
+  // "observed" micro-label + value
+  if (label === 'Observed statistic') {
+    overlays.append('text')
+      .attr('class', 'overlay-value observed-label')
+      .attr('x', x).attr('y', -16)
+      .attr('text-anchor', 'middle')
+      .attr('fill', color)
+      .attr('font-size', '9px')
+      .text('observed');
+  }
   overlays.append('text')
     .attr('class', 'overlay-value')
     .attr('x', x).attr('y', -4)

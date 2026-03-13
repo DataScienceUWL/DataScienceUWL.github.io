@@ -541,15 +541,29 @@ function animateDotRevert(el, targetFill, targetRadius, duration) {
  * @param {number} innerHeight
  */
 function renderObservedLine(overlays, value, xScale, innerHeight) {
+  const x = xScale(value);
   overlays.append('line')
-    .attr('x1', xScale(value))
-    .attr('x2', xScale(value))
+    .attr('x1', x)
+    .attr('x2', x)
     .attr('y1', 0)
     .attr('y2', innerHeight)
     .attr('stroke', OBSERVED_COLOR)
     .attr('stroke-width', 2)
     .attr('stroke-dasharray', '6,3')
     .attr('aria-label', `Observed statistic: ${value}`);
+  overlays.append('text')
+    .attr('class', 'overlay-value observed-label')
+    .attr('x', x).attr('y', -16)
+    .attr('text-anchor', 'middle')
+    .attr('fill', OBSERVED_COLOR)
+    .attr('font-size', '9px')
+    .text('observed');
+  overlays.append('text')
+    .attr('class', 'overlay-value')
+    .attr('x', x).attr('y', -4)
+    .attr('text-anchor', 'middle')
+    .attr('fill', OBSERVED_COLOR)
+    .text(value.toFixed(2));
 }
 
 /** CI line color (green). */

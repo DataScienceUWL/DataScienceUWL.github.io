@@ -175,7 +175,7 @@ function applyDatasetOutcome() {
 
   if (mechanismStrip && mechObservedStat) {
     mechanismStrip.hidden = false;
-    mechObservedStat.textContent = `${sampleSuccesses} of ${sampleN} (p̂ = ${formatStat(observedPHat, 0, 'proportion')})`;
+    mechObservedStat.innerHTML = `${sampleSuccesses} of ${sampleN} (<span class="observed-highlight">p\u0302 = ${formatStat(observedPHat, 0, 'proportion')}</span>)`;
   }
 
   setTimeout(() => {
@@ -214,7 +214,7 @@ function loadData() {
 
   if (mechanismStrip && mechObservedStat) {
     mechanismStrip.hidden = false;
-    mechObservedStat.textContent = `${k} of ${n} (p̂ = ${formatStat(observedPHat, 0, 'proportion')})`;
+    mechObservedStat.innerHTML = `${k} of ${n} (<span class="observed-highlight">p\u0302 = ${formatStat(observedPHat, 0, 'proportion')}</span>)`;
   }
   announce(`Data loaded: n = ${n}, successes = ${k}`);
 
