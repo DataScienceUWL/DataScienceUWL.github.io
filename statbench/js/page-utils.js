@@ -941,3 +941,44 @@ export function wrapWithStepper(input, options = {}) {
 
   return wrapper;
 }
+
+/**
+ * Resolve the relative path prefix from the current page to the repo root.
+ * Uses the stylesheet href to infer depth (e.g., '../../' for pages 2 levels deep).
+ * @returns {string}
+ */
+export function rootPrefix() {
+  const link = document.querySelector('link[rel="stylesheet"][href*="style.css"]');
+  if (link) {
+    const href = link.getAttribute('href');
+    return href?.replace(/css\/style\.css$/, '') ?? '';
+  }
+  return '';
+}
+
+/**
+ * Build a URL to a simulation page, optionally passing data via query params.
+ *
+ * @param {string} simPage - Path from repo root (e.g., 'simulate/bootstrap-mean/')
+ * @param {object} [opts]
+ * @param {number[]} [opts.data] - Numeric data to pass via ?data=
+ * @param {Record<string, string|number>} [opts.params] - Additional URL params (p, direction, etc.)
+ * @returns {string}
+ */
+export function buildSimLink(simPage, opts) {
+  const prefix = rootPrefix();
+  let url = `${prefix}${simPage}`;
+  const qp = new URLSearchParams();
+
+  if (opts?.data && opts.data.length > 0 && opts.data.length <= 2000) {
+    qp.set('data', opts.data.join(','));
+  }
+  if (opts?.params) {
+    for (const [k, v] of Object.entries(opts.params)) {
+      if (v != null && v !== '') qp.set(k, String(v));
+    }
+  }
+
+  const qs = qp.toString();
+  return qs ? `${url}?${qs}` : url;
+}

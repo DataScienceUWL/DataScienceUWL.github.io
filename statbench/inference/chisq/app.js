@@ -11,7 +11,7 @@ import { chisqTest } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
-import { announce, initTabs, initDataPanel, initKeyboardShortcuts } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initKeyboardShortcuts, buildSimLink } from '../../js/page-utils.js';
 import * as d3Selection from 'd3-selection';
 
 /** Render LaTeX to HTML string via KaTeX. */
@@ -367,6 +367,11 @@ function showResults(observed, rowLabels, colLabels) {
     }
     if (lowExpected) break;
   }
+  if (lowExpected) {
+    const randLink = buildSimLink('simulate/randomization-chisq/');
+    warningBanner.innerHTML = `<p><strong>Caution:</strong> One or more expected counts are below 5. The chi-square approximation may not be accurate.</p>
+    <p>Consider the <a href="${randLink}">Simulation-Based Chi-Square Test</a> instead.</p>`;
+  }
   warningBanner.hidden = !lowExpected;
 
   // Render formula display
@@ -553,9 +558,10 @@ function writeInterpretation(result, lowExpected) {
   `;
 
   if (lowExpected) {
+    const randLink = buildSimLink('simulate/randomization-chisq/');
     html += `<p><strong>Caution:</strong> One or more expected counts are below 5.
       The chi-square approximation may not be accurate. Consider merging categories
-      or using a simulation-based chi-square test instead.</p>`;
+      or using the <a href="${randLink}">Simulation-Based Chi-Square Test</a> instead.</p>`;
   }
 
   interpretationDiv.innerHTML = html;

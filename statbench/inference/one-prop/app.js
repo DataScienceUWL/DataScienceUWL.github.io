@@ -11,7 +11,7 @@ import { onePropZ } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
-import { announce, initTabs, initDataPanel, initKeyboardShortcuts, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initKeyboardShortcuts, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
 
 /** Render LaTeX to HTML string via KaTeX. */
@@ -251,6 +251,17 @@ function compute() {
   const nq0 = currentN * (1 - p0);
   const conditionsMet = np0 >= 10 && nq0 >= 10;
   conditionsWarning.hidden = conditionsMet;
+  if (!conditionsMet) {
+    const binaryData = Array(currentSuccesses).fill(1).concat(Array(currentN - currentSuccesses).fill(0));
+    const randLink = buildSimLink('simulate/randomization-one-prop/', {
+      data: binaryData,
+      params: { p: p0, direction: alternative },
+    });
+    const bootLink = buildSimLink('simulate/bootstrap-prop/', { data: binaryData });
+    conditionsWarning.innerHTML = `<p><strong>Warning:</strong> Normal approximation conditions not met
+      (np\u2080 = ${formatStat(np0, 0, 'stat')}, n(1\u2212p\u2080) = ${formatStat(nq0, 0, 'stat')}; both should be \u2265 10).</p>
+      <p>Consider the <a href="${randLink}">Randomization Test</a> or <a href="${bootLink}">Bootstrap CI</a> instead.</p>`;
+  }
 
   // ── Run test ──
   const result = onePropZ(currentSuccesses, currentN, { p0, alternative, confLevel });
@@ -294,8 +305,21 @@ function displayResults(r, successLabel, conditionsMet) {
   const seCount = Math.abs(r.zStat);
   const seDirection = r.zStat > 0 ? 'above' : r.zStat < 0 ? 'below' : 'at';
 
-  const condWarning = conditionsMet ? '' :
-    `<p class="warning-text"><strong>Caution:</strong> Normal approximation conditions are not satisfied (np\u2080 = ${formatStat(r.n * r.p0, 0, 'stat')} and n(1\u2212p\u2080) = ${formatStat(r.n * (1 - r.p0), 0, 'stat')}; both should be \u2265 10). Results may be unreliable.</p>`;
+  let condWarning = '';
+  if (!conditionsMet) {
+    // Build binary data vector for cross-links
+    const binaryData = Array(r.successes).fill(1).concat(Array(r.n - r.successes).fill(0));
+    const bootLink = buildSimLink('simulate/bootstrap-prop/', { data: binaryData });
+    const randLink = buildSimLink('simulate/randomization-one-prop/', {
+      data: binaryData,
+      params: { p: r.p0, direction: r.alternative === 'two-sided' ? 'two-sided' : r.alternative },
+    });
+    condWarning = `<p class="warning-text"><strong>Caution:</strong> Normal approximation conditions not satisfied
+      (np\u2080 = ${formatStat(r.n * r.p0, 0, 'stat')} and n(1\u2212p\u2080) = ${formatStat(r.n * (1 - r.p0), 0, 'stat')};
+      both should be \u2265 10). These results may be unreliable.</p>
+      <p class="warning-text">Try the <a href="${randLink}">Randomization Test</a> for hypothesis testing
+      or <a href="${bootLink}">Bootstrap CI</a> for confidence intervals \u2014 no sample size conditions required.</p>`;
+  }
 
   // z* for CI
   const zStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);

@@ -11,7 +11,7 @@ import { twoPropZ } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
-import { announce, initTabs, initDataPanel, initKeyboardShortcuts, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initKeyboardShortcuts, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 
 /** Render LaTeX to HTML string via KaTeX. */
 const tex = (/** @type {string} */ latex, display = false) =>
@@ -285,6 +285,11 @@ function compute() {
   const cond4 = currentN2 * (1 - pHat2) >= 5;
   const conditionsMet = cond1 && cond2 && cond3 && cond4;
   conditionsWarning.hidden = conditionsMet;
+  if (!conditionsMet) {
+    const randLink = buildSimLink('simulate/randomization-diff-props/');
+    conditionsWarning.innerHTML = `<p><strong>Warning:</strong> Normal approximation conditions not met. Each group needs at least 5 successes and 5 failures.</p>
+    <p>Consider the <a href="${randLink}">Randomization Test</a> instead.</p>`;
+  }
 
   // ── Run test ──
   const result = twoPropZ(currentX1, currentN1, currentX2, currentN2, { alternative, confLevel });
@@ -332,8 +337,11 @@ function displayResults(r, lbl1, lbl2, conditionsMet) {
   const seCount = Math.abs(r.zStat);
   const seDirection = r.zStat > 0 ? 'above' : r.zStat < 0 ? 'below' : 'at';
 
+  const randLink = buildSimLink('simulate/randomization-diff-props/');
   const condWarning = conditionsMet ? '' :
-    `<p class="warning-text"><strong>Caution:</strong> Normal approximation conditions are not satisfied. Each group needs at least 5 successes and 5 failures. Results may be unreliable.</p>`;
+    `<p class="warning-text"><strong>Caution:</strong> Normal approximation conditions not satisfied.
+   Each group needs at least 5 successes and 5 failures. These results may be unreliable.</p>
+   <p class="warning-text">Consider the <a href="${randLink}">Randomization Test</a> instead.</p>`;
 
   // z* for CI
   const zStar = r.se > 0 ? ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3) : '—';
