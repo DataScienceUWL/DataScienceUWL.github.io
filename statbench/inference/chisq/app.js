@@ -87,7 +87,7 @@ if (helpDialog) {
 // ── Data loading (datasets, paste, file) ────────────────────────────
 
 const dataPanel = initDataPanel({
-  datasetFilter: (/** @type {any} */ ds) => ds.hasCategorical === true,
+  datasetFilter: (/** @type {any} */ ds) => ds.type === 'randomization_prop' || ds.type === 'chisq',
   onDataset: (ds) => {
     const ctx = findContext(ds, 'chisq');
     currentContext = ctx;

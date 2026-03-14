@@ -61,7 +61,7 @@ let currentContext = null;
 // ── Data loading ────────────────────────────────────────────────────
 
 const dataPanel = initDataPanel({
-  datasetFilter: (/** @type {any} */ ds) => ds.hasCategorical === true,
+  datasetFilter: (/** @type {any} */ ds) => ds.type === 'bootstrap_prop' || ds.type === 'one_cat',
   onDataset: (ds) => {
     const ctx = findContext(ds, 'one-prop');
     currentContext = ctx;
