@@ -7,6 +7,7 @@
  * Every page imports from here instead of making independent decisions.
  */
 
+import * as d3Scale from 'd3-scale';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot } from './dotplot.js';
 import { renderSimPills } from './chart-utils.js';
@@ -265,6 +266,8 @@ export function createBinAdjuster(parent, opts) {
  * @property {any} [yScale]
  * @property {any[]} [bins]
  * @property {[number,number]} [domain]
+ * @property {number} [maxStack]
+ * @property {number} [binWidth]
  */
 
 /**
@@ -320,6 +323,10 @@ export function renderSimChart(container, stats, opts) {
   let bins = [];
   /** @type {[number,number]|undefined} */
   let chartDomain = opts.domain;
+  /** @type {number|undefined} */
+  let dotMaxStack;
+  /** @type {number|undefined} */
+  let dotBinWidth;
 
   if (opts.chartType === 'dotplot') {
     const r = drawDotplot(container, stats, {
@@ -338,6 +345,15 @@ export function renderSimChart(container, stats, opts) {
     });
     frame = r.frame;
     xScale = r.xScale;
+    // Build a yScale from dotplot stack heights (for theory overlay)
+    dotMaxStack = r.maxStack;
+    dotBinWidth = r.binWidth;
+    if (r.maxStack > 0 && frame) {
+      yScale = d3Scale.scaleLinear()
+        .domain([0, r.maxStack * 1.05])
+        .range([frame.height, 0]);
+    }
+    chartDomain = opts.domain;
   } else {
     const r = drawHistogram(container, stats, {
       id: opts.id,
@@ -380,5 +396,5 @@ export function renderSimChart(container, stats, opts) {
     }
   }
 
-  return { frame, xScale, yScale, bins, domain: chartDomain };
+  return { frame, xScale, yScale, bins, domain: chartDomain, maxStack: dotMaxStack, binWidth: dotBinWidth };
 }

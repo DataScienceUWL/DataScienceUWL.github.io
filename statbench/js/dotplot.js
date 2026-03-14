@@ -124,7 +124,7 @@ export function computeDotRadius(innerWidth, innerHeight, maxStack, numBins) {
  * @param {number} [options.highlightIndex] - Index of single newest dot to highlight (yellow pulse)
  * @param {Set<number>} [options.highlightIndices] - Indices of batch-added dots to highlight (accent pulse)
  * @param {number} [options.precision] - Decimal places for overlay value labels (default: 2)
- * @returns {{ frame: ChartFrame, dots: Array<{value: number, binCenter: number, stackIndex: number}>, xScale: d3Scale.ScaleLinear<number,number>, update: (values: number[], opts?: object) => void }}
+ * @returns {{ frame: ChartFrame, dots: Array<{value: number, binCenter: number, stackIndex: number}>, xScale: d3Scale.ScaleLinear<number,number>, maxStack: number, binWidth: number, update: (values: number[], opts?: object) => void }}
  */
 export function drawDotplot(container, values, options = {}) {
   const {
@@ -213,6 +213,8 @@ export function drawDotplot(container, values, options = {}) {
     frame,
     dots,
     xScale,
+    maxStack: result.maxStack,
+    binWidth: result.binWidth,
     update: (newValues, opts = {}) => {
       const newNumBins = opts.numBins ?? numBins;
       const newIsExtreme = opts.isExtreme ?? isExtreme;

@@ -194,10 +194,6 @@ export function initSimPage(config) {
       theoryOverlayOn = checked;
       if (allStats.length > 0) {
         if (checked) {
-          // Theory overlay requires histogram — switch if on dotplot
-          if (getActiveChartType() !== 'histogram' && setToggleSelected) {
-            setToggleSelected('histogram');
-          }
           renderChart(allStats, lastCI, lastObserved, lastDirection);
         } else if (chartContainer) {
           removeTheoryOverlay(chartContainer);

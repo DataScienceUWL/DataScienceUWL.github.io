@@ -11,7 +11,7 @@
 import { createRng, sampleWithReplacement } from './prng.js';
 import { mean, sd, detectPrecision, formatStat } from './stats.js';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
-import { drawDotplot } from './dotplot.js';
+import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { renderSimPills } from './chart-utils.js';
 import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, initDataPanel, computeHighlights, initHelp, initSettings, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
 import { parseParams } from './url-params.js';
@@ -108,10 +108,6 @@ export function initOneSamplePage(config) {
       theoryOverlayOn = checked;
       if (allStats.length > 0 && chartContainer) {
         if (checked) {
-          // Theory overlay requires histogram — switch if on dotplot
-          if (getActiveChartType() !== 'histogram' && setToggleSelected) {
-            setToggleSelected('histogram');
-          }
           renderChart(allStats, observedStat, getDirection());
         } else {
           removeTheoryOverlay(chartContainer);
@@ -149,6 +145,8 @@ export function initOneSamplePage(config) {
 
   /** @type {{ xScale: any, yScale: any, bins: any[], domain: [number,number] } | null} */
   let lastHistResult = null;
+  /** @type {{ xScale: any, frame: any, domain: [number,number], maxStack: number, numBins: number } | null} */
+  let lastDotResult = null;
 
   // One-prop state
   let sampleSuccesses = 0;
@@ -582,6 +580,7 @@ export function initOneSamplePage(config) {
     if (binAdjuster) binAdjuster.setMode(/** @type {'dotplot'|'histogram'} */ (activeChart));
 
     lastHistResult = null;
+    lastDotResult = null;
     const precision = displayPrecision(dataPrecision, { proportion: isProp, sampleN });
     const nullVal = getNullValue();
 
@@ -608,10 +607,13 @@ export function initOneSamplePage(config) {
 
     if (result.bins && result.bins.length > 0) {
       lastHistResult = { xScale: result.xScale, yScale: result.yScale, bins: result.bins, domain };
+    } else if (activeChart === 'dotplot' && result.maxStack > 0) {
+      const effectiveBins = isProp ? sampleN : (userBinCount ?? Math.min(n, 40));
+      lastDotResult = { xScale: result.xScale, frame: result.frame, domain, maxStack: result.maxStack, numBins: effectiveBins };
     }
 
-    // Theory overlay (only on histogram)
-    if (theoryOverlayOn && activeChart === 'histogram') {
+    // Theory overlay (histogram or dotplot)
+    if (theoryOverlayOn && (activeChart === 'histogram' || activeChart === 'dotplot')) {
       applyTheoryOverlay();
     }
   }
@@ -699,7 +701,8 @@ export function initOneSamplePage(config) {
   // ─── Theory overlay ───
 
   function applyTheoryOverlay() {
-    if (!chartContainer || !lastHistResult || sampleN === 0) return;
+    if (!chartContainer || sampleN === 0) return;
+    if (!lastHistResult && !lastDotResult) return;
     const nullVal = getNullValue();
     let se;
 
@@ -711,21 +714,43 @@ export function initOneSamplePage(config) {
     }
     if (!isFinite(se) || se <= 0) return;
 
-    const { xScale: hxScale, yScale: hyScale, bins, domain: dom } = lastHistResult;
-    if (bins.length === 0) return;
-    const binWidth = /** @type {number} */ (bins[0].x1) - /** @type {number} */ (bins[0].x0);
-
     const label = isProp ? `N(${nullVal}, ${se.toFixed(3)})` : 'N(\u03BC\u2080, SE)';
 
-    overlayTheoryCurve({
-      container: chartContainer,
-      pdf: (x) => normalPdf(x, nullVal, se),
-      xDomain: dom,
-      totalN: allStats.length,
-      binWidth,
-      xScale: hxScale,
-      yScale: hyScale,
-      label,
-    });
+    if (lastHistResult) {
+      const { xScale: hxScale, yScale: hyScale, bins, domain: dom } = lastHistResult;
+      if (bins.length === 0) return;
+      const binWidth = /** @type {number} */ (bins[0].x1) - /** @type {number} */ (bins[0].x0);
+
+      overlayTheoryCurve({
+        container: chartContainer,
+        pdf: (x) => normalPdf(x, nullVal, se),
+        xDomain: dom,
+        totalN: allStats.length,
+        binWidth,
+        xScale: hxScale,
+        yScale: hyScale,
+        label,
+      });
+    } else if (lastDotResult) {
+      const { xScale: dxScale, frame, domain: dom, maxStack, numBins } = lastDotResult;
+      const peakPdf = normalPdf(nullVal, nullVal, se);
+      if (peakPdf <= 0 || maxStack <= 0) return;
+
+      const dotRadius = computeDotRadius(frame.width, frame.height, maxStack, numBins);
+      const stackHeightPx = maxStack * dotRadius * 2;
+      const scaleFactor = stackHeightPx / peakPdf;
+      const yScale = (/** @type {number} */ freqY) => frame.height - freqY;
+
+      overlayTheoryCurve({
+        container: chartContainer,
+        pdf: (x) => normalPdf(x, nullVal, se),
+        xDomain: dom,
+        totalN: 1,
+        binWidth: scaleFactor,
+        xScale: dxScale,
+        yScale,
+        label,
+      });
+    }
   }
 }
