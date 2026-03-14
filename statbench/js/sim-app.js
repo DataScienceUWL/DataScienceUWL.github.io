@@ -96,6 +96,8 @@ export function initSimPage(config) {
   let resampleViewMode = 'summary';
   /** @type {number[]} */
   let lastResample = [];
+  /** Whether the last generate action was +1 (for persistent highlight). */
+  let lastWasSingle = false;
 
   /** Dataset context for natural-language interpretations. */
   /** @type {{population?:string, parameter?:string, unit?:string, nullClaim?:string, successLabel?:string}} */
@@ -1161,10 +1163,11 @@ export function initSimPage(config) {
       const showOneSampleMech = !config.twoGroup || config.paired;
 
       if (count === 1) {
+        lastWasSingle = true;
         // Staggered animation: mechanism update → 120ms → flash → 120ms → dot appears
         if (showOneSampleMech) {
           lastResample = lastResampleValues;
-          showResample(lastResampleValues, false);
+          showResample(lastResampleValues, false, true);
         }
         setTimeout(() => {
           flashMechanism();
@@ -1173,10 +1176,11 @@ export function initSimPage(config) {
           }, 120);
         }, 120);
       } else {
+        lastWasSingle = false;
         renderChart(allStats, ciForChart);
         if (showOneSampleMech) {
           lastResample = lastResampleValues;
-          showResample(lastResampleValues, false);
+          showResample(lastResampleValues, false, false);
         }
       }
 
@@ -1406,7 +1410,12 @@ export function initSimPage(config) {
    * @param {number[]} resampleValues
    * @param {boolean} [flash] - Whether to flash the statistic (for +1)
    */
-  function showResample(resampleValues, flash = false) {
+  /**
+   * @param {number[]} resampleValues
+   * @param {boolean} [flash] - Trigger mechanism flash animation
+   * @param {boolean} [highlightStat] - Highlight resample stat orange (+1 only)
+   */
+  function showResample(resampleValues, flash = false, highlightStat = false) {
     if (!resampleContentEl || !bootstrapSampleEl) return;
     bootstrapSampleEl.hidden = false;
 
@@ -1422,6 +1431,8 @@ export function initSimPage(config) {
       resampleMeanEl.textContent = config.proportion
         ? formatStat(resampleVal, dataPrecision, 'proportion')
         : formatStat(resampleVal, dataPrecision);
+      // Orange highlight only on +1 to visually link to persistent dot
+      resampleMeanEl.classList.toggle('highlight-last', highlightStat);
       const statLabelEl = document.getElementById('resample-stat-label');
       if (statLabelEl) {
         if (config.proportion) {
@@ -1608,7 +1619,7 @@ export function initSimPage(config) {
       resampleViewMode = mode;
       btnSummary.setAttribute('aria-pressed', String(mode === 'summary'));
       btnHistogram.setAttribute('aria-pressed', String(mode === 'histogram'));
-      if (lastResample.length > 0) showResample(lastResample);
+      if (lastResample.length > 0) showResample(lastResample, false, lastWasSingle);
     }
 
     btnSummary.addEventListener('click', () => setResampleView('summary'));

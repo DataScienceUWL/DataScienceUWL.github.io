@@ -340,15 +340,16 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
       .attr('stroke', '#000')
       .attr('stroke-width', 2)
       .attr('r', radius * 1.5);
+    // Shrink back to normal size but keep orange fill — persists until next render
+    // connects visually to the orange resample mean in the mechanism strip
     setTimeout(() => {
-      selected.each(function(d) {
+      selected.each(function() {
         if (reducedMotion) {
-          this.setAttribute('fill', normalFill(d));
-          this.setAttribute('stroke', normalFill(d));
+          this.setAttribute('stroke', HIGHLIGHT_FILL);
           this.setAttribute('stroke-width', '1');
           this.setAttribute('r', String(radius));
         } else {
-          animateDotRevert(this, normalFill(d), radius, 400);
+          animateDotRevert(this, HIGHLIGHT_FILL, radius, 400);
         }
       });
     }, 800);
@@ -468,18 +469,25 @@ function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, high
       .attr('stroke-width', hlWidth)
       .attr('stroke-linecap', 'round');
 
-    // Revert: fade out highlight segments
+    // Revert: for +1, keep last highlight persistent; for batches, fade out
     const reducedMotion = prefersReducedMotion();
-    setTimeout(() => {
-      if (reducedMotion) {
-        hlLines.remove();
-      } else {
-        hlLines.each(function() {
-          const el = /** @type {SVGLineElement} */ (this);
-          animateColumnRevert(el, 'transparent', 0, 400, () => el.remove());
-        });
-      }
-    }, 800);
+    if (!isOneShot) {
+      setTimeout(() => {
+        if (reducedMotion) {
+          hlLines.remove();
+        } else {
+          hlLines.each(function() {
+            const el = /** @type {SVGLineElement} */ (this);
+            animateColumnRevert(el, 'transparent', 0, 400, () => el.remove());
+          });
+        }
+      }, 800);
+    } else {
+      // +1: shrink to normal width but keep orange — persists until next render
+      setTimeout(() => {
+        hlLines.attr('stroke-width', colWidth);
+      }, 800);
+    }
   }
 
   // Tooltips
