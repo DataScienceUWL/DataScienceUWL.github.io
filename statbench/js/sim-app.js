@@ -144,14 +144,14 @@ export function initSimPage(config) {
   let lastHistResult = null;
 
   // Chart type toggle (Dotplot / Spike / Histogram) — radio-based segmented control
-  const chartFigure = chartContainer?.closest('figure');
+  const chartParent = chartContainer?.parentElement;
   /** @type {HTMLFieldSetElement|null} */
   let toggleFieldset = null;
-  if (chartFigure) {
+  if (chartParent) {
     toggleFieldset = document.createElement('fieldset');
     toggleFieldset.className = 'chart-type-toggle';
     toggleFieldset.insertAdjacentHTML('beforeend', buildToggleHTML(['dotplot', 'histogram'], 'dotplot'));
-    chartFigure.insertBefore(toggleFieldset, chartContainer);
+    chartParent.insertBefore(toggleFieldset, chartContainer);
     toggleFieldset.addEventListener('change', (e) => {
       const radio = /** @type {HTMLInputElement} */ (e.target);
       if (!radio.value) return;

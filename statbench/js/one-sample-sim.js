@@ -74,16 +74,16 @@ export function initOneSamplePage(config) {
   // ─── Chart type toggle ───
 
   let chartType = 'auto';
-  const chartFigure = chartContainer?.closest('figure');
+  const chartParent = chartContainer?.parentElement;
   /** @type {HTMLFieldSetElement|null} */
   let toggleFieldset = null;
-  if (chartFigure) {
+  if (chartParent) {
     toggleFieldset = document.createElement('fieldset');
     toggleFieldset.className = 'chart-type-toggle';
     toggleFieldset.insertAdjacentHTML('beforeend', chartTypes.map(([v, l]) =>
       `<label class="chart-toggle-option"><input type="radio" name="chart-type" value="${v}"${v === 'dotplot' ? ' checked' : ''}> ${l}</label>`
     ).join(''));
-    chartFigure.insertBefore(toggleFieldset, chartContainer);
+    chartParent.insertBefore(toggleFieldset, chartContainer);
     toggleFieldset.addEventListener('change', (e) => {
       const radio = /** @type {HTMLInputElement} */ (e.target);
       if (!radio.value) return;
