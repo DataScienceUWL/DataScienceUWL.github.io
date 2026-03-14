@@ -17,7 +17,7 @@ import { renderSimPills } from './chart-utils.js';
 import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
-import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, buildToggleHTML as buildToggleHTMLShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
+import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
 /**
  * @typedef {object} SimConfig
  * @property {'bootstrap'|'randomization'} mode
@@ -280,8 +280,6 @@ export function initSimPage(config) {
     });
   }
 
-  // buildToggleHTML imported from chart-defaults.js as buildToggleHTMLShared
-
   /**
    * Rebuild the chart toggle options based on whether data is discrete.
    * @param {boolean} isDiscrete
@@ -294,8 +292,29 @@ export function initSimPage(config) {
       ? [['dotplot', 'Dotplot'], ['spike', 'Spike'], ['histogram', 'Histogram']]
       : [['dotplot', 'Dotplot'], ['histogram', 'Histogram']];
     const selected = (chartType === 'auto' ? 'dotplot' : chartType);
-    toggleFieldset.innerHTML = '';
-    toggleFieldset.insertAdjacentHTML('beforeend', buildToggleHTMLShared(types, selected));
+    // Remove existing chart type buttons but keep non-button children (theory toggle, bin adjuster)
+    toggleFieldset.querySelectorAll('button[data-value]').forEach(b => b.remove());
+    // Insert new segmented buttons at the start
+    const refChild = toggleFieldset.firstChild;
+    for (const [value, label] of types) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = label;
+      btn.dataset.value = value;
+      btn.setAttribute('aria-pressed', String(value === selected));
+      btn.addEventListener('click', () => {
+        chartType = value;
+        if (setToggleSelected) setToggleSelected(value);
+        if (binAdjuster) binAdjuster.setMode(/** @type {'dotplot'|'histogram'} */ (value));
+        if (allStats.length > 0) {
+          lastStatIndex = -1;
+          batchHighlightIndices = null;
+          prevBinCounts = null;
+          renderChart(allStats, lastCI, lastObserved, lastDirection);
+        }
+      });
+      toggleFieldset.insertBefore(btn, refChild);
+    }
   }
 
   // Tab handling

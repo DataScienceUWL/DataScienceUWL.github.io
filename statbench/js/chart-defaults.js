@@ -156,39 +156,51 @@ export function buildToggleHTML(types, selected) {
 }
 
 /**
- * Create and insert a chart type toggle fieldset before a container element.
- * Returns the fieldset and a function to get/set the current chart type.
+ * Create and insert a chart type toggle (segmented control) before a container element.
+ * Returns the element and a function to get/set the current chart type.
  *
  * @param {HTMLElement} container - The chart container element
  * @param {object} opts
  * @param {Array<[string, string]>} [opts.types] - [value, label] pairs
  * @param {string} [opts.initial] - Initial chart type ('auto' resolves on render)
  * @param {(chartType: string) => void} opts.onChange - Called when user changes chart type
- * @returns {{ fieldset: HTMLFieldSetElement, setSelected: (type: string) => void }}
+ * @returns {{ fieldset: HTMLElement, setSelected: (type: string) => void }}
  */
 export function createChartToggle(container, opts) {
   const types = opts.types ?? [['dotplot', 'Dotplot'], ['histogram', 'Histogram']];
   const initial = opts.initial ?? 'dotplot';
 
-  const fieldset = document.createElement('fieldset');
-  fieldset.className = 'chart-type-toggle';
-  fieldset.insertAdjacentHTML('beforeend', buildToggleHTML(types, initial));
+  const seg = document.createElement('div');
+  seg.className = 'seg-control chart-type-toggle';
+  seg.setAttribute('role', 'group');
+  seg.setAttribute('aria-label', 'Chart type');
 
-  const parent = container.parentElement;
-  if (parent) parent.insertBefore(fieldset, container);
-
-  fieldset.addEventListener('change', (e) => {
-    const radio = /** @type {HTMLInputElement} */ (e.target);
-    if (radio.value) opts.onChange(radio.value);
-  });
-
-  function setSelected(type) {
-    const radio = /** @type {HTMLInputElement|null} */ (
-      fieldset.querySelector(`input[value="${type}"]`));
-    if (radio) radio.checked = true;
+  /** @type {Map<string, HTMLButtonElement>} */
+  const btnMap = new Map();
+  for (const [value, label] of types) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = label;
+    btn.dataset.value = value;
+    btn.setAttribute('aria-pressed', String(value === initial));
+    btn.addEventListener('click', () => {
+      setSelected(value);
+      opts.onChange(value);
+    });
+    seg.appendChild(btn);
+    btnMap.set(value, btn);
   }
 
-  return { fieldset, setSelected };
+  const parent = container.parentElement;
+  if (parent) parent.insertBefore(seg, container);
+
+  function setSelected(type) {
+    for (const [v, btn] of btnMap) {
+      btn.setAttribute('aria-pressed', String(v === type));
+    }
+  }
+
+  return { fieldset: seg, setSelected };
 }
 
 // ─── Bin adjuster ───────────────────────────────────────────────────
