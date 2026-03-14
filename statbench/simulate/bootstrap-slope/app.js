@@ -27,6 +27,11 @@ const dataPreview = document.getElementById('data-preview');
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
   document.querySelectorAll('.gen-btn'));
 
+// Move generate bar below chart for better mobile UX
+const _genBar = document.querySelector('.generate-bar');
+const _chartSection = document.getElementById('chart-and-results');
+if (_genBar && _chartSection) _chartSection.after(_genBar);
+
 initTabs();
 initKeyboardShortcuts(genBtns, resetBtn);
 initPlayPause(genBtns, resetBtn);

@@ -73,6 +73,14 @@ export function initSimPage(config) {
   const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
     document.querySelectorAll('.gen-btn'));
 
+  // Move generate bar below the chart section for better mobile UX
+  // (buttons near the chart you're watching, not above the mechanism strip)
+  const generateBar = document.querySelector('.generate-bar');
+  const chartSection = document.getElementById('chart-and-results');
+  if (generateBar && chartSection) {
+    chartSection.after(generateBar);
+  }
+
   // Mechanism strip elements
   const mechanismStrip = document.getElementById('mechanism-strip');
   const mechanismDescEl = document.getElementById('mechanism-description');
