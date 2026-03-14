@@ -258,6 +258,20 @@ function showResults() {
     ? Math.max(detectPrecision([summaryXbar]), detectPrecision([summaryS]))
     : detectPrecision(currentData);
 
+  // ── Check conditions ──
+  const n = result.n;
+  const smallSample = n < 30;
+  const hasRawData = !fromSummary && currentData;
+  conditionsWarning.hidden = !smallSample;
+  if (smallSample) {
+    const bootLink = hasRawData
+      ? buildSimLink('simulate/bootstrap-mean/', { data: /** @type {number[]} */ (currentData) })
+      : buildSimLink('simulate/bootstrap-mean/');
+    conditionsWarning.innerHTML = `<p><strong>Note:</strong> With n = ${n} (< 30), the t-test assumes
+      the population is approximately normal. Check that the data has no strong skewness or outliers.</p>
+      <p>If normality is questionable, consider the <a href="${bootLink}">Bootstrap CI</a> instead${hasRawData ? ' (data will carry over)' : ''}.</p>`;
+  }
+
   // Show sections
   controlsSection.hidden = false;
   chartAndResults.hidden = false;
@@ -266,7 +280,8 @@ function showResults() {
   drawChart(result);
 
   // Render sidebar results + formulas
-  renderResults(result, d, mu0, alternative, confLevel);
+  const conditionsMet = !smallSample;
+  renderResults(result, d, mu0, alternative, confLevel, conditionsMet);
 
   // Screen reader announcement
   announce(
@@ -283,8 +298,9 @@ function showResults() {
  * @param {number} mu0
  * @param {string} alternative
  * @param {number} confLevel
+ * @param {boolean} [conditionsMet]
  */
-function renderResults(r, d, mu0, alternative, confLevel) {
+function renderResults(r, d, mu0, alternative, confLevel, conditionsMet = true) {
   const altSymbol = alternative === 'less' ? '&lt;' :
                     alternative === 'greater' ? '&gt;' : '&ne;';
   const confPct = (confLevel * 100).toFixed(0);
@@ -353,6 +369,7 @@ function renderResults(r, d, mu0, alternative, confLevel) {
       <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
       ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
       <p>${confPct}% CI for ${tex('\\mu')}: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>
+      ${!conditionsMet ? `<p class="warning-text"><strong>Note:</strong> With n < 30, verify that the population distribution is approximately normal (no strong skew or outliers).</p>` : ''}
     </div>
   `;
 }

@@ -8,7 +8,7 @@
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { slopeT, slopeTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
-import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 
 initHelp();
 import { parseCSV } from '../../js/csv-parser.js';
@@ -29,6 +29,8 @@ const controlsSection = /** @type {HTMLElement} */ (document.getElementById('con
 const chartAndResults = /** @type {HTMLElement} */ (document.getElementById('chart-and-results'));
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
 const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('results-panel'));
+
+const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
 
 const inputAlt = /** @type {HTMLSelectElement} */ (document.getElementById('input-alt'));
 const inputConf = /** @type {HTMLInputElement} */ (document.getElementById('input-conf'));
@@ -228,8 +230,21 @@ function showResults() {
   controlsSection.hidden = false;
   chartAndResults.hidden = false;
 
+  // ── Conditions check ─────────────────────────────────────────────
+  const n = result.n;
+  const conditionsMet = n >= 30;
+  if (!conditionsMet && conditionsWarning) {
+    const bootLink = buildSimLink('simulate/bootstrap-slope/');
+    conditionsWarning.innerHTML = `<p><strong>Note:</strong> With n = ${n} (< 30), the t-test for slope assumes
+      that residuals are approximately normal with constant variance, and that the relationship is linear.</p>
+      <p>If conditions are questionable, consider the <a href="${bootLink}">Bootstrap Slope CI</a> which is less sensitive to these assumptions.</p>`;
+    conditionsWarning.hidden = false;
+  } else if (conditionsWarning) {
+    conditionsWarning.hidden = true;
+  }
+
   drawChart(result);
-  renderResults(result, d, alternative, confLevel);
+  renderResults(result, d, alternative, confLevel, conditionsMet);
 
   announce(
     `t = ${result.tStat.toFixed(3)}, df = ${result.df}, ` +

@@ -9,7 +9,7 @@ import * as jstatModule from 'jstat';
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { twoMeanT, twoMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
-import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 
 initHelp();
 import { mean, detectPrecision, formatStat } from '../../js/stats.js';
@@ -26,6 +26,7 @@ setJStat(jStat);
 // ── DOM elements ────────────────────────────────────────────────────
 const chartContainer = document.getElementById('chart-container');
 const resultDiv = document.getElementById('result-summary');
+const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
 const dataSummary = document.getElementById('data-summary');
 const dataPreview = document.getElementById('data-preview');
 const varSelectorsDiv = document.getElementById('var-selectors');
