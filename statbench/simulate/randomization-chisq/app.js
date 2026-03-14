@@ -7,10 +7,9 @@
 
 import { createRng, shuffle } from '../../js/prng.js';
 import { chisqStat, formatStat } from '../../js/stats.js';
-import { drawHistogram, computeBins } from '../../js/histogram.js';
-import { drawDotplot } from '../../js/dotplot.js';
-import { renderSimPills } from '../../js/chart-utils.js';
+import { computeBins } from '../../js/histogram.js';
 import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, initDataPanel, computeHighlights } from '../../js/page-utils.js';
+import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
 
 // ─── DOM elements ───
 
@@ -345,51 +344,29 @@ function generateSimulations(count) {
  */
 function renderChart(stats, observed, highlightIndex = -1, highlightIndices, prevBinCounts, hlDomain, hlThresholds) {
   if (!chartContainer) return;
-  chartContainer.innerHTML = '';
 
   const hi = Math.max(...stats, observed) * 1.05 || 1;
   /** @type {[number, number]} */
   const domain = hlDomain || [0, hi];
+  const activeChart = resolveChartType(stats.length, 'auto');
 
-  /** @type {import('../../js/chart-utils.js').ChartFrame} */
-  let frame;
-  /** @type {any} */
-  let xScale;
-  if (stats.length <= 200) {
-    const r = drawDotplot(chartContainer, stats, {
-      id: 'sim-chart',
-      xLabel: 'Chi-Square Statistic (χ²)',
-      titleText: 'Null Distribution',
-      isExtreme: (v) => v >= observed,
-      observedStat: observed,
-      animate: false,
-      domain,
-      highlightIndex,
-      highlightIndices,
-    });
-    frame = r.frame;
-    xScale = r.xScale;
-  } else {
-    const r = drawHistogram(chartContainer, stats, {
-      id: 'sim-chart',
-      xLabel: 'Chi-Square Statistic (χ²)',
-      titleText: 'Null Distribution',
-      isTail: (v) => v >= observed,
-      observedStat: observed,
-      animate: false,
-      domain,
-      thresholds: hlThresholds,
-      prevBinCounts,
-    });
-    frame = r.frame;
-    xScale = r.xScale;
-  }
+  const { pValue } = stats.length > 0 ? computePValue(stats, observed) : { pValue: 0 };
 
-  // P-value pills (always right-tailed)
-  if (stats.length > 0) {
-    const { pValue } = computePValue(stats, observed);
-    renderSimPills(frame, xScale, { mode: 'randomization', pValue, observedStat: observed, direction: 'right' });
-  }
+  renderSimChart(chartContainer, stats, {
+    chartType: activeChart,
+    id: 'sim-chart',
+    xLabel: 'Chi-Square Statistic (χ²)',
+    titleText: 'Null Distribution',
+    observedStat: observed,
+    direction: 'right',
+    domain,
+    highlightIndex,
+    highlightIndices,
+    prevBinCounts,
+    thresholds: hlThresholds,
+    pillMode: stats.length > 0 ? 'randomization' : undefined,
+    pValue,
+  });
 }
 
 /**

@@ -15,6 +15,7 @@ import { drawDotplot } from './dotplot.js';
 import { renderSimPills } from './chart-utils.js';
 import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, initDataPanel, computeHighlights, initHelp, initSettings } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
+import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, dotplotBins, histogramThresholds, renderSimChart, createBinAdjuster } from './chart-defaults.js';
 
 /**
  * @typedef {object} OneSampleSimConfig
@@ -68,30 +69,25 @@ export function initOneSamplePage(config) {
   // ─── Mode-dependent constants ───
 
   const xLabel = isProp ? 'Sample Proportion (p\u0302)' : 'Simulated Mean (x\u0304*)';
-  const chartTypes = /** @type {[string, string][]} */ (
-    [['dotplot', 'Dotplot'], ['histogram', 'Histogram']]);
 
   // ─── Chart type toggle ───
 
   let chartType = 'auto';
-  const chartParent = chartContainer?.parentElement;
   /** @type {HTMLFieldSetElement|null} */
   let toggleFieldset = null;
-  if (chartParent) {
-    toggleFieldset = document.createElement('fieldset');
-    toggleFieldset.className = 'chart-type-toggle';
-    toggleFieldset.insertAdjacentHTML('beforeend', chartTypes.map(([v, l]) =>
-      `<label class="chart-toggle-option"><input type="radio" name="chart-type" value="${v}"${v === 'dotplot' ? ' checked' : ''}> ${l}</label>`
-    ).join(''));
-    chartParent.insertBefore(toggleFieldset, chartContainer);
-    toggleFieldset.addEventListener('change', (e) => {
-      const radio = /** @type {HTMLInputElement} */ (e.target);
-      if (!radio.value) return;
-      chartType = radio.value;
-      if (allStats.length > 0) {
-        renderChart(allStats, observedStat, getDirection());
-      }
+  /** @type {((type: string) => void)|null} */
+  let setToggleSelected = null;
+  if (chartContainer) {
+    const toggle = createChartToggle(chartContainer, {
+      onChange: (type) => {
+        chartType = type;
+        if (allStats.length > 0) {
+          renderChart(allStats, observedStat, getDirection());
+        }
+      },
     });
+    toggleFieldset = toggle.fieldset;
+    setToggleSelected = toggle.setSelected;
 
     createTheoryToggle(toggleFieldset, (checked) => {
       theoryOverlayOn = checked;
@@ -102,6 +98,21 @@ export function initOneSamplePage(config) {
           removeTheoryOverlay(chartContainer);
         }
       }
+    });
+  }
+
+  // ─── Bin adjuster ───
+  /** @type {number|undefined} */
+  let userBinCount;
+  if (toggleFieldset) {
+    createBinAdjuster(toggleFieldset, {
+      currentBins: 20,
+      onChange: (bins) => {
+        userBinCount = bins;
+        if (allStats.length > 0) {
+          renderChart(allStats, observedStat, getDirection());
+        }
+      },
     });
   }
 
@@ -149,10 +160,7 @@ export function initOneSamplePage(config) {
   }
 
   function getActiveChartType() {
-    if (chartType === 'auto') {
-      return allStats.length <= 200 ? 'dotplot' : 'histogram';
-    }
-    return chartType;
+    return resolveChartType(allStats.length, chartType);
   }
 
   function syncAltNullValue() {
@@ -524,68 +532,36 @@ export function initOneSamplePage(config) {
     /** @type {[number, number]} */
     const domain = hlDomain || [lo - pad, hi + pad];
 
-    let activeChart = getActiveChartType();
-    // Sync toggle
-    if (toggleFieldset) {
-      const radio = /** @type {HTMLInputElement|null} */ (
-        toggleFieldset.querySelector(`input[value="${activeChart}"]`));
-      if (radio) radio.checked = true;
-    }
+    const activeChart = getActiveChartType();
+    if (setToggleSelected) setToggleSelected(activeChart);
 
-    /** @type {import('./chart-utils.js').ChartFrame} */
-    let frame;
-    /** @type {any} */
-    let xScale;
     lastHistResult = null;
+    const precision = displayPrecision(dataPrecision, { proportion: isProp, sampleN });
+    const nullVal = getNullValue();
 
-    const precision = isProp ? Math.max(3, String(sampleN).length) : dataPrecision;
+    const { pValue } = n > 0 ? computePValue(stats, observed, direction) : { pValue: 0 };
 
-    if (activeChart === 'dotplot') {
-      const dotOpts = {
-        id: 'sim-chart',
-        xLabel,
-        titleText: 'Null Distribution',
-        isExtreme: (/** @type {number} */ v) => isExtreme(v, observed, direction),
-        observedStat: observed,
-        animate: false,
-        domain,
-        highlightIndex,
-        highlightIndices,
-        precision,
-        numBins: /** @type {number|undefined} */ (undefined),
-      };
-      if (isProp) {
-        dotOpts.numBins = sampleN;
-      }
-      const r = drawDotplot(chartContainer, stats, dotOpts);
-      frame = r.frame;
-      xScale = r.xScale;
-    } else {
-      const propThresholds = hlThresholds || (isProp ? snappedPropThresholds(sampleN, domain, n) : undefined);
-      const histDomain = hlDomain || domain;
-      const r = drawHistogram(chartContainer, stats, {
-        id: 'sim-chart',
-        xLabel,
-        titleText: 'Null Distribution',
-        isTail: (/** @type {number} */ v) => isExtreme(v, observed, direction),
-        observedStat: observed,
-        animate: false,
-        domain: histDomain,
-        thresholds: propThresholds,
-        prevBinCounts,
-        precision,
-      });
-      frame = r.frame;
-      xScale = r.xScale;
-      lastHistResult = { xScale: r.xScale, yScale: r.yScale, bins: r.bins, domain: histDomain };
-    }
+    const result = renderSimChart(chartContainer, stats, {
+      chartType: activeChart,
+      id: 'sim-chart',
+      xLabel,
+      titleText: 'Null Distribution',
+      domain,
+      observedStat: observed,
+      direction,
+      nullCenter: nullVal,
+      highlightIndex,
+      highlightIndices,
+      prevBinCounts,
+      thresholds: userBinCount ? undefined : (hlThresholds || histogramThresholds({ proportion: isProp, sampleN, domain, dataLength: n })),
+      numBins: userBinCount ?? (isProp ? dotplotBins(n, { proportion: true, sampleN }) : undefined),
+      precision,
+      pillMode: n > 0 ? 'randomization' : undefined,
+      pValue,
+    });
 
-    // P-value pills
-    if (stats.length > 0) {
-      const { pValue } = computePValue(stats, observed, direction);
-      renderSimPills(frame, xScale, {
-        mode: 'randomization', pValue, observedStat: observed, direction,
-      });
+    if (result.bins && result.bins.length > 0) {
+      lastHistResult = { xScale: result.xScale, yScale: result.yScale, bins: result.bins, domain };
     }
 
     // Theory overlay (only on histogram)
@@ -596,15 +572,9 @@ export function initOneSamplePage(config) {
 
   // ─── P-value & extremes ───
 
-  /**
-   * @param {number} v
-   * @param {number} obs
-   * @param {'left'|'right'|'both'} dir
-   */
+  /** @type {(v: number, obs: number, dir: 'left'|'right'|'both') => boolean} */
   function isExtreme(v, obs, dir) {
-    if (dir === 'left') return v <= obs;
-    if (dir === 'both') return Math.abs(v - getNullValue()) >= Math.abs(obs - getNullValue());
-    return v >= obs;
+    return isExtremeShared(v, obs, dir, getNullValue());
   }
 
   /**

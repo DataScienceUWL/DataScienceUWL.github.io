@@ -10,6 +10,7 @@ import { mean, sd } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot, computeDots, computeDotRadius } from '../../js/dotplot.js';
 import { announce, initKeyboardShortcuts, initPlayPause, computeHighlights } from '../../js/page-utils.js';
+import { resolveChartType } from '../../js/chart-defaults.js';
 import * as d3Shape from 'd3-shape';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
@@ -285,7 +286,8 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
   if (n === 0) return;
 
   // Dotplot for small counts, histogram for large
-  if (n <= 200) {
+  const activeChart = resolveChartType(n, 'auto');
+  if (activeChart === 'dotplot') {
     const result = drawDotplot(samplingContainer, sampleMeans, {
       id: 'sampling-dist',
       xLabel: 'Sample Mean',

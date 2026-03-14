@@ -9,11 +9,10 @@ import { createRng } from '../../js/prng.js';
 import { linreg, mean, detectPrecision, formatStat } from '../../js/stats.js';
 import { bootstrapCI } from '../../js/sim-engine.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
-import { drawHistogram, computeBins } from '../../js/histogram.js';
-import { drawDotplot } from '../../js/dotplot.js';
+import { computeBins } from '../../js/histogram.js';
 import { parseCSV } from '../../js/csv-parser.js';
 import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initDataPanel, computeHighlights } from '../../js/page-utils.js';
-import { renderSimPills } from '../../js/chart-utils.js';
+import { renderSimChart, resolveChartType, createChartToggle, computeDomain } from '../../js/chart-defaults.js';
 
 // ─── DOM ───
 
@@ -247,59 +246,27 @@ function renderScatter() {
  */
 function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts, ci, hlDomain, hlThresholds) {
   if (!histContainer) return;
-  histContainer.innerHTML = '';
   const n = slopes.length;
-  if (n === 0) return;
+  if (n === 0) { histContainer.innerHTML = ''; return; }
 
-  // Region predicate: values inside CI are the region of interest
   const regionPred = ci ? (/** @type {number} */ v) => v >= ci[0] && v <= ci[1] : undefined;
+  const activeChart = resolveChartType(n, 'auto');
 
-  /** @type {import('../../js/chart-utils.js').ChartFrame} */
-  let frame;
-  /** @type {any} */
-  let xScale;
-
-  if (n <= 200) {
-    const r = drawDotplot(histContainer, slopes, {
-      id: 'slope-dist',
-      xLabel: 'Bootstrap Slope',
-      titleText: 'Bootstrap Distribution of Slope',
-      isExtreme: regionPred,
-      observedStat: observedSlope,
-      ciLines: ci ?? undefined,
-      animate: false,
-      highlightIndex,
-      highlightIndices,
-    });
-    frame = r.frame;
-    xScale = r.xScale;
-  } else {
-    const r = drawHistogram(histContainer, slopes, {
-      id: 'slope-dist',
-      xLabel: 'Bootstrap Slope',
-      titleText: 'Bootstrap Distribution of Slope',
-      isTail: regionPred,
-      observedStat: observedSlope,
-      ciLines: ci ?? undefined,
-      animate: false,
-      domain: hlDomain,
-      thresholds: hlThresholds,
-      prevBinCounts,
-    });
-    frame = r.frame;
-    xScale = r.xScale;
-  }
-
-  // Add CI proportion pill (single blue pill in middle)
-  if (ci && n > 0) {
-    const inside = slopes.filter(v => v >= ci[0] && v <= ci[1]).length;
-    const proportion = inside / n;
-    renderSimPills(frame, xScale, {
-      mode: 'bootstrap',
-      proportionLabel: formatStat(proportion, 0, 'proportion'),
-      ci,
-    });
-  }
+  renderSimChart(histContainer, slopes, {
+    chartType: activeChart,
+    id: 'slope-dist',
+    xLabel: 'Bootstrap Slope',
+    titleText: 'Bootstrap Distribution of Slope',
+    regionPredicate: regionPred,
+    observedStat: observedSlope,
+    ciLines: ci ?? undefined,
+    domain: hlDomain,
+    highlightIndex,
+    highlightIndices,
+    prevBinCounts,
+    thresholds: hlThresholds,
+    pillMode: ci ? 'bootstrap' : undefined,
+  });
 }
 
 /**

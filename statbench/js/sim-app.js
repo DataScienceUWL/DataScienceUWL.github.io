@@ -17,6 +17,7 @@ import { renderSimPills } from './chart-utils.js';
 import { initPlayPause, setupFileInput, initHelp } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
+import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, buildToggleHTML as buildToggleHTMLShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
 /**
  * @typedef {object} SimConfig
  * @property {'bootstrap'|'randomization'} mode
@@ -143,28 +144,25 @@ export function initSimPage(config) {
   /** @type {{ xScale: any, yScale: any, bins: any[], domain: [number,number] } | null} */
   let lastHistResult = null;
 
-  // Chart type toggle (Dotplot / Spike / Histogram) — radio-based segmented control
-  const chartParent = chartContainer?.parentElement;
+  // Chart type toggle (Dotplot / Histogram) — radio-based segmented control
   /** @type {HTMLFieldSetElement|null} */
   let toggleFieldset = null;
-  if (chartParent) {
-    toggleFieldset = document.createElement('fieldset');
-    toggleFieldset.className = 'chart-type-toggle';
-    toggleFieldset.insertAdjacentHTML('beforeend', buildToggleHTML(['dotplot', 'histogram'], 'dotplot'));
-    chartParent.insertBefore(toggleFieldset, chartContainer);
-    toggleFieldset.addEventListener('change', (e) => {
-      const radio = /** @type {HTMLInputElement} */ (e.target);
-      if (!radio.value) return;
-      chartType = radio.value;
-
-      // Re-render if we have data
-      if (allStats.length > 0) {
-        lastStatIndex = -1;
-        batchHighlightIndices = null;
-        prevBinCounts = null;
-        renderChart(allStats, lastCI, lastObserved, lastDirection);
-      }
+  /** @type {((type: string) => void)|null} */
+  let setToggleSelected = null;
+  if (chartContainer) {
+    const toggle = createChartToggle(chartContainer, {
+      onChange: (type) => {
+        chartType = type;
+        if (allStats.length > 0) {
+          lastStatIndex = -1;
+          batchHighlightIndices = null;
+          prevBinCounts = null;
+          renderChart(allStats, lastCI, lastObserved, lastDirection);
+        }
+      },
     });
+    toggleFieldset = toggle.fieldset;
+    setToggleSelected = toggle.setSelected;
   }
 
   // ─── Theory overlay toggle ───
@@ -184,12 +182,29 @@ export function initSimPage(config) {
     });
   }
 
+  // ─── Bin adjuster ───
+  /** @type {number|undefined} */
+  let userBinCount;
+  /** @type {HTMLLabelElement|null} */
+  let binAdjusterEl = null;
+  if (toggleFieldset) {
+    binAdjusterEl = createBinAdjuster(toggleFieldset, {
+      currentBins: 20,
+      onChange: (bins) => {
+        userBinCount = bins;
+        if (allStats.length > 0) {
+          lastStatIndex = -1;
+          batchHighlightIndices = null;
+          prevBinCounts = null;
+          renderChart(allStats, lastCI, lastObserved, lastDirection);
+        }
+      },
+    });
+  }
+
   /** Get the currently active chart type (resolving 'auto'). */
   function getActiveChartType() {
-    if (chartType === 'auto') {
-      return allStats.length <= 200 ? 'dotplot' : 'histogram';
-    }
-    return chartType;
+    return resolveChartType(allStats.length, chartType);
   }
 
   /**
@@ -262,19 +277,7 @@ export function initSimPage(config) {
     });
   }
 
-  /**
-   * Build HTML for chart type radio options.
-   * @param {string[]} types - e.g. ['dotplot', 'histogram'] or ['dotplot', 'spike', 'histogram']
-   * @param {string} selected - Currently selected type
-   * @returns {string}
-   */
-  function buildToggleHTML(types, selected) {
-    /** @type {Record<string, string>} */
-    const labels = { dotplot: 'Dotplot', spike: 'Spike', histogram: 'Histogram' };
-    return types.map(t =>
-      `<label class="chart-toggle-option"><input type="radio" name="chart-type" value="${t}"${t === selected ? ' checked' : ''}> ${labels[t] ?? t}</label>`
-    ).join('');
-  }
+  // buildToggleHTML imported from chart-defaults.js as buildToggleHTMLShared
 
   /**
    * Rebuild the chart toggle options based on whether data is discrete.
@@ -285,11 +288,11 @@ export function initSimPage(config) {
     const currentType = chartType;
     if (!isDiscrete && currentType === 'spike') chartType = 'auto';
     const types = isDiscrete
-      ? ['dotplot', 'spike', 'histogram']
-      : ['dotplot', 'histogram'];
+      ? [['dotplot', 'Dotplot'], ['spike', 'Spike'], ['histogram', 'Histogram']]
+      : [['dotplot', 'Dotplot'], ['histogram', 'Histogram']];
     const selected = (chartType === 'auto' ? 'dotplot' : chartType);
     toggleFieldset.innerHTML = '';
-    toggleFieldset.insertAdjacentHTML('beforeend', buildToggleHTML(types, selected));
+    toggleFieldset.insertAdjacentHTML('beforeend', buildToggleHTMLShared(types, selected));
   }
 
   // Tab handling
@@ -1110,18 +1113,16 @@ export function initSimPage(config) {
         resultDiv.innerHTML = `<p><strong>Bootstrap Distribution</strong> (${allStats.length} resamples)</p>
           <p>Need at least 10 resamples for CI estimate.</p>`;
       }
-      // Track new data for highlight
-      if (allStats.length <= 200) {
-        // Dotplot mode: highlight individual dots
-        if (count === 1) {
-          lastStatIndex = allStats.length - 1;
-        } else {
-          batchHighlightIndices = new Set();
-          for (let j = prevLength; j < allStats.length; j++) {
-            batchHighlightIndices.add(j);
-          }
+      // Track new data for highlight — always compute dot-level highlights
+      if (count === 1) {
+        lastStatIndex = allStats.length - 1;
+      } else {
+        batchHighlightIndices = new Set();
+        for (let j = prevLength; j < allStats.length; j++) {
+          batchHighlightIndices.add(j);
         }
-      } else if (prevLength > 0) {
+      }
+      if (allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
         // Histogram mode: compute previous bin counts for stacked delta
         // Must use EXACT same domain + thresholds as renderChart to align bins
         let lo = Math.min(...allStats);
@@ -1191,17 +1192,17 @@ export function initSimPage(config) {
       }
 
       showTwoGroupMechanism(lastG1, lastG2, false);
-      if (allStats.length <= 200) {
-        if (count === 1) {
-          lastStatIndex = allStats.length - 1;
-        } else {
-          batchHighlightIndices = new Set();
-          for (let j = prevLength; j < allStats.length; j++) {
-            batchHighlightIndices.add(j);
-          }
+      // Always compute dot-level highlights
+      if (count === 1) {
+        lastStatIndex = allStats.length - 1;
+      } else {
+        batchHighlightIndices = new Set();
+        for (let j = prevLength; j < allStats.length; j++) {
+          batchHighlightIndices.add(j);
         }
-      } else if (prevLength > 0) {
-        // Must use EXACT same domain + thresholds as renderChart to align bins
+      }
+      if (allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
+        // Histogram mode: compute previous bin counts for stacked delta
         const rVals = observedStat != null ? [...allStats, observedStat] : allStats;
         let rLo = Math.min(...rVals);
         let rHi = Math.max(...rVals);
@@ -1719,18 +1720,10 @@ export function initSimPage(config) {
     }
 
     // Determine which chart type to render
-    let activeChart = chartType;
-    if (activeChart === 'auto') {
-      activeChart = n <= 200 ? 'dotplot' : 'histogram';
-    }
+    const activeChart = resolveChartType(n, chartType);
 
     // Sync toggle radios to reflect actual chart type
-    if (toggleFieldset) {
-      const radio = /** @type {HTMLInputElement|null} */ (
-        toggleFieldset.querySelector(`input[value="${activeChart}"]`));
-      if (radio) radio.checked = true;
-
-    }
+    if (setToggleSelected) setToggleSelected(activeChart);
     // Build region-of-interest predicate
     // Randomization: extreme values (tail) are the region of interest
     // Bootstrap CI: values inside the CI are the region of interest
@@ -1756,7 +1749,7 @@ export function initSimPage(config) {
         ciLines: ci ?? undefined,
         animate: false,
         domain,
-        numBins: config.proportion && sampleSize <= 50 ? sampleSize : undefined,
+        numBins: userBinCount ?? (config.proportion ? sampleSize : undefined),
         highlightIndex,
         highlightIndices,
       });
@@ -1785,7 +1778,8 @@ export function initSimPage(config) {
         ciLines: ci ?? undefined,
         animate: false,
         domain,
-        thresholds: propThresholds,
+        thresholds: userBinCount ? undefined : propThresholds,
+        numBins: userBinCount,
         prevBinCounts: prevBinCounts ?? undefined,
       });
       chartResult = r.frame;
@@ -1821,16 +1815,8 @@ export function initSimPage(config) {
     prevBinCounts = null;
   }
 
-  /**
-   * @param {number} v
-   * @param {number} obs
-   * @param {'left'|'right'|'both'} [dir]
-   */
-  function isExtreme(v, obs, dir) {
-    if (dir === 'left') return v <= obs;
-    if (dir === 'both') return Math.abs(v) >= Math.abs(obs);
-    return v >= obs;
-  }
+  /** @type {(v: number, obs: number, dir?: 'left'|'right'|'both') => boolean} */
+  const isExtreme = isExtremeShared;
 
   // renderSimPills and _addSimPill are now in chart-utils.js
 

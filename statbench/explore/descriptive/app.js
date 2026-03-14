@@ -12,6 +12,7 @@ import { drawDotplot } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { drawBarChart } from '../../js/barchart.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper } from '../../js/page-utils.js';
+import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
 
 initHelp();
 
@@ -782,7 +783,7 @@ function renderActiveChart() {
       numBins: currentBinCount,
     });
   } else if (activeChart === 'dotplot') {
-    if (currentValues.length <= 200) {
+    if (currentValues.length <= DOTPLOT_AUTO_THRESHOLD) {
       drawDotplot(chartArea, currentValues, {
         xLabel,
         titleText: `Dotplot of ${xLabel}`,

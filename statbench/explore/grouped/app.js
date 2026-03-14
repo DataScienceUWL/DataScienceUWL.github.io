@@ -11,6 +11,7 @@ import { drawHistogram, computeBins, sturgesBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper } from '../../js/page-utils.js';
+import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
 
 initHelp();
 
@@ -484,9 +485,9 @@ function renderActiveChart() {
     });
   } else if (activeChart === 'dotplot') {
     const totalN = allValues.length;
-    if (totalN > 200) {
+    if (totalN > DOTPLOT_AUTO_THRESHOLD) {
       chartArea.innerHTML =
-        '<p class="hint">Dotplot not available for datasets with more than 200 values. Try Boxplot or Histogram.</p>';
+        `<p class="hint">Dotplot not available for datasets with more than ${DOTPLOT_AUTO_THRESHOLD} values. Try Boxplot or Histogram.</p>`;
       return;
     }
     renderStackedDotplots(groupNames);

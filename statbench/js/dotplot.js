@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * Dotplot (stacked dot plot) chart module for StatBench.
- * Used by simulation pages (n <= 200) and explore/descriptive (small datasets).
+ * Used by simulation pages and explore/descriptive for small-to-medium datasets.
  *
  * @import { ChartFrame } from './types.js'
  */
