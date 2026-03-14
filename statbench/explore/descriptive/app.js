@@ -14,6 +14,7 @@ import { drawBarChart } from '../../js/barchart.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper } from '../../js/page-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
 import { overlayDensityOnHistogram } from '../../js/kde.js';
+import { createExportBar } from '../../js/export.js';
 
 initHelp();
 
@@ -827,6 +828,15 @@ function renderActiveChart() {
       showOutliers,
     });
   }
+
+  // Export bar
+  const statsTable = /** @type {HTMLTableElement|null} */ (
+    document.querySelector('#numeric-stats .sidebar-stats'));
+  createExportBar({
+    chartContainer: chartArea,
+    chartFilename: `${xLabel.replace(/\s+/g, '_')}_${activeChart}.png`,
+    table: statsTable ?? undefined,
+  });
 }
 
 // ── Categorical rendering ─────────────────────────────────────────────
@@ -845,6 +855,15 @@ function renderCatChart() {
     descText: `Bar chart showing ${yLabel.toLowerCase()} of each category of ${currentVarLabel}`,
     id: 'desc-bar',
     animate: false,
+  });
+
+  // Export bar
+  const freqTable = /** @type {HTMLTableElement|null} */ (
+    document.querySelector('#freq-table-container table'));
+  createExportBar({
+    chartContainer: chartArea,
+    chartFilename: `${currentVarLabel.replace(/\s+/g, '_')}_barchart.png`,
+    table: freqTable ?? undefined,
   });
 }
 

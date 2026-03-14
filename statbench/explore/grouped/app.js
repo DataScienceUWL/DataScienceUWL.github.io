@@ -11,6 +11,7 @@ import { drawHistogram, computeBins, sturgesBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { drawGroupedDensity } from '../../js/kde.js';
+import { createExportBar } from '../../js/export.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper } from '../../js/page-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
 
@@ -502,6 +503,15 @@ function renderActiveChart() {
       id: 'grouped-density',
     });
   }
+
+  // Export bar
+  const statsTable = /** @type {HTMLTableElement|null} */ (
+    document.getElementById('grouped-stats-table'));
+  createExportBar({
+    chartContainer: chartArea,
+    chartFilename: `${currentVarLabel.replace(/\s+/g, '_')}_by_${currentGroupLabel.replace(/\s+/g, '_')}_${activeChart}.png`,
+    table: statsTable ?? undefined,
+  });
 }
 
 /**
@@ -549,12 +559,12 @@ function renderStackedHistograms(groupNames) {
   if (!chartArea) return;
 
   // Compute shared bin boundaries from all values
-  const { bins: sharedBins, domain: sharedDomain } = computeBins(allValues, {
+  const { bins: sharedBins } = computeBins(allValues, {
     numBins: currentBinCount,
   });
-  const thresholds = sharedBins.slice(1).map(b => b.x0);
+  const thresholds = /** @type {number[]} */ (sharedBins.slice(1).map(b => b.x0));
   /** @type {[number, number]} */
-  const domain = [sharedBins[0].x0, sharedBins[sharedBins.length - 1].x1];
+  const domain = [/** @type {number} */ (sharedBins[0].x0), /** @type {number} */ (sharedBins[sharedBins.length - 1].x1)];
 
   for (let i = 0; i < groupNames.length; i++) {
     const name = groupNames[i];

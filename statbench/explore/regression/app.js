@@ -7,6 +7,7 @@
 import { drawScatterplot, drawResidualPlot } from '../../js/scatterplot.js';
 import { linreg, detectPrecision, formatStat } from '../../js/stats.js';
 import { announce, initTabs, initDataPanel, initHelp } from '../../js/page-utils.js';
+import { createExportBar } from '../../js/export.js';
 
 initHelp();
 
@@ -164,6 +165,12 @@ function updateChart() {
         descText: `Scatterplot with ${xClean.length} points showing ${yVar} on the y-axis and ${xVar} on the x-axis.`,
         id: 'scatter-main',
         regression: showLine ? { slope: reg.slope, intercept: reg.intercept } : undefined,
+    });
+
+    // Export bar for scatterplot
+    createExportBar({
+        chartContainer: chartContainer,
+        chartFilename: `${yVar}_vs_${xVar}_scatter.png`.replace(/\s+/g, '_'),
     });
 
     // Equation display
