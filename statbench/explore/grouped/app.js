@@ -10,6 +10,7 @@ import { mean, median, sd, quantile, iqr, range, detectPrecision, formatStat } f
 import { drawHistogram, computeBins, sturgesBins } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
+import { drawGroupedDensity } from '../../js/kde.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper } from '../../js/page-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
 
@@ -33,7 +34,7 @@ initTabs();
 
 // ── Chart type toggle ─────────────────────────────────────────────────
 
-/** @type {'boxplot'|'dotplot'|'histogram'} */
+/** @type {'boxplot'|'dotplot'|'histogram'|'density'} */
 let activeChart = 'boxplot';
 
 /** Current quantitative variable label. */
@@ -48,7 +49,7 @@ const chartRadios = /** @type {NodeListOf<HTMLInputElement>} */ (
 
 chartRadios.forEach(radio => {
   radio.addEventListener('change', () => {
-    activeChart = /** @type {'boxplot'|'dotplot'|'histogram'} */ (radio.value);
+    activeChart = /** @type {'boxplot'|'dotplot'|'histogram'|'density'} */ (radio.value);
     renderActiveChart();
     updateChartControls();
   });
@@ -493,6 +494,13 @@ function renderActiveChart() {
     renderStackedDotplots(groupNames);
   } else if (activeChart === 'histogram') {
     renderStackedHistograms(groupNames);
+  } else if (activeChart === 'density') {
+    drawGroupedDensity(chartArea, groupedData, {
+      xLabel: currentVarLabel,
+      titleText: `Density of ${currentVarLabel} by ${currentGroupLabel}`,
+      descText: `Overlaid density curves comparing ${currentVarLabel} across groups of ${currentGroupLabel}`,
+      id: 'grouped-density',
+    });
   }
 }
 

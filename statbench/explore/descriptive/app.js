@@ -13,6 +13,7 @@ import { drawBoxplot } from '../../js/boxplot.js';
 import { drawBarChart } from '../../js/barchart.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper } from '../../js/page-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
+import { overlayDensityOnHistogram } from '../../js/kde.js';
 
 initHelp();
 
@@ -73,6 +74,9 @@ let activeChart = 'histogram';
 /** Current variable label (for chart titles). */
 let currentVarLabel = 'Value';
 
+/** Whether to show density curve overlay on histograms. */
+let showDensity = false;
+
 const chartRadios = /** @type {NodeListOf<HTMLInputElement>} */ (
   document.querySelectorAll('input[name="chart-type"]')
 );
@@ -105,6 +109,18 @@ function updateChartControls() {
       const n = parseInt(input.value, 10);
       if (!isFinite(n) || n < 3) return;
       currentBinCount = n;
+      renderActiveChart();
+    });
+
+    // Density overlay checkbox
+    const densityLabel = document.createElement('label');
+    densityLabel.innerHTML = '<input type="checkbox" id="show-density"> Density curve';
+    densityLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+    chartControls.appendChild(densityLabel);
+    const densityCb = /** @type {HTMLInputElement} */ (densityLabel.querySelector('input'));
+    densityCb.checked = showDensity;
+    densityCb.addEventListener('change', () => {
+      showDensity = densityCb.checked;
       renderActiveChart();
     });
   } else if (activeChart === 'boxplot') {
@@ -773,7 +789,7 @@ function renderActiveChart() {
   const xLabel = currentVarLabel;
 
   if (activeChart === 'histogram') {
-    drawHistogram(chartArea, currentValues, {
+    const histResult = drawHistogram(chartArea, currentValues, {
       xLabel,
       yLabel: 'Frequency',
       titleText: `Histogram of ${xLabel}`,
@@ -782,6 +798,12 @@ function renderActiveChart() {
       animate: false,
       numBins: currentBinCount,
     });
+    if (showDensity && histResult && histResult.bins && histResult.bins.length > 0 && currentValues.length >= 2) {
+      const firstX0 = /** @type {number} */ (histResult.bins[0].x0);
+      const lastX1 = /** @type {number} */ (histResult.bins[histResult.bins.length - 1].x1);
+      const avgBinWidth = (lastX1 - firstX0) / histResult.bins.length;
+      overlayDensityOnHistogram(histResult.frame.inner, currentValues, histResult.xScale, histResult.yScale, avgBinWidth);
+    }
   } else if (activeChart === 'dotplot') {
     if (currentValues.length <= DOTPLOT_AUTO_THRESHOLD) {
       drawDotplot(chartArea, currentValues, {

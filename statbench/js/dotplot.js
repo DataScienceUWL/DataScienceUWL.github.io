@@ -109,6 +109,7 @@ export function computeDotRadius(innerWidth, innerHeight, maxStack, numBins) {
  * @param {string} [options.id] - Unique ID prefix
  * @param {(value: number) => boolean} [options.isExtreme] - Predicate for extreme dot coloring
  * @param {number} [options.observedStat] - Value for observed statistic vertical line
+ * @param {string} [options.observedLabel] - Label for observed line (default: 'observed')
  * @param {[number,number]} [options.ciLines] - CI bound values to draw as vertical lines
  * @param {boolean} [options.animate] - Whether to animate (default: true)
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
@@ -126,6 +127,7 @@ export function drawDotplot(container, values, options = {}) {
     id,
     isExtreme,
     observedStat,
+    observedLabel = 'observed',
     ciLines,
     animate = true,
     margin,
@@ -191,7 +193,7 @@ export function drawDotplot(container, values, options = {}) {
   // Observed statistic line
   const overlaysGroup = d3Selection.select(frame.inner).select('.overlays');
   if (observedStat != null) {
-    renderObservedLine(overlaysGroup, observedStat, xScale, frame.height, precision);
+    renderObservedLine(overlaysGroup, observedStat, xScale, frame.height, precision, observedLabel);
   }
   if (ciLines) {
     renderCILine(overlaysGroup, ciLines[0], xScale, frame.height);
@@ -263,7 +265,7 @@ export function drawDotplot(container, values, options = {}) {
       const overlays = d3Selection.select(frame.inner).select('.overlays');
       overlays.selectAll('*').remove();
       if (newObserved != null) {
-        renderObservedLine(overlays, newObserved, xScale, frame.height, precision);
+        renderObservedLine(overlays, newObserved, xScale, frame.height, precision, opts.observedLabel ?? observedLabel);
       }
       if (newCiLines) {
         renderCILine(overlays, newCiLines[0], xScale, frame.height);
@@ -586,7 +588,7 @@ function animateDotRevert(el, targetFill, targetRadius, duration) {
  * @param {d3Scale.ScaleLinear<number, number>} xScale
  * @param {number} innerHeight
  */
-function renderObservedLine(overlays, value, xScale, innerHeight, precision = 2) {
+function renderObservedLine(overlays, value, xScale, innerHeight, precision = 2, label = 'observed') {
   const x = xScale(value);
   overlays.append('line')
     .attr('x1', x)
@@ -596,14 +598,14 @@ function renderObservedLine(overlays, value, xScale, innerHeight, precision = 2)
     .attr('stroke', OBSERVED_COLOR)
     .attr('stroke-width', 2)
     .attr('stroke-dasharray', '6,3')
-    .attr('aria-label', `Observed statistic: ${value}`);
+    .attr('aria-label', `${label}: ${value}`);
   overlays.append('text')
     .attr('class', 'overlay-value observed-label')
     .attr('x', x).attr('y', -16)
     .attr('text-anchor', 'middle')
     .attr('fill', OBSERVED_COLOR)
     .attr('font-size', '9px')
-    .text('observed');
+    .text(label);
   overlays.append('text')
     .attr('class', 'overlay-value')
     .attr('x', x).attr('y', -4)

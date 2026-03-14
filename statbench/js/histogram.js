@@ -144,6 +144,7 @@ export function computeBins(values, options = {}) {
  * @param {string} [options.id] - Unique ID prefix
  * @param {(value: number) => boolean} [options.isTail] - Predicate for tail shading
  * @param {number} [options.observedStat] - Value for observed statistic vertical line
+ * @param {string} [options.observedLabel] - Label for observed line (default: 'observed')
  * @param {[number,number]} [options.ciLines] - CI bound values to draw as vertical lines
  * @param {boolean} [options.animate] - Whether to animate bars (default: true)
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
@@ -162,6 +163,7 @@ export function drawHistogram(container, values, options = {}) {
     id,
     isTail,
     observedStat,
+    observedLabel = 'observed',
     ciLines,
     animate = true,
     margin,
@@ -205,7 +207,7 @@ export function drawHistogram(container, values, options = {}) {
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   if (observedStat != null) {
     renderOverlayLine(overlays, observedStat, xScale, frame.height,
-      '#F05133', 'Observed statistic', precision);
+      '#F05133', observedLabel, precision, observedLabel);
   }
   if (ciLines) {
     renderOverlayLine(overlays, ciLines[0], xScale, frame.height,
@@ -245,8 +247,9 @@ export function drawHistogram(container, values, options = {}) {
       // Re-render overlays
       overlays.selectAll('*').remove();
       if (newObserved != null) {
+        const newLabel = /** @type {any} */ (opts).observedLabel ?? observedLabel;
         renderOverlayLine(overlays, newObserved, xScale, frame.height,
-          '#F05133', 'Observed statistic', precision);
+          '#F05133', newLabel, precision, newLabel);
       }
       if (newCiLines) {
         renderOverlayLine(overlays, newCiLines[0], xScale, frame.height,
@@ -431,10 +434,11 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, i
  * @param {d3Scale.ScaleLinear<number,number>} xScale
  * @param {number} innerHeight
  * @param {string} color
- * @param {string} label
+ * @param {string} label - aria-label prefix
  * @param {number} [precision] - Decimal places for value label (default: 2)
+ * @param {string} [microLabel] - Small text above the value (e.g. 'observed', 'parameter')
  */
-function renderOverlayLine(overlays, value, xScale, innerHeight, color, label, precision = 2) {
+function renderOverlayLine(overlays, value, xScale, innerHeight, color, label, precision = 2, microLabel) {
   const x = xScale(value);
   overlays.append('line')
     .attr('x1', x).attr('x2', x)
@@ -443,15 +447,14 @@ function renderOverlayLine(overlays, value, xScale, innerHeight, color, label, p
     .attr('stroke-width', 2)
     .attr('stroke-dasharray', '6,3')
     .attr('aria-label', `${label}: ${value}`);
-  // "observed" micro-label + value
-  if (label === 'Observed statistic') {
+  if (microLabel) {
     overlays.append('text')
       .attr('class', 'overlay-value observed-label')
       .attr('x', x).attr('y', -16)
       .attr('text-anchor', 'middle')
       .attr('fill', color)
       .attr('font-size', '9px')
-      .text('observed');
+      .text(microLabel);
   }
   overlays.append('text')
     .attr('class', 'overlay-value')
