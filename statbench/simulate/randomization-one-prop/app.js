@@ -373,7 +373,7 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
   // Determine active chart type
   let activeChart = chartType;
   if (activeChart === 'auto') {
-    activeChart = n <= 200 ? 'dotplot' : 'spike';
+    activeChart = n <= 200 ? 'dotplot' : 'histogram';
   }
   // Sync toggle
   if (toggleFieldset) {

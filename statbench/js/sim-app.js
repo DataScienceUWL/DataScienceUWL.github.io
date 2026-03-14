@@ -187,7 +187,7 @@ export function initSimPage(config) {
   /** Get the currently active chart type (resolving 'auto'). */
   function getActiveChartType() {
     if (chartType === 'auto') {
-      return allStats.length <= 200 ? 'dotplot' : (config.proportion ? 'spike' : 'histogram');
+      return allStats.length <= 200 ? 'dotplot' : 'histogram';
     }
     return chartType;
   }
@@ -1721,7 +1721,7 @@ export function initSimPage(config) {
     // Determine which chart type to render
     let activeChart = chartType;
     if (activeChart === 'auto') {
-      activeChart = n <= 200 ? 'dotplot' : (config.proportion ? 'spike' : 'histogram');
+      activeChart = n <= 200 ? 'dotplot' : 'histogram';
     }
 
     // Sync toggle radios to reflect actual chart type
