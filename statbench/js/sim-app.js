@@ -14,7 +14,7 @@ import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.j
 import { drawDotplot } from './dotplot.js';
 import { drawSpike } from './spike.js';
 import { renderSimPills } from './chart-utils.js';
-import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse } from './page-utils.js';
+import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
@@ -1183,7 +1183,7 @@ export function initSimPage(config) {
 
       if (count === 1) {
         lastWasSingle = true;
-        // Staggered animation: mechanism update → 120ms → flash → 120ms → dot appears
+        // Staggered animation: mechanism update → 120ms → flash → 120ms → dot appears → drop animation
         if (showOneSampleMech) {
           lastResample = lastResampleValues;
           showResample(lastResampleValues, false, true);
@@ -1192,6 +1192,10 @@ export function initSimPage(config) {
           flashMechanism();
           setTimeout(() => {
             renderChart(allStats, ciForChart);
+            // Drop animation: flying dot from resample mean to chart
+            if (resampleMeanEl && chartContainer) {
+              animateDropToChart(resampleMeanEl, chartContainer);
+            }
           }, 120);
         }, 120);
       } else {
@@ -1259,11 +1263,17 @@ export function initSimPage(config) {
       displayRandomizationResults(allStats, observedStat, pValue, extremeCount, direction);
 
       if (count === 1) {
-        // Staggered: mechanism update → 120ms → flash → 120ms → dot appears
+        // Staggered: mechanism update → 120ms → flash → 120ms → dot appears → drop animation
         setTimeout(() => {
           flashMechanism();
           setTimeout(() => {
             renderChart(allStats, null, observedStat, direction);
+            // Drop animation: flying dot from mechanism strip to chart
+            // Two-group pages show diff in .mech-diff; one-sample uses #resample-mean
+            const dropSourceEl = document.querySelector('.mech-diff') || resampleMeanEl;
+            if (dropSourceEl && chartContainer) {
+              animateDropToChart(/** @type {HTMLElement} */ (dropSourceEl), chartContainer);
+            }
           }, 120);
         }, 120);
       } else {

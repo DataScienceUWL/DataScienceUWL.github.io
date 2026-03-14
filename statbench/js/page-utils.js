@@ -270,6 +270,137 @@ export function flashMechanism(mechanismStrip) {
 }
 
 /**
+ * Animate a dot "dropping" from the mechanism strip resample mean to the
+ * highlighted dot in the chart. Creates a fixed-position orange circle that
+ * flies along a curved path from source to target, then fades out on arrival.
+ *
+ * The highlighted dot in the SVG is hidden (opacity 0) before the animation
+ * starts and revealed when the flying dot arrives.
+ *
+ * Skipped entirely when prefers-reduced-motion is set.
+ *
+ * @param {HTMLElement} sourceEl - The resample mean element (#resample-mean)
+ * @param {HTMLElement} chartContainer - The chart container element
+ * @param {object} [opts]
+ * @param {number} [opts.duration] - Animation duration in ms (default 450)
+ */
+export function animateDropToChart(sourceEl, chartContainer, opts = {}) {
+  // Respect reduced-motion preference
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const duration = opts.duration ?? 450;
+
+  // Find the highlighted dot (orange fill) in the chart SVG
+  const svg = chartContainer.querySelector('svg');
+  if (!svg || !sourceEl) return;
+
+  // Look for the highlighted circle (HIGHLIGHT_FILL = #E07020) or column overlay
+  const highlightEl = svg.querySelector('circle[fill="#E07020"]')
+    || svg.querySelector('line[stroke="#E07020"]');
+  if (!highlightEl) return;
+  const highlightDot = /** @type {SVGElement} */ (highlightEl);
+
+  // Get screen coordinates
+  const sourceRect = sourceEl.getBoundingClientRect();
+
+  // Source: center of resample-mean text
+  const sx = sourceRect.left + sourceRect.width / 2;
+  const sy = sourceRect.top + sourceRect.height / 2;
+
+  // Target: center of highlighted dot in screen coordinates
+  /** @type {number} */
+  let tx = 0;
+  /** @type {number} */
+  let ty = 0;
+  if (highlightEl instanceof SVGCircleElement) {
+    // Dot mode: use circle cx/cy transformed to screen coords
+    const ctm = highlightEl.getCTM();
+    if (ctm) {
+      const pt = svg.createSVGPoint();
+      pt.x = parseFloat(highlightEl.getAttribute('cx') || '0');
+      pt.y = parseFloat(highlightEl.getAttribute('cy') || '0');
+      const screenPt = pt.matrixTransform(ctm);
+      tx = screenPt.x;
+      ty = screenPt.y;
+    } else {
+      const dotRect = highlightEl.getBoundingClientRect();
+      tx = dotRect.left + dotRect.width / 2;
+      ty = dotRect.top + dotRect.height / 2;
+    }
+  } else {
+    // Column/line mode: use bounding rect
+    const dotRect = highlightDot.getBoundingClientRect();
+    tx = dotRect.left + dotRect.width / 2;
+    ty = dotRect.top + dotRect.height / 2;
+  }
+
+  // Hide the SVG highlight until the flying dot arrives
+  const origOpacity = highlightDot.getAttribute('opacity');
+  highlightDot.setAttribute('opacity', '0');
+
+  // Create the flying dot
+  const dot = document.createElement('div');
+  dot.setAttribute('aria-hidden', 'true');
+  dot.style.cssText = `
+    position: fixed;
+    left: ${sx}px;
+    top: ${sy}px;
+    width: 12px;
+    height: 12px;
+    margin-left: -6px;
+    margin-top: -6px;
+    border-radius: 50%;
+    background: #E07020;
+    border: 1.5px solid #000;
+    z-index: 9999;
+    pointer-events: none;
+    will-change: transform, opacity;
+  `;
+  document.body.appendChild(dot);
+
+  // Animate using requestAnimationFrame for a curved path
+  const dx = tx - sx;
+  const dy = ty - sy;
+  // Control point for quadratic bezier: offset horizontally to create arc
+  const cpx = sx + dx * 0.5;
+  const cpy = Math.min(sy, ty) - Math.abs(dy) * 0.3 - 30; // arc above both points
+
+  const startTime = performance.now();
+
+  /** @param {number} now */
+  function frame(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    // Ease-in-out cubic
+    const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    // Quadratic bezier position
+    const u = 1 - ease;
+    const x = u * u * sx + 2 * u * ease * cpx + ease * ease * tx;
+    const y = u * u * sy + 2 * u * ease * cpy + ease * ease * ty;
+
+    dot.style.left = x + 'px';
+    dot.style.top = y + 'px';
+
+    // Scale: start at 1, peak at 1.3 midway, end at 1
+    const scale = 1 + 0.3 * Math.sin(ease * Math.PI);
+    dot.style.transform = `scale(${scale})`;
+
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      // Arrival: reveal the SVG dot and fade out the flying dot
+      highlightDot.setAttribute('opacity', origOpacity || '1');
+      dot.style.transition = 'opacity 150ms';
+      dot.style.opacity = '0';
+      setTimeout(() => dot.remove(), 160);
+    }
+  }
+
+  requestAnimationFrame(frame);
+}
+
+/**
  * Add a collapse toggle to the mechanism strip.
  * Inserts a bar with "Hide sampling detail" / "Show sampling detail" button.
  * State is persisted in sessionStorage so it survives within a session.

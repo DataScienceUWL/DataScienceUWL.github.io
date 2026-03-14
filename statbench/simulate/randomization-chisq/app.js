@@ -8,7 +8,7 @@
 import { createRng, shuffle } from '../../js/prng.js';
 import { chisqStat, formatStat } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, initMechanismCollapse, initDataPanel, computeHighlights } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
 
 // ─── DOM elements ───
@@ -322,6 +322,9 @@ function generateSimulations(count) {
       flashMechanism(mechanismStrip);
       setTimeout(() => {
         renderChart(allStats, observedChisq, hlIndex, hlIndices, prevBinCounts, hlDomain, lockedThresholds);
+        const dropSource = document.getElementById('mech-shuffled-chisq');
+        const chartCont = document.getElementById('chart-container');
+        if (dropSource && chartCont) animateDropToChart(dropSource, chartCont);
       }, 120);
     }, 120);
   } else {
