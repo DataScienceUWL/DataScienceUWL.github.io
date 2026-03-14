@@ -6,7 +6,7 @@
  */
 
 import { parseCSV, rowsToCSV, downloadCSV } from './csv-parser.js';
-import { getSettings, setSettings, resetSettings, applySettings, getActivityMode } from './settings.js';
+import { getSettings, setSettings, resetSettings, applySettings, getActivityMode, prefersReducedMotion } from './settings.js';
 
 /**
  * Resolve the path to the data/ directory from any page.
@@ -285,8 +285,8 @@ export function flashMechanism(mechanismStrip) {
  * @param {number} [opts.duration] - Animation duration in ms (default 450)
  */
 export function animateDropToChart(sourceEl, chartContainer, opts = {}) {
-  // Respect reduced-motion preference
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // Respect reduced-motion preference (settings-aware, not just OS)
+  if (prefersReducedMotion()) return;
 
   const duration = opts.duration ?? 450;
 
@@ -294,27 +294,28 @@ export function animateDropToChart(sourceEl, chartContainer, opts = {}) {
   const svg = chartContainer.querySelector('svg');
   if (!svg || !sourceEl) return;
 
-  // Look for the highlighted circle (HIGHLIGHT_FILL = #E07020) or column overlay
+  // Find the highlighted dot — look for orange fill or stroke.
+  // Check both exact hex and case variations since browsers may normalize.
   const highlightEl = svg.querySelector('circle[fill="#E07020"]')
-    || svg.querySelector('line[stroke="#E07020"]');
+    || svg.querySelector('circle[fill="#e07020"]')
+    || svg.querySelector('line[stroke="#E07020"]')
+    || svg.querySelector('line[stroke="#e07020"]');
   if (!highlightEl) return;
   const highlightDot = /** @type {SVGElement} */ (highlightEl);
 
-  // Get screen coordinates
+  // Get screen coordinates for source and target
   const sourceRect = sourceEl.getBoundingClientRect();
-
-  // Source: center of resample-mean text
   const sx = sourceRect.left + sourceRect.width / 2;
   const sy = sourceRect.top + sourceRect.height / 2;
 
-  // Target: center of highlighted dot in screen coordinates
+  // Target: use getScreenCTM for precise SVG→screen coordinate mapping
   /** @type {number} */
   let tx = 0;
   /** @type {number} */
   let ty = 0;
+
   if (highlightEl instanceof SVGCircleElement) {
-    // Dot mode: use circle cx/cy transformed to screen coords
-    const ctm = highlightEl.getCTM();
+    const ctm = highlightEl.getScreenCTM();
     if (ctm) {
       const pt = svg.createSVGPoint();
       pt.x = parseFloat(highlightEl.getAttribute('cx') || '0');
@@ -328,11 +329,14 @@ export function animateDropToChart(sourceEl, chartContainer, opts = {}) {
       ty = dotRect.top + dotRect.height / 2;
     }
   } else {
-    // Column/line mode: use bounding rect
     const dotRect = highlightDot.getBoundingClientRect();
     tx = dotRect.left + dotRect.width / 2;
     ty = dotRect.top + dotRect.height / 2;
   }
+
+  // Sanity check: target should be below source (chart is below mechanism strip)
+  // If coordinates look wrong (target at 0,0 or above source), bail out
+  if (tx === 0 && ty === 0) return;
 
   // Hide the SVG highlight until the flying dot arrives
   const origOpacity = highlightDot.getAttribute('opacity');

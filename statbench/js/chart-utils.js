@@ -44,10 +44,21 @@ const OKABE_ITO = [
 ];
 
 /**
- * Check if the user prefers reduced motion (OS/browser setting only).
+ * Check if reduced motion should be active.
+ * Respects the StatBench setting ('on'/'off'/'auto') with OS fallback.
  * @returns {boolean}
  */
 export function prefersReducedMotion() {
+  // Check StatBench setting if available (avoids circular import by reading localStorage directly)
+  try {
+    const raw = localStorage.getItem('statbench-settings');
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s.reducedMotion === 'on') return true;
+      if (s.reducedMotion === 'off') return false;
+    }
+  } catch { /* fall through to OS check */ }
+  // 'auto' or no setting — follow OS
   if (typeof globalThis.matchMedia !== 'function') return false;
   return globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
