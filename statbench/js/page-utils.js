@@ -100,6 +100,18 @@ export function initHelp() {
   // Also init settings and steppers on every page
   initSettings();
   autoWrapSteppers();
+
+  // Add site branding to header (upper right)
+  const h1 = document.querySelector('h1');
+  if (h1 && !h1.querySelector('.site-brand')) {
+    const homeHref = document.querySelector('.home-btn')?.getAttribute('href') || '/';
+    const brand = document.createElement('a');
+    brand.className = 'site-brand';
+    brand.href = homeHref;
+    brand.setAttribute('aria-label', 'StatBench home');
+    brand.innerHTML = `<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#569BBD"/><path d="M4 24 C4 24, 8 23, 10 20 C12 17, 13 8, 16 8 C19 8, 20 17, 22 20 C24 23, 28 24, 28 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M4 24 C4 24, 8 23, 10 20 L10 24 Z" fill="#ffffff60"/></svg> StatBench`;
+    h1.appendChild(brand);
+  }
 }
 
 /**
