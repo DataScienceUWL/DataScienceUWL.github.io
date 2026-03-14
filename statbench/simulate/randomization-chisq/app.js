@@ -35,10 +35,12 @@ const loadTableBtn = document.getElementById('load-table');
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
   document.querySelectorAll('.gen-btn'));
 
-// Move generate bar below chart for better mobile UX
+// Move generate bar inside app-body, between chart and sidebar
 const _genBar = document.querySelector('.generate-bar');
 const _chartSection = document.getElementById('chart-and-results');
-if (_genBar && _chartSection) _chartSection.after(_genBar);
+const _appBody = _chartSection?.querySelector('.app-body');
+const _sidebar = _chartSection?.querySelector('.app-sidebar');
+if (_genBar && _appBody && _sidebar) _appBody.insertBefore(_genBar, _sidebar);
 
 initTabs({ hintTarget: resultDiv, hintAction: 'run a simulation to see results' });
 initKeyboardShortcuts(genBtns, resetBtn);

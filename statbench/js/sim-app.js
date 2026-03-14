@@ -73,12 +73,15 @@ export function initSimPage(config) {
   const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
     document.querySelectorAll('.gen-btn'));
 
-  // Move generate bar below the chart section for better mobile UX
-  // (buttons near the chart you're watching, not above the mechanism strip)
+  // Move generate bar inside app-body, between chart and sidebar.
+  // CSS grid handles layout: desktop = 2-col (chart+gen left, sidebar right);
+  // mobile = single col (chart → generate → sidebar).
   const generateBar = document.querySelector('.generate-bar');
   const chartSection = document.getElementById('chart-and-results');
-  if (generateBar && chartSection) {
-    chartSection.after(generateBar);
+  const appBody = chartSection?.querySelector('.app-body');
+  const sidebarEl = chartSection?.querySelector('.app-sidebar');
+  if (generateBar && appBody && sidebarEl) {
+    appBody.insertBefore(generateBar, sidebarEl);
   }
 
   // Mechanism strip elements
