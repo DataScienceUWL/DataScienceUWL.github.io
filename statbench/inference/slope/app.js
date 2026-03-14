@@ -259,8 +259,9 @@ function showResults() {
  * @param {number} d
  * @param {string} alternative
  * @param {number} confLevel
+ * @param {boolean} conditionsMet
  */
-function renderResults(r, d, alternative, confLevel) {
+function renderResults(r, d, alternative, confLevel, conditionsMet) {
   const confPct = (confLevel * 100).toFixed(0);
   const pStr = formatStat(r.pValue, d, 'pvalue');
   const alpha = 1 - confLevel;
@@ -338,6 +339,7 @@ function renderResults(r, d, alternative, confLevel) {
     <div class="interpretation" aria-live="polite">
       ${regressionInterp}
       <p>Slope ${tex('b_1')} = ${formatStat(r.slope, d)} is ${Math.abs(r.tStat).toFixed(2)} SEs from zero.</p>
+      ${!conditionsMet ? `<p class="conditions-note"><strong>Conditions:</strong> With n = ${r.n} &lt; 30, verify that residuals are approximately normal, variability is roughly constant, and the relationship is linear before trusting this t-test.</p>` : ''}
       <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
       ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
       <p>${confPct}% CI for ${tex('\\beta_1')}: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>

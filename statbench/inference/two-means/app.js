@@ -302,8 +302,21 @@ function runAnalysis() {
     result = twoMeanT(group1, group2, { alternative, confLevel });
   }
 
+  const n1 = result.n1;
+  const n2 = result.n2;
+  const conditionsMet = n1 >= 30 && n2 >= 30;
+  if (conditionsWarning) {
+    conditionsWarning.hidden = conditionsMet;
+    if (!conditionsMet) {
+      const bootLink = buildSimLink('simulate/bootstrap-two-means/');
+      conditionsWarning.innerHTML = `<p><strong>Note:</strong> With small sample size(s) (n₁ = ${n1}, n₂ = ${n2}), the t-test assumes
+        each population is approximately normal. Check that neither group has strong skewness or outliers.</p>
+        <p>If normality is questionable, consider the <a href="${bootLink}">Bootstrap Two-Sample CI</a> instead.</p>`;
+    }
+  }
+
   renderChart(result);
-  renderResults(result);
+  renderResults(result, conditionsMet);
   announceResult(result);
 }
 
@@ -361,8 +374,9 @@ function renderChart(r) {
 /**
  * Render the results panel.
  * @param {import('../../js/inference.js').TwoMeanResult} r
+ * @param {boolean} conditionsMet
  */
-function renderResults(r) {
+function renderResults(r, conditionsMet = true) {
   if (!resultDiv) return;
 
   const d = dataPrecision;
@@ -451,6 +465,7 @@ function renderResults(r) {
       <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
       ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
       <p>${confPct}% CI: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}). ${ciInterpretation}</p>
+      ${!conditionsMet ? `<p class="warning-inline"><strong>Caution:</strong> One or both sample sizes are small; verify normality within each group before trusting these results.</p>` : ''}
     </div>
   `;
 }
