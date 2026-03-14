@@ -57,7 +57,7 @@ let currentContext = null;
 initTabs({ hintTarget: resultDiv, hintAction: 'click Compute' });
 initKeyboard();
 
-initDataPanel({
+const dataPanel = initDataPanel({
   datasetFilter: ds => ds.hasNumeric && ds.hasCategorical,
   onDataset: loadFromDataset,
   onText: loadFromParsed,
@@ -308,7 +308,10 @@ function runAnalysis() {
   if (conditionsWarning) {
     conditionsWarning.hidden = conditionsMet;
     if (!conditionsMet) {
-      const bootLink = buildSimLink('simulate/bootstrap-two-means/');
+      const dsId = dataPanel.currentDatasetId;
+      const bootLink = dsId
+        ? buildSimLink('simulate/bootstrap-two-means/', { dataset: dsId })
+        : buildSimLink('simulate/bootstrap-two-means/');
       conditionsWarning.innerHTML = `<p><strong>Note:</strong> With small sample size(s) (n₁ = ${n1}, n₂ = ${n2}), the t-test assumes
         each population is approximately normal. Check that neither group has strong skewness or outliers.</p>
         <p>If normality is questionable, consider the <a href="${bootLink}">Bootstrap Two-Sample CI</a> instead.</p>`;

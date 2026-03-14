@@ -11,6 +11,7 @@
  * @property {number[]} [data]          - Inline numeric data from ?data=
  * @property {string}   [dataset]       - Bundled dataset name from ?dataset=
  * @property {string}   [csv]           - Remote CSV URL from ?csv=
+ * @property {string}   [json]          - Remote JSON dataset URL from ?json=
  * @property {string}   [seed]          - PRNG seed string (auto-generated if omitted)
  * @property {string}   [gen]           - Generator type: normal|uniform|bernoulli|...
  * @property {number}   [n]             - Sample size for generation

@@ -665,25 +665,4 @@ function clearDisplay() {
   if (chartArea) chartArea.innerHTML = '';
 }
 
-// ── URL data (silent load) ────────────────────────────────────────────
-
-(function checkUrlData() {
-  const params = new URLSearchParams(window.location.search);
-  const datasetParam = params.get('dataset');
-  if (!datasetParam) return;
-
-  // If a dataset is specified via URL, select it in the dropdown after datasets load
-  const check = setInterval(() => {
-    const select = /** @type {HTMLSelectElement|null} */ (document.getElementById('dataset-select'));
-    if (!select) return;
-    const opt = select.querySelector(`option[value="${datasetParam}"]`);
-    if (opt) {
-      clearInterval(check);
-      select.value = datasetParam;
-      select.dispatchEvent(new Event('change'));
-    }
-  }, 200);
-
-  // Stop checking after 5 seconds
-  setTimeout(() => clearInterval(check), 5000);
-})();
+// URL ?dataset= auto-load is handled by initDataPanel() in page-utils.js

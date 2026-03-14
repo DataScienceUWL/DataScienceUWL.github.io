@@ -22,7 +22,7 @@ const FLOAT_PARAMS = new Set([
 
 /** Parameters that should remain as sanitized strings */
 const STRING_PARAMS = new Set([
-    'seed', 'gen', 'stat', 'direction', 'tail', 'dataset', 'csv',
+    'seed', 'gen', 'stat', 'direction', 'tail', 'dataset', 'csv', 'json',
     'var', 'x', 'y', 'group', 'response', 'label', 'units', 'context',
     'success', 'failure', 'group1', 'group2', 'var1', 'var2',
     'x_label', 'y_label'
@@ -103,7 +103,7 @@ export function parseParams(queryString) {
             let sanitized = sanitize(value);
             if (key === 'seed') {
                 sanitized = sanitized.slice(0, 100);
-            } else if (key === 'csv') {
+            } else if (key === 'csv' || key === 'json') {
                 // Allow URL characters but validate it looks like a URL
                 sanitized = value.trim().slice(0, 2000);
                 if (!sanitized.startsWith('http://') && !sanitized.startsWith('https://')) {

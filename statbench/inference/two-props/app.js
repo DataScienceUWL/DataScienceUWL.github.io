@@ -76,7 +76,7 @@ let currentContext = null;
 
 // ── Data loading ────────────────────────────────────────────────────
 
-initDataPanel({
+const dataPanel = initDataPanel({
   datasetFilter: (/** @type {any} */ ds) => ds.hasCategorical === true,
   onDataset: (ds) => {
     const ctx = findContext(ds, 'two-props');
@@ -286,7 +286,10 @@ function compute() {
   const conditionsMet = cond1 && cond2 && cond3 && cond4;
   conditionsWarning.hidden = conditionsMet;
   if (!conditionsMet) {
-    const randLink = buildSimLink('simulate/randomization-diff-props/');
+    const dsId = dataPanel.currentDatasetId;
+    const randLink = dsId
+      ? buildSimLink('simulate/randomization-diff-props/', { dataset: dsId })
+      : buildSimLink('simulate/randomization-diff-props/');
     conditionsWarning.innerHTML = `<p><strong>Warning:</strong> Normal approximation conditions not met. Each group needs at least 5 successes and 5 failures.</p>
     <p>Consider the <a href="${randLink}">Randomization Test</a> instead.</p>`;
   }
@@ -337,7 +340,10 @@ function displayResults(r, lbl1, lbl2, conditionsMet) {
   const seCount = Math.abs(r.zStat);
   const seDirection = r.zStat > 0 ? 'above' : r.zStat < 0 ? 'below' : 'at';
 
-  const randLink = buildSimLink('simulate/randomization-diff-props/');
+  const dsId2 = dataPanel.currentDatasetId;
+  const randLink = dsId2
+    ? buildSimLink('simulate/randomization-diff-props/', { dataset: dsId2 })
+    : buildSimLink('simulate/randomization-diff-props/');
   const condWarning = conditionsMet ? '' :
     `<p class="warning-text"><strong>Caution:</strong> Normal approximation conditions not satisfied.
    Each group needs at least 5 successes and 5 failures. These results may be unreliable.</p>

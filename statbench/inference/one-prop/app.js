@@ -60,7 +60,7 @@ let currentContext = null;
 
 // ── Data loading ────────────────────────────────────────────────────
 
-initDataPanel({
+const dataPanel = initDataPanel({
   datasetFilter: (/** @type {any} */ ds) => ds.hasCategorical === true,
   onDataset: (ds) => {
     const ctx = findContext(ds, 'one-prop');
@@ -252,12 +252,15 @@ function compute() {
   const conditionsMet = np0 >= 10 && nq0 >= 10;
   conditionsWarning.hidden = conditionsMet;
   if (!conditionsMet) {
-    const binaryData = Array(currentSuccesses).fill(1).concat(Array(currentN - currentSuccesses).fill(0));
+    const dsId = dataPanel.currentDatasetId;
+    const linkBase = dsId
+      ? { dataset: dsId }
+      : { data: Array(currentSuccesses).fill(1).concat(Array(currentN - currentSuccesses).fill(0)) };
     const randLink = buildSimLink('simulate/randomization-one-prop/', {
-      data: binaryData,
+      ...linkBase,
       params: { p: p0, direction: alternative },
     });
-    const bootLink = buildSimLink('simulate/bootstrap-prop/', { data: binaryData });
+    const bootLink = buildSimLink('simulate/bootstrap-prop/', linkBase);
     conditionsWarning.innerHTML = `<p><strong>Warning:</strong> Normal approximation conditions not met
       (np\u2080 = ${formatStat(np0, 0, 'stat')}, n(1\u2212p\u2080) = ${formatStat(nq0, 0, 'stat')}; both should be \u2265 10).</p>
       <p>Consider the <a href="${randLink}">Randomization Test</a> or <a href="${bootLink}">Bootstrap CI</a> instead.</p>`;
@@ -307,11 +310,13 @@ function displayResults(r, successLabel, conditionsMet) {
 
   let condWarning = '';
   if (!conditionsMet) {
-    // Build binary data vector for cross-links
-    const binaryData = Array(r.successes).fill(1).concat(Array(r.n - r.successes).fill(0));
-    const bootLink = buildSimLink('simulate/bootstrap-prop/', { data: binaryData });
+    const dsId2 = dataPanel.currentDatasetId;
+    const lb2 = dsId2
+      ? { dataset: dsId2 }
+      : { data: Array(r.successes).fill(1).concat(Array(r.n - r.successes).fill(0)) };
+    const bootLink = buildSimLink('simulate/bootstrap-prop/', lb2);
     const randLink = buildSimLink('simulate/randomization-one-prop/', {
-      data: binaryData,
+      ...lb2,
       params: { p: r.p0, direction: r.alternative === 'two-sided' ? 'two-sided' : r.alternative },
     });
     condWarning = `<p class="warning-text"><strong>Caution:</strong> Normal approximation conditions not satisfied

@@ -156,7 +156,7 @@ function handleText(parsed, sourceName) {
   loadFromSelections();
 }
 
-initDataPanel({
+const dataPanel = initDataPanel({
   datasetFilter: ds => ds.type === 'paired',
   onDataset: handleDataset,
   onText: handleText,
@@ -243,7 +243,10 @@ function showResults() {
   const smallSample = n < 30;
   conditionsWarning.hidden = !smallSample;
   if (smallSample) {
-    const bootLink = buildSimLink('simulate/bootstrap-paired/');
+    const dsId = dataPanel.currentDatasetId;
+    const bootLink = dsId
+      ? buildSimLink('simulate/bootstrap-paired/', { dataset: dsId })
+      : buildSimLink('simulate/bootstrap-paired/');
     conditionsWarning.innerHTML = `<p><strong>Note:</strong> With n = ${n} (< 30) pairs, the paired t-test assumes
       the population of differences is approximately normal. Check that the differences have no strong skewness or outliers.</p>
       <p>If normality is questionable, consider the <a href="${bootLink}">Bootstrap Paired CI</a> instead.</p>`;

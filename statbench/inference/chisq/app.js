@@ -86,7 +86,7 @@ if (helpDialog) {
 
 // ── Data loading (datasets, paste, file) ────────────────────────────
 
-initDataPanel({
+const dataPanel = initDataPanel({
   datasetFilter: (/** @type {any} */ ds) => ds.hasCategorical === true,
   onDataset: (ds) => {
     const ctx = findContext(ds, 'chisq');
@@ -368,7 +368,10 @@ function showResults(observed, rowLabels, colLabels) {
     if (lowExpected) break;
   }
   if (lowExpected) {
-    const randLink = buildSimLink('simulate/randomization-chisq/');
+    const dsId = dataPanel.currentDatasetId;
+    const randLink = dsId
+      ? buildSimLink('simulate/randomization-chisq/', { dataset: dsId })
+      : buildSimLink('simulate/randomization-chisq/');
     warningBanner.innerHTML = `<p><strong>Caution:</strong> One or more expected counts are below 5. The chi-square approximation may not be accurate.</p>
     <p>Consider the <a href="${randLink}">Simulation-Based Chi-Square Test</a> instead.</p>`;
   }
@@ -558,7 +561,10 @@ function writeInterpretation(result, lowExpected) {
   `;
 
   if (lowExpected) {
-    const randLink = buildSimLink('simulate/randomization-chisq/');
+    const dsId2 = dataPanel.currentDatasetId;
+    const randLink = dsId2
+      ? buildSimLink('simulate/randomization-chisq/', { dataset: dsId2 })
+      : buildSimLink('simulate/randomization-chisq/');
     html += `<p><strong>Caution:</strong> One or more expected counts are below 5.
       The chi-square approximation may not be accurate. Consider merging categories
       or using the <a href="${randLink}">Simulation-Based Chi-Square Test</a> instead.</p>`;

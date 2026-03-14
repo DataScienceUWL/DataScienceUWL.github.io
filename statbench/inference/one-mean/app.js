@@ -181,7 +181,7 @@ function handleText(parsed, sourceName) {
   varSelect.onchange = () => loadColumn(varSelect.value);
 }
 
-initDataPanel({
+const dataPanel = initDataPanel({
   datasetFilter: ds => ds.hasNumeric !== false,
   onDataset: handleDataset,
   onText: handleText,
@@ -264,9 +264,12 @@ function showResults() {
   const hasRawData = !fromSummary && currentData;
   conditionsWarning.hidden = !smallSample;
   if (smallSample) {
-    const bootLink = hasRawData
-      ? buildSimLink('simulate/bootstrap-mean/', { data: /** @type {number[]} */ (currentData) })
-      : buildSimLink('simulate/bootstrap-mean/');
+    const dsId = dataPanel.currentDatasetId;
+    const bootLink = dsId
+      ? buildSimLink('simulate/bootstrap-mean/', { dataset: dsId })
+      : hasRawData
+        ? buildSimLink('simulate/bootstrap-mean/', { data: /** @type {number[]} */ (currentData) })
+        : buildSimLink('simulate/bootstrap-mean/');
     conditionsWarning.innerHTML = `<p><strong>Note:</strong> With n = ${n} (< 30), the t-test assumes
       the population is approximately normal. Check that the data has no strong skewness or outliers.</p>
       <p>If normality is questionable, consider the <a href="${bootLink}">Bootstrap CI</a> instead${hasRawData ? ' (data will carry over)' : ''}.</p>`;

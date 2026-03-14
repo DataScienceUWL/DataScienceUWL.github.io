@@ -7,6 +7,7 @@
 
 import { parseCSV, rowsToCSV, downloadCSV } from './csv-parser.js';
 import { getSettings, setSettings, resetSettings, applySettings, getActivityMode, prefersReducedMotion } from './settings.js';
+import { parseParams } from './url-params.js';
 
 /**
  * Resolve the path to the data/ directory from any page.
@@ -713,6 +714,85 @@ export function computeHighlights(allStats, prevLength, count, computeBins, opti
 }
 
 /**
+ * Fetch and validate an external JSON dataset from a URL.
+ * @param {string} url - Must be https://
+ * @param {Function} onDataset - Called with the dataset object
+ * @param {Function} populateEditor - Called to fill the paste area
+ * @param {Function} resolve - Called when done (resolves the ready promise)
+ */
+function fetchExternalJSON(url, onDataset, populateEditor, resolve) {
+  if (!url.startsWith('https://')) {
+    announce('External datasets require HTTPS URLs.');
+    resolve();
+    return;
+  }
+  fetch(url, { mode: 'cors' })
+    .then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    })
+    .then(ds => {
+      if (!ds.variables || !Array.isArray(ds.variables) || !ds.rows || !Array.isArray(ds.rows)) {
+        throw new Error('Invalid format: must have "variables" and "rows" arrays.');
+      }
+      if (ds.rows.length > 50_000) throw new Error('Too many rows (max 50,000).');
+      // Sanitize variable names
+      for (const v of ds.variables) {
+        if (typeof v.name !== 'string') throw new Error('Each variable must have a "name" string.');
+        v.name = v.name.replace(/<[^>]*>/g, '').trim();
+      }
+      const meta = { id: 'external', name: ds.name || 'External data', description: ds.description || '', type: 'external', n: ds.rows.length };
+      onDataset(ds, meta);
+      if (ds.rows && ds.variables) {
+        const cols = ds.variables.map(/** @param {any} v */ v => v.name);
+        populateEditor(rowsToCSV(ds.rows, cols), meta.name);
+      }
+      resolve();
+    })
+    .catch(err => {
+      const msg = err instanceof TypeError
+        ? 'Could not load external data. The server may not allow cross-origin requests.'
+        : `Failed to load external data: ${err.message}`;
+      announce(msg);
+      resolve();
+    });
+}
+
+/**
+ * Fetch an external CSV file from a URL and parse it.
+ * @param {string} url - Must be https://
+ * @param {Function} handleText - Called with (csvText, sourceName)
+ * @param {Function} populateEditor - Called to fill the paste area
+ * @param {Function} resolve - Called when done
+ */
+function fetchExternalCSV(url, handleText, populateEditor, resolve) {
+  if (!url.startsWith('https://')) {
+    announce('External data requires HTTPS URLs.');
+    resolve();
+    return;
+  }
+  fetch(url, { mode: 'cors' })
+    .then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.text();
+    })
+    .then(text => {
+      if (text.length > 5_000_000) throw new Error('File too large (max 5MB).');
+      const name = url.split('/').pop()?.replace(/\.\w+$/, '') || 'external';
+      handleText(text, name);
+      populateEditor(text, name);
+      resolve();
+    })
+    .catch(err => {
+      const msg = err instanceof TypeError
+        ? 'Could not load external data. The server may not allow cross-origin requests.'
+        : `Failed to load external CSV: ${err.message}`;
+      announce(msg);
+      resolve();
+    });
+}
+
+/**
  * Initialize a standard data panel with dataset dropdown, paste, file input, and clear button.
  * Handles common wiring and delegates page-specific processing to callbacks.
  *
@@ -722,7 +802,7 @@ export function computeHighlights(allStats, prevLength, count, computeBins, opti
  * @param {(parsed: {headers:string[], types:string[], data:Array<Record<string,any>>}, sourceName: string) => void} [config.onText] - Called with parseCSV result for paste/file
  * @param {(text: string, sourceName: string) => void} [config.onRawText] - Receive raw text instead (overrides onText)
  * @param {() => void} config.onClear - Called when clear button clicked
- * @returns {{ getDatasetIndex: () => Array<{id:string,name:string,description:string,type:string,n:number}>, populateEditor: (csvText:string, sourceName:string) => void, refilterDatasets: (filterFn: (ds: any) => boolean) => void }}
+ * @returns {{ getDatasetIndex: () => Array<{id:string,name:string,description:string,type:string,n:number}>, populateEditor: (csvText:string, sourceName:string) => void, refilterDatasets: (filterFn: (ds: any) => boolean) => void, ready: Promise<void>, currentDatasetId: string|null }}
  */
 export function initDataPanel(config) {
   const { datasetFilter, onDataset, onText, onRawText, onClear } = config;
@@ -740,6 +820,17 @@ export function initDataPanel(config) {
 
   /** Track the current data source name for save filename. */
   let currentSourceName = 'data';
+
+  /** Track the current dataset ID (null if data came from paste/file/URL). */
+  let currentDatasetId = /** @type {string|null} */ (null);
+
+  /** URL params parsed once for auto-load logic. */
+  const urlParams = parseParams();
+
+  /** Promise that resolves after URL auto-load completes (or immediately if none). */
+  /** @type {(value?: any) => void} */
+  let resolveReady = /** @type {(value?: any) => void} */ (() => {});
+  const ready = new Promise(resolve => { resolveReady = resolve; });
 
   /**
    * Populate the edit textarea with CSV text from loaded data.
@@ -774,11 +865,52 @@ export function initDataPanel(config) {
   // ── Dataset dropdown ──
   if (datasetSelect) {
     loadDatasetIndex(datasetSelect, datasetFilter, datasetDesc)
-      .then(index => { fullIndex = index; datasetIndex = index; });
+      .then(index => {
+        fullIndex = index;
+        datasetIndex = index;
+
+        // Auto-select dataset from URL param (?dataset=NAME)
+        if (urlParams.dataset && index.some(ds => ds.id === urlParams.dataset)) {
+          datasetSelect.value = urlParams.dataset;
+          datasetSelect.dispatchEvent(new Event('change'));
+        } else if (urlParams.data && urlParams.data.length > 0) {
+          // Auto-load inline data from URL (?data=1,2,3,...)
+          const csv = 'value\n' + urlParams.data.join('\n');
+          queueMicrotask(() => {
+            handleText(csv, 'URL data');
+            populateEditor(csv, 'url_data');
+            resolveReady();
+          });
+        } else {
+          // Check sessionStorage for cross-page transfer
+          const transfer = consumeTransferData();
+          if (transfer?.datasetId && index.some(ds => ds.id === transfer.datasetId)) {
+            datasetSelect.value = transfer.datasetId;
+            datasetSelect.dispatchEvent(new Event('change'));
+          } else if (transfer?.csvText) {
+            const tCsv = /** @type {string} */ (transfer.csvText);
+            const tName = transfer.sourceName || 'Transferred data';
+            queueMicrotask(() => {
+              handleText(tCsv, tName);
+              populateEditor(tCsv, tName);
+              resolveReady();
+            });
+          } else if (urlParams.json) {
+            // Fetch external JSON dataset (?json=URL)
+            fetchExternalJSON(urlParams.json, onDataset, populateEditor, resolveReady);
+          } else if (urlParams.csv) {
+            // Fetch external CSV (?csv=URL)
+            fetchExternalCSV(urlParams.csv, handleText, populateEditor, resolveReady);
+          } else {
+            resolveReady();
+          }
+        }
+      });
 
     datasetSelect.addEventListener('change', () => {
       const id = datasetSelect.value;
       if (!id) {
+        currentDatasetId = null;
         if (datasetDesc) datasetDesc.textContent = '';
         return;
       }
@@ -787,15 +919,19 @@ export function initDataPanel(config) {
 
       fetchDataset(id)
         .then(ds => {
+          currentDatasetId = id;
           onDataset(ds, meta);
           // Populate editor with dataset as CSV
           if (ds.rows && ds.variables) {
             const cols = ds.variables.map(/** @param {any} v */ v => v.name);
             populateEditor(rowsToCSV(ds.rows, cols), meta?.name ?? id);
           }
+          resolveReady();
         })
         .catch(() => announce('Failed to load dataset.'));
     });
+  } else {
+    resolveReady();
   }
 
   // ── Text handler (shared by paste + file) ──
@@ -853,6 +989,8 @@ export function initDataPanel(config) {
     getDatasetIndex: () => datasetIndex,
     populateEditor,
     refilterDatasets,
+    ready,
+    get currentDatasetId() { return currentDatasetId; },
   };
 }
 
@@ -957,20 +1095,24 @@ export function rootPrefix() {
 }
 
 /**
- * Build a URL to a simulation page, optionally passing data via query params.
+ * Build a URL to another StatBench page, optionally passing data via query params.
+ * Prefers `?dataset=` over `?data=` when a dataset ID is available (shorter URL, full metadata).
  *
- * @param {string} simPage - Path from repo root (e.g., 'simulate/bootstrap-mean/')
+ * @param {string} targetPage - Path from repo root (e.g., 'simulate/bootstrap-mean/')
  * @param {object} [opts]
- * @param {number[]} [opts.data] - Numeric data to pass via ?data=
- * @param {Record<string, string|number>} [opts.params] - Additional URL params (p, direction, etc.)
+ * @param {string} [opts.dataset] - Bundled dataset ID (preferred over data)
+ * @param {number[]} [opts.data] - Numeric data to pass via ?data= (fallback)
+ * @param {Record<string, string|number>} [opts.params] - Additional URL params (p, direction, var, success, etc.)
  * @returns {string}
  */
-export function buildSimLink(simPage, opts) {
+export function buildSimLink(targetPage, opts) {
   const prefix = rootPrefix();
-  let url = `${prefix}${simPage}`;
+  let url = `${prefix}${targetPage}`;
   const qp = new URLSearchParams();
 
-  if (opts?.data && opts.data.length > 0 && opts.data.length <= 2000) {
+  if (opts?.dataset) {
+    qp.set('dataset', opts.dataset);
+  } else if (opts?.data && opts.data.length > 0 && opts.data.length <= 2000) {
     qp.set('data', opts.data.join(','));
   }
   if (opts?.params) {
@@ -981,4 +1123,33 @@ export function buildSimLink(simPage, opts) {
 
   const qs = qp.toString();
   return qs ? `${url}?${qs}` : url;
+}
+
+/**
+ * Store data for cross-page transfer via sessionStorage.
+ * Used when data is too large for URL params or came from paste/file input.
+ *
+ * @param {object} payload
+ * @param {string} [payload.datasetId] - Bundled dataset ID (receiver fetches fresh)
+ * @param {string} [payload.csvText] - Raw CSV text (for pasted/file data)
+ * @param {string} [payload.sourceName] - Display name for the data
+ */
+export function storeTransferData(payload) {
+  try {
+    sessionStorage.setItem('statbench-transfer', JSON.stringify(payload));
+  } catch { /* sessionStorage full or unavailable */ }
+}
+
+/**
+ * Retrieve and consume transfer data from sessionStorage. Returns null if none.
+ * Data is removed after reading (one-shot transfer).
+ * @returns {{datasetId?: string, csvText?: string, sourceName?: string}|null}
+ */
+export function consumeTransferData() {
+  try {
+    const raw = sessionStorage.getItem('statbench-transfer');
+    if (!raw) return null;
+    sessionStorage.removeItem('statbench-transfer');
+    return JSON.parse(raw);
+  } catch { return null; }
 }

@@ -422,7 +422,8 @@ export function initSimPage(config) {
   }
 
   // Apply URL params
-  if (urlParams.data) {
+  // Apply inline ?data= only if no ?dataset= (dataset auto-select handles that case)
+  if (urlParams.data && !urlParams.dataset) {
     data1 = urlParams.data;
     showDataLoaded();
   }
@@ -965,6 +966,12 @@ export function initSimPage(config) {
           opt.value = ds.id;
           opt.textContent = `${ds.name} (n = ${ds.n})`;
           datasetSelect.appendChild(opt);
+        }
+
+        // Auto-select dataset from URL param (?dataset=NAME)
+        if (urlParams.dataset && relevant.some(ds => ds.id === urlParams.dataset)) {
+          datasetSelect.value = urlParams.dataset;
+          datasetSelect.dispatchEvent(new Event('change'));
         }
       })
       .catch(() => {

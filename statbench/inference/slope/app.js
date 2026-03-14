@@ -147,7 +147,7 @@ function handleText(parsed, sourceName) {
   announce(`Loaded ${currentRows.length} observations from "${sourceName}".`);
 }
 
-initDataPanel({
+const dataPanel = initDataPanel({
   datasetFilter: ds => ds.type === 'regression',
   onDataset: handleDataset,
   onText: handleText,
@@ -234,7 +234,10 @@ function showResults() {
   const n = result.n;
   const conditionsMet = n >= 30;
   if (!conditionsMet && conditionsWarning) {
-    const bootLink = buildSimLink('simulate/bootstrap-slope/');
+    const dsId = dataPanel.currentDatasetId;
+    const bootLink = dsId
+      ? buildSimLink('simulate/bootstrap-slope/', { dataset: dsId })
+      : buildSimLink('simulate/bootstrap-slope/');
     conditionsWarning.innerHTML = `<p><strong>Note:</strong> With n = ${n} (< 30), the t-test for slope assumes
       that residuals are approximately normal with constant variance, and that the relationship is linear.</p>
       <p>If conditions are questionable, consider the <a href="${bootLink}">Bootstrap Slope CI</a> which is less sensitive to these assumptions.</p>`;
