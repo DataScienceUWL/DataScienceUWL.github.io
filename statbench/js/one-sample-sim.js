@@ -538,7 +538,7 @@ export function initOneSamplePage(config) {
     let xScale;
     lastHistResult = null;
 
-    const precision = isProp ? 2 : dataPrecision;
+    const precision = isProp ? Math.max(3, String(sampleN).length) : dataPrecision;
 
     if (activeChart === 'dotplot') {
       const dotOpts = {
@@ -554,7 +554,7 @@ export function initOneSamplePage(config) {
         precision,
         numBins: /** @type {number|undefined} */ (undefined),
       };
-      if (isProp && sampleN <= 50) {
+      if (isProp) {
         dotOpts.numBins = sampleN;
       }
       const r = drawDotplot(chartContainer, stats, dotOpts);

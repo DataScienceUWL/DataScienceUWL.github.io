@@ -451,14 +451,15 @@ export function computeHighlights(allStats, prevLength, count, computeBins, opti
   /** @type {number[]|undefined} */
   let prevBinCounts;
 
-  if (allStats.length <= 200) {
-    if (count === 1) {
-      hlIndex = allStats.length - 1;
-    } else {
-      hlIndices = new Set();
-      for (let j = prevLength; j < allStats.length; j++) hlIndices.add(j);
-    }
-  } else if (prevLength > 0) {
+  // Always compute dot-level highlights (needed for dotplot at any n)
+  if (count === 1) {
+    hlIndex = allStats.length - 1;
+  } else {
+    hlIndices = new Set();
+    for (let j = prevLength; j < allStats.length; j++) hlIndices.add(j);
+  }
+
+  if (allStats.length > 200 && prevLength > 0) {
     // Use the FULL dataset domain so prev bins align with current bins
     const prevStats = allStats.slice(0, prevLength);
     const { bins: prevBins } = computeBins(prevStats, {
