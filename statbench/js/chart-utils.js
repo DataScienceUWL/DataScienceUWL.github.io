@@ -304,7 +304,7 @@ function detectPhoneMargin() {
  * @param {d3Selection.Selection} textEl - SVG <text> element
  * @param {string} label - Label text, may contain combining overline chars
  */
-function renderStatLabel(textEl, label) {
+export function renderStatLabel(textEl, label) {
   // Pattern: any character followed by combining overline (U+0304)
   const parts = label.split(/(.(?:\u0304))/u);
   let hasOverline = false;

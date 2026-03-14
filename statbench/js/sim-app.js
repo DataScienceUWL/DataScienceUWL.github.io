@@ -11,7 +11,7 @@ import { mean, median, sd, quantile, resample, permute, detectPrecision, formatS
 import { bootstrapCI, permutationPValue } from './sim-engine.js';
 import * as d3Selection from 'd3-selection';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
-import { drawDotplot } from './dotplot.js';
+import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { drawSpike } from './spike.js';
 import { renderSimPills } from './chart-utils.js';
 import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart } from './page-utils.js';
@@ -146,7 +146,7 @@ export function initSimPage(config) {
   /** @type {{ xScale: any, yScale: any, bins: any[], domain: [number,number] } | null} */
   let lastHistResult = null;
   /** Cached dotplot result for theory overlay on dotplots. */
-  /** @type {{ xScale: any, frame: any, domain: [number,number] } | null} */
+  /** @type {{ xScale: any, frame: any, domain: [number,number], maxStack: number, numBins: number } | null} */
   let lastDotResult = null;
 
   // Chart type toggle (Dotplot / Histogram) — radio-based segmented control
@@ -283,22 +283,23 @@ export function initSimPage(config) {
         label,
       });
     } else if (lastDotResult) {
-      // Dotplot mode: scale PDF so the curve peak fits the chart height
-      const { xScale: dxScale, frame, domain: dom } = lastDotResult;
+      // Dotplot mode: scale PDF peak to match the tallest dot stack height
+      const { xScale: dxScale, frame, domain: dom, maxStack, numBins } = lastDotResult;
       const peakPdf = normalPdf(center, center, se);
-      if (peakPdf <= 0) return;
-      // Scale curve peak to ~85% of chart inner height
-      const targetPeakY = frame.height * 0.85;
-      const scaleFactor = targetPeakY / peakPdf;
-      // Create a y-scale that maps from scaled PDF value → SVG y coordinate
+      if (peakPdf <= 0 || maxStack <= 0) return;
+
+      // Compute dot radius to determine actual stack height in pixels
+      const dotRadius = computeDotRadius(frame.width, frame.height, maxStack, numBins);
+      const stackHeightPx = maxStack * dotRadius * 2;
+      // Scale the curve so its peak matches the tallest stack height
+      const scaleFactor = stackHeightPx / peakPdf;
+      // y-scale: map from scaled PDF pixel height → SVG y coordinate (top-down)
       const yScale = (/** @type {number} */ freqY) => frame.height - freqY;
 
       overlayTheoryCurve({
         container: chartContainer,
         pdf: (x) => normalPdf(x, center, se),
         xDomain: dom,
-        // For dotplot: pass totalN=1 and binWidth=scaleFactor so that
-        // totalN * binWidth * pdf(x) = scaleFactor * pdf(x) = scaled pixel height
         totalN: 1,
         binWidth: scaleFactor,
         xScale: dxScale,
@@ -1848,7 +1849,9 @@ export function initSimPage(config) {
       });
       chartResult = r.frame;
       chartXScale = r.xScale;
-      lastDotResult = { xScale: r.xScale, frame: r.frame, domain: domain || [0, 1] };
+      const maxStack = r.dots.reduce((m, d) => Math.max(m, d.stackIndex + 1), 0);
+      const effectiveBins = (config.proportion ? sampleSize : userBinCount) ?? Math.min(n, 40);
+      lastDotResult = { xScale: r.xScale, frame: r.frame, domain: domain || [0, 1], maxStack, numBins: effectiveBins };
       lastHistResult = null;
     } else if (activeChart === 'spike') {
       const r = drawSpike(chartContainer, stats, {

@@ -10,6 +10,7 @@
 
 import * as d3Selection from 'd3-selection';
 import * as d3Shape from 'd3-shape';
+import { renderStatLabel } from './chart-utils.js';
 
 /** Color for the theoretical curve (IMS red). */
 const THEORY_COLOR = '#F05133';
@@ -109,14 +110,14 @@ export function overlayTheoryCurve(options) {
     }
     const lx = xScale(peakX);
     const ly = yScale(scaleFactor * peakY);
-    g.append('text')
+    const textEl = g.append('text')
       .attr('x', lx + 10)
       .attr('y', Math.max(ly - 6, 14))
       .attr('fill', color)
       .attr('font-size', '13px')
       .attr('font-weight', '700')
-      .attr('font-family', 'var(--font-body, sans-serif)')
-      .text(label);
+      .attr('font-family', 'var(--font-body, sans-serif)');
+    renderStatLabel(textEl, label);
   }
 }
 
