@@ -196,8 +196,8 @@ export function drawDotplot(container, values, options = {}) {
     renderObservedLine(overlaysGroup, observedStat, xScale, frame.height, precision, observedLabel);
   }
   if (ciLines) {
-    renderCILine(overlaysGroup, ciLines[0], xScale, frame.height);
-    renderCILine(overlaysGroup, ciLines[1], xScale, frame.height);
+    renderCILine(overlaysGroup, ciLines[0], xScale, frame.height, precision);
+    renderCILine(overlaysGroup, ciLines[1], xScale, frame.height, precision);
   }
 
   return {
@@ -268,8 +268,8 @@ export function drawDotplot(container, values, options = {}) {
         renderObservedLine(overlays, newObserved, xScale, frame.height, precision, opts.observedLabel ?? observedLabel);
       }
       if (newCiLines) {
-        renderCILine(overlays, newCiLines[0], xScale, frame.height);
-        renderCILine(overlays, newCiLines[1], xScale, frame.height);
+        renderCILine(overlays, newCiLines[0], xScale, frame.height, precision);
+        renderCILine(overlays, newCiLines[1], xScale, frame.height, precision);
       }
     },
   };
@@ -623,8 +623,9 @@ const CI_COLOR = '#114B5F';
  * @param {number} value
  * @param {d3Scale.ScaleLinear<number, number>} xScale
  * @param {number} innerHeight
+ * @param {number} [precision=2] - Decimal places for value label
  */
-function renderCILine(overlays, value, xScale, innerHeight) {
+function renderCILine(overlays, value, xScale, innerHeight, precision = 2) {
   const x = xScale(value);
   overlays.append('line')
     .attr('x1', x).attr('x2', x)
@@ -638,5 +639,5 @@ function renderCILine(overlays, value, xScale, innerHeight) {
     .attr('x', x).attr('y', -4)
     .attr('text-anchor', 'middle')
     .attr('fill', CI_COLOR)
-    .text(value.toFixed(2));
+    .text(value.toFixed(precision));
 }

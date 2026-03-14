@@ -339,6 +339,7 @@ export function renderSimChart(container, stats, opts) {
       thresholds: opts.thresholds,
       prevBinCounts: opts.prevBinCounts,
       numBins: opts.numBins,
+      precision: opts.precision,
     });
     frame = r.frame;
     xScale = r.xScale;

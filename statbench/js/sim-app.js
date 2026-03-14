@@ -1754,6 +1754,7 @@ export function initSimPage(config) {
         numBins: config.proportion ? sampleSize : userBinCount,
         highlightIndex,
         highlightIndices,
+        precision: dataPrecision,
       });
       chartResult = r.frame;
       chartXScale = r.xScale;
@@ -1783,6 +1784,7 @@ export function initSimPage(config) {
         thresholds: propThresholds,
         numBins: userBinCount,
         prevBinCounts: prevBinCounts ?? undefined,
+        precision: dataPrecision,
       });
       chartResult = r.frame;
       chartXScale = r.xScale;
@@ -1866,13 +1868,15 @@ export function initSimPage(config) {
     const popPhrase = ctx.population ? ` for ${ctx.population}` : '';
     /** @param {number} v */
     const fmt = (v) => config.proportion ? formatStat(v, dataPrecision, 'proportion') : formatStat(v, dataPrecision);
+    const ciLo = `<span class="ci-value">${fmt(ci[0])}</span>`;
+    const ciHi = `<span class="ci-value">${fmt(ci[1])}</span>`;
     resultDiv.innerHTML = `
       <p><strong>Bootstrap Distribution</strong> (${stats.length} resamples)</p>
       <p>${paramLabel}: ${fmt(m)}</p>
       <p>SE: ${formatStat(se, dataPrecision)}</p>
-      <p><strong>${ciLevel}% Confidence Interval:</strong> (${fmt(ci[0])}, ${fmt(ci[1])})</p>
-      <p class="interpretation">The middle ${ciLevel}% of bootstrap ${bootLong}s fall between ${fmt(ci[0])}${unitSuffix} and ${fmt(ci[1])}${unitSuffix}.</p>
-      <p class="interpretation">We are ${ciLevel}% confident that the ${ctxParam}${popPhrase} is between ${fmt(ci[0])}${unitSuffix} and ${fmt(ci[1])}${unitSuffix}.</p>
+      <p><strong>${ciLevel}% Confidence Interval:</strong> (${ciLo}, ${ciHi})</p>
+      <p class="interpretation">The middle ${ciLevel}% of bootstrap ${bootLong}s fall between ${ciLo}${unitSuffix} and ${ciHi}${unitSuffix}.</p>
+      <p class="interpretation">We are ${ciLevel}% confident that the ${ctxParam}${popPhrase} is between ${ciLo}${unitSuffix} and ${ciHi}${unitSuffix}.</p>
       ${stats.length < 50 ? '<p class="hint">CI is approximate with few resamples. Generate more for stability.</p>' : ''}
     `;
   }
@@ -1889,11 +1893,11 @@ export function initSimPage(config) {
       : direction === 'right' ? 'right-tail' : 'left-tail';
     let obsLabel;
     if (config.proportion) {
-      obsLabel = `p̂<sub>${group1Name}</sub> − p̂<sub>${group2Name}</sub> = ${formatStat(observedStat, dataPrecision, 'proportion')}`;
+      obsLabel = `p̂<sub>${group1Name}</sub> − p̂<sub>${group2Name}</sub> = <span class="observed-value">${formatStat(observedStat, dataPrecision, 'proportion')}</span>`;
     } else if (config.twoGroup) {
-      obsLabel = `x̄<sub>${group1Name}</sub> − x̄<sub>${group2Name}</sub> = ${formatStat(observedStat, dataPrecision)}`;
+      obsLabel = `x̄<sub>${group1Name}</sub> − x̄<sub>${group2Name}</sub> = <span class="observed-value">${formatStat(observedStat, dataPrecision)}</span>`;
     } else {
-      obsLabel = formatStat(observedStat, dataPrecision);
+      obsLabel = `<span class="observed-value">${formatStat(observedStat, dataPrecision)}</span>`;
     }
     // Plain-language interpretation
     let strength;

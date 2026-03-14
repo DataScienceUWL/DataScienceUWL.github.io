@@ -266,6 +266,7 @@ function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts
     prevBinCounts,
     thresholds: hlThresholds,
     pillMode: ci ? 'bootstrap' : undefined,
+    precision: dataPrecision,
   });
 }
 
@@ -279,13 +280,15 @@ function displayResults(slopes, ci, se, ciLevel) {
   if (!resultDiv) return;
   const d = dataPrecision;
   const fmt = (v) => formatStat(v, d);
+  const ciLo = `<span class="ci-value">${fmt(ci[0])}</span>`;
+  const ciHi = `<span class="ci-value">${fmt(ci[1])}</span>`;
   resultDiv.innerHTML = `
     <p><strong>Bootstrap Distribution</strong> (${slopes.length} resamples)</p>
     <p>Observed slope: ${fmt(observedSlope)}</p>
     <p>Bootstrap mean slope: ${fmt(mean(slopes))}</p>
     <p>SE: ${fmt(se)}</p>
-    <p><strong>${ciLevel}% Confidence Interval:</strong> (${fmt(ci[0])}, ${fmt(ci[1])})</p>
-    <p class="interpretation">We are ${ciLevel}% confident that the ${datasetContext.parameter || 'true population slope'}${datasetContext.population ? ' for ' + datasetContext.population : ''} is between ${fmt(ci[0])} and ${fmt(ci[1])}. The ${bootLines.length} semi-transparent lines on the scatterplot show the variability in the fitted regression across bootstrap resamples.</p>
+    <p><strong>${ciLevel}% Confidence Interval:</strong> (${ciLo}, ${ciHi})</p>
+    <p class="interpretation">We are ${ciLevel}% confident that the ${datasetContext.parameter || 'true population slope'}${datasetContext.population ? ' for ' + datasetContext.population : ''} is between ${ciLo} and ${ciHi}. The ${bootLines.length} semi-transparent lines on the scatterplot show the variability in the fitted regression across bootstrap resamples.</p>
     ${slopes.length < 50 ? '<p class="hint">CI is approximate with few resamples. Generate more for stability.</p>' : ''}
   `;
 }
