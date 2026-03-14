@@ -218,6 +218,7 @@ export function drawDotplot(container, values, options = {}) {
       // Clear existing data
       dataGroup.selectAll('circle').remove();
       dataGroup.selectAll('.col-line').remove();
+      dataGroup.selectAll('.col-highlight').remove();
 
       if (newOverflow) {
         // Switch to column mode — need y-axis
@@ -430,34 +431,52 @@ function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, high
     .attr('role', 'listitem')
     .attr('aria-label', d => `${formatTick(d.center)}: ${d.count}`);
 
-  // Highlight columns that contain new dots
+  // Highlight only the NEW portion of columns that received new dots
   if (highlightIndex >= 0 || (highlightIndices && highlightIndices.size > 0)) {
-    /** @type {Set<number>} */
-    const highlightedCenters = new Set();
+    // Count how many new dots landed in each bin
+    /** @type {Map<number, number>} */
+    const newCountByCenter = new Map();
     for (let i = 0; i < dots.length; i++) {
       if (i === highlightIndex || (highlightIndices && highlightIndices.has(i))) {
-        highlightedCenters.add(dots[i].binCenter);
+        const c = dots[i].binCenter;
+        newCountByCenter.set(c, (newCountByCenter.get(c) ?? 0) + 1);
       }
     }
 
-    const highlighted = lines.filter(d => highlightedCenters.has(d.center));
+    // Draw overlay segments for just the new portion of each affected column
     const isOneShot = highlightIndex >= 0 && (!highlightIndices || highlightIndices.size === 0);
-    highlighted
-      .attr('stroke', HIGHLIGHT_FILL)
-      .attr('stroke-width', isOneShot ? colWidth + 2 : colWidth + 1);
+    const hlWidth = isOneShot ? colWidth + 2 : colWidth + 1;
 
-    // Revert after delay
+    /** @type {Array<{center: number, totalCount: number, newCount: number}>} */
+    const hlData = [];
+    for (const [center, newCount] of newCountByCenter) {
+      const total = bins.get(center)?.count ?? newCount;
+      hlData.push({ center, totalCount: total, newCount });
+    }
+
+    const hlLines = group.selectAll('.col-highlight')
+      .data(hlData)
+      .join('line')
+      .attr('class', 'col-highlight')
+      .attr('x1', d => xScale(d.center))
+      .attr('x2', d => xScale(d.center))
+      .attr('y1', d => yScale(d.totalCount - d.newCount))  // bottom of new portion
+      .attr('y2', d => yScale(d.totalCount))                // top of column
+      .attr('stroke', HIGHLIGHT_FILL)
+      .attr('stroke-width', hlWidth)
+      .attr('stroke-linecap', 'round');
+
+    // Revert: fade out highlight segments
     const reducedMotion = prefersReducedMotion();
     setTimeout(() => {
-      highlighted.each(function(d) {
-        const el = /** @type {SVGLineElement} */ (this);
-        if (reducedMotion) {
-          el.setAttribute('stroke', colColor(d.center));
-          el.setAttribute('stroke-width', String(colWidth));
-        } else {
-          animateColumnRevert(el, colColor(d.center), colWidth, 400);
-        }
-      });
+      if (reducedMotion) {
+        hlLines.remove();
+      } else {
+        hlLines.each(function() {
+          const el = /** @type {SVGLineElement} */ (this);
+          animateColumnRevert(el, 'transparent', 0, 400, () => el.remove());
+        });
+      }
     }, 800);
   }
 
@@ -472,24 +491,36 @@ function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, high
 }
 
 /**
- * Animate a highlighted column back to its normal stroke color and width.
+ * Animate a highlighted column back to its normal stroke color and width,
+ * or fade it out (when onComplete is provided for overlay removal).
  * @param {SVGLineElement} el
- * @param {string} targetColor - Normal stroke color (hex)
+ * @param {string} targetColor - Normal stroke color (hex), or 'transparent' to fade out
  * @param {number} targetWidth - Normal stroke-width
  * @param {number} duration - Animation duration in ms
+ * @param {(() => void)} [onComplete] - Called when animation finishes
  */
-function animateColumnRevert(el, targetColor, targetWidth, duration) {
+function animateColumnRevert(el, targetColor, targetWidth, duration, onComplete) {
+  const fadeOut = targetColor === 'transparent';
   const startColor = hexToRGB(el.getAttribute('stroke') ?? HIGHLIGHT_FILL);
-  const endColor = hexToRGB(targetColor);
+  const endColor = fadeOut ? startColor : hexToRGB(targetColor);
   const startW = parseFloat(el.getAttribute('stroke-width') ?? String(targetWidth));
+  const startOpacity = 1;
   const start = performance.now();
 
   function tick(now) {
     const t = Math.min((now - start) / duration, 1);
     const e = 1 - (1 - t) * (1 - t); // ease-out quad
-    el.setAttribute('stroke', lerpColor(startColor, endColor, e));
-    el.setAttribute('stroke-width', String(startW + (targetWidth - startW) * e));
-    if (t < 1) requestAnimationFrame(tick);
+    if (fadeOut) {
+      el.setAttribute('opacity', String(1 - e));
+    } else {
+      el.setAttribute('stroke', lerpColor(startColor, endColor, e));
+      el.setAttribute('stroke-width', String(startW + (targetWidth - startW) * e));
+    }
+    if (t < 1) {
+      requestAnimationFrame(tick);
+    } else if (onComplete) {
+      onComplete();
+    }
   }
   requestAnimationFrame(tick);
 }
