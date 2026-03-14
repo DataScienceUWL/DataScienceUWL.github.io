@@ -14,7 +14,7 @@ import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.j
 import { drawDotplot } from './dotplot.js';
 import { drawSpike } from './spike.js';
 import { renderSimPills } from './chart-utils.js';
-import { initPlayPause, setupFileInput, initHelp } from './page-utils.js';
+import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, buildToggleHTML as buildToggleHTMLShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
@@ -723,14 +723,17 @@ export function initSimPage(config) {
       if (config.paired && originalContentEl) {
         // Paired bootstrap: show differences in one-sample mechanism strip
         mechanismStrip.hidden = false;
+        initMechanismCollapse(mechanismStrip);
         renderOriginalSample();
       } else if (config.mode === 'bootstrap' && !config.twoGroup && originalContentEl) {
         // One-sample bootstrap: original sample chips/histogram
         mechanismStrip.hidden = false;
+        initMechanismCollapse(mechanismStrip);
         renderOriginalSample();
       } else if (config.twoGroup) {
         // Two-group: show original group summaries
         mechanismStrip.hidden = false;
+        initMechanismCollapse(mechanismStrip);
         renderTwoGroupOriginal();
       }
     }
@@ -1429,10 +1432,6 @@ export function initSimPage(config) {
         }
       }
     }
-    if (resampleToggle) {
-      resampleToggle.textContent = resampleViewMode === 'summary' ? 'Histogram' : 'Summary';
-    }
-
     // Mechanism description: summarize what "with replacement" did
     if (mechanismDescEl) {
       if (config.proportion && !config.twoGroup) {
@@ -1583,14 +1582,37 @@ export function initSimPage(config) {
     resampleContentEl.appendChild(container);
   }
 
-  // Toggle button
+  // Replace single toggle button with segmented control
   if (resampleToggle) {
-    resampleToggle.addEventListener('click', () => {
-      resampleViewMode = resampleViewMode === 'summary' ? 'histogram' : 'summary';
-      if (lastResample.length > 0) {
-        showResample(lastResample);
-      }
-    });
+    const seg = document.createElement('div');
+    seg.className = 'seg-control';
+    seg.setAttribute('role', 'group');
+    seg.setAttribute('aria-label', 'Resample view');
+
+    const btnSummary = document.createElement('button');
+    btnSummary.type = 'button';
+    btnSummary.textContent = 'Summary';
+    btnSummary.setAttribute('aria-pressed', 'true');
+
+    const btnHistogram = document.createElement('button');
+    btnHistogram.type = 'button';
+    btnHistogram.textContent = 'Histogram';
+    btnHistogram.setAttribute('aria-pressed', 'false');
+
+    seg.appendChild(btnSummary);
+    seg.appendChild(btnHistogram);
+    resampleToggle.replaceWith(seg);
+
+    /** @param {'summary'|'histogram'} mode */
+    function setResampleView(mode) {
+      resampleViewMode = mode;
+      btnSummary.setAttribute('aria-pressed', String(mode === 'summary'));
+      btnHistogram.setAttribute('aria-pressed', String(mode === 'histogram'));
+      if (lastResample.length > 0) showResample(lastResample);
+    }
+
+    btnSummary.addEventListener('click', () => setResampleView('summary'));
+    btnHistogram.addEventListener('click', () => setResampleView('histogram'));
   }
 
   // Re-render when CI level changes

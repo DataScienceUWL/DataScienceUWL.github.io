@@ -270,6 +270,43 @@ export function flashMechanism(mechanismStrip) {
 }
 
 /**
+ * Add a collapse toggle to the mechanism strip.
+ * Inserts a bar with "Hide sampling detail" / "Show sampling detail" button.
+ * State is persisted in sessionStorage so it survives within a session.
+ * @param {HTMLElement|null} mechanismStrip - The #mechanism-strip element
+ */
+export function initMechanismCollapse(mechanismStrip) {
+  if (!mechanismStrip || mechanismStrip.querySelector('.mechanism-collapse-bar')) return;
+
+  const bar = document.createElement('div');
+  bar.className = 'mechanism-collapse-bar';
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'mechanism-collapse-btn';
+  btn.textContent = 'Hide sampling detail';
+  btn.setAttribute('aria-expanded', 'true');
+
+  // Restore persisted state
+  const collapsed = sessionStorage.getItem('mechanism-collapsed') === 'true';
+  if (collapsed) {
+    mechanismStrip.classList.add('collapsed');
+    btn.textContent = 'Show sampling detail';
+    btn.setAttribute('aria-expanded', 'false');
+  }
+
+  btn.addEventListener('click', () => {
+    const isCollapsed = mechanismStrip.classList.toggle('collapsed');
+    btn.textContent = isCollapsed ? 'Show sampling detail' : 'Hide sampling detail';
+    btn.setAttribute('aria-expanded', String(!isCollapsed));
+    sessionStorage.setItem('mechanism-collapsed', String(isCollapsed));
+  });
+
+  bar.appendChild(btn);
+  mechanismStrip.insertBefore(bar, mechanismStrip.firstChild);
+}
+
+/**
  * Fetch the dataset index and populate a <select> element with matching datasets.
  * @param {HTMLSelectElement} selectEl - The dataset <select> element
  * @param {(ds: {id:string, type:string}) => boolean} filterFn - Filter function for relevant datasets

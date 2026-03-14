@@ -8,7 +8,7 @@
 import { createRng, shuffle } from '../../js/prng.js';
 import { chisqStat, formatStat } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, initDataPanel, computeHighlights } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, initMechanismCollapse, initDataPanel, computeHighlights } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
 
 // ─── DOM elements ───
@@ -215,6 +215,7 @@ function showDataLoaded() {
 
   if (mechanismStrip && mechObservedTable) {
     mechanismStrip.hidden = false;
+    initMechanismCollapse(mechanismStrip);
     mechObservedTable.innerHTML = renderTableHTML(observedTable, rowLabels, colLabels);
     if (mechObservedChisq) mechObservedChisq.textContent = formatStat(observedChisq, 2);
   }
