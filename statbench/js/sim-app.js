@@ -145,6 +145,9 @@ export function initSimPage(config) {
   /** Cached histogram result for theory overlay. */
   /** @type {{ xScale: any, yScale: any, bins: any[], domain: [number,number] } | null} */
   let lastHistResult = null;
+  /** Cached dotplot result for theory overlay on dotplots. */
+  /** @type {{ xScale: any, frame: any, domain: [number,number] } | null} */
+  let lastDotResult = null;
 
   // Chart type toggle (Dotplot / Histogram) — radio-based segmented control
   /** @type {HTMLFieldSetElement|null} */
@@ -176,7 +179,8 @@ export function initSimPage(config) {
     theoryCheckbox = createTheoryToggle(toggleFieldset, (checked) => {
       theoryOverlayOn = checked;
       if (allStats.length > 0) {
-        if (checked && getActiveChartType() === 'histogram') {
+        const activeType = getActiveChartType();
+        if (checked && (activeType === 'histogram' || activeType === 'dotplot')) {
           applyTheoryOverlay(allStats);
         } else if (chartContainer) {
           removeTheoryOverlay(chartContainer);
@@ -262,22 +266,46 @@ export function initSimPage(config) {
 
     if (!isFinite(se) || se <= 0) return;
 
-    // Use cached histogram scales for accurate overlay positioning
-    if (!lastHistResult) return;
-    const { xScale: hxScale, yScale: hyScale, bins, domain: dom } = lastHistResult;
-    if (!bins || bins.length === 0) return;
-    const binWidth = /** @type {number} */ (bins[0].x1) - /** @type {number} */ (bins[0].x0);
+    if (lastHistResult) {
+      // Histogram mode: scale PDF to match histogram bar heights
+      const { xScale: hxScale, yScale: hyScale, bins, domain: dom } = lastHistResult;
+      if (!bins || bins.length === 0) return;
+      const binWidth = /** @type {number} */ (bins[0].x1) - /** @type {number} */ (bins[0].x0);
 
-    overlayTheoryCurve({
-      container: chartContainer,
-      pdf: (x) => normalPdf(x, center, se),
-      xDomain: dom,
-      totalN: stats.length,
-      binWidth,
-      xScale: hxScale,
-      yScale: hyScale,
-      label,
-    });
+      overlayTheoryCurve({
+        container: chartContainer,
+        pdf: (x) => normalPdf(x, center, se),
+        xDomain: dom,
+        totalN: stats.length,
+        binWidth,
+        xScale: hxScale,
+        yScale: hyScale,
+        label,
+      });
+    } else if (lastDotResult) {
+      // Dotplot mode: scale PDF so the curve peak fits the chart height
+      const { xScale: dxScale, frame, domain: dom } = lastDotResult;
+      const peakPdf = normalPdf(center, center, se);
+      if (peakPdf <= 0) return;
+      // Scale curve peak to ~85% of chart inner height
+      const targetPeakY = frame.height * 0.85;
+      const scaleFactor = targetPeakY / peakPdf;
+      // Create a y-scale that maps from scaled PDF value → SVG y coordinate
+      const yScale = (/** @type {number} */ freqY) => frame.height - freqY;
+
+      overlayTheoryCurve({
+        container: chartContainer,
+        pdf: (x) => normalPdf(x, center, se),
+        xDomain: dom,
+        // For dotplot: pass totalN=1 and binWidth=scaleFactor so that
+        // totalN * binWidth * pdf(x) = scaleFactor * pdf(x) = scaled pixel height
+        totalN: 1,
+        binWidth: scaleFactor,
+        xScale: dxScale,
+        yScale,
+        label,
+      });
+    }
   }
 
   /**
@@ -1820,6 +1848,8 @@ export function initSimPage(config) {
       });
       chartResult = r.frame;
       chartXScale = r.xScale;
+      lastDotResult = { xScale: r.xScale, frame: r.frame, domain: domain || [0, 1] };
+      lastHistResult = null;
     } else if (activeChart === 'spike') {
       const r = drawSpike(chartContainer, stats, {
         id: 'sim-chart',
@@ -1851,6 +1881,7 @@ export function initSimPage(config) {
       chartResult = r.frame;
       chartXScale = r.xScale;
       lastHistResult = { xScale: r.xScale, yScale: r.yScale, bins: r.bins, domain: domain || [0, 1] };
+      lastDotResult = null;
     }
 
     // Add probability pills
@@ -1871,8 +1902,8 @@ export function initSimPage(config) {
       }
     }
 
-    // Theory overlay (only on histogram in bootstrap mode)
-    if (theoryOverlayOn && activeChart === 'histogram' && config.mode === 'bootstrap') {
+    // Theory overlay (histogram or dotplot, bootstrap mode only)
+    if (theoryOverlayOn && (activeChart === 'histogram' || activeChart === 'dotplot') && config.mode === 'bootstrap') {
       applyTheoryOverlay(stats);
     }
 
