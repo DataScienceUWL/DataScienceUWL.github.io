@@ -142,6 +142,9 @@ export function initSimPage(config) {
   /** Pre-simulated domain for initial empty chart axis. */
   /** @type {[number,number]|null} */
   let preSimDomain = null;
+  /** Locked dotplot bin grid — computed once from preSimDomain, reused for all renders. */
+  /** @type {{ binWidth: number, binOrigin: number } | null} */
+  let lockedDotGrid = null;
   /** Cached histogram result for theory overlay. */
   /** @type {{ xScale: any, yScale: any, bins: any[], domain: [number,number] } | null} */
   let lastHistResult = null;
@@ -199,6 +202,11 @@ export function initSimPage(config) {
       currentBins: 20,
       onChange: (bins) => {
         userBinCount = bins;
+        // Recompute locked dot grid with new bin count
+        if (preSimDomain) {
+          const gridBinWidth = (preSimDomain[1] - preSimDomain[0]) / bins;
+          lockedDotGrid = { binWidth: gridBinWidth, binOrigin: preSimDomain[0] };
+        }
         if (allStats.length > 0) {
           lastStatIndex = -1;
           batchHighlightIndices = null;
@@ -846,6 +854,11 @@ export function initSimPage(config) {
     const hi = preStats[preStats.length - 1 - TRIM];
     const pad = (hi - lo) * 0.1 || 0.5;
     preSimDomain = [lo - pad, hi + pad];
+
+    // Lock the dotplot bin grid so dots don't shift as domain grows
+    const gridNumBins = config.proportion ? data1.length : (userBinCount ?? 40);
+    const gridBinWidth = (preSimDomain[1] - preSimDomain[0]) / gridNumBins;
+    lockedDotGrid = { binWidth: gridBinWidth, binOrigin: preSimDomain[0] };
 
     // Render empty chart (no observed stat line — just axes)
     renderChart([]);
@@ -1734,6 +1747,7 @@ export function initSimPage(config) {
   function resetSimulation() {
     allStats = [];
     rng = null;
+    lockedDotGrid = null;
     // New random seed each reset (unless URL-locked for graded work)
     if (!urlSeed) {
       seed = Math.random().toString(36).slice(2, 10);
@@ -1843,6 +1857,8 @@ export function initSimPage(config) {
         animate: false,
         domain,
         numBins: config.proportion ? sampleSize : userBinCount,
+        binWidth: lockedDotGrid?.binWidth,
+        binOrigin: lockedDotGrid?.binOrigin,
         highlightIndex,
         highlightIndices,
         precision: dataPrecision + 1,

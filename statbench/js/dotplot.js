@@ -37,6 +37,8 @@ const COLUMN_MAX_WIDTH = 6;
  * @param {object} [options]
  * @param {number} [options.numBins] - Number of bins for stacking (default: min(n, 40))
  * @param {[number, number]} [options.domain] - [min, max] domain override
+ * @param {number} [options.binWidth] - Locked bin width (overrides domain/numBins computation)
+ * @param {number} [options.binOrigin] - Locked bin origin for grid alignment (default: domain[0])
  * @returns {{ dots: Array<{value: number, binCenter: number, stackIndex: number}>, binWidth: number, maxStack: number, domain: [number, number] }}
  */
 export function computeDots(values, options = {}) {
@@ -58,13 +60,16 @@ export function computeDots(values, options = {}) {
 
   const domain = options.domain ?? /** @type {[number, number]} */ ([xMin, xMax]);
   const numBins = options.numBins ?? Math.min(n, 40);
-  const binWidth = (domain[1] - domain[0]) / numBins;
+  // Allow locked binWidth (for stable dotplot grids across re-renders)
+  const binWidth = options.binWidth ?? (domain[1] - domain[0]) / numBins;
+  // Use the bin origin from the locked grid if provided, else from domain
+  const binOrigin = options.binOrigin ?? domain[0];
 
   // Stack: group values by bin center, assign stack indices
   /** @type {Map<number, number>} */
   const stackCounts = new Map();
   const dots = values.map(v => {
-    const binCenter = Math.round((v - domain[0]) / binWidth) * binWidth + domain[0];
+    const binCenter = Math.round((v - binOrigin) / binWidth) * binWidth + binOrigin;
     const stackIndex = stackCounts.get(binCenter) ?? 0;
     stackCounts.set(binCenter, stackIndex + 1);
     return { value: v, binCenter, stackIndex };
@@ -114,6 +119,8 @@ export function computeDotRadius(innerWidth, innerHeight, maxStack, numBins) {
  * @param {boolean} [options.animate] - Whether to animate (default: true)
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
  * @param {[number,number]} [options.domain] - Override x-axis domain
+ * @param {number} [options.binWidth] - Locked bin width for stable grid across re-renders
+ * @param {number} [options.binOrigin] - Locked bin origin for stable grid alignment
  * @param {number} [options.highlightIndex] - Index of single newest dot to highlight (yellow pulse)
  * @param {Set<number>} [options.highlightIndices] - Indices of batch-added dots to highlight (accent pulse)
  * @param {number} [options.precision] - Decimal places for overlay value labels (default: 2)
@@ -133,12 +140,14 @@ export function drawDotplot(container, values, options = {}) {
     margin,
     numBins,
     domain,
+    binWidth: lockedBinWidth,
+    binOrigin: lockedBinOrigin,
     highlightIndex = -1,
     highlightIndices,
     precision = 2,
   } = options;
 
-  const result = computeDots(values, { numBins, domain });
+  const result = computeDots(values, { numBins, domain, binWidth: lockedBinWidth, binOrigin: lockedBinOrigin });
   const { dots, maxStack, domain: finalDomain } = result;
   const effectiveBins = numBins ?? Math.min(values.length, 40);
 
