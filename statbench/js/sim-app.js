@@ -182,12 +182,12 @@ export function initSimPage(config) {
     });
   }
 
-  // ─── Bin adjuster ───
+  // ─── Bin adjuster (continuous data only — proportions have fixed k/n bins) ───
   /** @type {number|undefined} */
   let userBinCount;
   /** @type {HTMLLabelElement|null} */
   let binAdjusterEl = null;
-  if (toggleFieldset) {
+  if (toggleFieldset && !config.proportion) {
     binAdjusterEl = createBinAdjuster(toggleFieldset, {
       currentBins: 20,
       onChange: (bins) => {
@@ -1749,7 +1749,7 @@ export function initSimPage(config) {
         ciLines: ci ?? undefined,
         animate: false,
         domain,
-        numBins: userBinCount ?? (config.proportion ? sampleSize : undefined),
+        numBins: config.proportion ? sampleSize : userBinCount,
         highlightIndex,
         highlightIndices,
       });
@@ -1778,7 +1778,7 @@ export function initSimPage(config) {
         ciLines: ci ?? undefined,
         animate: false,
         domain,
-        thresholds: userBinCount ? undefined : propThresholds,
+        thresholds: propThresholds,
         numBins: userBinCount,
         prevBinCounts: prevBinCounts ?? undefined,
       });

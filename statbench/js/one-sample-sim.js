@@ -101,11 +101,13 @@ export function initOneSamplePage(config) {
     });
   }
 
-  // ─── Bin adjuster ───
+  // ─── Bin adjuster (continuous data only — proportions have fixed k/n bins) ───
   /** @type {number|undefined} */
   let userBinCount;
-  if (toggleFieldset) {
-    createBinAdjuster(toggleFieldset, {
+  /** @type {HTMLLabelElement|null} */
+  let binAdjusterEl = null;
+  if (toggleFieldset && !isProp) {
+    binAdjusterEl = createBinAdjuster(toggleFieldset, {
       currentBins: 20,
       onChange: (bins) => {
         userBinCount = bins;
@@ -553,8 +555,8 @@ export function initOneSamplePage(config) {
       highlightIndex,
       highlightIndices,
       prevBinCounts,
-      thresholds: userBinCount ? undefined : (hlThresholds || histogramThresholds({ proportion: isProp, sampleN, domain, dataLength: n })),
-      numBins: userBinCount ?? (isProp ? dotplotBins(n, { proportion: true, sampleN }) : undefined),
+      thresholds: hlThresholds || histogramThresholds({ proportion: isProp, sampleN, domain, dataLength: n }),
+      numBins: isProp ? dotplotBins(n, { proportion: true, sampleN }) : userBinCount,
       precision,
       pillMode: n > 0 ? 'randomization' : undefined,
       pValue,
