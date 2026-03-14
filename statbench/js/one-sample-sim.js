@@ -77,10 +77,17 @@ export function initOneSamplePage(config) {
   let toggleFieldset = null;
   /** @type {((type: string) => void)|null} */
   let setToggleSelected = null;
+  // ─── Bin adjuster (continuous data only — proportions have fixed k/n bins) ───
+  /** @type {number|undefined} */
+  let userBinCount;
+  /** @type {import('./chart-defaults.js').BinAdjusterControl|null} */
+  let binAdjuster = null;
+
   if (chartContainer) {
     const toggle = createChartToggle(chartContainer, {
       onChange: (type) => {
         chartType = type;
+        if (binAdjuster) binAdjuster.setMode(/** @type {'dotplot'|'histogram'} */ (type));
         if (allStats.length > 0) {
           renderChart(allStats, observedStat, getDirection());
         }
@@ -99,23 +106,18 @@ export function initOneSamplePage(config) {
         }
       }
     });
-  }
 
-  // ─── Bin adjuster (continuous data only — proportions have fixed k/n bins) ───
-  /** @type {number|undefined} */
-  let userBinCount;
-  /** @type {HTMLLabelElement|null} */
-  let binAdjusterEl = null;
-  if (toggleFieldset && !isProp) {
-    binAdjusterEl = createBinAdjuster(toggleFieldset, {
-      currentBins: 20,
-      onChange: (bins) => {
-        userBinCount = bins;
-        if (allStats.length > 0) {
-          renderChart(allStats, observedStat, getDirection());
-        }
-      },
-    });
+    if (!isProp) {
+      binAdjuster = createBinAdjuster(toggleFieldset, {
+        currentBins: 20,
+        onChange: (bins) => {
+          userBinCount = bins;
+          if (allStats.length > 0) {
+            renderChart(allStats, observedStat, getDirection());
+          }
+        },
+      });
+    }
   }
 
   // ─── State ───
@@ -536,6 +538,7 @@ export function initOneSamplePage(config) {
 
     const activeChart = getActiveChartType();
     if (setToggleSelected) setToggleSelected(activeChart);
+    if (binAdjuster) binAdjuster.setMode(/** @type {'dotplot'|'histogram'} */ (activeChart));
 
     lastHistResult = null;
     const precision = displayPrecision(dataPrecision, { proportion: isProp, sampleN });

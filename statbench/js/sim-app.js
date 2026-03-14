@@ -153,6 +153,7 @@ export function initSimPage(config) {
     const toggle = createChartToggle(chartContainer, {
       onChange: (type) => {
         chartType = type;
+        if (binAdjuster) binAdjuster.setMode(/** @type {'dotplot'|'histogram'} */ (type));
         if (allStats.length > 0) {
           lastStatIndex = -1;
           batchHighlightIndices = null;
@@ -185,10 +186,10 @@ export function initSimPage(config) {
   // ─── Bin adjuster (continuous data only — proportions have fixed k/n bins) ───
   /** @type {number|undefined} */
   let userBinCount;
-  /** @type {HTMLLabelElement|null} */
-  let binAdjusterEl = null;
+  /** @type {import('./chart-defaults.js').BinAdjusterControl|null} */
+  let binAdjuster = null;
   if (toggleFieldset && !config.proportion) {
-    binAdjusterEl = createBinAdjuster(toggleFieldset, {
+    binAdjuster = createBinAdjuster(toggleFieldset, {
       currentBins: 20,
       onChange: (bins) => {
         userBinCount = bins;
@@ -1722,8 +1723,9 @@ export function initSimPage(config) {
     // Determine which chart type to render
     const activeChart = resolveChartType(n, chartType);
 
-    // Sync toggle radios to reflect actual chart type
+    // Sync toggle radios and bin adjuster label to reflect actual chart type
     if (setToggleSelected) setToggleSelected(activeChart);
+    if (binAdjuster) binAdjuster.setMode(/** @type {'dotplot'|'histogram'} */ (activeChart));
     // Build region-of-interest predicate
     // Randomization: extreme values (tail) are the region of interest
     // Bootstrap CI: values inside the CI are the region of interest

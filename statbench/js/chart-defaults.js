@@ -194,8 +194,15 @@ export function createChartToggle(container, opts) {
 // ─── Bin adjuster ───────────────────────────────────────────────────
 
 /**
- * Create a bin count adjuster control and append it to a parent element.
- * Works for both histograms and dotplots.
+ * @typedef {object} BinAdjusterControl
+ * @property {HTMLLabelElement} element - The label element
+ * @property {(mode: 'dotplot'|'histogram') => void} setMode - Update label text for chart type
+ * @property {(value: number) => void} setValue - Set the input value programmatically
+ */
+
+/**
+ * Create a bin/stack count adjuster control and append it to a parent element.
+ * Label changes between "Stacks" (dotplot) and "Bins" (histogram).
  *
  * @param {HTMLElement} parent - Container to append the control to
  * @param {object} opts
@@ -203,13 +210,16 @@ export function createChartToggle(container, opts) {
  * @param {number} [opts.min] - Minimum bins (default BIN_MIN)
  * @param {number} [opts.max] - Maximum bins (default HIST_MAX_BINS)
  * @param {(bins: number) => void} opts.onChange - Called when bin count changes
- * @returns {HTMLLabelElement}
+ * @returns {BinAdjusterControl}
  */
 export function createBinAdjuster(parent, opts) {
   const min = opts.min ?? BIN_MIN;
   const max = opts.max ?? HIST_MAX_BINS;
   const label = document.createElement('label');
-  label.innerHTML = `Bins: <input type="number" id="bin-count" min="${min}" max="${max}" step="1">`;
+  const labelSpan = document.createElement('span');
+  labelSpan.textContent = 'Bins:';
+  label.appendChild(labelSpan);
+  label.insertAdjacentHTML('beforeend', ` <input type="number" id="bin-count" min="${min}" max="${max}" step="1">`);
   label.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
   parent.appendChild(label);
 
@@ -223,7 +233,15 @@ export function createBinAdjuster(parent, opts) {
     if (isFinite(n) && n >= min) opts.onChange(n);
   });
 
-  return label;
+  return {
+    element: label,
+    setMode: (mode) => {
+      labelSpan.textContent = mode === 'dotplot' ? 'Stacks:' : 'Bins:';
+    },
+    setValue: (value) => {
+      input.value = String(value);
+    },
+  };
 }
 
 // ─── Unified sim chart renderer ─────────────────────────────────────
