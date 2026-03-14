@@ -1806,7 +1806,7 @@ export function initSimPage(config) {
         numBins: config.proportion ? sampleSize : userBinCount,
         highlightIndex,
         highlightIndices,
-        precision: dataPrecision,
+        precision: dataPrecision + 1,
       });
       chartResult = r.frame;
       chartXScale = r.xScale;
@@ -1836,7 +1836,7 @@ export function initSimPage(config) {
         thresholds: propThresholds,
         numBins: userBinCount,
         prevBinCounts: prevBinCounts ?? undefined,
-        precision: dataPrecision,
+        precision: dataPrecision + 1,
       });
       chartResult = r.frame;
       chartXScale = r.xScale;

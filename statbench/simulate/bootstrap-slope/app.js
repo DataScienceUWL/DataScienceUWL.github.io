@@ -266,7 +266,7 @@ function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts
     prevBinCounts,
     thresholds: hlThresholds,
     pillMode: ci ? 'bootstrap' : undefined,
-    precision: dataPrecision,
+    precision: dataPrecision + 1,
   });
 }
 
