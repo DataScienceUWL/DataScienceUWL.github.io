@@ -8,7 +8,7 @@
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { slopeT, slopeTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
-import { initTabs, initDataPanel, announce, initHelp } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
 
 initHelp();
 import { parseCSV } from '../../js/csv-parser.js';
@@ -66,7 +66,7 @@ if (helpDialog) {
 }
 
 // ── Tabs ───────────────────────────────────────────────────────────
-initTabs();
+initTabs({ hintTarget: resultsPanel, hintAction: 'click Compute' });
 
 // ── Variable selectors ─────────────────────────────────────────────
 
@@ -158,7 +158,7 @@ initDataPanel({
     controlsSection.hidden = true;
     chartAndResults.hidden = true;
     chartContainer.innerHTML = '';
-    resultsPanel.innerHTML = '<p class="placeholder">Load data to see results.</p>';
+    resultsPanel.innerHTML = `<p class="placeholder">${getTabHintText(getActiveTabId(), 'click Compute')}</p>`;
   },
 });
 

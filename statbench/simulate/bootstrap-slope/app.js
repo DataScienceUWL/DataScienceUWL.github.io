@@ -11,7 +11,7 @@ import { bootstrapCI } from '../../js/sim-engine.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
 import { computeBins } from '../../js/histogram.js';
 import { parseCSV } from '../../js/csv-parser.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initDataPanel, computeHighlights } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initDataPanel, computeHighlights, updateTabHint, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType, createChartToggle, computeDomain } from '../../js/chart-defaults.js';
 
 // ─── DOM ───
@@ -32,7 +32,7 @@ const _genBar = document.querySelector('.generate-bar');
 const _chartSection = document.getElementById('chart-and-results');
 if (_genBar && _chartSection) _chartSection.after(_genBar);
 
-initTabs();
+initTabs({ hintTarget: resultDiv, hintAction: 'run a simulation to see results' });
 initKeyboardShortcuts(genBtns, resetBtn);
 initPlayPause(genBtns, resetBtn);
 
@@ -314,6 +314,6 @@ function resetSimulation() {
   rng = null;
   seed = Math.random().toString(36).slice(2, 10);
   if (histContainer) histContainer.innerHTML = '';
-  if (resultDiv) resultDiv.innerHTML = '<p class="placeholder">Load data and run a simulation to see results.</p>';
+  if (resultDiv) resultDiv.innerHTML = `<p class="placeholder">${getTabHintText(getActiveTabId(), 'run a simulation to see results')}</p>`;
   if (resetBtn) resetBtn.hidden = true;
 }

@@ -11,7 +11,7 @@ import { onePropZ } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
-import { announce, initTabs, initDataPanel, initKeyboardShortcuts } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initKeyboardShortcuts, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
 
 /** Render LaTeX to HTML string via KaTeX. */
@@ -40,7 +40,7 @@ const successSelector = document.getElementById('success-selector');
 const successOutcome = /** @type {HTMLSelectElement|null} */ (document.getElementById('success-outcome'));
 const loadSummaryBtn = document.getElementById('load-summary');
 
-initTabs();
+initTabs({ hintTarget: resultsPanel, hintAction: 'click Compute' });
 initKeyboardShortcuts();
 
 // ── State ───────────────────────────────────────────────────────────
@@ -121,7 +121,7 @@ initDataPanel({
     if (successSelector) successSelector.hidden = true;
     if (variableSelector) variableSelector.hidden = true;
     chartContainer.innerHTML = '';
-    resultsPanel.innerHTML = '<p class="placeholder">Load data or enter summary statistics, then click Compute.</p>';
+    resultsPanel.innerHTML = `<p class="placeholder">${getTabHintText(getActiveTabId(), 'click Compute')}</p>`;
     resultBanner.innerHTML = '';
     announce('Data cleared.');
   },

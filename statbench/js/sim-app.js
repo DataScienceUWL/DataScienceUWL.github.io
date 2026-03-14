@@ -14,7 +14,7 @@ import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.j
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { drawSpike } from './spike.js';
 import { renderSimPills } from './chart-utils.js';
-import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart } from './page-utils.js';
+import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
@@ -373,6 +373,7 @@ export function initSimPage(config) {
       const panelId = tab.getAttribute('aria-controls');
       const panel = document.getElementById(panelId);
       if (panel) panel.hidden = false;
+      updateTabHint(tab.id, resultDiv, 'run a simulation to see results');
     });
   }
 
@@ -1761,7 +1762,7 @@ export function initSimPage(config) {
       seed = Math.random().toString(36).slice(2, 10);
     }
     chartContainer.innerHTML = '';
-    resultDiv.innerHTML = '<p class="placeholder">Load data and run a simulation to see results.</p>';
+    resultDiv.innerHTML = `<p class="placeholder">${getTabHintText(getActiveTabId(), 'run a simulation to see results')}</p>`;
     if (resetBtn) resetBtn.hidden = true;
     if (bootstrapSampleEl) bootstrapSampleEl.hidden = true;
     if (mechResampleContent) mechResampleContent.innerHTML = '';

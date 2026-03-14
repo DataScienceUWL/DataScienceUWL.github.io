@@ -13,7 +13,7 @@ import { mean, sd, detectPrecision, formatStat } from './stats.js';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot } from './dotplot.js';
 import { renderSimPills } from './chart-utils.js';
-import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, initDataPanel, computeHighlights, initHelp, initSettings } from './page-utils.js';
+import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, initDataPanel, computeHighlights, initHelp, initSettings, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, dotplotBins, histogramThresholds, renderSimChart, createBinAdjuster } from './chart-defaults.js';
 
@@ -65,7 +65,7 @@ export function initOneSamplePage(config) {
   const inputSuccesses = /** @type {HTMLInputElement} */ (document.getElementById('input-successes'));
   const loadSummaryBtn = document.getElementById('load-summary');
 
-  initTabs();
+  initTabs({ hintTarget: resultDiv, hintAction: 'run a simulation to see results' });
   initKeyboardShortcuts(genBtns, resetBtn);
   initPlayPause(genBtns, resetBtn);
   initHelp();
@@ -649,7 +649,7 @@ export function initOneSamplePage(config) {
     rng = null;
     seed = Math.random().toString(36).slice(2, 10);
     chartContainer.innerHTML = '';
-    resultDiv.innerHTML = '<p class="placeholder">Enter sample data and run a simulation to see results.</p>';
+    resultDiv.innerHTML = `<p class="placeholder">${getTabHintText(getActiveTabId(), 'run a simulation to see results')}</p>`;
     if (resetBtn) resetBtn.hidden = true;
   }
 

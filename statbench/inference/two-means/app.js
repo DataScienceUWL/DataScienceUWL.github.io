@@ -9,7 +9,7 @@ import * as jstatModule from 'jstat';
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { twoMeanT, twoMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
-import { initTabs, initDataPanel, announce, initHelp } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
 
 initHelp();
 import { mean, detectPrecision, formatStat } from '../../js/stats.js';
@@ -53,7 +53,7 @@ let summaryResult = null;
 let currentContext = null;
 
 // ── Initialization ──────────────────────────────────────────────────
-initTabs();
+initTabs({ hintTarget: resultDiv, hintAction: 'click Compute' });
 initKeyboard();
 
 initDataPanel({
@@ -269,7 +269,7 @@ function clearData() {
   if (varSelectorsDiv) varSelectorsDiv.hidden = true;
   if (chartContainer) chartContainer.innerHTML = '';
   if (resultDiv) {
-    resultDiv.innerHTML = '<p class="placeholder">Load a dataset to see results.</p>';
+    resultDiv.innerHTML = `<p class="placeholder">${getTabHintText(getActiveTabId(), 'click Compute')}</p>`;
   }
 }
 

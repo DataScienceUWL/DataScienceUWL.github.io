@@ -37,11 +37,63 @@ export function announce(msg, el) {
   requestAnimationFrame(() => { announceDiv.textContent = msg; });
 }
 
+/** @type {Record<string, string>} */
+const TAB_HINTS = {
+  'tab-dataset': 'Select a dataset',
+  'tab-paste':   'Enter or paste your data and click Apply',
+  'tab-file':    'Open a CSV or TSV file',
+  'tab-summary': 'Enter summary statistics',
+  'tab-table':   'Enter a contingency table',
+  'tab-edit':    'Enter or paste your data and click Apply',
+};
+
+/**
+ * Update the placeholder text in a results element based on the active data-input tab.
+ * Only updates if a `.placeholder` paragraph is still showing (i.e., no results yet).
+ *
+ * @param {string} tabId - The id of the active tab (e.g., 'tab-dataset')
+ * @param {HTMLElement|null} resultEl - The element containing the placeholder
+ * @param {string} [action] - What the user should do after loading data (default: 'to see results')
+ */
+export function updateTabHint(tabId, resultEl, action = 'to see results') {
+  if (!resultEl) return;
+  const p = resultEl.querySelector('.placeholder');
+  if (!p) return; // results already showing, don't overwrite
+  const hint = TAB_HINTS[tabId] || 'Load data';
+  p.textContent = `${hint}, then ${action}.`;
+}
+
+/**
+ * Get the placeholder text for a given tab and action.
+ * Useful for reset functions that rebuild the placeholder HTML.
+ *
+ * @param {string} tabId - The id of the active tab
+ * @param {string} [action] - Action phrase (default: 'to see results')
+ * @returns {string}
+ */
+export function getTabHintText(tabId, action = 'to see results') {
+  const hint = TAB_HINTS[tabId] || 'Load data';
+  return `${hint}, then ${action}.`;
+}
+
+/**
+ * Get the currently selected tab id.
+ * @returns {string}
+ */
+export function getActiveTabId() {
+  const active = document.querySelector('[role="tab"][aria-selected="true"]');
+  return active?.id ?? 'tab-dataset';
+}
+
 /**
  * Initialize accessible tab switching on all [role="tab"] elements in the page.
  * Handles click, ArrowLeft/ArrowRight keyboard navigation.
+ *
+ * @param {object} [opts]
+ * @param {HTMLElement|null} [opts.hintTarget] - Element containing a .placeholder to update on tab switch
+ * @param {string} [opts.hintAction] - Action phrase for placeholder (e.g., 'run a simulation to see results')
  */
-export function initTabs() {
+export function initTabs(opts) {
   const tabs = /** @type {HTMLElement[]} */ (
     Array.from(document.querySelectorAll('[role="tab"]')));
   const panels = /** @type {HTMLElement[]} */ (
@@ -57,6 +109,9 @@ export function initTabs() {
       const panelId = tab.getAttribute('aria-controls');
       const panel = document.getElementById(panelId ?? '');
       if (panel) panel.hidden = false;
+      if (opts?.hintTarget) {
+        updateTabHint(tab.id, opts.hintTarget, opts.hintAction);
+      }
     });
 
     tab.addEventListener('keydown', (e) => {
