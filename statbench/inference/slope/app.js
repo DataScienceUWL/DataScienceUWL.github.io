@@ -8,7 +8,7 @@
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { slopeT, slopeTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
-import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 
 initHelp();
 import { parseCSV } from '../../js/csv-parser.js';
@@ -32,7 +32,7 @@ const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('result
 
 const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
 
-const inputAlt = /** @type {HTMLSelectElement} */ (document.getElementById('input-alt'));
+const inputAlt = initHypToggle('input-alt', () => { if (currentRows.length || fromSummary) showResults(); });
 const inputConf = /** @type {HTMLInputElement} */ (document.getElementById('input-conf'));
 
 const varSelector = /** @type {HTMLElement} */ (document.getElementById('variable-selector'));
@@ -115,7 +115,7 @@ function handleDataset(ds, _meta) {
   if (!ds.variables || !ds.rows) { announce('Dataset has no usable data.'); return; }
   const ctx = findContext(ds, 'slope');
   currentContext = ctx;
-  if (ctx && ctx.alternative) inputAlt.value = ctx.alternative;
+  if (ctx && ctx.alternative) inputAlt.setValue(ctx.alternative);
 
   const numCols = ds.variables
     .filter(/** @param {any} v */ v => v.type === 'numeric')
@@ -193,7 +193,7 @@ if (loadSummaryBtn) {
 }
 
 // ── Parameter + variable change listeners ──────────────────────────
-inputAlt.addEventListener('change', () => { if (currentRows.length || fromSummary) showResults(); });
+// Note: alternative change handler is wired via initHypToggle callback above
 inputConf.addEventListener('input', () => { if (currentRows.length || fromSummary) showResults(); });
 xVarSelect.addEventListener('change', () => { if (currentRows.length) showResults(); });
 yVarSelect.addEventListener('change', () => { if (currentRows.length) showResults(); });
@@ -201,7 +201,7 @@ yVarSelect.addEventListener('change', () => { if (currentRows.length) showResult
 // ── Core: compute and display ──────────────────────────────────────
 
 function showResults() {
-  const alternative = /** @type {'less'|'greater'|'two-sided'} */ (inputAlt.value);
+  const alternative = /** @type {'less'|'greater'|'two-sided'} */ (inputAlt.getValue());
   const confLevel = Math.min(0.99, Math.max(0.80, Number(inputConf.value) || 0.95));
 
   /** @type {import('../../js/inference.js').SlopeResult} */

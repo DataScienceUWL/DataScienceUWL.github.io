@@ -193,9 +193,12 @@ export function initSimPage(config) {
     theoryCheckbox = createTheoryToggle(toggleFieldset, (checked) => {
       theoryOverlayOn = checked;
       if (allStats.length > 0) {
-        const activeType = getActiveChartType();
-        if (checked && (activeType === 'histogram' || activeType === 'dotplot')) {
-          applyTheoryOverlay(allStats);
+        if (checked) {
+          // Theory overlay requires histogram — switch if on dotplot
+          if (getActiveChartType() !== 'histogram' && setToggleSelected) {
+            setToggleSelected('histogram');
+          }
+          renderChart(allStats, lastCI, lastObserved, lastDirection);
         } else if (chartContainer) {
           removeTheoryOverlay(chartContainer);
         }
@@ -1123,6 +1126,19 @@ export function initSimPage(config) {
         displayRandomizationResults(allStats, observedStat, pValue, extremeCount, direction);
       }
     });
+  }
+
+  // Apply ?direction= from URL (from cross-links)
+  if (urlParams.direction && altDirectionBtn) {
+    const vals = (altDirectionBtn.dataset.values || '').split(',');
+    const labels = (altDirectionBtn.dataset.labels || '').split(',');
+    const dirMap = { 'less': 'less', 'greater': 'greater', 'two-sided': 'twosided', 'twosided': 'twosided' };
+    const mapped = dirMap[urlParams.direction] || urlParams.direction;
+    const idx = vals.indexOf(mapped);
+    if (idx >= 0) {
+      altDirectionBtn.dataset.value = vals[idx];
+      altDirectionBtn.textContent = labels[idx];
+    }
   }
 
   // ─── Generate bar ───

@@ -11,7 +11,7 @@ import { twoPropZ } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
-import { announce, initTabs, initDataPanel, initKeyboardShortcuts, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initKeyboardShortcuts, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 
 /** Render LaTeX to HTML string via KaTeX. */
 const tex = (/** @type {string} */ latex, display = false) =>
@@ -26,7 +26,9 @@ const inputN1 = /** @type {HTMLInputElement} */ (document.getElementById('input-
 const inputLabel2 = /** @type {HTMLInputElement} */ (document.getElementById('input-label2'));
 const inputX2 = /** @type {HTMLInputElement} */ (document.getElementById('input-x2'));
 const inputN2 = /** @type {HTMLInputElement} */ (document.getElementById('input-n2'));
-const inputAlt = /** @type {HTMLSelectElement} */ (document.getElementById('input-alternative'));
+const inputAlt = initHypToggle('input-alternative', () => {
+  if (resultsPanel.querySelector('.results-table')) compute();
+});
 const inputConfLevel = /** @type {HTMLInputElement} */ (document.getElementById('input-conf-level'));
 const computeBtn = /** @type {HTMLButtonElement} */ (document.getElementById('compute-btn'));
 const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
@@ -255,10 +257,7 @@ for (const el of [inputConfLevel]) {
   });
 }
 
-// Recompute when alternative changes (if results are already showing)
-inputAlt.addEventListener('change', () => {
-  if (resultsPanel.querySelector('.results-table')) compute();
-});
+// Note: alternative change handler is wired via initHypToggle callback above
 
 // ── Main computation ────────────────────────────────────────────────
 
@@ -268,7 +267,7 @@ function compute() {
     return;
   }
 
-  const alternative = /** @type {'less'|'greater'|'two-sided'} */ (inputAlt.value);
+  const alternative = /** @type {'less'|'greater'|'two-sided'} */ (inputAlt.getValue());
   const confLevel = Number(inputConfLevel.value);
 
   if (!Number.isFinite(confLevel) || confLevel <= 0 || confLevel >= 1) {

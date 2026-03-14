@@ -9,7 +9,7 @@ import * as jstatModule from 'jstat';
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { twoMeanT, twoMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
-import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 
 initHelp();
 import { mean, detectPrecision, formatStat } from '../../js/stats.js';
@@ -65,8 +65,7 @@ const dataPanel = initDataPanel({
 });
 
 // Listen for parameter changes
-const altSelect = /** @type {HTMLSelectElement} */ (document.getElementById('input-alt'));
-altSelect?.addEventListener('change', runAnalysis);
+const altSelect = initHypToggle('input-alt', runAnalysis);
 const confSelect = /** @type {HTMLSelectElement} */ (document.getElementById('conf-level'));
 confSelect?.addEventListener('change', runAnalysis);
 
@@ -133,8 +132,7 @@ function loadFromDataset(ds, _meta) {
   const ctx = findContext(ds, 'two-means');
   currentContext = ctx;
   if (ctx && ctx.alternative) {
-    const altEl = /** @type {HTMLSelectElement|null} */ (document.getElementById('input-alt'));
-    if (altEl) altEl.value = ctx.alternative;
+    altSelect.setValue(ctx.alternative);
   }
 
   const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
@@ -278,7 +276,7 @@ function clearData() {
 
 /** Get current alternative hypothesis direction. */
 function getAlternative() {
-  return /** @type {'less'|'greater'|'two-sided'} */ (altSelect?.value ?? 'two-sided');
+  return /** @type {'less'|'greater'|'two-sided'} */ (altSelect.getValue());
 }
 
 /** Get current confidence level. */

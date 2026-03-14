@@ -312,6 +312,46 @@ export function initSettings() {
  * @param {NodeListOf<HTMLButtonElement>} genBtns - Generate buttons
  * @param {HTMLButtonElement|null} resetBtn - Reset button
  */
+/**
+ * Initialize a .hyp-toggle button for cycling alternative hypothesis direction.
+ * Reads data-values, data-labels from the element's data attributes.
+ * Returns an object with { getValue(), setValue(v), el } for programmatic access.
+ * @param {string} elementId - The id of the button element
+ * @param {() => void} [onChange] - Optional callback when value changes
+ * @returns {{ getValue: () => string, setValue: (v: string) => void, el: HTMLButtonElement }}
+ */
+export function initHypToggle(elementId, onChange) {
+  const el = /** @type {HTMLButtonElement} */ (document.getElementById(elementId));
+  const vals = (el.dataset.values || '').split(',');
+  const labels = (el.dataset.labels || '').split(',');
+
+  el.addEventListener('click', () => {
+    const cur = vals.indexOf(el.dataset.value || vals[0]);
+    const next = (cur + 1) % vals.length;
+    el.dataset.value = vals[next];
+    el.textContent = labels[next];
+    if (onChange) onChange();
+  });
+
+  return {
+    getValue() { return el.dataset.value || vals[0]; },
+    setValue(v) {
+      const idx = vals.indexOf(v);
+      if (idx >= 0) {
+        el.dataset.value = vals[idx];
+        el.textContent = labels[idx];
+      }
+    },
+    el,
+  };
+}
+
+/**
+ * Initialize keyboard shortcuts for generate buttons, reset, and help dialog.
+ * Keys 1-4 map to gen-btn elements, 0 to reset, ? to help dialog.
+ * @param {NodeListOf<HTMLButtonElement>} genBtns - Generate buttons
+ * @param {HTMLButtonElement|null} resetBtn - Reset button
+ */
 export function initKeyboardShortcuts(genBtns, resetBtn) {
   initHelp();
 

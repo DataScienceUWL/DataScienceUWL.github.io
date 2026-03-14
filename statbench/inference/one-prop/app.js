@@ -11,7 +11,7 @@ import { onePropZ } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
-import { announce, initTabs, initDataPanel, initKeyboardShortcuts, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initKeyboardShortcuts, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
 
 /** Render LaTeX to HTML string via KaTeX. */
@@ -25,7 +25,9 @@ const inputSuccesses = /** @type {HTMLInputElement} */ (document.getElementById(
 const inputN = /** @type {HTMLInputElement} */ (document.getElementById('input-n'));
 const inputSuccessLabel = /** @type {HTMLInputElement} */ (document.getElementById('input-success-label'));
 const inputP0 = /** @type {HTMLInputElement} */ (document.getElementById('input-p0'));
-const inputAlt = /** @type {HTMLSelectElement} */ (document.getElementById('input-alternative'));
+const inputAlt = initHypToggle('input-alternative', () => {
+  if (resultsPanel.querySelector('.results-table')) compute();
+});
 const inputConfLevel = /** @type {HTMLInputElement} */ (document.getElementById('input-conf-level'));
 const computeBtn = /** @type {HTMLButtonElement} */ (document.getElementById('compute-btn'));
 const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
@@ -67,7 +69,7 @@ const dataPanel = initDataPanel({
     currentContext = ctx;
     if (ctx) {
       if (ctx.nullValue != null) inputP0.value = String(ctx.nullValue);
-      if (ctx.alternative) inputAlt.value = ctx.alternative;
+      if (ctx.alternative) inputAlt.setValue(ctx.alternative);
       syncNullDisplay();
     }
     const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
@@ -219,10 +221,7 @@ for (const el of [inputP0, inputConfLevel]) {
   });
 }
 
-// Recompute when alternative changes (if results are already showing)
-inputAlt.addEventListener('change', () => {
-  if (resultsPanel.querySelector('.results-table')) compute();
-});
+// Note: alternative change handler is wired via initHypToggle callback above
 
 // ── Main computation ────────────────────────────────────────────────
 
@@ -233,7 +232,7 @@ function compute() {
   }
 
   const p0 = Number(inputP0.value);
-  const alternative = /** @type {'less'|'greater'|'two-sided'} */ (inputAlt.value);
+  const alternative = /** @type {'less'|'greater'|'two-sided'} */ (inputAlt.getValue());
   const confLevel = Number(inputConfLevel.value);
 
   // ── Validate ──

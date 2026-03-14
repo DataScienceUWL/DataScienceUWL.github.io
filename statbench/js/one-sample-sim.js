@@ -14,6 +14,7 @@ import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.j
 import { drawDotplot } from './dotplot.js';
 import { renderSimPills } from './chart-utils.js';
 import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, initDataPanel, computeHighlights, initHelp, initSettings, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
+import { parseParams } from './url-params.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, dotplotBins, histogramThresholds, renderSimChart, createBinAdjuster } from './chart-defaults.js';
 
@@ -106,8 +107,12 @@ export function initOneSamplePage(config) {
     createTheoryToggle(toggleFieldset, (checked) => {
       theoryOverlayOn = checked;
       if (allStats.length > 0 && chartContainer) {
-        if (checked && getActiveChartType() === 'histogram') {
-          applyTheoryOverlay();
+        if (checked) {
+          // Theory overlay requires histogram — switch if on dotplot
+          if (getActiveChartType() !== 'histogram' && setToggleSelected) {
+            setToggleSelected('histogram');
+          }
+          renderChart(allStats, observedStat, getDirection());
         } else {
           removeTheoryOverlay(chartContainer);
         }
@@ -139,6 +144,8 @@ export function initOneSamplePage(config) {
   let observedStat = 0;
   let dataPrecision = 0;
   let theoryOverlayOn = false;
+  /** @type {{ population?: string, parameter?: string, nullClaim?: string, successLabel?: string }} */
+  let datasetContext = {};
 
   /** @type {{ xScale: any, yScale: any, bins: any[], domain: [number,number] } | null} */
   let lastHistResult = null;
@@ -256,8 +263,8 @@ export function initOneSamplePage(config) {
         if (!catVar) { announce('No categorical variable found.'); return; }
         rawOutcomes = ds.rows.map(/** @param {any} r */ r => String(r[catVar.name]));
         const levels = [...new Set(rawOutcomes)];
-        const ctx = ds.context || {};
-        populateSuccessSelector(levels, ctx.successLabel);
+        datasetContext = ds.context || {};
+        populateSuccessSelector(levels, datasetContext.successLabel);
         announce(`${ds.name}.`);
       },
       onText: (/** @type {any} */ parsed) => {
@@ -272,6 +279,7 @@ export function initOneSamplePage(config) {
       },
       onClear: () => {
         rawOutcomes = [];
+        datasetContext = {};
         resetSimulation();
         if (dataPreview) dataPreview.hidden = true;
         if (dataSummary) dataSummary.textContent = '\u2014';
@@ -352,6 +360,7 @@ export function initOneSamplePage(config) {
           .map(/** @param {any} r */ r => Number(r[numVar.name]))
           .filter(/** @param {number} v */ v => isFinite(v));
         if (values.length === 0) { announce('No valid numeric values found.'); return; }
+        datasetContext = ds.context || {};
         loadNumericData(values);
         announce(`${ds.name}.`);
       },
@@ -371,6 +380,7 @@ export function initOneSamplePage(config) {
       onClear: () => {
         sampleData = [];
         shiftedData = [];
+        datasetContext = {};
         resetSimulation();
         if (dataPreview) dataPreview.hidden = true;
         if (dataSummary) dataSummary.textContent = '\u2014';
@@ -417,6 +427,30 @@ export function initOneSamplePage(config) {
         displayResults(allStats, observedStat, pValue, extremeCount, direction);
       }
     });
+  }
+
+  // ─── Apply URL params for hypothesis (from cross-links) ───
+  {
+    const urlP = parseParams();
+    // Set null value from ?p= (proportion) or ?null_value= (mean)
+    const nullVal = isProp ? urlP.p : urlP.null_value;
+    if (nullVal != null && nullInput) {
+      nullInput.value = String(nullVal);
+      syncAltNullValue();
+    }
+    // Set direction from ?direction=
+    if (urlP.direction && altDirectionBtn) {
+      const vals = (altDirectionBtn.dataset.values || '').split(',');
+      const labels = (altDirectionBtn.dataset.labels || '').split(',');
+      // Map inference page values to sim page values
+      const dirMap = { 'less': 'less', 'greater': 'greater', 'two-sided': 'twosided', 'twosided': 'twosided' };
+      const mapped = dirMap[urlP.direction] || urlP.direction;
+      const idx = vals.indexOf(mapped);
+      if (idx >= 0) {
+        altDirectionBtn.dataset.value = vals[idx];
+        altDirectionBtn.textContent = labels[idx];
+      }
+    }
   }
 
   // ─── Generate ───
@@ -628,12 +662,19 @@ export function initOneSamplePage(config) {
     const nullSymbol = isProp ? 'p' : '\u03BC';
     const statName = isProp ? 'proportions' : 'means';
 
+    const defaultNull = isProp
+      ? `${nullSymbol} = ${nullVal}`
+      : `${nullSymbol} = ${nullVal}`;
+    const nullDesc = datasetContext.nullClaim || defaultNull;
+    const pFmt = formatStat(pValue, 0, 'pvalue');
+    const pDisplay = pFmt.startsWith('p') ? pFmt : `p-value: ${pFmt}`;
+
     resultDiv.innerHTML = `
       <p><strong>Null Distribution</strong> (${stats.length} simulations, ${nullParam} = ${nullVal})</p>
       <p>Observed <span class="observed-highlight">${statSymbolHTML} = ${fmtObs(observed)}</span></p>
       <p>Extreme count: ${extremeCount} of ${stats.length} (${dirLabel})</p>
-      <p><strong>p-value:</strong> ${formatStat(pValue, 0, 'pvalue')}</p>
-      <p class="interpretation">${extremeCount} of ${stats.length} simulated ${statName} were at least as extreme as the observed <span class="observed-highlight">${statSymbolHTML} = ${fmtObs(observed)}</span>. This provides ${strength} evidence against H\u2080: ${nullSymbol} = ${nullVal}.</p>
+      <p><strong>${pDisplay}</strong></p>
+      <p class="interpretation">${extremeCount} of ${stats.length} simulated ${statName} were at least as extreme as the observed <span class="observed-highlight">${statSymbolHTML} = ${fmtObs(observed)}</span>. This provides ${strength} evidence against H\u2080: ${nullDesc}.</p>
     `;
   }
 

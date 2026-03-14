@@ -8,7 +8,7 @@
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { oneMeanT, oneMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain } from '../../js/curve.js';
-import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 
 initHelp();
 import { parseCSV } from '../../js/csv-parser.js';
@@ -32,7 +32,7 @@ const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('result
 const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
 
 const inputMu0 = /** @type {HTMLInputElement} */ (document.getElementById('input-mu0'));
-const inputAlt = /** @type {HTMLSelectElement} */ (document.getElementById('input-alt'));
+const inputAlt = initHypToggle('input-alt', () => { if (currentData || fromSummary) showResults(); });
 const inputConf = /** @type {HTMLInputElement} */ (document.getElementById('input-conf'));
 
 const varSelector = /** @type {HTMLElement} */ (document.getElementById('variable-selector'));
@@ -94,7 +94,7 @@ function handleDataset(ds, _meta) {
   currentContext = ctx;
   if (ctx) {
     if (ctx.nullValue != null) inputMu0.value = String(ctx.nullValue);
-    if (ctx.alternative) inputAlt.value = ctx.alternative;
+    if (ctx.alternative) inputAlt.setValue(ctx.alternative);
     syncNullDisplay();
   }
 
@@ -235,7 +235,7 @@ syncNullDisplay();
 
 // ── Parameter change listeners ─────────────────────────────────────
 inputMu0.addEventListener('input', () => { if (currentData || fromSummary) showResults(); });
-inputAlt.addEventListener('change', () => { if (currentData || fromSummary) showResults(); });
+// Note: alternative change handler is wired via initHypToggle callback above
 inputConf.addEventListener('input', () => { if (currentData || fromSummary) showResults(); });
 
 // ── Core: compute and display ──────────────────────────────────────
@@ -245,7 +245,7 @@ function showResults() {
   if (currentData && currentData.length < 2) return;
 
   const mu0 = Number(inputMu0.value) || 0;
-  const alternative = /** @type {'less'|'greater'|'two-sided'} */ (inputAlt.value);
+  const alternative = /** @type {'less'|'greater'|'two-sided'} */ (inputAlt.getValue());
   const confLevel = Math.min(0.99, Math.max(0.80, Number(inputConf.value) || 0.95));
 
   // Compute
