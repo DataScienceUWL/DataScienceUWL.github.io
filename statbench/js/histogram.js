@@ -175,7 +175,7 @@ export function drawHistogram(container, values, options = {}) {
     precision = 2,
     relativeFrequency = false,
   } = options;
-  const effectiveYLabel = yLabel ?? (relativeFrequency ? 'Relative Frequency' : 'Frequency');
+  const effectiveYLabel = yLabel ?? (relativeFrequency ? 'Rel. Frequency' : 'Frequency');
 
   const frame = createChart(container, { titleText, descText, id, margin });
   const { bins, domain: finalDomain } = computeBins(values, { numBins, domain, thresholds });

@@ -272,8 +272,9 @@ export function addAxes(frame, xAxis, yAxis, xLabel, yLabel) {
         if (w > maxTickWidth) maxTickWidth = w;
       } catch { /* getBBox fails in JSDOM */ }
     });
-    // Place label just outside the tick labels with a small gap
-    const labelY = -(maxTickWidth + 14);
+    // Place label just outside the tick labels with a small gap,
+    // but never push it past the SVG left edge (wide ticks like "0.0877")
+    const labelY = Math.max(-(frame.margin.left - 6), -(maxTickWidth + 14));
 
     axes.append('text')
       .attr('class', 'y-label')
