@@ -155,6 +155,13 @@ export async function copyTableToClipboard(tableEl) {
  * @returns {HTMLDivElement}
  */
 export function createExportBar(opts) {
+  const parent = opts.parent ?? opts.chartContainer?.parentElement;
+  // Remove any existing export bar in the same parent to prevent duplicates
+  if (parent) {
+    const existing = parent.querySelector('.export-bar');
+    if (existing) existing.remove();
+  }
+
   const bar = document.createElement('div');
   bar.className = 'export-bar';
 
@@ -195,7 +202,6 @@ export function createExportBar(opts) {
     bar.appendChild(btn);
   }
 
-  const parent = opts.parent ?? opts.chartContainer?.parentElement;
   if (parent) parent.appendChild(bar);
 
   return bar;

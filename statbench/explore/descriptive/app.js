@@ -721,7 +721,7 @@ function setData(values, varLabel, sourceName) {
 
   // Show data preview
   if (dataPreview) dataPreview.hidden = false;
-  if (dataSummary) dataSummary.textContent = `${sourceName} — ${varLabel} (n = ${values.length})`;
+  if (dataSummary) dataSummary.textContent = `${varLabel} (n = ${values.length})`;
 
   if (resultsSection) resultsSection.hidden = false;
   computeAndDisplay(values);
@@ -752,7 +752,7 @@ function setCatData(values, varLabel, sourceName) {
 
   // Show data preview
   if (dataPreview) dataPreview.hidden = false;
-  if (dataSummary) dataSummary.textContent = `${sourceName} — ${varLabel} (n = ${values.length})`;
+  if (dataSummary) dataSummary.textContent = `${varLabel} (n = ${values.length})`;
 
   if (resultsSection) resultsSection.hidden = false;
   if (chartControls) chartControls.innerHTML = '';
