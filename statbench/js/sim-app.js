@@ -1351,6 +1351,12 @@ export function initSimPage(config) {
       displayRandomizationResults(allStats, observedStat, pValue, extremeCount, direction);
 
       if (count === 1) {
+        // Highlight the diff value in orange to connect with the flying dot
+        const mechDiffEl = document.querySelector('.mech-diff');
+        if (mechDiffEl) {
+          mechDiffEl.classList.add('highlight-last');
+          setTimeout(() => mechDiffEl.classList.remove('highlight-last'), 900);
+        }
         // Staggered: mechanism update → 120ms → flash → 120ms → dot appears → drop animation
         setTimeout(() => {
           flashMechanism();
@@ -1358,7 +1364,7 @@ export function initSimPage(config) {
             renderChart(allStats, null, observedStat, direction);
             // Drop animation: flying dot from mechanism strip to chart
             // Two-group pages show diff in .mech-diff; one-sample uses #resample-mean
-            const dropSourceEl = document.querySelector('.mech-diff') || resampleMeanEl;
+            const dropSourceEl = mechDiffEl || resampleMeanEl;
             if (dropSourceEl && chartContainer) {
               animateDropToChart(/** @type {HTMLElement} */ (dropSourceEl), chartContainer);
             }

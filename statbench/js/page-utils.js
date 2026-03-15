@@ -434,12 +434,15 @@ export function animateDropToChart(sourceEl, chartContainer, opts = {}) {
   const svg = chartContainer.querySelector('svg');
   if (!svg || !sourceEl) return;
 
-  // Find the highlighted dot — look for orange fill or stroke.
+  // Find the highlighted element — look for orange fill or stroke.
   // Check both exact hex and case variations since browsers may normalize.
+  // Supports: dotplot circles, spike lines, and histogram delta bars (rects).
   const highlightEl = svg.querySelector('circle[fill="#E07020"]')
     || svg.querySelector('circle[fill="#e07020"]')
     || svg.querySelector('line[stroke="#E07020"]')
-    || svg.querySelector('line[stroke="#e07020"]');
+    || svg.querySelector('line[stroke="#e07020"]')
+    || svg.querySelector('rect[fill="#E07020"]')
+    || svg.querySelector('rect[fill="#e07020"]');
   if (!highlightEl) return;
   const highlightDot = /** @type {SVGElement} */ (highlightEl);
 
@@ -478,6 +481,21 @@ export function animateDropToChart(sourceEl, chartContainer, opts = {}) {
       const dotRect = highlightEl.getBoundingClientRect();
       tx = dotRect.left + dotRect.width / 2;
       ty = dotRect.top + dotRect.height / 2;
+    }
+  } else if (highlightEl instanceof SVGRectElement) {
+    // Histogram bar: aim for top-center of the delta bar
+    const ctm = highlightEl.getScreenCTM();
+    if (ctm) {
+      const pt = svg.createSVGPoint();
+      pt.x = parseFloat(highlightEl.getAttribute('x') || '0') + parseFloat(highlightEl.getAttribute('width') || '0') / 2;
+      pt.y = parseFloat(highlightEl.getAttribute('y') || '0');
+      const screenPt = pt.matrixTransform(ctm);
+      tx = screenPt.x;
+      ty = screenPt.y;
+    } else {
+      const barRect = highlightEl.getBoundingClientRect();
+      tx = barRect.left + barRect.width / 2;
+      ty = barRect.top;
     }
   } else {
     const dotRect = highlightDot.getBoundingClientRect();
