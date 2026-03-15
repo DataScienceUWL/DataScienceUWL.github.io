@@ -1065,13 +1065,14 @@ export function initSimPage(config) {
             .filter(v => isFinite(v));
         }
 
+        currentSourceName = ds.name || id;
+
         showDataLoaded();
 
         // Populate editor with dataset as CSV
         if (pasteArea && ds.rows && ds.variables) {
           const cols = ds.variables.map(/** @param {any} v */ v => v.name);
           pasteArea.value = rowsToCSV(ds.rows, cols);
-          currentSourceName = ds.name || id;
         }
 
         announce(`${ds.name}.`);
