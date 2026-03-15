@@ -1029,12 +1029,15 @@ function renderActiveChart() {
         /** @type {[number, number]} */
         const domain = /** @type {[number, number]} */ (histResult.xScale.domain());
 
+        // Use selected group's N for all curves so shapes are visually comparable
+        // on the same y-axis (whether frequency or relative frequency mode)
+        const selectedN = currentValues.length;
         for (let i = 0; i < groups.length; i++) {
           const vals = groupedSubsets[groups[i]];
           if (vals.length < 2) continue;
           const result = kde(vals, { domain });
-          // Scale density to histogram frequency: density * groupN * binWidth
-          const yFreq = result.y.map(d => d * vals.length * avgBinWidth);
+          // Scale density to match histogram y-axis using selected group's N
+          const yFreq = result.y.map(d => d * selectedN * avgBinWidth);
           drawDensityCurve(histResult.frame.inner, result.x, yFreq, histResult.xScale, histResult.yScale, {
             stroke: colors[i % colors.length],
             strokeWidth: 2.5,
