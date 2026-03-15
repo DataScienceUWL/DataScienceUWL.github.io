@@ -594,6 +594,8 @@ function handleApply() {
 }
 
 const dataPanel = initDataPanel({
+  autoCollapse: true,
+  showPreview: true,
   datasetFilter: (/** @type {any} */ ds) => ds.hasNumeric !== false,
   onDataset: (ds) => {
     loadedDataset = ds;
@@ -719,8 +721,6 @@ function setData(values, varLabel, sourceName) {
   if (quantChartSelector) /** @type {HTMLElement} */ (quantChartSelector).hidden = false;
   if (catChartSelector) /** @type {HTMLElement} */ (catChartSelector).hidden = true;
 
-  // Show data preview
-  if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) dataSummary.textContent = `${varLabel} (n = ${values.length})`;
 
   if (resultsSection) resultsSection.hidden = false;
@@ -750,8 +750,6 @@ function setCatData(values, varLabel, sourceName) {
   if (quantChartSelector) /** @type {HTMLElement} */ (quantChartSelector).hidden = true;
   if (catChartSelector) /** @type {HTMLElement} */ (catChartSelector).hidden = false;
 
-  // Show data preview
-  if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) dataSummary.textContent = `${varLabel} (n = ${values.length})`;
 
   if (resultsSection) resultsSection.hidden = false;

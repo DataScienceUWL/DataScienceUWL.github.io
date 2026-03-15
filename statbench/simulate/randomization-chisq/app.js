@@ -8,7 +8,7 @@
 import { createRng, shuffle } from '../../js/prng.js';
 import { chisqStat, formatStat } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
 
 // ─── DOM elements ───
@@ -35,9 +35,7 @@ const loadTableBtn = document.getElementById('load-table');
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
   document.querySelectorAll('.gen-btn'));
 
-// Data panel (for collapse after data loads)
-const dataPanel = document.getElementById('data-panel');
-// Controls section (for sticky + expert toggle)
+// Controls section (for expert toggle)
 const controlsSection = document.getElementById('controls');
 
 // Add expert toggle link next to generate bar
@@ -177,12 +175,16 @@ if (loadTableBtn && tableGrid) {
     }
     observedChisq = chisqStat(observedTable);
     showDataLoaded();
+    dataApi.triggerPostLoad();
   });
 }
 
 // ─── Data loading: Datasets / initDataPanel ───
 
-initDataPanel({
+const dataApi = initDataPanel({
+  autoCollapse: true,
+  stickyControls: true,
+  showPreview: true,
   datasetFilter: ds => ds.type === 'chisq',
   onDataset: (ds) => {
     resetSimulation();
@@ -220,7 +222,6 @@ initDataPanel({
 
 function showDataLoaded() {
   resetSimulation();
-  if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
     const dims = `${rowLabels.length} × ${colLabels.length}`;
     const namePrefix = currentSourceName ? `${currentSourceName}: ` : '';
@@ -234,10 +235,6 @@ function showDataLoaded() {
     mechObservedTable.innerHTML = renderTableHTML(observedTable, rowLabels, colLabels);
     if (mechObservedChisq) mechObservedChisq.textContent = formatStat(observedChisq, 2);
   }
-
-  // Collapse data panel and make controls sticky
-  collapseDataPanel(dataPanel);
-  controlsSection?.classList.add('sticky');
 
   announce(`Data loaded: ${rowLabels.length} × ${colLabels.length} table, n = ${totalN}`);
 

@@ -939,10 +939,14 @@ function fetchExternalCSV(url, handleText, populateEditor, resolve) {
  * @param {(parsed: {headers:string[], types:string[], data:Array<Record<string,any>>}, sourceName: string) => void} [config.onText] - Called with parseCSV result for paste/file
  * @param {(text: string, sourceName: string) => void} [config.onRawText] - Receive raw text instead (overrides onText)
  * @param {() => void} config.onClear - Called when clear button clicked
- * @returns {{ getDatasetIndex: () => Array<{id:string,name:string,description:string,type:string,n:number}>, populateEditor: (csvText:string, sourceName:string) => void, refilterDatasets: (filterFn: (ds: any) => boolean) => void, ready: Promise<void>, currentDatasetId: string|null }}
+ * @param {boolean} [config.autoCollapse] - Collapse #data-panel after successful data load
+ * @param {boolean} [config.stickyControls] - Add .sticky to #controls after data load
+ * @param {boolean} [config.showPreview] - Unhide #data-preview after data load
+ * @returns {{ getDatasetIndex: () => Array<{id:string,name:string,description:string,type:string,n:number}>, populateEditor: (csvText:string, sourceName:string) => void, refilterDatasets: (filterFn: (ds: any) => boolean) => void, ready: Promise<void>, currentDatasetId: string|null, triggerPostLoad: () => void }}
  */
 export function initDataPanel(config) {
-  const { datasetFilter, onDataset, onText, onRawText, onClear } = config;
+  const { datasetFilter, onDataset, onText, onRawText, onClear,
+    autoCollapse = false, stickyControls = false, showPreview = false } = config;
 
   const datasetSelect = /** @type {HTMLSelectElement|null} */ (document.getElementById('dataset-select'));
   const datasetDesc = document.getElementById('dataset-desc');
@@ -977,6 +981,19 @@ export function initDataPanel(config) {
   function populateEditor(csvText, sourceName) {
     if (pasteArea) pasteArea.value = csvText;
     currentSourceName = sourceName.replace(/\.\w+$/, ''); // strip extension
+  }
+
+  // Centralized post-load UI: collapse panel, sticky controls, show preview
+  const dataPanelEl = document.getElementById('data-panel');
+  const dataPreviewEl = document.getElementById('data-preview');
+
+  function postLoadUI() {
+    if (showPreview && dataPreviewEl) dataPreviewEl.hidden = false;
+    if (autoCollapse) collapseDataPanel(dataPanelEl);
+    if (stickyControls) {
+      const ctrl = document.getElementById('controls');
+      if (ctrl) ctrl.classList.add('sticky');
+    }
   }
 
   /** Full unfiltered dataset index (loaded once). @type {Array<{id:string,name:string,description:string,type:string,n:number}>} */
@@ -1016,6 +1033,7 @@ export function initDataPanel(config) {
           queueMicrotask(() => {
             handleText(csv, 'URL data');
             populateEditor(csv, 'url_data');
+            postLoadUI();
             resolveReady();
           });
         } else {
@@ -1030,14 +1048,15 @@ export function initDataPanel(config) {
             queueMicrotask(() => {
               handleText(tCsv, tName);
               populateEditor(tCsv, tName);
+              postLoadUI();
               resolveReady();
             });
           } else if (urlParams.json) {
             // Fetch external JSON dataset (?json=URL)
-            fetchExternalJSON(urlParams.json, onDataset, populateEditor, resolveReady);
+            fetchExternalJSON(urlParams.json, onDataset, populateEditor, () => { postLoadUI(); resolveReady(); });
           } else if (urlParams.csv) {
             // Fetch external CSV (?csv=URL)
-            fetchExternalCSV(urlParams.csv, handleText, populateEditor, resolveReady);
+            fetchExternalCSV(urlParams.csv, handleText, populateEditor, () => { postLoadUI(); resolveReady(); });
           } else {
             resolveReady();
           }
@@ -1063,6 +1082,7 @@ export function initDataPanel(config) {
             const cols = ds.variables.map(/** @param {any} v */ v => v.name);
             populateEditor(rowsToCSV(ds.rows, cols), meta?.name ?? id);
           }
+          postLoadUI();
           resolveReady();
         })
         .catch(() => announce('Failed to load dataset.'));
@@ -1089,6 +1109,7 @@ export function initDataPanel(config) {
       if (!text) return;
       currentSourceName = 'edited_data';
       handleText(text, 'Edited data');
+      postLoadUI();
     });
   }
 
@@ -1097,6 +1118,7 @@ export function initDataPanel(config) {
     setupFileInput(fileInput, (text, filename) => {
       handleText(text, filename);
       populateEditor(text, filename);
+      postLoadUI();
     });
   }
 
@@ -1118,6 +1140,10 @@ export function initDataPanel(config) {
   if (clearBtn) {
     clearBtn.addEventListener('click', () => {
       if (pasteArea) pasteArea.value = '';
+      if (stickyControls) {
+        const ctrl = document.getElementById('controls');
+        if (ctrl) ctrl.classList.remove('sticky');
+      }
       onClear();
     });
   }
@@ -1128,6 +1154,7 @@ export function initDataPanel(config) {
     refilterDatasets,
     ready,
     get currentDatasetId() { return currentDatasetId; },
+    triggerPostLoad: postLoadUI,
   };
 }
 

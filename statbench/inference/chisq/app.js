@@ -87,6 +87,7 @@ if (helpDialog) {
 // ── Data loading (datasets, paste, file) ────────────────────────────
 
 const dataPanel = initDataPanel({
+  autoCollapse: true, stickyControls: true, showPreview: true,
   datasetFilter: (/** @type {any} */ ds) => ds.type === 'randomization_prop' || ds.type === 'chisq',
   onDataset: (ds) => {
     const ctx = findContext(ds, 'chisq');
@@ -210,7 +211,6 @@ function buildFromRawData(sourceName) {
     colCats.map(cv => table.get(rv)?.get(cv) ?? 0)
   );
 
-  if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
     dataSummary.textContent =
       `${sourceName}: ${rowVar} (${rowCats.length} levels) × ${colVar} (${colCats.length} levels), n = ${rawRows.length}`;
@@ -308,11 +308,11 @@ loadTableBtn.addEventListener('click', () => {
   currentColLabels = data.colLabels;
 
   const total = data.observed.flat().reduce((a, b) => a + b, 0);
-  if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
     dataSummary.textContent =
       `Manual table: ${data.rowLabels.length} × ${data.colLabels.length}, n = ${total}`;
   }
+  dataPanel.triggerPostLoad();
   controlsSection.hidden = false;
   announce(`Table loaded: ${data.rowLabels.length} × ${data.colLabels.length}, n = ${total}.`);
 });

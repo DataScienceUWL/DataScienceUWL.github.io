@@ -63,6 +63,7 @@ let currentContext = null;
 // ── Data loading ────────────────────────────────────────────────────
 
 const dataPanel = initDataPanel({
+  autoCollapse: true, stickyControls: true, showPreview: true,
   datasetFilter: (/** @type {any} */ ds) => ds.type === 'bootstrap_prop' || ds.type === 'one_cat',
   onDataset: (ds) => {
     const ctx = findContext(ds, 'one-prop');
@@ -169,7 +170,6 @@ function countAndLoad(values, successValue, sourceName) {
   currentSuccesses = values.filter(v => v === successValue).length;
   currentSuccessLabel = successValue;
 
-  if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
     dataSummary.textContent = `${sourceName}: n = ${currentN}, ${successValue} = ${currentSuccesses} (p\u0302 = ${formatStat(currentSuccesses / currentN, 0, 'proportion')})`;
   }
@@ -196,10 +196,10 @@ if (loadSummaryBtn) {
     currentSuccessLabel = inputSuccessLabel.value.trim() || 'successes';
     fromRawData = false;
 
-    if (dataPreview) dataPreview.hidden = false;
     if (dataSummary) {
       dataSummary.textContent = `Summary: n = ${currentN}, ${currentSuccessLabel} = ${currentSuccesses} (p\u0302 = ${formatStat(currentSuccesses / currentN, 0, 'proportion')})`;
     }
+    dataPanel.triggerPostLoad();
     announce(`Loaded summary: n = ${n}, successes = ${successes}.`);
   });
 }

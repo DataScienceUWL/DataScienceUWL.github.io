@@ -70,6 +70,8 @@ function loadParsedData(parsed, sourceName) {
 }
 
 initDataPanel({
+  autoCollapse: true,
+  showPreview: true,
   datasetFilter: (/** @type {any} */ ds) => ds.hasCategorical === true,
   onDataset: (ds) => {
     const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
@@ -158,7 +160,6 @@ chartModeSelect.addEventListener('change', () => updateDisplay());
  * @param {string} sourceName
  */
 function showDataLoaded(sourceName) {
-  if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) dataSummary.textContent = `${sourceName} (n = ${rawRows.length})`;
   updateDisplay();
   announce(`${rawRows.length} observations.`);

@@ -157,6 +157,7 @@ function handleText(parsed, sourceName) {
 }
 
 const dataPanel = initDataPanel({
+  autoCollapse: true, stickyControls: true, showPreview: true,
   datasetFilter: ds => ds.type === 'paired',
   onDataset: handleDataset,
   onText: handleText,

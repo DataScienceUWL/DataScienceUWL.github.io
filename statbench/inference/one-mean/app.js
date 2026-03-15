@@ -182,6 +182,7 @@ function handleText(parsed, sourceName) {
 }
 
 const dataPanel = initDataPanel({
+  autoCollapse: true, stickyControls: true, showPreview: true,
   datasetFilter: ds => ds.hasNumeric !== false,
   onDataset: handleDataset,
   onText: handleText,

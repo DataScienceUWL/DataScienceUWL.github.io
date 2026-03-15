@@ -11,7 +11,7 @@ import { bootstrapCI } from '../../js/sim-engine.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
 import { computeBins } from '../../js/histogram.js';
 import { parseCSV } from '../../js/csv-parser.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initDataPanel, computeHighlights, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initDataPanel, computeHighlights, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType, createChartToggle, computeDomain } from '../../js/chart-defaults.js';
 
 // ─── DOM ───
@@ -27,9 +27,7 @@ const dataPreview = document.getElementById('data-preview');
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
   document.querySelectorAll('.gen-btn'));
 
-// Data panel (for collapse after data loads)
-const dataPanel = document.getElementById('data-panel');
-// Controls section (for sticky + expert toggle)
+// Controls section (for expert toggle)
 const controlsSection = document.getElementById('controls');
 
 // Mark CI selector row as expert-only
@@ -98,6 +96,9 @@ function loadTextData(text) {
 }
 
 initDataPanel({
+  autoCollapse: true,
+  stickyControls: true,
+  showPreview: true,
   datasetFilter: ds => ds.type === 'regression',
   onDataset: (ds) => {
     resetSimulation();
@@ -138,7 +139,6 @@ function showDataLoaded() {
   observedIntercept = reg.intercept;
   dataPrecision = Math.max(detectPrecision(xData), detectPrecision(yData));
 
-  if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
     const d = dataPrecision;
     const namePrefix = currentSourceName ? `${currentSourceName}: ` : '';
@@ -149,10 +149,6 @@ function showDataLoaded() {
   if (resultDiv) resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
 
   renderScatter();
-
-  // Collapse data panel and make controls sticky
-  collapseDataPanel(dataPanel);
-  controlsSection?.classList.add('sticky');
 
   announce(`Data loaded: n = ${xData.length}`);
 

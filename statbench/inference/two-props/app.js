@@ -79,6 +79,7 @@ let currentContext = null;
 // ── Data loading ────────────────────────────────────────────────────
 
 const dataPanel = initDataPanel({
+  autoCollapse: true, stickyControls: true, showPreview: true,
   datasetFilter: (/** @type {any} */ ds) => ds.type === 'randomization_prop' || ds.type === 'chisq',
   onDataset: (ds) => {
     const ctx = findContext(ds, 'two-props');
@@ -209,7 +210,6 @@ function countFromData(sourceName) {
   currentX2 = g2Rows.filter(r => r[outcomeVar] === successValue).length;
   fromRawData = true;
 
-  if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
     const p1 = currentN1 > 0 ? formatStat(currentX1 / currentN1, 0, 'proportion') : '—';
     const p2 = currentN2 > 0 ? formatStat(currentX2 / currentN2, 0, 'proportion') : '—';
@@ -239,11 +239,11 @@ if (loadSummaryBtn) {
     label2 = inputLabel2.value.trim() || 'Group 2';
     fromRawData = false;
 
-    if (dataPreview) dataPreview.hidden = false;
     if (dataSummary) {
       dataSummary.textContent =
         `Summary: ${label1} ${currentX1}/${currentN1}, ${label2} ${currentX2}/${currentN2}`;
     }
+    dataPanel.triggerPostLoad();
     announce(`Loaded summary: ${label1} ${x1}/${n1}, ${label2} ${x2}/${n2}.`);
   });
 }

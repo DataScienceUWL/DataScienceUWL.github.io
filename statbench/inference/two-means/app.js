@@ -58,6 +58,7 @@ initTabs({ hintTarget: resultDiv, hintAction: 'click Compute' });
 initKeyboard();
 
 const dataPanel = initDataPanel({
+  autoCollapse: true, stickyControls: true, showPreview: true,
   datasetFilter: ds => ds.hasNumeric && ds.hasCategorical,
   onDataset: loadFromDataset,
   onText: loadFromParsed,
@@ -248,7 +249,6 @@ function extractGroups() {
 
 /** Display data summary above the chart. */
 function showDataSummary() {
-  if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
     dataSummary.textContent =
       `${group1Name}: n = ${group1.length}, x\u0304 = ${formatStat(mean(group1), dataPrecision)} | ` +

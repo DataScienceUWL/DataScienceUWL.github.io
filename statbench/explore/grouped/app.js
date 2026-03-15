@@ -400,8 +400,6 @@ function loadGroupedData(quantVar, groupVar, ds, sourceName) {
   }
   populateSheet(sheetData);
 
-  // Show preview
-  if (dataPreview) dataPreview.hidden = false;
   const groupNames = Object.keys(groupedData);
   const groupSummary = groupNames.map(g => `${g}: n=${groupedData[g].length}`).join(', ');
   if (dataSummary) {
@@ -450,6 +448,8 @@ function handleApply() {
 }
 
 const dataPanel = initDataPanel({
+  autoCollapse: true,
+  showPreview: true,
   datasetFilter: (/** @type {any} */ ds) => ds.hasNumeric && ds.hasCategorical,
   onDataset: (ds) => {
     loadedDataset = ds;

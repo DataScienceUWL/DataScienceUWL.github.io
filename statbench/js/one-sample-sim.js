@@ -13,7 +13,7 @@ import { mean, sd, detectPrecision, formatStat } from './stats.js';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { renderSimPills } from './chart-utils.js';
-import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, animateDropToChart, initDataPanel, computeHighlights, initHelp, initSettings, initMechanismCollapse, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
+import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, animateDropToChart, initDataPanel, computeHighlights, initHelp, initSettings, initMechanismCollapse, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
 import { parseParams } from './url-params.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, dotplotBins, histogramThresholds, renderSimChart, createBinAdjuster } from './chart-defaults.js';
@@ -47,9 +47,7 @@ export function initOneSamplePage(config) {
   const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
     document.querySelectorAll('.gen-btn'));
 
-  // Data panel (for collapse after data loads)
-  const dataPanel = document.getElementById('data-panel');
-  // Controls section (for sticky + expert toggle)
+  // Controls section (for expert toggle)
   const controlsSection = document.getElementById('controls');
 
   // Note: hypothesis controls (null value, direction) are essential for students — NOT expert-only
@@ -211,7 +209,6 @@ export function initOneSamplePage(config) {
 
   /** Enable generate buttons and show hypothesis. */
   function enableControls() {
-    if (dataPreview) dataPreview.hidden = false;
     if (hypothesisDisplay) hypothesisDisplay.hidden = false;
     for (const btn of genBtns) btn.disabled = false;
     resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
@@ -262,13 +259,13 @@ export function initOneSamplePage(config) {
       if (mechObservedStat) {
         mechObservedStat.innerHTML = `${sampleSuccesses} of ${sampleN} (<span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>)`;
       }
-      // Collapse data panel and make controls sticky
-      collapseDataPanel(dataPanel);
-      controlsSection?.classList.add('sticky');
       scrollToControls();
     }
 
-    initDataPanel({
+    const propDataApi = initDataPanel({
+      autoCollapse: true,
+      stickyControls: true,
+      showPreview: true,
       datasetFilter: (/** @type {any} */ ds) => ds.type === 'bootstrap_prop',
       onDataset: (/** @type {any} */ ds) => {
         const catVar = ds.variables.find(/** @param {any} v */ v => v.type === 'categorical') || ds.variables[0];
@@ -329,9 +326,7 @@ export function initOneSamplePage(config) {
         if (mechObservedStat) {
           mechObservedStat.innerHTML = `${k} of ${n} (<span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>)`;
         }
-        // Collapse data panel and make controls sticky
-        collapseDataPanel(dataPanel);
-        controlsSection?.classList.add('sticky');
+        propDataApi.triggerPostLoad();
         announce(`Data loaded: n = ${n}, successes = ${k}`);
         scrollToControls();
       });
@@ -361,9 +356,6 @@ export function initOneSamplePage(config) {
       if (mechObservedStat) {
         mechObservedStat.innerHTML = `n = ${sampleN}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedStat, dataPrecision)}</span>`;
       }
-      // Collapse data panel and make controls sticky
-      collapseDataPanel(dataPanel);
-      controlsSection?.classList.add('sticky');
       scrollToControls();
     }
 
@@ -374,6 +366,9 @@ export function initOneSamplePage(config) {
     }
 
     initDataPanel({
+      autoCollapse: true,
+      stickyControls: true,
+      showPreview: true,
       datasetFilter: (/** @type {any} */ ds) => ds.hasNumeric !== false,
       onDataset: (/** @type {any} */ ds) => {
         const numVar = ds.variables.find(/** @param {any} v */ v => v.type === 'numeric') || ds.variables[0];

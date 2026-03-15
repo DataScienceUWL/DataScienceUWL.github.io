@@ -74,7 +74,6 @@ function loadParsedData(parsed, sourceName) {
     populateVarSelectors();
 
     dataSummary.textContent = `${currentRows.length} observations, ${numericColumns.length} numeric variables`;
-    dataPreview.hidden = false;
 
     announce(`${sourceName}: ${currentRows.length} observations.`);
     updateChart();
@@ -235,6 +234,8 @@ function updateChart() {
 initTabs();
 
 initDataPanel({
+    autoCollapse: true,
+    showPreview: true,
     datasetFilter: ds => ds.type === 'regression',
     onDataset: (ds) => {
         currentRows = ds.rows;
@@ -250,7 +251,6 @@ initDataPanel({
 
         populateVarSelectors();
         dataSummary.textContent = `${currentRows.length} observations, ${numericColumns.length} numeric variables`;
-        dataPreview.hidden = false;
         announce(`${ds.name}: ${currentRows.length} observations.`);
         updateChart();
     },
