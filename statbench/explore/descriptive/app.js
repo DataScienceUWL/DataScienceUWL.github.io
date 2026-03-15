@@ -13,7 +13,8 @@ import { drawBoxplot } from '../../js/boxplot.js';
 import { drawBarChart } from '../../js/barchart.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper } from '../../js/page-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
-import { overlayDensityOnHistogram } from '../../js/kde.js';
+import { overlayDensityOnHistogram, kde, drawDensityCurve } from '../../js/kde.js';
+import { getColors } from '../../js/chart-utils.js';
 import { createExportBar } from '../../js/export.js';
 
 initHelp();
@@ -145,6 +146,20 @@ function updateChartControls() {
       showDensity = densityCb.checked;
       renderActiveChart();
     });
+
+    // Compare group densities checkbox (only when grouped dataset loaded)
+    if (Object.keys(groupedSubsets).length >= 2) {
+      const groupLabel = document.createElement('label');
+      groupLabel.innerHTML = '<input type="checkbox" id="show-group-density"> Compare groups';
+      groupLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+      chartControls.appendChild(groupLabel);
+      const groupCb = /** @type {HTMLInputElement} */ (groupLabel.querySelector('input'));
+      groupCb.checked = showGroupDensity;
+      groupCb.addEventListener('change', () => {
+        showGroupDensity = groupCb.checked;
+        renderActiveChart();
+      });
+    }
   } else if (activeChart === 'boxplot') {
     const label = document.createElement('label');
     label.innerHTML = '<input type="checkbox" id="show-outliers" checked> Show outliers';
@@ -830,7 +845,11 @@ varSelect.addEventListener('change', () => {
   if (!loadedDataset) return;
   const varName = varSelect.value;
   const varInfo = loadedDataset.variables.find(/** @param {any} v */ v => v.name === varName);
-  if (varInfo) loadVariable(varInfo, loadedDataset);
+  if (varInfo) {
+    // Rebuild group subsets for the new numeric variable
+    if (groupVarName) rebuildGroupSubsets(loadedDataset);
+    loadVariable(varInfo, loadedDataset);
+  }
 });
 
 /**
@@ -953,6 +972,29 @@ function computeAndDisplay(values) {
 }
 
 /**
+ * Add a small legend below the chart showing group colors.
+ * @param {HTMLElement} container
+ * @param {string[]} groups
+ * @param {string[]} colors
+ */
+function addGroupDensityLegend(container, groups, colors) {
+  const legend = document.createElement('div');
+  legend.className = 'group-density-legend';
+  legend.style.cssText = 'display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;font-size:0.82rem;margin:0.3rem 0 0;';
+  for (let i = 0; i < groups.length; i++) {
+    const item = document.createElement('span');
+    item.style.cssText = 'display:inline-flex;align-items:center;gap:0.3rem;';
+    const swatch = document.createElement('span');
+    swatch.style.cssText = `display:inline-block;width:20px;height:3px;background:${colors[i % colors.length]};border-radius:2px;`;
+    swatch.setAttribute('aria-hidden', 'true');
+    item.appendChild(swatch);
+    item.appendChild(document.createTextNode(`${groups[i]} (n=${groupedSubsets[groups[i]].length})`));
+    legend.appendChild(item);
+  }
+  container.appendChild(legend);
+}
+
+/**
  * Render the currently selected quantitative chart type.
  */
 function renderActiveChart() {
@@ -975,6 +1017,34 @@ function renderActiveChart() {
       const lastX1 = /** @type {number} */ (histResult.bins[histResult.bins.length - 1].x1);
       const avgBinWidth = (lastX1 - firstX0) / histResult.bins.length;
       overlayDensityOnHistogram(histResult.frame.inner, currentValues, histResult.xScale, histResult.yScale, avgBinWidth);
+    }
+    // Group density overlay: one KDE curve per group level
+    if (showGroupDensity && histResult && histResult.bins && histResult.bins.length > 0) {
+      const groups = Object.keys(groupedSubsets);
+      if (groups.length >= 2) {
+        const colors = getColors(groups.length);
+        const firstX0 = /** @type {number} */ (histResult.bins[0].x0);
+        const lastX1 = /** @type {number} */ (histResult.bins[histResult.bins.length - 1].x1);
+        const avgBinWidth = (lastX1 - firstX0) / histResult.bins.length;
+        /** @type {[number, number]} */
+        const domain = /** @type {[number, number]} */ (histResult.xScale.domain());
+
+        for (let i = 0; i < groups.length; i++) {
+          const vals = groupedSubsets[groups[i]];
+          if (vals.length < 2) continue;
+          const result = kde(vals, { domain });
+          // Scale density to histogram frequency: density * groupN * binWidth
+          const yFreq = result.y.map(d => d * vals.length * avgBinWidth);
+          drawDensityCurve(histResult.frame.inner, result.x, yFreq, histResult.xScale, histResult.yScale, {
+            stroke: colors[i % colors.length],
+            strokeWidth: 2.5,
+            className: 'density-curve group-density',
+          });
+        }
+
+        // Add inline legend below the chart
+        addGroupDensityLegend(chartArea, groups, colors);
+      }
     }
   } else if (activeChart === 'dotplot') {
     if (currentValues.length <= DOTPLOT_AUTO_THRESHOLD) {
@@ -1076,7 +1146,11 @@ function clearDisplay() {
   currentCatValues = [];
 
   loadedDataset = null;
+  groupVarName = '';
+  groupedSubsets = {};
+  showGroupDensity = false;
   if (variableSelector) variableSelector.hidden = true;
+  if (groupFilterEl) groupFilterEl.hidden = true;
   if (dataPreview) dataPreview.hidden = true;
   if (resultsSection) resultsSection.hidden = true;
   if (chartArea) chartArea.innerHTML = '';
