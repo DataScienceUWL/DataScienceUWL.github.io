@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Guess the Correlation — interactive game with Slider and Match modes.
+ * Guess the Correlation — drag-and-drop matching game.
  */
 
 import * as d3Selection from 'd3-selection';
@@ -10,17 +10,15 @@ import { initHelp } from '../../js/page-utils.js';
 
 initHelp();
 
-// ── DOM references (shared) ─────────────────────────────────────
+// ── DOM references ──────────────────────────────────────────
 const announceEl = /** @type {HTMLElement} */ (document.getElementById('sr-announce'));
-const sliderMode = /** @type {HTMLElement} */ (document.getElementById('slider-mode'));
-const matchMode = /** @type {HTMLElement} */ (document.getElementById('match-mode'));
 
 function announce(msg) {
   if (announceEl) announceEl.textContent = msg;
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Data generation (shared)
+// Data generation
 // ═══════════════════════════════════════════════════════════════
 
 /** Box-Muller standard normal. */
@@ -58,16 +56,6 @@ function generateData(n, targetR) {
   return { x, y, actualR };
 }
 
-/** Pick a random target r from interesting ranges. */
-function pickTargetR() {
-  const ranges = [
-    [-0.95, -0.70], [-0.70, -0.40], [-0.40, -0.10], [-0.10, 0.10],
-    [0.10, 0.40], [0.40, 0.70], [0.70, 0.95],
-  ];
-  const range = ranges[Math.floor(Math.random() * ranges.length)];
-  return range[0] + Math.random() * (range[1] - range[0]);
-}
-
 /**
  * Pick 4 distinct target r values that are well-separated.
  * @returns {number[]}
@@ -84,16 +72,7 @@ function pickFourTargets() {
   return bands.map(([lo, hi]) => lo + Math.random() * (hi - lo));
 }
 
-/** Shuffle array in place. */
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-// ── Draw scatterplot ────────────────────────────────────────────
+// ── Draw scatterplot ────────────────────────────────────────
 /**
  * @param {HTMLElement} container
  * @param {number[]} x
@@ -171,117 +150,7 @@ function drawScatter(container, x, y, opts = {}) {
 
 
 // ═══════════════════════════════════════════════════════════════
-// SLIDER MODE
-// ═══════════════════════════════════════════════════════════════
-
-const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
-const guessSlider = /** @type {HTMLInputElement} */ (document.getElementById('guess-slider'));
-const guessDisplay = /** @type {HTMLElement} */ (document.getElementById('guess-display'));
-const btnSubmit = /** @type {HTMLButtonElement} */ (document.getElementById('btn-submit'));
-const btnNext = /** @type {HTMLButtonElement} */ (document.getElementById('btn-next'));
-const feedbackEl = /** @type {HTMLElement} */ (document.getElementById('feedback'));
-const roundNum = /** @type {HTMLElement} */ (document.getElementById('round-num'));
-const avgErrorEl = /** @type {HTMLElement} */ (document.getElementById('avg-error'));
-const bestStreakEl = /** @type {HTMLElement} */ (document.getElementById('best-streak'));
-const totalScoreEl = /** @type {HTMLElement} */ (document.getElementById('total-score'));
-const historyBar = /** @type {HTMLElement} */ (document.getElementById('history-bar'));
-
-let sliderState = {
-  trueR: 0, round: 0, totalError: 0, totalScore: 0, streak: 0, bestStreak: 0,
-  submitted: false, currentX: /** @type {number[]} */ ([]), currentY: /** @type {number[]} */ ([]),
-};
-
-function getSliderN() {
-  const v = /** @type {HTMLInputElement|null} */ (
-    document.querySelector('input[name="difficulty"]:checked'))?.value || 'medium';
-  return v === 'easy' ? 50 : v === 'hard' ? 15 : 30;
-}
-
-function scoreGuess(error) {
-  if (error <= 0.05) return { grade: 'excellent', points: 10, label: 'Excellent!' };
-  if (error <= 0.10) return { grade: 'good', points: 7, label: 'Good!' };
-  if (error <= 0.20) return { grade: 'ok', points: 3, label: 'OK' };
-  return { grade: 'miss', points: 0, label: 'Miss' };
-}
-
-function sliderNewRound() {
-  const s = sliderState;
-  s.submitted = false;
-  s.round++;
-
-  const data = generateData(getSliderN(), pickTargetR());
-  s.currentX = data.x; s.currentY = data.y;
-  s.trueR = data.actualR;
-
-  drawScatter(chartContainer, s.currentX, s.currentY);
-
-  guessSlider.value = '0'; guessSlider.disabled = false;
-  guessDisplay.textContent = '0.00';
-  btnSubmit.style.display = ''; btnSubmit.disabled = false;
-  btnNext.style.display = 'none';
-  feedbackEl.className = 'feedback hidden'; feedbackEl.textContent = '';
-  roundNum.textContent = String(s.round);
-
-  announce(`Round ${s.round}. Look at the scatterplot and guess the correlation.`);
-  guessSlider.focus();
-}
-
-function sliderSubmit() {
-  const s = sliderState;
-  if (s.submitted) return;
-  s.submitted = true;
-
-  const guess = Number(guessSlider.value) / 100;
-  const error = Math.abs(guess - s.trueR);
-  const result = scoreGuess(error);
-
-  s.totalError += error;
-  s.totalScore += result.points;
-  if (error <= 0.10) { s.streak++; if (s.streak > s.bestStreak) s.bestStreak = s.streak; }
-  else s.streak = 0;
-
-  avgErrorEl.textContent = (s.totalError / s.round).toFixed(2);
-  bestStreakEl.textContent = String(s.bestStreak);
-  totalScoreEl.textContent = String(s.totalScore);
-
-  feedbackEl.className = `feedback ${result.grade}`;
-  feedbackEl.textContent =
-    `${result.label} — You guessed ${guess.toFixed(2)}, actual r = ${s.trueR.toFixed(3)} ` +
-    `(off by ${error.toFixed(3)}, +${result.points} pts)`;
-
-  const dot = document.createElement('span');
-  dot.className = `history-dot ${result.grade}`;
-  dot.title = `Round ${s.round}: guessed ${guess.toFixed(2)}, actual ${s.trueR.toFixed(3)}`;
-  dot.setAttribute('aria-label', dot.title);
-  historyBar.appendChild(dot);
-
-  drawScatter(chartContainer, s.currentX, s.currentY, { showR: true, showLine: true, actualR: s.trueR });
-
-  guessSlider.disabled = true;
-  btnSubmit.style.display = 'none'; btnNext.style.display = '';
-  btnNext.focus();
-
-  announce(`${result.label}. You guessed ${guess.toFixed(2)}, actual ${s.trueR.toFixed(3)}.`);
-}
-
-guessSlider.addEventListener('input', () => {
-  guessDisplay.textContent = (Number(guessSlider.value) / 100).toFixed(2);
-});
-btnSubmit.addEventListener('click', sliderSubmit);
-btnNext.addEventListener('click', sliderNewRound);
-
-for (const r of document.querySelectorAll('input[name="difficulty"]')) {
-  r.addEventListener('change', () => {
-    Object.assign(sliderState, { round: 0, totalError: 0, totalScore: 0, streak: 0, bestStreak: 0 });
-    avgErrorEl.textContent = '\u2014'; bestStreakEl.textContent = '0'; totalScoreEl.textContent = '0';
-    historyBar.innerHTML = '';
-    sliderNewRound();
-  });
-}
-
-
-// ═══════════════════════════════════════════════════════════════
-// MATCH MODE
+// MATCH GAME
 // ═══════════════════════════════════════════════════════════════
 
 const matchGrid = /** @type {HTMLElement} */ (document.getElementById('match-grid'));
@@ -296,9 +165,7 @@ const matchHistory = /** @type {HTMLElement} */ (document.getElementById('match-
 
 /** @type {{ x: number[], y: number[], actualR: number, label: string }[]} */
 let matchPlots = [];
-/** @type {number[]} */
-let matchRValues = [];
-/** @type {Map<number, number>} plotIndex → rValueIndex in matchRValues */
+/** @type {Map<number, number>} plotIndex → correctPlotIdx */
 let matchAssignments = new Map();
 let matchSelectedPlot = -1;
 let matchRound = 0;
@@ -308,7 +175,7 @@ let matchRevealed = false;
 
 function getMatchN() {
   const v = /** @type {HTMLInputElement|null} */ (
-    document.querySelector('input[name="match-difficulty"]:checked'))?.value || 'medium';
+    document.querySelector('input[name="difficulty"]:checked'))?.value || 'medium';
   return v === 'easy' ? 50 : v === 'hard' ? 15 : 30;
 }
 
@@ -376,7 +243,6 @@ function matchNewRound() {
       btn.classList.add('dragging');
       e.dataTransfer?.setData('text/plain', String(item.origPlotIdx));
       if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
-      // Clear any plot selection since we're dragging instead
       matchSelectedPlot = -1;
       matchGrid.querySelectorAll('.match-plot').forEach(el => el.classList.remove('selected'));
     });
@@ -406,11 +272,9 @@ function matchNewRound() {
       if (matchRevealed || matchAssignments.has(plotIdx)) return;
       const correctPlotIdx = Number(/** @type {DragEvent} */ (e).dataTransfer?.getData('text/plain'));
       if (!isFinite(correctPlotIdx)) return;
-      // Find the matching button
       const btn = /** @type {HTMLButtonElement|null} */ (
         rChoices.querySelector(`[data-plot-idx="${correctPlotIdx}"]`));
       if (!btn || btn.classList.contains('used')) return;
-      // Temporarily set selectedPlot so selectR works
       matchSelectedPlot = plotIdx;
       selectR(correctPlotIdx, btn);
     });
@@ -422,7 +286,7 @@ function matchNewRound() {
   btnMatchNext.style.display = 'none';
   matchRoundEl.textContent = String(matchRound);
 
-  announce(`Match round ${matchRound}. Four scatterplots labeled A through D. Match each to its correlation.`);
+  announce(`Round ${matchRound}. Four scatterplots labeled A through D. Match each to its correlation.`);
 }
 
 function selectPlot(idx) {
@@ -452,12 +316,10 @@ function selectR(correctPlotIdx, btn) {
   }
   if (btn.classList.contains('used')) return;
 
-  // Record: the student assigned this r (which belongs to correctPlotIdx) to matchSelectedPlot
   matchAssignments.set(matchSelectedPlot, correctPlotIdx);
 
   btn.classList.add('used', 'selected');
 
-  // Mark plot as assigned
   const plotDiv = matchGrid.querySelector(`[data-idx="${matchSelectedPlot}"]`);
   if (plotDiv) {
     plotDiv.classList.remove('selected');
@@ -476,7 +338,7 @@ function selectR(correctPlotIdx, btn) {
   if (matchAssignments.size === 4) {
     checkMatch();
   } else {
-    matchInstructions.innerHTML = `${matchAssignments.size}/4 matched. Click another scatterplot.`;
+    matchInstructions.innerHTML = `${matchAssignments.size}/4 matched. Drag or click another.`;
   }
 }
 
@@ -484,7 +346,6 @@ function checkMatch() {
   matchRevealed = true;
   let correct = 0;
 
-  // For each plot, check if the r assigned to it actually belongs to that plot
   matchAssignments.forEach((assignedCorrectPlotIdx, plotIdx) => {
     const isCorrect = assignedCorrectPlotIdx === plotIdx;
     if (isCorrect) correct++;
@@ -540,7 +401,7 @@ function checkMatch() {
 
 btnMatchNext.addEventListener('click', matchNewRound);
 
-for (const r of document.querySelectorAll('input[name="match-difficulty"]')) {
+for (const r of document.querySelectorAll('input[name="difficulty"]')) {
   r.addEventListener('change', () => {
     matchRound = 0; matchCorrectCount = 0; matchTotalCount = 0;
     matchCorrectEl.textContent = '0'; matchTotalEl.textContent = '0';
@@ -564,7 +425,6 @@ rChoices.addEventListener('touchstart', (e) => {
   e.preventDefault();
   touchSourceBtn = btn;
 
-  // Create floating clone
   touchClone = /** @type {HTMLElement} */ (btn.cloneNode(true));
   touchClone.style.cssText = 'position:fixed;pointer-events:none;z-index:1000;opacity:0.85;transform:scale(1.1);box-shadow:0 4px 16px rgba(0,0,0,0.2);';
   const touch = e.touches[0];
@@ -584,7 +444,6 @@ rChoices.addEventListener('touchmove', (e) => {
   touchClone.style.left = `${touch.clientX - 40}px`;
   touchClone.style.top = `${touch.clientY - 25}px`;
 
-  // Highlight plot under finger
   const el = document.elementFromPoint(touch.clientX, touch.clientY);
   const plotDiv = el?.closest('.match-plot');
   matchGrid.querySelectorAll('.match-plot').forEach(p => p.classList.remove('drag-over'));
@@ -618,39 +477,5 @@ rChoices.addEventListener('touchend', (e) => {
   touchSourceBtn = null;
 });
 
-// ═══════════════════════════════════════════════════════════════
-// MODE SWITCHING
-// ═══════════════════════════════════════════════════════════════
-
-let sliderStarted = false;
-let matchStarted = false;
-
-for (const radio of document.querySelectorAll('input[name="mode"]')) {
-  radio.addEventListener('change', () => {
-    const mode = /** @type {HTMLInputElement} */ (radio).value;
-    sliderMode.style.display = mode === 'slider' ? '' : 'none';
-    matchMode.style.display = mode === 'match' ? '' : 'none';
-
-    if (mode === 'slider' && !sliderStarted) {
-      sliderStarted = true;
-      sliderNewRound();
-    }
-    if (mode === 'match' && !matchStarted) {
-      matchStarted = true;
-      matchNewRound();
-    }
-  });
-}
-
-// Keyboard: Enter to submit/next (slider mode only when visible)
-document.addEventListener('keydown', (e) => {
-  if (e.key !== 'Enter') return;
-  if (sliderMode.style.display !== 'none') {
-    if (!sliderState.submitted) sliderSubmit();
-    else sliderNewRound();
-  }
-});
-
-// ── Start ───────────────────────────────────────────────────────
-sliderStarted = true;
-sliderNewRound();
+// ── Start ───────────────────────────────────────────────────
+matchNewRound();
