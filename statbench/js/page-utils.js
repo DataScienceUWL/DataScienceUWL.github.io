@@ -258,6 +258,13 @@ export function initSettings() {
       </div>
       <input type="checkbox" id="set-expert" ${s.expertMode ? 'checked' : ''}>
     </div>
+    <div class="setting-row">
+      <div>
+        <label for="set-interpret" class="setting-label">Show interpretations</label>
+        <p class="setting-hint">Show auto-generated conclusions and interpretations. Turn off for calculator-only mode.</p>
+      </div>
+      <input type="checkbox" id="set-interpret" ${s.showInterpretations !== false ? 'checked' : ''}>
+    </div>
     <div class="reset-row">
       <button type="button" class="reset-link" id="set-reset">Reset to defaults</button>
     </div>
@@ -301,6 +308,15 @@ export function initSettings() {
   if (expertCheck) {
     expertCheck.addEventListener('change', () => {
       setSettings({ expertMode: expertCheck.checked });
+      applySettings();
+    });
+  }
+
+  // Interpretations toggle
+  const interpretCheck = /** @type {HTMLInputElement|null} */ (document.getElementById('set-interpret'));
+  if (interpretCheck) {
+    interpretCheck.addEventListener('change', () => {
+      setSettings({ showInterpretations: interpretCheck.checked });
       applySettings();
     });
   }

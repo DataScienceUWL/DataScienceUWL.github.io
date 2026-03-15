@@ -41,6 +41,10 @@ const DEFAULTS = {
   // Expert mode — hides advanced controls (statistic selector, CI level, chart toggle,
   // bin adjuster, theory overlay) in simple mode for intro students
   expertMode:      false,
+
+  // Show interpretations — when off, hides auto-generated conclusions and
+  // interpretation text so students produce their own (calculator vs tutor mode)
+  showInterpretations: true,
 };
 
 const STORAGE_KEY = 'statbench-settings';
@@ -146,6 +150,18 @@ export function getExpertMode() {
 }
 
 /**
+ * Get whether interpretations should be shown, respecting URL param override.
+ * URL param ?interpret=false hides auto-generated conclusions.
+ * @returns {boolean}
+ */
+export function getShowInterpretations() {
+  const urlParam = new URLSearchParams(window.location.search).get('interpret');
+  if (urlParam === 'false' || urlParam === '0') return false;
+  if (urlParam === 'true' || urlParam === '1') return true;
+  return !!getSetting('showInterpretations');
+}
+
+/**
  * Apply settings to the current page (CSS custom properties, etc.).
  * Call once on page load from each page's init code.
  */
@@ -161,6 +177,13 @@ export function applySettings() {
     document.body?.setAttribute('data-expert', 'true');
   } else {
     document.body?.removeAttribute('data-expert');
+  }
+
+  // Interpretations toggle → data attribute (CSS hides .interpretation when off)
+  if (getShowInterpretations()) {
+    document.body?.removeAttribute('data-hide-interpretations');
+  } else {
+    document.body?.setAttribute('data-hide-interpretations', 'true');
   }
 
   // Chart font scale → CSS custom property
