@@ -991,6 +991,65 @@ function computeAndDisplay(values) {
 }
 
 /**
+ * Render a collapsible bin frequency table below the histogram.
+ * @param {Array<{x0: any, x1: any, length: number}>} bins
+ * @param {number} totalN
+ */
+function renderBinTable(bins, totalN) {
+  if (!chartArea) return;
+  const details = document.createElement('details');
+  details.className = 'bin-table-details';
+  details.style.cssText = 'margin:0.5rem 0;font-size:0.85rem;';
+  const summary = document.createElement('summary');
+  summary.textContent = relativeFreq ? 'Bin relative frequencies' : 'Bin frequencies';
+  summary.style.cssText = 'cursor:pointer;color:var(--ims-green);font-weight:500;';
+  details.appendChild(summary);
+
+  const table = document.createElement('table');
+  table.className = 'bin-freq-table';
+  table.style.cssText = 'width:100%;border-collapse:collapse;margin:0.4rem 0;font-size:0.82rem;';
+
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  for (const text of ['Bin', relativeFreq ? 'Rel. Frequency' : 'Frequency']) {
+    const th = document.createElement('th');
+    th.textContent = text;
+    th.style.cssText = `text-align:${text === 'Bin' ? 'left' : 'right'};padding:0.2rem 0.4rem;border-bottom:2px solid #ccc;`;
+    headerRow.appendChild(th);
+  }
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  const d = dataPrecision;
+  for (let i = 0; i < bins.length; i++) {
+    const bin = bins[i];
+    const tr = document.createElement('tr');
+    if (i % 2 === 1) tr.style.background = '#f8f8f8';
+
+    const tdBin = document.createElement('td');
+    tdBin.textContent = `[${formatStat(bin.x0, d)}, ${formatStat(bin.x1, d)})`;
+    tdBin.style.cssText = 'padding:0.2rem 0.4rem;border-bottom:1px solid #eee;white-space:nowrap;';
+    tr.appendChild(tdBin);
+
+    const tdVal = document.createElement('td');
+    if (relativeFreq) {
+      const rf = bin.length / (totalN || 1);
+      tdVal.textContent = rf === 0 ? '0' : rf.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+    } else {
+      tdVal.textContent = String(bin.length);
+    }
+    tdVal.style.cssText = 'text-align:right;padding:0.2rem 0.4rem;border-bottom:1px solid #eee;';
+    tr.appendChild(tdVal);
+
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  details.appendChild(table);
+  chartArea.appendChild(details);
+}
+
+/**
  * Render the currently selected quantitative chart type.
  */
 function renderActiveChart() {
@@ -1013,6 +1072,10 @@ function renderActiveChart() {
       const lastX1 = /** @type {number} */ (histResult.bins[histResult.bins.length - 1].x1);
       const avgBinWidth = (lastX1 - firstX0) / histResult.bins.length;
       overlayDensityOnHistogram(histResult.frame.inner, currentValues, histResult.xScale, histResult.yScale, avgBinWidth);
+    }
+    // Collapsible bin frequency table
+    if (histResult && histResult.bins && histResult.bins.length > 0) {
+      renderBinTable(histResult.bins, currentValues.length);
     }
   } else if (activeChart === 'dotplot') {
     drawDotplot(chartArea, currentValues, {

@@ -656,6 +656,88 @@ function renderStackedHistograms(groupNames) {
       relativeFrequency: relativeFreq,
     });
   }
+
+  // Bin frequency table (collapsed by default)
+  renderBinTable(/** @type {any} */ (sharedBins), groupNames, domain, thresholds);
+}
+
+/**
+ * Render a collapsible bin frequency table below the histograms.
+ * @param {Array<{x0: number, x1: number, length: number}>} sharedBins - Bins computed from all values
+ * @param {string[]} groupNames
+ * @param {[number, number]} domain
+ * @param {number[]} thresholds
+ */
+function renderBinTable(sharedBins, groupNames, domain, thresholds) {
+  if (!chartArea) return;
+
+  // Compute per-group bins using the same boundaries
+  /** @type {Record<string, number[]>} */
+  const groupBinCounts = {};
+  for (const name of groupNames) {
+    const { bins } = computeBins(groupedData[name], { domain, thresholds });
+    groupBinCounts[name] = bins.map(b => b.length);
+  }
+
+  const details = document.createElement('details');
+  details.className = 'bin-table-details';
+  details.style.cssText = 'margin:0.5rem 0;font-size:0.85rem;';
+  const summary = document.createElement('summary');
+  summary.textContent = relativeFreq ? 'Bin relative frequencies' : 'Bin frequencies';
+  summary.style.cssText = 'cursor:pointer;color:var(--ims-green);font-weight:500;';
+  details.appendChild(summary);
+
+  const table = document.createElement('table');
+  table.className = 'bin-freq-table';
+  table.style.cssText = 'width:100%;border-collapse:collapse;margin:0.4rem 0;font-size:0.82rem;';
+
+  // Header
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  const thBin = document.createElement('th');
+  thBin.textContent = 'Bin';
+  thBin.style.cssText = 'text-align:left;padding:0.2rem 0.4rem;border-bottom:2px solid #ccc;';
+  headerRow.appendChild(thBin);
+  for (const name of groupNames) {
+    const th = document.createElement('th');
+    th.textContent = name;
+    th.style.cssText = 'text-align:right;padding:0.2rem 0.4rem;border-bottom:2px solid #ccc;';
+    headerRow.appendChild(th);
+  }
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  // Rows
+  const tbody = document.createElement('tbody');
+  const d = dataPrecision;
+  for (let i = 0; i < sharedBins.length; i++) {
+    const bin = sharedBins[i];
+    const tr = document.createElement('tr');
+    if (i % 2 === 1) tr.style.background = '#f8f8f8';
+
+    const tdBin = document.createElement('td');
+    tdBin.textContent = `[${formatStat(/** @type {number} */ (bin.x0), d)}, ${formatStat(/** @type {number} */ (bin.x1), d)})`;
+    tdBin.style.cssText = 'padding:0.2rem 0.4rem;border-bottom:1px solid #eee;white-space:nowrap;';
+    tr.appendChild(tdBin);
+
+    for (const name of groupNames) {
+      const td = document.createElement('td');
+      const count = groupBinCounts[name][i] ?? 0;
+      if (relativeFreq) {
+        const n = groupedData[name].length || 1;
+        const rf = count / n;
+        td.textContent = rf === 0 ? '0' : rf.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+      } else {
+        td.textContent = String(count);
+      }
+      td.style.cssText = 'text-align:right;padding:0.2rem 0.4rem;border-bottom:1px solid #eee;';
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  details.appendChild(table);
+  chartArea.appendChild(details);
 }
 
 // ── Summary statistics table ──────────────────────────────────────────
