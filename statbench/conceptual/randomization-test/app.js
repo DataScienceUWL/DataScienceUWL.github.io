@@ -9,7 +9,7 @@
  * using a card-shuffle metaphor.
  */
 
-import { drawHistogram } from '../../js/histogram.js';
+import { drawHistogram, snappedPropThresholds } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { renderSimPills } from '../../js/chart-utils.js';
 import { resolveChartType, createChartToggle } from '../../js/chart-defaults.js';
@@ -127,6 +127,9 @@ let config = DATASETS.sex_discrimination;
 /** @type {number[]} */
 let nullDiffs = [];
 let observedDiff = 0;
+
+/** Discrete step size for proportion differences (1/n1 + 1/n2 when total successes fixed). */
+let discreteStep = 0;
 let prng = createRng('randomization');
 let predictionLocked = false;
 let currentStep = 1;  // discovery mode: which step is active
@@ -217,6 +220,10 @@ async function loadDataset(id) {
   const p1 = countSuccess(group1) / group1.length;
   const p2 = countSuccess(group2) / group2.length;
   observedDiff = +(p1 - p2).toFixed(6);
+
+  // Discrete step: when total successes are fixed and one moves from group1 to group2,
+  // the difference changes by 1/n1 + 1/n2
+  discreteStep = 1 / group1.length + 1 / group2.length;
 
   renderStep1(group1, group2);
   renderStep2();
@@ -667,6 +674,13 @@ function updateChart() {
   /** @type {any} */
   let chartXScale;
 
+  // Compute domain from data + observed stat, padded by half a step
+  const allVals = [...nullDiffs, observedDiff];
+  const lo = Math.min(...allVals) - discreteStep;
+  const hi = Math.max(...allVals) + discreteStep;
+  /** @type {[number, number]} */
+  const domain = [lo, hi];
+
   if (activeChart === 'dotplot') {
     const highlightIndex = lastStatIndex >= 0 ? lastStatIndex : -1;
     const r = drawDotplot(container, nullDiffs, {
@@ -678,10 +692,18 @@ function updateChart() {
       animate: false,
       highlightIndex,
       highlightIndices: batchHighlightIndices ?? undefined,
+      domain,
+      binWidth: discreteStep,
     });
     chartFrame = r.frame;
     chartXScale = r.xScale;
   } else {
+    // Snap histogram bin edges to the discrete grid
+    const thresholds = snappedPropThresholds(
+      Math.round(1 / discreteStep),  // effective "sample size" for grid
+      domain,
+      nullDiffs.length,
+    );
     const r = drawHistogram(container, nullDiffs, {
       xLabel,
       titleText: '',
@@ -689,6 +711,8 @@ function updateChart() {
       isTail: isExtreme,
       observedStat: observedDiff,
       animate: false,
+      domain,
+      thresholds,
     });
     chartFrame = r.frame;
     chartXScale = r.xScale;
