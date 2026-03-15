@@ -386,6 +386,10 @@ function flyDotBetweenCharts(sampleMean, onDone) {
   const startTime = performance.now();
   const dx = endPos.x - startPos.x;
   const dy = endPos.y - startPos.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+
+  // Detect layout: side-by-side (dx dominant) vs stacked (dy dominant)
+  const isSideBySide = Math.abs(dx) > Math.abs(dy);
 
   function step(now) {
     const elapsed = now - startTime;
@@ -395,12 +399,20 @@ function flyDotBetweenCharts(sampleMean, onDone) {
       ? 4 * t * t * t
       : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-    // Add a slight arc (upward curve)
-    const arcHeight = -Math.min(Math.abs(dy) * 0.3, 60);
-    const arc = 4 * arcHeight * eased * (1 - eased); // parabolic arc
+    // Pronounced arc — scales with travel distance
+    const arcAmount = Math.max(dist * 0.4, 80);
+    const arcT = 4 * eased * (1 - eased); // peaks at t=0.5
 
-    const x = startPos.x + dx * eased;
-    const y = startPos.y + dy * eased + arc;
+    let x, y;
+    if (isSideBySide) {
+      // Side-by-side: arc upward (negative y offset)
+      x = startPos.x + dx * eased;
+      y = startPos.y + dy * eased - arcAmount * arcT;
+    } else {
+      // Stacked: arc to the right (positive x offset)
+      x = startPos.x + dx * eased + arcAmount * 0.7 * arcT;
+      y = startPos.y + dy * eased;
+    }
 
     dot.style.left = `${x - 7}px`;
     dot.style.top = `${y - 7}px`;
