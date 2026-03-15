@@ -360,20 +360,65 @@ function matchNewRound() {
     });
   });
 
-  // Render r-value buttons
+  // Render r-value buttons (draggable + clickable)
   rChoices.innerHTML = '';
   rWithIndex.forEach(item => {
     const btn = document.createElement('button');
     btn.className = 'r-choice';
     btn.textContent = item.r.toFixed(2);
-    btn.dataset.plotIdx = String(item.origPlotIdx); // which plot this r belongs to
+    btn.dataset.plotIdx = String(item.origPlotIdx);
+    btn.draggable = true;
     btn.addEventListener('click', () => selectR(item.origPlotIdx, btn));
+
+    // Drag events
+    btn.addEventListener('dragstart', (e) => {
+      if (matchRevealed || btn.classList.contains('used')) { e.preventDefault(); return; }
+      btn.classList.add('dragging');
+      e.dataTransfer?.setData('text/plain', String(item.origPlotIdx));
+      if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+      // Clear any plot selection since we're dragging instead
+      matchSelectedPlot = -1;
+      matchGrid.querySelectorAll('.match-plot').forEach(el => el.classList.remove('selected'));
+    });
+    btn.addEventListener('dragend', () => btn.classList.remove('dragging'));
+
     rChoices.appendChild(btn);
+  });
+
+  // Drop targets on plots
+  matchGrid.querySelectorAll('.match-plot').forEach(plotDiv => {
+    plotDiv.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (e instanceof DragEvent && e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    });
+    plotDiv.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      const idx = Number(/** @type {HTMLElement} */ (plotDiv).dataset.idx);
+      if (!matchRevealed && !matchAssignments.has(idx)) {
+        plotDiv.classList.add('drag-over');
+      }
+    });
+    plotDiv.addEventListener('dragleave', () => plotDiv.classList.remove('drag-over'));
+    plotDiv.addEventListener('drop', (e) => {
+      e.preventDefault();
+      plotDiv.classList.remove('drag-over');
+      const plotIdx = Number(/** @type {HTMLElement} */ (plotDiv).dataset.idx);
+      if (matchRevealed || matchAssignments.has(plotIdx)) return;
+      const correctPlotIdx = Number(/** @type {DragEvent} */ (e).dataTransfer?.getData('text/plain'));
+      if (!isFinite(correctPlotIdx)) return;
+      // Find the matching button
+      const btn = /** @type {HTMLButtonElement|null} */ (
+        rChoices.querySelector(`[data-plot-idx="${correctPlotIdx}"]`));
+      if (!btn || btn.classList.contains('used')) return;
+      // Temporarily set selectedPlot so selectR works
+      matchSelectedPlot = plotIdx;
+      selectR(correctPlotIdx, btn);
+    });
   });
 
   matchFeedback.className = 'feedback hidden';
   matchFeedback.textContent = '';
-  matchInstructions.innerHTML = 'Click a scatterplot, then click the matching <em>r</em> value.';
+  matchInstructions.innerHTML = 'Drag an <em>r</em> value onto its scatterplot, or click to match.';
   btnMatchNext.style.display = 'none';
   matchRoundEl.textContent = String(matchRound);
 
@@ -504,6 +549,74 @@ for (const r of document.querySelectorAll('input[name="match-difficulty"]')) {
   });
 }
 
+
+// ── Touch drag support (mobile) ──────────────────────────────
+
+/** @type {HTMLElement|null} */
+let touchClone = null;
+/** @type {HTMLButtonElement|null} */
+let touchSourceBtn = null;
+
+rChoices.addEventListener('touchstart', (e) => {
+  const btn = /** @type {HTMLButtonElement|null} */ (/** @type {HTMLElement} */ (e.target).closest('.r-choice'));
+  if (!btn || matchRevealed || btn.classList.contains('used')) return;
+
+  e.preventDefault();
+  touchSourceBtn = btn;
+
+  // Create floating clone
+  touchClone = /** @type {HTMLElement} */ (btn.cloneNode(true));
+  touchClone.style.cssText = 'position:fixed;pointer-events:none;z-index:1000;opacity:0.85;transform:scale(1.1);box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+  const touch = e.touches[0];
+  touchClone.style.left = `${touch.clientX - 40}px`;
+  touchClone.style.top = `${touch.clientY - 25}px`;
+  document.body.appendChild(touchClone);
+  btn.classList.add('dragging');
+
+  matchSelectedPlot = -1;
+  matchGrid.querySelectorAll('.match-plot').forEach(el => el.classList.remove('selected'));
+}, { passive: false });
+
+rChoices.addEventListener('touchmove', (e) => {
+  if (!touchClone) return;
+  e.preventDefault();
+  const touch = e.touches[0];
+  touchClone.style.left = `${touch.clientX - 40}px`;
+  touchClone.style.top = `${touch.clientY - 25}px`;
+
+  // Highlight plot under finger
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  const plotDiv = el?.closest('.match-plot');
+  matchGrid.querySelectorAll('.match-plot').forEach(p => p.classList.remove('drag-over'));
+  if (plotDiv) {
+    const idx = Number(/** @type {HTMLElement} */ (plotDiv).dataset.idx);
+    if (!matchAssignments.has(idx)) plotDiv.classList.add('drag-over');
+  }
+}, { passive: false });
+
+rChoices.addEventListener('touchend', (e) => {
+  if (!touchClone || !touchSourceBtn) return;
+
+  touchClone.remove();
+  touchClone = null;
+  touchSourceBtn.classList.remove('dragging');
+  matchGrid.querySelectorAll('.match-plot').forEach(p => p.classList.remove('drag-over'));
+
+  const touch = e.changedTouches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  const plotDiv = el?.closest('.match-plot');
+
+  if (plotDiv) {
+    const plotIdx = Number(/** @type {HTMLElement} */ (plotDiv).dataset.idx);
+    const correctPlotIdx = Number(touchSourceBtn.dataset.plotIdx);
+    if (!matchAssignments.has(plotIdx) && !touchSourceBtn.classList.contains('used')) {
+      matchSelectedPlot = plotIdx;
+      selectR(correctPlotIdx, touchSourceBtn);
+    }
+  }
+
+  touchSourceBtn = null;
+});
 
 // ═══════════════════════════════════════════════════════════════
 // MODE SWITCHING
