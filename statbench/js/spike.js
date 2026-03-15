@@ -171,7 +171,7 @@ export function drawSpike(container, values, options = {}) {
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   if (observedStat != null) {
     renderOverlayLine(overlays, observedStat, xScale, frame.height,
-      '#F05133', 'Observed statistic');
+      '#114B5F', 'Observed statistic');
   }
   if (ciLines) {
     renderOverlayLine(overlays, ciLines[0], xScale, frame.height,

@@ -219,7 +219,7 @@ export function drawHistogram(container, values, options = {}) {
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   if (observedStat != null) {
     renderOverlayLine(overlays, observedStat, xScale, frame.height,
-      '#F05133', observedLabel, precision, observedLabel);
+      '#114B5F', observedLabel, precision, observedLabel);
   }
   if (ciLines) {
     renderOverlayLine(overlays, ciLines[0], xScale, frame.height,
@@ -261,7 +261,7 @@ export function drawHistogram(container, values, options = {}) {
       if (newObserved != null) {
         const newLabel = /** @type {any} */ (opts).observedLabel ?? observedLabel;
         renderOverlayLine(overlays, newObserved, xScale, frame.height,
-          '#F05133', newLabel, precision, newLabel);
+          '#114B5F', newLabel, precision, newLabel);
       }
       if (newCiLines) {
         renderOverlayLine(overlays, newCiLines[0], xScale, frame.height,

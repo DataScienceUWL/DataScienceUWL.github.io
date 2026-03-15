@@ -18,8 +18,8 @@ const DOT_FILL = '#808080';
 /** Extreme dot fill (in tail). */
 const EXTREME_FILL = '#569BBD';
 
-/** Observed statistic line color. */
-const OBSERVED_COLOR = '#F05133';
+/** Observed statistic line color (dark teal — distinct from orange highlight). */
+const OBSERVED_COLOR = '#114B5F';
 
 /** Minimum dot radius. */
 const MIN_RADIUS = 2;
@@ -618,7 +618,7 @@ function renderObservedLine(overlays, value, xScale, innerHeight, precision = 2,
     .attr('y1', 0)
     .attr('y2', innerHeight)
     .attr('stroke', OBSERVED_COLOR)
-    .attr('stroke-width', 2)
+    .attr('stroke-width', 2.5)
     .attr('stroke-dasharray', '6,3')
     .attr('aria-label', `${label}: ${value}`);
   overlays.append('text')
