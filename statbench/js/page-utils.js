@@ -585,7 +585,6 @@ export function initMechanismCollapse(mechanismStrip) {
     const mechDiff = strip.querySelector('.mech-diff');
     if (mechDiff && mechDiff.textContent.trim()) {
       summary.innerHTML = mechDiff.innerHTML;
-      summary.classList.toggle('highlight-last', mechDiff.classList.contains('highlight-last'));
       return;
     }
 
@@ -593,7 +592,6 @@ export function initMechanismCollapse(mechanismStrip) {
     const mechSimStat = strip.querySelector('#mech-sim-stat');
     if (mechSimStat && mechSimStat.textContent.trim()) {
       summary.innerHTML = mechSimStat.innerHTML;
-      summary.classList.toggle('highlight-last', mechSimStat.classList.contains('highlight-last'));
       return;
     }
 
@@ -602,8 +600,8 @@ export function initMechanismCollapse(mechanismStrip) {
     if (resampleMean && resampleMean.textContent.trim() && resampleMean.textContent !== '\u2014') {
       const labelEl = strip.querySelector('#resample-stat-label');
       const label = labelEl?.textContent || 'Resample statistic';
-      summary.innerHTML = `${label} = ${resampleMean.innerHTML}`;
-      summary.classList.toggle('highlight-last', resampleMean.classList.contains('highlight-last'));
+      const hl = resampleMean.classList.contains('highlight-last') ? ' class="highlight-last"' : '';
+      summary.innerHTML = `${label} = <span${hl}>${resampleMean.innerHTML}</span>`;
       return;
     }
 
