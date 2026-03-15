@@ -154,7 +154,6 @@ function drawOneSample(n) {
  * @param {number} count
  */
 function drawSamples(count) {
-  // For +1 with animation, use the animated path
   if (count === 1 && !prefersReducedMotion) {
     drawOneSampleAnimated();
     return;
@@ -173,7 +172,7 @@ function drawSamples(count) {
 }
 
 /**
- * Animated +1 path: shows sample on population, then drops dot to sampling dist.
+ * Animated +1: show sample on population, fly dot to sampling dist, then fade all.
  */
 function drawOneSampleAnimated() {
   if (animating) return;
@@ -184,27 +183,37 @@ function drawOneSampleAnimated() {
   const { sample, sampleMean } = drawOneSample(n);
   sampleMeans.push(sampleMean);
 
-  // Step 1: Show orange sample lines on population
-  showSampleOnPopulation(sample, sampleMean, () => {
-    // Step 2: After showing sample, update the sampling distribution
+  // Step 1: Show sample lines + mean on population (stays visible)
+  const popOverlay = showSampleOnPopulation(sample, sampleMean);
+
+  // Step 2: After pause, render sampling dist, then fly dot from population to it
+  setTimeout(() => {
     updateStatsAndRender(prevLength, 1);
 
-    // Step 3: Animate the orange dot dropping into the sampling distribution
-    animateDropDot(sampleMean, () => {
-      animating = false;
+    // Step 3: Fly dot from population mean position to sampling distribution
+    flyDotBetweenCharts(sampleMean, () => {
+      // Step 4: Fade out everything together
+      if (popOverlay) {
+        popOverlay.style.transition = 'opacity 0.5s ease-out';
+        popOverlay.style.opacity = '0';
+      }
+      setTimeout(() => {
+        if (popOverlay) popOverlay.remove();
+        animating = false;
+      }, 550);
     });
-  });
+  }, 900);
 }
 
 /**
  * Draw thin orange lines on the population histogram for each sampled value,
- * then show the sample mean marker.
+ * plus a mean marker. Returns the overlay group element (caller controls removal).
  * @param {number[]} sample
  * @param {number} sampleMean
- * @param {() => void} onDone
+ * @returns {SVGGElement|null}
  */
-function showSampleOnPopulation(sample, sampleMean, onDone) {
-  if (!popHistResult) { onDone(); return; }
+function showSampleOnPopulation(sample, sampleMean) {
+  if (!popHistResult) return null;
 
   const { frame, xScale } = popHistResult;
   const inner = d3Selection.select(frame.inner);
@@ -216,7 +225,7 @@ function showSampleOnPopulation(sample, sampleMean, onDone) {
   const g = overlays.append('g').attr('class', 'sample-overlay');
 
   // Draw thin orange lines for each sampled value
-  const lineHeight = frame.height * 0.35; // lines go 35% up from x-axis
+  const lineHeight = frame.height * 0.35;
   for (const val of sample) {
     const x = xScale(val);
     if (x >= 0 && x <= frame.width) {
@@ -231,118 +240,187 @@ function showSampleOnPopulation(sample, sampleMean, onDone) {
 
   // Fade in the sample lines
   g.selectAll('line')
-    .attr('opacity', 0)
     .each(function () {
-      const line = /** @type {SVGLineElement} */ (this);
-      line.style.transition = 'opacity 0.2s ease-in';
-      // Force reflow then set opacity
-      void line.getBBox();
-      line.setAttribute('opacity', '0.5');
+      const el = /** @type {SVGLineElement} */ (this);
+      el.style.transition = 'opacity 0.3s ease-in';
+      void el.getBBox();
+      el.setAttribute('opacity', '0.5');
     });
 
-  // After 350ms, show the mean marker
+  // After 500ms, add the mean marker
   setTimeout(() => {
     const mx = xScale(sampleMean);
 
-    // Orange triangle marker at x-axis pointing up
+    // Orange triangle pointing up
     g.append('polygon')
-      .attr('points', `${mx - 6},${frame.height + 2} ${mx + 6},${frame.height + 2} ${mx},${frame.height - 8}`)
-      .attr('fill', '#F05133');
+      .attr('class', 'mean-marker')
+      .attr('points', `${mx - 7},${frame.height + 3} ${mx + 7},${frame.height + 3} ${mx},${frame.height - 9}`)
+      .attr('fill', '#F05133')
+      .attr('opacity', 0);
 
     // Mean label
     g.append('text')
+      .attr('class', 'mean-label')
       .attr('x', mx)
-      .attr('y', frame.height - 14)
+      .attr('y', frame.height - 16)
       .attr('text-anchor', 'middle')
       .attr('font-size', '13px')
       .attr('font-weight', '700')
       .attr('fill', '#F05133')
-      .text(`x̄ = ${sampleMean.toFixed(2)}`);
+      .attr('opacity', 0);
 
-    // After showing the mean, proceed
-    setTimeout(() => {
-      // Fade out sample lines (keep mean marker a bit longer)
-      g.selectAll('line').each(function () {
-        /** @type {SVGLineElement} */ (this).style.transition = 'opacity 0.3s ease-out';
-        /** @type {SVGLineElement} */ (this).setAttribute('opacity', '0');
-      });
+    // Set label text
+    g.select('.mean-label').text(`x̄ = ${sampleMean.toFixed(2)}`);
 
-      setTimeout(() => {
-        g.remove();
-        onDone();
-      }, 350);
-    }, 400);
-  }, 300);
+    // Fade in marker + label
+    g.select('.mean-marker').each(function () {
+      const el = /** @type {SVGElement} */ (this);
+      el.style.transition = 'opacity 0.25s ease-in';
+      void el.getBBox();
+      el.setAttribute('opacity', '1');
+    });
+    g.select('.mean-label').each(function () {
+      const el = /** @type {SVGElement} */ (this);
+      el.style.transition = 'opacity 0.25s ease-in';
+      void el.getBBox();
+      el.setAttribute('opacity', '1');
+    });
+  }, 450);
+
+  return /** @type {SVGGElement} */ (g.node());
 }
 
 /**
- * Animate an orange dot dropping from the top of the sampling distribution
- * chart to its x-position.
+ * Convert an SVG-local coordinate to a page-fixed position.
+ * @param {SVGSVGElement} svg
+ * @param {SVGGElement} inner
+ * @param {number} localX - x in inner-group coordinates
+ * @param {number} localY - y in inner-group coordinates
+ * @returns {{ x: number, y: number }} viewport-fixed coordinates
+ */
+function svgLocalToFixed(svg, inner, localX, localY) {
+  const pt = svg.createSVGPoint();
+  pt.x = localX;
+  pt.y = localY;
+  // Transform from inner-group coords to SVG root coords
+  const ctm = inner.getCTM();
+  if (!ctm) return { x: 0, y: 0 };
+  const svgPt = pt.matrixTransform(ctm);
+  // Now convert from SVG viewport coords to screen coords
+  const screenCtm = svg.getScreenCTM();
+  if (!screenCtm) return { x: 0, y: 0 };
+  const screenPt = pt.matrixTransform(/** @type {DOMMatrix} */ (inner.getCTM()).multiply(/** @type {DOMMatrix} */ (svg.getScreenCTM()).inverse()).inverse());
+  // Simpler: use getBoundingClientRect + ratio
+  const svgRect = svg.getBoundingClientRect();
+  const vb = svg.viewBox.baseVal;
+  const scaleX = svgRect.width / vb.width;
+  const scaleY = svgRect.height / vb.height;
+  // inner group transform
+  const transform = inner.getAttribute('transform') || '';
+  const match = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+  const tx = match ? parseFloat(match[1]) : 0;
+  const ty = match ? parseFloat(match[2]) : 0;
+  return {
+    x: svgRect.left + (tx + localX) * scaleX,
+    y: svgRect.top + (ty + localY) * scaleY,
+  };
+}
+
+/**
+ * Fly an orange dot from the mean position on the population chart
+ * to the mean position on the sampling distribution chart.
+ * Uses a fixed-position DOM element to cross between SVGs.
  * @param {number} sampleMean
  * @param {() => void} onDone
  */
-function animateDropDot(sampleMean, onDone) {
-  if (!samplingContainer) { onDone(); return; }
+function flyDotBetweenCharts(sampleMean, onDone) {
+  if (!popHistResult || !popContainer || !samplingContainer) { onDone(); return; }
 
-  const svg = samplingContainer.querySelector('svg');
-  if (!svg) { onDone(); return; }
+  const popSvg = /** @type {SVGSVGElement|null} */ (popContainer.querySelector('svg'));
+  const sampSvg = /** @type {SVGSVGElement|null} */ (samplingContainer.querySelector('svg'));
+  if (!popSvg || !sampSvg) { onDone(); return; }
 
-  const inner = svg.querySelector('.chart-inner');
-  if (!inner) { onDone(); return; }
+  const popInner = /** @type {SVGGElement|null} */ (popSvg.querySelector('.chart-inner'));
+  const sampInner = /** @type {SVGGElement|null} */ (sampSvg.querySelector('.chart-inner'));
+  if (!popInner || !sampInner) { onDone(); return; }
 
-  // Find the xScale from the rendered chart by reading the x-axis domain
-  // We need to position the dot — grab dimensions from the inner group transform
-  const overlays = d3Selection.select(inner).select('.overlays');
+  // Start position: mean on population chart (at the x-axis)
+  const { frame: popFrame, xScale: popXScale } = popHistResult;
+  const popLocalX = popXScale(sampleMean);
+  const popLocalY = popFrame.height - 10; // just above x-axis, at the triangle tip
+  const startPos = svgLocalToFixed(popSvg, popInner, popLocalX, popLocalY);
 
-  // Get the chart frame dimensions from the inner transform
-  const transform = inner.getAttribute('transform') || '';
-  const match = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
-  const marginLeft = match ? parseFloat(match[1]) : 60;
-
-  // Get SVG viewBox dimensions
-  const vb = svg.getAttribute('viewBox')?.split(' ').map(Number) || [0, 0, 600, 371];
-  const innerWidth = vb[2] - marginLeft - 20; // approximate right margin
-  const innerHeight = vb[3] - (match ? parseFloat(match[2]) : 28) - 50; // approximate bottom margin
-
-  // We need the xScale domain — get it from lastDomain
+  // End position: mean on sampling distribution chart
+  // Get the sampling dist xScale from lastDomain
   if (!lastDomain) { onDone(); return; }
-  const xScale = d3Scale.scaleLinear().domain(lastDomain).range([0, innerWidth]);
-  const dotX = xScale(sampleMean);
+  const sampVb = sampSvg.viewBox.baseVal;
+  const sampTransform = sampInner.getAttribute('transform') || '';
+  const sampMatch = sampTransform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+  const sampTx = sampMatch ? parseFloat(sampMatch[1]) : 60;
+  const sampTy = sampMatch ? parseFloat(sampMatch[2]) : 28;
+  const sampInnerW = sampVb.width - sampTx - 20;
+  const sampInnerH = sampVb.height - sampTy - 50;
 
-  // Clamp to visible area
-  if (dotX < 0 || dotX > innerWidth) { onDone(); return; }
+  const sampXScale = d3Scale.scaleLinear().domain(lastDomain).range([0, sampInnerW]);
+  const sampLocalX = sampXScale(sampleMean);
+  const sampLocalY = sampInnerH; // x-axis level
+  const endPos = svgLocalToFixed(sampSvg, sampInner, sampLocalX, sampLocalY);
 
-  // Create the dropping dot
-  const dot = overlays.append('circle')
-    .attr('class', 'drop-dot')
-    .attr('cx', dotX)
-    .attr('cy', -10) // start above the chart
-    .attr('r', 6)
-    .attr('fill', '#F05133')
-    .attr('opacity', 0.9);
+  // Create flying dot as a fixed-position DOM element
+  const dot = document.createElement('div');
+  dot.style.cssText = `
+    position: fixed;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #F05133;
+    box-shadow: 0 2px 6px rgba(240, 81, 51, 0.4);
+    z-index: 1000;
+    pointer-events: none;
+    left: ${startPos.x - 7}px;
+    top: ${startPos.y - 7}px;
+  `;
+  document.body.appendChild(dot);
 
-  // Animate: drop from top to the x-axis level
-  const targetY = innerHeight;
-  const duration = 500;
+  // Animate from start to end
+  const duration = 700;
   const startTime = performance.now();
+  const dx = endPos.x - startPos.x;
+  const dy = endPos.y - startPos.y;
 
   function step(now) {
     const elapsed = now - startTime;
     const t = Math.min(elapsed / duration, 1);
-    // Ease-in (quadratic) for gravity-like feel
-    const eased = t * t;
-    const cy = -10 + (targetY + 10) * eased;
-    dot.attr('cy', cy);
+    // Ease: slow start, fast middle, slow end (ease-in-out cubic)
+    const eased = t < 0.5
+      ? 4 * t * t * t
+      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    // Add a slight arc (upward curve)
+    const arcHeight = -Math.min(Math.abs(dy) * 0.3, 60);
+    const arc = 4 * arcHeight * eased * (1 - eased); // parabolic arc
+
+    const x = startPos.x + dx * eased;
+    const y = startPos.y + dy * eased + arc;
+
+    dot.style.left = `${x - 7}px`;
+    dot.style.top = `${y - 7}px`;
 
     if (t < 1) {
       requestAnimationFrame(step);
     } else {
-      // Brief pulse then fade
-      dot.attr('r', 8).attr('opacity', 1);
+      // Brief pulse at landing
+      dot.style.transition = 'transform 0.15s ease-out, opacity 0.4s ease-out';
+      dot.style.transform = 'scale(1.4)';
       setTimeout(() => {
-        dot.attr('opacity', 0);
-        setTimeout(() => { dot.remove(); onDone(); }, 200);
-      }, 300);
+        dot.style.transform = 'scale(1)';
+        setTimeout(() => {
+          dot.style.opacity = '0';
+          setTimeout(() => {
+            dot.remove();
+            onDone();
+          }, 400);
+        }, 300);
+      }, 150);
     }
   }
 
@@ -612,6 +690,11 @@ function resetSimulation() {
   lastDomain = undefined;
   lastThresholds = undefined;
   animating = false;
+  // Clean up any lingering animation elements
+  if (popHistResult?.frame?.inner) {
+    d3Selection.select(popHistResult.frame.inner).selectAll('.sample-overlay').remove();
+  }
+  document.querySelectorAll('.flying-dot').forEach(el => el.remove());
   if (samplingContainer) samplingContainer.innerHTML = '';
   if (samplingStats) samplingStats.hidden = true;
   if (resultDiv) resultDiv.innerHTML = '<p class="placeholder">Choose a population shape and click a button to draw samples.</p>';
