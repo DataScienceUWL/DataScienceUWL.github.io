@@ -378,10 +378,10 @@ export function renderSimPills(frame, xScale, opts) {
       const narrow = tailWidth < w * 0.25;
 
       if (narrow) {
-        // Pill stays at normal height, offset toward chart center so it doesn't clip
+        // Pill floats above plot area, positioned close to the tail
         const pillX = isLeft
           ? Math.max(60, Math.min(w * 0.35, obsX))
-          : Math.min(w - 60, Math.max(w * 0.65, obsX));
+          : Math.min(w - 40, Math.max(w * 0.78, obsX));
         _addSimPill(annotations, pText, pillX, pillY, false);
         // Leader line from pill down to the observed stat line (always visible)
         const lineTargetX = Math.max(4, Math.min(w - 4, obsX));

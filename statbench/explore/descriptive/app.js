@@ -30,6 +30,9 @@ const chartControls = document.getElementById('chart-controls');
 
 const crosslinkEl = document.getElementById('dataset-crosslink');
 
+const groupFilterEl = document.getElementById('group-filter');
+const groupSelect = /** @type {HTMLSelectElement} */ (document.getElementById('group-select'));
+
 const numericStats = document.getElementById('numeric-stats');
 const categoricalStats = document.getElementById('categorical-stats');
 const freqTableContainer = document.getElementById('freq-table-container');
@@ -194,6 +197,19 @@ let showOutliers = true;
  * @type {null | {variables: Array<{name:string, label:string, type:string}>, rows: Array<Record<string,any>>}}
  */
 let loadedDataset = null;
+
+/** Name of the categorical grouping variable (if any). */
+let groupVarName = '';
+
+/** Whether to overlay per-group density curves on the histogram. */
+let showGroupDensity = false;
+
+/**
+ * Grouped data for density overlay: { groupName: number[] }.
+ * Only populated when dataset has a categorical variable.
+ * @type {Record<string, number[]>}
+ */
+let groupedSubsets = {};
 
 // ── Mode toggle logic ────────────────────────────────────────────────
 
@@ -659,6 +675,108 @@ function showCrosslink(meta) {
   }
 }
 
+/**
+ * Set up the group filter dropdown when a dataset has a categorical variable.
+ * Populates the dropdown with group levels and builds groupedSubsets for density overlay.
+ * @param {{ variables: Array<{name:string, label:string, type:string}>, rows: Array<Record<string,any>> }} ds
+ */
+function setupGroupFilter(ds) {
+  groupVarName = '';
+  groupedSubsets = {};
+  showGroupDensity = false;
+
+  if (varMode !== 'quantitative') {
+    if (groupFilterEl) groupFilterEl.hidden = true;
+    return;
+  }
+
+  const catVars = ds.variables.filter(v => v.type === 'categorical');
+  if (catVars.length === 0) {
+    if (groupFilterEl) groupFilterEl.hidden = true;
+    return;
+  }
+
+  // Use the first categorical variable as the grouping variable
+  const catVar = catVars[0];
+  groupVarName = catVar.name;
+  const groupLabel = catVar.label || catVar.name;
+
+  // Build group subsets keyed by the currently selected numeric variable
+  rebuildGroupSubsets(ds);
+
+  // Populate group select
+  groupSelect.innerHTML = '';
+  const allOpt = document.createElement('option');
+  allOpt.value = '';
+  allOpt.textContent = 'All (combined)';
+  groupSelect.appendChild(allOpt);
+
+  for (const level of Object.keys(groupedSubsets)) {
+    const opt = document.createElement('option');
+    opt.value = level;
+    opt.textContent = `${level} (n=${groupedSubsets[level].length})`;
+    groupSelect.appendChild(opt);
+  }
+
+  if (groupFilterEl) {
+    const label = groupFilterEl.querySelector('label');
+    if (label) {
+      label.firstChild && (label.firstChild.textContent = `${groupLabel}: `);
+    }
+    groupFilterEl.hidden = false;
+  }
+}
+
+/**
+ * Rebuild groupedSubsets from current dataset and selected numeric variable.
+ * @param {{ variables: Array<{name:string, label:string, type:string}>, rows: Array<Record<string,any>> }} ds
+ */
+function rebuildGroupSubsets(ds) {
+  groupedSubsets = {};
+  if (!groupVarName) return;
+
+  const numVar = varSelect.value || ds.variables.find(v => v.type === 'numeric')?.name;
+  if (!numVar) return;
+
+  /** @type {string[]} */
+  const levelOrder = [];
+  for (const row of ds.rows) {
+    const val = parseFloat(row[numVar]);
+    const grp = String(row[groupVarName]);
+    if (!isFinite(val) || !grp) continue;
+    if (!groupedSubsets[grp]) {
+      groupedSubsets[grp] = [];
+      levelOrder.push(grp);
+    }
+    groupedSubsets[grp].push(val);
+  }
+}
+
+// Group filter change handler
+groupSelect.addEventListener('change', () => {
+  if (!loadedDataset) return;
+
+  const selectedGroup = groupSelect.value;
+  const numVarName = varSelect.value || loadedDataset.variables.find(v => v.type === 'numeric')?.name;
+  if (!numVarName) return;
+
+  const numVar = loadedDataset.variables.find(v => v.name === numVarName);
+  if (!numVar) return;
+
+  if (selectedGroup) {
+    // Filter to just this group's values
+    const values = loadedDataset.rows
+      .filter(r => String(r[groupVarName]) === selectedGroup)
+      .map(r => parseFloat(r[numVar.name]))
+      .filter(v => isFinite(v));
+    const label = `${numVar.label || numVar.name} (${selectedGroup})`;
+    setData(values, label, '');
+  } else {
+    // "All (combined)" — load all values
+    loadVariable(numVar, loadedDataset);
+  }
+});
+
 const dataPanel = initDataPanel({
   autoCollapse: true,
   showPreview: true,
@@ -689,6 +807,9 @@ const dataPanel = initDataPanel({
     } else {
       if (variableSelector) variableSelector.hidden = true;
     }
+
+    // Detect categorical grouping variable for group filter
+    setupGroupFilter(ds);
 
     loadVariable(matchingVars[0], ds);
   },

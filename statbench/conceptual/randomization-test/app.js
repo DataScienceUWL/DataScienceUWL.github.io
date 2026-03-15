@@ -10,7 +10,9 @@
  */
 
 import { drawHistogram } from '../../js/histogram.js';
+import { drawDotplot } from '../../js/dotplot.js';
 import { renderSimPills } from '../../js/chart-utils.js';
+import { resolveChartType, createChartToggle } from '../../js/chart-defaults.js';
 import { initHelp } from '../../js/page-utils.js';
 import { createRng, shuffle as prngShuffle } from '../../js/prng.js';
 import { getActivityMode } from '../../js/settings.js';
@@ -131,6 +133,18 @@ let currentStep = 1;  // discovery mode: which step is active
 let hasShuffledOnce = false; // track if step 3 shuffle happened
 const mode = getActivityMode();
 
+/** @type {'auto'|'dotplot'|'histogram'} */
+let chartType = 'auto';
+
+/** Index of last added stat for dotplot highlight animation (-1 = none). */
+let lastStatIndex = -1;
+
+/** Indices of batch-added stats for dotplot highlight. @type {Set<number>|null} */
+let batchHighlightIndices = null;
+
+/** @type {((type: string) => void)|null} */
+let setToggleSelected = null;
+
 // ─── DOM References ────────────────────────────────────────────────
 
 const datasetSelect = /** @type {HTMLSelectElement} */ (document.getElementById('dataset-select'));
@@ -139,6 +153,21 @@ const stepCards = /** @type {NodeListOf<HTMLElement>} */ (document.querySelector
 // ─── Initialization ────────────────────────────────────────────────
 
 initHelp();
+
+// Chart type toggle (dotplot / histogram)
+// createChartToggle inserts before its first arg in the parent, so pass the chart div
+const nullDistChart = document.getElementById('null-dist-chart');
+if (nullDistChart) {
+  const toggle = createChartToggle(nullDistChart, {
+    types: [['dotplot', 'Dotplot'], ['histogram', 'Histogram']],
+    initial: 'dotplot',
+    onChange: (type) => {
+      chartType = /** @type {'auto'|'dotplot'|'histogram'} */ (type);
+      updateChart();
+    },
+  });
+  setToggleSelected = toggle.setSelected;
+}
 
 datasetSelect.addEventListener('change', () => {
   loadDataset(datasetSelect.value);
@@ -543,7 +572,7 @@ function renderStep3() {
 // Step 4: Many shuffles
 function renderStep4() {
   nullDiffs = [];
-  updateHistogram();
+  updateChart();
   updateSimStats();
 
   // Hide gate 4 until enough shuffles
@@ -558,17 +587,29 @@ function renderStep4() {
     nullDiffs = [];
     prng = createRng('randomization-' + datasetSelect.value);
     if (gate4) gate4.hidden = true;
-    updateHistogram();
+    updateChart();
     updateSimStats();
     renderStep5();
   };
 }
 
 function addShuffles(n) {
+  const startIdx = nullDiffs.length;
   for (let i = 0; i < n; i++) {
     nullDiffs.push(simulateOne());
   }
-  updateHistogram();
+  // Track highlights for dotplot animation
+  if (n === 1) {
+    lastStatIndex = nullDiffs.length - 1;
+    batchHighlightIndices = null;
+  } else {
+    lastStatIndex = -1;
+    batchHighlightIndices = new Set();
+    for (let i = startIdx; i < nullDiffs.length; i++) {
+      batchHighlightIndices.add(i);
+    }
+  }
+  updateChart();
   updateSimStats();
   renderStep5();
 
@@ -605,7 +646,7 @@ function isExtremeFn() {
       : (v) => v <= observedDiff;
 }
 
-function updateHistogram() {
+function updateChart() {
   const container = el('null-dist-chart');
   container.innerHTML = '';
 
@@ -614,27 +655,60 @@ function updateHistogram() {
     return;
   }
 
-  const r = drawHistogram(container, nullDiffs, {
-    xLabel: `Simulated difference in proportions (${config.group1Label} − ${config.group2Label})`,
-    titleText: '',
-    id: 'null-dist',
-    isTail: isExtremeFn(),
-    observedStat: observedDiff,
-    animate: false,
-  });
+  const xLabel = `Simulated difference in proportions (${config.group1Label} − ${config.group2Label})`;
+  const isExtreme = isExtremeFn();
+  const activeChart = resolveChartType(nullDiffs.length, chartType);
+
+  // Sync toggle UI to reflect resolved chart type
+  if (setToggleSelected) setToggleSelected(activeChart);
+
+  /** @type {import('../../js/chart-utils.js').ChartFrame|undefined} */
+  let chartFrame;
+  /** @type {any} */
+  let chartXScale;
+
+  if (activeChart === 'dotplot') {
+    const highlightIndex = lastStatIndex >= 0 ? lastStatIndex : -1;
+    const r = drawDotplot(container, nullDiffs, {
+      id: 'null-dist',
+      xLabel,
+      titleText: '',
+      isExtreme,
+      observedStat: observedDiff,
+      animate: false,
+      highlightIndex,
+      highlightIndices: batchHighlightIndices ?? undefined,
+    });
+    chartFrame = r.frame;
+    chartXScale = r.xScale;
+  } else {
+    const r = drawHistogram(container, nullDiffs, {
+      xLabel,
+      titleText: '',
+      id: 'null-dist',
+      isTail: isExtreme,
+      observedStat: observedDiff,
+      animate: false,
+    });
+    chartFrame = r.frame;
+    chartXScale = r.xScale;
+  }
 
   // Add p-value pills (shared from chart-utils.js)
-  if (r.frame && r.xScale) {
-    const isExtreme = isExtremeFn();
+  if (chartFrame && chartXScale) {
     const extremeCount = nullDiffs.filter(isExtreme).length;
     const pValue = extremeCount / nullDiffs.length;
-    renderSimPills(r.frame, r.xScale, {
+    renderSimPills(chartFrame, chartXScale, {
       mode: 'randomization',
       pValue,
       observedStat: observedDiff,
       direction: config.direction,
     });
   }
+
+  // Clear highlight tracking after render
+  lastStatIndex = -1;
+  batchHighlightIndices = null;
 }
 
 function updateSimStats() {
