@@ -93,6 +93,16 @@ let lastDomain;
 /** @type {number[]|undefined} */
 let lastThresholds;
 
+// Cached population histogram result for overlay animation
+/** @type {{ frame: import('../../js/types.js').ChartFrame, xScale: d3Scale.ScaleLinear<number,number> }|null} */
+let popHistResult = null;
+
+// Animation lock — prevent rapid clicks during +1 animation
+let animating = false;
+
+// ─── Reduced motion preference ───
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 // ─── Initialize ───
 
 function initPopulation() {
@@ -112,39 +122,245 @@ function initPopulation() {
 function renderPopulation() {
   if (!popContainer) return;
   popContainer.innerHTML = '';
-  drawHistogram(popContainer, population, {
+  const result = drawHistogram(popContainer, population, {
     id: 'pop-hist',
     xLabel: 'Value',
+    yLabel: '',
     titleText: 'Population Distribution',
     animate: false,
     numBins: 40,
   });
+  popHistResult = { frame: result.frame, xScale: result.xScale };
 }
 
 // ─── Sampling ───
 
 /**
+ * Draw one sample and return the sampled values.
+ * @param {number} n - sample size
+ * @returns {{ sample: number[], sampleMean: number }}
+ */
+function drawOneSample(n) {
+  if (!rng) rng = createRng(seed);
+  const sample = [];
+  for (let j = 0; j < n; j++) {
+    const idx = Math.floor(rng() * population.length);
+    sample.push(population[idx]);
+  }
+  return { sample, sampleMean: mean(sample) };
+}
+
+/**
  * @param {number} count
  */
 function drawSamples(count) {
+  // For +1 with animation, use the animated path
+  if (count === 1 && !prefersReducedMotion) {
+    drawOneSampleAnimated();
+    return;
+  }
+
   if (!rng) rng = createRng(seed);
   const n = parseInt(sampleSizeInput.value, 10) || 30;
   const prevLength = sampleMeans.length;
 
   for (let i = 0; i < count; i++) {
-    const sample = [];
-    for (let j = 0; j < n; j++) {
-      const idx = Math.floor(rng() * population.length);
-      sample.push(population[idx]);
-    }
-    sampleMeans.push(mean(sample));
+    const { sampleMean } = drawOneSample(n);
+    sampleMeans.push(sampleMean);
   }
+
+  updateStatsAndRender(prevLength, count);
+}
+
+/**
+ * Animated +1 path: shows sample on population, then drops dot to sampling dist.
+ */
+function drawOneSampleAnimated() {
+  if (animating) return;
+  animating = true;
+
+  const n = parseInt(sampleSizeInput.value, 10) || 30;
+  const prevLength = sampleMeans.length;
+  const { sample, sampleMean } = drawOneSample(n);
+  sampleMeans.push(sampleMean);
+
+  // Step 1: Show orange sample lines on population
+  showSampleOnPopulation(sample, sampleMean, () => {
+    // Step 2: After showing sample, update the sampling distribution
+    updateStatsAndRender(prevLength, 1);
+
+    // Step 3: Animate the orange dot dropping into the sampling distribution
+    animateDropDot(sampleMean, () => {
+      animating = false;
+    });
+  });
+}
+
+/**
+ * Draw thin orange lines on the population histogram for each sampled value,
+ * then show the sample mean marker.
+ * @param {number[]} sample
+ * @param {number} sampleMean
+ * @param {() => void} onDone
+ */
+function showSampleOnPopulation(sample, sampleMean, onDone) {
+  if (!popHistResult) { onDone(); return; }
+
+  const { frame, xScale } = popHistResult;
+  const inner = d3Selection.select(frame.inner);
+  const overlays = inner.select('.overlays');
+
+  // Remove any previous sample overlay
+  overlays.selectAll('.sample-overlay').remove();
+
+  const g = overlays.append('g').attr('class', 'sample-overlay');
+
+  // Draw thin orange lines for each sampled value
+  const lineHeight = frame.height * 0.35; // lines go 35% up from x-axis
+  for (const val of sample) {
+    const x = xScale(val);
+    if (x >= 0 && x <= frame.width) {
+      g.append('line')
+        .attr('x1', x).attr('y1', frame.height)
+        .attr('x2', x).attr('y2', frame.height - lineHeight)
+        .attr('stroke', '#F05133')
+        .attr('stroke-width', 1.2)
+        .attr('opacity', 0);
+    }
+  }
+
+  // Fade in the sample lines
+  g.selectAll('line')
+    .attr('opacity', 0)
+    .each(function () {
+      const line = /** @type {SVGLineElement} */ (this);
+      line.style.transition = 'opacity 0.2s ease-in';
+      // Force reflow then set opacity
+      void line.getBBox();
+      line.setAttribute('opacity', '0.5');
+    });
+
+  // After 350ms, show the mean marker
+  setTimeout(() => {
+    const mx = xScale(sampleMean);
+
+    // Orange triangle marker at x-axis pointing up
+    g.append('polygon')
+      .attr('points', `${mx - 6},${frame.height + 2} ${mx + 6},${frame.height + 2} ${mx},${frame.height - 8}`)
+      .attr('fill', '#F05133');
+
+    // Mean label
+    g.append('text')
+      .attr('x', mx)
+      .attr('y', frame.height - 14)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '13px')
+      .attr('font-weight', '700')
+      .attr('fill', '#F05133')
+      .text(`x̄ = ${sampleMean.toFixed(2)}`);
+
+    // After showing the mean, proceed
+    setTimeout(() => {
+      // Fade out sample lines (keep mean marker a bit longer)
+      g.selectAll('line').each(function () {
+        /** @type {SVGLineElement} */ (this).style.transition = 'opacity 0.3s ease-out';
+        /** @type {SVGLineElement} */ (this).setAttribute('opacity', '0');
+      });
+
+      setTimeout(() => {
+        g.remove();
+        onDone();
+      }, 350);
+    }, 400);
+  }, 300);
+}
+
+/**
+ * Animate an orange dot dropping from the top of the sampling distribution
+ * chart to its x-position.
+ * @param {number} sampleMean
+ * @param {() => void} onDone
+ */
+function animateDropDot(sampleMean, onDone) {
+  if (!samplingContainer) { onDone(); return; }
+
+  const svg = samplingContainer.querySelector('svg');
+  if (!svg) { onDone(); return; }
+
+  const inner = svg.querySelector('.chart-inner');
+  if (!inner) { onDone(); return; }
+
+  // Find the xScale from the rendered chart by reading the x-axis domain
+  // We need to position the dot — grab dimensions from the inner group transform
+  const overlays = d3Selection.select(inner).select('.overlays');
+
+  // Get the chart frame dimensions from the inner transform
+  const transform = inner.getAttribute('transform') || '';
+  const match = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+  const marginLeft = match ? parseFloat(match[1]) : 60;
+
+  // Get SVG viewBox dimensions
+  const vb = svg.getAttribute('viewBox')?.split(' ').map(Number) || [0, 0, 600, 371];
+  const innerWidth = vb[2] - marginLeft - 20; // approximate right margin
+  const innerHeight = vb[3] - (match ? parseFloat(match[2]) : 28) - 50; // approximate bottom margin
+
+  // We need the xScale domain — get it from lastDomain
+  if (!lastDomain) { onDone(); return; }
+  const xScale = d3Scale.scaleLinear().domain(lastDomain).range([0, innerWidth]);
+  const dotX = xScale(sampleMean);
+
+  // Clamp to visible area
+  if (dotX < 0 || dotX > innerWidth) { onDone(); return; }
+
+  // Create the dropping dot
+  const dot = overlays.append('circle')
+    .attr('class', 'drop-dot')
+    .attr('cx', dotX)
+    .attr('cy', -10) // start above the chart
+    .attr('r', 6)
+    .attr('fill', '#F05133')
+    .attr('opacity', 0.9);
+
+  // Animate: drop from top to the x-axis level
+  const targetY = innerHeight;
+  const duration = 500;
+  const startTime = performance.now();
+
+  function step(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    // Ease-in (quadratic) for gravity-like feel
+    const eased = t * t;
+    const cy = -10 + (targetY + 10) * eased;
+    dot.attr('cy', cy);
+
+    if (t < 1) {
+      requestAnimationFrame(step);
+    } else {
+      // Brief pulse then fade
+      dot.attr('r', 8).attr('opacity', 1);
+      setTimeout(() => {
+        dot.attr('opacity', 0);
+        setTimeout(() => { dot.remove(); onDone(); }, 200);
+      }, 300);
+    }
+  }
+
+  requestAnimationFrame(step);
+}
+
+/**
+ * Update stats display and render the sampling distribution chart.
+ * @param {number} prevLength
+ * @param {number} count
+ */
+function updateStatsAndRender(prevLength, count) {
+  const n = parseInt(sampleSizeInput.value, 10) || 30;
 
   // Update stats
   if (samplingStats) {
     const wasHidden = samplingStats.hidden;
     samplingStats.hidden = false;
-    // KaTeX auto-render skips hidden elements — render on first show
     if (wasHidden && typeof renderMathInElement === 'function') {
       renderMathInElement(samplingStats, {
         delimiters: [{ left: '\\(', right: '\\)', display: false }],
@@ -164,11 +380,9 @@ function drawSamples(count) {
   const smPad = (smHi - smLo) * 0.05 || 0.5;
   const sharedDomain = /** @type {[number,number]} */ ([smLo - smPad, smHi + smPad]);
 
-  // Pre-compute bins for the full dataset to lock in bin edges
   const { bins: fullBins } = computeBins(sampleMeans, { domain: sharedDomain });
   const thresholds = fullBins.slice(1).map(b => b.x0);
 
-  // Cache for checkbox toggle re-render
   lastDomain = sharedDomain;
   lastThresholds = thresholds;
 
@@ -215,7 +429,6 @@ function overlayNormalCurve(inner, mu, se, xScale, yScale, totalCount, binWidth)
   const steps = 150;
   const dx = (xMax - xMin) / steps;
 
-  // Scale PDF density → frequency count
   const scaleFactor = totalCount * binWidth;
 
   /** @type {[number, number][]} */
@@ -241,9 +454,6 @@ function overlayNormalCurve(inner, mu, se, xScale, yScale, totalCount, binWidth)
 
 /**
  * Overlay a N(mu, se) curve on a dotplot chart.
- * Builds a virtual yScale from the dotplot's stacking geometry so the
- * curve height matches the tallest dot stack.
- *
  * @param {{ frame: import('../../js/types.js').ChartFrame, dots: Array<{value: number, binCenter: number, stackIndex: number}>, xScale: d3Scale.ScaleLinear<number,number> }} result
  * @param {number[]} values
  */
@@ -254,16 +464,12 @@ function overlayNormalOnDotplot(result, values) {
   const empiricalSE = sd(values);
   if (empiricalSE <= 0 || n < 10) return;
 
-  // Recompute dot geometry to get maxStack and binWidth
   const dotInfo = computeDots(values);
   const { maxStack, binWidth } = dotInfo;
   const effectiveBins = Math.min(n, 40);
   const dotRadius = computeDotRadius(frame.width, frame.height, maxStack, effectiveBins);
 
-  // Build a virtual yScale: dotplot stacks go from 0 to maxStack,
-  // mapping to pixel positions [innerHeight, innerHeight - maxStack * 2 * dotRadius]
-  // The peak of the normal curve (in "count" units) should match ~maxStack
-  const maxY = maxStack * 1.1; // small headroom
+  const maxY = maxStack * 1.1;
   const yScale = d3Scale.scaleLinear()
     .domain([0, maxY])
     .range([frame.height, frame.height - maxY * dotRadius * 2]);
@@ -285,7 +491,6 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
   const n = sampleMeans.length;
   if (n === 0) return;
 
-  // Dotplot for small counts, histogram for large
   const activeChart = resolveChartType(n, 'auto');
   if (activeChart === 'dotplot') {
     const result = drawDotplot(samplingContainer, sampleMeans, {
@@ -314,7 +519,6 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
       thresholds,
     });
     if (showNormalCheckbox?.checked && result?.bins?.length > 0) {
-      // Use AVERAGE bin width — edge bins may differ due to padded domain
       const firstX0 = result.bins[0].x0;
       const lastX1 = result.bins[result.bins.length - 1].x1;
       const avgBinWidth = (lastX1 - firstX0) / result.bins.length;
@@ -407,6 +611,7 @@ function resetSimulation() {
   seed = Math.random().toString(36).slice(2, 10);
   lastDomain = undefined;
   lastThresholds = undefined;
+  animating = false;
   if (samplingContainer) samplingContainer.innerHTML = '';
   if (samplingStats) samplingStats.hidden = true;
   if (resultDiv) resultDiv.innerHTML = '<p class="placeholder">Choose a population shape and click a button to draw samples.</p>';
