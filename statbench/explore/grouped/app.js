@@ -56,6 +56,60 @@ chartRadios.forEach(radio => {
   });
 });
 
+/** Whether dotplot is currently disabled due to overflow. */
+let dotplotDisabled = false;
+
+/**
+ * Enable or disable the dotplot radio based on whether any group would overflow.
+ * Call after data loads or group selection changes.
+ */
+function updateDotplotAvailability() {
+  const groupNames = Object.keys(groupedData);
+  const totalN = allValues.length;
+
+  // Check total N threshold
+  let tooMany = totalN > DOTPLOT_AUTO_THRESHOLD;
+
+  // Check per-group stack overflow
+  if (!tooMany && groupNames.length > 0) {
+    const xMin = Math.min(...allValues);
+    const xMax = Math.max(...allValues);
+    const pad = (xMax - xMin) * 0.05 || 0.5;
+    /** @type {[number, number]} */
+    const domain = [xMin - pad, xMax + pad];
+    const INNER_HEIGHT = 296;
+    const MIN_R = 2;
+    for (const name of groupNames) {
+      const result = computeDots(groupedData[name], { domain });
+      if (result.maxStack > 0 && result.maxStack * MIN_R * 2 > INNER_HEIGHT) {
+        tooMany = true;
+        break;
+      }
+    }
+  }
+
+  dotplotDisabled = tooMany;
+  const dotRadio = /** @type {HTMLInputElement|null} */ (
+    document.querySelector('input[name="chart-type"][value="dotplot"]'));
+  if (dotRadio) {
+    dotRadio.disabled = tooMany;
+    const label = dotRadio.closest('label');
+    if (label) {
+      label.title = tooMany ? 'Too many values for dotplot — try Histogram' : '';
+      label.style.opacity = tooMany ? '0.45' : '';
+    }
+    // If dotplot was active and now disabled, switch to histogram
+    if (tooMany && activeChart === 'dotplot') {
+      const histRadio = /** @type {HTMLInputElement|null} */ (
+        document.querySelector('input[name="chart-type"][value="histogram"]'));
+      if (histRadio) {
+        histRadio.checked = true;
+        activeChart = 'histogram';
+      }
+    }
+  }
+}
+
 // ── State ─────────────────────────────────────────────────────────────
 
 /**
@@ -423,6 +477,7 @@ function loadGroupedData(quantVar, groupVar, ds, sourceName) {
   }
 
   if (resultsSection) resultsSection.hidden = false;
+  updateDotplotAvailability();
   renderStats();
   updateChartControls();
   renderActiveChart();
@@ -502,12 +557,6 @@ function renderActiveChart() {
       showOutliers,
     });
   } else if (activeChart === 'dotplot') {
-    const totalN = allValues.length;
-    if (totalN > DOTPLOT_AUTO_THRESHOLD) {
-      chartArea.innerHTML =
-        `<p class="hint">Dotplot not available for datasets with more than ${DOTPLOT_AUTO_THRESHOLD} values. Try Boxplot or Histogram.</p>`;
-      return;
-    }
     renderStackedDotplots(groupNames);
   } else if (activeChart === 'histogram') {
     renderStackedHistograms(groupNames);
@@ -542,19 +591,6 @@ function renderStackedDotplots(groupNames) {
   /** @type {[number, number]} */
   const domain = [xMin - pad, xMax + pad];
 
-  // Pre-check: if ANY group would overflow at min dot radius, force all to column mode
-  // Chart inner height ≈ 296 (viewBox 371 - margins 75), min radius = 2
-  const INNER_HEIGHT = 296;
-  const MIN_R = 2;
-  let anyOverflow = false;
-  for (const name of groupNames) {
-    const result = computeDots(groupedData[name], { domain });
-    if (result.maxStack > 0 && result.maxStack * MIN_R * 2 > INNER_HEIGHT) {
-      anyOverflow = true;
-      break;
-    }
-  }
-
   for (let i = 0; i < groupNames.length; i++) {
     const name = groupNames[i];
     const values = groupedData[name];
@@ -576,7 +612,6 @@ function renderStackedDotplots(groupNames) {
       id: `grouped-dot-${i}`,
       animate: false,
       domain,
-      forceColumns: anyOverflow,
     });
   }
 }

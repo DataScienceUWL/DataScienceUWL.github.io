@@ -8,7 +8,7 @@
 import { parseCSV } from '../../js/csv-parser.js';
 import { mean, median, sd, quantile, iqr, range, detectPrecision, formatStat } from '../../js/stats.js';
 import { drawHistogram, sturgesBins } from '../../js/histogram.js';
-import { drawDotplot } from '../../js/dotplot.js';
+import { drawDotplot, computeDots } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { drawBarChart } from '../../js/barchart.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper } from '../../js/page-utils.js';
@@ -97,6 +97,41 @@ chartRadios.forEach(radio => {
     updateChartControls();
   });
 });
+
+/**
+ * Enable or disable the dotplot radio based on whether data would overflow.
+ * Call after data loads or variable selection changes.
+ */
+function updateDotplotAvailability() {
+  const values = currentValues;
+  let tooMany = values.length > DOTPLOT_AUTO_THRESHOLD;
+
+  if (!tooMany && values.length > 0) {
+    const result = computeDots(values);
+    const INNER_HEIGHT = 296;
+    const MIN_R = 2;
+    tooMany = result.maxStack > 0 && result.maxStack * MIN_R * 2 > INNER_HEIGHT;
+  }
+
+  const dotRadio = /** @type {HTMLInputElement|null} */ (
+    document.querySelector('input[name="chart-type"][value="dotplot"]'));
+  if (dotRadio) {
+    dotRadio.disabled = tooMany;
+    const label = dotRadio.closest('label');
+    if (label) {
+      label.title = tooMany ? 'Too many values for dotplot — try Histogram' : '';
+      label.style.opacity = tooMany ? '0.45' : '';
+    }
+    if (tooMany && activeChart === 'dotplot') {
+      const histRadio = /** @type {HTMLInputElement|null} */ (
+        document.querySelector('input[name="chart-type"][value="histogram"]'));
+      if (histRadio) {
+        histRadio.checked = true;
+        activeChart = 'histogram';
+      }
+    }
+  }
+}
 
 /** Show/hide contextual controls based on active chart. */
 function updateChartControls() {
@@ -899,6 +934,7 @@ function setData(values, varLabel, sourceName) {
   if (dataSummary) dataSummary.textContent = `${varLabel} (n = ${values.length})`;
 
   if (resultsSection) resultsSection.hidden = false;
+  updateDotplotAvailability();
   computeAndDisplay(values);
   updateChartControls();
   renderActiveChart();
@@ -979,18 +1015,13 @@ function renderActiveChart() {
       overlayDensityOnHistogram(histResult.frame.inner, currentValues, histResult.xScale, histResult.yScale, avgBinWidth);
     }
   } else if (activeChart === 'dotplot') {
-    if (currentValues.length <= DOTPLOT_AUTO_THRESHOLD) {
-      drawDotplot(chartArea, currentValues, {
-        xLabel,
-        titleText: `Dotplot of ${xLabel}`,
-        descText: `Dot plot showing individual values of ${xLabel}`,
-        id: 'desc-dot',
-        animate: false,
-      });
-    } else {
-      chartArea.innerHTML =
-        '<p class="hint">Dotplot not available for datasets with more than 200 values.</p>';
-    }
+    drawDotplot(chartArea, currentValues, {
+      xLabel,
+      titleText: `Dotplot of ${xLabel}`,
+      descText: `Dot plot showing individual values of ${xLabel}`,
+      id: 'desc-dot',
+      animate: false,
+    });
   } else if (activeChart === 'boxplot') {
     drawBoxplot(chartArea, currentValues, {
       xLabel,
