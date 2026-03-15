@@ -12,7 +12,7 @@ import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTa
 
 initHelp();
 import { parseCSV } from '../../js/csv-parser.js';
-import { formatStat, detectPrecision } from '../../js/stats.js';
+import { formatStat, detectPrecision, mean, sd } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
 import * as d3Selection from 'd3-selection';
 
@@ -38,6 +38,7 @@ const inputConf = /** @type {HTMLInputElement} */ (document.getElementById('inpu
 const varSelectors = /** @type {HTMLElement} */ (document.getElementById('variable-selectors'));
 const var1Select = /** @type {HTMLSelectElement} */ (document.getElementById('var1-select'));
 const var2Select = /** @type {HTMLSelectElement} */ (document.getElementById('var2-select'));
+const dataSummary = document.getElementById('data-summary');
 
 // ── State ──────────────────────────────────────────────────────────
 /** @type {number[] | null} */
@@ -121,6 +122,12 @@ function loadFromSelections() {
 
   currentDiffs = diffs;
   fromSummary = false;
+  if (dataSummary) {
+    const name = dataPanel.currentSourceName;
+    const prefix = name ? `${name}: ` : '';
+    const d = detectPrecision(diffs);
+    dataSummary.textContent = `${prefix}${diffs.length} pairs (${col1} \u2212 ${col2}), d\u0304 = ${formatStat(mean(diffs), d)}, s_d = ${formatStat(sd(diffs), d)}`;
+  }
   showResults();
   announce(`Loaded ${diffs.length} paired differences (${col1} \u2212 ${col2}).`);
 }

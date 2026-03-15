@@ -1007,7 +1007,7 @@ function fetchExternalCSV(url, handleText, populateEditor, resolve) {
  * @param {boolean} [config.autoCollapse] - Collapse #data-panel after successful data load
  * @param {boolean} [config.stickyControls] - Add .sticky to #controls after data load
  * @param {boolean} [config.showPreview] - Unhide #data-preview after data load
- * @returns {{ getDatasetIndex: () => Array<{id:string,name:string,description:string,type:string,n:number}>, populateEditor: (csvText:string, sourceName:string) => void, refilterDatasets: (filterFn: (ds: any) => boolean) => void, ready: Promise<void>, currentDatasetId: string|null, triggerPostLoad: () => void }}
+ * @returns {{ getDatasetIndex: () => Array<{id:string,name:string,description:string,type:string,n:number}>, populateEditor: (csvText:string, sourceName:string) => void, refilterDatasets: (filterFn: (ds: any) => boolean) => void, ready: Promise<void>, currentDatasetId: string|null, currentSourceName: string, triggerPostLoad: () => void }}
  */
 export function initDataPanel(config) {
   const { datasetFilter, onDataset, onText, onRawText, onClear,
@@ -1141,6 +1141,7 @@ export function initDataPanel(config) {
       fetchDataset(id)
         .then(ds => {
           currentDatasetId = id;
+          currentSourceName = meta?.name || ds.name || id;
           onDataset(ds, meta);
           // Populate editor with dataset as CSV
           if (ds.rows && ds.variables) {
@@ -1205,6 +1206,8 @@ export function initDataPanel(config) {
   if (clearBtn) {
     clearBtn.addEventListener('click', () => {
       if (pasteArea) pasteArea.value = '';
+      currentSourceName = '';
+      currentDatasetId = null;
       if (stickyControls) {
         const ctrl = document.getElementById('controls');
         if (ctrl) ctrl.classList.remove('sticky');
@@ -1219,6 +1222,7 @@ export function initDataPanel(config) {
     refilterDatasets,
     ready,
     get currentDatasetId() { return currentDatasetId; },
+    get currentSourceName() { return currentSourceName; },
     triggerPostLoad: postLoadUI,
   };
 }

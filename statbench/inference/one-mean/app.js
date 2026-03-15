@@ -12,7 +12,7 @@ import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTa
 
 initHelp();
 import { parseCSV } from '../../js/csv-parser.js';
-import { formatStat, detectPrecision } from '../../js/stats.js';
+import { formatStat, detectPrecision, mean, sd } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
 import * as d3Selection from 'd3-selection';
 
@@ -37,6 +37,7 @@ const inputConf = /** @type {HTMLInputElement} */ (document.getElementById('inpu
 
 const varSelector = /** @type {HTMLElement} */ (document.getElementById('variable-selector'));
 const varSelect = /** @type {HTMLSelectElement} */ (document.getElementById('var-select'));
+const dataSummary = document.getElementById('data-summary');
 
 // ── State ──────────────────────────────────────────────────────────
 /** @type {number[] | null} */
@@ -125,12 +126,26 @@ function handleDataset(ds, _meta) {
 
     currentData = values;
     fromSummary = false;
+    updateDataSummary(col, values);
     showResults();
     announce(`Loaded ${values.length} values from "${col}".`);
   };
 
   loadColumn(numericCols[0]);
   varSelect.onchange = () => loadColumn(varSelect.value);
+}
+
+/**
+ * Update the data summary strip with dataset info.
+ * @param {string} varName
+ * @param {number[]} values
+ */
+function updateDataSummary(varName, values) {
+  if (!dataSummary) return;
+  const name = dataPanel.currentSourceName;
+  const prefix = name ? `${name}: ` : '';
+  const d = detectPrecision(values);
+  dataSummary.textContent = `${prefix}${varName}: n = ${values.length}, x\u0304 = ${formatStat(mean(values), d)}, s = ${formatStat(sd(values), d)}`;
 }
 
 /**
@@ -173,6 +188,7 @@ function handleText(parsed, sourceName) {
 
     currentData = values;
     fromSummary = false;
+    updateDataSummary(col, values);
     showResults();
     announce(`Loaded ${values.length} values from "${sourceName}".`);
   };

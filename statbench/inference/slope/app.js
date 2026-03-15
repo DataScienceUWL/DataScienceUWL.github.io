@@ -12,7 +12,7 @@ import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTa
 
 initHelp();
 import { parseCSV } from '../../js/csv-parser.js';
-import { formatStat, detectPrecision } from '../../js/stats.js';
+import { formatStat, detectPrecision, linreg } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
 import * as d3Selection from 'd3-selection';
 
@@ -38,6 +38,7 @@ const inputConf = /** @type {HTMLInputElement} */ (document.getElementById('inpu
 const varSelector = /** @type {HTMLElement} */ (document.getElementById('variable-selector'));
 const xVarSelect = /** @type {HTMLSelectElement} */ (document.getElementById('x-var'));
 const yVarSelect = /** @type {HTMLSelectElement} */ (document.getElementById('y-var'));
+const dataSummary = document.getElementById('data-summary');
 
 // ── State ──────────────────────────────────────────────────────────
 /** @type {Array<Record<string,any>>} */
@@ -109,6 +110,18 @@ function extractXY() {
   return { x, y };
 }
 
+/** Update the data summary strip with dataset info. */
+function updateDataSummary() {
+  if (!dataSummary) return;
+  const xy = extractXY();
+  if (!xy) return;
+  const name = dataPanel.currentSourceName;
+  const prefix = name ? `${name}: ` : '';
+  const reg = linreg(xy.x, xy.y);
+  const d = Math.max(detectPrecision(xy.x), detectPrecision(xy.y));
+  dataSummary.textContent = `${prefix}n = ${xy.x.length}, slope = ${formatStat(reg.slope, d)}, r\u00B2 = ${formatStat(reg.r2, d, 'correlation')}`;
+}
+
 // ── Data Panel ─────────────────────────────────────────────────────
 
 function handleDataset(ds, _meta) {
@@ -124,6 +137,7 @@ function handleDataset(ds, _meta) {
   currentRows = ds.rows;
   numericColumns = numCols;
   populateVarSelectors();
+  updateDataSummary();
   showResults();
   announce(`Loaded ${ds.rows.length} observations.`);
 }
@@ -143,6 +157,7 @@ function handleText(parsed, sourceName) {
   });
   numericColumns = numCols;
   populateVarSelectors();
+  updateDataSummary();
   showResults();
   announce(`Loaded ${currentRows.length} observations from "${sourceName}".`);
 }
