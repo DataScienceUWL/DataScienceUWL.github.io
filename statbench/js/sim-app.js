@@ -1248,8 +1248,11 @@ export function initSimPage(config) {
         }
         /** @type {[number,number]} */
         const fullDomain = [lo, hi];
+        const histSampleSize = (config.twoGroup && config.proportion && data2.length > 0)
+          ? Math.round(data1.length * data2.length / (data1.length + data2.length))
+          : data1.length;
         const histThresholds = config.proportion
-          ? snappedPropThresholds(data1.length, fullDomain, allStats.length)
+          ? snappedPropThresholds(histSampleSize, fullDomain, allStats.length)
           : undefined;
         // Bin the FULL dataset first to lock in bin edges
         const { bins: fullBins } = computeBins(allStats, {
@@ -1333,8 +1336,11 @@ export function initSimPage(config) {
         }
         /** @type {[number,number]} */
         const rDomain = [rLo, rHi];
+        const rHistSampleSize = (config.twoGroup && config.proportion && data2.length > 0)
+          ? Math.round(data1.length * data2.length / (data1.length + data2.length))
+          : data1.length;
         const rThresholds = config.proportion
-          ? snappedPropThresholds(data1.length, rDomain, allStats.length)
+          ? snappedPropThresholds(rHistSampleSize, rDomain, allStats.length)
           : undefined;
         // Bin the FULL dataset first to lock in bin edges
         const { bins: fullBins } = computeBins(allStats, {
@@ -1881,7 +1887,12 @@ export function initSimPage(config) {
     // Highlight new dots in dotplot mode
     const highlightIndex = lastStatIndex >= 0 ? lastStatIndex : -1;
     const highlightIndices = batchHighlightIndices ?? undefined;
-    const sampleSize = data1.length;
+    // For two-group proportions, the step between possible difference values
+    // is 1/n₁ + 1/n₂ (not 1/n). Use harmonic mean so snappedPropThresholds
+    // produces bins aligned to the actual discrete grid.
+    const sampleSize = (config.twoGroup && config.proportion && data2.length > 0)
+      ? Math.round(data1.length * data2.length / (data1.length + data2.length))
+      : data1.length;
 
     // For proportion histogram: snap bin edges to k/n grid so bars touch
     /** @type {number[]|undefined} */
