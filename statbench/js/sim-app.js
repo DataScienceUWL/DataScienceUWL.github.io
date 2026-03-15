@@ -1310,7 +1310,7 @@ export function initSimPage(config) {
         allStats.push(stat);
       }
 
-      showTwoGroupMechanism(lastG1, lastG2, false);
+      showTwoGroupMechanism(lastG1, lastG2, false, count === 1);
       // Always compute dot-level highlights
       if (count === 1) {
         lastStatIndex = allStats.length - 1;
@@ -1351,19 +1351,25 @@ export function initSimPage(config) {
       displayRandomizationResults(allStats, observedStat, pValue, extremeCount, direction);
 
       if (count === 1) {
-        // Highlight the diff value in orange to connect with the flying dot
+        // The diff is already highlighted orange via showTwoGroupMechanism(…, highlight=true)
         const mechDiffEl = document.querySelector('.mech-diff');
-        if (mechDiffEl) {
-          mechDiffEl.classList.add('highlight-last');
-          setTimeout(() => mechDiffEl.classList.remove('highlight-last'), 900);
-        }
+        // Remove highlight after animation completes (120+120+~500ms = ~740ms)
+        setTimeout(() => {
+          const el = document.querySelector('.mech-diff');
+          if (el) el.classList.remove('highlight-last');
+          // Also clear from collapsed summary
+          const summary = document.querySelector('.mechanism-collapsed-summary');
+          const hl = summary?.querySelector('.highlight-last');
+          if (hl) {
+            hl.classList.remove('highlight-last');
+          }
+        }, 1500);
         // Staggered: mechanism update → 120ms → flash → 120ms → dot appears → drop animation
         setTimeout(() => {
           flashMechanism();
           setTimeout(() => {
             renderChart(allStats, null, observedStat, direction);
             // Drop animation: flying dot from mechanism strip to chart
-            // Two-group pages show diff in .mech-diff; one-sample uses #resample-mean
             const dropSourceEl = mechDiffEl || resampleMeanEl;
             if (dropSourceEl && chartContainer) {
               animateDropToChart(/** @type {HTMLElement} */ (dropSourceEl), chartContainer);
@@ -1498,20 +1504,22 @@ export function initSimPage(config) {
    * @param {number[]} g1 - Group 1 values (resample or shuffled)
    * @param {number[]} g2 - Group 2 values (resample or shuffled)
    * @param {boolean} [flash]
+   * @param {boolean} [highlight] - Highlight diff orange (+1 animation)
    */
-  function showTwoGroupMechanism(g1, g2, flash = false) {
+  function showTwoGroupMechanism(g1, g2, flash = false, highlight = false) {
     if (!mechResampleContent || !mechanismDescEl) return;
     const statFn = config.mode === 'bootstrap' ? getBootstrapStat().fn : mean;
     const statSymbol = config.proportion ? 'p̂' : 'x̄';
     const s1 = statFn(g1);
     const s2 = statFn(g2);
     const fmtType = config.proportion ? 'proportion' : undefined;
+    const hlClass = highlight ? ' highlight-last' : '';
     mechResampleContent.innerHTML = `
       <div class="mech-group-row"><span class="mech-group-name">${group1Name}:</span>
         <span class="mech-group-stat">n = ${g1.length}, ${statSymbol} = ${formatStat(s1, dataPrecision, fmtType)}</span></div>
       <div class="mech-group-row"><span class="mech-group-name">${group2Name}:</span>
         <span class="mech-group-stat">n = ${g2.length}, ${statSymbol} = ${formatStat(s2, dataPrecision, fmtType)}</span></div>
-      <div class="mech-diff">diff = ${formatStat(s1 - s2, dataPrecision, fmtType)}</div>
+      <div class="mech-diff${hlClass}">diff = ${formatStat(s1 - s2, dataPrecision, fmtType)}</div>
     `;
 
     if (config.mode === 'bootstrap') {

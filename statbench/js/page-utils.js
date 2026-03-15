@@ -620,7 +620,11 @@ export function initMechanismCollapse(mechanismStrip) {
     // Try two-group diff first (already labeled)
     const mechDiff = strip.querySelector('.mech-diff');
     if (mechDiff && mechDiff.textContent.trim()) {
-      summary.innerHTML = mechDiff.innerHTML;
+      if (mechDiff.classList.contains('highlight-last')) {
+        summary.innerHTML = `<span class="highlight-last">${mechDiff.innerHTML}</span>`;
+      } else {
+        summary.innerHTML = mechDiff.innerHTML;
+      }
       return;
     }
 
@@ -664,6 +668,12 @@ export function initMechanismCollapse(mechanismStrip) {
   if (resampleMeanWatch) {
     const classObserver = new MutationObserver(syncSummary);
     classObserver.observe(resampleMeanWatch, { attributes: true, attributeFilter: ['class'] });
+  }
+  // Watch #mech-resample-content for attribute changes on child elements (e.g. .mech-diff highlight-last)
+  const mechResampleContent = strip.querySelector('#mech-resample-content');
+  if (mechResampleContent) {
+    const attrObserver = new MutationObserver(syncSummary);
+    attrObserver.observe(mechResampleContent, { attributes: true, attributeFilter: ['class'], subtree: true });
   }
 
   // Restore persisted state
