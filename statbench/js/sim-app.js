@@ -1217,14 +1217,14 @@ export function initSimPage(config) {
 
       const ciLevel = parseInt(ciSelect?.value ?? '95', 10);
       let ci = null;
-      const CI_MIN = 20; // Don't show CI lines until this many resamples
-      if (allStats.length >= 10) {
+      const CI_MIN = 20; // Don't show CI until this many resamples
+      if (allStats.length >= CI_MIN) {
         const result = bootstrapCI([...allStats], ciLevel);
         ci = result.ci;
         displayBootstrapResults(allStats, result.ci, result.se, ciLevel);
       } else {
         resultDiv.innerHTML = `<p><strong>Bootstrap Distribution</strong> (${allStats.length} resamples)</p>
-          <p>Need at least 10 resamples for CI estimate.</p>`;
+          <p>Need at least ${CI_MIN} resamples for CI estimate.</p>`;
       }
       // Track new data for highlight — always compute dot-level highlights
       if (count === 1) {

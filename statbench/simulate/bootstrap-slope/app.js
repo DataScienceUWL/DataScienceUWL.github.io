@@ -210,14 +210,15 @@ function generateResamples(count) {
   const ciLevel = parseInt(ciSelect?.value ?? '95', 10);
   /** @type {[number,number]|null} */
   let currentCI = null;
-  if (allSlopes.length >= 10) {
+  const CI_MIN = 20;
+  if (allSlopes.length >= CI_MIN) {
     const result = bootstrapCI([...allSlopes], ciLevel);
     currentCI = result.ci;
     displayResults(allSlopes, result.ci, result.se, ciLevel);
   } else {
     if (resultDiv) {
       resultDiv.innerHTML = `<p><strong>Bootstrap Distribution</strong> (${allSlopes.length} resamples)</p>
-        <p>Need at least 10 resamples for CI estimate.</p>`;
+        <p>Need at least ${CI_MIN} resamples for CI estimate.</p>`;
     }
   }
 
