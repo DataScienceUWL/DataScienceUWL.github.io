@@ -124,6 +124,7 @@ export function computeDotRadius(innerWidth, innerHeight, maxStack, numBins) {
  * @param {number} [options.highlightIndex] - Index of single newest dot to highlight (yellow pulse)
  * @param {Set<number>} [options.highlightIndices] - Indices of batch-added dots to highlight (accent pulse)
  * @param {number} [options.precision] - Decimal places for overlay value labels (default: 2)
+ * @param {boolean} [options.forceColumns] - Force filled-column mode even if dots would fit (for consistent grouped rendering)
  * @returns {{ frame: ChartFrame, dots: Array<{value: number, binCenter: number, stackIndex: number}>, xScale: d3Scale.ScaleLinear<number,number>, maxStack: number, binWidth: number, update: (values: number[], opts?: object) => void }}
  */
 export function drawDotplot(container, values, options = {}) {
@@ -145,6 +146,7 @@ export function drawDotplot(container, values, options = {}) {
     highlightIndex = -1,
     highlightIndices,
     precision = 2,
+    forceColumns = false,
   } = options;
 
   const result = computeDots(values, { numBins, domain, binWidth: lockedBinWidth, binOrigin: lockedBinOrigin });
@@ -163,7 +165,7 @@ export function drawDotplot(container, values, options = {}) {
   const dotRadius = computeDotRadius(frame.width, frame.height, maxStack, effectiveBins);
 
   // Detect if stacks overflow even at minimum radius — switch to filled columns
-  const wouldOverflow = maxStack > 0 && maxStack * MIN_RADIUS * 2 > frame.height;
+  const wouldOverflow = forceColumns || (maxStack > 0 && maxStack * MIN_RADIUS * 2 > frame.height);
 
   // Y axis is implicit (stacking height) for dots; column mode gets a y-axis
   const xAxis = d3Axis.axisBottom(xScale).tickFormat(formatTick);

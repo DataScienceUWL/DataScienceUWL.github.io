@@ -8,7 +8,7 @@
 import { parseCSV } from '../../js/csv-parser.js';
 import { mean, median, sd, quantile, iqr, range, detectPrecision, formatStat } from '../../js/stats.js';
 import { drawHistogram, computeBins, sturgesBins } from '../../js/histogram.js';
-import { drawDotplot } from '../../js/dotplot.js';
+import { drawDotplot, computeDots } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { drawGroupedDensity } from '../../js/kde.js';
 import { createExportBar } from '../../js/export.js';
@@ -542,6 +542,19 @@ function renderStackedDotplots(groupNames) {
   /** @type {[number, number]} */
   const domain = [xMin - pad, xMax + pad];
 
+  // Pre-check: if ANY group would overflow at min dot radius, force all to column mode
+  // Chart inner height ≈ 296 (viewBox 371 - margins 75), min radius = 2
+  const INNER_HEIGHT = 296;
+  const MIN_R = 2;
+  let anyOverflow = false;
+  for (const name of groupNames) {
+    const result = computeDots(groupedData[name], { domain });
+    if (result.maxStack > 0 && result.maxStack * MIN_R * 2 > INNER_HEIGHT) {
+      anyOverflow = true;
+      break;
+    }
+  }
+
   for (let i = 0; i < groupNames.length; i++) {
     const name = groupNames[i];
     const values = groupedData[name];
@@ -563,6 +576,7 @@ function renderStackedDotplots(groupNames) {
       id: `grouped-dot-${i}`,
       animate: false,
       domain,
+      forceColumns: anyOverflow,
     });
   }
 }
