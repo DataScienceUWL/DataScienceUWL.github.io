@@ -13,7 +13,7 @@ import { drawHistogram, snappedPropThresholds } from '../../js/histogram.js';
 import { drawDotplot } from '../../js/dotplot.js';
 import { renderSimPills } from '../../js/chart-utils.js';
 import { resolveChartType, createChartToggle } from '../../js/chart-defaults.js';
-import { initHelp } from '../../js/page-utils.js';
+import { initHelp, animateDropToChart } from '../../js/page-utils.js';
 import { createRng, shuffle as prngShuffle } from '../../js/prng.js';
 import { getActivityMode } from '../../js/settings.js';
 import { formatStat } from '../../js/stats.js';
@@ -594,6 +594,8 @@ function renderStep4() {
     nullDiffs = [];
     prng = createRng('randomization-' + datasetSelect.value);
     if (gate4) gate4.hidden = true;
+    const lastSimEl = document.getElementById('last-sim-value');
+    if (lastSimEl) lastSimEl.hidden = true;
     updateChart();
     updateSimStats();
     renderStep5();
@@ -616,7 +618,24 @@ function addShuffles(n) {
       batchHighlightIndices.add(i);
     }
   }
-  updateChart();
+
+  // +1 drop animation: show the value, render chart, then animate
+  const lastSimEl = document.getElementById('last-sim-value');
+  const chartContainer = el('null-dist-chart');
+  if (n === 1 && lastSimEl) {
+    const val = nullDiffs[nullDiffs.length - 1];
+    lastSimEl.textContent = (val * 100).toFixed(1) + ' pp';
+    lastSimEl.hidden = false;
+    updateChart();
+    // Short delay for DOM to settle, then animate
+    setTimeout(() => {
+      animateDropToChart(lastSimEl, chartContainer);
+    }, 30);
+  } else {
+    if (lastSimEl) lastSimEl.hidden = true;
+    updateChart();
+  }
+
   updateSimStats();
   renderStep5();
 
