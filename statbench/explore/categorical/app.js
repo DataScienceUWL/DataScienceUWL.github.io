@@ -69,10 +69,20 @@ function loadParsedData(parsed, sourceName) {
   showDataLoaded(sourceName);
 }
 
+/** Group label for categorical datasets. @param {any} ds */
+function catGroupFn(ds) {
+  if (ds.type === 'chisq' || ds.type === 'randomization_prop') return '1:Two Categorical Variables';
+  if (ds.type === 'one_cat' || ds.type === 'bootstrap_prop') return '2:One Categorical Variable';
+  if (ds.hasNumeric) return '3:With Quantitative Variable';
+  // Fallback: use variable count
+  return (ds.variables?.length ?? 0) >= 2 ? '1:Two Categorical Variables' : '2:One Categorical Variable';
+}
+
 initDataPanel({
   autoCollapse: true,
   showPreview: true,
   datasetFilter: (/** @type {any} */ ds) => ds.hasCategorical === true,
+  datasetGroupFn: catGroupFn,
   onDataset: (ds) => {
     const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
     if (catVars.length === 0) {
