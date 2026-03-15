@@ -569,18 +569,67 @@ export function initMechanismCollapse(mechanismStrip) {
 
   // Sync summary content from the sim stat element
   const strip = /** @type {HTMLElement} */ (mechanismStrip);
+
+  /**
+   * Build a labeled summary line from the mechanism strip's stat elements.
+   * Handles three layouts:
+   *   1) sim-app bootstrap one-sample: #resample-stat-label + #resample-mean
+   *   2) sim-app two-group: .mech-diff (already contains "diff = ...")
+   *   3) one-sample-sim: #mech-sim-stat (already contains label + value)
+   *   4) chisq: #mech-shuffled-chisq with parent <p> "χ² = <span>..."
+   */
   function syncSummary() {
-    const simStat = strip.querySelector('#mech-sim-stat, #resample-mean');
-    if (simStat && summary) {
-      summary.innerHTML = simStat.innerHTML;
+    if (!summary) return;
+
+    // Try two-group diff first (already labeled)
+    const mechDiff = strip.querySelector('.mech-diff');
+    if (mechDiff && mechDiff.textContent.trim()) {
+      summary.innerHTML = mechDiff.innerHTML;
+      summary.classList.toggle('highlight-last', mechDiff.classList.contains('highlight-last'));
+      return;
+    }
+
+    // Try one-sample-sim #mech-sim-stat (already labeled)
+    const mechSimStat = strip.querySelector('#mech-sim-stat');
+    if (mechSimStat && mechSimStat.textContent.trim()) {
+      summary.innerHTML = mechSimStat.innerHTML;
+      summary.classList.toggle('highlight-last', mechSimStat.classList.contains('highlight-last'));
+      return;
+    }
+
+    // Try sim-app bootstrap: #resample-stat-label + #resample-mean
+    const resampleMean = strip.querySelector('#resample-mean');
+    if (resampleMean && resampleMean.textContent.trim() && resampleMean.textContent !== '\u2014') {
+      const labelEl = strip.querySelector('#resample-stat-label');
+      const label = labelEl?.textContent || 'Resample statistic';
+      summary.innerHTML = `${label} = ${resampleMean.innerHTML}`;
+      summary.classList.toggle('highlight-last', resampleMean.classList.contains('highlight-last'));
+      return;
+    }
+
+    // Try chisq: #mech-shuffled-chisq — copy parent <p> which has "χ² = <span>..."
+    const chisqStat = strip.querySelector('#mech-shuffled-chisq');
+    if (chisqStat && chisqStat.textContent.trim() && chisqStat.textContent !== '\u2014') {
+      const parent = chisqStat.closest('.mechanism-stat');
+      summary.innerHTML = parent ? parent.innerHTML : `χ² = ${chisqStat.innerHTML}`;
+      return;
     }
   }
 
-  // Watch for sim stat changes so collapsed summary stays current
-  const simStatEl = strip.querySelector('#mech-sim-stat, #resample-mean');
-  if (simStatEl) {
+  // Watch for sim stat changes so collapsed summary stays current.
+  // Observe stat elements and their containers (for dynamically created content like .mech-diff).
+  const watchTargets = strip.querySelectorAll(
+    '#mech-sim-stat, #resample-mean, #mech-shuffled-chisq, #mech-resample-content, #resample-content'
+  );
+  for (const el of watchTargets) {
     const observer = new MutationObserver(syncSummary);
-    observer.observe(simStatEl, { childList: true, characterData: true, subtree: true });
+    observer.observe(el, { childList: true, characterData: true, subtree: true });
+  }
+  // Also watch #resample-mean for class changes (highlight-last toggle)
+  const resampleMeanWatch = strip.querySelector('#resample-mean');
+  if (resampleMeanWatch) {
+    const classObserver = new MutationObserver(syncSummary);
+    classObserver.observe(resampleMeanWatch, { attributes: true, attributeFilter: ['class'] });
   }
 
   // Restore persisted state
