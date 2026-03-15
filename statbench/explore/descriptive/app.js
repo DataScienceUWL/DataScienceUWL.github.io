@@ -28,6 +28,8 @@ const resultsSection = document.getElementById('results-section');
 const chartArea = document.getElementById('chart-area');
 const chartControls = document.getElementById('chart-controls');
 
+const crosslinkEl = document.getElementById('dataset-crosslink');
+
 const numericStats = document.getElementById('numeric-stats');
 const categoricalStats = document.getElementById('categorical-stats');
 const freqTableContainer = document.getElementById('freq-table-container');
@@ -628,13 +630,43 @@ function catGroupFn(ds) {
   return '1:One Categorical Variable';
 }
 
+/**
+ * Show a cross-link hint when a dataset belongs to a non-primary group.
+ * @param {any} meta - Dataset metadata from the index
+ */
+function showCrosslink(meta) {
+  if (!crosslinkEl) return;
+  crosslinkEl.hidden = true;
+  crosslinkEl.innerHTML = '';
+  if (!meta) return;
+
+  if (varMode === 'quantitative') {
+    if (meta.hasCategorical) {
+      crosslinkEl.innerHTML = 'This dataset has a categorical grouping variable. To compare groups, try <a href="../../explore/grouped/">Grouped Statistics</a>.';
+      crosslinkEl.hidden = false;
+    } else if (meta.type === 'paired') {
+      crosslinkEl.innerHTML = 'This dataset has paired measurements. To compare pairs, try <a href="../../explore/grouped/">Grouped Statistics</a>.';
+      crosslinkEl.hidden = false;
+    } else if (meta.type === 'regression' || (meta.variables && meta.variables.length > 1)) {
+      crosslinkEl.innerHTML = 'This dataset has two quantitative variables. To explore their relationship, try <a href="../../explore/regression/">Regression</a>.';
+      crosslinkEl.hidden = false;
+    }
+  } else {
+    if (meta.hasNumeric) {
+      crosslinkEl.innerHTML = 'This dataset also has a quantitative variable. To compare groups, try <a href="../../explore/grouped/">Grouped Statistics</a>.';
+      crosslinkEl.hidden = false;
+    }
+  }
+}
+
 const dataPanel = initDataPanel({
   autoCollapse: true,
   showPreview: true,
   datasetFilter: (/** @type {any} */ ds) => ds.hasNumeric !== false,
   datasetGroupFn: quantGroupFn,
-  onDataset: (ds) => {
+  onDataset: (ds, meta) => {
     loadedDataset = ds;
+    showCrosslink(meta);
     const typeFilter = varMode === 'quantitative' ? 'numeric' : 'categorical';
     const matchingVars = ds.variables.filter(
       /** @param {{type:string}} v */ v => v.type === typeFilter
@@ -927,4 +959,5 @@ function clearDisplay() {
   if (dataPreview) dataPreview.hidden = true;
   if (resultsSection) resultsSection.hidden = true;
   if (chartArea) chartArea.innerHTML = '';
+  if (crosslinkEl) crosslinkEl.hidden = true;
 }
