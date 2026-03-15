@@ -13,7 +13,7 @@ import { mean, sd, detectPrecision, formatStat } from './stats.js';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { renderSimPills } from './chart-utils.js';
-import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, initDataPanel, computeHighlights, initHelp, initSettings, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
+import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, animateDropToChart, initDataPanel, computeHighlights, initHelp, initSettings, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
 import { parseParams } from './url-params.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, dotplotBins, histogramThresholds, renderSimChart, createBinAdjuster } from './chart-defaults.js';
@@ -545,6 +545,10 @@ export function initOneSamplePage(config) {
         flashMechanism(mechanismStrip);
         setTimeout(() => {
           renderChart(allStats, observedStat, direction, hlIndex, hlIndices, prevBinCounts, hlDomain, lockedThresholds);
+          // Drop animation: flying dot from sim stat to chart
+          if (mechSimStat && chartContainer) {
+            animateDropToChart(mechSimStat, chartContainer);
+          }
         }, 120);
       }, 120);
     } else {

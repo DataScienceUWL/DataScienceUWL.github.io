@@ -411,10 +411,19 @@ export function animateDropToChart(sourceEl, chartContainer, opts = {}) {
   if (!highlightEl) return;
   const highlightDot = /** @type {SVGElement} */ (highlightEl);
 
-  // Get screen coordinates for source and target
+  // Get screen coordinates for source and target.
+  // If the source element is hidden (e.g. mechanism strip collapsed), use the
+  // collapsed summary element as the visual origin instead.
+  let effectiveSource = sourceEl;
   const sourceRect = sourceEl.getBoundingClientRect();
-  const sx = sourceRect.left + sourceRect.width / 2;
-  const sy = sourceRect.top + sourceRect.height / 2;
+  if (sourceRect.width === 0 && sourceRect.height === 0) {
+    const strip = sourceEl.closest('.mechanism-strip');
+    const summary = strip?.querySelector('.mechanism-collapsed-summary');
+    if (summary) effectiveSource = /** @type {HTMLElement} */ (summary);
+  }
+  const finalRect = effectiveSource.getBoundingClientRect();
+  const sx = finalRect.left + finalRect.width / 2;
+  const sy = finalRect.top + finalRect.height / 2;
 
   // Target: use getScreenCTM for precise SVG→screen coordinate mapping
   /** @type {number} */
@@ -515,6 +524,9 @@ export function animateDropToChart(sourceEl, chartContainer, opts = {}) {
 /**
  * Add a collapse toggle to the mechanism strip.
  * Inserts a bar with "Hide sampling detail" / "Show sampling detail" button.
+ * When collapsed, a compact one-line summary remains visible showing the
+ * last simulated statistic — this serves as the visual origin for the
+ * dot-drop animation so it doesn't appear to come from nowhere.
  * State is persisted in sessionStorage so it survives within a session.
  * @param {HTMLElement|null} mechanismStrip - The #mechanism-strip element
  */
@@ -530,23 +542,50 @@ export function initMechanismCollapse(mechanismStrip) {
   btn.textContent = 'Hide sampling detail';
   btn.setAttribute('aria-expanded', 'true');
 
+  // Collapsed summary: compact one-line stat shown when panels are hidden
+  let summary = mechanismStrip.querySelector('.mechanism-collapsed-summary');
+  if (!summary) {
+    summary = document.createElement('p');
+    summary.className = 'mechanism-collapsed-summary';
+    summary.setAttribute('aria-live', 'polite');
+    mechanismStrip.appendChild(summary);
+  }
+
+  // Sync summary content from the sim stat element
+  const strip = /** @type {HTMLElement} */ (mechanismStrip);
+  function syncSummary() {
+    const simStat = strip.querySelector('#mech-sim-stat, #resample-mean');
+    if (simStat && summary) {
+      summary.innerHTML = simStat.innerHTML;
+    }
+  }
+
+  // Watch for sim stat changes so collapsed summary stays current
+  const simStatEl = strip.querySelector('#mech-sim-stat, #resample-mean');
+  if (simStatEl) {
+    const observer = new MutationObserver(syncSummary);
+    observer.observe(simStatEl, { childList: true, characterData: true, subtree: true });
+  }
+
   // Restore persisted state
   const collapsed = sessionStorage.getItem('mechanism-collapsed') === 'true';
   if (collapsed) {
-    mechanismStrip.classList.add('collapsed');
+    strip.classList.add('collapsed');
     btn.textContent = 'Show sampling detail';
     btn.setAttribute('aria-expanded', 'false');
+    syncSummary();
   }
 
   btn.addEventListener('click', () => {
-    const isCollapsed = mechanismStrip.classList.toggle('collapsed');
+    const isCollapsed = strip.classList.toggle('collapsed');
     btn.textContent = isCollapsed ? 'Show sampling detail' : 'Hide sampling detail';
     btn.setAttribute('aria-expanded', String(!isCollapsed));
     sessionStorage.setItem('mechanism-collapsed', String(isCollapsed));
+    if (isCollapsed) syncSummary();
   });
 
   bar.appendChild(btn);
-  mechanismStrip.insertBefore(bar, mechanismStrip.firstChild);
+  strip.insertBefore(bar, strip.firstChild);
 }
 
 /**
