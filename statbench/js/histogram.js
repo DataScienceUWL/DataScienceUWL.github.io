@@ -223,9 +223,9 @@ export function drawHistogram(container, values, options = {}) {
   }
   if (ciLines) {
     renderOverlayLine(overlays, ciLines[0], xScale, frame.height,
-      '#B5747A', 'CI lower bound', precision);
+      '#B5747A', 'CI lower bound', precision, undefined, true);
     renderOverlayLine(overlays, ciLines[1], xScale, frame.height,
-      '#B5747A', 'CI upper bound', precision);
+      '#B5747A', 'CI upper bound', precision, undefined, true);
   }
 
   return {
@@ -265,9 +265,9 @@ export function drawHistogram(container, values, options = {}) {
       }
       if (newCiLines) {
         renderOverlayLine(overlays, newCiLines[0], xScale, frame.height,
-          '#B5747A', 'CI lower bound', precision);
+          '#B5747A', 'CI lower bound', precision, undefined, true);
         renderOverlayLine(overlays, newCiLines[1], xScale, frame.height,
-          '#B5747A', 'CI upper bound', precision);
+          '#B5747A', 'CI upper bound', precision, undefined, true);
       }
     },
   };
@@ -450,15 +450,15 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, i
  * @param {number} [precision] - Decimal places for value label (default: 2)
  * @param {string} [microLabel] - Small text above the value (e.g. 'observed', 'parameter')
  */
-function renderOverlayLine(overlays, value, xScale, innerHeight, color, label, precision = 2, microLabel) {
+function renderOverlayLine(overlays, value, xScale, innerHeight, color, label, precision = 2, microLabel, dashed = false) {
   const x = xScale(value);
-  overlays.append('line')
+  const line = overlays.append('line')
     .attr('x1', x).attr('x2', x)
     .attr('y1', 0).attr('y2', innerHeight)
     .attr('stroke', color)
-    .attr('stroke-width', 2)
-    .attr('stroke-dasharray', '6,3')
+    .attr('stroke-width', dashed ? 2 : 2.5)
     .attr('aria-label', `${label}: ${value}`);
+  if (dashed) line.attr('stroke-dasharray', '6,3');
   if (microLabel) {
     overlays.append('text')
       .attr('class', 'overlay-value observed-label')

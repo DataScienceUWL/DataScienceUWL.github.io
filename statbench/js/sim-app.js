@@ -1926,7 +1926,7 @@ export function initSimPage(config) {
         binOrigin: lockedDotGrid?.binOrigin,
         highlightIndex,
         highlightIndices,
-        precision: dataPrecision + 1,
+        precision: config.proportion ? Math.max(dataPrecision + 1, 3) : dataPrecision + 1,
       });
       chartResult = r.frame;
       chartXScale = r.xScale;
@@ -1962,7 +1962,7 @@ export function initSimPage(config) {
         thresholds: propThresholds,
         numBins: userBinCount,
         prevBinCounts: prevBinCounts ?? undefined,
-        precision: dataPrecision + 1,
+        precision: config.proportion ? Math.max(dataPrecision + 1, 3) : dataPrecision + 1,
       });
       chartResult = r.frame;
       chartXScale = r.xScale;

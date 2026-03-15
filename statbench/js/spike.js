@@ -175,9 +175,9 @@ export function drawSpike(container, values, options = {}) {
   }
   if (ciLines) {
     renderOverlayLine(overlays, ciLines[0], xScale, frame.height,
-      '#B5747A', 'CI lower bound');
+      '#B5747A', 'CI lower bound', true);
     renderOverlayLine(overlays, ciLines[1], xScale, frame.height,
-      '#B5747A', 'CI upper bound');
+      '#B5747A', 'CI upper bound', true);
   }
 
   return { frame, xScale, counts };
@@ -192,15 +192,15 @@ export function drawSpike(container, values, options = {}) {
  * @param {string} color
  * @param {string} label
  */
-function renderOverlayLine(overlays, value, xScale, innerHeight, color, label) {
+function renderOverlayLine(overlays, value, xScale, innerHeight, color, label, dashed = false) {
   const x = xScale(value);
-  overlays.append('line')
+  const line = overlays.append('line')
     .attr('x1', x).attr('x2', x)
     .attr('y1', 0).attr('y2', innerHeight)
     .attr('stroke', color)
-    .attr('stroke-width', 2)
-    .attr('stroke-dasharray', '6,3')
+    .attr('stroke-width', dashed ? 2 : 2.5)
     .attr('aria-label', `${label}: ${value}`);
+  if (dashed) line.attr('stroke-dasharray', '6,3');
   overlays.append('text')
     .attr('class', 'overlay-value')
     .attr('x', x).attr('y', -4)

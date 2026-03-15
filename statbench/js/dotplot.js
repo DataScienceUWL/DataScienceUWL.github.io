@@ -619,7 +619,6 @@ function renderObservedLine(overlays, value, xScale, innerHeight, precision = 2,
     .attr('y2', innerHeight)
     .attr('stroke', OBSERVED_COLOR)
     .attr('stroke-width', 2.5)
-    .attr('stroke-dasharray', '6,3')
     .attr('aria-label', `${label}: ${value}`);
   overlays.append('text')
     .attr('class', 'overlay-value observed-label')
