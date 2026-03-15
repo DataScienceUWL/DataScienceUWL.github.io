@@ -149,7 +149,10 @@ export function drawDotplot(container, values, options = {}) {
 
   const result = computeDots(values, { numBins, domain, binWidth: lockedBinWidth, binOrigin: lockedBinOrigin });
   const { dots, maxStack, domain: finalDomain } = result;
-  const effectiveBins = numBins ?? Math.min(values.length, 40);
+  // Compute effective bin count from locked grid + domain when available
+  const effectiveBins = numBins
+    ?? (lockedBinWidth && finalDomain ? Math.ceil((finalDomain[1] - finalDomain[0]) / lockedBinWidth) : null)
+    ?? Math.min(values.length, 40);
 
   const frame = createChart(container, { titleText, descText, id, margin });
 

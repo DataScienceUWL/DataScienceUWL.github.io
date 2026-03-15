@@ -150,6 +150,8 @@ export function initOneSamplePage(config) {
   let mechanismInitialized = false;
   /** @type {{ population?: string, parameter?: string, nullClaim?: string, successLabel?: string }} */
   let datasetContext = {};
+  /** Track current data source name for display. */
+  let currentSourceName = '';
 
   /** @type {{ xScale: any, yScale: any, bins: any[], domain: [number,number] } | null} */
   let lastHistResult = null;
@@ -252,7 +254,8 @@ export function initOneSamplePage(config) {
       resetSimulation();
       enableControls();
       if (dataSummary) {
-        dataSummary.innerHTML = `n = ${sampleN}, successes = ${sampleSuccesses} ("${successVal}"), <span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>`;
+        const namePrefix = currentSourceName ? `${currentSourceName}: ` : '';
+        dataSummary.innerHTML = `${namePrefix}n = ${sampleN}, successes = ${sampleSuccesses} ("${successVal}"), <span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>`;
       }
 
       // Populate mechanism strip content (stays hidden until first generate)
@@ -273,6 +276,7 @@ export function initOneSamplePage(config) {
         rawOutcomes = ds.rows.map(/** @param {any} r */ r => String(r[catVar.name]));
         const levels = [...new Set(rawOutcomes)];
         datasetContext = ds.context || {};
+        currentSourceName = ds.name || '';
         populateSuccessSelector(levels, datasetContext.successLabel);
         announce(`${ds.name}.`);
       },
@@ -284,11 +288,13 @@ export function initOneSamplePage(config) {
         }
         const colName = parsed.headers[catIdx];
         rawOutcomes = parsed.data.map(/** @param {any} r */ r => String(r[colName]));
+        currentSourceName = '';
         populateSuccessSelector([...new Set(rawOutcomes)]);
       },
       onClear: () => {
         rawOutcomes = [];
         datasetContext = {};
+        currentSourceName = '';
         resetSimulation();
         if (dataPreview) dataPreview.hidden = true;
         if (dataSummary) dataSummary.textContent = '\u2014';
@@ -317,7 +323,7 @@ export function initOneSamplePage(config) {
         resetSimulation();
         enableControls();
         if (dataSummary) {
-          dataSummary.innerHTML = `n = ${n}, successes = ${k}, <span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>`;
+          dataSummary.innerHTML = `n = ${n}, successes = ${k}, <span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>`;  // No dataset name for manual summary input
         }
         // Populate mechanism strip content (stays hidden until first generate)
         if (mechObservedStat) {
@@ -345,7 +351,8 @@ export function initOneSamplePage(config) {
 
       if (dataSummary) {
         const sampleSD = sd(sampleData);
-        dataSummary.innerHTML = `n = ${sampleN}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedStat, dataPrecision)}</span>, s = ${formatStat(sampleSD, dataPrecision)}`;
+        const namePrefix = currentSourceName ? `${currentSourceName}: ` : '';
+        dataSummary.innerHTML = `${namePrefix}n = ${sampleN}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedStat, dataPrecision)}</span>, s = ${formatStat(sampleSD, dataPrecision)}`;
       }
 
       computeShiftedData();
@@ -376,6 +383,7 @@ export function initOneSamplePage(config) {
           .filter(/** @param {number} v */ v => isFinite(v));
         if (values.length === 0) { announce('No valid numeric values found.'); return; }
         datasetContext = ds.context || {};
+        currentSourceName = ds.name || '';
         loadNumericData(values);
         announce(`${ds.name}.`);
       },
@@ -390,12 +398,14 @@ export function initOneSamplePage(config) {
           .map(/** @param {any} r */ r => Number(r[colName]))
           .filter(/** @param {number} v */ v => isFinite(v));
         if (values.length === 0) { announce('No valid numeric values found.'); return; }
+        currentSourceName = '';
         loadNumericData(values);
       },
       onClear: () => {
         sampleData = [];
         shiftedData = [];
         datasetContext = {};
+        currentSourceName = '';
         resetSimulation();
         if (dataPreview) dataPreview.hidden = true;
         if (dataSummary) dataSummary.textContent = '\u2014';

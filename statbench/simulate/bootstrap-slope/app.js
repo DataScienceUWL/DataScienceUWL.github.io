@@ -54,6 +54,7 @@ let xLabel = 'x';
 let yLabel = 'y';
 /** @type {{population?:string, parameter?:string, unit?:string}} */
 let datasetContext = {};
+let currentSourceName = '';
 
 /** @type {number[]} */
 let allSlopes = [];
@@ -101,6 +102,7 @@ initDataPanel({
   onDataset: (ds) => {
     resetSimulation();
     datasetContext = ds.context || {};
+    currentSourceName = ds.name || '';
     const numVars = ds.variables.filter(v => v.type === 'numeric');
     if (numVars.length < 2) return;
     xLabel = numVars[0].name;
@@ -113,10 +115,11 @@ initDataPanel({
     showDataLoaded();
     announce(`${ds.name}: ${minLen} observations.`);
   },
-  onRawText: (text) => loadTextData(text),
+  onRawText: (text) => { currentSourceName = ''; loadTextData(text); },
   onClear: () => {
     xData = [];
     yData = [];
+    currentSourceName = '';
     resetSimulation();
     if (dataPreview) dataPreview.hidden = true;
     if (dataSummary) dataSummary.textContent = '\u2014';
@@ -138,8 +141,9 @@ function showDataLoaded() {
   if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
     const d = dataPrecision;
+    const namePrefix = currentSourceName ? `${currentSourceName}: ` : '';
     dataSummary.textContent =
-      `n = ${xData.length}, slope = ${formatStat(reg.slope, d)}, r² = ${formatStat(reg.r2, d, 'correlation')}`;
+      `${namePrefix}n = ${xData.length}, slope = ${formatStat(reg.slope, d)}, r² = ${formatStat(reg.r2, d, 'correlation')}`;
   }
   for (const btn of genBtns) btn.disabled = false;
   if (resultDiv) resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';

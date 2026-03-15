@@ -758,35 +758,36 @@ export function initSimPage(config) {
 
     if (dataPreview) dataPreview.hidden = false;
     if (dataSummary) {
+      const namePrefix = currentSourceName && currentSourceName !== 'data' ? `${currentSourceName}: ` : '';
       if (config.paired) {
         const diffs = data2.map((v, i) => v - data1[i]);
         const m = mean(diffs);
         dataSummary.textContent =
-          `${data1.length} pairs | ${group1Name}: x̄ = ${formatStat(mean(data1), dataPrecision)} | ` +
+          `${namePrefix}${data1.length} pairs | ${group1Name}: x̄ = ${formatStat(mean(data1), dataPrecision)} | ` +
           `${group2Name}: x̄ = ${formatStat(mean(data2), dataPrecision)} | Mean diff = ${formatStat(m, dataPrecision)}`;
       } else if (config.proportion && !config.twoGroup) {
         const p1 = mean(data1);
         const s1 = data1.filter(v => v === 1).length;
         dataSummary.textContent =
-          `n = ${data1.length}, successes = ${s1}, p̂ = ${formatStat(p1, dataPrecision, 'proportion')}`;
+          `${namePrefix}n = ${data1.length}, successes = ${s1}, p̂ = ${formatStat(p1, dataPrecision, 'proportion')}`;
       } else if (config.proportion && data2.length > 0) {
         const p1 = mean(data1);
         const p2 = mean(data2);
         const s1 = data1.filter(v => v === 1).length;
         const s2 = data2.filter(v => v === 1).length;
         dataSummary.textContent =
-          `${group1Name}: ${s1}/${data1.length} (p̂ = ${formatStat(p1, dataPrecision, 'proportion')}) | ` +
+          `${namePrefix}${group1Name}: ${s1}/${data1.length} (p̂ = ${formatStat(p1, dataPrecision, 'proportion')}) | ` +
           `${group2Name}: ${s2}/${data2.length} (p̂ = ${formatStat(p2, dataPrecision, 'proportion')})`;
       } else if (config.twoGroup && data2.length > 0) {
         dataSummary.textContent =
-          `${group1Name}: n = ${data1.length}, x̄ = ${formatStat(mean(data1), dataPrecision)} | ` +
+          `${namePrefix}${group1Name}: n = ${data1.length}, x̄ = ${formatStat(mean(data1), dataPrecision)} | ` +
           `${group2Name}: n = ${data2.length}, x̄ = ${formatStat(mean(data2), dataPrecision)}`;
       } else {
         const n = data1.length;
         const m = mean(data1);
         const s = sd(data1);
         const varPrefix = selectedVarName ? `${selectedVarName}: ` : '';
-        dataSummary.textContent = `${varPrefix}n = ${n}, mean = ${formatStat(m, dataPrecision)}, SD = ${formatStat(s, dataPrecision)}`;
+        dataSummary.textContent = `${namePrefix}${varPrefix}n = ${n}, mean = ${formatStat(m, dataPrecision)}, SD = ${formatStat(s, dataPrecision)}`;
       }
     }
     for (const btn of genBtns) btn.disabled = false;
@@ -1913,7 +1914,9 @@ export function initSimPage(config) {
       chartResult = r.frame;
       chartXScale = r.xScale;
       const maxStack = r.dots.reduce((m, d) => Math.max(m, d.stackIndex + 1), 0);
-      const effectiveBins = (config.proportion ? sampleSize : userBinCount) ?? Math.min(n, 40);
+      const effectiveBins = (config.proportion ? sampleSize : userBinCount)
+        ?? (lockedDotGrid && domain ? Math.ceil((domain[1] - domain[0]) / lockedDotGrid.binWidth) : null)
+        ?? Math.min(n, 40);
       lastDotResult = { xScale: r.xScale, frame: r.frame, domain: domain || [0, 1], maxStack, numBins: effectiveBins };
       lastHistResult = null;
     } else if (activeChart === 'spike') {

@@ -68,6 +68,7 @@ let colLabels = [];
 let observedTable = [];
 let observedChisq = 0;
 let totalN = 0;
+let currentSourceName = '';
 
 /** @type {Array<{group: string, outcome: string}>} */
 let rawData = [];
@@ -186,6 +187,7 @@ initDataPanel({
   onDataset: (ds) => {
     resetSimulation();
     datasetContext = ds.context || {};
+    currentSourceName = ds.name || '';
     const catVars = ds.variables.filter(v => v.type === 'categorical');
     if (catVars.length < 2) return;
     rawData = ds.rows.map(r => ({
@@ -198,11 +200,13 @@ initDataPanel({
   },
   onRawText: (text) => {
     datasetContext = {};
+    currentSourceName = '';
     loadFromCSV(text);
   },
   onClear: () => {
     rawData = [];
     observedTable = [];
+    currentSourceName = '';
     resetSimulation();
     if (dataPreview) dataPreview.hidden = true;
     if (dataSummary) dataSummary.textContent = '\u2014';
@@ -219,7 +223,8 @@ function showDataLoaded() {
   if (dataPreview) dataPreview.hidden = false;
   if (dataSummary) {
     const dims = `${rowLabels.length} × ${colLabels.length}`;
-    dataSummary.textContent = `${dims} table, n = ${totalN}, observed χ² = ${formatStat(observedChisq, 2)}`;
+    const namePrefix = currentSourceName ? `${currentSourceName}: ` : '';
+    dataSummary.textContent = `${namePrefix}${dims} table, n = ${totalN}, observed χ² = ${formatStat(observedChisq, 2)}`;
   }
   for (const btn of genBtns) btn.disabled = false;
   if (resultDiv) resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
