@@ -204,11 +204,11 @@ function setMode(/** @type {'quantitative'|'categorical'} */ mode) {
   if (pasteQuant) pasteQuant.hidden = mode !== 'quantitative';
   if (pasteCat) pasteCat.hidden = mode !== 'categorical';
 
-  // Re-filter datasets
+  // Re-filter datasets with pedagogical grouping
   if (mode === 'quantitative') {
-    dataPanel.refilterDatasets((/** @type {any} */ ds) => ds.hasNumeric !== false);
+    dataPanel.refilterDatasets((/** @type {any} */ ds) => ds.hasNumeric !== false, quantGroupFn);
   } else {
-    dataPanel.refilterDatasets((/** @type {any} */ ds) => ds.hasCategorical === true);
+    dataPanel.refilterDatasets((/** @type {any} */ ds) => ds.hasCategorical === true, catGroupFn);
   }
 
   // Clear current display when switching modes
@@ -609,10 +609,30 @@ function handleApply() {
   announce('Enter numeric values.');
 }
 
+// ── Dataset grouping functions ───────────────────────────────────────
+
+/** Group label for quantitative-mode datasets (prefix controls sort order). @param {any} ds */
+function quantGroupFn(ds) {
+  if (ds.hasCategorical) return '4:Grouped Comparison';
+  if (ds.type === 'paired') return '2:Paired Variables';
+  if (ds.type === 'regression' || (ds.variables && ds.variables.length > 1))
+    return '3:Two Quantitative Variables';
+  return '1:One Quantitative Variable';
+}
+
+/** Group label for categorical-mode datasets (prefix controls sort order). @param {any} ds */
+function catGroupFn(ds) {
+  if (ds.hasNumeric) return '3:With Quantitative Variable';
+  if (ds.type === 'chisq' || ds.type === 'randomization_prop')
+    return '2:Two Categorical Variables';
+  return '1:One Categorical Variable';
+}
+
 const dataPanel = initDataPanel({
   autoCollapse: true,
   showPreview: true,
   datasetFilter: (/** @type {any} */ ds) => ds.hasNumeric !== false,
+  datasetGroupFn: quantGroupFn,
   onDataset: (ds) => {
     loadedDataset = ds;
     const typeFilter = varMode === 'quantitative' ? 'numeric' : 'categorical';
@@ -620,34 +640,18 @@ const dataPanel = initDataPanel({
       /** @param {{type:string}} v */ v => v.type === typeFilter
     );
 
-    const allVars = ds.variables.filter(
-      /** @param {{type:string}} v */ v => v.type === 'numeric' || v.type === 'categorical'
-    );
-
     if (matchingVars.length === 0) {
       announce(`No ${varMode} variables in this dataset.`);
       return;
     }
 
-    if (allVars.length > 1) {
+    if (matchingVars.length > 1) {
       varSelect.innerHTML = '';
       for (const v of matchingVars) {
         const opt = document.createElement('option');
         opt.value = v.name;
         opt.textContent = v.label || v.name;
         varSelect.appendChild(opt);
-      }
-      const otherVars = allVars.filter(/** @param {{type:string}} v */ v => v.type !== typeFilter);
-      if (otherVars.length > 0) {
-        const optGroup = document.createElement('optgroup');
-        optGroup.label = typeFilter === 'numeric' ? 'Categorical' : 'Quantitative';
-        for (const v of otherVars) {
-          const opt = document.createElement('option');
-          opt.value = v.name;
-          opt.textContent = v.label || v.name;
-          optGroup.appendChild(opt);
-        }
-        varSelect.appendChild(optGroup);
       }
       if (variableSelector) variableSelector.hidden = false;
     } else {

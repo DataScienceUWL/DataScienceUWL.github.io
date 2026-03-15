@@ -712,24 +712,64 @@ export function createExpertToggle(container) {
 }
 
 /**
- * Fetch the dataset index and populate a <select> element with matching datasets.
- * @param {HTMLSelectElement} selectEl - The dataset <select> element
- * @param {(ds: {id:string, type:string}) => boolean} filterFn - Filter function for relevant datasets
- * @param {HTMLElement|null} [descEl] - Element to show error messages
- * @returns {Promise<Array<{id:string, name:string, description:string, type:string, n:number}>>}
+ * Populate a <select> with dataset entries, optionally grouped via <optgroup>.
+ * Datasets are always sorted alphabetically by name within each group.
+ * @param {HTMLSelectElement} selectEl
+ * @param {Array<{id:string, name:string, n:number}>} datasets
+ * @param {((ds: any) => string)|undefined} [groupFn] - Returns group label for each dataset
  */
-export async function loadDatasetIndex(selectEl, filterFn, descEl) {
-  try {
-    const resp = await fetch(dataPath('datasets.json'));
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const index = await resp.json();
-    const relevant = index.filter(filterFn);
-    for (const ds of relevant) {
+function populateDatasetSelect(selectEl, datasets, groupFn) {
+  // Sort alphabetically by name
+  const sorted = [...datasets].sort((a, b) => a.name.localeCompare(b.name));
+
+  if (groupFn) {
+    // Bucket into groups, sorted by group key
+    /** @type {Map<string, typeof sorted>} */
+    const groups = new Map();
+    for (const ds of sorted) {
+      const label = groupFn(ds);
+      if (!groups.has(label)) groups.set(label, []);
+      /** @type {typeof sorted} */ (groups.get(label)).push(ds);
+    }
+    // Sort groups by key, then strip numeric prefix (e.g. "1:Label" → "Label")
+    const sortedKeys = [...groups.keys()].sort();
+    for (const key of sortedKeys) {
+      const items = /** @type {typeof sorted} */ (groups.get(key));
+      const optGroup = document.createElement('optgroup');
+      optGroup.label = key.includes(':') ? key.split(':').slice(1).join(':') : key;
+      for (const ds of items) {
+        const opt = document.createElement('option');
+        opt.value = ds.id;
+        opt.textContent = `${ds.name} (n = ${ds.n})`;
+        optGroup.appendChild(opt);
+      }
+      selectEl.appendChild(optGroup);
+    }
+  } else {
+    for (const ds of sorted) {
       const opt = document.createElement('option');
       opt.value = ds.id;
       opt.textContent = `${ds.name} (n = ${ds.n})`;
       selectEl.appendChild(opt);
     }
+  }
+}
+
+/**
+ * Fetch the dataset index and populate a <select> element with matching datasets.
+ * @param {HTMLSelectElement} selectEl - The dataset <select> element
+ * @param {(ds: {id:string, type:string}) => boolean} filterFn - Filter function for relevant datasets
+ * @param {HTMLElement|null} [descEl] - Element to show error messages
+ * @param {((ds: any) => string)} [groupFn] - Optional grouping function for <optgroup> labels
+ * @returns {Promise<Array<{id:string, name:string, description:string, type:string, n:number}>>}
+ */
+export async function loadDatasetIndex(selectEl, filterFn, descEl, groupFn) {
+  try {
+    const resp = await fetch(dataPath('datasets.json'));
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const index = await resp.json();
+    const relevant = index.filter(filterFn);
+    populateDatasetSelect(selectEl, relevant, groupFn);
     return relevant;
   } catch {
     if (descEl) descEl.textContent = 'Could not load datasets.';
@@ -1007,11 +1047,13 @@ function fetchExternalCSV(url, handleText, populateEditor, resolve) {
  * @param {boolean} [config.autoCollapse] - Collapse #data-panel after successful data load
  * @param {boolean} [config.stickyControls] - Add .sticky to #controls after data load
  * @param {boolean} [config.showPreview] - Unhide #data-preview after data load
- * @returns {{ getDatasetIndex: () => Array<{id:string,name:string,description:string,type:string,n:number}>, populateEditor: (csvText:string, sourceName:string) => void, refilterDatasets: (filterFn: (ds: any) => boolean) => void, ready: Promise<void>, currentDatasetId: string|null, currentSourceName: string, triggerPostLoad: () => void }}
+ * @param {(ds: any) => string} [config.datasetGroupFn] - Returns group label for <optgroup> in dataset dropdown
+ * @returns {{ getDatasetIndex: () => Array<{id:string,name:string,description:string,type:string,n:number}>, populateEditor: (csvText:string, sourceName:string) => void, refilterDatasets: (filterFn: (ds: any) => boolean, groupFn?: (ds: any) => string) => void, ready: Promise<void>, currentDatasetId: string|null, currentSourceName: string, triggerPostLoad: () => void }}
  */
 export function initDataPanel(config) {
   const { datasetFilter, onDataset, onText, onRawText, onClear,
-    autoCollapse = false, stickyControls = false, showPreview = false } = config;
+    autoCollapse = false, stickyControls = false, showPreview = false,
+    datasetGroupFn } = config;
 
   const datasetSelect = /** @type {HTMLSelectElement|null} */ (document.getElementById('dataset-select'));
   const datasetDesc = document.getElementById('dataset-desc');
@@ -1067,23 +1109,19 @@ export function initDataPanel(config) {
   /**
    * Re-filter the dataset dropdown with a new filter function.
    * @param {(ds: {id:string, type:string, hasNumeric?:boolean, hasCategorical?:boolean}) => boolean} filterFn
+   * @param {((ds: any) => string)} [groupFn] - Optional grouping function for <optgroup> labels
    */
-  function refilterDatasets(filterFn) {
+  function refilterDatasets(filterFn, groupFn) {
     if (!datasetSelect) return;
     datasetSelect.innerHTML = '<option value="">-- Select --</option>';
     if (datasetDesc) datasetDesc.textContent = '';
     datasetIndex = fullIndex.filter(filterFn);
-    for (const ds of datasetIndex) {
-      const opt = document.createElement('option');
-      opt.value = ds.id;
-      opt.textContent = `${ds.name} (n = ${ds.n})`;
-      datasetSelect.appendChild(opt);
-    }
+    populateDatasetSelect(datasetSelect, datasetIndex, groupFn);
   }
 
   // ── Dataset dropdown ──
   if (datasetSelect) {
-    loadDatasetIndex(datasetSelect, datasetFilter, datasetDesc)
+    loadDatasetIndex(datasetSelect, datasetFilter, datasetDesc, datasetGroupFn)
       .then(index => {
         fullIndex = index;
         datasetIndex = index;
