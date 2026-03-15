@@ -234,7 +234,7 @@ function overlayNormalCurve(inner, mu, se, xScale, yScale, totalCount, binWidth)
     .attr('class', 'normal-curve')
     .attr('d', line(points))
     .attr('fill', 'none')
-    .attr('stroke', '#114B5F')
+    .attr('stroke', '#7B2D8E')
     .attr('stroke-width', 2.5)
     .attr('stroke-dasharray', '8,4');
 }

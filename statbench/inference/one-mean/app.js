@@ -453,7 +453,7 @@ function drawChart(result) {
       .attr('x2', tX)
       .attr('y1', yScale(0))
       .attr('y2', yTop)
-      .attr('stroke', '#114B5F')
+      .attr('stroke', '#7B2D8E')
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', '6 3');
 
@@ -463,7 +463,7 @@ function drawChart(result) {
       .attr('x', tX)
       .attr('y', labelY)
       .attr('text-anchor', 'middle')
-      .attr('fill', '#114B5F')
+      .attr('fill', '#7B2D8E')
       .attr('font-size', '11px')
       .attr('font-weight', '700')
       .text(`t = ${tStat.toFixed(3)}`);

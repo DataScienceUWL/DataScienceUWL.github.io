@@ -219,13 +219,13 @@ export function drawHistogram(container, values, options = {}) {
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   if (observedStat != null) {
     renderOverlayLine(overlays, observedStat, xScale, frame.height,
-      '#114B5F', observedLabel, precision, observedLabel);
+      '#7B2D8E', observedLabel, precision, observedLabel);
   }
   if (ciLines) {
     renderOverlayLine(overlays, ciLines[0], xScale, frame.height,
-      '#114B5F', 'CI lower bound', precision);
+      '#7B2D8E', 'CI lower bound', precision);
     renderOverlayLine(overlays, ciLines[1], xScale, frame.height,
-      '#114B5F', 'CI upper bound', precision);
+      '#7B2D8E', 'CI upper bound', precision);
   }
 
   return {
@@ -261,13 +261,13 @@ export function drawHistogram(container, values, options = {}) {
       if (newObserved != null) {
         const newLabel = /** @type {any} */ (opts).observedLabel ?? observedLabel;
         renderOverlayLine(overlays, newObserved, xScale, frame.height,
-          '#114B5F', newLabel, precision, newLabel);
+          '#7B2D8E', newLabel, precision, newLabel);
       }
       if (newCiLines) {
         renderOverlayLine(overlays, newCiLines[0], xScale, frame.height,
-          '#114B5F', 'CI lower bound', precision);
+          '#7B2D8E', 'CI lower bound', precision);
         renderOverlayLine(overlays, newCiLines[1], xScale, frame.height,
-          '#114B5F', 'CI upper bound', precision);
+          '#7B2D8E', 'CI upper bound', precision);
       }
     },
   };

@@ -442,7 +442,7 @@ function drawChart(r) {
       .attr('x2', zX)
       .attr('y1', yScale(0))
       .attr('y2', yTop)
-      .attr('stroke', '#114B5F')
+      .attr('stroke', '#7B2D8E')
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', '4,3');
 
@@ -451,7 +451,7 @@ function drawChart(r) {
       .attr('x', zX)
       .attr('y', yTop - 8)
       .attr('text-anchor', 'middle')
-      .attr('fill', '#114B5F')
+      .attr('fill', '#7B2D8E')
       .attr('font-size', '12px')
       .attr('font-weight', '700')
       .text(`z = ${r.zStat.toFixed(3)}`);
@@ -467,7 +467,7 @@ function drawChart(r) {
         .attr('x2', mirrorX)
         .attr('y1', yScale(0))
         .attr('y2', mirrorYTop)
-        .attr('stroke', '#114B5F')
+        .attr('stroke', '#7B2D8E')
         .attr('stroke-width', 2)
         .attr('stroke-dasharray', '4,3');
     }

@@ -18,8 +18,8 @@ const DOT_FILL = '#808080';
 /** Extreme dot fill (in tail). */
 const EXTREME_FILL = '#569BBD';
 
-/** Observed statistic line color (dark teal — distinct from orange highlight). */
-const OBSERVED_COLOR = '#114B5F';
+/** Observed statistic line color (deep purple — distinct from orange highlight). */
+const OBSERVED_COLOR = '#7B2D8E';
 
 /** Minimum dot radius. */
 const MIN_RADIUS = 2;
@@ -636,8 +636,8 @@ function renderObservedLine(overlays, value, xScale, innerHeight, precision = 2,
     .text(value.toFixed(precision));
 }
 
-/** CI line color (green). */
-const CI_COLOR = '#114B5F';
+/** CI line color (deep purple — matches observed stat). */
+const CI_COLOR = '#7B2D8E';
 
 /**
  * Render a CI bound vertical line with label.

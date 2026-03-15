@@ -269,7 +269,7 @@ export const COLOR = {
   grayLight:  '#8a8a8a',
   unshaded:   '#DCE5EC',
   highlight:  '#E07020',
-  observedStat: '#114B5F',
+  observedStat: '#7B2D8E',
   white:      '#FFFFFF',
 };
 

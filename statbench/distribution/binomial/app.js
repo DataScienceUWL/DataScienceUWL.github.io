@@ -335,7 +335,7 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma, prob, type) {
       .attr('x2', xLinear(mu))
       .attr('y1', 0)
       .attr('y2', innerH)
-      .attr('stroke', '#114B5F')
+      .attr('stroke', '#7B2D8E')
       .attr('stroke-width', 1.5)
       .attr('stroke-dasharray', '4,3');
   }
@@ -389,7 +389,7 @@ function renderPill(g, cx, cy, text, isComplement) {
     .attr('y', cy)
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'central')
-    .attr('fill', isComplement ? '#6B6B6B' : '#114B5F')
+    .attr('fill', isComplement ? '#6B6B6B' : '#7B2D8E')
     .style('pointer-events', 'none')
     .text(text);
 }

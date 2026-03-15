@@ -448,7 +448,7 @@ function _addSimPill(group, text, cx, cy, isComplement) {
     .attr('y', cy)
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'central')
-    .attr('fill', isComplement ? '#6B6B6B' : '#114B5F')
+    .attr('fill', isComplement ? '#6B6B6B' : '#7B2D8E')
     .style('pointer-events', 'none')
     .text(text);
 }

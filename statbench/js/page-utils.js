@@ -618,7 +618,9 @@ export function initMechanismCollapse(mechanismStrip) {
     if (!summary) return;
 
     // Try two-group diff first (already labeled)
-    const mechDiff = strip.querySelector('.mech-diff');
+    // Scope to resample panel — original panel also has .mech-diff but shows observed stat
+    const mechDiff = strip.querySelector('#mech-resample-content .mech-diff')
+      || strip.querySelector('.mech-diff');
     if (mechDiff && mechDiff.textContent.trim()) {
       if (mechDiff.classList.contains('highlight-last')) {
         summary.innerHTML = `<span class="highlight-last">${mechDiff.innerHTML}</span>`;

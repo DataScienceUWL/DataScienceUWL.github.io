@@ -1352,10 +1352,12 @@ export function initSimPage(config) {
 
       if (count === 1) {
         // The diff is already highlighted orange via showTwoGroupMechanism(…, highlight=true)
-        const mechDiffEl = document.querySelector('.mech-diff');
+        // IMPORTANT: scope to #mech-resample-content — there are TWO .mech-diff elements
+        // (one in original panel, one in shuffled panel); we want the shuffled one.
+        const mechDiffEl = document.querySelector('#mech-resample-content .mech-diff');
         // Remove highlight after animation completes (120+120+~500ms = ~740ms)
         setTimeout(() => {
-          const el = document.querySelector('.mech-diff');
+          const el = document.querySelector('#mech-resample-content .mech-diff');
           if (el) el.classList.remove('highlight-last');
           // Also clear from collapsed summary
           const summary = document.querySelector('.mechanism-collapsed-summary');
@@ -1369,7 +1371,7 @@ export function initSimPage(config) {
           flashMechanism();
           setTimeout(() => {
             renderChart(allStats, null, observedStat, direction);
-            // Drop animation: flying dot from mechanism strip to chart
+            // Drop animation: flying dot from shuffled diff to chart
             const dropSourceEl = mechDiffEl || resampleMeanEl;
             if (dropSourceEl && chartContainer) {
               animateDropToChart(/** @type {HTMLElement} */ (dropSourceEl), chartContainer);

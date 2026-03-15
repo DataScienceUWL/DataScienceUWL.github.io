@@ -171,13 +171,13 @@ export function drawSpike(container, values, options = {}) {
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   if (observedStat != null) {
     renderOverlayLine(overlays, observedStat, xScale, frame.height,
-      '#114B5F', 'Observed statistic');
+      '#7B2D8E', 'Observed statistic');
   }
   if (ciLines) {
     renderOverlayLine(overlays, ciLines[0], xScale, frame.height,
-      '#114B5F', 'CI lower bound');
+      '#7B2D8E', 'CI lower bound');
     renderOverlayLine(overlays, ciLines[1], xScale, frame.height,
-      '#114B5F', 'CI upper bound');
+      '#7B2D8E', 'CI upper bound');
   }
 
   return { frame, xScale, counts };

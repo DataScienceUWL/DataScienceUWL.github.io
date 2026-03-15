@@ -214,7 +214,7 @@ function renderChart() {
     .attr('x2', xScale(popMu))
     .attr('y1', 0)
     .attr('y2', innerH)
-    .attr('stroke', '#114B5F')
+    .attr('stroke', '#7B2D8E')
     .attr('stroke-width', 2)
     .attr('stroke-dasharray', '4,3');
 
@@ -224,7 +224,7 @@ function renderChart() {
     .attr('y', -5)
     .attr('text-anchor', 'middle')
     .attr('font-size', '10px')
-    .attr('fill', '#114B5F')
+    .attr('fill', '#7B2D8E')
     .attr('font-weight', 700)
     .text(`μ = ${popMu.toFixed(2)}`);
 
