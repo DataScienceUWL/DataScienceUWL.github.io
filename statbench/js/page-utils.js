@@ -6,7 +6,7 @@
  */
 
 import { parseCSV, rowsToCSV, downloadCSV } from './csv-parser.js';
-import { getSettings, setSettings, resetSettings, applySettings, getActivityMode, prefersReducedMotion } from './settings.js';
+import { getSettings, setSettings, resetSettings, applySettings, getActivityMode, getExpertMode, prefersReducedMotion } from './settings.js';
 import { parseParams } from './url-params.js';
 
 /**
@@ -251,6 +251,13 @@ export function initSettings() {
         <option value="present"${s.activityMode === 'present' ? ' selected' : ''}>Presentation</option>
       </select>
     </div>
+    <div class="setting-row">
+      <div>
+        <label for="set-expert" class="setting-label">Expert mode</label>
+        <p class="setting-hint">Show advanced controls: statistic selector, CI level, chart type toggle, bin adjuster, theory overlay.</p>
+      </div>
+      <input type="checkbox" id="set-expert" ${s.expertMode ? 'checked' : ''}>
+    </div>
     <div class="reset-row">
       <button type="button" class="reset-link" id="set-reset">Reset to defaults</button>
     </div>
@@ -286,6 +293,15 @@ export function initSettings() {
       setSettings({ activityMode: modeSelect.value });
       applySettings();
       location.reload();
+    });
+  }
+
+  // Expert mode checkbox — toggles visibility of advanced controls
+  const expertCheck = /** @type {HTMLInputElement|null} */ (document.getElementById('set-expert'));
+  if (expertCheck) {
+    expertCheck.addEventListener('change', () => {
+      setSettings({ expertMode: expertCheck.checked });
+      applySettings();
     });
   }
 
@@ -586,6 +602,48 @@ export function initMechanismCollapse(mechanismStrip) {
 
   bar.appendChild(btn);
   strip.insertBefore(bar, strip.firstChild);
+}
+
+/**
+ * Collapse the data panel to a compact summary bar after dataset loads.
+ * Adds a "Change Data" button to re-expand. Idempotent.
+ * @param {HTMLElement|null} dataPanel - The #data-panel element
+ */
+export function collapseDataPanel(dataPanel) {
+  if (!dataPanel || dataPanel.classList.contains('collapsed')) return;
+  dataPanel.classList.add('collapsed');
+
+  if (!dataPanel.querySelector('.data-panel-expand-btn')) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'data-panel-expand-btn';
+    btn.textContent = 'Change Data';
+    btn.addEventListener('click', () => {
+      dataPanel.classList.remove('collapsed');
+    });
+    dataPanel.appendChild(btn);
+  }
+}
+
+/**
+ * Create an on-page "More options" / "Fewer options" toggle for expert mode.
+ * Inserts a small text link into the given container. Syncs with settings.
+ * @param {HTMLElement} container - Element to append the toggle to
+ */
+export function createExpertToggle(container) {
+  if (container.querySelector('.expert-toggle')) return;
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'expert-toggle';
+  btn.textContent = getExpertMode() ? 'Fewer options' : 'More options';
+  btn.addEventListener('click', () => {
+    const nowExpert = !getExpertMode();
+    setSettings({ expertMode: nowExpert });
+    applySettings();
+    btn.textContent = nowExpert ? 'Fewer options' : 'More options';
+  });
+  container.appendChild(btn);
 }
 
 /**

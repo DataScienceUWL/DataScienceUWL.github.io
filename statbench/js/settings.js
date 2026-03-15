@@ -37,6 +37,10 @@ const DEFAULTS = {
 
   // Activity mode
   activityMode:    'discover', // 'discover' (guided, gated) or 'present' (open, all steps visible)
+
+  // Expert mode — hides advanced controls (statistic selector, CI level, chart toggle,
+  // bin adjuster, theory overlay) in simple mode for intro students
+  expertMode:      false,
 };
 
 const STORAGE_KEY = 'statbench-settings';
@@ -130,6 +134,18 @@ export function getActivityMode() {
 }
 
 /**
+ * Get whether expert mode is active, respecting URL param override.
+ * URL param ?expert=true overrides the saved setting.
+ * @returns {boolean}
+ */
+export function getExpertMode() {
+  const urlExpert = new URLSearchParams(window.location.search).get('expert');
+  if (urlExpert === 'true' || urlExpert === '1') return true;
+  if (urlExpert === 'false' || urlExpert === '0') return false;
+  return !!getSetting('expertMode');
+}
+
+/**
  * Apply settings to the current page (CSS custom properties, etc.).
  * Call once on page load from each page's init code.
  */
@@ -139,6 +155,13 @@ export function applySettings() {
 
   // Activity mode → data attribute on body (CSS can target [data-mode="present"])
   document.body?.setAttribute('data-mode', getActivityMode());
+
+  // Expert mode → data attribute on body (CSS hides .expert-only when off)
+  if (getExpertMode()) {
+    document.body?.setAttribute('data-expert', 'true');
+  } else {
+    document.body?.removeAttribute('data-expert');
+  }
 
   // Chart font scale → CSS custom property
   if (s.chartFontScale !== 1.0) {

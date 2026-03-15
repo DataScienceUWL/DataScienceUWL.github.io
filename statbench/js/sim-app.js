@@ -14,7 +14,7 @@ import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.j
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { drawSpike } from './spike.js';
 import { renderSimPills } from './chart-utils.js';
-import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
+import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
@@ -73,16 +73,18 @@ export function initSimPage(config) {
   const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
     document.querySelectorAll('.gen-btn'));
 
-  // Move generate bar inside app-body, between chart and sidebar.
-  // CSS grid handles layout: desktop = 2-col (chart+gen left, sidebar right);
-  // mobile = single col (chart → generate → sidebar).
-  const generateBar = document.querySelector('.generate-bar');
-  const chartSection = document.getElementById('chart-and-results');
-  const appBody = chartSection?.querySelector('.app-body');
-  const sidebarEl = chartSection?.querySelector('.app-sidebar');
-  if (generateBar && appBody && sidebarEl) {
-    appBody.insertBefore(generateBar, sidebarEl);
-  }
+  // Data panel (for collapse after data loads)
+  const dataPanel = document.getElementById('data-panel');
+  // Controls section (for sticky + expert toggle)
+  const controlsSection = document.getElementById('controls');
+
+  // Mark statistic/CI selectors as expert-only
+  const controlRow = controlsSection?.querySelector('.control-row');
+  if (controlRow) controlRow.classList.add('expert-only');
+
+  // Add expert toggle link next to generate bar
+  const generateBar = controlsSection?.querySelector('.generate-bar');
+  if (generateBar) createExpertToggle(generateBar);
 
   // Mechanism strip elements
   const mechanismStrip = document.getElementById('mechanism-strip');
@@ -109,6 +111,8 @@ export function initSimPage(config) {
   let lastResample = [];
   /** Whether the last generate action was +1 (for persistent highlight). */
   let lastWasSingle = false;
+  /** Whether the mechanism strip has been initialized (deferred to first generate). */
+  let mechanismInitialized = false;
 
   /** Dataset context for natural-language interpretations. */
   /** @type {{population?:string, parameter?:string, unit?:string, nullClaim?:string, successLabel?:string}} */
@@ -183,6 +187,8 @@ export function initSimPage(config) {
     });
     toggleFieldset = toggle.fieldset;
     setToggleSelected = toggle.setSelected;
+    // Chart toggle, theory overlay, and bin adjuster are expert-only
+    toggleFieldset.classList.add('expert-only');
   }
 
   // ─── Theory overlay toggle ───
@@ -788,25 +794,14 @@ export function initSimPage(config) {
     updateToggleButtons(!!config.proportion);
     // Clear stale results
     resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
-    // Show mechanism strip
-    if (mechanismStrip) {
-      if (config.paired && originalContentEl) {
-        // Paired bootstrap: show differences in one-sample mechanism strip
-        mechanismStrip.hidden = false;
-        initMechanismCollapse(mechanismStrip);
-        renderOriginalSample();
-      } else if (config.mode === 'bootstrap' && !config.twoGroup && originalContentEl) {
-        // One-sample bootstrap: original sample chips/histogram
-        mechanismStrip.hidden = false;
-        initMechanismCollapse(mechanismStrip);
-        renderOriginalSample();
-      } else if (config.twoGroup) {
-        // Two-group: show original group summaries
-        mechanismStrip.hidden = false;
-        initMechanismCollapse(mechanismStrip);
-        renderTwoGroupOriginal();
-      }
-    }
+    // Mechanism strip is deferred until first generate click (see generateSamples)
+
+    // Collapse data panel to compact summary bar
+    collapseDataPanel(dataPanel);
+
+    // Make controls sticky on desktop
+    controlsSection?.classList.add('sticky');
+
     // Show hypothesis display (randomization tests)
     if (config.mode === 'randomization' && config.twoGroup && hypothesisDisplay) {
       hypothesisDisplay.hidden = false;
@@ -1156,6 +1151,24 @@ export function initSimPage(config) {
    */
   function generateSamples(count) {
     if (!rng) rng = createRng(seed);
+
+    // Initialize mechanism strip on first generate (deferred from data load)
+    if (!mechanismInitialized && mechanismStrip) {
+      mechanismInitialized = true;
+      if (config.paired && originalContentEl) {
+        mechanismStrip.hidden = false;
+        initMechanismCollapse(mechanismStrip);
+        renderOriginalSample();
+      } else if (config.mode === 'bootstrap' && !config.twoGroup && originalContentEl) {
+        mechanismStrip.hidden = false;
+        initMechanismCollapse(mechanismStrip);
+        renderOriginalSample();
+      } else if (config.twoGroup) {
+        mechanismStrip.hidden = false;
+        initMechanismCollapse(mechanismStrip);
+        renderTwoGroupOriginal();
+      }
+    }
 
     // Capture previous state for histogram delta highlight
     const prevLength = allStats.length;
@@ -1779,6 +1792,7 @@ export function initSimPage(config) {
     allStats = [];
     rng = null;
     lockedDotGrid = null;
+    mechanismInitialized = false;
     // New random seed each reset (unless URL-locked for graded work)
     if (!urlSeed) {
       seed = Math.random().toString(36).slice(2, 10);
@@ -1789,6 +1803,8 @@ export function initSimPage(config) {
     if (bootstrapSampleEl) bootstrapSampleEl.hidden = true;
     if (mechResampleContent) mechResampleContent.innerHTML = '';
     if (mechanismDescEl) mechanismDescEl.hidden = true;
+    // Hide mechanism strip (will re-show on next first generate)
+    if (mechanismStrip) mechanismStrip.hidden = true;
   }
 
   // ─── Chart rendering ───

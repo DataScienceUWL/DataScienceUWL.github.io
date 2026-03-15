@@ -8,7 +8,7 @@
 import { createRng, shuffle } from '../../js/prng.js';
 import { chisqStat, formatStat } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, updateTabHint, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
 
 // ─── DOM elements ───
@@ -35,12 +35,14 @@ const loadTableBtn = document.getElementById('load-table');
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
   document.querySelectorAll('.gen-btn'));
 
-// Move generate bar inside app-body, between chart and sidebar
-const _genBar = document.querySelector('.generate-bar');
-const _chartSection = document.getElementById('chart-and-results');
-const _appBody = _chartSection?.querySelector('.app-body');
-const _sidebar = _chartSection?.querySelector('.app-sidebar');
-if (_genBar && _appBody && _sidebar) _appBody.insertBefore(_genBar, _sidebar);
+// Data panel (for collapse after data loads)
+const dataPanel = document.getElementById('data-panel');
+// Controls section (for sticky + expert toggle)
+const controlsSection = document.getElementById('controls');
+
+// Add expert toggle link next to generate bar
+const generateBar = /** @type {HTMLElement|null} */ (controlsSection?.querySelector('.generate-bar'));
+if (generateBar) createExpertToggle(generateBar);
 
 initTabs({ hintTarget: resultDiv, hintAction: 'run a simulation to see results' });
 initKeyboardShortcuts(genBtns, resetBtn);
@@ -55,6 +57,8 @@ let allStats = [];
 /** @type {(() => number)|null} */
 let rng = null;
 let seed = Math.random().toString(36).slice(2, 10);
+/** Whether the mechanism strip has been initialized (deferred to first generate). */
+let mechanismInitialized = false;
 
 /** @type {string[]} */
 let rowLabels = [];
@@ -220,12 +224,16 @@ function showDataLoaded() {
   for (const btn of genBtns) btn.disabled = false;
   if (resultDiv) resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
 
-  if (mechanismStrip && mechObservedTable) {
-    mechanismStrip.hidden = false;
-    initMechanismCollapse(mechanismStrip);
+  // Populate mechanism strip content (stays hidden until first generate)
+  if (mechObservedTable) {
     mechObservedTable.innerHTML = renderTableHTML(observedTable, rowLabels, colLabels);
     if (mechObservedChisq) mechObservedChisq.textContent = formatStat(observedChisq, 2);
   }
+
+  // Collapse data panel and make controls sticky
+  collapseDataPanel(dataPanel);
+  controlsSection?.classList.add('sticky');
+
   announce(`Data loaded: ${rowLabels.length} × ${colLabels.length} table, n = ${totalN}`);
 
   // Scroll controls into view after DOM settles
@@ -272,6 +280,14 @@ for (const btn of genBtns) {
 /** @param {number} count */
 function generateSimulations(count) {
   if (!rng) rng = createRng(seed);
+
+  // Show mechanism strip on first generate (deferred from data load)
+  if (!mechanismInitialized && mechanismStrip) {
+    mechanismInitialized = true;
+    mechanismStrip.hidden = false;
+    initMechanismCollapse(mechanismStrip);
+  }
+
   const prevLength = allStats.length;
 
   if (simTitleEl) {
@@ -428,8 +444,11 @@ if (resetBtn) {
 function resetSimulation() {
   allStats = [];
   rng = null;
+  mechanismInitialized = false;
   seed = Math.random().toString(36).slice(2, 10);
   if (chartContainer) chartContainer.innerHTML = '';
   if (resultDiv) resultDiv.innerHTML = `<p class="placeholder">${getTabHintText(getActiveTabId(), 'run a simulation to see results')}</p>`;
   if (resetBtn) resetBtn.hidden = true;
+  // Hide mechanism strip (will re-show on next first generate)
+  if (mechanismStrip) mechanismStrip.hidden = true;
 }

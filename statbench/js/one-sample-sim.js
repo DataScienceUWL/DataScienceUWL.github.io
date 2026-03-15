@@ -13,7 +13,7 @@ import { mean, sd, detectPrecision, formatStat } from './stats.js';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { renderSimPills } from './chart-utils.js';
-import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, animateDropToChart, initDataPanel, computeHighlights, initHelp, initSettings, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
+import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, animateDropToChart, initDataPanel, computeHighlights, initHelp, initSettings, initMechanismCollapse, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
 import { parseParams } from './url-params.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, dotplotBins, histogramThresholds, renderSimChart, createBinAdjuster } from './chart-defaults.js';
@@ -47,12 +47,16 @@ export function initOneSamplePage(config) {
   const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
     document.querySelectorAll('.gen-btn'));
 
-  // Move generate bar inside app-body, between chart and sidebar
-  const _genBar = document.querySelector('.generate-bar');
-  const _chartSection = document.getElementById('chart-and-results');
-  const _appBody = _chartSection?.querySelector('.app-body');
-  const _sidebar = _chartSection?.querySelector('.app-sidebar');
-  if (_genBar && _appBody && _sidebar) _appBody.insertBefore(_genBar, _sidebar);
+  // Data panel (for collapse after data loads)
+  const dataPanel = document.getElementById('data-panel');
+  // Controls section (for sticky + expert toggle)
+  const controlsSection = document.getElementById('controls');
+
+  // Note: hypothesis controls (null value, direction) are essential for students — NOT expert-only
+
+  // Add expert toggle link next to generate bar
+  const generateBar = /** @type {HTMLElement|null} */ (controlsSection?.querySelector('.generate-bar'));
+  if (generateBar) createExpertToggle(generateBar);
 
   // Mechanism strip
   const mechanismStrip = document.getElementById('mechanism-strip');
@@ -103,6 +107,8 @@ export function initOneSamplePage(config) {
     });
     toggleFieldset = toggle.fieldset;
     setToggleSelected = toggle.setSelected;
+    // Chart toggle, theory overlay, and bin adjuster are expert-only
+    toggle.fieldset.classList.add('expert-only');
 
     createTheoryToggle(toggleFieldset, (checked) => {
       theoryOverlayOn = checked;
@@ -140,6 +146,8 @@ export function initOneSamplePage(config) {
   let observedStat = 0;
   let dataPrecision = 0;
   let theoryOverlayOn = false;
+  /** Whether the mechanism strip has been initialized (deferred to first generate). */
+  let mechanismInitialized = false;
   /** @type {{ population?: string, parameter?: string, nullClaim?: string, successLabel?: string }} */
   let datasetContext = {};
 
@@ -247,10 +255,13 @@ export function initOneSamplePage(config) {
         dataSummary.innerHTML = `n = ${sampleN}, successes = ${sampleSuccesses} ("${successVal}"), <span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>`;
       }
 
-      if (mechanismStrip && mechObservedStat) {
-        mechanismStrip.hidden = false;
+      // Populate mechanism strip content (stays hidden until first generate)
+      if (mechObservedStat) {
         mechObservedStat.innerHTML = `${sampleSuccesses} of ${sampleN} (<span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>)`;
       }
+      // Collapse data panel and make controls sticky
+      collapseDataPanel(dataPanel);
+      controlsSection?.classList.add('sticky');
       scrollToControls();
     }
 
@@ -308,10 +319,13 @@ export function initOneSamplePage(config) {
         if (dataSummary) {
           dataSummary.innerHTML = `n = ${n}, successes = ${k}, <span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>`;
         }
-        if (mechanismStrip && mechObservedStat) {
-          mechanismStrip.hidden = false;
+        // Populate mechanism strip content (stays hidden until first generate)
+        if (mechObservedStat) {
           mechObservedStat.innerHTML = `${k} of ${n} (<span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>)`;
         }
+        // Collapse data panel and make controls sticky
+        collapseDataPanel(dataPanel);
+        controlsSection?.classList.add('sticky');
         announce(`Data loaded: n = ${n}, successes = ${k}`);
         scrollToControls();
       });
@@ -336,10 +350,13 @@ export function initOneSamplePage(config) {
 
       computeShiftedData();
 
-      if (mechanismStrip && mechObservedStat) {
-        mechanismStrip.hidden = false;
+      // Populate mechanism strip content (stays hidden until first generate)
+      if (mechObservedStat) {
         mechObservedStat.innerHTML = `n = ${sampleN}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedStat, dataPrecision)}</span>`;
       }
+      // Collapse data panel and make controls sticky
+      collapseDataPanel(dataPanel);
+      controlsSection?.classList.add('sticky');
       scrollToControls();
     }
 
@@ -467,6 +484,14 @@ export function initOneSamplePage(config) {
   /** @param {number} count */
   function generateSimulations(count) {
     if (!rng) rng = createRng(seed);
+
+    // Show mechanism strip on first generate (deferred from data load)
+    if (!mechanismInitialized && mechanismStrip) {
+      mechanismInitialized = true;
+      mechanismStrip.hidden = false;
+      initMechanismCollapse(mechanismStrip);
+    }
+
     const prevLength = allStats.length;
 
     if (simTitleEl) {
@@ -696,10 +721,13 @@ export function initOneSamplePage(config) {
   function resetSimulation() {
     allStats = [];
     rng = null;
+    mechanismInitialized = false;
     seed = Math.random().toString(36).slice(2, 10);
     chartContainer.innerHTML = '';
     resultDiv.innerHTML = `<p class="placeholder">${getTabHintText(getActiveTabId(), 'run a simulation to see results')}</p>`;
     if (resetBtn) resetBtn.hidden = true;
+    // Hide mechanism strip (will re-show on next first generate)
+    if (mechanismStrip) mechanismStrip.hidden = true;
   }
 
   // ─── Theory overlay ───

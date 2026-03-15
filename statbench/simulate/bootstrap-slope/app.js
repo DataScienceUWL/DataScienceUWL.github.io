@@ -11,7 +11,7 @@ import { bootstrapCI } from '../../js/sim-engine.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
 import { computeBins } from '../../js/histogram.js';
 import { parseCSV } from '../../js/csv-parser.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initDataPanel, computeHighlights, updateTabHint, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initDataPanel, computeHighlights, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType, createChartToggle, computeDomain } from '../../js/chart-defaults.js';
 
 // ─── DOM ───
@@ -27,12 +27,18 @@ const dataPreview = document.getElementById('data-preview');
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
   document.querySelectorAll('.gen-btn'));
 
-// Move generate bar inside app-body, between chart and sidebar
-const _genBar = document.querySelector('.generate-bar');
-const _chartSection = document.getElementById('chart-and-results');
-const _appBody = _chartSection?.querySelector('.app-body');
-const _sidebar = _chartSection?.querySelector('.app-sidebar');
-if (_genBar && _appBody && _sidebar) _appBody.insertBefore(_genBar, _sidebar);
+// Data panel (for collapse after data loads)
+const dataPanel = document.getElementById('data-panel');
+// Controls section (for sticky + expert toggle)
+const controlsSection = document.getElementById('controls');
+
+// Mark CI selector row as expert-only
+const controlRow = controlsSection?.querySelector('.control-row');
+if (controlRow) controlRow.classList.add('expert-only');
+
+// Add expert toggle link next to generate bar
+const generateBar = /** @type {HTMLElement|null} */ (controlsSection?.querySelector('.generate-bar'));
+if (generateBar) createExpertToggle(generateBar);
 
 initTabs({ hintTarget: resultDiv, hintAction: 'run a simulation to see results' });
 initKeyboardShortcuts(genBtns, resetBtn);
@@ -139,6 +145,11 @@ function showDataLoaded() {
   if (resultDiv) resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
 
   renderScatter();
+
+  // Collapse data panel and make controls sticky
+  collapseDataPanel(dataPanel);
+  controlsSection?.classList.add('sticky');
+
   announce(`Data loaded: n = ${xData.length}`);
 
   // Scroll controls into view after DOM settles
