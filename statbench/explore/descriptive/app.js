@@ -78,6 +78,9 @@ let currentVarLabel = 'Value';
 /** Whether to show density curve overlay on histograms. */
 let showDensity = false;
 
+/** Whether to show relative frequency (proportion) on y-axis. */
+let relativeFreq = false;
+
 const chartRadios = /** @type {NodeListOf<HTMLInputElement>} */ (
   document.querySelectorAll('input[name="chart-type"]')
 );
@@ -110,6 +113,19 @@ function updateChartControls() {
       const n = parseInt(input.value, 10);
       if (!isFinite(n) || n < 3) return;
       currentBinCount = n;
+      renderActiveChart();
+    });
+
+    // Y-axis scale toggle
+    const yLabel = document.createElement('label');
+    yLabel.innerHTML = 'Y-axis: <select id="y-scale"><option value="frequency">Frequency</option><option value="relative">Relative Frequency</option></select>';
+    yLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+    chartControls.appendChild(yLabel);
+    const ySelect = /** @type {HTMLSelectElement} */ (yLabel.querySelector('select'));
+    ySelect.style.cssText = 'padding:0.15rem 0.3rem;font-size:0.85rem;';
+    ySelect.value = relativeFreq ? 'relative' : 'frequency';
+    ySelect.addEventListener('change', () => {
+      relativeFreq = ySelect.value === 'relative';
       renderActiveChart();
     });
 
@@ -790,12 +806,12 @@ function renderActiveChart() {
   if (activeChart === 'histogram') {
     const histResult = drawHistogram(chartArea, currentValues, {
       xLabel,
-      yLabel: 'Frequency',
       titleText: `Histogram of ${xLabel}`,
       descText: `Histogram showing the distribution of ${xLabel}`,
       id: 'desc-hist',
       animate: false,
       numBins: currentBinCount,
+      relativeFrequency: relativeFreq,
     });
     if (showDensity && histResult && histResult.bins && histResult.bins.length > 0 && currentValues.length >= 2) {
       const firstX0 = /** @type {number} */ (histResult.bins[0].x0);

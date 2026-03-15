@@ -77,6 +77,9 @@ let currentBinCount = 7;
 /** Whether to show outliers in boxplot. */
 let showOutliers = true;
 
+/** Whether to show relative frequency on histogram y-axis. */
+let relativeFreq = false;
+
 /**
  * Current loaded dataset (raw JSON), null if pasted.
  * @type {null | {variables: Array<{name:string, label:string, type:string}>, rows: Array<Record<string,any>>}}
@@ -105,6 +108,19 @@ function updateChartControls() {
       const n = parseInt(input.value, 10);
       if (!isFinite(n) || n < 3) return;
       currentBinCount = n;
+      renderActiveChart();
+    });
+
+    // Y-axis scale toggle
+    const yLabel = document.createElement('label');
+    yLabel.innerHTML = 'Y-axis: <select id="y-scale"><option value="frequency">Frequency</option><option value="relative">Relative Frequency</option></select>';
+    yLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+    chartControls.appendChild(yLabel);
+    const ySelect = /** @type {HTMLSelectElement} */ (yLabel.querySelector('select'));
+    ySelect.style.cssText = 'padding:0.15rem 0.3rem;font-size:0.85rem;';
+    ySelect.value = relativeFreq ? 'relative' : 'frequency';
+    ySelect.addEventListener('change', () => {
+      relativeFreq = ySelect.value === 'relative';
       renderActiveChart();
     });
   } else if (activeChart === 'boxplot') {
@@ -582,13 +598,13 @@ function renderStackedHistograms(groupNames) {
 
     drawHistogram(chartDiv, values, {
       xLabel: i === groupNames.length - 1 ? currentVarLabel : '',
-      yLabel: 'Frequency',
       titleText: `Histogram of ${currentVarLabel} for ${name}`,
       descText: `Histogram of ${currentVarLabel} for group ${name}`,
       id: `grouped-hist-${i}`,
       animate: false,
       domain,
       thresholds,
+      relativeFrequency: relativeFreq,
     });
   }
 }

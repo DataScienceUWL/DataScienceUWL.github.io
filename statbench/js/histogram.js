@@ -152,12 +152,13 @@ export function computeBins(values, options = {}) {
  * @param {number[]} [options.thresholds] - Explicit bin threshold values (overrides numBins)
  * @param {number[]} [options.prevBinCounts] - Previous bin counts for stacked delta highlight
  * @param {number} [options.precision] - Decimal places for overlay value labels (default: 2)
+ * @param {boolean} [options.relativeFrequency] - Show relative frequency (proportion) on y-axis instead of count
  * @returns {{ frame: ChartFrame, bins: d3Array.Bin<number, number>[], xScale: d3Scale.ScaleLinear<number,number>, yScale: d3Scale.ScaleLinear<number,number>, update: (values: number[], opts?: object) => void }}
  */
 export function drawHistogram(container, values, options = {}) {
   const {
     xLabel,
-    yLabel = 'Frequency',
+    yLabel,
     titleText = 'Histogram',
     descText = '',
     id,
@@ -172,7 +173,9 @@ export function drawHistogram(container, values, options = {}) {
     thresholds,
     prevBinCounts,
     precision = 2,
+    relativeFrequency = false,
   } = options;
+  const effectiveYLabel = yLabel ?? (relativeFrequency ? 'Relative Frequency' : 'Frequency');
 
   const frame = createChart(container, { titleText, descText, id, margin });
   const { bins, domain: finalDomain } = computeBins(values, { numBins, domain, thresholds });
@@ -186,14 +189,18 @@ export function drawHistogram(container, values, options = {}) {
     .domain(xDomain)
     .range([0, frame.width]);
 
+  const maxCount = d3Array.max(bins, b => b.length) || 1;
+  const totalN = values.length || 1;
   const yScale = d3Scale.scaleLinear()
-    .domain([0, d3Array.max(bins, b => b.length) || 1])
+    .domain([0, maxCount])
     .nice()
     .range([frame.height, 0]);
 
   const xAxis = d3Axis.axisBottom(xScale).tickFormat(formatTick);
-  const yAxis = d3Axis.axisLeft(yScale).tickFormat(formatTick);
-  addAxes(frame, xAxis, yAxis, xLabel, yLabel);
+  const yAxis = relativeFrequency
+    ? d3Axis.axisLeft(yScale).tickFormat(/** @param {any} d */ d => formatTick(+d / totalN))
+    : d3Axis.axisLeft(yScale).tickFormat(formatTick);
+  addAxes(frame, xAxis, yAxis, xLabel, effectiveYLabel);
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
   renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate, frame.inner, observedStat, ciLines);
