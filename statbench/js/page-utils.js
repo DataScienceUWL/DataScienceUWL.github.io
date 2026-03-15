@@ -435,7 +435,9 @@ export function animateDropToChart(sourceEl, chartContainer, opts = {}) {
   if (sourceRect.width === 0 && sourceRect.height === 0) {
     const strip = sourceEl.closest('.mechanism-strip');
     const summary = strip?.querySelector('.mechanism-collapsed-summary');
-    if (summary) effectiveSource = /** @type {HTMLElement} */ (summary);
+    // Prefer the highlighted value span inside the summary (matches detailed view)
+    const hlSpan = summary?.querySelector('.highlight-last');
+    effectiveSource = /** @type {HTMLElement} */ (hlSpan || summary || effectiveSource);
   }
   const finalRect = effectiveSource.getBoundingClientRect();
   const sx = finalRect.left + finalRect.width / 2;
