@@ -52,6 +52,7 @@ let summaryResult = null;
 
 /** @type {import('../../js/conclusions.js').ConclusionContext|null} */
 let currentContext = null;
+let currentSourceName = '';
 
 // ── Initialization ──────────────────────────────────────────────────
 initTabs({ hintTarget: resultDiv, hintAction: 'click Compute' });
@@ -130,6 +131,7 @@ if (loadSummaryBtn) {
 function loadFromDataset(ds, _meta) {
   if (!ds.rows || !ds.variables) return;
 
+  currentSourceName = ds.name || '';
   const ctx = findContext(ds, 'two-means');
   currentContext = ctx;
   if (ctx && ctx.alternative) {
@@ -160,6 +162,7 @@ function loadFromDataset(ds, _meta) {
  * @param {string} _sourceName
  */
 function loadFromParsed(parsed, _sourceName) {
+  currentSourceName = '';
   currentContext = null;
   const catCols = parsed.headers.filter((_, i) => parsed.types[i] === 'categorical');
   const numCols = parsed.headers.filter((_, i) => parsed.types[i] === 'numeric');
@@ -250,9 +253,12 @@ function extractGroups() {
 /** Display data summary above the chart. */
 function showDataSummary() {
   if (dataSummary) {
+    const namePrefix = currentSourceName ? `${currentSourceName}: ` : '';
+    const responseVar = responseVarSelect?.value;
+    const varSuffix = responseVar ? ` (${responseVar})` : '';
     dataSummary.textContent =
-      `${group1Name}: n = ${group1.length}, x\u0304 = ${formatStat(mean(group1), dataPrecision)} | ` +
-      `${group2Name}: n = ${group2.length}, x\u0304 = ${formatStat(mean(group2), dataPrecision)}`;
+      `${namePrefix}${group1Name}: n = ${group1.length}, x\u0304 = ${formatStat(mean(group1), dataPrecision)} | ` +
+      `${group2Name}: n = ${group2.length}, x\u0304 = ${formatStat(mean(group2), dataPrecision)}${varSuffix}`;
   }
 }
 
@@ -264,6 +270,7 @@ function clearData() {
   fromSummary = false;
   summaryResult = null;
   currentContext = null;
+  currentSourceName = '';
   if (dataPreview) dataPreview.hidden = true;
   if (varSelectorsDiv) varSelectorsDiv.hidden = true;
   if (chartContainer) chartContainer.innerHTML = '';

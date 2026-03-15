@@ -198,7 +198,12 @@ export function drawHistogram(container, values, options = {}) {
 
   const xAxis = d3Axis.axisBottom(xScale).tickFormat(formatTick);
   const yAxis = relativeFrequency
-    ? d3Axis.axisLeft(yScale).tickFormat(/** @param {any} d */ d => formatTick(+d / totalN))
+    ? d3Axis.axisLeft(yScale).tickFormat(/** @param {any} d */ d => {
+        const v = +d / totalN;
+        if (v === 0) return '0';
+        // Keep labels compact: up to 3 sig figs, strip trailing zeros
+        return String(Number(v.toPrecision(3)));
+      })
     : d3Axis.axisLeft(yScale).tickFormat(formatTick);
   addAxes(frame, xAxis, yAxis, xLabel, effectiveYLabel);
 

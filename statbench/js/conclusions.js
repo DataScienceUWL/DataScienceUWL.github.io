@@ -125,7 +125,9 @@ function formatP(p) {
  * @returns {ConclusionResult}
  */
 export function generateConclusions(opts) {
-  const { pValue, alpha, alternative, testType, statName, statValue, context } = opts;
+  const { pValue, alpha: rawAlpha, alternative, testType, statName, statValue, context } = opts;
+  // Round alpha to avoid floating-point artifacts (e.g. 1 - 0.95 = 0.050000000000000044)
+  const alpha = parseFloat(rawAlpha.toPrecision(6));
   const sig = pValue < alpha;
   const strength = evidenceStrength(pValue);
   const decision = sig ? 'reject' : 'fail to reject';
