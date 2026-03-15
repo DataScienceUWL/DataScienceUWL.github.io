@@ -636,8 +636,8 @@ function renderObservedLine(overlays, value, xScale, innerHeight, precision = 2,
     .text(value.toFixed(precision));
 }
 
-/** CI line color (deep purple — matches observed stat). */
-const CI_COLOR = '#7B2D8E';
+/** CI line color (dark pink — distinct from purple observed stat). */
+const CI_COLOR = '#B5747A';
 
 /**
  * Render a CI bound vertical line with label.

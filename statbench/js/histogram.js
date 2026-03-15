@@ -223,9 +223,9 @@ export function drawHistogram(container, values, options = {}) {
   }
   if (ciLines) {
     renderOverlayLine(overlays, ciLines[0], xScale, frame.height,
-      '#7B2D8E', 'CI lower bound', precision);
+      '#B5747A', 'CI lower bound', precision);
     renderOverlayLine(overlays, ciLines[1], xScale, frame.height,
-      '#7B2D8E', 'CI upper bound', precision);
+      '#B5747A', 'CI upper bound', precision);
   }
 
   return {
@@ -265,9 +265,9 @@ export function drawHistogram(container, values, options = {}) {
       }
       if (newCiLines) {
         renderOverlayLine(overlays, newCiLines[0], xScale, frame.height,
-          '#7B2D8E', 'CI lower bound', precision);
+          '#B5747A', 'CI lower bound', precision);
         renderOverlayLine(overlays, newCiLines[1], xScale, frame.height,
-          '#7B2D8E', 'CI upper bound', precision);
+          '#B5747A', 'CI upper bound', precision);
       }
     },
   };

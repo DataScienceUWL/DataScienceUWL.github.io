@@ -175,9 +175,9 @@ export function drawSpike(container, values, options = {}) {
   }
   if (ciLines) {
     renderOverlayLine(overlays, ciLines[0], xScale, frame.height,
-      '#7B2D8E', 'CI lower bound');
+      '#B5747A', 'CI lower bound');
     renderOverlayLine(overlays, ciLines[1], xScale, frame.height,
-      '#7B2D8E', 'CI upper bound');
+      '#B5747A', 'CI upper bound');
   }
 
   return { frame, xScale, counts };
