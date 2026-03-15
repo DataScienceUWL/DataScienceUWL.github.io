@@ -44,7 +44,7 @@ const DEFAULTS = {
 
   // Show interpretations — when off, hides auto-generated conclusions and
   // interpretation text so students produce their own (calculator vs tutor mode)
-  showInterpretations: true,
+  showInterpretations: false,
 };
 
 const STORAGE_KEY = 'statbench-settings';
