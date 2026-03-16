@@ -84,14 +84,25 @@
             font-size: 0.82rem;
             min-width: 8rem;
         }
-        .stat-grid .row-header a {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 700;
+        .stat-grid .row-header .hint {
+            display: block;
+            font-weight: 400;
+            font-size: 0.75rem;
+            color: var(--ims-gray-text);
+            margin-top: 0.1rem;
         }
-        .stat-grid .row-header a:hover,
-        .stat-grid .row-header a:focus-visible {
-            text-decoration: underline;
+        .stat-grid .row-header-col {
+            min-width: 8rem;
+        }
+        .stat-grid a.coming-soon {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+        .stat-grid a.coming-soon::after {
+            content: " \2022 soon";
+            font-size: 0.7rem;
+            font-weight: 400;
+            color: var(--ims-gray-text);
         }
         .stat-grid td a {
             display: block;
@@ -274,9 +285,8 @@
         <!-- ═══ View switcher ═══════════════════════════════════════════ -->
         <fieldset class="view-switcher" aria-label="Choose landing page layout">
             <label class="active"><input type="radio" name="view" value="cards" checked><span>Cards</span></label>
-            <label><input type="radio" name="view" value="grid"><span>Grid</span></label>
-            <label><input type="radio" name="view" value="course"><span>Course</span></label>
-            <label><input type="radio" name="view" value="compact"><span>Compact</span></label>
+            <label><input type="radio" name="view" value="data-grid"><span>By Data Type</span></label>
+            <label><input type="radio" name="view" value="proc-grid"><span>By Procedure</span></label>
         </fieldset>
 
         <!-- ═══════════════════════════════════════════════════════════════
@@ -448,97 +458,74 @@
         </div>
 
         <!-- ═══════════════════════════════════════════════════════════════
-             VIEW 2: GRID — variable-type × method matrix
+             VIEW 2: BY DATA TYPE — "What data do I have?"
              ═══════════════════════════════════════════════════════════════ -->
-        <div id="view-grid" class="view-panel">
+        <div id="view-data-grid" class="view-panel">
 
-            <p class="grid-intro">Start by asking: <strong>how many variables, and what type?</strong> Then choose the right tool.</p>
+            <p class="grid-intro">Start by asking: <strong>what kind of data do I have?</strong> Then choose the right tool.</p>
 
             <div class="stat-grid-wrap">
-            <table class="stat-grid" aria-label="Statistical tools organized by variable type and method">
+            <table class="stat-grid" aria-label="Statistical tools organized by data type">
                 <thead>
                     <tr>
-                        <th scope="col">Descriptive Statistics &amp; Graphs</th>
-                        <th scope="col">Bootstrap Confidence Intervals</th>
-                        <th scope="col">Randomization Hypothesis Tests</th>
-                        <th scope="col">Traditional Inference</th>
+                        <th scope="col" class="row-header-col">Data Type</th>
+                        <th scope="col">Explore</th>
+                        <th scope="col">Bootstrap CI</th>
+                        <th scope="col">Randomization Test</th>
+                        <th scope="col">Traditional</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <th scope="row" class="row-header">
-                            <a href="explore/descriptive/">One Quantitative Variable</a>
-                        </th>
-                        <td>
-                            <a href="simulate/bootstrap-mean/">CI for a Mean</a>
-                            <span class="hint">Bootstrap mean, median, or SD</span>
-                        </td>
-                        <td>
-                            <a href="simulate/randomization-one-mean/">Test for a Mean</a>
-                            <span class="hint">Shifted bootstrap, H&#8320;: &mu; = &mu;&#8320;</span>
-                        </td>
-                        <td>
-                            <a href="inference/one-mean/">One-Sample t</a>
-                        </td>
+                        <th scope="row" class="row-header">One Quantitative Variable</th>
+                        <td><a href="explore/descriptive/">Descriptive Stats</a></td>
+                        <td><a href="simulate/bootstrap-mean/">CI for a Mean</a></td>
+                        <td><a href="simulate/randomization-one-mean/">Test for a Mean</a></td>
+                        <td><a href="inference/one-mean/">One-Sample t</a></td>
                     </tr>
                     <tr>
-                        <th scope="row" class="row-header">
-                            <a href="explore/one-cat/">One Categorical Variable</a>
-                        </th>
-                        <td>
-                            <a href="simulate/bootstrap-prop/">CI for a Proportion</a>
-                        </td>
-                        <td>
-                            <a href="simulate/randomization-one-prop/">Test for a Proportion</a>
-                            <span class="hint">Simulate under H&#8320;: p = p&#8320;</span>
-                        </td>
-                        <td>
-                            <a href="inference/one-prop/">One-Prop z</a>
-                        </td>
+                        <th scope="row" class="row-header">One Categorical Variable</th>
+                        <td><a href="explore/one-cat/">Frequency Table</a></td>
+                        <td><a href="simulate/bootstrap-prop/">CI for a Proportion</a></td>
+                        <td><a href="simulate/randomization-one-prop/">Test for a Proportion</a></td>
+                        <td><a href="inference/one-prop/">One-Prop z</a></td>
                     </tr>
                     <tr>
-                        <th scope="row" class="row-header">
-                            <a href="explore/grouped/">Quant + Categorical (Compare Groups)</a>
-                        </th>
+                        <th scope="row" class="row-header">Two Groups (Independent)</th>
+                        <td><a href="explore/grouped/">Compare Groups</a></td>
                         <td>
                             <a href="simulate/bootstrap-two-means/">CI: Diff in Means</a>
-                            <a href="simulate/bootstrap-paired/" style="margin-top:0.3rem">CI: Paired Diff</a>
+                            <a href="simulate/bootstrap-two-props/" class="coming-soon" style="margin-top:0.3rem">CI: Diff in Props</a>
                         </td>
                         <td>
                             <a href="simulate/randomization-diff-means/">Test: Diff in Means</a>
+                            <a href="simulate/randomization-diff-props/" style="margin-top:0.3rem">Test: Diff in Props</a>
                         </td>
                         <td>
                             <a href="inference/two-means/">Two-Sample t</a>
-                            <a href="inference/paired/" style="margin-top:0.3rem">Paired t</a>
+                            <a href="inference/two-props/" style="margin-top:0.3rem">Two-Prop z</a>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row" class="row-header">
-                            <a href="explore/categorical/">Two Categorical Variables</a>
-                        </th>
+                        <th scope="row" class="row-header">Paired Samples</th>
+                        <td><a href="explore/descriptive/">Descriptive Stats</a><span class="hint">on the differences</span></td>
+                        <td><a href="simulate/bootstrap-paired/">CI: Paired Diff</a></td>
+                        <td><a href="simulate/randomization-one-mean/" class="coming-soon">Test: Paired Diff</a></td>
+                        <td><a href="inference/paired/">Paired t</a></td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="row-header">Two Categorical Variables</th>
+                        <td><a href="explore/categorical/">Two-Way Table</a></td>
                         <td class="empty">&mdash;</td>
-                        <td>
-                            <a href="simulate/randomization-diff-props/">Test: Diff in Props</a>
-                            <a href="simulate/randomization-chisq/" style="margin-top:0.3rem">&chi;&sup2; Randomization</a>
-                        </td>
-                        <td>
-                            <a href="inference/two-props/">Two-Prop z</a>
-                            <a href="inference/chisq/" style="margin-top:0.3rem">&chi;&sup2; Test</a>
-                        </td>
+                        <td><a href="simulate/randomization-chisq/">&chi;&sup2; Randomization</a></td>
+                        <td><a href="inference/chisq/">&chi;&sup2; Test</a></td>
                     </tr>
                     <tr>
-                        <th scope="row" class="row-header">
-                            <a href="explore/regression/">Two Quantitative Variables</a>
-                        </th>
-                        <td>
-                            <a href="simulate/bootstrap-slope/">CI for Slope</a>
-                        </td>
-                        <td>
-                            <a href="simulate/randomization-correlation/">Test for Correlation</a>
-                        </td>
-                        <td>
-                            <a href="inference/slope/">Regression t</a>
-                        </td>
+                        <th scope="row" class="row-header">Two Quantitative Variables</th>
+                        <td><a href="explore/regression/">Scatterplot</a></td>
+                        <td><a href="simulate/bootstrap-slope/">CI for Slope</a></td>
+                        <td><a href="simulate/randomization-correlation/">Test for Correlation</a></td>
+                        <td><a href="inference/slope/">Regression t</a></td>
                     </tr>
                 </tbody>
             </table>
@@ -548,18 +535,9 @@
 
             <p class="section-label">Conceptual Demonstrations</p>
             <div class="tool-grid">
-                <a class="tool-card" href="conceptual/sampling-dist/">
-                    <h3>Sampling Distributions</h3>
-                    <p>Draw samples, see the CLT in action.</p>
-                </a>
-                <a class="tool-card" href="conceptual/ci-coverage/">
-                    <h3>CI Coverage</h3>
-                    <p>What &ldquo;95% confidence&rdquo; really means.</p>
-                </a>
-                <a class="tool-card" href="conceptual/randomization-test/">
-                    <h3>Randomization Test</h3>
-                    <p>Shuffle cards, build a null distribution.</p>
-                </a>
+                <a class="tool-card" href="conceptual/sampling-dist/"><h3>Sampling Distributions</h3><p>Draw samples, see the CLT in action.</p></a>
+                <a class="tool-card" href="conceptual/ci-coverage/"><h3>CI Coverage</h3><p>What &ldquo;95% confidence&rdquo; really means.</p></a>
+                <a class="tool-card" href="conceptual/randomization-test/"><h3>Randomization Test</h3><p>Shuffle cards, build a null distribution.</p></a>
             </div>
 
             <p class="section-label">Distribution Calculators</p>
@@ -573,240 +551,108 @@
 
             <p class="section-label">Practice &amp; Games</p>
             <div class="tool-grid">
-                <a class="tool-card" href="practice/correlation/">
-                    <h3>Guess the Correlation</h3>
-                    <p>See a scatterplot, guess <em>r</em>. Build visual intuition.</p>
-                </a>
-                <a class="tool-card" href="practice/conclusions/">
-                    <h3>Conclusion Practice</h3>
-                    <p>Practice writing hypothesis test conclusions.</p>
-                </a>
+                <a class="tool-card" href="practice/correlation/"><h3>Guess the Correlation</h3><p>See a scatterplot, guess <em>r</em>.</p></a>
+                <a class="tool-card" href="practice/conclusions/"><h3>Conclusion Practice</h3><p>Practice writing hypothesis test conclusions.</p></a>
             </div>
         </div>
 
         <!-- ═══════════════════════════════════════════════════════════════
-             VIEW 3: COURSE — ordered by when students encounter tools
+             VIEW 3: BY PROCEDURE — "What am I estimating or testing?"
              ═══════════════════════════════════════════════════════════════ -->
-        <div id="view-course" class="view-panel">
+        <div id="view-proc-grid" class="view-panel">
 
-            <p class="grid-intro">Tools ordered by the UWL Intro Stats course progression:<br>
-            <strong>EDA &rarr; Simulation Inference &rarr; Traditional Inference &rarr; Probability &rarr; Modeling</strong></p>
+            <p class="grid-intro">Start by asking: <strong>what parameter am I estimating or testing?</strong></p>
 
-            <p class="section-label">Part I &mdash; Data and Exploration (Ch. 1&ndash;5)</p>
-            <div class="tool-grid">
-                <a class="tool-card" href="explore/descriptive/">
-                    <h3>Descriptive Statistics</h3>
-                    <p>Histogram, dotplot, boxplot, summary stats for one variable.</p>
-                </a>
-                <a class="tool-card" href="explore/grouped/">
-                    <h3>Compare Groups</h3>
-                    <p>Side-by-side plots and stats for comparing two groups.</p>
-                </a>
-                <a class="tool-card" href="explore/one-cat/">
-                    <h3>One Categorical Variable</h3>
-                    <p>Bar chart and frequency table for a single categorical variable.</p>
-                </a>
-                <a class="tool-card" href="explore/categorical/">
-                    <h3>Two Categorical Variables</h3>
-                    <p>Contingency table with proportion toggles and grouped bar charts.</p>
-                </a>
-                <a class="tool-card" href="explore/regression/">
-                    <h3>Scatterplot &amp; Regression</h3>
-                    <p>Scatterplot, regression line, r, R&sup2;.</p>
-                </a>
-            </div>
-
-            <p class="section-label">Part II &mdash; Simulation-Based Inference (Ch. 6&ndash;9)</p>
-            <div class="tool-grid">
-                <a class="tool-card" href="conceptual/sampling-dist/">
-                    <h3>Sampling Distributions</h3>
-                    <p>Watch the CLT in action as sample size increases.</p>
-                </a>
-                <a class="tool-card" href="conceptual/randomization-test/">
-                    <h3>What is a Randomization Test?</h3>
-                    <p>Interactive walkthrough &mdash; shuffle cards, build null distribution, find p-value.</p>
-                </a>
-                <a class="tool-card" href="simulate/randomization-one-prop/">
-                    <h3>Randomization: One Proportion</h3>
-                    <p>First randomization test &mdash; simulate under H&#8320;: p = p&#8320;.</p>
-                </a>
-                <a class="tool-card" href="simulate/randomization-diff-means/">
-                    <h3>Randomization: Diff in Means</h3>
-                    <p>Permutation test for two groups.</p>
-                </a>
-                <a class="tool-card" href="simulate/randomization-diff-props/">
-                    <h3>Randomization: Diff in Proportions</h3>
-                    <p>Shuffle labels, compare proportions.</p>
-                </a>
-                <a class="tool-card" href="simulate/randomization-one-mean/">
-                    <h3>Randomization: One Mean</h3>
-                    <p>Shifted bootstrap under H&#8320;: &mu; = &mu;&#8320;.</p>
-                </a>
-                <a class="tool-card" href="simulate/randomization-chisq/">
-                    <h3>Randomization: Chi-Square</h3>
-                    <p>Shuffle to test independence. Always right-skewed.</p>
-                </a>
-                <a class="tool-card" href="simulate/bootstrap-mean/">
-                    <h3>Bootstrap CI: Mean</h3>
-                    <p>First bootstrap &mdash; CI for a single mean.</p>
-                </a>
-                <a class="tool-card" href="simulate/bootstrap-prop/">
-                    <h3>Bootstrap CI: Proportion</h3>
-                    <p>CI for a single proportion.</p>
-                </a>
-                <a class="tool-card" href="simulate/bootstrap-two-means/">
-                    <h3>Bootstrap CI: Diff in Means</h3>
-                    <p>CI for the difference in two group means.</p>
-                </a>
-                <a class="tool-card" href="simulate/bootstrap-paired/">
-                    <h3>Bootstrap CI: Paired Diff</h3>
-                    <p>CI for the mean of paired differences.</p>
-                </a>
-                <a class="tool-card" href="conceptual/ci-coverage/">
-                    <h3>CI Coverage Simulator</h3>
-                    <p>See what &ldquo;95% confidence&rdquo; really means.</p>
-                </a>
-            </div>
-
-            <p class="section-label">Part III &mdash; Traditional Inference (Ch. 10&ndash;13)</p>
-            <div class="tool-grid">
-                <a class="tool-card" href="inference/one-mean/">
-                    <h3>One-Sample t</h3>
-                    <p>t-test and CI for a single mean.</p>
-                </a>
-                <a class="tool-card" href="inference/two-means/">
-                    <h3>Two-Sample t</h3>
-                    <p>Welch&rsquo;s t-test for &mu;&#8321; &minus; &mu;&#8322;.</p>
-                </a>
-                <a class="tool-card" href="inference/paired/">
-                    <h3>Paired t</h3>
-                    <p>Paired t-test for the mean difference.</p>
-                </a>
-                <a class="tool-card" href="inference/one-prop/">
-                    <h3>One-Proportion z</h3>
-                    <p>z-test and CI for a single proportion.</p>
-                </a>
-                <a class="tool-card" href="inference/two-props/">
-                    <h3>Two-Proportion z</h3>
-                    <p>z-test and CI for p&#8321; &minus; p&#8322;.</p>
-                </a>
-                <a class="tool-card" href="inference/chisq/">
-                    <h3>Chi-Square Test</h3>
-                    <p>Theory-based &chi;&sup2; test of independence.</p>
-                </a>
-            </div>
-
-            <p class="section-label">Part IV &mdash; Probability &amp; Distributions (Ch. 14&ndash;18)</p>
-            <div class="tool-grid">
-                <a class="tool-card" href="distribution/normal/"><h3>Normal Calculator</h3><p>z probabilities and critical values.</p></a>
-                <a class="tool-card" href="distribution/binomial/"><h3>Binomial Calculator</h3><p>PMF, cumulative P, normal approximation.</p></a>
-                <a class="tool-card" href="distribution/t/"><h3>t Calculator</h3><p>t-distribution with adjustable df.</p></a>
-                <a class="tool-card" href="distribution/chisq/"><h3>Chi-Square Calculator</h3><p>&chi;&sup2; distribution calculator.</p></a>
-                <a class="tool-card" href="distribution/f/"><h3>F Calculator</h3><p>F distribution calculator.</p></a>
-            </div>
-
-            <p class="section-label">Part VI &mdash; Modeling &amp; Regression (Ch. 22&ndash;24)</p>
-            <div class="tool-grid">
-                <a class="tool-card" href="practice/correlation/">
-                    <h3>Guess the Correlation</h3>
-                    <p>See a scatterplot, guess <em>r</em>. Build your visual intuition.</p>
-                </a>
-                <a class="tool-card" href="simulate/bootstrap-slope/">
-                    <h3>Bootstrap CI: Slope</h3>
-                    <p>Bootstrap lines overlaid on scatterplot.</p>
-                </a>
-                <a class="tool-card" href="simulate/randomization-correlation/">
-                    <h3>Test for Correlation</h3>
-                    <p>Shuffle y-values to test H&#8320;: &rho; = 0.</p>
-                </a>
-                <a class="tool-card" href="inference/slope/">
-                    <h3>Regression t-Test</h3>
-                    <p>t-test and CI for the slope &beta;&#8321;.</p>
-                </a>
+            <div class="stat-grid-wrap">
+            <table class="stat-grid" aria-label="Statistical tools organized by procedure">
+                <thead>
+                    <tr>
+                        <th scope="col" class="row-header-col">Parameter</th>
+                        <th scope="col">Explore</th>
+                        <th scope="col">Bootstrap CI</th>
+                        <th scope="col">Randomization Test</th>
+                        <th scope="col">Traditional</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row" class="row-header">One Mean <span class="hint">&mu;</span></th>
+                        <td><a href="explore/descriptive/">Descriptive Stats</a></td>
+                        <td><a href="simulate/bootstrap-mean/">CI for a Mean</a></td>
+                        <td><a href="simulate/randomization-one-mean/">Test for a Mean</a></td>
+                        <td><a href="inference/one-mean/">One-Sample t</a></td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="row-header">One Proportion <span class="hint">p</span></th>
+                        <td><a href="explore/one-cat/">Frequency Table</a></td>
+                        <td><a href="simulate/bootstrap-prop/">CI for a Proportion</a></td>
+                        <td><a href="simulate/randomization-one-prop/">Test for a Proportion</a></td>
+                        <td><a href="inference/one-prop/">One-Prop z</a></td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="row-header">Diff in Means <span class="hint">&mu;&#8321; &minus; &mu;&#8322;</span></th>
+                        <td><a href="explore/grouped/">Compare Groups</a></td>
+                        <td><a href="simulate/bootstrap-two-means/">CI: Diff in Means</a></td>
+                        <td><a href="simulate/randomization-diff-means/">Test: Diff in Means</a></td>
+                        <td><a href="inference/two-means/">Two-Sample t</a></td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="row-header">Paired Mean Diff <span class="hint">&mu;<sub>d</sub></span></th>
+                        <td><a href="explore/descriptive/">Descriptive Stats</a><span class="hint">on differences</span></td>
+                        <td><a href="simulate/bootstrap-paired/">CI: Paired Diff</a></td>
+                        <td><a href="simulate/randomization-one-mean/" class="coming-soon">Test: Paired Diff</a></td>
+                        <td><a href="inference/paired/">Paired t</a></td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="row-header">Diff in Proportions <span class="hint">p&#8321; &minus; p&#8322;</span></th>
+                        <td><a href="explore/categorical/">Two-Way Table</a></td>
+                        <td><a href="simulate/bootstrap-two-props/" class="coming-soon">CI: Diff in Props</a></td>
+                        <td><a href="simulate/randomization-diff-props/">Test: Diff in Props</a></td>
+                        <td><a href="inference/two-props/">Two-Prop z</a></td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="row-header">Independence <span class="hint">&chi;&sup2;</span></th>
+                        <td><a href="explore/categorical/">Two-Way Table</a></td>
+                        <td class="empty">&mdash;</td>
+                        <td><a href="simulate/randomization-chisq/">&chi;&sup2; Randomization</a></td>
+                        <td><a href="inference/chisq/">&chi;&sup2; Test</a></td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="row-header">Slope / Correlation <span class="hint">&beta;&#8321;, &rho;</span></th>
+                        <td><a href="explore/regression/">Scatterplot</a></td>
+                        <td><a href="simulate/bootstrap-slope/">CI for Slope</a></td>
+                        <td><a href="simulate/randomization-correlation/">Test for Correlation</a></td>
+                        <td><a href="inference/slope/">Regression t</a></td>
+                    </tr>
+                </tbody>
+            </table>
             </div>
 
             <hr class="section-divider">
-            <p class="section-label">Practice &amp; Games (any time)</p>
+
+            <p class="section-label">Conceptual Demonstrations</p>
             <div class="tool-grid">
-                <a class="tool-card" href="practice/correlation/">
-                    <h3>Guess the Correlation</h3>
-                    <p>See a scatterplot, guess <em>r</em>. Build your visual intuition.</p>
-                </a>
-                <a class="tool-card" href="practice/conclusions/">
-                    <h3>Conclusion Practice</h3>
-                    <p>Practice writing formal and practical conclusions for hypothesis tests.</p>
-                </a>
+                <a class="tool-card" href="conceptual/sampling-dist/"><h3>Sampling Distributions</h3><p>Draw samples, see the CLT in action.</p></a>
+                <a class="tool-card" href="conceptual/ci-coverage/"><h3>CI Coverage</h3><p>What &ldquo;95% confidence&rdquo; really means.</p></a>
+                <a class="tool-card" href="conceptual/randomization-test/"><h3>Randomization Test</h3><p>Shuffle cards, build a null distribution.</p></a>
+            </div>
+
+            <p class="section-label">Distribution Calculators</p>
+            <div class="tool-grid">
+                <a class="tool-card" href="distribution/normal/"><h3>Normal</h3><p>z probabilities and critical values.</p></a>
+                <a class="tool-card" href="distribution/t/"><h3>t</h3><p>t-distribution with adjustable df.</p></a>
+                <a class="tool-card" href="distribution/chisq/"><h3>Chi-Square</h3><p>&chi;&sup2; distribution calculator.</p></a>
+                <a class="tool-card" href="distribution/f/"><h3>F</h3><p>F distribution calculator.</p></a>
+                <a class="tool-card" href="distribution/binomial/"><h3>Binomial</h3><p>PMF, cumulative P, normal overlay.</p></a>
+            </div>
+
+            <p class="section-label">Practice &amp; Games</p>
+            <div class="tool-grid">
+                <a class="tool-card" href="practice/correlation/"><h3>Guess the Correlation</h3><p>See a scatterplot, guess <em>r</em>.</p></a>
+                <a class="tool-card" href="practice/conclusions/"><h3>Conclusion Practice</h3><p>Practice writing hypothesis test conclusions.</p></a>
             </div>
         </div>
 
-        <!-- ═══════════════════════════════════════════════════════════════
-             VIEW 4: COMPACT — minimal alphabetical list, all tools
-             ═══════════════════════════════════════════════════════════════ -->
-        <div id="view-compact" class="view-panel">
-
-            <p class="grid-intro">All 31 tools in one list.</p>
-
-            <p class="section-label">Explore</p>
-            <ul class="compact-list">
-                <li><a href="explore/descriptive/">Descriptive Statistics</a> <span class="cl-hint">&mdash; one quantitative variable</span></li>
-                <li><a href="explore/one-cat/">One Categorical Variable</a> <span class="cl-hint">&mdash; bar chart, frequency table</span></li>
-                <li><a href="explore/grouped/">Compare Groups</a> <span class="cl-hint">&mdash; side-by-side plots by group</span></li>
-                <li><a href="explore/categorical/">Two Categorical Variables</a> <span class="cl-hint">&mdash; contingency tables, grouped bar charts</span></li>
-                <li><a href="explore/regression/">Scatterplot &amp; Regression</a> <span class="cl-hint">&mdash; two quantitative variables</span></li>
-            </ul>
-
-            <p class="section-label">Bootstrap Confidence Intervals</p>
-            <ul class="compact-list">
-                <li><a href="simulate/bootstrap-mean/">CI for a Mean</a></li>
-                <li><a href="simulate/bootstrap-paired/">CI for Paired Differences</a></li>
-                <li><a href="simulate/bootstrap-prop/">CI for a Proportion</a></li>
-                <li><a href="simulate/bootstrap-slope/">CI for Regression Slope</a></li>
-                <li><a href="simulate/bootstrap-two-means/">CI for Diff in Means</a></li>
-            </ul>
-
-            <p class="section-label">Randomization Tests</p>
-            <ul class="compact-list">
-                <li><a href="simulate/randomization-chisq/">Chi-Square Randomization</a></li>
-                <li><a href="simulate/randomization-diff-means/">Test for Diff in Means</a></li>
-                <li><a href="simulate/randomization-diff-props/">Test for Diff in Proportions</a></li>
-                <li><a href="simulate/randomization-one-mean/">Test for a Mean</a></li>
-                <li><a href="simulate/randomization-one-prop/">Test for a Proportion</a></li>
-                <li><a href="simulate/randomization-correlation/">Test for Correlation</a></li>
-            </ul>
-
-            <p class="section-label">Traditional Inference</p>
-            <ul class="compact-list">
-                <li><a href="inference/chisq/">Chi-Square Test</a></li>
-                <li><a href="inference/one-mean/">One-Sample t</a></li>
-                <li><a href="inference/one-prop/">One-Proportion z</a></li>
-                <li><a href="inference/paired/">Paired t</a></li>
-                <li><a href="inference/slope/">Regression t</a></li>
-                <li><a href="inference/two-means/">Two-Sample t</a></li>
-                <li><a href="inference/two-props/">Two-Proportion z</a></li>
-            </ul>
-
-            <p class="section-label">Conceptual Demonstrations</p>
-            <ul class="compact-list">
-                <li><a href="conceptual/ci-coverage/">CI Coverage</a></li>
-                <li><a href="conceptual/randomization-test/">Randomization Test</a></li>
-                <li><a href="conceptual/sampling-dist/">Sampling Distributions</a></li>
-            </ul>
-
-            <p class="section-label">Distribution Calculators</p>
-            <ul class="compact-list">
-                <li><a href="distribution/binomial/">Binomial</a></li>
-                <li><a href="distribution/chisq/">Chi-Square</a></li>
-                <li><a href="distribution/f/">F</a></li>
-                <li><a href="distribution/normal/">Normal</a></li>
-                <li><a href="distribution/t/">t</a></li>
-            </ul>
-
-            <p class="section-label">Practice &amp; Games</p>
-            <ul class="compact-list">
-                <li><a href="practice/conclusions/">Conclusion Practice</a> <span class="cl-hint">&mdash; write hypothesis test conclusions</span></li>
-                <li><a href="practice/correlation/">Guess the Correlation</a> <span class="cl-hint">&mdash; visual intuition for <em>r</em></span></li>
-            </ul>
-        </div>
     </main>
 
     <script>
