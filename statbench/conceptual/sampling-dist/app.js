@@ -132,7 +132,7 @@ function precomputeSamplingDomain() {
   const n = parseInt(sampleSizeInput.value, 10) || 30;
   const pilotRng = createRng('pilot-' + popShapeSelect.value + '-' + n);
   const pilotMeans = [];
-  for (let i = 0; i < 2000; i++) {
+  for (let i = 0; i < 10000; i++) {
     let sum = 0;
     for (let j = 0; j < n; j++) {
       sum += population[Math.floor(pilotRng() * population.length)];
@@ -140,10 +140,12 @@ function precomputeSamplingDomain() {
     pilotMeans.push(sum / n);
   }
   pilotMeans.sort((a, b) => a - b);
-  const lo = pilotMeans[0];
-  const hi = pilotMeans[pilotMeans.length - 1];
-  const pad = (hi - lo) * 0.05 || 0.5;
-  samplingDomain = [lo - pad, hi + pad];
+  // Use 0.1th and 99.9th percentiles so rare outlier means don't cause rescaling
+  const lo = pilotMeans[Math.floor(pilotMeans.length * 0.001)];
+  const hi = pilotMeans[Math.floor(pilotMeans.length * 0.999)];
+  const range = hi - lo || 1;
+  // 15% padding on each side ensures virtually no sample mean falls outside
+  samplingDomain = [lo - range * 0.15, hi + range * 0.15];
 }
 
 function renderPopulation() {
