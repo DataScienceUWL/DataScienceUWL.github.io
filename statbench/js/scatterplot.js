@@ -98,7 +98,7 @@ export function drawScatterplot(container, xValues, yValues, options = {}) {
     xAxis.tickSize(0);
     yAxis.tickSize(0);
   }
-  addAxes(frame, xAxis, yAxis, minimal ? undefined : xLabel, minimal ? undefined : yLabel);
+  addAxes(frame, xAxis, yAxis, xLabel, yLabel);
 
   const overlays = d3Selection.select(frame.inner).select('.overlays');
 
