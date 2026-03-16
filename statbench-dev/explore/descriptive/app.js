@@ -294,11 +294,8 @@ function handleApply() {
 
 /** Group label for quantitative-mode datasets (prefix controls sort order). @param {any} ds */
 function quantGroupFn(ds) {
-  if (ds.hasCategorical) return '4:Grouped Comparison';
-  if (ds.type === 'paired') return '2:Paired Variables';
-  if (ds.type === 'regression' || (ds.variables && ds.variables.length > 1))
-    return '3:Two Quantitative Variables';
-  return '1:One Quantitative Variable';
+  if (ds.type === 'explore') return '1:Explore';
+  return '2:One Quantitative Variable';
 }
 
 /**
@@ -414,7 +411,9 @@ groupSelect.addEventListener('change', () => {
 const dataPanel = initDataPanel({
   autoCollapse: true,
   showPreview: true,
-  datasetFilter: (/** @type {any} */ ds) => ds.hasNumeric === true,
+  datasetFilter: (/** @type {any} */ ds) =>
+    ds.hasNumeric === true && !ds.hasCategorical &&
+    ds.type !== 'regression' && ds.type !== 'paired',
   datasetGroupFn: quantGroupFn,
   onDataset: (ds, meta) => {
     loadedDataset = ds;
