@@ -138,8 +138,11 @@ function loadParsedData(parsed, sourceName) {
 
 /** Group label for categorical datasets. @param {any} ds */
 function catGroupFn(ds) {
-  if (ds.type === 'one_cat') return '1:One Variable';
-  return '2:Two Variables';
+  const vars = ds.variables || [];
+  const catCount = vars.filter(/** @param {any} v */ v =>
+    typeof v === 'object' ? v.type === 'categorical' : true
+  ).length;
+  return catCount <= 1 ? '1:One Variable' : '2:Two Variables';
 }
 
 initDataPanel({
