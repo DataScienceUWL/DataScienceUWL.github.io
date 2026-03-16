@@ -291,30 +291,41 @@ function drawLegend(frame, categories, colors, title) {
     yOff += lineHeight;
   }
 
-  // Measure and add background rect
-  try {
-    const bbox = /** @type {SVGGElement} */ (g.node()).getBBox();
-    const bgPad = 4;
-    g.insert('rect', ':first-child')
-      .attr('x', bbox.x - bgPad)
-      .attr('y', bbox.y - bgPad)
-      .attr('width', bbox.width + bgPad * 2)
-      .attr('height', bbox.height + bgPad * 2)
-      .attr('fill', 'white')
-      .attr('fill-opacity', 0.9)
-      .attr('stroke', '#ccc')
-      .attr('stroke-width', 0.5)
-      .attr('rx', 4);
-  } catch { /* getBBox fails in JSDOM */ }
-
-  // Position top-right
+  // Position top-right (initial estimate before text is laid out)
   g.attr('transform', `translate(${frame.width - 120}, 0)`);
 
-  // Adjust position based on measured width
-  try {
-    const bbox = /** @type {SVGGElement} */ (g.node()).getBBox();
-    g.attr('transform', `translate(${frame.width - bbox.width - 4}, 0)`);
-  } catch { /* JSDOM fallback */ }
+  // Defer getBBox measurements until the browser has rendered text —
+  // on first load, fonts may not be ready, causing getBBox to return
+  // near-zero width and pushing the legend off the right edge.
+  const measureAndPosition = () => {
+    try {
+      const bbox = /** @type {SVGGElement} */ (g.node()).getBBox();
+      // Add background rect sized to actual content
+      const bgPad = 4;
+      if (!g.select('.legend-bg').size()) {
+        g.insert('rect', ':first-child')
+          .attr('class', 'legend-bg')
+          .attr('fill', 'white')
+          .attr('fill-opacity', 0.9)
+          .attr('stroke', '#ccc')
+          .attr('stroke-width', 0.5)
+          .attr('rx', 4);
+      }
+      g.select('.legend-bg')
+        .attr('x', bbox.x - bgPad)
+        .attr('y', bbox.y - bgPad)
+        .attr('width', bbox.width + bgPad * 2)
+        .attr('height', bbox.height + bgPad * 2);
+      // Position based on measured width
+      g.attr('transform', `translate(${frame.width - bbox.width - 4}, 0)`);
+    } catch { /* getBBox fails in JSDOM */ }
+  };
+
+  // Try immediately (works when fonts are cached), then again after layout
+  measureAndPosition();
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(measureAndPosition);
+  }
 }
 
 /**
