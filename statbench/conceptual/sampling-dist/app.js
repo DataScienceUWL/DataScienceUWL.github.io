@@ -6,7 +6,7 @@
  */
 
 import { createRng, randNormal } from '../../js/prng.js';
-import { mean, sd } from '../../js/stats.js';
+import { mean, sd, quantile } from '../../js/stats.js';
 import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot, computeDots, computeDotRadius } from '../../js/dotplot.js';
 import { announce, initKeyboardShortcuts, initPlayPause, computeHighlights } from '../../js/page-utils.js';
@@ -93,6 +93,10 @@ let lastDomain;
 /** @type {number[]|undefined} */
 let lastThresholds;
 
+// Pre-computed sampling distribution domain (stable axes)
+/** @type {[number,number]|null} */
+let samplingDomain = null;
+
 // Cached population histogram result for overlay animation
 /** @type {{ frame: import('../../js/types.js').ChartFrame, xScale: d3Scale.ScaleLinear<number,number> }|null} */
 let popHistResult = null;
@@ -116,12 +120,43 @@ function initPopulation() {
   if (popSdEl) popSdEl.textContent = popSigma.toFixed(2);
 
   renderPopulation();
+  precomputeSamplingDomain();
   resetSimulation();
+}
+
+/**
+ * Pre-compute the sampling distribution domain by running 2000 pilot samples.
+ * Uses a separate RNG so the user's simulation is unaffected.
+ */
+function precomputeSamplingDomain() {
+  const n = parseInt(sampleSizeInput.value, 10) || 30;
+  const pilotRng = createRng('pilot-' + popShapeSelect.value + '-' + n);
+  const pilotMeans = [];
+  for (let i = 0; i < 2000; i++) {
+    let sum = 0;
+    for (let j = 0; j < n; j++) {
+      sum += population[Math.floor(pilotRng() * population.length)];
+    }
+    pilotMeans.push(sum / n);
+  }
+  pilotMeans.sort((a, b) => a - b);
+  const lo = pilotMeans[0];
+  const hi = pilotMeans[pilotMeans.length - 1];
+  const pad = (hi - lo) * 0.05 || 0.5;
+  samplingDomain = [lo - pad, hi + pad];
 }
 
 function renderPopulation() {
   if (!popContainer) return;
   popContainer.innerHTML = '';
+
+  // Clip domain to 0.5th–99.5th percentile so long tails don't waste space
+  const sorted = population.slice().sort((a, b) => a - b);
+  const pLo = quantile(sorted, 0.005);
+  const pHi = quantile(sorted, 0.995);
+  const pad = (pHi - pLo) * 0.03;
+  const popDomain = /** @type {[number, number]} */ ([pLo - pad, pHi + pad]);
+
   const result = drawHistogram(popContainer, population, {
     id: 'pop-hist',
     xLabel: 'Value',
@@ -129,6 +164,7 @@ function renderPopulation() {
     titleText: 'Population Distribution',
     animate: false,
     numBins: 40,
+    domain: popDomain,
   });
   popHistResult = { frame: result.frame, xScale: result.xScale };
 
@@ -559,11 +595,11 @@ function updateStatsAndRender(prevLength, count) {
   }
   if (seTheoryEl) seTheoryEl.textContent = (popSigma / Math.sqrt(n)).toFixed(4);
 
-  // Compute shared domain + thresholds so prev/current bin edges align exactly
-  const smLo = Math.min(...sampleMeans);
-  const smHi = Math.max(...sampleMeans);
-  const smPad = (smHi - smLo) * 0.05 || 0.5;
-  const sharedDomain = /** @type {[number,number]} */ ([smLo - smPad, smHi + smPad]);
+  // Use pre-computed domain so axes never shift
+  const sharedDomain = samplingDomain || /** @type {[number,number]} */ ([
+    Math.min(...sampleMeans) - 0.5,
+    Math.max(...sampleMeans) + 0.5,
+  ]);
 
   const { bins: fullBins } = computeBins(sampleMeans, { domain: sharedDomain });
   const thresholds = fullBins.slice(1).map(b => b.x0);
@@ -777,6 +813,7 @@ sampleSizeInput.addEventListener('change', () => {
   const val = parseInt(sampleSizeInput.value, 10);
   if (val < 1) sampleSizeInput.value = '1';
   if (val > 500) sampleSizeInput.value = '500';
+  precomputeSamplingDomain();
   resetSimulation();
   announce(`Sample size set to ${sampleSizeInput.value}. Simulation reset.`);
 });
