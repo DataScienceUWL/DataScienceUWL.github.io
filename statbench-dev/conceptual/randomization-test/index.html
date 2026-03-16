@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>What is a Randomization Test? | StatBench</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+    <style>
+        /* Card grid layout */
+        .card-display {
+            display: flex;
+            gap: 1.5rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .card-group {
+            flex: 1;
+            min-width: 200px;
+            max-width: 340px;
+        }
+        .card-group h3 {
+            font-size: 0.95rem;
+            margin: 0 0 0.5rem;
+            text-align: center;
+        }
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+        }
+        .card {
+            width: 28px;
+            height: 36px;
+            border-radius: 3px;
+            border: 1px solid #999;
+            transition: transform 0.3s, background 0.3s;
+        }
+        .card.promoted { background: var(--ims-red, #F05133); }
+        .card.not-promoted { background: #f5f5f5; border-color: #ccc; }
+
+        .card-legend {
+            display: flex;
+            gap: 1.2rem;
+            justify-content: center;
+            margin: 0.5rem 0 0;
+            font-size: 0.85rem;
+            color: var(--ims-gray-text, #555);
+            flex-basis: 100%;
+        }
+        .card-legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .card-legend .swatch {
+            display: inline-block;
+            width: 14px;
+            height: 18px;
+            border-radius: 2px;
+            border: 1px solid #999;
+            vertical-align: middle;
+        }
+        .card-legend .swatch.success { background: var(--ims-red, #F05133); }
+        .card-legend .swatch.failure { background: #f5f5f5; border-color: #ccc; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .card { transition: none; }
+        }
+
+        /* Summary tables */
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+        .summary-table th, .summary-table td {
+            padding: 0.3rem 0.6rem;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        .summary-table th { background: var(--ims-lightest); font-weight: 700; }
+        .summary-table .highlight { background: #fff3cd; font-weight: 700; }
+        .summary-table .success-row td { background: #fde8e4; }
+        .summary-table .failure-row td { background: #f5f5f5; }
+
+        /* Histogram area */
+        .hist-panel {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem;
+            margin: 1rem 0;
+        }
+        .hist-panel h3 {
+            font-size: 0.95rem;
+            margin: 0 0 0.25rem;
+            color: var(--ims-gray-text);
+        }
+        .hist-panel svg { font-family: var(--font-body); }
+
+        /* Stats line */
+        .sim-stats {
+            font-size: 0.85rem;
+            color: var(--ims-gray-text);
+            margin: 0.3rem 0;
+        }
+        .sim-stats strong { color: var(--fg); }
+        .last-sim-value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #E07020;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            background: color-mix(in srgb, #E07020 10%, transparent);
+            white-space: nowrap;
+        }
+
+        /* Dataset selector */
+        .dataset-selector {
+            margin: 0.75rem 0;
+        }
+        .dataset-selector label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        /* Generate & shuffle buttons */
+        .shuffle-controls {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin: 0.75rem 0;
+        }
+
+        /* Reveal button */
+        .reveal-btn {
+            background: var(--ims-green);
+            color: white;
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .reveal-btn:hover { filter: brightness(0.9); }
+        .reveal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Prediction input */
+        .prediction-input {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 0.5rem 0;
+        }
+        .prediction-input input[type="number"] {
+            width: 5rem;
+            font-size: 1rem;
+            padding: 0.3rem 0.5rem;
+        }
+        .prediction-feedback {
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .prediction-feedback.correct { background: #e8f5e9; color: #2e7d32; }
+        .prediction-feedback.close { background: #fff8e1; color: #f57f17; }
+        .prediction-feedback.off { background: #fce4ec; color: #c62828; }
+        .prediction-feedback.hidden { display: none; }
+
+        /* Interpretation prompt */
+        .prompt {
+            background: #fff8e1;
+            border-left: 4px solid #f9a825;
+            padding: 0.6rem 1rem;
+            border-radius: 0 6px 6px 0;
+            margin: 0.75rem 0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Student reflection textarea */
+        .reflection-area {
+            width: 100%;
+            min-height: 3rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            resize: vertical;
+            margin: 0.5rem 0;
+        }
+
+        .page-attribution {
+            font-size: 0.78rem;
+            color: var(--ims-gray-text, #888);
+            text-align: center;
+            margin: 2rem 0 0.5rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border, #ddd);
+        }
+        .page-attribution a { color: var(--ims-blue, #569BBD); }
+
+        @media (max-width: 480px) {
+            .card { width: 22px; height: 28px; }
+            .card-display { gap: 1rem; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main>
+        <h1>What is a Randomization Test?<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatBench home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatBench</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
+        <p class="page-subtitle">An interactive walkthrough of the core idea behind hypothesis testing with randomization.</p>
+
+        <!-- Progress bar (discovery mode only) -->
+        <div class="step-progress discover-only" id="step-progress" aria-label="Progress"></div>
+
+        <div class="dataset-selector">
+            <label for="dataset-select">Dataset:
+                <select id="dataset-select">
+                    <option value="sex_discrimination" selected>Sex Discrimination</option>
+                    <option value="opportunity_cost">Opportunity Cost</option>
+                    <option value="cpr">CPR &amp; Blood Thinner</option>
+                </select>
+            </label>
+        </div>
+
+        <!-- Step 1: Observed Data -->
+        <div class="step-card" id="step-observed" data-step="1">
+            <h2>Step 1: The Observed Data</h2>
+            <p id="step1-description"></p>
+            <div id="observed-cards" class="card-display" role="img" aria-label="Original data shown as cards"></div>
+            <table class="summary-table" id="observed-table" aria-label="Observed data summary">
+                <thead><tr><th></th><th id="obs-col1"></th><th id="obs-col2"></th><th>Total</th></tr></thead>
+                <tbody>
+                    <tr class="success-row"><th id="obs-row1"></th><td id="obs-a"></td><td id="obs-b"></td><td id="obs-t1"></td></tr>
+                    <tr class="failure-row"><th id="obs-row2"></th><td id="obs-c"></td><td id="obs-d"></td><td id="obs-t2"></td></tr>
+                    <tr><th>Total</th><td id="obs-tc1"></td><td id="obs-tc2"></td><td id="obs-tt"></td></tr>
+                </tbody>
+            </table>
+            <p id="step1-difference"></p>
+
+            <!-- Discovery: gate question -->
+            <div class="gate-question discover-only" id="gate-1">
+                <p><strong>Check your understanding:</strong> <span id="gate1-question"></span></p>
+                <div class="gate-choices" id="gate1-choices"></div>
+                <div class="gate-feedback" id="gate1-feedback" hidden></div>
+            </div>
+
+        </div>
+
+        <!-- Step 2: The Question -->
+        <div class="step-card" id="step-question" data-step="2">
+            <h2>Step 2: Could This Difference Be Due to Chance?</h2>
+            <p id="step2-hypotheses"></p>
+
+            <div class="prompt">
+                <strong>Key idea:</strong> If the explanatory variable truly has no effect, then the outcomes
+                would have been the same no matter which group each observation was assigned to. We can
+                simulate this by <strong>shuffling</strong> the group labels while keeping the outcomes fixed.
+            </div>
+
+            <!-- Discovery: gate question about the null hypothesis -->
+            <div class="gate-question discover-only" id="gate-2">
+                <p><strong>Think about it:</strong> <span id="gate2-question"></span></p>
+                <div class="gate-choices" id="gate2-choices"></div>
+                <div class="gate-feedback" id="gate2-feedback" hidden></div>
+            </div>
+
+        </div>
+
+        <!-- Step 3: One Shuffle -->
+        <div class="step-card" id="step-shuffle" data-step="3">
+            <h2>Step 3: Shuffle and Re-deal</h2>
+            <p>We keep the same outcomes (colors) but randomly reassign them to the two groups.</p>
+
+            <div class="prompt" id="prediction-prompt">
+                <strong>Predict:</strong> If the null hypothesis is true, what difference in proportions
+                would you expect from one random shuffle?
+                <div class="prediction-input">
+                    <input type="number" id="prediction-input" step="0.01" min="-1" max="1" placeholder="0.00">
+                    <button class="reveal-btn" id="predict-btn">Lock in prediction</button>
+                    <span id="prediction-feedback" class="prediction-feedback hidden"></span>
+                </div>
+            </div>
+
+            <div class="shuffle-controls">
+                <button type="button" class="gen-btn" id="shuffle-one">Shuffle once</button>
+                <button type="button" class="gen-btn" id="shuffle-reset">Reset cards</button>
+            </div>
+
+            <div id="shuffled-cards" class="card-display" role="img" aria-label="Shuffled data shown as cards"></div>
+            <table class="summary-table" id="shuffled-table" aria-label="Shuffled data summary" hidden>
+                <thead><tr><th></th><th id="shuf-col1"></th><th id="shuf-col2"></th><th>Total</th></tr></thead>
+                <tbody>
+                    <tr class="success-row"><th id="shuf-row1"></th><td id="shuf-a"></td><td id="shuf-b"></td><td id="shuf-t1"></td></tr>
+                    <tr class="failure-row"><th id="shuf-row2"></th><td id="shuf-c"></td><td id="shuf-d"></td><td id="shuf-t2"></td></tr>
+                    <tr><th>Total</th><td id="shuf-tc1"></td><td id="shuf-tc2"></td><td id="shuf-tt"></td></tr>
+                </tbody>
+            </table>
+            <p id="shuffle-result" hidden></p>
+
+            <!-- Discovery: reflection after shuffle -->
+            <div class="gate-question discover-only" id="gate-3" hidden>
+                <p><strong>Reflect:</strong> <span id="gate3-question"></span></p>
+                <div class="gate-choices" id="gate3-choices"></div>
+                <div class="gate-feedback" id="gate3-feedback" hidden></div>
+            </div>
+
+        </div>
+
+        <!-- Step 4: Many Shuffles -->
+        <div class="step-card" id="step-many" data-step="4">
+            <h2>Step 4: Build the Null Distribution</h2>
+            <p>One shuffle isn't enough. Let's repeat many times to see what differences
+            are <em>typical</em> when the null hypothesis is true.</p>
+
+            <div class="shuffle-controls">
+                <button type="button" class="gen-btn" id="gen-1">+1</button>
+                <button type="button" class="gen-btn" id="gen-10">+10</button>
+                <button type="button" class="gen-btn" id="gen-100">+100</button>
+                <button type="button" class="gen-btn" id="gen-1000">+1000</button>
+                <span id="last-sim-value" class="last-sim-value" hidden></span>
+                <button type="button" class="gen-btn" id="gen-reset" style="margin-left: auto;">Reset</button>
+            </div>
+            <p class="sim-stats" id="sim-stats">Shuffles: 0</p>
+
+            <div class="hist-panel">
+                <h3>Null Distribution of Simulated Differences</h3>
+                <div id="null-dist-chart"></div>
+            </div>
+
+            <!-- Discovery: gate after enough shuffles -->
+            <div class="gate-question discover-only" id="gate-4" hidden>
+                <p><strong>Analyze:</strong> <span id="gate4-question"></span></p>
+                <div class="gate-choices" id="gate4-choices"></div>
+                <div class="gate-feedback" id="gate4-feedback" hidden></div>
+            </div>
+
+        </div>
+
+        <!-- Step 5: Conclusion -->
+        <div class="step-card" id="step-conclusion" data-step="5">
+            <h2>Step 5: Draw a Conclusion</h2>
+
+            <!-- Discovery: student writes conclusion first -->
+            <div class="discover-only" id="student-conclusion">
+                <p>Based on the null distribution you built, write your conclusion:</p>
+                <textarea class="reflection-area" id="student-reflection"
+                    placeholder="Do you think the observed difference could plausibly be due to chance? Why or why not?"
+                    aria-label="Write your conclusion"></textarea>
+                <button type="button" class="reveal-btn" id="reveal-conclusion">See the model answer</button>
+            </div>
+
+            <!-- Model conclusion (hidden until revealed in discovery; always visible in present) -->
+            <div id="model-conclusion" class="present-only">
+                <p id="conclusion-text"></p>
+                <div class="prompt" id="conclusion-prompt">
+                    <strong>Interpretation:</strong> <span id="interpretation-text"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <p class="page-attribution">Datasets from <a href="https://www.openintro.org/data/" target="_blank" rel="noopener">OpenIntro</a>. Inspired by <em>Introduction to Modern Statistics</em> by Cetinkaya-Rundel &amp; Hardin.</p>
+
+        <div id="sr-announce" class="sr-only" aria-live="polite" role="status"></div>
+    </main>
+
+    <dialog id="page-help" aria-label="Help">
+        <h2>Help</h2>
+        <p class="help-intro">Walk through the logic of a randomization test step by step.</p>
+        <h3>How it works</h3>
+        <ol style="padding-left: 1.2rem; font-size: 0.9rem; line-height: 1.5;">
+            <li>See the original data as colored cards in two groups</li>
+            <li>Understand the null and alternative hypotheses</li>
+            <li>Predict what happens when we shuffle randomly</li>
+            <li>Shuffle once to see one simulated difference</li>
+            <li>Repeat many times to build a null distribution</li>
+            <li>Compare the observed difference to the null distribution</li>
+        </ol>
+        <h3>Why cards?</h3>
+        <p style="font-size: 0.85rem; line-height: 1.5;">Each card represents one observation. The color is the outcome.
+        Shuffling simulates what would happen if the group assignment didn't matter &mdash;
+        this is the core logic behind every randomization test.</p>
+        <h3>Modes</h3>
+        <p style="font-size: 0.85rem; line-height: 1.5;"><strong>Discovery mode</strong> (default): guided step-by-step with questions — ideal for student self-study.
+        <strong>Presentation mode</strong>: all steps visible, clean interface for classroom demonstration.
+        Switch in Settings (⚙) or add <code>?mode=present</code> to the URL.
+        A printable <a href="guide.html">Instructor Guide</a> with discussion prompts and talking points is available separately.</p>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+            <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>Navigate steps (presentation mode)</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

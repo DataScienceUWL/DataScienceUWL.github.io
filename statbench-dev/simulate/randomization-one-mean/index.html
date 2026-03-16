@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Randomization Test: Single Mean | StatBench</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#data-panel">Skip to Data</a>
+        <a href="#controls">Skip to Controls</a>
+        <a href="#chart">Skip to Chart</a>
+        <a href="#results">Skip to Results</a>
+    </nav>
+
+    <main>
+        <h1>Randomization Test for a Single Mean<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatBench home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatBench</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
+
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-dataset" aria-selected="true"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Edit Data</button>
+                <button role="tab" id="tab-file" aria-selected="false"
+                        aria-controls="panel-file">Open File</button>
+            </div>
+
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset">
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </label>
+                <p id="dataset-desc" class="hint"></p>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <label for="paste-area">Edit or paste data (one value per line, or CSV with headers):
+                    <textarea id="paste-area" rows="6"
+                              placeholder="23.1&#10;19.4&#10;27.8&#10;22.0"></textarea>
+                </label>
+                <div class="btn-row">
+                    <button type="button" id="load-pasted">Apply</button>
+                    <button type="button" id="save-btn" class="btn-secondary">Save</button>
+                    <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+
+            <div role="tabpanel" id="panel-file" aria-labelledby="tab-file" hidden>
+                <label for="file-input">Open a CSV or TSV file:
+                    <input type="file" id="file-input" accept=".csv,.tsv,.txt">
+                </label>
+            </div>
+
+            <div id="data-preview" hidden>
+                <output id="data-summary"></output>
+            </div>
+        </section>
+
+        <section id="controls" aria-label="Simulation controls">
+            <div id="hypothesis-display" class="hypothesis-display" hidden>
+                <div class="hypothesis-row">
+                    <span class="hypothesis-label">H&#8320;:</span>
+                    <span>&#956; = </span>
+                    <input type="number" id="null-mean" step="any"
+                           value="0" class="input-narrow" aria-label="Null hypothesis mean">
+                </div>
+                <div class="hypothesis-row">
+                    <span class="hypothesis-label">H&#8336;:</span>
+                    <span>&#956;</span>
+                    <button type="button" id="alt-direction" class="hyp-toggle"
+                            aria-label="Alternative hypothesis direction: click to cycle"
+                            data-values="greater,less,twosided"
+                            data-labels="&gt;,&lt;,&#8800;"
+                            data-value="greater">&gt;</button>
+                    <span id="alt-null-value">0</span>
+                </div>
+                <p id="seed-notice" class="seed-notice" hidden></p>
+            </div>
+            <div class="generate-bar" role="group" aria-label="Generate simulations">
+                <button type="button" class="gen-btn" data-count="1" disabled>+1</button>
+                <button type="button" class="gen-btn" data-count="10" disabled>+10</button>
+                <button type="button" class="gen-btn" data-count="100" disabled>+100</button>
+                <button type="button" class="gen-btn" data-count="1000" disabled>+1000</button>
+                <span class="gen-label">Simulations</span>
+                <button type="button" id="reset-btn" class="btn-secondary" hidden>Reset</button>
+            </div>
+        </section>
+
+        <!-- Mechanism strip: shifted bootstrap -->
+        <section id="mechanism-strip" class="mechanism-strip" aria-label="Simulation mechanism" hidden>
+            <div class="mechanism-panels">
+                <div class="mechanism-panel" id="mech-observed">
+                    <h2 class="mechanism-title">Observed Data</h2>
+                    <p class="mechanism-stat" id="mech-observed-stat"></p>
+                </div>
+                <div class="mechanism-arrow" aria-hidden="true">&#8594;</div>
+                <div class="mechanism-panel" id="mech-simulation">
+                    <h2 class="mechanism-title" id="sim-title">This Simulation</h2>
+                    <p class="mechanism-stat" id="mech-sim-stat"></p>
+                </div>
+            </div>
+            <p id="mechanism-description" class="mechanism-desc" hidden></p>
+        </section>
+
+        <section id="chart-and-results" aria-label="Chart and results">
+            <div class="app-body">
+                <div class="app-main" id="chart" aria-label="Randomization distribution">
+                    <figure>
+                        <div id="chart-container"></div>
+                    </figure>
+                </div>
+                <div class="app-sidebar" id="results">
+                    <div id="result-summary" tabindex="-1">
+                        <p class="placeholder">Select a dataset, then run a simulation to see results.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <dialog id="page-help" aria-label="Keyboard shortcuts">
+        <h2>Keyboard Shortcuts</h2>
+        <p class="help-intro">Load a dataset, then run resamples or shuffles to build a bootstrap or null distribution. Use the histogram to estimate confidence intervals or p-values.</p>
+        <dl>
+            <dt><kbd>1</kbd></dt><dd>+1 simulation</dd>
+            <dt><kbd>2</kbd></dt><dd>+10 simulations</dd>
+            <dt><kbd>3</kbd></dt><dd>+100 simulations</dd>
+            <dt><kbd>4</kbd></dt><dd>+1000 simulations</dd>
+            <dt><kbd>0</kbd></dt><dd>Reset</dd>
+            <dt><kbd>Space</kbd></dt><dd>Play / Pause</dd>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Regression Slope t-Test | StatBench</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.js"></script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm",
+            "jstat":        "https://cdn.jsdelivr.net/npm/jstat@1/+esm"
+        }
+    }
+    </script>
+
+    <style>
+        /* Variable selectors */
+        .var-selectors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-bottom: 0.75rem;
+        }
+        .var-selectors label {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .var-selectors select {
+            width: auto;
+            min-width: 10rem;
+        }
+
+        /* Chart area */
+        #chart-container svg {
+            font-family: var(--font-body);
+            font-size: var(--font-size-chart);
+        }
+
+        /* t-stat marker */
+        .t-stat-line {
+            stroke: var(--observed-stat, #7B2D8E);
+            stroke-width: 2;
+            stroke-dasharray: 6 3;
+        }
+        .t-stat-label {
+            fill: var(--observed-stat, #7B2D8E);
+            font-size: 12px;
+            font-weight: 700;
+            font-family: var(--font-mono, 'Source Code Pro', monospace);
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#data-panel">Skip to Data</a>
+        <a href="#controls">Skip to Parameters</a>
+        <a href="#chart">Skip to Chart</a>
+        <a href="#results">Skip to Results</a>
+    </nav>
+
+    <main>
+        <h1>t-Test and CI for Regression Slope<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatBench home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatBench</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
+
+        <!-- Data Panel -->
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-dataset" aria-selected="true"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Edit Data</button>
+                <button role="tab" id="tab-file" aria-selected="false"
+                        aria-controls="panel-file">Open File</button>
+                <button role="tab" id="tab-summary" aria-selected="false"
+                        aria-controls="panel-summary">Enter Summary</button>
+            </div>
+
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset">
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </label>
+                <p id="dataset-desc" class="hint"></p>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <p class="hint" style="margin:0 0 0.3rem;">Paste data (two numeric columns with headers, CSV):</p>
+                <textarea id="paste-area" rows="6"
+                          placeholder="x,y&#10;1.2,3.4&#10;2.5,5.1&#10;3.8,7.2&#10;..."></textarea>
+                <div class="btn-row">
+                    <button type="button" id="load-pasted">Apply</button>
+                    <button type="button" id="save-btn" class="btn-secondary">Save</button>
+                    <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+
+            <div role="tabpanel" id="panel-file" aria-labelledby="tab-file" hidden>
+                <label for="file-input">Open a CSV or TSV file:
+                    <input type="file" id="file-input" accept=".csv,.tsv,.txt">
+                </label>
+            </div>
+
+            <div role="tabpanel" id="panel-summary" aria-labelledby="tab-summary" hidden>
+                <div class="inference-inputs">
+                    <label for="input-slope">Slope (b&#8321;):
+                        <input type="number" id="input-slope" step="any" placeholder="2.34">
+                    </label>
+                    <label for="input-se">SE of slope:
+                        <input type="number" id="input-se" min="0" step="any" placeholder="0.56">
+                    </label>
+                    <label for="input-n">Sample size (n):
+                        <input type="number" id="input-n" min="3" step="1" placeholder="30">
+                    </label>
+                    <button type="button" id="load-summary" class="btn-primary">Load</button>
+                </div>
+            </div>
+
+            <div id="data-preview" hidden>
+                <output id="data-summary"></output>
+            </div>
+        </section>
+
+        <!-- Variable selectors -->
+        <div id="variable-selector" hidden>
+            <div class="var-selectors">
+                <label for="x-var">X variable (explanatory):
+                    <select id="x-var"></select>
+                </label>
+                <label for="y-var">Y variable (response):
+                    <select id="y-var"></select>
+                </label>
+            </div>
+        </div>
+
+        <!-- Parameters -->
+        <section id="controls" aria-label="Test parameters" hidden>
+            <h2 class="sr-only">Parameters</h2>
+            <div class="hypothesis-display">
+                <div class="hypothesis-row">
+                    <span class="hypothesis-label">H<sub>0</sub>:</span>
+                    <span>&beta;<sub>1</sub> = 0</span>
+                </div>
+                <div class="hypothesis-row">
+                    <span class="hypothesis-label">H<sub>a</sub>:</span>
+                    <span>&beta;<sub>1</sub></span>
+                    <button type="button" id="input-alt" class="hyp-toggle"
+                            aria-label="Alternative hypothesis direction: click to cycle"
+                            data-values="two-sided,less,greater"
+                            data-labels="≠,&lt;,&gt;"
+                            data-value="two-sided">&ne;</button>
+                    <span>0</span>
+                </div>
+            </div>
+            <div class="controls-row">
+                <label for="input-conf">Confidence level
+                    <input type="number" id="input-conf" value="0.95"
+                           step="0.01" min="0.80" max="0.99">
+                </label>
+            </div>
+        </section>
+
+        <!-- Conditions warning banner -->
+        <div id="conditions-warning" class="warning-banner" hidden aria-live="polite"></div>
+
+        <!-- Chart + Results (sidebar layout) -->
+        <section id="chart-and-results" aria-label="Chart and results" hidden>
+            <div class="app-body">
+                <div class="app-main" id="chart" aria-label="t-distribution chart">
+                    <div id="chart-container"></div>
+                </div>
+                <aside class="app-sidebar" id="results">
+                    <div id="results-panel" tabindex="-1">
+                        <p class="placeholder">Select a dataset, then click Compute.</p>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <dialog id="page-help" aria-label="Keyboard shortcuts">
+        <h2>Keyboard Shortcuts</h2>
+        <p class="help-intro">Load data or enter summary statistics, set hypotheses, and compute test results with a confidence interval.</p>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

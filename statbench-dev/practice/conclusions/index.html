@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Conclusion Practice | StatBench</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.js"></script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "jstat": "https://cdn.jsdelivr.net/npm/jstat@1/+esm"
+        }
+    }
+    </script>
+
+    <style>
+        .scenario-card {
+            background: var(--ims-lightest);
+            border: 2px solid var(--ims-blue);
+            border-radius: 8px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .scenario-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: var(--ims-blue);
+            font-size: 1.1rem;
+        }
+        .scenario-card .hypotheses {
+            margin: 0.5rem 0;
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+        .scenario-card .test-results {
+            background: white;
+            border-radius: 4px;
+            padding: 0.6rem 1rem;
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .practice-section {
+            margin: 1rem 0;
+        }
+        .practice-section label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            color: var(--ims-green);
+        }
+        .practice-section textarea {
+            width: 100%;
+            min-height: 70px;
+            padding: 0.6rem;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            font-family: 'Atkinson Hyperlegible', sans-serif;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+        .practice-section textarea:focus {
+            border-color: var(--ims-blue);
+            outline: 2px solid var(--ims-blue);
+            outline-offset: 1px;
+        }
+        .model-answer {
+            background: #f0f7f0;
+            border-left: 4px solid var(--ims-green);
+            padding: 0.8rem 1rem;
+            margin: 0.5rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+        .model-answer.hidden { display: none; }
+        .model-answer strong { display: block; margin-bottom: 0.3rem; }
+        .btn-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+        .btn-primary {
+            background: var(--ims-blue);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-primary:hover { background: var(--ims-green); }
+        .btn-primary:focus-visible {
+            outline: 2px solid var(--ims-green);
+            outline-offset: 2px;
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: white;
+            color: var(--ims-blue);
+            border: 2px solid var(--ims-blue);
+            padding: 0.5rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-secondary:hover { background: var(--ims-lightest); }
+        .key-elements {
+            background: #fff8e1;
+            border-left: 4px solid #f9a825;
+            padding: 0.6rem 1rem;
+            margin: 0.5rem 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.9rem;
+        }
+        .key-elements.hidden { display: none; }
+        .key-elements ul {
+            margin: 0.3rem 0;
+            padding-left: 1.2rem;
+        }
+        .key-elements li { margin: 0.2rem 0; }
+        .scenario-counter {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        .self-assess {
+            margin: 1rem 0;
+        }
+        .self-assess.hidden { display: none; }
+        .self-assess p {
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        .self-assess .btn-row { margin: 0; }
+        .assess-btn {
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-family: inherit;
+            border: 2px solid;
+        }
+        .assess-btn.got-it {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+        .assess-btn.mostly {
+            background: #fff8e1;
+            border-color: #f9a825;
+            color: #f57f17;
+        }
+        .assess-btn.needs-work {
+            background: #fce4ec;
+            border-color: #e57373;
+            color: #c62828;
+        }
+        .assess-btn:hover { filter: brightness(0.95); }
+        .score-bar {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        .score-bar span { white-space: nowrap; }
+    </style>
+</head>
+
+<body>
+
+    <main>
+        <h1>Hypothesis Test Conclusion Practice<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatBench home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatBench</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
+        <p class="page-subtitle">Practice writing formal and practical conclusions for hypothesis tests.</p>
+        <div class="score-bar">
+            <span id="scenario-counter"></span>
+            <span id="score-display"></span>
+        </div>
+
+        <div id="scenario-card" class="scenario-card">
+            <p class="placeholder">Loading scenarios...</p>
+        </div>
+
+        <div class="practice-section">
+            <label for="formal-input">Your formal conclusion:</label>
+            <textarea id="formal-input" placeholder='Example: "At the 5% significance level, we reject H₀. There is sufficient evidence that the mean weight differs from 5 lbs (t = 2.34, p = 0.021)."'></textarea>
+        </div>
+
+        <div class="practice-section">
+            <label for="practical-input">Your practical conclusion:</label>
+            <textarea id="practical-input" placeholder='Example: "The data provide strong evidence that the average birth weight differs from 5 pounds."'></textarea>
+        </div>
+
+        <div class="btn-row" id="action-buttons">
+            <button id="check-answer" class="btn-primary">Check My Answer</button>
+            <button id="show-answer" class="btn-primary" disabled>Show Model Answer</button>
+            <button id="next-scenario" class="btn-secondary">Next Scenario</button>
+        </div>
+
+        <div id="key-elements" class="key-elements hidden">
+            <strong>Key elements checklist:</strong>
+            <ul id="key-elements-list"></ul>
+        </div>
+
+        <div id="model-formal" class="model-answer hidden">
+            <strong>Model formal conclusion:</strong>
+            <p id="model-formal-text"></p>
+        </div>
+
+        <div id="model-practical" class="model-answer hidden">
+            <strong>Model practical conclusion:</strong>
+            <p id="model-practical-text"></p>
+        </div>
+
+        <div id="self-assess" class="self-assess hidden">
+            <p>How did your answer compare?</p>
+            <div class="btn-row">
+                <button class="assess-btn got-it" data-rating="got-it">Got it</button>
+                <button class="assess-btn mostly" data-rating="mostly">Mostly</button>
+                <button class="assess-btn needs-work" data-rating="needs-work">Needs work</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="sr-announce" class="sr-only" aria-live="polite" role="status"></div>
+
+    <dialog id="page-help" aria-label="Help">
+        <h2>Help</h2>
+        <p class="help-intro">Practice writing formal and practical conclusions for hypothesis tests.</p>
+        <h3>How it works</h3>
+        <ol style="padding-left: 1.2rem; font-size: 0.9rem; line-height: 1.5;">
+            <li>Read the scenario: test type, hypotheses, and results</li>
+            <li>Write your formal and practical conclusions in the text boxes</li>
+            <li>Click <strong>Check My Answer</strong> to see a checklist of key elements</li>
+            <li>Click <strong>Show Model Answer</strong> to compare with model conclusions</li>
+            <li>Rate yourself and move to the next scenario</li>
+        </ol>
+        <h3>Formal conclusion template</h3>
+        <p style="font-size: 0.85rem; line-height: 1.5;">At the [&alpha;] significance level, we [reject / fail to reject] H&#8320;. There is [sufficient / insufficient] evidence that [claim] ([stat] = [value], p-value = [value]).</p>
+        <h3>Practical conclusion template</h3>
+        <p style="font-size: 0.85rem; line-height: 1.5;">The data [provide / do not provide] [strength] evidence that [claim in everyday language].</p>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>
