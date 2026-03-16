@@ -272,6 +272,115 @@
             color: var(--ims-gray-text);
             margin-top: 0.5rem !important;
         }
+
+        /* ── Course-phase tabs ──────────────────────────── */
+        .course-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid var(--border);
+            margin: 0 0 1rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .course-tab {
+            padding: 0.55rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--ims-gray-text);
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .course-tab:hover {
+            color: var(--accent);
+        }
+        .course-tab:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: -2px;
+        }
+        .course-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+        .course-panel { display: none; }
+        .course-panel.active { display: block; }
+
+        .tab-intro {
+            font-size: 0.85rem;
+            color: var(--ims-gray-text);
+            margin: 0 0 0.75rem;
+            line-height: 1.4;
+        }
+
+        /* Mini grid for Simulate & Calculate tabs */
+        .mini-grid {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.5rem 0 1.25rem;
+            font-size: 0.85rem;
+        }
+        .mini-grid th,
+        .mini-grid td {
+            border: 1px solid var(--border);
+            padding: 0.45rem 0.6rem;
+            vertical-align: top;
+        }
+        .mini-grid thead th {
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        .mini-grid .row-header {
+            background: var(--bg-alt, #f5f5f5);
+            font-weight: 700;
+            font-size: 0.82rem;
+            min-width: 7rem;
+        }
+        .mini-grid .row-header .hint {
+            display: block;
+            font-weight: 400;
+            font-size: 0.72rem;
+            color: var(--ims-gray-text);
+            margin-top: 0.1rem;
+        }
+        .mini-grid td a {
+            display: block;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            line-height: 1.3;
+        }
+        .mini-grid td a:hover,
+        .mini-grid td a:focus-visible { text-decoration: underline; }
+        .mini-grid td.empty {
+            color: var(--ims-gray-text);
+            font-size: 0.75rem;
+            font-style: italic;
+            text-align: center;
+        }
+        @media (max-width: 640px) {
+            .mini-grid-wrap {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .mini-grid .row-header,
+            .mini-grid thead th:first-child {
+                position: sticky;
+                left: 0;
+                z-index: 2;
+            }
+            .mini-grid thead th:first-child { z-index: 3; }
+        }
+        @media (max-width: 480px) {
+            .course-tab { padding: 0.45rem 0.65rem; font-size: 0.78rem; }
+        }
     </style>
 </head>
 <body>
@@ -290,170 +399,207 @@
         </fieldset>
 
         <!-- ═══════════════════════════════════════════════════════════════
-             VIEW 1: CARDS — grouped by method type (the original layout)
+             VIEW 1: COURSE TABS — organized by course phase
              ═══════════════════════════════════════════════════════════════ -->
         <div id="view-cards" class="view-panel active">
 
-            <p class="section-label">Explore Data</p>
-            <div class="tool-grid">
-                <a class="tool-card" href="explore/descriptive/">
-                    <h3>Descriptive Statistics</h3>
-                    <p>Summary stats, histogram, boxplot, and dotplot for one variable.</p>
-                </a>
-                <a class="tool-card" href="explore/grouped/">
-                    <h3>Compare Groups</h3>
-                    <p>Side-by-side boxplots, dotplots, or histograms by group.</p>
-                </a>
-                <a class="tool-card" href="explore/regression/">
-                    <h3>Scatterplot &amp; Regression</h3>
-                    <p>Scatterplot with least-squares regression line, r, R&sup2;.</p>
-                </a>
-                <a class="tool-card" href="explore/one-cat/">
-                    <h3>One Categorical Variable</h3>
-                    <p>Bar chart and frequency table for a single categorical variable.</p>
-                </a>
-                <a class="tool-card" href="explore/categorical/">
-                    <h3>Two Categorical Variables</h3>
-                    <p>Contingency table with proportion toggles and grouped bar charts.</p>
-                </a>
+            <nav class="course-tabs" role="tablist" aria-label="Course phase">
+                <button class="course-tab active" role="tab" aria-selected="true" aria-controls="tab-explore" id="tab-btn-explore">Explore</button>
+                <button class="course-tab" role="tab" aria-selected="false" aria-controls="tab-learn" id="tab-btn-learn">Learn</button>
+                <button class="course-tab" role="tab" aria-selected="false" aria-controls="tab-simulate" id="tab-btn-simulate">Simulate</button>
+                <button class="course-tab" role="tab" aria-selected="false" aria-controls="tab-calculate" id="tab-btn-calculate">Calculate</button>
+                <button class="course-tab" role="tab" aria-selected="false" aria-controls="tab-practice" id="tab-btn-practice">Practice</button>
+            </nav>
+
+            <!-- ── Explore tab ────────────────────────────────── -->
+            <div id="tab-explore" class="course-panel active" role="tabpanel" aria-labelledby="tab-btn-explore">
+                <p class="tab-intro">Visualize and summarize your data. Start by asking: <strong>what kind of variable do I have?</strong></p>
+
+                <div class="tool-grid">
+                    <a class="tool-card" href="explore/descriptive/">
+                        <h3>Descriptive Statistics</h3>
+                        <p>One numeric variable &mdash; histogram, boxplot, dotplot, and summary stats.</p>
+                    </a>
+                    <a class="tool-card" href="explore/grouped/">
+                        <h3>Compare Groups</h3>
+                        <p>Numeric variable split by group &mdash; side-by-side boxplots, dotplots, or histograms.</p>
+                    </a>
+                    <a class="tool-card" href="explore/one-cat/">
+                        <h3>One Categorical Variable</h3>
+                        <p>Bar chart and frequency table for a single categorical variable.</p>
+                    </a>
+                    <a class="tool-card" href="explore/categorical/">
+                        <h3>Two Categorical Variables</h3>
+                        <p>Contingency table with proportion toggles and grouped bar charts.</p>
+                    </a>
+                    <a class="tool-card" href="explore/regression/">
+                        <h3>Scatterplot &amp; Regression</h3>
+                        <p>Two numeric variables &mdash; scatterplot with regression line, r, R&sup2;.</p>
+                    </a>
+                </div>
             </div>
 
-            <p class="section-label">Bootstrap Confidence Intervals</p>
-            <div class="tool-grid">
-                <a class="tool-card" href="simulate/bootstrap-mean/">
-                    <h3>CI for a Mean</h3>
-                    <p>Bootstrap CI for a single mean, median, or SD.</p>
-                </a>
-                <a class="tool-card" href="simulate/bootstrap-prop/">
-                    <h3>CI for a Proportion</h3>
-                    <p>Bootstrap CI for a single proportion.</p>
-                </a>
-                <a class="tool-card" href="simulate/bootstrap-two-means/">
-                    <h3>CI for Diff in Means</h3>
-                    <p>Bootstrap the difference in two group means.</p>
-                </a>
-                <a class="tool-card" href="simulate/bootstrap-paired/">
-                    <h3>CI for Paired Differences</h3>
-                    <p>Bootstrap the mean of paired differences.</p>
-                </a>
-                <a class="tool-card" href="simulate/bootstrap-slope/">
-                    <h3>CI for Regression Slope</h3>
-                    <p>Resample pairs, refit regression, bootstrap lines on scatterplot.</p>
-                </a>
+            <!-- ── Learn tab ──────────────────────────────────── -->
+            <div id="tab-learn" class="course-panel" role="tabpanel" aria-labelledby="tab-btn-learn">
+                <p class="tab-intro">Interactive demonstrations of the big ideas behind statistical inference.</p>
+
+                <p class="section-label">StatBench Labs</p>
+                <div class="tool-grid">
+                    <a class="tool-card" href="conceptual/sampling-dist/">
+                        <h3>Sampling Distributions</h3>
+                        <p>Draw samples, compute statistics, watch the sampling distribution build. See the Central Limit Theorem in action.</p>
+                    </a>
+                    <a class="tool-card" href="conceptual/ci-coverage/">
+                        <h3>Confidence Interval Coverage</h3>
+                        <p>Draw 100 confidence intervals and see what &ldquo;95% confidence&rdquo; really means.</p>
+                    </a>
+                    <a class="tool-card" href="conceptual/randomization-test/">
+                        <h3>What Is a Randomization Test?</h3>
+                        <p>Shuffle cards, build a null distribution step by step, and see what a p-value really means.</p>
+                    </a>
+                </div>
             </div>
 
-            <p class="section-label">Randomization Tests</p>
-            <div class="tool-grid">
-                <a class="tool-card" href="simulate/randomization-one-mean/">
-                    <h3>Test for a Mean</h3>
-                    <p>Shifted bootstrap test under H&#8320;: &mu; = &mu;&#8320;.</p>
-                </a>
-                <a class="tool-card" href="simulate/randomization-one-prop/">
-                    <h3>Test for a Proportion</h3>
-                    <p>Simulate under H&#8320;: p = p&#8320;.</p>
-                </a>
-                <a class="tool-card" href="simulate/randomization-diff-means/">
-                    <h3>Test for Diff in Means</h3>
-                    <p>Permutation test for a difference in two group means.</p>
-                </a>
-                <a class="tool-card" href="simulate/randomization-diff-props/">
-                    <h3>Test for Diff in Proportions</h3>
-                    <p>Shuffle labels to test the difference in two proportions.</p>
-                </a>
-                <a class="tool-card" href="simulate/randomization-chisq/">
-                    <h3>Chi-Square Randomization</h3>
-                    <p>Shuffle group labels to test independence. Always right-skewed.</p>
-                </a>
-                <a class="tool-card" href="simulate/randomization-correlation/">
-                    <h3>Test for Correlation</h3>
-                    <p>Shuffle y-values to test H&#8320;: &rho; = 0.</p>
-                </a>
+            <!-- ── Simulate tab ───────────────────────────────── -->
+            <div id="tab-simulate" class="course-panel" role="tabpanel" aria-labelledby="tab-btn-simulate">
+                <p class="tab-intro">Build confidence intervals by bootstrapping and test hypotheses by randomization. Choose your row by <strong>what kind of data you have</strong>.</p>
+
+                <div class="mini-grid-wrap">
+                <table class="mini-grid" aria-label="Simulation tools by variable type">
+                    <thead>
+                        <tr>
+                            <th scope="col">Data Type</th>
+                            <th scope="col">Bootstrap CI</th>
+                            <th scope="col">Randomization Test</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" class="row-header">One Quantitative<span class="hint">one numeric variable</span></th>
+                            <td><a href="simulate/bootstrap-mean/">CI for a Mean</a></td>
+                            <td><a href="simulate/randomization-one-mean/">Test for a Mean</a></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="row-header">One Categorical<span class="hint">one yes/no variable</span></th>
+                            <td><a href="simulate/bootstrap-prop/">CI for a Proportion</a></td>
+                            <td><a href="simulate/randomization-one-prop/">Test for a Proportion</a></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="row-header">Compare Two Groups<span class="hint">numeric outcome by group</span></th>
+                            <td>
+                                <a href="simulate/bootstrap-two-means/">CI: Diff in Means</a>
+                                <a href="simulate/bootstrap-two-props/" style="margin-top:0.25rem">CI: Diff in Props</a>
+                            </td>
+                            <td>
+                                <a href="simulate/randomization-diff-means/">Test: Diff in Means</a>
+                                <a href="simulate/randomization-diff-props/" style="margin-top:0.25rem">Test: Diff in Props</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="row-header">Paired Samples<span class="hint">before/after on same subjects</span></th>
+                            <td><a href="simulate/bootstrap-paired/">CI: Paired Diff</a></td>
+                            <td><a href="simulate/randomization-paired/">Test: Paired Diff</a></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="row-header">Two Categorical<span class="hint">group &times; outcome</span></th>
+                            <td class="empty">&mdash;</td>
+                            <td><a href="simulate/randomization-chisq/">&chi;&sup2; Randomization</a></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="row-header">Two Quantitative<span class="hint">x &amp; y scatterplot data</span></th>
+                            <td><a href="simulate/bootstrap-slope/">CI for Slope</a></td>
+                            <td><a href="simulate/randomization-correlation/">Test for Correlation</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
             </div>
 
-            <p class="section-label">Traditional Inference</p>
-            <div class="tool-grid">
-                <a class="tool-card" href="inference/one-mean/">
-                    <h3>One-Sample t</h3>
-                    <p>t-test and CI for a single mean.</p>
-                </a>
-                <a class="tool-card" href="inference/one-prop/">
-                    <h3>One-Proportion z</h3>
-                    <p>z-test and CI for a single proportion.</p>
-                </a>
-                <a class="tool-card" href="inference/two-means/">
-                    <h3>Two-Sample t</h3>
-                    <p>Welch&rsquo;s t-test and CI for &mu;&#8321; &minus; &mu;&#8322;.</p>
-                </a>
-                <a class="tool-card" href="inference/paired/">
-                    <h3>Paired t</h3>
-                    <p>Paired t-test and CI for the mean difference.</p>
-                </a>
-                <a class="tool-card" href="inference/two-props/">
-                    <h3>Two-Proportion z</h3>
-                    <p>z-test and CI for p&#8321; &minus; p&#8322;.</p>
-                </a>
-                <a class="tool-card" href="inference/chisq/">
-                    <h3>Chi-Square Test</h3>
-                    <p>Theory-based &chi;&sup2; test of independence.</p>
-                </a>
-                <a class="tool-card" href="inference/slope/">
-                    <h3>Regression t</h3>
-                    <p>t-test and CI for the regression slope &beta;&#8321;.</p>
-                </a>
+            <!-- ── Calculate tab ──────────────────────────────── -->
+            <div id="tab-calculate" class="course-panel" role="tabpanel" aria-labelledby="tab-btn-calculate">
+                <p class="tab-intro">Theory-based tests and confidence intervals using t, z, and &chi;&sup2; distributions. Choose your row by <strong>what kind of data you have</strong>.</p>
+
+                <div class="mini-grid-wrap">
+                <table class="mini-grid" aria-label="Traditional inference tools by variable type">
+                    <thead>
+                        <tr>
+                            <th scope="col">Data Type</th>
+                            <th scope="col">Traditional Inference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" class="row-header">One Quantitative<span class="hint">one numeric variable</span></th>
+                            <td><a href="inference/one-mean/">One-Sample t</a><span class="hint">t-test and CI for a single mean</span></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="row-header">One Categorical<span class="hint">one yes/no variable</span></th>
+                            <td><a href="inference/one-prop/">One-Proportion z</a><span class="hint">z-test and CI for a single proportion</span></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="row-header">Compare Two Groups<span class="hint">numeric outcome by group</span></th>
+                            <td>
+                                <a href="inference/two-means/">Two-Sample t</a><span class="hint">Welch&rsquo;s t-test for &mu;&#8321; &minus; &mu;&#8322;</span>
+                                <a href="inference/two-props/" style="margin-top:0.25rem">Two-Proportion z</a><span class="hint">z-test for p&#8321; &minus; p&#8322;</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="row-header">Paired Samples<span class="hint">before/after on same subjects</span></th>
+                            <td><a href="inference/paired/">Paired t</a><span class="hint">t-test and CI for mean difference</span></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="row-header">Two Categorical<span class="hint">group &times; outcome</span></th>
+                            <td><a href="inference/chisq/">Chi-Square Test</a><span class="hint">theory-based &chi;&sup2; test of independence</span></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="row-header">Two Quantitative<span class="hint">x &amp; y scatterplot data</span></th>
+                            <td><a href="inference/slope/">Regression t</a><span class="hint">t-test and CI for slope &beta;&#8321;</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+
+                <hr class="section-divider">
+
+                <p class="section-label">Distribution Calculators</p>
+                <div class="tool-grid">
+                    <a class="tool-card" href="distribution/normal/">
+                        <h3>Normal</h3>
+                        <p>Probabilities and critical values for the normal distribution.</p>
+                    </a>
+                    <a class="tool-card" href="distribution/t/">
+                        <h3>t</h3>
+                        <p>Student&rsquo;s t-distribution with adjustable df.</p>
+                    </a>
+                    <a class="tool-card" href="distribution/chisq/">
+                        <h3>Chi-Square</h3>
+                        <p>Chi-square distribution calculator.</p>
+                    </a>
+                    <a class="tool-card" href="distribution/f/">
+                        <h3>F</h3>
+                        <p>F distribution with numerator and denominator df.</p>
+                    </a>
+                    <a class="tool-card" href="distribution/binomial/">
+                        <h3>Binomial</h3>
+                        <p>Discrete PMF, cumulative probabilities, normal approximation overlay.</p>
+                    </a>
+                </div>
             </div>
 
-            <hr class="section-divider">
+            <!-- ── Practice tab ───────────────────────────────── -->
+            <div id="tab-practice" class="course-panel" role="tabpanel" aria-labelledby="tab-btn-practice">
+                <p class="tab-intro">Build skills and check your understanding with interactive practice activities.</p>
 
-            <p class="section-label">Conceptual Demonstrations</p>
-            <div class="tool-grid">
-                <a class="tool-card" href="conceptual/sampling-dist/">
-                    <h3>Sampling Distributions</h3>
-                    <p>Draw samples, compute statistics, watch the sampling distribution build.</p>
-                </a>
-                <a class="tool-card" href="conceptual/ci-coverage/">
-                    <h3>CI Coverage</h3>
-                    <p>Draw 100 confidence intervals and see what &ldquo;95% confidence&rdquo; really means.</p>
-                </a>
-                <a class="tool-card" href="conceptual/randomization-test/">
-                    <h3>Randomization Test</h3>
-                    <p>Shuffle cards, build a null distribution, see what a p-value really means.</p>
-                </a>
-            </div>
-
-            <p class="section-label">Practice &amp; Games</p>
-            <div class="tool-grid">
-                <a class="tool-card" href="practice/correlation/">
-                    <h3>Guess the Correlation</h3>
-                    <p>See a scatterplot, guess <em>r</em>. Build your visual intuition.</p>
-                </a>
-                <a class="tool-card" href="practice/conclusions/">
-                    <h3>Conclusion Practice</h3>
-                    <p>Practice writing formal and practical conclusions for hypothesis tests.</p>
-                </a>
-            </div>
-
-            <p class="section-label">Distribution Calculators</p>
-            <div class="tool-grid">
-                <a class="tool-card" href="distribution/normal/">
-                    <h3>Normal</h3>
-                    <p>Probabilities and critical values for the normal distribution.</p>
-                </a>
-                <a class="tool-card" href="distribution/t/">
-                    <h3>t</h3>
-                    <p>Student&rsquo;s t-distribution with adjustable df.</p>
-                </a>
-                <a class="tool-card" href="distribution/chisq/">
-                    <h3>Chi-Square</h3>
-                    <p>Chi-square distribution calculator.</p>
-                </a>
-                <a class="tool-card" href="distribution/f/">
-                    <h3>F</h3>
-                    <p>F distribution with numerator and denominator df.</p>
-                </a>
-                <a class="tool-card" href="distribution/binomial/">
-                    <h3>Binomial</h3>
-                    <p>Discrete PMF, cumulative probabilities, normal approximation overlay.</p>
-                </a>
+                <div class="tool-grid">
+                    <a class="tool-card" href="practice/correlation/">
+                        <h3>Guess the Correlation</h3>
+                        <p>See a scatterplot, guess <em>r</em>. Build your visual intuition for correlation.</p>
+                    </a>
+                    <a class="tool-card" href="practice/conclusions/">
+                        <h3>Conclusion Practice</h3>
+                        <p>Practice writing formal and practical conclusions for hypothesis tests.</p>
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -678,6 +824,50 @@
             switchView(saved);
             const radio = document.querySelector(`.view-switcher input[value="${saved}"]`);
             if (radio) radio.checked = true;
+        }
+    } catch {}
+
+    // Course-phase tab logic — persists choice in localStorage
+    const courseTabs = document.querySelectorAll('.course-tab');
+    const coursePanels = document.querySelectorAll('.course-panel');
+
+    function switchCourseTab(tabId) {
+        courseTabs.forEach(t => {
+            const isActive = t.getAttribute('aria-controls') === tabId;
+            t.classList.toggle('active', isActive);
+            t.setAttribute('aria-selected', isActive);
+        });
+        coursePanels.forEach(p => p.classList.toggle('active', p.id === tabId));
+        try { localStorage.setItem('sb-course-tab', tabId); } catch {}
+    }
+
+    courseTabs.forEach(t => {
+        t.addEventListener('click', () => switchCourseTab(t.getAttribute('aria-controls')));
+    });
+
+    // Arrow key navigation between course tabs
+    const tabList = document.querySelector('.course-tabs');
+    if (tabList) {
+        tabList.addEventListener('keydown', (e) => {
+            const tabs = [...courseTabs];
+            const idx = tabs.indexOf(document.activeElement);
+            if (idx < 0) return;
+            let next = -1;
+            if (e.key === 'ArrowRight') next = (idx + 1) % tabs.length;
+            else if (e.key === 'ArrowLeft') next = (idx - 1 + tabs.length) % tabs.length;
+            if (next >= 0) {
+                e.preventDefault();
+                tabs[next].focus();
+                switchCourseTab(tabs[next].getAttribute('aria-controls'));
+            }
+        });
+    }
+
+    // Restore saved course tab
+    try {
+        const savedTab = localStorage.getItem('sb-course-tab');
+        if (savedTab && document.getElementById(savedTab)) {
+            switchCourseTab(savedTab);
         }
     } catch {}
     </script>
