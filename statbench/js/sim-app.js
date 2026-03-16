@@ -13,7 +13,7 @@ import * as d3Selection from 'd3-selection';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { drawSpike } from './spike.js';
-import { renderSimPills } from './chart-utils.js';
+import { renderSimPills, formatMechStat, drawMiniBoxplot } from './chart-utils.js';
 import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
@@ -762,9 +762,9 @@ export function initSimPage(config) {
       if (config.paired) {
         const diffs = data2.map((v, i) => v - data1[i]);
         const m = mean(diffs);
-        dataSummary.textContent =
-          `${namePrefix}${data1.length} pairs | ${group1Name}: x̄ = ${formatStat(mean(data1), dataPrecision)} | ` +
-          `${group2Name}: x̄ = ${formatStat(mean(data2), dataPrecision)} | Mean diff = ${formatStat(m, dataPrecision)}`;
+        dataSummary.innerHTML =
+          `${namePrefix}${data1.length} pairs | ${group1Name}: <span class="x-bar">x</span> = ${formatStat(mean(data1), dataPrecision)} | ` +
+          `${group2Name}: <span class="x-bar">x</span> = ${formatStat(mean(data2), dataPrecision)} | Mean diff (${group2Name} \u2212 ${group1Name}) = ${formatStat(m, dataPrecision)}`;
       } else if (config.proportion && !config.twoGroup) {
         const p1 = mean(data1);
         const s1 = data1.filter(v => v === 1).length;
@@ -779,9 +779,9 @@ export function initSimPage(config) {
           `${namePrefix}${group1Name}: ${s1}/${data1.length} (p̂ = ${formatStat(p1, dataPrecision, 'proportion')}) | ` +
           `${group2Name}: ${s2}/${data2.length} (p̂ = ${formatStat(p2, dataPrecision, 'proportion')})`;
       } else if (config.twoGroup && data2.length > 0) {
-        dataSummary.textContent =
-          `${namePrefix}${group1Name}: n = ${data1.length}, x̄ = ${formatStat(mean(data1), dataPrecision)} | ` +
-          `${group2Name}: n = ${data2.length}, x̄ = ${formatStat(mean(data2), dataPrecision)}`;
+        dataSummary.innerHTML =
+          `${namePrefix}${group1Name}: n = ${data1.length}, <span class="x-bar">x</span> = ${formatStat(mean(data1), dataPrecision)} | ` +
+          `${group2Name}: n = ${data2.length}, <span class="x-bar">x</span> = ${formatStat(mean(data2), dataPrecision)}`;
       } else {
         const n = data1.length;
         const m = mean(data1);
@@ -1295,13 +1295,14 @@ export function initSimPage(config) {
           lastResample = lastResampleValues;
           showResample(lastResampleValues, false, true);
         }
-        // For two-group bootstrap, get the diff element for drop animation + highlight removal
+        // For two-group, get the diff value element for drop animation + highlight removal
         const bootDiffEl = !showOneSampleMech
           ? document.querySelector('#mech-resample-content .mech-diff')
           : null;
-        if (bootDiffEl) {
+        const bootDiffValueEl = bootDiffEl?.querySelector('.mech-stat-value') ?? null;
+        if (bootDiffValueEl) {
           setTimeout(() => {
-            bootDiffEl.classList.remove('highlight-last');
+            bootDiffValueEl.classList.remove('highlight-last');
             const summary = document.querySelector('.mechanism-collapsed-summary');
             const hl = summary?.querySelector('.highlight-last');
             if (hl) hl.classList.remove('highlight-last');
@@ -1312,7 +1313,7 @@ export function initSimPage(config) {
           setTimeout(() => {
             renderChart(allStats, ciForChart);
             // Drop animation: flying dot from resample stat to chart
-            const dropSource = bootDiffEl || resampleMeanEl;
+            const dropSource = bootDiffValueEl || bootDiffEl || resampleMeanEl;
             if (dropSource && chartContainer) {
               animateDropToChart(/** @type {HTMLElement} */ (dropSource), chartContainer);
             }
@@ -1524,6 +1525,11 @@ export function initSimPage(config) {
 
       if (origNEl) origNEl.textContent = `${diffs.length} pairs`;
       if (origMeanEl) origMeanEl.textContent = formatStat(mean(diffs), dataPrecision);
+      // Update title to show difference direction
+      const diffTitleEl = document.getElementById('orig-diff-title');
+      if (diffTitleEl) {
+        diffTitleEl.textContent = `Differences (${group2Name} \u2212 ${group1Name})`;
+      }
       return;
     }
 
@@ -1591,13 +1597,25 @@ export function initSimPage(config) {
    * @param {boolean} [highlightDiff] - Highlight diff in orange
    * @returns {string} HTML string
    */
-  function buildTwoGroupHTML(g1, g2, highlightDiff = false) {
+  /** Shared x-domain for two-group mini boxplots (set from original data). */
+  let twoGroupBoxDomain = /** @type {[number,number]|null} */ (null);
+
+  /**
+   * Build HTML for a two-group panel (shared by original and resample).
+   * For non-proportion data, includes mini boxplots. For proportions, shows prop bars.
+   * @param {number[]} g1 - Group 1 values
+   * @param {number[]} g2 - Group 2 values
+   * @param {boolean} [highlightDiff] - Highlight diff value in orange
+   * @param {boolean} [isOriginal] - True if rendering the original (left) panel
+   * @returns {string} HTML string (boxplot containers are populated after innerHTML set)
+   */
+  function buildTwoGroupHTML(g1, g2, highlightDiff = false, isOriginal = false) {
     const statFn = config.mode === 'bootstrap' ? getBootstrapStat().fn : mean;
-    const statSymbol = config.proportion ? 'p̂' : 'x̄';
+    const statSymbol = config.proportion ? 'p̂' : '<span class="x-bar">x</span>';
     const s1 = statFn(g1);
     const s2 = statFn(g2);
     const fmtType = config.proportion ? 'proportion' : undefined;
-    const hlClass = highlightDiff ? ' highlight-last' : '';
+    const diffVal = formatStat(s1 - s2, dataPrecision, fmtType);
 
     let html = '';
 
@@ -1624,22 +1642,68 @@ export function initSimPage(config) {
           <span class="mech-prop-label">${succ2} S / ${fail2} F</span>
         </div>`;
     } else {
-      // Means: text stats (chips for small n would be too wide for two groups side-by-side)
+      // Means: text stats + mini boxplots
+      const tag = isOriginal ? 'orig' : 'resamp';
       html += `
         <div class="mech-group-row"><span class="mech-group-name">${group1Name}:</span>
           <span class="mech-group-stat">n = ${g1.length}, ${statSymbol} = ${formatStat(s1, dataPrecision, fmtType)}</span></div>
+        <div id="mech-box-${tag}-1" class="mech-box-container"></div>
         <div class="mech-group-row"><span class="mech-group-name">${group2Name}:</span>
-          <span class="mech-group-stat">n = ${g2.length}, ${statSymbol} = ${formatStat(s2, dataPrecision, fmtType)}</span></div>`;
+          <span class="mech-group-stat">n = ${g2.length}, ${statSymbol} = ${formatStat(s2, dataPrecision, fmtType)}</span></div>
+        <div id="mech-box-${tag}-2" class="mech-box-container"></div>`;
     }
 
-    html += `<div class="mech-diff${hlClass}">diff = ${formatStat(s1 - s2, dataPrecision, fmtType)}</div>`;
+    const hlClass = highlightDiff ? ' highlight-last' : '';
+    html += `<div class="mech-diff">diff = <span class="mech-stat-value${hlClass}">${diffVal}</span></div>`;
     return html;
+  }
+
+  /**
+   * Render mini boxplots into the two-group mechanism containers.
+   * Must be called AFTER innerHTML is set (so the containers exist in DOM).
+   * @param {number[]} g1 - Group 1 values
+   * @param {number[]} g2 - Group 2 values
+   * @param {string} tag - 'orig' or 'resamp'
+   * @param {boolean} [highlightMean=false] - Highlight mean markers in orange
+   */
+  function renderTwoGroupBoxplots(g1, g2, tag, highlightMean = false) {
+    if (config.proportion) return;
+    const statFn = config.mode === 'bootstrap' ? getBootstrapStat().fn : mean;
+
+    // Set domain from original data (stable across resamples)
+    if (tag === 'orig') {
+      const allVals = [...g1, ...g2];
+      const lo = Math.min(...allVals);
+      const hi = Math.max(...allVals);
+      const pad = (hi - lo) * 0.08 || 0.5;
+      twoGroupBoxDomain = [lo - pad, hi + pad];
+    }
+
+    const box1 = document.getElementById(`mech-box-${tag}-1`);
+    const box2 = document.getElementById(`mech-box-${tag}-2`);
+    if (box1 && g1.length >= 2) {
+      drawMiniBoxplot(box1, g1, {
+        domain: twoGroupBoxDomain ?? undefined,
+        meanValue: statFn(g1),
+        highlightMean,
+        label: `${tag === 'orig' ? 'Original' : 'Resampled'} ${group1Name} distribution`,
+      });
+    }
+    if (box2 && g2.length >= 2) {
+      drawMiniBoxplot(box2, g2, {
+        domain: twoGroupBoxDomain ?? undefined,
+        meanValue: statFn(g2),
+        highlightMean,
+        label: `${tag === 'orig' ? 'Original' : 'Resampled'} ${group2Name} distribution`,
+      });
+    }
   }
 
   /** Render original group summaries in the mechanism strip. */
   function renderTwoGroupOriginal() {
     if (!mechOriginalContent) return;
-    mechOriginalContent.innerHTML = buildTwoGroupHTML(data1, data2);
+    mechOriginalContent.innerHTML = buildTwoGroupHTML(data1, data2, false, true);
+    renderTwoGroupBoxplots(data1, data2, 'orig');
   }
 
   /**
@@ -1652,6 +1716,7 @@ export function initSimPage(config) {
   function showTwoGroupMechanism(g1, g2, flash = false, highlight = false) {
     if (!mechResampleContent || !mechanismDescEl) return;
     mechResampleContent.innerHTML = buildTwoGroupHTML(g1, g2, highlight);
+    renderTwoGroupBoxplots(g1, g2, 'resamp', highlight);
 
     if (config.mode === 'bootstrap') {
       mechanismDescEl.textContent = 'Resample each group independently with replacement';
@@ -2208,7 +2273,7 @@ export function initSimPage(config) {
     if (config.proportion) {
       obsLabel = `p̂<sub>${group1Name}</sub> − p̂<sub>${group2Name}</sub> = <span class="observed-value">${formatStat(observedStat, dataPrecision, 'proportion')}</span>`;
     } else if (config.twoGroup) {
-      obsLabel = `x̄<sub>${group1Name}</sub> − x̄<sub>${group2Name}</sub> = <span class="observed-value">${formatStat(observedStat, dataPrecision)}</span>`;
+      obsLabel = `<span class="x-bar">x</span><sub>${group1Name}</sub> − <span class="x-bar">x</span><sub>${group2Name}</sub> = <span class="observed-value">${formatStat(observedStat, dataPrecision)}</span>`;
     } else {
       obsLabel = `<span class="observed-value">${formatStat(observedStat, dataPrecision)}</span>`;
     }

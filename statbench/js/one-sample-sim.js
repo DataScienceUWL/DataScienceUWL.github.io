@@ -12,7 +12,7 @@ import { createRng, sampleWithReplacement } from './prng.js';
 import { mean, sd, detectPrecision, formatStat } from './stats.js';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
-import { renderSimPills } from './chart-utils.js';
+import { renderSimPills, formatMechStat, drawMiniBoxplot } from './chart-utils.js';
 import { announce, initKeyboardShortcuts, initPlayPause, initTabs, flashMechanism, animateDropToChart, initDataPanel, computeHighlights, initHelp, initSettings, initMechanismCollapse, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
 import { parseParams } from './url-params.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
@@ -301,7 +301,13 @@ export function initOneSamplePage(config) {
 
       // Populate mechanism strip content (stays hidden until first generate)
       if (mechObservedStat) {
-        mechObservedStat.innerHTML = `${sampleSuccesses} of ${sampleN} (<span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>)`;
+        const obsPct = sampleN > 0 ? (sampleSuccesses / sampleN * 100) : 0;
+        const obsFailures = sampleN - sampleSuccesses;
+        mechObservedStat.innerHTML = `${sampleSuccesses} of ${sampleN} (<span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>)
+          <div class="mech-prop-bar" aria-label="${sampleSuccesses} successes, ${obsFailures} failures" style="margin-top:4px">
+            <div class="mech-prop-fill" style="width:${obsPct}%"></div>
+            <span class="mech-prop-label">${sampleSuccesses} S / ${obsFailures} F</span>
+          </div>`;
       }
       computePreSimDomain();
       scrollToControls();
@@ -369,7 +375,13 @@ export function initOneSamplePage(config) {
         }
         // Populate mechanism strip content (stays hidden until first generate)
         if (mechObservedStat) {
-          mechObservedStat.innerHTML = `${k} of ${n} (<span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>)`;
+          const obsPct = n > 0 ? (k / n * 100) : 0;
+          const obsFail = n - k;
+          mechObservedStat.innerHTML = `${k} of ${n} (<span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>)
+            <div class="mech-prop-bar" aria-label="${k} successes, ${obsFail} failures" style="margin-top:4px">
+              <div class="mech-prop-fill" style="width:${obsPct}%"></div>
+              <span class="mech-prop-label">${k} S / ${obsFail} F</span>
+            </div>`;
         }
         propDataApi.triggerPostLoad();
         announce(`Data loaded: n = ${n}, successes = ${k}`);
@@ -399,7 +411,15 @@ export function initOneSamplePage(config) {
 
       // Populate mechanism strip content (stays hidden until first generate)
       if (mechObservedStat) {
-        mechObservedStat.innerHTML = `n = ${sampleN}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedStat, dataPrecision)}</span>`;
+        mechObservedStat.innerHTML = `n = ${sampleN}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedStat, dataPrecision)}</span>
+          <div id="mech-obs-box" class="mech-box-container"></div>`;
+        const obsBoxEl = document.getElementById('mech-obs-box');
+        if (obsBoxEl && sampleData.length >= 2) {
+          drawMiniBoxplot(obsBoxEl, sampleData, {
+            meanValue: observedStat,
+            label: 'Observed data distribution',
+          });
+        }
       }
       computePreSimDomain();
       scrollToControls();
@@ -552,6 +572,10 @@ export function initOneSamplePage(config) {
     let lastSimStat = 0;
     let lastSimDetail = '';
 
+    const isSingle = count === 1;
+    /** @type {number[]|null} */
+    let lastResampleArr = null;
+
     if (isProp) {
       // Bernoulli(p₀) simulation
       const p0 = getNullValue();
@@ -566,7 +590,17 @@ export function initOneSamplePage(config) {
         allStats.push(successes / n);
       }
       lastSimStat = lastSuccesses / n;
-      lastSimDetail = `${lastSuccesses} of ${n} (p\u0302 = ${fmtObs(lastSimStat)})`;
+      const hlClass = isSingle ? ' highlight-last' : '';
+      const lastFailures = n - lastSuccesses;
+      const pct = n > 0 ? (lastSuccesses / n * 100) : 0;
+      lastSimDetail = `${lastSuccesses} of ${n} (p\u0302 = <span class="mech-stat-value${hlClass}">${fmtObs(lastSimStat)}</span>)`;
+
+      // Proportion bar for visual
+      lastSimDetail += `
+        <div class="mech-prop-bar" aria-label="${lastSuccesses} successes, ${lastFailures} failures" style="margin-top:4px">
+          <div class="mech-prop-fill" style="width:${pct}%"></div>
+          <span class="mech-prop-label">${lastSuccesses} S / ${lastFailures} F</span>
+        </div>`;
 
       if (mechanismDescEl) {
         mechanismDescEl.textContent = `Simulate ${n} trials, each with P(success) = ${p0}`;
@@ -579,9 +613,12 @@ export function initOneSamplePage(config) {
         const resampleArr = sampleWithReplacement(shiftedData, n, rng);
         const simMean = mean(/** @type {number[]} */ (resampleArr));
         lastSimStat = simMean;
+        lastResampleArr = /** @type {number[]} */ (resampleArr);
         allStats.push(simMean);
       }
-      lastSimDetail = `<span class="x-bar">x</span>* = ${formatStat(lastSimStat, dataPrecision)}`;
+      const hlClass = isSingle ? ' highlight-last' : '';
+      lastSimDetail = `<span class="x-bar">x</span>* = <span class="mech-stat-value${hlClass}">${formatStat(lastSimStat, dataPrecision)}</span>`;
+      lastSimDetail += '<div id="mech-sim-box" class="mech-box-container"></div>';
 
       if (mechanismDescEl) {
         mechanismDescEl.textContent = `Resample ${n} values (with replacement) from data shifted to \u03BC\u2080 = ${getNullValue()}, compute mean`;
@@ -591,6 +628,32 @@ export function initOneSamplePage(config) {
 
     if (mechSimStat) {
       mechSimStat.innerHTML = lastSimDetail;
+
+      // Render mini boxplot for one-mean after DOM update
+      if (!isProp && lastResampleArr && lastResampleArr.length >= 2) {
+        const boxEl = document.getElementById('mech-sim-box');
+        if (boxEl) {
+          // Use original data domain for stable comparison
+          const origVals = sampleData;
+          const lo = Math.min(...origVals);
+          const hi = Math.max(...origVals);
+          const pad = (hi - lo) * 0.08 || 0.5;
+          drawMiniBoxplot(boxEl, lastResampleArr, {
+            domain: [lo - pad, hi + pad],
+            meanValue: lastSimStat,
+            highlightMean: isSingle,
+            label: 'Shifted bootstrap resample distribution',
+          });
+        }
+      }
+
+      // Remove highlight after delay
+      if (isSingle) {
+        const hlEl = mechSimStat.querySelector('.mech-stat-value.highlight-last');
+        if (hlEl) {
+          setTimeout(() => hlEl.classList.remove('highlight-last'), 1500);
+        }
+      }
     }
 
     const direction = getDirection();
