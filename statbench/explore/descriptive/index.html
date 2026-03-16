@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Descriptive Statistics | StatBench</title>
+    <title>One Quantitative Variable | StatBench</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,38 +29,6 @@
 
     <style>
         /* Descriptive stats page overrides */
-        .var-type-toggle {
-            display: flex;
-            gap: 0;
-            margin-bottom: 0.75rem;
-        }
-        .var-type-toggle button {
-            flex: 1;
-            padding: 0.5rem 1rem;
-            border: 2px solid var(--accent);
-            background: var(--bg);
-            color: var(--accent);
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: background 0.15s, color 0.15s;
-        }
-        .var-type-toggle button:first-child {
-            border-radius: 6px 0 0 6px;
-            border-right: 1px solid var(--accent);
-        }
-        .var-type-toggle button:last-child {
-            border-radius: 0 6px 6px 0;
-            border-left: 1px solid var(--accent);
-        }
-        .var-type-toggle button[aria-pressed="true"] {
-            background: var(--accent);
-            color: #fff;
-        }
-        .var-type-toggle button:focus-visible {
-            outline: 2px solid var(--accent);
-            outline-offset: 2px;
-        }
         #variable-selector,
         #group-filter {
             margin-bottom: 0.5rem;
@@ -85,124 +53,6 @@
             padding: 0.15rem 0.3rem;
             font-size: 0.85rem;
         }
-        /* Spreadsheet editor */
-        .spreadsheet {
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            max-height: 14rem;
-            overflow-y: auto;
-            font-size: 0.85rem;
-        }
-        .spreadsheet table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .spreadsheet thead th {
-            position: sticky;
-            top: 0;
-            background: var(--bg-alt, #f5f5f5);
-            border-bottom: 2px solid var(--border);
-            padding: 0.25rem 0.4rem;
-            font-weight: 700;
-            font-size: 0.8rem;
-            text-align: left;
-            z-index: 1;
-        }
-        .spreadsheet .row-num {
-            width: 2.5rem;
-            text-align: right;
-            padding-right: 0.4rem;
-            color: var(--ims-gray-text);
-            font-size: 0.75rem;
-            user-select: none;
-            background: var(--bg-alt, #f5f5f5);
-            border-right: 1px solid var(--border);
-        }
-        .spreadsheet td {
-            padding: 0;
-            border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
-        }
-        .spreadsheet input {
-            width: 100%;
-            border: none;
-            background: transparent;
-            padding: 0.25rem 0.4rem;
-            font-size: 0.85rem;
-            font-family: var(--font-mono, 'Source Code Pro', monospace);
-            outline: none;
-            box-sizing: border-box;
-        }
-        .spreadsheet input:focus {
-            background: color-mix(in srgb, var(--accent) 8%, transparent);
-        }
-        .spreadsheet tr.empty-row input {
-            color: var(--ims-gray-text);
-        }
-        /* Categorical editor: side-by-side on desktop */
-        .cat-editors {
-            display: flex;
-            gap: 1rem;
-            align-items: flex-start;
-        }
-        .cat-editors > * {
-            flex: 1;
-            min-width: 0;
-        }
-        @media (max-width: 600px) {
-            .cat-editors {
-                flex-direction: column;
-            }
-        }
-        /* Summary table (categorical) */
-        .summary-table-wrap .summary-heading {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.82rem;
-            margin: 0 0 0.25rem;
-            color: var(--ims-gray-text);
-            font-weight: 700;
-        }
-        .summary-table-wrap .summary-heading input[type="number"] {
-            width: 2.8rem;
-            font-size: 0.82rem;
-            padding: 0.1rem 0.2rem;
-            text-align: center;
-        }
-        #summary-table {
-            border-collapse: collapse;
-            width: 100%;
-            font-size: 0.82rem;
-        }
-        #summary-table th {
-            background: var(--bg-alt, #f5f5f5);
-            border: 1px solid var(--border);
-            padding: 0.15rem 0.4rem;
-            font-weight: 700;
-            text-align: left;
-            font-size: 0.78rem;
-        }
-        #summary-table td {
-            border: 1px solid var(--border);
-            padding: 0;
-        }
-        #summary-table input {
-            width: 100%;
-            border: none;
-            padding: 0.15rem 0.4rem;
-            font-size: 0.82rem;
-            background: transparent;
-            outline: none;
-            box-sizing: border-box;
-        }
-        #summary-table input:focus {
-            background: color-mix(in srgb, var(--accent) 8%, transparent);
-        }
-        #summary-table input[type="number"] {
-            width: 100%;
-            text-align: right;
-            font-family: var(--font-mono, 'Source Code Pro', monospace);
-        }
     </style>
 </head>
 <body>
@@ -213,12 +63,7 @@
     </nav>
 
     <main>
-        <h1>Descriptive Statistics<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatBench home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatBench</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
-
-        <div class="var-type-toggle" role="group" aria-label="Variable type">
-            <button type="button" id="mode-quantitative" aria-pressed="true">Quantitative</button>
-            <button type="button" id="mode-categorical" aria-pressed="false">Categorical</button>
-        </div>
+        <h1>One Quantitative Variable<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatBench home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatBench</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
 
         <section id="data-panel" aria-label="Data input">
             <div role="tablist" aria-label="Data source">
@@ -252,30 +97,6 @@
                         </table>
                     </div>
                     <textarea id="paste-area" hidden></textarea>
-                </div>
-                <div id="paste-categorical" hidden>
-                    <div class="cat-editors">
-                        <div>
-                            <p class="hint" style="margin:0 0 0.25rem;">Raw values:</p>
-                            <div id="cat-spreadsheet" class="spreadsheet" aria-label="Category data editor">
-                                <table>
-                                    <thead><tr><th class="row-num">#</th><th>Category</th></tr></thead>
-                                    <tbody id="cat-sheet-body"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="summary-table-wrap">
-                            <div class="summary-heading">
-                                Summary table &mdash;
-                                <input type="number" id="num-categories" min="2" max="20" value="3" aria-label="Number of categories">
-                                categories
-                            </div>
-                            <table id="summary-table" aria-label="Summary frequency table">
-                                <thead><tr><th>Category</th><th>Count</th></tr></thead>
-                                <tbody id="summary-table-body"></tbody>
-                            </table>
-                        </div>
-                    </div>
                 </div>
                 <div class="btn-row">
                     <button type="button" id="load-pasted">Apply</button>
@@ -318,10 +139,6 @@
                         <label><input type="radio" name="chart-type" value="dotplot"> Dotplot</label>
                         <label><input type="radio" name="chart-type" value="boxplot"> Boxplot</label>
                     </div>
-                    <div class="chart-selector" id="cat-chart-selector" role="radiogroup" aria-label="Bar chart display" hidden>
-                        <label><input type="radio" name="cat-chart-type" value="frequency" checked> Frequency</label>
-                        <label><input type="radio" name="cat-chart-type" value="relative"> Relative Frequency</label>
-                    </div>
                     <div class="chart-controls-bar" id="chart-controls">
                         <!-- Contextual controls injected by JS -->
                     </div>
@@ -346,10 +163,6 @@
                                 <tr><th scope="row">Range</th><td id="stat-range">&mdash;</td></tr>
                             </tbody>
                         </table>
-                    </div>
-                    <div id="categorical-stats" hidden>
-                        <h2 style="font-size:1rem; margin:0;">Frequency Table</h2>
-                        <div id="freq-table-container"></div>
                     </div>
                 </div>
             </div>

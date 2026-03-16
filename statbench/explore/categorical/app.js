@@ -7,6 +7,8 @@
 import { drawBarChart, computeGroupedFrequencies } from '../../js/barchart.js';
 import { formatStat } from '../../js/stats.js';
 import { announce, initTabs, initDataPanel, initHelp } from '../../js/page-utils.js';
+import { parseCSV } from '../../js/csv-parser.js';
+import { initSheet, handleSheetPaste, readSheetValues, populateSheet } from '../../js/spreadsheet.js';
 
 initHelp();
 
@@ -24,8 +26,73 @@ const chartContainer = document.getElementById('chart-container');
 const tableModeSelect = /** @type {HTMLSelectElement} */ (document.getElementById('table-mode'));
 const chartModeSelect = /** @type {HTMLSelectElement} */ (document.getElementById('chart-mode'));
 const proportionNote = document.getElementById('proportion-note');
+const catSheetBody = /** @type {HTMLElement} */ (document.getElementById('cat-sheet-body'));
+const numCategoriesInput = /** @type {HTMLInputElement} */ (document.getElementById('num-categories'));
+const summaryTableBody = /** @type {HTMLElement} */ (document.getElementById('summary-table-body'));
 
 initTabs();
+
+// ── Spreadsheet + summary table init ────────────────────────────────
+
+if (catSheetBody) {
+  initSheet(catSheetBody, 'text');
+  catSheetBody.closest('.spreadsheet')?.addEventListener('paste', (e) => {
+    handleSheetPaste(catSheetBody, 'text', /** @type {ClipboardEvent} */ (e));
+  });
+}
+
+/** Build the summary table rows (category name + count pairs). */
+function buildSummaryTable() {
+  if (!summaryTableBody) return;
+  const n = parseInt(numCategoriesInput?.value ?? '3', 10) || 3;
+  summaryTableBody.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const tr = document.createElement('tr');
+    const tdName = document.createElement('td');
+    const inputName = document.createElement('input');
+    inputName.type = 'text';
+    inputName.placeholder = `Category ${i + 1}`;
+    inputName.setAttribute('aria-label', `Category ${i + 1} name`);
+    tdName.appendChild(inputName);
+    tr.appendChild(tdName);
+
+    const tdCount = document.createElement('td');
+    const inputCount = document.createElement('input');
+    inputCount.type = 'number';
+    inputCount.min = '0';
+    inputCount.placeholder = '0';
+    inputCount.setAttribute('aria-label', `Category ${i + 1} count`);
+    tdCount.appendChild(inputCount);
+    tr.appendChild(tdCount);
+
+    summaryTableBody.appendChild(tr);
+  }
+}
+
+buildSummaryTable();
+numCategoriesInput?.addEventListener('change', buildSummaryTable);
+
+/**
+ * Read data from the summary table (category name + count → expanded values).
+ * @returns {{ values: string[], varName: string } | null}
+ */
+function readSummaryData() {
+  if (!summaryTableBody) return null;
+  const rows = summaryTableBody.querySelectorAll('tr');
+  /** @type {string[]} */
+  const values = [];
+  let hasData = false;
+  for (const row of rows) {
+    const inputs = row.querySelectorAll('input');
+    const name = inputs[0]?.value.trim();
+    const count = parseInt(inputs[1]?.value ?? '0', 10);
+    if (name && count > 0) {
+      hasData = true;
+      for (let i = 0; i < count; i++) values.push(name);
+    }
+  }
+  return hasData ? { values, varName: 'Category' } : null;
+}
 
 // ── State ────────────────────────────────────────────────────────────
 
@@ -71,17 +138,15 @@ function loadParsedData(parsed, sourceName) {
 
 /** Group label for categorical datasets. @param {any} ds */
 function catGroupFn(ds) {
-  if (ds.type === 'chisq' || ds.type === 'randomization_prop') return '1:Two Categorical Variables';
-  if (ds.type === 'one_cat' || ds.type === 'bootstrap_prop') return '2:One Categorical Variable';
-  if (ds.hasNumeric) return '3:With Quantitative Variable';
-  // Fallback: use variable count
-  return (ds.variables?.length ?? 0) >= 2 ? '1:Two Categorical Variables' : '2:One Categorical Variable';
+  if (ds.type === 'one_cat') return '1:One Variable';
+  return '2:Two Variables';
 }
 
 initDataPanel({
   autoCollapse: true,
   showPreview: true,
-  datasetFilter: (/** @type {any} */ ds) => ds.hasCategorical === true,
+  datasetFilter: (/** @type {any} */ ds) =>
+    ds.hasCategorical === true && !ds.hasNumeric,
   datasetGroupFn: catGroupFn,
   onDataset: (ds) => {
     const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
@@ -92,6 +157,11 @@ initDataPanel({
     catVarNames = catVars.map(/** @param {any} v */ v => v.name);
     rawRows = ds.rows;
     setupVariableSelectors(catVarNames);
+    // Populate spreadsheet with the first categorical variable's values
+    if (catSheetBody && catVarNames.length > 0) {
+      const vals = rawRows.map(r => String(r[catVarNames[0]] ?? ''));
+      populateSheet(catSheetBody, 'text', vals);
+    }
     showDataLoaded(ds.name);
   },
   onText: loadParsedData,
@@ -103,9 +173,65 @@ initDataPanel({
     if (resultsSection) resultsSection.hidden = true;
     if (tableContainer) tableContainer.innerHTML = '';
     if (chartContainer) chartContainer.innerHTML = '';
+    if (catSheetBody) initSheet(catSheetBody, 'text');
+    buildSummaryTable();
     announce('Data cleared.');
   },
 });
+
+/**
+ * Load a flat array of categorical values (from spreadsheet or summary table).
+ * @param {string[]} values
+ * @param {string} varName
+ * @param {string} sourceName
+ */
+function loadRawValues(values, varName, sourceName) {
+  catVarNames = [varName];
+  rawRows = values.map(v => ({ [varName]: v }));
+  setupVariableSelectors(catVarNames);
+  showDataLoaded(sourceName);
+}
+
+/**
+ * Handle the Apply button — check summary table, then spreadsheet, then CSV textarea.
+ */
+function handleApply() {
+  // 1. Summary table
+  const summary = readSummaryData();
+  if (summary) {
+    loadRawValues(summary.values, summary.varName, 'Summary data');
+    return;
+  }
+  // 2. Spreadsheet
+  if (catSheetBody) {
+    const sheetValues = readSheetValues(catSheetBody).filter(v => v.length > 0);
+    if (sheetValues.length > 0) {
+      loadRawValues(sheetValues, 'Value', 'Edited data');
+      return;
+    }
+  }
+  // 3. CSV textarea fallback
+  const pasteArea = /** @type {HTMLTextAreaElement|null} */ (document.getElementById('paste-area'));
+  const text = pasteArea?.value?.trim();
+  if (text) {
+    try {
+      const parsed = parseCSV(text);
+      loadParsedData(parsed, 'Edited data');
+    } catch (e) {
+      announce(`Error parsing data: ${e instanceof Error ? e.message : String(e)}`);
+    }
+    return;
+  }
+  announce('Enter categorical values or summary counts.');
+}
+
+// Override the default Apply button to use our custom handler
+const loadPastedBtn = document.getElementById('load-pasted');
+if (loadPastedBtn) {
+  const newBtn = /** @type {HTMLElement} */ (loadPastedBtn.cloneNode(true));
+  loadPastedBtn.parentNode?.replaceChild(newBtn, loadPastedBtn);
+  newBtn.addEventListener('click', handleApply);
+}
 
 // ── Variable selectors ───────────────────────────────────────────────
 
