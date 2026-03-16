@@ -155,6 +155,9 @@ export function initOneSamplePage(config) {
   let lastHistResult = null;
   /** @type {{ xScale: any, frame: any, domain: [number,number], maxStack: number, numBins: number } | null} */
   let lastDotResult = null;
+  /** Pre-simulated domain for stable axis limits. */
+  /** @type {[number,number]|null} */
+  let preSimDomain = null;
 
   // One-prop state
   let sampleSuccesses = 0;
@@ -214,6 +217,47 @@ export function initOneSamplePage(config) {
     resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
   }
 
+  /**
+   * Run a silent pre-simulation to establish stable axis limits.
+   * Called after data loads so the chart domain doesn't jump as resamples accumulate.
+   */
+  function computePreSimDomain() {
+    const PRE_N = 2000;
+    const TRIM = 5;
+    const preRng = createRng('presim-' + Date.now());
+    const preStats = [];
+    const p0 = getNullValue();
+
+    if (isProp) {
+      for (let i = 0; i < PRE_N; i++) {
+        let k = 0;
+        for (let j = 0; j < sampleN; j++) {
+          if (preRng() < p0) k++;
+        }
+        preStats.push(k / sampleN);
+      }
+    } else {
+      // One-mean: shifted bootstrap
+      const shift = p0 - observedStat;
+      const shifted = sampleData.map(v => v + shift);
+      for (let i = 0; i < PRE_N; i++) {
+        const rs = sampleWithReplacement(shifted, sampleN, preRng);
+        preStats.push(mean(rs));
+      }
+    }
+
+    if (preStats.length === 0) { preSimDomain = null; return; }
+
+    preStats.sort((a, b) => a - b);
+    const lo = preStats[TRIM];
+    const hi = preStats[preStats.length - 1 - TRIM];
+    const pad = (hi - lo) * 0.1 || 0.05;
+    preSimDomain = [lo - pad, hi + pad];
+
+    // Render empty chart with pre-sim axes
+    renderChart([], observedStat, getDirection());
+  }
+
   // ─── Data loading ───
 
   if (isProp) {
@@ -259,6 +303,7 @@ export function initOneSamplePage(config) {
       if (mechObservedStat) {
         mechObservedStat.innerHTML = `${sampleSuccesses} of ${sampleN} (<span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>)`;
       }
+      computePreSimDomain();
       scrollToControls();
     }
 
@@ -356,6 +401,7 @@ export function initOneSamplePage(config) {
       if (mechObservedStat) {
         mechObservedStat.innerHTML = `n = ${sampleN}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedStat, dataPrecision)}</span>`;
       }
+      computePreSimDomain();
       scrollToControls();
     }
 
@@ -550,10 +596,16 @@ export function initOneSamplePage(config) {
     const direction = getDirection();
 
     // Compute domain for consistent bin alignment
-    const lo = Math.min(...allStats, observedStat);
-    const hi = Math.max(...allStats, observedStat);
+    // Never shrink below the pre-simulated domain
+    let lo = Math.min(...allStats, observedStat);
+    let hi = Math.max(...allStats, observedStat);
     const pad = (hi - lo) * 0.05 || 0.05;
-    const hlDomain = /** @type {[number,number]} */ ([lo - pad, hi + pad]);
+    lo -= pad; hi += pad;
+    if (preSimDomain) {
+      lo = Math.min(lo, preSimDomain[0]);
+      hi = Math.max(hi, preSimDomain[1]);
+    }
+    const hlDomain = /** @type {[number,number]} */ ([lo, hi]);
 
     // Thresholds: snapped for proportions, default for means
     const thresholdOpts = isProp
@@ -603,11 +655,16 @@ export function initOneSamplePage(config) {
     chartContainer.innerHTML = '';
     const n = stats.length;
 
-    const lo = Math.min(...stats, observed);
-    const hi = Math.max(...stats, observed);
-    const pad = (hi - lo) * 0.05 || 0.05;
+    let cLo = n > 0 ? Math.min(...stats, observed) : observed;
+    let cHi = n > 0 ? Math.max(...stats, observed) : observed;
+    const cPad = (cHi - cLo) * 0.05 || 0.05;
+    cLo -= cPad; cHi += cPad;
+    if (preSimDomain) {
+      cLo = Math.min(cLo, preSimDomain[0]);
+      cHi = Math.max(cHi, preSimDomain[1]);
+    }
     /** @type {[number, number]} */
-    const domain = hlDomain || [lo - pad, hi + pad];
+    const domain = hlDomain || [cLo, cHi];
 
     const activeChart = getActiveChartType();
     if (setToggleSelected) setToggleSelected(activeChart);

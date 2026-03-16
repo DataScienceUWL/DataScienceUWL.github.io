@@ -832,8 +832,8 @@ export function initSimPage(config) {
    * then render an empty chart (0 dots, just axes, no observed line).
    */
   function renderEmptyChart() {
-    const PRE_SIM_N = 100;
-    const TRIM = 5;
+    const PRE_SIM_N = 2000;
+    const TRIM = 5; // 5/2000 = 0.25th percentile — captures extreme tails
     const preRng = createRng('presim-' + Date.now());
     const preStats = [];
 
