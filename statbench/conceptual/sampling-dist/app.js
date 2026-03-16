@@ -459,8 +459,8 @@ function flyDotBetweenCharts(sampleMean, onDone) {
   if (!target) { onDone(); return; }
   const endPos = { x: target.x, y: target.y };
 
-  // Match the landing dot size to the actual chart dot size
-  const dotSize = Math.max(target.size, 8);
+  // Fly the enlarged highlighted dot (matches dotplot highlight: 1.5× with black border)
+  const dotSize = Math.max(target.size * 1.5, 12);
   const halfDot = dotSize / 2;
 
   // Create flying dot
@@ -471,7 +471,8 @@ function flyDotBetweenCharts(sampleMean, onDone) {
     width: ${dotSize}px; height: ${dotSize}px;
     border-radius: 50%;
     background: #E07020;
-    box-shadow: 0 2px 6px rgba(224, 112, 32, 0.4);
+    border: 2px solid #000;
+    box-sizing: border-box;
     z-index: 1000;
     pointer-events: none;
     left: ${startPos.x - halfDot}px;
