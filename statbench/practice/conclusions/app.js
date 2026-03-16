@@ -597,13 +597,12 @@ function showScenario(idx) {
       <option value="sufficient">sufficient</option>
       <option value="insufficient">insufficient</option>
     </select>
-    evidence <em>[selected claim above]</em>.`;
+    evidence <span class="claim-fill" id="formal-claim-fill">[select a claim above]</span>.`;
   formalSection.style.display = '';
   formalFeedback.className = 'feedback-box';
   formalFeedback.textContent = '';
 
   // ── Build practical conclusion Mad Libs ──
-  const sig = s.pValue < s.alpha;
   practicalSentence.innerHTML = `The data
     <select id="practical-provide" class="madlib-select" aria-label="Provide or do not provide">
       <option value="" selected disabled>choose...</option>
@@ -617,10 +616,22 @@ function showScenario(idx) {
       <option value="weak">weak</option>
       <option value="no">no</option>
     </select>
-    evidence <em>[selected claim above]</em>.`;
+    evidence <span class="claim-fill" id="practical-claim-fill">[select a claim above]</span>.`;
   practicalSection.style.display = '';
   practicalFeedback.className = 'feedback-box';
   practicalFeedback.textContent = '';
+
+  // ── Claim radio → fill in both conclusion sentences ──
+  claimOptionsList.addEventListener('change', (e) => {
+    const input = /** @type {HTMLInputElement} */ (e.target);
+    if (input.name !== 'claim-choice') return;
+    const label = input.closest('label');
+    const text = label?.querySelector('span')?.textContent || '';
+    const formalFill = document.getElementById('formal-claim-fill');
+    const practicalFill = document.getElementById('practical-claim-fill');
+    if (formalFill) { formalFill.textContent = text; formalFill.classList.add('filled'); }
+    if (practicalFill) { practicalFill.textContent = text; practicalFill.classList.add('filled'); }
+  });
 
   // ── Reset buttons ──
   actionButtons.style.display = '';
