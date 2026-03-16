@@ -193,8 +193,13 @@ function drawOneSampleAnimated() {
   setTimeout(() => {
     updateStatsAndRender(prevLength, 1);
 
+    // Hide the highlight until the flying dot arrives
+    const highlightEl = hideHighlight();
+
     // Step 3: Fly dot from population mean position to sampling distribution
     flyDotBetweenCharts(sampleMean, () => {
+      // Reveal the highlight now that the dot has landed
+      revealHighlights();
       // Step 4: Fade out everything together
       if (popOverlay) {
         popOverlay.style.transition = 'opacity 0.5s ease-out';
@@ -372,6 +377,59 @@ function findHighlightTarget() {
   }
 
   return null;
+}
+
+/**
+ * Hide the highlighted element in the sampling distribution chart.
+ * Returns the element so the caller can reveal it later.
+ * @returns {SVGElement|null}
+ */
+function hideHighlight() {
+  if (!samplingContainer) return null;
+  const sampSvg = samplingContainer.querySelector('svg');
+  if (!sampSvg) return null;
+
+  // Dotplot: hide the orange circle
+  const circles = sampSvg.querySelectorAll('.data circle');
+  for (const c of circles) {
+    if (c.getAttribute('fill') === '#E07020') {
+      /** @type {SVGElement} */ (c).style.opacity = '0';
+      return /** @type {SVGElement} */ (c);
+    }
+  }
+
+  // Histogram: hide delta-bars
+  const deltaBars = sampSvg.querySelectorAll('.delta-bar');
+  if (deltaBars.length > 0) {
+    for (const bar of deltaBars) {
+      /** @type {SVGElement} */ (bar).style.opacity = '0';
+    }
+    // Return first one — caller just needs a truthy value to trigger reveal
+    return /** @type {SVGElement} */ (deltaBars[0]);
+  }
+
+  return null;
+}
+
+/**
+ * Reveal all hidden highlights (for histogram delta-bars there may be multiple).
+ */
+function revealHighlights() {
+  if (!samplingContainer) return;
+  const sampSvg = samplingContainer.querySelector('svg');
+  if (!sampSvg) return;
+  // Restore any hidden circles
+  for (const c of sampSvg.querySelectorAll('.data circle')) {
+    if (/** @type {SVGElement} */ (c).style.opacity === '0') {
+      /** @type {SVGElement} */ (c).style.removeProperty('opacity');
+    }
+  }
+  // Restore any hidden delta-bars
+  for (const bar of sampSvg.querySelectorAll('.delta-bar')) {
+    if (/** @type {SVGElement} */ (bar).style.opacity === '0') {
+      /** @type {SVGElement} */ (bar).style.removeProperty('opacity');
+    }
+  }
 }
 
 /**
