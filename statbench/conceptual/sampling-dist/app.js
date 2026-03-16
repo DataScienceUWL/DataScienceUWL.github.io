@@ -725,6 +725,7 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
       animate: false,
       highlightIndex,
       highlightIndices,
+      domain,
     });
     if (showNormalCheckbox?.checked && n >= 10) {
       overlayNormalOnDotplot(result, sampleMeans);
