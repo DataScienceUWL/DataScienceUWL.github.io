@@ -936,7 +936,7 @@ input[aria-invalid="true"] {
   font-weight: 600;
 }
 
-/* Orange highlight for resample statistic — number only */
+/* Subtle highlight for resample statistic — brief bold pulse, auto-fades */
 .highlight-last.mech-stat-value,
 #resample-mean.highlight-last,
 #mech-shuffled-chisq.highlight-last,
@@ -944,6 +944,11 @@ input[aria-invalid="true"] {
 .mechanism-collapsed-summary .highlight-last {
   color: var(--highlight-orange);
   font-weight: 700;
+  animation: stat-text-fade 1.2s ease-out forwards;
+}
+@keyframes stat-text-fade {
+  0%   { color: var(--highlight-orange); font-weight: 700; }
+  100% { color: inherit; font-weight: 600; }
 }
 
 /* Mini boxplot in mechanism strip */
@@ -961,14 +966,10 @@ input[aria-invalid="true"] {
   font-style: italic;
 }
 
-/* Flash animation for +1 mechanism highlight */
+/* Mechanism strip flash — disabled (was too stroby during auto-play).
+   Kept as class hook in case we want a subtler version later. */
 .mechanism-flash .mechanism-stat {
-  animation: stat-flash 0.4s ease-out;
-}
-
-@keyframes stat-flash {
-  0% { background: var(--highlight-orange); }
-  100% { background: transparent; }
+  /* no-op — animation removed */
 }
 /* Observed statistic highlight — matches chart overlay line color */
 .observed-highlight,
@@ -1030,7 +1031,7 @@ input[aria-invalid="true"] {
   width: fit-content;
 }
 .mech-diff.highlight-last {
-  color: #E07020;
+  animation: stat-text-fade 1.2s ease-out forwards;
 }
 .mech-box-container {
   margin: 2px 0 4px;

@@ -1290,35 +1290,23 @@ export function initSimPage(config) {
 
       if (count === 1) {
         lastWasSingle = true;
-        // Staggered animation: mechanism update → 120ms → flash → 120ms → dot appears → drop animation
         if (showOneSampleMech) {
           lastResample = lastResampleValues;
           showResample(lastResampleValues, false, true);
         }
-        // For two-group, get the diff value element for drop animation + highlight removal
+        // For two-group, get the diff value element for drop animation
         const bootDiffEl = !showOneSampleMech
           ? document.querySelector('#mech-resample-content .mech-diff')
           : null;
         const bootDiffValueEl = bootDiffEl?.querySelector('.mech-stat-value') ?? null;
-        if (bootDiffValueEl) {
-          setTimeout(() => {
-            bootDiffValueEl.classList.remove('highlight-last');
-            const summary = document.querySelector('.mechanism-collapsed-summary');
-            const hl = summary?.querySelector('.highlight-last');
-            if (hl) hl.classList.remove('highlight-last');
-          }, 1500);
-        }
+        // Brief pause for mechanism to update visually, then render chart + drop
         setTimeout(() => {
-          flashMechanism();
-          setTimeout(() => {
-            renderChart(allStats, ciForChart);
-            // Drop animation: flying dot from resample stat to chart
-            const dropSource = bootDiffValueEl || bootDiffEl || resampleMeanEl;
-            if (dropSource && chartContainer) {
-              animateDropToChart(/** @type {HTMLElement} */ (dropSource), chartContainer);
-            }
-          }, 120);
-        }, 120);
+          renderChart(allStats, ciForChart);
+          const dropSource = bootDiffValueEl || bootDiffEl || resampleMeanEl;
+          if (dropSource && chartContainer) {
+            animateDropToChart(/** @type {HTMLElement} */ (dropSource), chartContainer);
+          }
+        }, 150);
       } else {
         lastWasSingle = false;
         renderChart(allStats, ciForChart);
@@ -1381,14 +1369,11 @@ export function initSimPage(config) {
       if (count === 1) {
         lastWasSingle = true;
         setTimeout(() => {
-          flashMechanism();
-          setTimeout(() => {
-            renderChart(allStats, null, observedStat, direction);
-            if (resampleMeanEl && chartContainer) {
-              animateDropToChart(resampleMeanEl, chartContainer);
-            }
-          }, 120);
-        }, 120);
+          renderChart(allStats, null, observedStat, direction);
+          if (resampleMeanEl && chartContainer) {
+            animateDropToChart(resampleMeanEl, chartContainer);
+          }
+        }, 150);
       } else {
         lastWasSingle = false;
         renderChart(allStats, null, observedStat, direction);
@@ -1452,33 +1437,17 @@ export function initSimPage(config) {
       displayRandomizationResults(allStats, observedStat, pValue, extremeCount, direction);
 
       if (count === 1) {
-        // The diff is already highlighted orange via showTwoGroupMechanism(…, highlight=true)
-        // IMPORTANT: scope to #mech-resample-content — there are TWO .mech-diff elements
-        // (one in original panel, one in shuffled panel); we want the shuffled one.
+        // The diff value gets highlight-last via showTwoGroupMechanism(…, highlight=true)
+        // CSS auto-fades it via stat-text-fade animation (1.2s)
         const mechDiffEl = document.querySelector('#mech-resample-content .mech-diff');
-        // Remove highlight after animation completes (120+120+~500ms = ~740ms)
+        // Brief pause for mechanism to update, then render chart + drop
         setTimeout(() => {
-          const el = document.querySelector('#mech-resample-content .mech-diff');
-          if (el) el.classList.remove('highlight-last');
-          // Also clear from collapsed summary
-          const summary = document.querySelector('.mechanism-collapsed-summary');
-          const hl = summary?.querySelector('.highlight-last');
-          if (hl) {
-            hl.classList.remove('highlight-last');
+          renderChart(allStats, null, observedStat, direction);
+          const dropSourceEl = mechDiffEl || resampleMeanEl;
+          if (dropSourceEl && chartContainer) {
+            animateDropToChart(/** @type {HTMLElement} */ (dropSourceEl), chartContainer);
           }
-        }, 1500);
-        // Staggered: mechanism update → 120ms → flash → 120ms → dot appears → drop animation
-        setTimeout(() => {
-          flashMechanism();
-          setTimeout(() => {
-            renderChart(allStats, null, observedStat, direction);
-            // Drop animation: flying dot from shuffled diff to chart
-            const dropSourceEl = mechDiffEl || resampleMeanEl;
-            if (dropSourceEl && chartContainer) {
-              animateDropToChart(/** @type {HTMLElement} */ (dropSourceEl), chartContainer);
-            }
-          }, 120);
-        }, 120);
+        }, 150);
       } else {
         renderChart(allStats, null, observedStat, direction);
       }
@@ -1710,10 +1679,10 @@ export function initSimPage(config) {
    * Show the two-group mechanism after a simulation step.
    * @param {number[]} g1 - Group 1 values (resample or shuffled)
    * @param {number[]} g2 - Group 2 values (resample or shuffled)
-   * @param {boolean} [flash]
-   * @param {boolean} [highlight] - Highlight diff orange (+1 animation)
+   * @param {boolean} [_flash] - Unused (kept for call-site compat)
+   * @param {boolean} [highlight] - Highlight diff value (+1 animation, auto-fades via CSS)
    */
-  function showTwoGroupMechanism(g1, g2, flash = false, highlight = false) {
+  function showTwoGroupMechanism(g1, g2, _flash = false, highlight = false) {
     if (!mechResampleContent || !mechanismDescEl) return;
     mechResampleContent.innerHTML = buildTwoGroupHTML(g1, g2, highlight);
     renderTwoGroupBoxplots(g1, g2, 'resamp', highlight);
@@ -1724,12 +1693,6 @@ export function initSimPage(config) {
       mechanismDescEl.textContent = 'Shuffle group labels · same values, new grouping';
     }
     mechanismDescEl.hidden = false;
-
-    if (flash && mechanismStrip) {
-      mechanismStrip.classList.remove('mechanism-flash');
-      void mechanismStrip.offsetWidth;
-      mechanismStrip.classList.add('mechanism-flash');
-    }
   }
 
   /**
@@ -1742,7 +1705,7 @@ export function initSimPage(config) {
    * @param {boolean} [flash] - Trigger mechanism flash animation
    * @param {boolean} [highlightStat] - Highlight resample stat orange (+1 only)
    */
-  function showResample(resampleValues, flash = false, highlightStat = false) {
+  function showResample(resampleValues, _flash = false, highlightStat = false) {
     if (!resampleContentEl || !bootstrapSampleEl) return;
     bootstrapSampleEl.hidden = false;
 
@@ -1799,18 +1762,6 @@ export function initSimPage(config) {
       mechanismDescEl.hidden = false;
     }
 
-    // Flash animation for +1 to emphasize statistic → dot connection
-    if (flash && mechanismStrip) {
-      flashMechanism();
-    }
-  }
-
-  /** Trigger the CSS flash animation on the mechanism strip. */
-  function flashMechanism() {
-    if (!mechanismStrip) return;
-    mechanismStrip.classList.remove('mechanism-flash');
-    void mechanismStrip.offsetWidth; // force reflow to restart animation
-    mechanismStrip.classList.add('mechanism-flash');
   }
 
   /**
