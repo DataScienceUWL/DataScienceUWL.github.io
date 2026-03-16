@@ -93,9 +93,13 @@ let lastDomain;
 /** @type {number[]|undefined} */
 let lastThresholds;
 
-// Pre-computed sampling distribution domain (stable axes)
+// Pre-computed sampling distribution domain + dotplot grid (stable axes & stacks)
 /** @type {[number,number]|null} */
 let samplingDomain = null;
+/** @type {number|null} */
+let samplingBinWidth = null;
+/** @type {number|null} */
+let samplingBinOrigin = null;
 
 // Cached population histogram result for overlay animation
 /** @type {{ frame: import('../../js/types.js').ChartFrame, xScale: d3Scale.ScaleLinear<number,number> }|null} */
@@ -146,6 +150,11 @@ function precomputeSamplingDomain() {
   const range = hi - lo || 1;
   // 15% padding on each side ensures virtually no sample mean falls outside
   samplingDomain = [lo - range * 0.15, hi + range * 0.15];
+  // Lock the dotplot bin grid so stacks don't shift as dots are added
+  const domainSpan = samplingDomain[1] - samplingDomain[0];
+  const numDotBins = 40; // matches dotplot.js default max
+  samplingBinWidth = domainSpan / numDotBins;
+  samplingBinOrigin = samplingDomain[0];
 }
 
 function renderPopulation() {
@@ -731,6 +740,8 @@ function renderSamplingDist(highlightIndex = -1, highlightIndices, prevBinCounts
       highlightIndex,
       highlightIndices,
       domain,
+      binWidth: samplingBinWidth,
+      binOrigin: samplingBinOrigin,
     });
     if (showNormalCheckbox?.checked && n >= 10) {
       overlayNormalOnDotplot(result, sampleMeans);
