@@ -518,38 +518,40 @@ function flyDotBetweenCharts(sampleMean, onDone) {
   `;
   document.body.appendChild(dot);
 
-  // Animate from start to end
+  // Animate from start to end using quadratic bezier (matches mechanism strip drop)
   const duration = 700;
   const startTime = performance.now();
-  const dx = endPos.x - startPos.x;
-  const dy = endPos.y - startPos.y;
-  const dist = Math.sqrt(dx * dx + dy * dy);
+  const sx = startPos.x, sy = startPos.y;
+  const tx = endPos.x, ty = endPos.y;
+  const dx = tx - sx;
+  const dy = ty - sy;
 
   // Detect layout: side-by-side (dx dominant) vs stacked (dy dominant)
   const isSideBySide = Math.abs(dx) > Math.abs(dy);
 
+  // Quadratic bezier control point — arc up above both endpoints
+  let cpx, cpy;
+  if (isSideBySide) {
+    cpx = sx + dx * 0.5;
+    cpy = Math.min(sy, ty) - Math.abs(dx) * 0.3 - 40;
+  } else {
+    // Stacked: shoot upward from population mean, then fall into sampling dist
+    cpx = sx + dx * 0.5;
+    cpy = Math.min(sy, ty) - Math.abs(dy) * 0.35 - 30;
+  }
+
   function step(now) {
     const elapsed = now - startTime;
     const t = Math.min(elapsed / duration, 1);
-    // Ease: slow start, fast middle, slow end (ease-in-out cubic)
+    // Ease-in-out cubic
     const eased = t < 0.5
       ? 4 * t * t * t
       : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-    // Pronounced arc — scales with travel distance
-    const arcAmount = Math.max(dist * 0.4, 80);
-    const arcT = 4 * eased * (1 - eased); // peaks at t=0.5
-
-    let x, y;
-    if (isSideBySide) {
-      // Side-by-side: arc upward
-      x = startPos.x + dx * eased;
-      y = startPos.y + dy * eased - arcAmount * arcT;
-    } else {
-      // Stacked: arc to the right
-      x = startPos.x + dx * eased + arcAmount * 0.7 * arcT;
-      y = startPos.y + dy * eased;
-    }
+    // Quadratic bezier position
+    const u = 1 - eased;
+    const x = u * u * sx + 2 * u * eased * cpx + eased * eased * tx;
+    const y = u * u * sy + 2 * u * eased * cpy + eased * eased * ty;
 
     dot.style.left = `${x - halfDot}px`;
     dot.style.top = `${y - halfDot}px`;
