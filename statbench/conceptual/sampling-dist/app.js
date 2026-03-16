@@ -339,10 +339,10 @@ function findHighlightTarget() {
   const sampSvg = /** @type {SVGSVGElement|null} */ (samplingContainer.querySelector('svg'));
   if (!sampSvg) return null;
 
-  // For dotplot: find the highlighted circle (orange fill, enlarged)
+  // For dotplot: find the highlighted circle (orange fill #E07020, enlarged)
   const circles = sampSvg.querySelectorAll('.data circle');
   for (const c of circles) {
-    if (c.getAttribute('fill') === '#F05133') {
+    if (c.getAttribute('fill') === '#E07020') {
       const rect = c.getBoundingClientRect();
       return {
         x: rect.left + rect.width / 2,
@@ -412,8 +412,8 @@ function flyDotBetweenCharts(sampleMean, onDone) {
     position: fixed;
     width: ${dotSize}px; height: ${dotSize}px;
     border-radius: 50%;
-    background: #F05133;
-    box-shadow: 0 2px 6px rgba(240, 81, 51, 0.4);
+    background: #E07020;
+    box-shadow: 0 2px 6px rgba(224, 112, 32, 0.4);
     z-index: 1000;
     pointer-events: none;
     left: ${startPos.x - halfDot}px;
