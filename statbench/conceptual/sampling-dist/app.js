@@ -131,6 +131,9 @@ function renderPopulation() {
     numBins: 40,
   });
   popHistResult = { frame: result.frame, xScale: result.xScale };
+
+  // Remove y-axis entirely — population chart shows shape only
+  d3Selection.select(result.frame.inner).select('.y-axis').remove();
 }
 
 // ─── Sampling ───
@@ -327,8 +330,53 @@ function svgLocalToFixed(svg, inner, localX, localY) {
 }
 
 /**
+ * Find the highlighted element in the sampling distribution chart and return
+ * its center position (viewport-fixed) and rendered size.
+ * @returns {{ x: number, y: number, size: number }|null}
+ */
+function findHighlightTarget() {
+  if (!samplingContainer) return null;
+  const sampSvg = /** @type {SVGSVGElement|null} */ (samplingContainer.querySelector('svg'));
+  if (!sampSvg) return null;
+
+  // For dotplot: find the highlighted circle (orange fill, enlarged)
+  const circles = sampSvg.querySelectorAll('.data circle');
+  for (const c of circles) {
+    if (c.getAttribute('fill') === '#F05133') {
+      const rect = c.getBoundingClientRect();
+      return {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+        size: rect.width,
+      };
+    }
+  }
+
+  // For histogram: find the delta-bar (orange highlight bar)
+  const deltaBars = sampSvg.querySelectorAll('.delta-bar');
+  if (deltaBars.length > 0) {
+    // Find the delta bar closest to the sample mean
+    let best = deltaBars[0];
+    let bestArea = 0;
+    for (const bar of deltaBars) {
+      const r = bar.getBoundingClientRect();
+      const area = r.width * r.height;
+      if (area > bestArea) { bestArea = area; best = bar; }
+    }
+    const rect = best.getBoundingClientRect();
+    return {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      size: Math.min(rect.width, rect.height),
+    };
+  }
+
+  return null;
+}
+
+/**
  * Fly an orange dot from the mean position on the population chart
- * to the mean position on the sampling distribution chart.
+ * to the highlighted element in the sampling distribution chart.
  * Uses a fixed-position DOM element to cross between SVGs.
  * @param {number} sampleMean
  * @param {() => void} onDone
@@ -337,47 +385,39 @@ function flyDotBetweenCharts(sampleMean, onDone) {
   if (!popHistResult || !popContainer || !samplingContainer) { onDone(); return; }
 
   const popSvg = /** @type {SVGSVGElement|null} */ (popContainer.querySelector('svg'));
-  const sampSvg = /** @type {SVGSVGElement|null} */ (samplingContainer.querySelector('svg'));
-  if (!popSvg || !sampSvg) { onDone(); return; }
+  if (!popSvg) { onDone(); return; }
 
   const popInner = /** @type {SVGGElement|null} */ (popSvg.querySelector('.chart-inner'));
-  const sampInner = /** @type {SVGGElement|null} */ (sampSvg.querySelector('.chart-inner'));
-  if (!popInner || !sampInner) { onDone(); return; }
+  if (!popInner) { onDone(); return; }
 
-  // Start position: mean on population chart (at the x-axis)
+  // Start position: mean marker on population chart
   const { frame: popFrame, xScale: popXScale } = popHistResult;
   const popLocalX = popXScale(sampleMean);
-  const popLocalY = popFrame.height - 10; // just above x-axis, at the triangle tip
+  const popLocalY = popFrame.height - 10;
   const startPos = svgLocalToFixed(popSvg, popInner, popLocalX, popLocalY);
 
-  // End position: mean on sampling distribution chart
-  // Get the sampling dist xScale from lastDomain
-  if (!lastDomain) { onDone(); return; }
-  const sampVb = sampSvg.viewBox.baseVal;
-  const sampTransform = sampInner.getAttribute('transform') || '';
-  const sampMatch = sampTransform.match(/translate\(([^,]+),\s*([^)]+)\)/);
-  const sampTx = sampMatch ? parseFloat(sampMatch[1]) : 60;
-  const sampTy = sampMatch ? parseFloat(sampMatch[2]) : 28;
-  const sampInnerW = sampVb.width - sampTx - 20;
-  const sampInnerH = sampVb.height - sampTy - 50;
+  // End position: the actual highlighted element in the sampling distribution
+  const target = findHighlightTarget();
+  if (!target) { onDone(); return; }
+  const endPos = { x: target.x, y: target.y };
 
-  const sampXScale = d3Scale.scaleLinear().domain(lastDomain).range([0, sampInnerW]);
-  const sampLocalX = sampXScale(sampleMean);
-  const sampLocalY = sampInnerH; // x-axis level
-  const endPos = svgLocalToFixed(sampSvg, sampInner, sampLocalX, sampLocalY);
+  // Match the landing dot size to the actual chart dot size
+  const dotSize = Math.max(target.size, 8);
+  const halfDot = dotSize / 2;
 
-  // Create flying dot as a fixed-position DOM element
+  // Create flying dot
   const dot = document.createElement('div');
+  dot.className = 'flying-dot';
   dot.style.cssText = `
     position: fixed;
-    width: 14px; height: 14px;
+    width: ${dotSize}px; height: ${dotSize}px;
     border-radius: 50%;
     background: #F05133;
     box-shadow: 0 2px 6px rgba(240, 81, 51, 0.4);
     z-index: 1000;
     pointer-events: none;
-    left: ${startPos.x - 7}px;
-    top: ${startPos.y - 7}px;
+    left: ${startPos.x - halfDot}px;
+    top: ${startPos.y - halfDot}px;
   `;
   document.body.appendChild(dot);
 
@@ -405,34 +445,30 @@ function flyDotBetweenCharts(sampleMean, onDone) {
 
     let x, y;
     if (isSideBySide) {
-      // Side-by-side: arc upward (negative y offset)
+      // Side-by-side: arc upward
       x = startPos.x + dx * eased;
       y = startPos.y + dy * eased - arcAmount * arcT;
     } else {
-      // Stacked: arc to the right (positive x offset)
+      // Stacked: arc to the right
       x = startPos.x + dx * eased + arcAmount * 0.7 * arcT;
       y = startPos.y + dy * eased;
     }
 
-    dot.style.left = `${x - 7}px`;
-    dot.style.top = `${y - 7}px`;
+    dot.style.left = `${x - halfDot}px`;
+    dot.style.top = `${y - halfDot}px`;
 
     if (t < 1) {
       requestAnimationFrame(step);
     } else {
-      // Brief pulse at landing
-      dot.style.transition = 'transform 0.15s ease-out, opacity 0.4s ease-out';
-      dot.style.transform = 'scale(1.4)';
+      // Landed — fade out
+      dot.style.transition = 'opacity 0.4s ease-out';
       setTimeout(() => {
-        dot.style.transform = 'scale(1)';
+        dot.style.opacity = '0';
         setTimeout(() => {
-          dot.style.opacity = '0';
-          setTimeout(() => {
-            dot.remove();
-            onDone();
-          }, 400);
-        }, 300);
-      }, 150);
+          dot.remove();
+          onDone();
+        }, 400);
+      }, 250);
     }
   }
 
