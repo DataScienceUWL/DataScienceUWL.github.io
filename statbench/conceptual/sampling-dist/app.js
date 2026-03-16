@@ -529,15 +529,18 @@ function flyDotBetweenCharts(sampleMean, onDone) {
   // Detect layout: side-by-side (dx dominant) vs stacked (dy dominant)
   const isSideBySide = Math.abs(dx) > Math.abs(dy);
 
-  // Quadratic bezier control point — arc up above both endpoints
+  // Quadratic bezier control point
   let cpx, cpy;
   if (isSideBySide) {
+    // Side-by-side: arc upward above both charts
     cpx = sx + dx * 0.5;
     cpy = Math.min(sy, ty) - Math.abs(dx) * 0.3 - 40;
   } else {
-    // Stacked: shoot upward from population mean, then fall into sampling dist
-    cpx = sx + dx * 0.5;
-    cpy = Math.min(sy, ty) - Math.abs(dy) * 0.35 - 30;
+    // Stacked: pop up slightly from the mean, then fall down into the
+    // sampling distribution — like tossing a ball into a bucket below.
+    // Small upward launch (25px above start), gentle lateral drift.
+    cpx = sx + dx * 0.5 + 25;
+    cpy = sy - 25;
   }
 
   function step(now) {
