@@ -6,7 +6,7 @@
  * structured conclusions via dropdowns and radio-button claim selection.
  */
 
-import { generateConclusions, evidenceStrength } from '../../js/conclusions.js';
+import { generateConclusions } from '../../js/conclusions.js';
 import { initHelp } from '../../js/page-utils.js';
 
 initHelp();
@@ -454,62 +454,6 @@ function extractGroups(ctx) {
   };
 }
 
-// ── Evidence strength acceptance ────────────────────────────────────
-
-/**
- * The ordered scale of evidence strength labels.
- * evidenceStrength() returns: 'very strong', 'strong', 'moderate', 'weak', 'little to no'
- */
-const STRENGTH_SCALE = ['very strong', 'strong', 'moderate', 'weak', 'little to no'];
-
-/**
- * Map from dropdown values to scale entries.
- * The dropdown has: strong, moderate, weak, no
- * The evidenceStrength function returns: very strong, strong, moderate, weak, little to no
- */
-const DROPDOWN_TO_SCALE = {
-  'strong': ['very strong', 'strong'],
-  'moderate': ['moderate'],
-  'weak': ['weak'],
-  'no': ['little to no'],
-};
-
-/**
- * Check if a selected strength is acceptable given the best answer.
- * Accepts the best answer and one adjacent level.
- * @param {string} selected - dropdown value: 'strong'|'moderate'|'weak'|'no'
- * @param {string} best - from evidenceStrength(): 'very strong'|'strong'|'moderate'|'weak'|'little to no'
- * @returns {boolean}
- */
-function isStrengthAcceptable(selected, best) {
-  const bestIdx = STRENGTH_SCALE.indexOf(best);
-  // Get all scale values the dropdown selection covers
-  const selectedScaleValues = DROPDOWN_TO_SCALE[selected] || [];
-
-  // Check if the selected value directly matches
-  if (selectedScaleValues.includes(best)) return true;
-
-  // Accept adjacent: if the best is at index i, accept i-1 or i+1
-  for (const sv of selectedScaleValues) {
-    const svIdx = STRENGTH_SCALE.indexOf(sv);
-    if (Math.abs(svIdx - bestIdx) <= 1) return true;
-  }
-
-  return false;
-}
-
-/**
- * Get the best dropdown value for a given evidenceStrength result.
- * @param {string} strength - from evidenceStrength()
- * @returns {string} dropdown value
- */
-function strengthToDropdown(strength) {
-  if (strength === 'very strong' || strength === 'strong') return 'strong';
-  if (strength === 'moderate') return 'moderate';
-  if (strength === 'weak') return 'weak';
-  return 'no';
-}
-
 // ── Load all datasets with contexts ─────────────────────────────────
 
 async function loadScenarios() {
@@ -561,10 +505,12 @@ function showScenario(idx) {
   scenarioCounter.textContent = `Scenario ${(idx % scenarios.length) + 1} of ${scenarios.length}`;
   updateScoreDisplay();
 
-  // Scenario card — show dataset name, hypotheses, results (no test type label)
+  // Scenario card — show dataset name, context, hypotheses, results
+  const parameterNote = s.parameter ? `<p class="parameter-note">where ${s.parameter}</p>` : '';
   scenarioCard.innerHTML = `
     <h3>${s.datasetName}</h3>
     <div class="hypotheses">${s.hypotheses}</div>
+    ${parameterNote}
     <p>Significance level: ${tex('\\alpha')} = ${s.alpha}</p>
     <div class="test-results">${s.resultsDisplay}</div>
   `;
@@ -609,13 +555,6 @@ function showScenario(idx) {
       <option value="" selected disabled>choose...</option>
       <option value="provide">provide</option>
       <option value="do not provide">do not provide</option>
-    </select>
-    <select id="practical-strength" class="madlib-select" aria-label="Evidence strength">
-      <option value="" selected disabled>choose...</option>
-      <option value="strong">strong</option>
-      <option value="moderate">moderate</option>
-      <option value="weak">weak</option>
-      <option value="no">no</option>
     </select>
     evidence <span class="claim-fill filled" id="practical-claim-fill"></span>.`;
   practicalFeedback.className = 'feedback-box';
@@ -710,41 +649,34 @@ checkClaimBtn.addEventListener('click', () => {
 checkBtn.addEventListener('click', () => {
   const s = scenarios[currentIndex % scenarios.length];
   const sig = s.pValue < s.alpha;
-  const bestStrength = evidenceStrength(s.pValue);
-
   // Correct answers
   const correctDecision = sig ? 'reject' : 'fail to reject';
   const correctEvidence = sig ? 'sufficient' : 'insufficient';
   const correctProvide = sig ? 'provide' : 'do not provide';
-  const bestStrengthDropdown = strengthToDropdown(bestStrength);
 
   // Read student selections
   const decisionSelect = /** @type {HTMLSelectElement} */ (document.getElementById('formal-decision'));
   const evidenceSelect = /** @type {HTMLSelectElement} */ (document.getElementById('formal-evidence'));
   const provideSelect = /** @type {HTMLSelectElement} */ (document.getElementById('practical-provide'));
-  const strengthSelect = /** @type {HTMLSelectElement} */ (document.getElementById('practical-strength'));
 
   const studentDecision = decisionSelect?.value || '';
   const studentEvidence = evidenceSelect?.value || '';
   const studentProvide = provideSelect?.value || '';
-  const studentStrength = strengthSelect?.value || '';
 
   // Check if all fields are filled
-  const allFilled = studentDecision && studentEvidence && studentProvide && studentStrength;
+  const allFilled = studentDecision && studentEvidence && studentProvide;
   if (!allFilled) {
     announce('Please fill in all blanks before checking.');
-    // Highlight empty fields
     if (!studentDecision) decisionSelect.classList.add('incorrect');
     if (!studentEvidence) evidenceSelect.classList.add('incorrect');
     if (!studentProvide) provideSelect.classList.add('incorrect');
-    if (!studentStrength) strengthSelect.classList.add('incorrect');
     return;
   }
 
   // ── Grade each blank ──
   // Claim was already graded in the gate step; score claim as correct on first try
   let blanksCorrect = claimAttempts === 1 ? 1 : 0;
-  const blanksTotal = 5; // claim (from gate) + decision + evidence + provide + strength
+  const blanksTotal = 4; // claim (from gate) + decision + evidence + provide
   const feedbackParts = /** @type {string[]} */ ([]);
 
   // 1. Decision
@@ -773,19 +705,6 @@ checkBtn.addEventListener('click', () => {
   if (provideOk) blanksCorrect++;
   else feedbackParts.push(`Provide: The data "${correctProvide}" evidence when we ${correctDecision} H\u2080.`);
 
-  // 4. Evidence strength
-  const strengthOk = isStrengthAcceptable(studentStrength, bestStrength);
-  strengthSelect.classList.remove('correct', 'incorrect');
-  strengthSelect.classList.add(strengthOk ? 'correct' : 'incorrect');
-  if (strengthOk) blanksCorrect++;
-  else feedbackParts.push(`Strength: With p = ${fmtP(s.pValue)}, the evidence is best described as "${bestStrength}" (best answer: "${bestStrengthDropdown}").`);
-
-  // If not significant, provide/strength logic: "do not provide" means strength should be "no"
-  // But we already grade them independently, so just add a note
-  if (!sig && studentProvide === 'do not provide' && studentStrength !== 'no') {
-    // Acceptable — strength tells how close we were, even if not significant
-  }
-
   // ── Update feedback displays ──
   // Formal feedback
   if (decisionOk && evidenceOk) {
@@ -799,12 +718,11 @@ checkBtn.addEventListener('click', () => {
   }
 
   // Practical feedback
-  if (provideOk && strengthOk) {
-    practicalFeedback.textContent = 'Practical conclusion: all correct.';
+  if (provideOk) {
+    practicalFeedback.textContent = 'Practical conclusion: correct.';
     practicalFeedback.className = 'feedback-box visible success';
   } else {
-    const practErrors = feedbackParts.filter(p =>
-      p.startsWith('Provide:') || p.startsWith('Strength:'));
+    const practErrors = feedbackParts.filter(p => p.startsWith('Provide:'));
     practicalFeedback.innerHTML = practErrors.map(e => `<div>${e}</div>`).join('');
     practicalFeedback.className = 'feedback-box visible error';
   }
