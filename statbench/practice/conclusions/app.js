@@ -1,9 +1,9 @@
 // @ts-check
 /**
- * Conclusion Practice page controller.
- * Generates randomized hypothesis test scenarios from bundled datasets,
- * lets students practice writing formal + practical conclusions,
- * then reveals model answers with progressive scaffolding.
+ * Conclusion Practice — Mad Libs fill-in-the-blank edition.
+ *
+ * Presents hypothesis test results and has students complete
+ * structured conclusions via dropdowns and radio-button claim selection.
  */
 
 import { generateConclusions, evidenceStrength } from '../../js/conclusions.js';
@@ -32,18 +32,19 @@ const jStat = jstatMod.default || jstatMod;
 const scenarioCard = /** @type {HTMLElement} */ (document.getElementById('scenario-card'));
 const scenarioCounter = /** @type {HTMLElement} */ (document.getElementById('scenario-counter'));
 const scoreDisplay = /** @type {HTMLElement} */ (document.getElementById('score-display'));
-const formalInput = /** @type {HTMLTextAreaElement} */ (document.getElementById('formal-input'));
-const practicalInput = /** @type {HTMLTextAreaElement} */ (document.getElementById('practical-input'));
+const claimSection = /** @type {HTMLElement} */ (document.getElementById('claim-section'));
+const claimOptionsList = /** @type {HTMLElement} */ (document.getElementById('claim-options'));
+const claimFeedback = /** @type {HTMLElement} */ (document.getElementById('claim-feedback'));
+const formalSection = /** @type {HTMLElement} */ (document.getElementById('formal-section'));
+const formalSentence = /** @type {HTMLElement} */ (document.getElementById('formal-sentence'));
+const formalFeedback = /** @type {HTMLElement} */ (document.getElementById('formal-feedback'));
+const practicalSection = /** @type {HTMLElement} */ (document.getElementById('practical-section'));
+const practicalSentence = /** @type {HTMLElement} */ (document.getElementById('practical-sentence'));
+const practicalFeedback = /** @type {HTMLElement} */ (document.getElementById('practical-feedback'));
+const actionButtons = /** @type {HTMLElement} */ (document.getElementById('action-buttons'));
 const checkBtn = /** @type {HTMLButtonElement} */ (document.getElementById('check-answer'));
-const showAnswerBtn = /** @type {HTMLButtonElement} */ (document.getElementById('show-answer'));
 const nextBtn = /** @type {HTMLButtonElement} */ (document.getElementById('next-scenario'));
-const modelFormalDiv = /** @type {HTMLElement} */ (document.getElementById('model-formal'));
-const modelFormalText = /** @type {HTMLElement} */ (document.getElementById('model-formal-text'));
-const modelPracticalDiv = /** @type {HTMLElement} */ (document.getElementById('model-practical'));
-const modelPracticalText = /** @type {HTMLElement} */ (document.getElementById('model-practical-text'));
-const keyElementsDiv = /** @type {HTMLElement} */ (document.getElementById('key-elements'));
-const keyElementsList = /** @type {HTMLElement} */ (document.getElementById('key-elements-list'));
-const selfAssessDiv = /** @type {HTMLElement} */ (document.getElementById('self-assess'));
+const scoreSummary = /** @type {HTMLElement} */ (document.getElementById('score-summary'));
 const srAnnounce = document.getElementById('sr-announce');
 
 /** @param {string} msg */
@@ -52,13 +53,14 @@ function announce(msg) {
 }
 
 // ── Score tracking ──────────────────────────────────────────────────
-let completed = 0;
-const ratings = { 'got-it': 0, 'mostly': 0, 'needs-work': 0 };
+let totalBlanks = 0;
+let correctBlanks = 0;
+let scenariosAttempted = 0;
 
 function updateScoreDisplay() {
   if (!scoreDisplay) return;
-  if (completed === 0) { scoreDisplay.textContent = ''; return; }
-  scoreDisplay.textContent = `${ratings['got-it']} got it · ${ratings['mostly']} mostly · ${ratings['needs-work']} needs work`;
+  if (scenariosAttempted === 0) { scoreDisplay.textContent = ''; return; }
+  scoreDisplay.textContent = `${correctBlanks}/${totalBlanks} blanks correct across ${scenariosAttempted} scenarios`;
 }
 
 // ── Scenario types ──────────────────────────────────────────────────
@@ -67,7 +69,6 @@ function updateScoreDisplay() {
  * @typedef {Object} Scenario
  * @property {string} datasetName
  * @property {string} testType
- * @property {string} testLabel
  * @property {string} hypotheses - HTML string with rendered math
  * @property {string} resultsDisplay - HTML string with rendered math
  * @property {number} pValue
@@ -78,6 +79,7 @@ function updateScoreDisplay() {
  * @property {string} [parameter]
  * @property {number|string} [nullValue]
  * @property {string} [claim]
+ * @property {Object} ctx - raw inferenceContext for distractor generation
  */
 
 /** @type {Scenario[]} */
@@ -135,10 +137,9 @@ function propZ(x, n, p0, alt) {
 // ── Hypothesis and results formatting with KaTeX ────────────────────
 
 /**
- * Build rendered hypothesis HTML using KaTeX.
- * @param {string} param - LaTeX parameter symbol (e.g. '\\mu', 'p')
+ * @param {string} param - LaTeX parameter symbol
  * @param {number|string} nullVal
- * @param {string} alt - 'less' | 'greater' | 'two-sided'
+ * @param {string} alt
  * @returns {string} HTML
  */
 function buildHypotheses(param, nullVal, alt) {
@@ -160,16 +161,19 @@ function buildScenario(ds, ctx) {
   const rows = ds.rows;
   const alpha = 0.05;
 
+  /** @type {Partial<Scenario>} */
+  const base = { datasetName: ds.name, alpha, ctx };
+
   if (ctx.test === 'one-mean') {
     const vals = rows.map(/** @param {any} r */ r => Number(r[ctx.response])).filter(isFinite);
     if (vals.length < 3) return null;
     const { mean, sd, n } = basicStats(vals);
     const res = tTest(mean, sd, n, ctx.nullValue, ctx.alternative);
     return {
-      datasetName: ds.name, testType: 'one-mean', testLabel: 'One-Sample t-Test',
+      ...base, testType: 'one-mean',
       hypotheses: buildHypotheses('\\mu', ctx.nullValue, ctx.alternative),
       resultsDisplay: `${tex('n')} = ${n}, &ensp;${tex('\\bar{x}')} = ${mean.toFixed(2)}, &ensp;${tex('s')} = ${sd.toFixed(2)}<br>${tex('t')} = ${res.t.toFixed(3)}, &ensp;${tex('\\text{df}')} = ${res.df}, &ensp;p-value = ${fmtP(res.p)}`,
-      pValue: res.p, alpha, alternative: ctx.alternative,
+      pValue: res.p, alternative: ctx.alternative,
       statName: 't', statValue: res.t.toFixed(3),
       parameter: ctx.parameter, nullValue: ctx.nullValue, claim: ctx.claim,
     };
@@ -187,10 +191,10 @@ function buildScenario(ds, ctx) {
     const mu0 = ctx.nullValue ?? 0;
     const res = tTest(mean, sd, n, mu0, ctx.alternative);
     return {
-      datasetName: ds.name, testType: 'paired', testLabel: 'Paired t-Test',
+      ...base, testType: 'paired',
       hypotheses: buildHypotheses('\\mu_d', mu0, ctx.alternative),
       resultsDisplay: `${tex('n')} = ${n} pairs, &ensp;${tex('\\bar{d}')} = ${mean.toFixed(2)}, &ensp;${tex('s_d')} = ${sd.toFixed(2)}<br>${tex('t')} = ${res.t.toFixed(3)}, &ensp;${tex('\\text{df}')} = ${res.df}, &ensp;p-value = ${fmtP(res.p)}`,
-      pValue: res.p, alpha, alternative: ctx.alternative,
+      pValue: res.p, alternative: ctx.alternative,
       statName: 't', statValue: res.t.toFixed(3),
       parameter: ctx.parameter, nullValue: mu0, claim: ctx.claim,
     };
@@ -208,10 +212,10 @@ function buildScenario(ds, ctx) {
     const s2 = basicStats(g2);
     const res = welchT(s1.mean, s1.sd, s1.n, s2.mean, s2.sd, s2.n, ctx.alternative);
     return {
-      datasetName: ds.name, testType: 'two-means', testLabel: 'Two-Sample t-Test (Welch)',
+      ...base, testType: 'two-means',
       hypotheses: buildHypotheses('\\mu_1 - \\mu_2', 0, ctx.alternative),
       resultsDisplay: `${groups[0]}: ${tex('n')}=${s1.n}, ${tex('\\bar{x}')}=${s1.mean.toFixed(2)} &ensp;|&ensp; ${groups[1]}: ${tex('n')}=${s2.n}, ${tex('\\bar{x}')}=${s2.mean.toFixed(2)}<br>${tex('t')} = ${res.t.toFixed(3)}, &ensp;${tex('\\text{df}')} = ${res.df}, &ensp;p-value = ${fmtP(res.p)}`,
-      pValue: res.p, alpha, alternative: ctx.alternative,
+      pValue: res.p, alternative: ctx.alternative,
       statName: 't', statValue: res.t.toFixed(3),
       parameter: ctx.parameter, nullValue: 0, claim: ctx.claim,
     };
@@ -224,10 +228,10 @@ function buildScenario(ds, ctx) {
     if (n < 5) return null;
     const res = propZ(x, n, ctx.nullValue, ctx.alternative);
     return {
-      datasetName: ds.name, testType: 'one-prop', testLabel: 'One-Proportion z-Test',
+      ...base, testType: 'one-prop',
       hypotheses: buildHypotheses('p', ctx.nullValue, ctx.alternative),
       resultsDisplay: `${tex('n')} = ${n}, &ensp;successes = ${x}, &ensp;${tex('\\hat{p}')} = ${res.pHat.toFixed(4)}<br>${tex('z')} = ${res.z.toFixed(3)}, &ensp;p-value = ${fmtP(res.p)}`,
-      pValue: res.p, alpha, alternative: ctx.alternative,
+      pValue: res.p, alternative: ctx.alternative,
       statName: 'z', statValue: res.z.toFixed(3),
       parameter: ctx.parameter, nullValue: ctx.nullValue, claim: ctx.claim,
     };
@@ -252,10 +256,10 @@ function buildScenario(ds, ctx) {
     else if (ctx.alternative === 'greater') p = 1 - jStat.normal.cdf(z, 0, 1);
     else p = 2 * (1 - jStat.normal.cdf(Math.abs(z), 0, 1));
     return {
-      datasetName: ds.name, testType: 'two-props', testLabel: 'Two-Proportion z-Test',
+      ...base, testType: 'two-props',
       hypotheses: buildHypotheses('p_1 - p_2', 0, ctx.alternative),
       resultsDisplay: `${groups[0]}: ${x1}/${n1} &ensp;|&ensp; ${groups[1]}: ${x2}/${n2}<br>${tex('z')} = ${z.toFixed(3)}, &ensp;p-value = ${fmtP(p)}`,
-      pValue: p, alpha, alternative: ctx.alternative,
+      pValue: p, alternative: ctx.alternative,
       statName: 'z', statValue: z.toFixed(3),
       parameter: ctx.parameter, nullValue: 0, claim: ctx.claim,
     };
@@ -295,16 +299,213 @@ function buildScenario(ds, ctx) {
     const h0 = tex(`H_0\\text{: ${rVar} and ${cVar} are independent}`);
     const ha = tex(`H_a\\text{: There is an association between ${rVar} and ${cVar}}`);
     return {
-      datasetName: ds.name, testType: 'chisq', testLabel: 'Chi-Square Test of Independence',
+      ...base, testType: 'chisq',
       hypotheses: `${h0}<br>${ha}`,
-      resultsDisplay: `${nR} × ${nC} table, &ensp;${tex('n')} = ${n}<br>${tex('\\chi^2')} = ${chiSq.toFixed(3)}, &ensp;${tex('\\text{df}')} = ${df}, &ensp;p-value = ${fmtP(p)}`,
-      pValue: p, alpha, alternative: 'greater',
+      resultsDisplay: `${nR} \u00D7 ${nC} table, &ensp;${tex('n')} = ${n}<br>${tex('\\chi^2')} = ${chiSq.toFixed(3)}, &ensp;${tex('\\text{df}')} = ${df}, &ensp;p-value = ${fmtP(p)}`,
+      pValue: p, alternative: 'greater',
       statName: '\u03C7\u00B2', statValue: chiSq.toFixed(3),
       parameter: ctx.parameter, claim: ctx.claim,
     };
   }
 
   return null;
+}
+
+// ── Distractor generation ───────────────────────────────────────────
+
+/**
+ * Generate 4 claim options: 1 correct + 3 distractors.
+ * Returns array of {text, type} where type is 'correct', 'null', 'sample', 'proof'.
+ * @param {Scenario} s
+ * @returns {{text: string, type: string}[]}
+ */
+function generateClaimOptions(s) {
+  const ctx = s.ctx;
+  const testType = s.testType;
+  const claim = s.claim || '';
+  const parameter = s.parameter || '';
+
+  /** @type {{text: string, type: string}[]} */
+  const options = [];
+
+  // Correct claim — always "that [claim]"
+  options.push({ text: `that ${claim}`, type: 'correct' });
+
+  if (testType === 'one-mean') {
+    // Null-as-conclusion: states null as if true
+    options.push({
+      text: `that ${parameter} is ${ctx.nullValue}`,
+      type: 'null'
+    });
+    // Sample language
+    const sampleStat = parameter.replace(/population mean/i, 'sample mean').replace(/^the population /, 'the sample ');
+    const dir = ctx.alternative === 'less' ? 'less than'
+      : ctx.alternative === 'greater' ? 'greater than' : 'different from';
+    options.push({
+      text: `that ${sampleStat} is ${dir} ${ctx.nullValue}`,
+      type: 'sample'
+    });
+    // Proof language
+    options.push({
+      text: `that we proved ${claim}`,
+      type: 'proof'
+    });
+  } else if (testType === 'paired') {
+    const mu0 = ctx.nullValue ?? 0;
+    options.push({
+      text: `that ${parameter} is ${mu0}`,
+      type: 'null'
+    });
+    const sampleParam = parameter.replace(/population mean/i, 'sample mean').replace(/^the population /, 'the sample ');
+    const dir = ctx.alternative === 'less' ? 'less than'
+      : ctx.alternative === 'greater' ? 'greater than' : 'different from';
+    options.push({
+      text: `that ${sampleParam} is ${dir} ${mu0}`,
+      type: 'sample'
+    });
+    options.push({
+      text: `that we proved ${claim}`,
+      type: 'proof'
+    });
+  } else if (testType === 'one-prop') {
+    options.push({
+      text: `that ${parameter} is ${ctx.nullValue}`,
+      type: 'null'
+    });
+    const sampleParam = parameter.replace(/population proportion/i, 'sample proportion')
+      .replace(/true proportion/i, 'sample proportion')
+      .replace(/true complication rate/i, 'sample complication rate')
+      .replace(/^the population /, 'the sample ');
+    const dir = ctx.alternative === 'less' ? 'less than'
+      : ctx.alternative === 'greater' ? 'greater than' : 'different from';
+    options.push({
+      text: `that ${sampleParam} is ${dir} ${ctx.nullValue}`,
+      type: 'sample'
+    });
+    options.push({
+      text: `that we proved ${claim}`,
+      type: 'proof'
+    });
+  } else if (testType === 'two-means') {
+    options.push({
+      text: `that there is no difference in population means between the groups`,
+      type: 'null'
+    });
+    options.push({
+      text: `that the sample means are different between the groups`,
+      type: 'sample'
+    });
+    // Causal language for two-means (often experiments)
+    const groups = extractGroups(ctx);
+    options.push({
+      text: `that ${groups.g1} causes a change in the response compared to ${groups.g2}`,
+      type: 'proof'
+    });
+  } else if (testType === 'two-props') {
+    options.push({
+      text: `that there is no difference in population proportions between the groups`,
+      type: 'null'
+    });
+    options.push({
+      text: `that the sample proportions are different between the groups`,
+      type: 'sample'
+    });
+    const groups = extractGroups(ctx);
+    options.push({
+      text: `that ${groups.g1} causes a change in the outcome compared to ${groups.g2}`,
+      type: 'proof'
+    });
+  } else if (testType === 'chisq') {
+    const rVar = ctx.rowVar || 'variable 1';
+    const cVar = ctx.colVar || 'variable 2';
+    options.push({
+      text: `that ${rVar} and ${cVar} are independent`,
+      type: 'null'
+    });
+    options.push({
+      text: `that in our sample, ${rVar} and ${cVar} are related`,
+      type: 'sample'
+    });
+    options.push({
+      text: `that ${rVar} causes changes in ${cVar}`,
+      type: 'proof'
+    });
+  } else {
+    // Fallback distractors
+    options.push({ text: `that the null hypothesis is true`, type: 'null' });
+    options.push({ text: `that the sample statistic differs from the null value`, type: 'sample' });
+    options.push({ text: `that we proved the alternative hypothesis`, type: 'proof' });
+  }
+
+  return options;
+}
+
+/**
+ * Extract group names from context.
+ * @param {any} ctx
+ * @returns {{g1: string, g2: string}}
+ */
+function extractGroups(ctx) {
+  return {
+    g1: ctx.group1 || 'group 1',
+    g2: ctx.group2 || 'group 2',
+  };
+}
+
+// ── Evidence strength acceptance ────────────────────────────────────
+
+/**
+ * The ordered scale of evidence strength labels.
+ * evidenceStrength() returns: 'very strong', 'strong', 'moderate', 'weak', 'little to no'
+ */
+const STRENGTH_SCALE = ['very strong', 'strong', 'moderate', 'weak', 'little to no'];
+
+/**
+ * Map from dropdown values to scale entries.
+ * The dropdown has: strong, moderate, weak, no
+ * The evidenceStrength function returns: very strong, strong, moderate, weak, little to no
+ */
+const DROPDOWN_TO_SCALE = {
+  'strong': ['very strong', 'strong'],
+  'moderate': ['moderate'],
+  'weak': ['weak'],
+  'no': ['little to no'],
+};
+
+/**
+ * Check if a selected strength is acceptable given the best answer.
+ * Accepts the best answer and one adjacent level.
+ * @param {string} selected - dropdown value: 'strong'|'moderate'|'weak'|'no'
+ * @param {string} best - from evidenceStrength(): 'very strong'|'strong'|'moderate'|'weak'|'little to no'
+ * @returns {boolean}
+ */
+function isStrengthAcceptable(selected, best) {
+  const bestIdx = STRENGTH_SCALE.indexOf(best);
+  // Get all scale values the dropdown selection covers
+  const selectedScaleValues = DROPDOWN_TO_SCALE[selected] || [];
+
+  // Check if the selected value directly matches
+  if (selectedScaleValues.includes(best)) return true;
+
+  // Accept adjacent: if the best is at index i, accept i-1 or i+1
+  for (const sv of selectedScaleValues) {
+    const svIdx = STRENGTH_SCALE.indexOf(sv);
+    if (Math.abs(svIdx - bestIdx) <= 1) return true;
+  }
+
+  return false;
+}
+
+/**
+ * Get the best dropdown value for a given evidenceStrength result.
+ * @param {string} strength - from evidenceStrength()
+ * @returns {string} dropdown value
+ */
+function strengthToDropdown(strength) {
+  if (strength === 'very strong' || strength === 'strong') return 'strong';
+  if (strength === 'moderate') return 'moderate';
+  if (strength === 'weak') return 'weak';
+  return 'no';
 }
 
 // ── Load all datasets with contexts ─────────────────────────────────
@@ -322,14 +523,14 @@ async function loadScenarios() {
         if (!ds.inferenceContexts) continue;
         for (const ctx of ds.inferenceContexts) {
           const scenario = buildScenario(ds, ctx);
-          if (scenario) built.push(scenario);
+          if (scenario && scenario.claim) built.push(scenario);
         }
       } catch { /* skip failed loads */ }
     }
 
     scenarios = shuffle(built);
     if (scenarios.length === 0) {
-      scenarioCard.innerHTML = '<p>No scenarios available. Check that datasets have inferenceContexts.</p>';
+      scenarioCard.innerHTML = '<p>No scenarios available. Check that datasets have inferenceContexts with claims.</p>';
       return;
     }
     showScenario(0);
@@ -358,102 +559,237 @@ function showScenario(idx) {
   scenarioCounter.textContent = `Scenario ${(idx % scenarios.length) + 1} of ${scenarios.length}`;
   updateScoreDisplay();
 
+  // Scenario card — show dataset name, hypotheses, results (no test type label)
   scenarioCard.innerHTML = `
-    <h3>${s.testLabel}: ${s.datasetName}</h3>
+    <h3>${s.datasetName}</h3>
     <div class="hypotheses">${s.hypotheses}</div>
     <p>Significance level: ${tex('\\alpha')} = ${s.alpha}</p>
     <div class="test-results">${s.resultsDisplay}</div>
   `;
 
-  // Reset UI state
-  formalInput.value = '';
-  practicalInput.value = '';
-  modelFormalDiv.classList.add('hidden');
-  modelPracticalDiv.classList.add('hidden');
-  keyElementsDiv.classList.add('hidden');
-  selfAssessDiv.classList.add('hidden');
-  checkBtn.disabled = false;
-  showAnswerBtn.disabled = true;
+  // ── Build claim options ──
+  const claimOptions = generateClaimOptions(s);
+  const shuffled = shuffle(claimOptions);
+  claimOptionsList.innerHTML = shuffled.map((opt, i) => `
+    <li>
+      <label>
+        <input type="radio" name="claim-choice" value="${opt.type}" id="claim-${i}"
+               aria-label="Claim option ${i + 1}">
+        <span>${opt.text}</span>
+      </label>
+    </li>
+  `).join('');
+  claimSection.style.display = '';
+  claimFeedback.className = 'feedback-box';
+  claimFeedback.textContent = '';
 
-  formalInput.focus();
-  announce(`Scenario ${(idx % scenarios.length) + 1}: ${s.testLabel} for ${s.datasetName}.`);
+  // ── Build formal conclusion Mad Libs ──
+  const alphaStr = s.alpha;
+  formalSentence.innerHTML = `At the ${tex(`\\alpha = ${alphaStr}`)} significance level, we
+    <select id="formal-decision" class="madlib-select" aria-label="Decision: reject or fail to reject">
+      <option value="" selected disabled>choose...</option>
+      <option value="reject">reject</option>
+      <option value="fail to reject">fail to reject</option>
+    </select>
+    ${tex('H_0')}. There is
+    <select id="formal-evidence" class="madlib-select" aria-label="Evidence: sufficient or insufficient">
+      <option value="" selected disabled>choose...</option>
+      <option value="sufficient">sufficient</option>
+      <option value="insufficient">insufficient</option>
+    </select>
+    evidence <em>[selected claim above]</em>.`;
+  formalSection.style.display = '';
+  formalFeedback.className = 'feedback-box';
+  formalFeedback.textContent = '';
+
+  // ── Build practical conclusion Mad Libs ──
+  const sig = s.pValue < s.alpha;
+  practicalSentence.innerHTML = `The data
+    <select id="practical-provide" class="madlib-select" aria-label="Provide or do not provide">
+      <option value="" selected disabled>choose...</option>
+      <option value="provide">provide</option>
+      <option value="do not provide">do not provide</option>
+    </select>
+    <select id="practical-strength" class="madlib-select" aria-label="Evidence strength">
+      <option value="" selected disabled>choose...</option>
+      <option value="strong">strong</option>
+      <option value="moderate">moderate</option>
+      <option value="weak">weak</option>
+      <option value="no">no</option>
+    </select>
+    evidence <em>[selected claim above]</em>.`;
+  practicalSection.style.display = '';
+  practicalFeedback.className = 'feedback-box';
+  practicalFeedback.textContent = '';
+
+  // ── Reset buttons ──
+  actionButtons.style.display = '';
+  checkBtn.disabled = false;
+  nextBtn.disabled = true;
+
+  announce(`Scenario ${(idx % scenarios.length) + 1}: ${s.datasetName}. Fill in the blanks and select a claim.`);
 }
 
-// ── Step 1: Check My Answer → show key elements checklist ───────────
+// ── Check answer ────────────────────────────────────────────────────
 
 checkBtn.addEventListener('click', () => {
   const s = scenarios[currentIndex % scenarios.length];
   const sig = s.pValue < s.alpha;
+  const bestStrength = evidenceStrength(s.pValue);
 
-  const elements = [
-    `State the decision: "${sig ? 'reject' : 'fail to reject'} ${tex('H_0')}" (never say "accept ${tex('H_0')}")`,
-    `Reference the significance level (${tex(`\\alpha = ${s.alpha}`)})`,
-    `Use "${sig ? 'sufficient' : 'insufficient'} evidence" language`,
-    s.claim ? `Include the context: what the claim is about in plain language` : null,
-    `Cite the test statistic and p-value`,
-    sig ? null : `Do NOT conclude that ${tex('H_0')} is true — only that there is not enough evidence against it`,
-  ].filter(Boolean);
+  // Correct answers
+  const correctDecision = sig ? 'reject' : 'fail to reject';
+  const correctEvidence = sig ? 'sufficient' : 'insufficient';
+  const correctProvide = sig ? 'provide' : 'do not provide';
+  const bestStrengthDropdown = strengthToDropdown(bestStrength);
 
-  keyElementsList.innerHTML = elements.map(e => `<li>${e}</li>`).join('');
-  keyElementsDiv.classList.remove('hidden');
+  // Read student selections
+  const decisionSelect = /** @type {HTMLSelectElement} */ (document.getElementById('formal-decision'));
+  const evidenceSelect = /** @type {HTMLSelectElement} */ (document.getElementById('formal-evidence'));
+  const provideSelect = /** @type {HTMLSelectElement} */ (document.getElementById('practical-provide'));
+  const strengthSelect = /** @type {HTMLSelectElement} */ (document.getElementById('practical-strength'));
+  const claimRadio = /** @type {HTMLInputElement|null} */ (document.querySelector('input[name="claim-choice"]:checked'));
 
-  checkBtn.disabled = true;
-  showAnswerBtn.disabled = false;
-  showAnswerBtn.focus();
-  announce('Key elements checklist shown. Review your answer, then click Show Model Answer.');
-});
+  const studentDecision = decisionSelect?.value || '';
+  const studentEvidence = evidenceSelect?.value || '';
+  const studentProvide = provideSelect?.value || '';
+  const studentStrength = strengthSelect?.value || '';
+  const studentClaimType = claimRadio?.value || '';
 
-// ── Step 2: Show Model Answer ───────────────────────────────────────
+  // Check if all fields are filled
+  const allFilled = studentDecision && studentEvidence && studentProvide && studentStrength && studentClaimType;
+  if (!allFilled) {
+    announce('Please fill in all blanks and select a claim before checking.');
+    // Highlight empty fields
+    if (!studentDecision) decisionSelect.classList.add('incorrect');
+    if (!studentEvidence) evidenceSelect.classList.add('incorrect');
+    if (!studentProvide) provideSelect.classList.add('incorrect');
+    if (!studentStrength) strengthSelect.classList.add('incorrect');
+    if (!studentClaimType) {
+      claimFeedback.textContent = 'Please select a claim option.';
+      claimFeedback.className = 'feedback-box visible hint';
+    }
+    return;
+  }
 
-showAnswerBtn.addEventListener('click', () => {
-  const s = scenarios[currentIndex % scenarios.length];
+  // ── Grade each blank ──
+  let blanksCorrect = 0;
+  const blanksTotal = 5; // decision, evidence, claim, provide, strength
+  const feedbackParts = /** @type {string[]} */ ([]);
 
-  const conclusions = generateConclusions({
-    pValue: s.pValue,
-    alpha: s.alpha,
-    alternative: s.alternative,
-    testType: s.testType,
-    statName: s.statName,
-    statValue: s.statValue,
-    context: {
-      parameter: s.parameter,
-      nullValue: s.nullValue,
-      claim: s.claim,
-    },
+  // 1. Decision
+  const decisionOk = studentDecision === correctDecision;
+  decisionSelect.classList.remove('correct', 'incorrect');
+  decisionSelect.classList.add(decisionOk ? 'correct' : 'incorrect');
+  if (decisionOk) blanksCorrect++;
+  else feedbackParts.push(`Decision: We ${correctDecision} H\u2080 because p-value (${fmtP(s.pValue)}) is ${sig ? 'less' : 'greater'} than \u03B1 (${s.alpha}).`);
+
+  // 2. Evidence word
+  const evidenceOk = studentEvidence === correctEvidence;
+  evidenceSelect.classList.remove('correct', 'incorrect');
+  evidenceSelect.classList.add(evidenceOk ? 'correct' : 'incorrect');
+  if (evidenceOk) blanksCorrect++;
+  else feedbackParts.push(`Evidence: "${correctEvidence}" pairs with "${correctDecision}" H\u2080.`);
+
+  // Check consistency: if decision is right but evidence is wrong (or vice versa), flag
+  if (decisionOk !== evidenceOk) {
+    feedbackParts.push(`Note: "reject" always pairs with "sufficient", and "fail to reject" always pairs with "insufficient".`);
+  }
+
+  // 3. Claim selection
+  const claimOk = studentClaimType === 'correct';
+  // Style the radio labels
+  claimOptionsList.querySelectorAll('label').forEach(label => {
+    const input = label.querySelector('input');
+    label.classList.remove('correct', 'incorrect', 'correct-answer');
+    if (input?.checked) {
+      label.classList.add(claimOk ? 'correct' : 'incorrect');
+    }
+    if (!claimOk && input?.value === 'correct') {
+      label.classList.add('correct-answer');
+    }
   });
-
-  modelFormalText.textContent = conclusions.formal;
-  modelFormalDiv.classList.remove('hidden');
-
-  if (conclusions.practical) {
-    modelPracticalText.textContent = conclusions.practical;
-    modelPracticalDiv.classList.remove('hidden');
+  if (claimOk) blanksCorrect++;
+  else {
+    const distractorExplanation = {
+      'null': 'That option states the null hypothesis as a conclusion. We never conclude H\u2080 is true \u2014 we only fail to reject it.',
+      'sample': 'That option describes the sample, not the population. Conclusions should be about the population parameter.',
+      'proof': 'Statistical tests never "prove" anything, and we must be careful about claiming causation from observational data.',
+    };
+    feedbackParts.push(`Claim: ${distractorExplanation[studentClaimType] || 'The selected claim is not the correct contextual conclusion.'}`);
+  }
+  if (claimOk) {
+    claimFeedback.textContent = 'Correct claim selected.';
+    claimFeedback.className = 'feedback-box visible success';
+  } else {
+    claimFeedback.textContent = feedbackParts[feedbackParts.length - 1];
+    claimFeedback.className = 'feedback-box visible error';
   }
 
-  showAnswerBtn.disabled = true;
-  selfAssessDiv.classList.remove('hidden');
-  announce('Model answer revealed. Rate how your answer compared.');
-});
+  // 4. Provide / do not provide
+  const provideOk = studentProvide === correctProvide;
+  provideSelect.classList.remove('correct', 'incorrect');
+  provideSelect.classList.add(provideOk ? 'correct' : 'incorrect');
+  if (provideOk) blanksCorrect++;
+  else feedbackParts.push(`Provide: The data "${correctProvide}" evidence when we ${correctDecision} H\u2080.`);
 
-// ── Step 3: Self-assessment ─────────────────────────────────────────
+  // 5. Evidence strength
+  const strengthOk = isStrengthAcceptable(studentStrength, bestStrength);
+  strengthSelect.classList.remove('correct', 'incorrect');
+  strengthSelect.classList.add(strengthOk ? 'correct' : 'incorrect');
+  if (strengthOk) blanksCorrect++;
+  else feedbackParts.push(`Strength: With p = ${fmtP(s.pValue)}, the evidence is best described as "${bestStrength}" (best answer: "${bestStrengthDropdown}").`);
 
-selfAssessDiv.addEventListener('click', (e) => {
-  const btn = /** @type {HTMLElement} */ (e.target).closest('[data-rating]');
-  if (!btn) return;
-  const rating = /** @type {string} */ (btn.getAttribute('data-rating'));
-  if (rating in ratings) {
-    ratings[/** @type {keyof typeof ratings} */ (rating)]++;
+  // If not significant, provide/strength logic: "do not provide" means strength should be "no"
+  // But we already grade them independently, so just add a note
+  if (!sig && studentProvide === 'do not provide' && studentStrength !== 'no') {
+    // Acceptable — strength tells how close we were, even if not significant
   }
-  completed++;
+
+  // ── Update feedback displays ──
+  // Formal feedback
+  if (decisionOk && evidenceOk) {
+    formalFeedback.textContent = 'Formal conclusion: all correct.';
+    formalFeedback.className = 'feedback-box visible success';
+  } else {
+    const formalErrors = feedbackParts.filter(p =>
+      p.startsWith('Decision:') || p.startsWith('Evidence:') || p.startsWith('Note:'));
+    formalFeedback.innerHTML = formalErrors.map(e => `<div>${e}</div>`).join('');
+    formalFeedback.className = 'feedback-box visible error';
+  }
+
+  // Practical feedback
+  if (provideOk && strengthOk) {
+    practicalFeedback.textContent = 'Practical conclusion: all correct.';
+    practicalFeedback.className = 'feedback-box visible success';
+  } else {
+    const practErrors = feedbackParts.filter(p =>
+      p.startsWith('Provide:') || p.startsWith('Strength:'));
+    practicalFeedback.innerHTML = practErrors.map(e => `<div>${e}</div>`).join('');
+    practicalFeedback.className = 'feedback-box visible error';
+  }
+
+  // ── Update score ──
+  totalBlanks += blanksTotal;
+  correctBlanks += blanksCorrect;
+  scenariosAttempted++;
   updateScoreDisplay();
-  selfAssessDiv.classList.add('hidden');
-  announce(`Rated "${btn.textContent}". Click Next Scenario to continue.`);
+
+  // Show score summary for this scenario
+  scoreSummary.innerHTML = `This scenario: <span class="fraction">${blanksCorrect}/${blanksTotal}</span> correct`;
+
+  // Disable check, enable next
+  checkBtn.disabled = true;
+  nextBtn.disabled = false;
   nextBtn.focus();
+
+  announce(`${blanksCorrect} of ${blanksTotal} blanks correct. ${blanksCorrect === blanksTotal ? 'Perfect!' : 'Review the feedback below.'}`);
 });
 
 // ── Next scenario ───────────────────────────────────────────────────
 
 nextBtn.addEventListener('click', () => {
+  scoreSummary.innerHTML = '';
   showScenario(currentIndex + 1);
 });
 
