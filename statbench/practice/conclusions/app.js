@@ -44,8 +44,10 @@ const practicalFeedback = /** @type {HTMLElement} */ (document.getElementById('p
 const actionButtons = /** @type {HTMLElement} */ (document.getElementById('action-buttons'));
 const checkBtn = /** @type {HTMLButtonElement} */ (document.getElementById('check-answer'));
 const nextBtn = /** @type {HTMLButtonElement} */ (document.getElementById('next-scenario'));
+const checkClaimBtn = /** @type {HTMLButtonElement} */ (document.getElementById('check-claim'));
 const scoreSummary = /** @type {HTMLElement} */ (document.getElementById('score-summary'));
 const srAnnounce = document.getElementById('sr-announce');
+let claimAttempts = 0;
 
 /** @param {string} msg */
 function announce(msg) {
@@ -582,8 +584,9 @@ function showScenario(idx) {
   claimSection.style.display = '';
   claimFeedback.className = 'feedback-box';
   claimFeedback.textContent = '';
+  claimAttempts = 0;
 
-  // ── Build formal conclusion Mad Libs ──
+  // ── Pre-build formal + practical HTML (hidden until claim is correct) ──
   const alphaStr = s.alpha;
   formalSentence.innerHTML = `At the ${tex(`\\alpha = ${alphaStr}`)} significance level, we
     <select id="formal-decision" class="madlib-select" aria-label="Decision: reject or fail to reject">
@@ -597,12 +600,10 @@ function showScenario(idx) {
       <option value="sufficient">sufficient</option>
       <option value="insufficient">insufficient</option>
     </select>
-    evidence <span class="claim-fill" id="formal-claim-fill">[select a claim above]</span>.`;
-  formalSection.style.display = '';
+    evidence <span class="claim-fill filled" id="formal-claim-fill"></span>.`;
   formalFeedback.className = 'feedback-box';
   formalFeedback.textContent = '';
 
-  // ── Build practical conclusion Mad Libs ──
   practicalSentence.innerHTML = `The data
     <select id="practical-provide" class="madlib-select" aria-label="Provide or do not provide">
       <option value="" selected disabled>choose...</option>
@@ -616,32 +617,95 @@ function showScenario(idx) {
       <option value="weak">weak</option>
       <option value="no">no</option>
     </select>
-    evidence <span class="claim-fill" id="practical-claim-fill">[select a claim above]</span>.`;
-  practicalSection.style.display = '';
+    evidence <span class="claim-fill filled" id="practical-claim-fill"></span>.`;
   practicalFeedback.className = 'feedback-box';
   practicalFeedback.textContent = '';
 
-  // ── Claim radio → fill in both conclusion sentences ──
-  claimOptionsList.addEventListener('change', (e) => {
-    const input = /** @type {HTMLInputElement} */ (e.target);
-    if (input.name !== 'claim-choice') return;
-    const label = input.closest('label');
-    const text = label?.querySelector('span')?.textContent || '';
-    const formalFill = document.getElementById('formal-claim-fill');
-    const practicalFill = document.getElementById('practical-claim-fill');
-    if (formalFill) { formalFill.textContent = text; formalFill.classList.add('filled'); }
-    if (practicalFill) { practicalFill.textContent = text; practicalFill.classList.add('filled'); }
-  });
+  // Hide formal/practical/check until claim is confirmed
+  formalSection.style.display = 'none';
+  practicalSection.style.display = 'none';
+  actionButtons.style.display = 'none';
 
-  // ── Reset buttons ──
-  actionButtons.style.display = '';
+  // Show the claim check button
+  checkClaimBtn.style.display = '';
+  checkClaimBtn.disabled = false;
+
+  // Reset buttons
   checkBtn.disabled = false;
   nextBtn.disabled = true;
 
-  announce(`Scenario ${(idx % scenarios.length) + 1}: ${s.datasetName}. Fill in the blanks and select a claim.`);
+  announce(`Scenario ${(idx % scenarios.length) + 1}: ${s.datasetName}. Select the correct claim to continue.`);
 }
 
-// ── Check answer ────────────────────────────────────────────────────
+// ── Check claim (gate) ───────────────────────────────────────────────
+
+checkClaimBtn.addEventListener('click', () => {
+  const claimRadio = /** @type {HTMLInputElement|null} */ (
+    document.querySelector('input[name="claim-choice"]:checked'));
+
+  if (!claimRadio) {
+    claimFeedback.textContent = 'Please select a claim option.';
+    claimFeedback.className = 'feedback-box visible hint';
+    announce('Please select a claim option.');
+    return;
+  }
+
+  claimAttempts++;
+  const claimOk = claimRadio.value === 'correct';
+
+  // Style the radio labels
+  claimOptionsList.querySelectorAll('label').forEach(label => {
+    const input = label.querySelector('input');
+    label.classList.remove('correct', 'incorrect', 'correct-answer');
+    if (input?.checked) {
+      label.classList.add(claimOk ? 'correct' : 'incorrect');
+    }
+  });
+
+  if (claimOk) {
+    claimFeedback.textContent = 'Correct! Now complete the conclusion below.';
+    claimFeedback.className = 'feedback-box visible success';
+    checkClaimBtn.disabled = true;
+
+    // Disable the claim radios so they can't change it
+    claimOptionsList.querySelectorAll('input').forEach(
+      input => /** @type {HTMLInputElement} */ (input).disabled = true);
+
+    // Fill the claim text into both conclusion sentences
+    const label = claimRadio.closest('label');
+    const text = label?.querySelector('span')?.textContent || '';
+    const formalFill = document.getElementById('formal-claim-fill');
+    const practicalFill = document.getElementById('practical-claim-fill');
+    if (formalFill) formalFill.textContent = text;
+    if (practicalFill) practicalFill.textContent = text;
+
+    // Reveal the conclusion sections
+    formalSection.style.display = '';
+    practicalSection.style.display = '';
+    actionButtons.style.display = '';
+    announce('Correct claim! Now fill in the formal and practical conclusion blanks.');
+  } else {
+    const distractorExplanation = {
+      'null': 'That option states the null hypothesis as a conclusion. We never conclude H\u2080 is true \u2014 we only fail to reject it.',
+      'sample': 'That option describes the sample, not the population. Conclusions should be about the population parameter.',
+      'proof': 'Statistical tests never "prove" anything, and we must be careful about claiming causation from observational data.',
+    };
+    claimFeedback.textContent = distractorExplanation[claimRadio.value] || 'That is not the correct claim. Try again.';
+    claimFeedback.className = 'feedback-box visible error';
+
+    // After 2 wrong attempts, highlight the correct answer
+    if (claimAttempts >= 2) {
+      claimOptionsList.querySelectorAll('label').forEach(label => {
+        const input = label.querySelector('input');
+        if (input?.value === 'correct') label.classList.add('correct-answer');
+      });
+    }
+
+    announce('Incorrect claim. ' + (claimAttempts >= 2 ? 'The correct answer is highlighted.' : 'Try again.'));
+  }
+});
+
+// ── Check conclusion blanks ─────────────────────────────────────────
 
 checkBtn.addEventListener('click', () => {
   const s = scenarios[currentIndex % scenarios.length];
@@ -659,33 +723,28 @@ checkBtn.addEventListener('click', () => {
   const evidenceSelect = /** @type {HTMLSelectElement} */ (document.getElementById('formal-evidence'));
   const provideSelect = /** @type {HTMLSelectElement} */ (document.getElementById('practical-provide'));
   const strengthSelect = /** @type {HTMLSelectElement} */ (document.getElementById('practical-strength'));
-  const claimRadio = /** @type {HTMLInputElement|null} */ (document.querySelector('input[name="claim-choice"]:checked'));
 
   const studentDecision = decisionSelect?.value || '';
   const studentEvidence = evidenceSelect?.value || '';
   const studentProvide = provideSelect?.value || '';
   const studentStrength = strengthSelect?.value || '';
-  const studentClaimType = claimRadio?.value || '';
 
   // Check if all fields are filled
-  const allFilled = studentDecision && studentEvidence && studentProvide && studentStrength && studentClaimType;
+  const allFilled = studentDecision && studentEvidence && studentProvide && studentStrength;
   if (!allFilled) {
-    announce('Please fill in all blanks and select a claim before checking.');
+    announce('Please fill in all blanks before checking.');
     // Highlight empty fields
     if (!studentDecision) decisionSelect.classList.add('incorrect');
     if (!studentEvidence) evidenceSelect.classList.add('incorrect');
     if (!studentProvide) provideSelect.classList.add('incorrect');
     if (!studentStrength) strengthSelect.classList.add('incorrect');
-    if (!studentClaimType) {
-      claimFeedback.textContent = 'Please select a claim option.';
-      claimFeedback.className = 'feedback-box visible hint';
-    }
     return;
   }
 
   // ── Grade each blank ──
-  let blanksCorrect = 0;
-  const blanksTotal = 5; // decision, evidence, claim, provide, strength
+  // Claim was already graded in the gate step; score claim as correct on first try
+  let blanksCorrect = claimAttempts === 1 ? 1 : 0;
+  const blanksTotal = 5; // claim (from gate) + decision + evidence + provide + strength
   const feedbackParts = /** @type {string[]} */ ([]);
 
   // 1. Decision
@@ -707,44 +766,14 @@ checkBtn.addEventListener('click', () => {
     feedbackParts.push(`Note: "reject" always pairs with "sufficient", and "fail to reject" always pairs with "insufficient".`);
   }
 
-  // 3. Claim selection
-  const claimOk = studentClaimType === 'correct';
-  // Style the radio labels
-  claimOptionsList.querySelectorAll('label').forEach(label => {
-    const input = label.querySelector('input');
-    label.classList.remove('correct', 'incorrect', 'correct-answer');
-    if (input?.checked) {
-      label.classList.add(claimOk ? 'correct' : 'incorrect');
-    }
-    if (!claimOk && input?.value === 'correct') {
-      label.classList.add('correct-answer');
-    }
-  });
-  if (claimOk) blanksCorrect++;
-  else {
-    const distractorExplanation = {
-      'null': 'That option states the null hypothesis as a conclusion. We never conclude H\u2080 is true \u2014 we only fail to reject it.',
-      'sample': 'That option describes the sample, not the population. Conclusions should be about the population parameter.',
-      'proof': 'Statistical tests never "prove" anything, and we must be careful about claiming causation from observational data.',
-    };
-    feedbackParts.push(`Claim: ${distractorExplanation[studentClaimType] || 'The selected claim is not the correct contextual conclusion.'}`);
-  }
-  if (claimOk) {
-    claimFeedback.textContent = 'Correct claim selected.';
-    claimFeedback.className = 'feedback-box visible success';
-  } else {
-    claimFeedback.textContent = feedbackParts[feedbackParts.length - 1];
-    claimFeedback.className = 'feedback-box visible error';
-  }
-
-  // 4. Provide / do not provide
+  // 3. Provide / do not provide
   const provideOk = studentProvide === correctProvide;
   provideSelect.classList.remove('correct', 'incorrect');
   provideSelect.classList.add(provideOk ? 'correct' : 'incorrect');
   if (provideOk) blanksCorrect++;
   else feedbackParts.push(`Provide: The data "${correctProvide}" evidence when we ${correctDecision} H\u2080.`);
 
-  // 5. Evidence strength
+  // 4. Evidence strength
   const strengthOk = isStrengthAcceptable(studentStrength, bestStrength);
   strengthSelect.classList.remove('correct', 'incorrect');
   strengthSelect.classList.add(strengthOk ? 'correct' : 'incorrect');
