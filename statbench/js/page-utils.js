@@ -654,12 +654,20 @@ export function initMechanismCollapse(mechanismStrip) {
       summary.innerHTML = parent ? parent.innerHTML : `χ² = ${chisqStat.innerHTML}`;
       return;
     }
+
+    // Try correlation: #mech-shuffled-r — copy parent <p> which has "r = <span>..."
+    const corrStat = strip.querySelector('#mech-shuffled-r');
+    if (corrStat && corrStat.textContent.trim() && corrStat.textContent !== '\u2014') {
+      const parent = corrStat.closest('.mechanism-stat');
+      summary.innerHTML = parent ? parent.innerHTML : `r = ${corrStat.innerHTML}`;
+      return;
+    }
   }
 
   // Watch for sim stat changes so collapsed summary stays current.
   // Observe stat elements and their containers (for dynamically created content like .mech-diff).
   const watchTargets = strip.querySelectorAll(
-    '#mech-sim-stat, #resample-mean, #mech-shuffled-chisq, #mech-resample-content, #resample-content'
+    '#mech-sim-stat, #resample-mean, #mech-shuffled-chisq, #mech-shuffled-r, #mech-resample-content, #resample-content'
   );
   for (const el of watchTargets) {
     const observer = new MutationObserver(syncSummary);

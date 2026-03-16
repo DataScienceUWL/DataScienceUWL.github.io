@@ -52,6 +52,9 @@ export function pointRadius(n) {
  * @param {{slope: number, intercept: number}} [options.regression] - Regression line to overlay
  * @param {Array<{slope: number, intercept: number}>} [options.bootstrapLines] - Bootstrap regression lines (draws first 100)
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
+ * @param {boolean} [options.minimal] - If true, hide axis labels and tick labels (show only dots + regression line)
+ * @param {number} [options.yTicks] - Number of y-axis ticks (default: auto)
+ * @param {number} [options.xTicks] - Number of x-axis ticks (default: auto)
  * @returns {{ frame: ChartFrame, xScale: d3Scale.ScaleLinear<number,number>, yScale: d3Scale.ScaleLinear<number,number> }}
  */
 export function drawScatterplot(container, xValues, yValues, options = {}) {
@@ -64,6 +67,9 @@ export function drawScatterplot(container, xValues, yValues, options = {}) {
     regression,
     bootstrapLines,
     margin,
+    minimal = false,
+    yTicks,
+    xTicks,
   } = options;
 
   const n = Math.min(xValues.length, yValues.length);
@@ -84,9 +90,15 @@ export function drawScatterplot(container, xValues, yValues, options = {}) {
     .nice()
     .range([frame.height, 0]);
 
-  const xAxis = d3Axis.axisBottom(xScale).tickFormat(formatTick);
-  const yAxis = d3Axis.axisLeft(yScale).tickFormat(formatTick);
-  addAxes(frame, xAxis, yAxis, xLabel, yLabel);
+  const xAxis = d3Axis.axisBottom(xScale).tickFormat(minimal ? () => '' : formatTick);
+  const yAxis = d3Axis.axisLeft(yScale).tickFormat(minimal ? () => '' : formatTick);
+  if (xTicks !== undefined) xAxis.ticks(xTicks);
+  if (yTicks !== undefined) yAxis.ticks(yTicks);
+  if (minimal) {
+    xAxis.tickSize(0);
+    yAxis.tickSize(0);
+  }
+  addAxes(frame, xAxis, yAxis, minimal ? undefined : xLabel, minimal ? undefined : yLabel);
 
   const overlays = d3Selection.select(frame.inner).select('.overlays');
 

@@ -179,15 +179,15 @@ function showDataLoaded() {
   if (hypothesisDisplay) hypothesisDisplay.hidden = false;
 
   // Draw observed scatterplot in mechanism (stays hidden until first generate)
-  const mechMargin = { top: 8, right: 12, bottom: 38, left: 58 };
+  const mechMargin = { top: 8, right: 8, bottom: 12, left: 12 };
   if (mechObservedPlot) {
     mechObservedPlot.innerHTML = '';
     drawScatterplot(mechObservedPlot, xValues, yValues, {
-      xLabel, yLabel,
       titleText: 'Original Data',
       id: 'mech-obs',
       regression: computeRegression(xValues, yValues),
       margin: mechMargin,
+      minimal: true,
     });
   }
   if (mechObservedR) mechObservedR.textContent = formatStat(observedR, 4);
@@ -244,13 +244,13 @@ function generateSimulations(count) {
   // Update mechanism strip with last shuffle
   if (mechShuffledPlot) {
     mechShuffledPlot.innerHTML = '';
-    const sMargin = { top: 8, right: 12, bottom: 38, left: 58 };
+    const sMargin = { top: 8, right: 8, bottom: 12, left: 12 };
     drawScatterplot(mechShuffledPlot, xValues, lastShuffledY, {
-      xLabel, yLabel,
       titleText: count === 1 ? 'This Shuffle' : 'Last Shuffle',
       id: 'mech-shuf',
       regression: computeRegression(xValues, lastShuffledY),
       margin: sMargin,
+      minimal: true,
     });
   }
   if (mechShuffledR) mechShuffledR.textContent = formatStat(lastR, 4);
