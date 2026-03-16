@@ -306,9 +306,9 @@ function showSampleOnPopulation(sample, sampleMean) {
     g.append('text')
       .attr('class', 'mean-label')
       .attr('x', mx)
-      .attr('y', frame.height - 16)
+      .attr('y', frame.height - 24)
       .attr('text-anchor', 'middle')
-      .attr('font-size', '13px')
+      .attr('font-size', '20px')
       .attr('font-weight', '700')
       .attr('fill', '#F05133')
       .attr('opacity', 0);
