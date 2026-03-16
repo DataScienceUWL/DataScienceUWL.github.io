@@ -804,9 +804,9 @@ export function initSimPage(config) {
     controlsSection?.classList.add('sticky');
 
     // Show hypothesis display (randomization tests)
-    if (config.mode === 'randomization' && config.twoGroup && hypothesisDisplay) {
+    if (config.mode === 'randomization' && (config.twoGroup || config.paired) && hypothesisDisplay) {
       hypothesisDisplay.hidden = false;
-      updateHypothesisDisplay();
+      if (config.twoGroup) updateHypothesisDisplay();
     }
     // Show group order (two-sample bootstrap)
     const groupOrderEl = document.getElementById('group-order');
@@ -846,6 +846,13 @@ export function initSimPage(config) {
         for (let i = 0; i < PRE_SIM_N; i++) preStats.push(statFn(resample(data1, preRng)) - statFn(resample(data2, preRng)));
       } else {
         for (let i = 0; i < PRE_SIM_N; i++) preStats.push(statFn(resample(data1, preRng)));
+      }
+    } else if (config.paired && data2.length > 0) {
+      // Paired randomization: sign-flip pre-sim
+      const diffs = data2.map((v, i) => v - data1[i]);
+      for (let i = 0; i < PRE_SIM_N; i++) {
+        const flipped = diffs.map(d => preRng() < 0.5 ? d : -d);
+        preStats.push(mean(flipped));
       }
     } else if (config.testStat) {
       for (let i = 0; i < PRE_SIM_N; i++) {
@@ -948,6 +955,7 @@ export function initSimPage(config) {
         const relevant = index.filter(ds => {
           if (config.paired) return ds.type === 'paired';
           if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) return ds.type === 'bootstrap_prop';
+          if (config.mode === 'bootstrap' && config.twoGroup && config.proportion) return ds.type === 'randomization_prop';
           if (config.mode === 'bootstrap' && config.twoGroup) return ds.type === 'randomization';
           if (config.mode === 'bootstrap') return ds.type === 'bootstrap';
           if (config.proportion) return ds.type === 'randomization_prop';
@@ -1112,7 +1120,9 @@ export function initSimPage(config) {
       altDirectionBtn.dataset.value = vals[next];
       altDirectionBtn.textContent = labels[next];
       if (allStats.length > 0) {
-        const observedStat = config.testStat(data1, data2);
+        const observedStat = config.paired
+          ? mean(data2.map((v, i) => v - data1[i]))
+          : config.testStat(data1, data2);
         const direction = getDirection();
         renderChart(allStats, null, observedStat, direction);
         const { pValue, extremeCount } = permutationPValue(allStats, observedStat, direction);
@@ -1177,7 +1187,8 @@ export function initSimPage(config) {
 
     // Update resample panel title
     if (resampleTitleEl) {
-      resampleTitleEl.textContent = count === 1 ? 'This Resample' : 'Last Resample';
+      const verb = config.mode === 'randomization' ? 'Shuffle' : 'Resample';
+      resampleTitleEl.textContent = count === 1 ? `This ${verb}` : `Last ${verb}`;
     }
 
     if (config.mode === 'bootstrap') {
@@ -1299,6 +1310,71 @@ export function initSimPage(config) {
       }
 
       announce(`Generated ${count} resample${count > 1 ? 's' : ''}. Total: ${allStats.length}`);
+    } else if (config.paired) {
+      // ─── Paired randomization: sign-flip test ───
+      const diffs = data2.map((v, i) => v - data1[i]);
+      const observedStat = mean(diffs);
+      const direction = getDirection();
+
+      /** @type {number[]} */ let lastFlipped = [];
+      for (let i = 0; i < count; i++) {
+        const flipped = diffs.map(d => rng() < 0.5 ? d : -d);
+        lastFlipped = flipped;
+        allStats.push(mean(flipped));
+      }
+
+      // Show mechanism (reuse one-sample mechanism strip)
+      lastResample = lastFlipped;
+      showResample(lastFlipped, false, count === 1);
+
+      // Highlights
+      if (count === 1) {
+        lastStatIndex = allStats.length - 1;
+      } else {
+        batchHighlightIndices = new Set();
+        for (let j = prevLength; j < allStats.length; j++) {
+          batchHighlightIndices.add(j);
+        }
+      }
+      // Histogram delta for batch
+      if (allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
+        const rVals = [...allStats, observedStat];
+        let rLo = Math.min(...rVals);
+        let rHi = Math.max(...rVals);
+        const rPad = (rHi - rLo) * 0.05 || 0.5;
+        rLo -= rPad; rHi += rPad;
+        if (preSimDomain) {
+          rLo = Math.min(rLo, preSimDomain[0]);
+          rHi = Math.max(rHi, preSimDomain[1]);
+        }
+        /** @type {[number,number]} */
+        const rDomain = [rLo, rHi];
+        const { bins: fullBins } = computeBins(allStats, { domain: rDomain });
+        const lockedThresholds = fullBins.slice(1).map(b => b.x0);
+        const prevStats = allStats.slice(0, prevLength);
+        const { bins: prevBins } = computeBins(prevStats, { domain: rDomain, thresholds: lockedThresholds });
+        prevBinCounts = prevBins.map(b => b.length);
+      }
+
+      const { pValue, extremeCount } = permutationPValue(allStats, observedStat, direction);
+      displayRandomizationResults(allStats, observedStat, pValue, extremeCount, direction);
+
+      if (count === 1) {
+        lastWasSingle = true;
+        setTimeout(() => {
+          flashMechanism();
+          setTimeout(() => {
+            renderChart(allStats, null, observedStat, direction);
+            if (resampleMeanEl && chartContainer) {
+              animateDropToChart(resampleMeanEl, chartContainer);
+            }
+          }, 120);
+        }, 120);
+      } else {
+        lastWasSingle = false;
+        renderChart(allStats, null, observedStat, direction);
+      }
+      announce(`Generated ${count} shuffle${count > 1 ? 's' : ''}. Total: ${allStats.length}`);
     } else {
       const observedStat = config.testStat(data1, data2);
       const direction = getDirection();
