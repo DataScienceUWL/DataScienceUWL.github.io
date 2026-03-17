@@ -41,8 +41,6 @@ const presetSelect = /** @type {HTMLSelectElement} */ (document.getElementById('
 const undoBtn = /** @type {HTMLButtonElement} */ (document.getElementById('undo-btn'));
 const clearBtn = /** @type {HTMLButtonElement} */ (document.getElementById('clear-btn'));
 const boxplotCheck = /** @type {HTMLInputElement} */ (document.getElementById('boxplot-check'));
-const freezeBtn = /** @type {HTMLButtonElement} */ (document.getElementById('freeze-btn'));
-const unfreezeBtn = /** @type {HTMLButtonElement} */ (document.getElementById('unfreeze-btn'));
 const challengeBtn = /** @type {HTMLButtonElement} */ (document.getElementById('challenge-btn'));
 const challengeBanner = /** @type {HTMLElement} */ (document.getElementById('challenge-banner'));
 
@@ -99,31 +97,11 @@ clearBtn.addEventListener('click', resetData);
 // Boxplot toggle
 boxplotCheck.addEventListener('change', () => {
   showBoxplot = boxplotCheck.checked;
-  freezeBtn.disabled = !showBoxplot;
   if (!showBoxplot) {
     frozenBoxplot = null;
-    unfreezeBtn.style.display = 'none';
-    freezeBtn.style.display = '';
     if (challengeActive) endChallenge();
   }
   render();
-});
-
-freezeBtn.addEventListener('click', () => {
-  if (values.length < 2) return;
-  frozenBoxplot = computeBoxplotStats(values);
-  freezeBtn.style.display = 'none';
-  unfreezeBtn.style.display = '';
-  render();
-  announce('Boxplot frozen. Edit the data to compare.');
-});
-
-unfreezeBtn.addEventListener('click', () => {
-  frozenBoxplot = null;
-  unfreezeBtn.style.display = 'none';
-  freezeBtn.style.display = '';
-  render();
-  announce('Boxplot unfrozen.');
 });
 
 // Challenge mode
@@ -432,8 +410,7 @@ function updateStats() {
  */
 function drawInlineBoxplot(parent, xScale, frozen, currentValues, bandHeight) {
   const bpGroup = parent.append('g').attr('class', 'boxplot-overlay');
-  const hasTwo = frozen && currentValues.length >= 2;
-  const parallel = challengeActive && hasTwo;
+  const hasLive = currentValues.length >= 2;
 
   // Separator line between boxplot and dots
   bpGroup.append('line')
@@ -441,13 +418,13 @@ function drawInlineBoxplot(parent, xScale, frozen, currentValues, bandHeight) {
     .attr('y1', bandHeight).attr('y2', bandHeight)
     .attr('stroke', '#ddd').attr('stroke-width', 0.5).attr('stroke-dasharray', '4,3');
 
-  if (parallel) {
-    // Challenge mode with both boxplots: render on separate rows
+  if (frozen && hasLive) {
+    // Two boxplots (challenge mode): parallel rows
     const targetY = bandHeight * 0.28;
     const liveY = bandHeight * 0.72;
-    const boxHalf = 9; // smaller to fit two rows
+    const boxHalf = 9;
 
-    drawOneBoxplot(bpGroup, xScale, /** @type {import('../../js/boxplot.js').BoxplotStats} */ (frozen), targetY, boxHalf, {
+    drawOneBoxplot(bpGroup, xScale, frozen, targetY, boxHalf, {
       fill: '#fff3cd', stroke: '#b8860b', strokeWidth: 2, dasharray: '', opacity: 0.9, label: 'Target',
     });
 
@@ -456,22 +433,15 @@ function drawInlineBoxplot(parent, xScale, frozen, currentValues, bandHeight) {
       fill: 'rgba(86,155,189,0.15)', stroke: '#569BBD', strokeWidth: 2, dasharray: '', opacity: 1, label: 'Yours',
     });
   } else {
-    // Single boxplot or overlaid freeze mode
+    // Single boxplot (either target-only or live-only)
     const midY = bandHeight / 2;
     const boxHalf = 14;
 
     if (frozen) {
       drawOneBoxplot(bpGroup, xScale, frozen, midY, boxHalf, {
-        fill: challengeActive ? '#fff3cd' : '#eee',
-        stroke: challengeActive ? '#b8860b' : '#aaa',
-        strokeWidth: challengeActive ? 2 : 1.5,
-        dasharray: challengeActive ? '' : '4,2',
-        opacity: challengeActive ? 0.9 : 0.8,
-        label: challengeActive ? 'Target' : 'Frozen',
+        fill: '#fff3cd', stroke: '#b8860b', strokeWidth: 2, dasharray: '', opacity: 0.9, label: 'Target',
       });
-    }
-
-    if (currentValues.length >= 2) {
+    } else if (hasLive) {
       const live = computeBoxplotStats(currentValues);
       drawOneBoxplot(bpGroup, xScale, live, midY, boxHalf, {
         fill: 'rgba(86,155,189,0.15)', stroke: '#569BBD', strokeWidth: 2, dasharray: '', opacity: 1, label: '',
@@ -592,14 +562,11 @@ function startChallenge() {
   const pool = CHALLENGE_POOLS[Math.floor(Math.random() * CHALLENGE_POOLS.length)];
   const target = computeBoxplotStats(pool);
 
-  // Enable boxplot, set target as frozen
+  // Enable boxplot, set target
   showBoxplot = true;
   boxplotCheck.checked = true;
   frozenBoxplot = target;
   challengeActive = true;
-  freezeBtn.disabled = true;
-  freezeBtn.style.display = 'none';
-  unfreezeBtn.style.display = 'none';
   challengeBtn.textContent = 'New Challenge';
 
   // Clear data so student starts fresh
@@ -621,9 +588,6 @@ function endChallenge() {
   challengeBtn.textContent = 'Challenge';
   challengeBanner.style.display = 'none';
   frozenBoxplot = null;
-  freezeBtn.style.display = '';
-  freezeBtn.disabled = !showBoxplot;
-  unfreezeBtn.style.display = 'none';
 }
 
 function updateChallengeBanner() {
