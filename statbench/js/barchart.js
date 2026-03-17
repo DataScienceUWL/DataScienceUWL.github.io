@@ -11,7 +11,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip } from './chart-utils.js';
+import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels } from './chart-utils.js';
 
 /** Bar stroke (white separator). */
 const BAR_STROKE = '#FFFFFF';
@@ -180,9 +180,12 @@ function drawSimpleBars(frame, values, mode, opts) {
   const yAxis = d3Axis.axisLeft(yScale).tickFormat(formatTick);
 
   const axes = d3Selection.select(frame.inner).select('.axes');
-  axes.append('g').attr('class', 'x-axis')
+  const xAxisG = axes.append('g').attr('class', 'x-axis')
     .attr('transform', `translate(0, ${frame.height})`).call(xAxis);
   axes.append('g').attr('class', 'y-axis').call(yAxis);
+
+  // Wrap long category labels on x-axis (band width sets max label width)
+  wrapTickLabels(xAxisG, xScale.bandwidth());
 
   if (opts.xLabel) {
     axes.append('text')
@@ -360,9 +363,10 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
     }
 
     const yScale = d3Scale.scaleLinear().domain([0, yMax || 1]).nice().range([frame.height, 0]);
-    axes.append('g').attr('class', 'x-axis')
+    const xAxisG2 = axes.append('g').attr('class', 'x-axis')
       .attr('transform', `translate(0, ${frame.height})`).call(d3Axis.axisBottom(xScale));
     axes.append('g').attr('class', 'y-axis').call(d3Axis.axisLeft(yScale).tickFormat(formatTick));
+    wrapTickLabels(xAxisG2, xScale.bandwidth());
 
     if (opts.xLabel) {
       axes.append('text').attr('class', 'x-label').attr('text-anchor', 'middle')
@@ -402,9 +406,10 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
     const yMax = mode === 'filled' ? 1 : d3Array.max(primaryCats.map(p => primaryTotals.get(p) ?? 0)) || 1;
     const yScale = d3Scale.scaleLinear().domain([0, yMax]).nice().range([frame.height, 0]);
 
-    axes.append('g').attr('class', 'x-axis')
+    const xAxisG3 = axes.append('g').attr('class', 'x-axis')
       .attr('transform', `translate(0, ${frame.height})`).call(d3Axis.axisBottom(xScale));
     axes.append('g').attr('class', 'y-axis').call(d3Axis.axisLeft(yScale).tickFormat(formatTick));
+    wrapTickLabels(xAxisG3, xScale.bandwidth());
 
     if (opts.xLabel) {
       axes.append('text').attr('class', 'x-label').attr('text-anchor', 'middle')

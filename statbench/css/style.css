@@ -1350,18 +1350,13 @@ input[aria-invalid="true"] {
   min-width: 0;   /* prevent SVG overflow */
 }
 
-/* On mobile, chart is slightly wider than viewport so data area stays readable.
-   User swipes left to reveal full y-axis labels. On a 375px phone with 1rem
-   padding, the container is ~343px. min-width: 420px overflows by ~77px,
-   keeping most of the chart visible while allowing the full left labels to
-   be reached with a small swipe. */
+/* On mobile, chart fills container naturally — no forced min-width.
+   Long axis labels are wrapped via wrapTickLabels() in JS.
+   overflow-x: auto is a safety net in case anything still overflows. */
 @media (max-width: 600px) {
   .app-main {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-  }
-  .app-main svg[role="img"] {
-    min-width: 420px;
   }
 }
 

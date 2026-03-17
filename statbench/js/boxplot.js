@@ -11,7 +11,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import { quantile } from './stats.js';
-import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip } from './chart-utils.js';
+import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels } from './chart-utils.js';
 
 /** IMS blue for strokes and fills. */
 const IMS_BLUE = '#569BBD';
@@ -157,9 +157,11 @@ export function drawBoxplot(container, data, options = {}) {
   // Y axis (group labels) — only for grouped
   if (isGrouped) {
     const yAxis = d3Axis.axisLeft(yScale);
-    axes.append('g')
+    const yAxisG = axes.append('g')
       .attr('class', 'y-axis')
       .call(yAxis);
+    // Wrap long group labels (e.g., "Nonsmoker" → "Non-\nsmoker" on narrow screens)
+    wrapTickLabels(yAxisG, frame.margin.left - 15);
   }
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');

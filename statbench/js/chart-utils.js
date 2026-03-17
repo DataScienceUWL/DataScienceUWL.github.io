@@ -296,6 +296,92 @@ function detectPhoneMargin() {
 }
 
 /**
+ * Wrap long tick labels in an axis group by splitting into multiple <tspan> lines.
+ * Works for both x-axis (horizontal text) and y-axis (horizontal text on left axis).
+ * Labels are split at natural break points (spaces, hyphens, underscores, camelCase).
+ *
+ * @param {d3Selection.Selection} axisG - The axis <g> element (e.g., `.y-axis`)
+ * @param {number} maxWidth - Maximum allowed width in viewBox units before wrapping
+ */
+export function wrapTickLabels(axisG, maxWidth) {
+  axisG.selectAll('.tick text').each(function () {
+    const textEl = d3Selection.select(this);
+    const fullText = textEl.text();
+
+    // Quick check: does the label even need wrapping?
+    let textWidth = 0;
+    try { textWidth = /** @type {SVGTextElement} */ (this).getBBox().width; }
+    catch { return; /* getBBox fails in JSDOM */ }
+    if (textWidth <= maxWidth) return;
+
+    // Split at spaces, hyphens (keep hyphen), underscores, or camelCase boundaries
+    const words = fullText
+      .replace(/([a-z])([A-Z])/g, '$1 $2')      // camelCase → separate words
+      .replace(/[_]/g, ' ')                       // underscores → spaces
+      .split(/\s+/)                                // split on whitespace
+      .filter(Boolean);
+
+    if (words.length <= 1) return; // can't split a single word
+
+    const x = textEl.attr('x') || '0';
+    const dy = parseFloat(textEl.attr('dy') || '0');
+    const anchor = textEl.attr('text-anchor') || 'end';
+
+    textEl.text(null); // clear existing text
+
+    let currentLine = '';
+    let lineNumber = 0;
+    const lineHeight = 1.1; // em
+
+    for (let i = 0; i < words.length; i++) {
+      const testLine = currentLine ? currentLine + ' ' + words[i] : words[i];
+      const tspan = textEl.append('tspan')
+        .attr('x', x)
+        .attr('text-anchor', anchor)
+        .text(testLine);
+
+      let tspanWidth = 0;
+      try { tspanWidth = /** @type {SVGTSpanElement} */ (tspan.node()).getComputedTextLength(); }
+      catch { tspanWidth = testLine.length * 7; } // fallback estimate
+
+      if (tspanWidth > maxWidth && currentLine) {
+        // This word pushes over — finalize previous line, start new one
+        tspan.text(currentLine);
+        tspan.attr('dy', lineNumber === 0 ? '0em' : `${lineHeight}em`);
+        currentLine = words[i];
+        lineNumber++;
+      } else {
+        currentLine = testLine;
+        tspan.remove(); // will re-add on finalize
+      }
+    }
+
+    // Add final line
+    if (currentLine) {
+      const lastTspan = textEl.append('tspan')
+        .attr('x', x)
+        .attr('text-anchor', anchor)
+        .attr('dy', lineNumber === 0 ? '0em' : `${lineHeight}em`)
+        .text(currentLine);
+    }
+
+    // Re-center vertically: shift up by half the total height added
+    const totalLines = lineNumber + 1;
+    if (totalLines > 1) {
+      const shiftUp = ((totalLines - 1) * lineHeight) / 2;
+      textEl.selectAll('tspan').each(function (_, i) {
+        const ts = d3Selection.select(this);
+        if (i === 0) {
+          ts.attr('dy', `-${shiftUp}em`);
+        } else {
+          ts.attr('dy', `${lineHeight}em`);
+        }
+      });
+    }
+  });
+}
+
+/**
  * Render a statistical label in SVG, converting combining overline (U+0304)
  * into proper SVG `<tspan text-decoration="overline">` for reliable rendering.
  *
