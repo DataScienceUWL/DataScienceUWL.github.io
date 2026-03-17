@@ -249,6 +249,10 @@ initDataPanel({
                 typeof currentRows[0][k] === 'number');
         }
 
+        // Reset controls to defaults on new data
+        showLineCheckbox.checked = true;
+        showResidualsCheckbox.checked = false;
+
         populateVarSelectors();
         dataSummary.textContent = `${currentRows.length} observations, ${numericColumns.length} numeric variables`;
         announce(`${ds.name}: ${currentRows.length} observations.`);

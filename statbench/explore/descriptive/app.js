@@ -504,6 +504,16 @@ function setData(values, varLabel, sourceName) {
   dataPrecision = detectPrecision(values);
   currentBinCount = sturgesBins(values.length);
 
+  // Reset controls to defaults on new data
+  activeChart = 'histogram';
+  showOutliers = true;
+  showDensity = false;
+  relativeFreq = false;
+  const histRadio = /** @type {HTMLInputElement|null} */ (
+    document.querySelector('input[name="chart-type"][value="histogram"]'));
+  if (histRadio) histRadio.checked = true;
+  if (groupSelect) groupSelect.value = '';
+
   // Populate spreadsheet editor
   if (quantSheetBody) populateSheet(quantSheetBody, 'number', values.map(String));
 

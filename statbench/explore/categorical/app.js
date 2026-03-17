@@ -299,6 +299,9 @@ chartModeSelect.addEventListener('change', () => updateDisplay());
  * @param {string} sourceName
  */
 function showDataLoaded(sourceName) {
+  // Reset controls to defaults on new data
+  if (tableModeSelect) tableModeSelect.value = 'counts';
+  if (chartModeSelect) chartModeSelect.value = 'stacked';
   if (dataSummary) dataSummary.textContent = `${sourceName} (n = ${rawRows.length})`;
   updateDisplay();
   announce(`${rawRows.length} observations.`);

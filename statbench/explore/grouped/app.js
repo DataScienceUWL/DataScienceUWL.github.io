@@ -393,6 +393,14 @@ function setupVariableSelectors(ds, sourceName) {
     return;
   }
 
+  // Reset controls to defaults on new data
+  activeChart = 'boxplot';
+  showOutliers = true;
+  relativeFreq = false;
+  const boxRadio = /** @type {HTMLInputElement|null} */ (
+    document.querySelector('input[name="chart-type"][value="boxplot"]'));
+  if (boxRadio) boxRadio.checked = true;
+
   quantVarSelect.innerHTML = '';
   for (const v of numericVars) {
     const opt = document.createElement('option');

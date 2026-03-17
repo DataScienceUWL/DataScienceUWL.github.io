@@ -121,6 +121,8 @@ function loadParsedData(parsed, sourceName) {
 function loadValues(values, varName, sourceName) {
   currentValues = values;
   currentVarName = varName;
+  // Reset controls to defaults on new data
+  if (chartModeSelect) chartModeSelect.value = 'frequency';
   if (dataSummary) dataSummary.textContent = `${sourceName} (n = ${values.length})`;
   updateDisplay();
   announce(`${values.length} observations loaded.`);
