@@ -43,6 +43,8 @@ const clearBtn = /** @type {HTMLButtonElement} */ (document.getElementById('clea
 const boxplotCheck = /** @type {HTMLInputElement} */ (document.getElementById('boxplot-check'));
 const freezeBtn = /** @type {HTMLButtonElement} */ (document.getElementById('freeze-btn'));
 const unfreezeBtn = /** @type {HTMLButtonElement} */ (document.getElementById('unfreeze-btn'));
+const challengeBtn = /** @type {HTMLButtonElement} */ (document.getElementById('challenge-btn'));
+const challengeBanner = /** @type {HTMLElement} */ (document.getElementById('challenge-banner'));
 
 // Stat cells
 const statEls = {
@@ -70,6 +72,7 @@ let history = [];
 let showBoxplot = false;
 /** @type {import('../../js/boxplot.js').BoxplotStats|null} */
 let frozenBoxplot = null;
+let challengeActive = false;
 
 // ─── Initialization ───
 
@@ -85,6 +88,7 @@ if (helpBtn && helpDialog) {
 
 // Preset selector
 presetSelect.addEventListener('change', () => {
+  if (challengeActive) endChallenge();
   loadPreset(presetSelect.value);
 });
 
@@ -100,6 +104,7 @@ boxplotCheck.addEventListener('change', () => {
     frozenBoxplot = null;
     unfreezeBtn.style.display = 'none';
     freezeBtn.style.display = '';
+    if (challengeActive) endChallenge();
   }
   render();
 });
@@ -120,6 +125,9 @@ unfreezeBtn.addEventListener('click', () => {
   render();
   announce('Boxplot unfrozen.');
 });
+
+// Challenge mode
+challengeBtn.addEventListener('click', startChallenge);
 
 // Keyboard: Ctrl+Z, ?
 document.addEventListener('keydown', (e) => {
@@ -195,9 +203,15 @@ function removePoint(val) {
 function render() {
   chartArea.innerHTML = '';
 
-  // Compute domain
-  const dataMin = values.length > 0 ? d3Array.min(values) ?? 0 : 0;
-  const dataMax = values.length > 0 ? d3Array.max(values) ?? 20 : 20;
+  // Compute domain — include frozen/challenge boxplot range
+  let dataMin = values.length > 0 ? d3Array.min(values) ?? 0 : 0;
+  let dataMax = values.length > 0 ? d3Array.max(values) ?? 20 : 20;
+  if (frozenBoxplot) {
+    const allFrozen = [frozenBoxplot.whiskerLo, frozenBoxplot.whiskerHi,
+      ...frozenBoxplot.mildOutliers, ...frozenBoxplot.extremeOutliers];
+    dataMin = Math.min(dataMin, ...allFrozen);
+    dataMax = Math.max(dataMax, ...allFrozen);
+  }
   const lo = Math.min(0, dataMin - 2);
   const hi = Math.max(20, dataMax + 2);
 
@@ -365,6 +379,7 @@ function render() {
   }
 
   updateStats();
+  updateChallengeBanner();
 }
 
 // ─── Stats display ───
@@ -426,10 +441,15 @@ function drawInlineBoxplot(parent, xScale, frozen, currentValues, bandHeight) {
     .attr('y1', bandHeight).attr('y2', bandHeight)
     .attr('stroke', '#ddd').attr('stroke-width', 0.5).attr('stroke-dasharray', '4,3');
 
-  // Draw frozen ghost first (behind)
+  // Draw frozen/target ghost first (behind)
   if (frozen) {
     drawOneBoxplot(bpGroup, xScale, frozen, midY, boxHalf, {
-      fill: '#eee', stroke: '#aaa', strokeWidth: 1.5, dasharray: '4,2', opacity: 0.8, label: 'Frozen',
+      fill: challengeActive ? '#fff3cd' : '#eee',
+      stroke: challengeActive ? '#b8860b' : '#aaa',
+      strokeWidth: challengeActive ? 2 : 1.5,
+      dasharray: challengeActive ? '' : '4,2',
+      opacity: challengeActive ? 0.9 : 0.8,
+      label: challengeActive ? 'Target' : 'Frozen',
     });
   }
 
@@ -521,3 +541,129 @@ function drawOneBoxplot(parent, xScale, stats, midY, boxHalf, style) {
       .text(style.label);
   }
 }
+
+// ─── Challenge mode ───
+
+/** @type {Array<number[]>} */
+const CHALLENGE_POOLS = [
+  // No outliers — symmetric
+  [4, 6, 7, 8, 8, 9, 10, 12],
+  [2, 5, 6, 7, 8, 9, 11, 14],
+  [3, 5, 6, 7, 7, 8, 9, 11],
+  // No outliers — skewed
+  [1, 2, 3, 3, 4, 5, 6, 10],
+  [2, 3, 4, 5, 5, 6, 8, 12],
+  [5, 8, 9, 10, 11, 12, 13, 15],
+  // One outlier low
+  [1, 6, 7, 8, 9, 10, 11, 13],
+  [2, 9, 10, 11, 12, 13, 14, 16],
+  // One outlier high
+  [3, 5, 6, 7, 8, 9, 10, 18],
+  [4, 6, 7, 8, 9, 10, 11, 20],
+  [1, 3, 4, 5, 6, 7, 8, 16],
+  // Two outliers (both sides)
+  [1, 6, 8, 9, 10, 11, 13, 20],
+  [0, 5, 7, 8, 9, 10, 12, 19],
+  // Two outliers same side
+  [2, 3, 5, 6, 7, 8, 9, 16, 19],
+  [1, 4, 8, 9, 10, 11, 12, 13, 20],
+];
+
+function startChallenge() {
+  // Pick a random challenge dataset
+  const pool = CHALLENGE_POOLS[Math.floor(Math.random() * CHALLENGE_POOLS.length)];
+  const target = computeBoxplotStats(pool);
+
+  // Enable boxplot, set target as frozen
+  showBoxplot = true;
+  boxplotCheck.checked = true;
+  frozenBoxplot = target;
+  challengeActive = true;
+  freezeBtn.disabled = true;
+  freezeBtn.style.display = 'none';
+  unfreezeBtn.style.display = 'none';
+  challengeBtn.textContent = 'New Challenge';
+
+  // Clear data so student starts fresh
+  pushHistory();
+  values = [];
+  history = [];
+  undoBtn.disabled = true;
+
+  // Switch preset to empty
+  presetSelect.value = 'empty';
+
+  render();
+  updateChallengeBanner();
+  announce('Challenge started! Build a dataset that matches the target boxplot.');
+}
+
+function endChallenge() {
+  challengeActive = false;
+  challengeBtn.textContent = 'Challenge';
+  challengeBanner.style.display = 'none';
+  frozenBoxplot = null;
+  freezeBtn.style.display = '';
+  freezeBtn.disabled = !showBoxplot;
+  unfreezeBtn.style.display = 'none';
+}
+
+function updateChallengeBanner() {
+  if (!challengeActive || !frozenBoxplot) {
+    challengeBanner.style.display = 'none';
+    return;
+  }
+
+  challengeBanner.style.display = '';
+
+  if (values.length < 2) {
+    challengeBanner.className = 'challenge-banner active';
+    const target = frozenBoxplot;
+    const outliers = [...target.mildOutliers, ...target.extremeOutliers];
+    const outlierNote = outliers.length > 0
+      ? ` (with ${outliers.length} outlier${outliers.length > 1 ? 's' : ''})`
+      : '';
+    challengeBanner.innerHTML =
+      `<strong>Challenge:</strong> Build a dataset that matches the target boxplot${outlierNote}. ` +
+      `Click the number line to add points.`;
+    return;
+  }
+
+  const live = computeBoxplotStats(values);
+  const checks = [
+    { name: 'Min/Whisker Low', match: live.whiskerLo === frozenBoxplot.whiskerLo },
+    { name: 'Q1', match: live.q1 === frozenBoxplot.q1 },
+    { name: 'Median', match: live.median === frozenBoxplot.median },
+    { name: 'Q3', match: live.q3 === frozenBoxplot.q3 },
+    { name: 'Max/Whisker High', match: live.whiskerHi === frozenBoxplot.whiskerHi },
+  ];
+
+  // Check outliers: same set of values
+  const targetOutliers = [...frozenBoxplot.mildOutliers, ...frozenBoxplot.extremeOutliers].sort((a, b) => a - b);
+  const liveOutliers = [...live.mildOutliers, ...live.extremeOutliers].sort((a, b) => a - b);
+  const outliersMatch = targetOutliers.length === liveOutliers.length &&
+    targetOutliers.every((v, i) => v === liveOutliers[i]);
+
+  if (targetOutliers.length > 0) {
+    checks.push({ name: `Outlier${targetOutliers.length > 1 ? 's' : ''}`, match: outliersMatch });
+  }
+
+  const allMatch = checks.every(c => c.match);
+
+  if (allMatch) {
+    challengeBanner.className = 'challenge-banner matched';
+    challengeBanner.innerHTML =
+      `<strong>Match!</strong> Your data produces the target boxplot. ` +
+      `Can you build a <em>different</em> dataset with the same boxplot? Click <strong>New Challenge</strong> for another.`;
+    announce('Match! Your data produces the target boxplot.');
+  } else {
+    const detail = checks
+      .map(c => `<span class="${c.match ? 'yes' : 'no'}">${c.match ? '\u2713' : '\u2717'} ${c.name}</span>`)
+      .join(' &nbsp; ');
+    challengeBanner.className = 'challenge-banner active';
+    challengeBanner.innerHTML =
+      `<strong>Challenge:</strong> Match the target boxplot.` +
+      `<div class="match-detail">${detail}</div>`;
+  }
+}
+
