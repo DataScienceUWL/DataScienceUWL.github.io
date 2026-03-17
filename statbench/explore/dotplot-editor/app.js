@@ -171,6 +171,9 @@ function render() {
     descText: `Dotplot with ${values.length} data points. Click to add or remove.`,
   });
 
+  // frame.inner is a raw DOM node; wrap as D3 selection for chaining
+  const g = d3.select(frame.inner);
+
   const xScale = d3Scale.scaleLinear()
     .domain([lo, hi])
     .range([0, frame.width]);
@@ -186,13 +189,13 @@ function render() {
     .tickValues(tickValues)
     .tickFormat(d => String(Math.round(/** @type {number} */ (d))));
 
-  frame.inner.append('g')
+  g.append('g')
     .attr('class', 'x-axis')
     .attr('transform', `translate(0,${frame.height})`)
     .call(xAxis);
 
   // Light grid lines
-  frame.inner.append('g')
+  g.append('g')
     .attr('class', 'grid-lines')
     .selectAll('line')
     .data(tickValues)
@@ -205,7 +208,7 @@ function render() {
     .attr('stroke-width', 0.5);
 
   // Clickable background rect (for adding points)
-  frame.inner.append('rect')
+  g.append('rect')
     .attr('class', 'click-target')
     .attr('x', 0)
     .attr('y', 0)
@@ -243,7 +246,7 @@ function render() {
   const r = neededHeight > availHeight ? Math.max(3, availHeight / (maxStack * 2.2)) : naturalR;
 
   // Draw dots
-  const dotGroup = frame.inner.append('g').attr('class', 'dots');
+  const dotGroup = g.append('g').attr('class', 'dots');
 
   dotGroup.selectAll('circle')
     .data(dots)
@@ -280,11 +283,11 @@ function render() {
 
     // Mean marker (triangle pointing up toward axis)
     const mx = xScale(m);
-    frame.inner.append('polygon')
+    g.append('polygon')
       .attr('points', `${mx - triSize},${markerY + triSize} ${mx + triSize},${markerY + triSize} ${mx},${markerY}`)
       .attr('fill', MEAN_COLOR)
       .attr('pointer-events', 'none');
-    frame.inner.append('text')
+    g.append('text')
       .attr('class', 'marker-label')
       .attr('x', mx)
       .attr('y', markerY + triSize + 12)
@@ -296,12 +299,12 @@ function render() {
     const medX = xScale(med);
     // Only draw if it's not on top of the mean marker
     if (Math.abs(medX - mx) > 3) {
-      frame.inner.append('polygon')
+      g.append('polygon')
         .attr('points', `${medX - triSize},${markerY + triSize} ${medX + triSize},${markerY + triSize} ${medX},${markerY}`)
         .attr('fill', MEDIAN_COLOR)
         .attr('pointer-events', 'none');
     }
-    frame.inner.append('text')
+    g.append('text')
       .attr('class', 'marker-label')
       .attr('x', medX)
       .attr('y', markerY + triSize + 24)
