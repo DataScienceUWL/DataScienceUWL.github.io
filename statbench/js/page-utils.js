@@ -799,6 +799,13 @@ function renderDatasetInfo(panel, ds) {
 
   details.appendChild(content);
   panel.appendChild(details);
+
+  // Close on click outside
+  document.addEventListener('click', function closeOutside(e) {
+    if (!details.open) return;
+    if (details.contains(/** @type {Node} */ (e.target))) return;
+    details.open = false;
+  });
 }
 
 /**
