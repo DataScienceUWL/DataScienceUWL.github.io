@@ -32,7 +32,7 @@ const MAX_HISTORY = 100;
 const VIEW_WIDTH = 600;
 const VIEW_HEIGHT = 360;
 const MARGIN = { top: 20, right: 20, bottom: 65, left: 20 };
-const BOXPLOT_BAND = 45; // viewBox units reserved at top for boxplot
+const BOXPLOT_BAND = 55; // viewBox units reserved at top for boxplot (fits two parallel rows)
 
 // ─── DOM refs ───
 
@@ -432,8 +432,8 @@ function updateStats() {
  */
 function drawInlineBoxplot(parent, xScale, frozen, currentValues, bandHeight) {
   const bpGroup = parent.append('g').attr('class', 'boxplot-overlay');
-  const midY = bandHeight / 2;
-  const boxHalf = 14; // half-height of the box
+  const hasTwo = frozen && currentValues.length >= 2;
+  const parallel = challengeActive && hasTwo;
 
   // Separator line between boxplot and dots
   bpGroup.append('line')
@@ -441,24 +441,42 @@ function drawInlineBoxplot(parent, xScale, frozen, currentValues, bandHeight) {
     .attr('y1', bandHeight).attr('y2', bandHeight)
     .attr('stroke', '#ddd').attr('stroke-width', 0.5).attr('stroke-dasharray', '4,3');
 
-  // Draw frozen/target ghost first (behind)
-  if (frozen) {
-    drawOneBoxplot(bpGroup, xScale, frozen, midY, boxHalf, {
-      fill: challengeActive ? '#fff3cd' : '#eee',
-      stroke: challengeActive ? '#b8860b' : '#aaa',
-      strokeWidth: challengeActive ? 2 : 1.5,
-      dasharray: challengeActive ? '' : '4,2',
-      opacity: challengeActive ? 0.9 : 0.8,
-      label: challengeActive ? 'Target' : 'Frozen',
-    });
-  }
+  if (parallel) {
+    // Challenge mode with both boxplots: render on separate rows
+    const targetY = bandHeight * 0.28;
+    const liveY = bandHeight * 0.72;
+    const boxHalf = 9; // smaller to fit two rows
 
-  // Draw live boxplot
-  if (currentValues.length >= 2) {
-    const live = computeBoxplotStats(currentValues);
-    drawOneBoxplot(bpGroup, xScale, live, midY, boxHalf, {
-      fill: 'rgba(86,155,189,0.15)', stroke: '#569BBD', strokeWidth: 2, dasharray: '', opacity: 1, label: '',
+    drawOneBoxplot(bpGroup, xScale, /** @type {import('../../js/boxplot.js').BoxplotStats} */ (frozen), targetY, boxHalf, {
+      fill: '#fff3cd', stroke: '#b8860b', strokeWidth: 2, dasharray: '', opacity: 0.9, label: 'Target',
     });
+
+    const live = computeBoxplotStats(currentValues);
+    drawOneBoxplot(bpGroup, xScale, live, liveY, boxHalf, {
+      fill: 'rgba(86,155,189,0.15)', stroke: '#569BBD', strokeWidth: 2, dasharray: '', opacity: 1, label: 'Yours',
+    });
+  } else {
+    // Single boxplot or overlaid freeze mode
+    const midY = bandHeight / 2;
+    const boxHalf = 14;
+
+    if (frozen) {
+      drawOneBoxplot(bpGroup, xScale, frozen, midY, boxHalf, {
+        fill: challengeActive ? '#fff3cd' : '#eee',
+        stroke: challengeActive ? '#b8860b' : '#aaa',
+        strokeWidth: challengeActive ? 2 : 1.5,
+        dasharray: challengeActive ? '' : '4,2',
+        opacity: challengeActive ? 0.9 : 0.8,
+        label: challengeActive ? 'Target' : 'Frozen',
+      });
+    }
+
+    if (currentValues.length >= 2) {
+      const live = computeBoxplotStats(currentValues);
+      drawOneBoxplot(bpGroup, xScale, live, midY, boxHalf, {
+        fill: 'rgba(86,155,189,0.15)', stroke: '#569BBD', strokeWidth: 2, dasharray: '', opacity: 1, label: '',
+      });
+    }
   }
 }
 
