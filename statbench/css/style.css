@@ -1350,11 +1350,18 @@ input[aria-invalid="true"] {
   min-width: 0;   /* prevent SVG overflow */
 }
 
-/* On mobile, allow horizontal scroll only when chart truly overflows */
+/* On mobile, chart is slightly wider than viewport so data area stays readable.
+   User swipes left to reveal full y-axis labels. On a 375px phone with 1rem
+   padding, the container is ~343px. min-width: 420px overflows by ~77px,
+   keeping most of the chart visible while allowing the full left labels to
+   be reached with a small swipe. */
 @media (max-width: 600px) {
   .app-main {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+  .app-main svg[role="img"] {
+    min-width: 420px;
   }
 }
 
@@ -2333,6 +2340,15 @@ body[data-mode="discover"] .present-only { display: none !important; }
     min-height: 44px;
     display: inline-flex;
     align-items: center;
+  }
+
+  /* Stats tables: compact on phone */
+  .sidebar-stats {
+    font-size: 0.82rem;
+  }
+  .sidebar-stats th,
+  .sidebar-stats td {
+    padding: 0.2rem 0.3rem;
   }
 
   /* Collapsed data panel: tighter on phone */

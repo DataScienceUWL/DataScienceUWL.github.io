@@ -1,6 +1,6 @@
 // StatBench Service Worker — stale-while-revalidate with update notification.
 // DEPLOY_VERSION is replaced by deploy.sh on each deploy.
-const CACHE_NAME = 'statbench-f5d80c24';
+const CACHE_NAME = 'statbench-3a92bdea';
 
 // App shell — the core files needed for the app to work
 const APP_SHELL = [
@@ -43,10 +43,19 @@ const APP_SHELL = [
   '/statbench/data/datasets.json',
 ];
 
-// Install: cache app shell
+// Install: cache app shell (best-effort — don't block install on individual fetch failures)
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.allSettled(
+        APP_SHELL.map((url) =>
+          cache.add(url).catch(() => {
+            // Individual file failed (network error, 404) — log but continue
+            console.warn('[SW] Failed to cache:', url);
+          })
+        )
+      )
+    )
   );
   // Activate immediately — don't wait for old tabs to close
   self.skipWaiting();
