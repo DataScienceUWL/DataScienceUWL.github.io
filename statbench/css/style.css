@@ -1398,6 +1398,7 @@ body[data-hide-interpretations="true"] .interpretation { display: none !importan
   display: none;
 }
 #data-panel.collapsed {
+  position: relative;
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.35rem 0.75rem;
@@ -1429,7 +1430,11 @@ body[data-hide-interpretations="true"] .interpretation { display: none !importan
 }
 
 /* ===== Dataset Info Panel (expandable) ===== */
-/* Sits inline in the collapsed flex bar; content drops below full-width when open */
+/* Summary stays inline in the collapsed bar; content drops below as a full-width block */
+.dataset-info {
+  /* Keep the <details> from growing — summary stays in its flex position */
+  flex-shrink: 0;
+}
 .dataset-info summary {
   font-size: 0.85rem;
   font-weight: 600;
@@ -1441,18 +1446,21 @@ body[data-hide-interpretations="true"] .interpretation { display: none !importan
 .dataset-info summary:hover {
   text-decoration: underline;
 }
-.dataset-info[open] {
-  /* When open, span full width so content drops below the bar items */
-  flex-basis: 100%;
-}
 .dataset-info-content {
-  margin-top: 0.4rem;
+  /* Break out of the flex row: position below the entire collapsed bar */
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 10;
+  margin-top: 0.25rem;
   padding: 0.5rem 0.75rem;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.82rem;
   line-height: 1.45;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 .dataset-info-content p {
   margin: 0 0 0.4rem;
