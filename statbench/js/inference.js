@@ -7,7 +7,7 @@
  * Requires distributions.js to be initialized first (jStat loaded).
  */
 
-import { normalCDF, normalInv, tCDF, tInv, chisqCDF, pdfT, pdfNormal, pdfChisq } from './distributions.js';
+import { normalCDF, normalInv, tCDF, tInv, chisqCDF, fCDF, pdfT, pdfNormal, pdfChisq } from './distributions.js';
 import { mean, sd } from './stats.js';
 
 // ── One-sample t ─────────────────────────────────────────────────────
@@ -537,4 +537,98 @@ export function slopeTSummary(slope, se, n, options = {}) {
 
   // Can't compute intercept, r, rSquared from summary stats alone
   return { slope, intercept: NaN, se, tStat, df, pValue, ciLower, ciUpper, r: NaN, rSquared: NaN, n, alternative, confLevel };
+}
+
+// ── One-way ANOVA ───────────────────────────────────────────────────
+
+/**
+ * @typedef {object} AnovaResult
+ * @property {number} fStat - F test statistic
+ * @property {number} dfBetween - Between-group df (k - 1)
+ * @property {number} dfWithin - Within-group df (N - k)
+ * @property {number} pValue - Right-tail p-value: P(F >= fStat)
+ * @property {number} ssBetween - Sum of squares between groups
+ * @property {number} ssWithin - Sum of squares within groups
+ * @property {number} ssTotal - Total sum of squares
+ * @property {number} msBetween - Mean square between
+ * @property {number} msWithin - Mean square within
+ * @property {number[]} groupMeans - Mean for each group
+ * @property {number[]} groupSDs - SD for each group
+ * @property {number[]} groupNs - Sample size for each group
+ * @property {string[]} groupNames - Group labels
+ * @property {number} grandMean - Overall mean
+ */
+
+/**
+ * One-way ANOVA F-test from raw grouped data.
+ * @param {number[][]} groups - Array of numeric arrays, one per group
+ * @param {string[]} groupNames - Labels for each group
+ * @returns {AnovaResult}
+ */
+export function anovaF(groups, groupNames) {
+  const k = groups.length;
+  const groupNs = groups.map(g => g.length);
+  const N = groupNs.reduce((a, b) => a + b, 0);
+  const groupMeans = groups.map(g => mean(g));
+  const groupSDs = groups.map(g => g.length > 1 ? sd(g) : 0);
+  const grandMean = mean(groups.flat());
+
+  let ssBetween = 0;
+  let ssWithin = 0;
+  for (let i = 0; i < k; i++) {
+    ssBetween += groupNs[i] * (groupMeans[i] - grandMean) ** 2;
+    for (const v of groups[i]) {
+      ssWithin += (v - groupMeans[i]) ** 2;
+    }
+  }
+
+  const ssTotal = ssBetween + ssWithin;
+  const dfBetween = k - 1;
+  const dfWithin = N - k;
+  const msBetween = ssBetween / dfBetween;
+  const msWithin = dfWithin > 0 ? ssWithin / dfWithin : NaN;
+  const fStat = msWithin > 0 ? msBetween / msWithin : NaN;
+  const pValue = isFinite(fStat) ? 1 - fCDF(fStat, dfBetween, dfWithin) : NaN;
+
+  return {
+    fStat, dfBetween, dfWithin, pValue,
+    ssBetween, ssWithin, ssTotal, msBetween, msWithin,
+    groupMeans, groupSDs, groupNs, groupNames, grandMean,
+  };
+}
+
+/**
+ * One-way ANOVA F-test from summary statistics.
+ * @param {number[]} means - Group means
+ * @param {number[]} sds - Group standard deviations
+ * @param {number[]} ns - Group sample sizes
+ * @param {string[]} groupNames - Group labels
+ * @returns {AnovaResult}
+ */
+export function anovaFSummary(means, sds, ns, groupNames) {
+  const k = means.length;
+  const N = ns.reduce((a, b) => a + b, 0);
+  const grandMean = ns.reduce((sum, n, i) => sum + n * means[i], 0) / N;
+
+  let ssBetween = 0;
+  let ssWithin = 0;
+  for (let i = 0; i < k; i++) {
+    ssBetween += ns[i] * (means[i] - grandMean) ** 2;
+    ssWithin += (ns[i] - 1) * sds[i] ** 2;
+  }
+
+  const ssTotal = ssBetween + ssWithin;
+  const dfBetween = k - 1;
+  const dfWithin = N - k;
+  const msBetween = ssBetween / dfBetween;
+  const msWithin = dfWithin > 0 ? ssWithin / dfWithin : NaN;
+  const fStat = msWithin > 0 ? msBetween / msWithin : NaN;
+  const pValue = isFinite(fStat) ? 1 - fCDF(fStat, dfBetween, dfWithin) : NaN;
+
+  return {
+    fStat, dfBetween, dfWithin, pValue,
+    ssBetween, ssWithin, ssTotal, msBetween, msWithin,
+    groupMeans: [...means], groupSDs: [...sds], groupNs: [...ns],
+    groupNames: [...groupNames], grandMean,
+  };
 }

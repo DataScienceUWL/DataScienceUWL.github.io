@@ -33,8 +33,8 @@ function buildHaPhrase(testType, alternative, parameter, nullValue) {
   const param = parameter || defaultParameter(testType);
   const nv = nullValue != null ? nullValue : defaultNullValue(testType);
 
-  if (testType === 'chisq') {
-    return param; // e.g. "there is an association between X and Y"
+  if (testType === 'chisq' || testType === 'anova') {
+    return param; // e.g. "there is an association between X and Y" or "at least one mean differs"
   }
 
   const dir = alternative === 'less' ? 'less than'
@@ -57,6 +57,7 @@ function defaultParameter(testType) {
     case 'one-prop': return 'the population proportion';
     case 'two-props': return 'the difference in population proportions';
     case 'chisq': return 'there is an association between the variables';
+    case 'anova': return 'at least one population mean differs from the others';
     case 'slope': return 'the population slope';
     default: return 'the parameter';
   }
@@ -103,7 +104,7 @@ function formatP(p) {
  * @property {number} pValue
  * @property {number} alpha
  * @property {string} alternative - 'less' | 'greater' | 'two-sided'
- * @property {string} testType - 'one-mean' | 'paired' | 'two-means' | 'one-prop' | 'two-props' | 'chisq' | 'slope'
+ * @property {string} testType - 'one-mean' | 'paired' | 'two-means' | 'one-prop' | 'two-props' | 'chisq' | 'anova' | 'slope'
  * @property {string} statName - 't', 'z', 'chi-sq'
  * @property {string} statValue - formatted test statistic
  * @property {ConclusionContext} [context]
@@ -139,7 +140,7 @@ export function generateConclusions(opts) {
 
   // ── Formal conclusion ──
   const haPhrase = buildHaPhrase(testType, alternative, parameter, nullValue);
-  const formal = testType === 'chisq'
+  const formal = (testType === 'chisq' || testType === 'anova')
     ? (sig
       ? `At \u03b1 = ${alpha}, we reject H\u2080. There is sufficient evidence that ${haPhrase}.`
       : `At \u03b1 = ${alpha}, we fail to reject H\u2080. There is insufficient evidence that ${haPhrase}.`)
