@@ -336,6 +336,7 @@ export function addInferenceAnnotations(chart, opts) {
   const domain = xScale.domain();
 
   // ── Dashed line(s) at the test statistic ──
+  // Full chart height, matching distribution calculator styling
   const statPoints = tail === 'both' && statValueNeg != null
     ? [statValueNeg, statValue]
     : [statValue];
@@ -344,31 +345,53 @@ export function addInferenceAnnotations(chart, opts) {
     // Clamp to domain edge so extreme stats still show a line at chart boundary
     const svClamped = Math.max(domain[0], Math.min(domain[1], sv));
     const sx = xScale(svClamped);
-    const yTop = yScale(pdfFn(svClamped));
 
-    // Dashed vertical line from baseline to curve
+    // Dashed vertical line — full chart height (matches distribution calculator)
     annotations.append('line')
       .attr('class', 'inf-annotation inf-stat-line')
       .attr('x1', sx)
       .attr('x2', sx)
-      .attr('y1', yScale(0))
-      .attr('y2', yTop)
-      .attr('stroke', STAT_COLOR)
-      .attr('stroke-width', 2)
-      .attr('stroke-dasharray', '6 3');
+      .attr('y1', 0)
+      .attr('y2', h)
+      .attr('stroke', '#333')
+      .attr('stroke-width', 1.5)
+      .attr('stroke-dasharray', '6,3');
 
-    // Stat value label above the line (use unclamped value for display)
-    const labelY = Math.max(yTop - 12, 4);
-    const labelText = `${statLabel} = ${sv.toFixed(decimals)}`;
-    annotations.append('text')
-      .attr('class', 'inf-annotation inf-stat-label')
+    // Value pill on the x-axis (matches distribution calculator crit-label style)
+    const labelText = `${sv.toFixed(decimals)}`;
+    const textWidth = labelText.length * 8 + 12;
+    const pillH = 20;
+    const pillG = annotations.append('g').attr('class', 'inf-annotation inf-stat-label');
+    pillG.append('rect')
+      .attr('x', sx - textWidth / 2)
+      .attr('y', h + 6)
+      .attr('width', textWidth)
+      .attr('height', pillH)
+      .attr('rx', 3)
+      .attr('fill', '#fff')
+      .attr('stroke', CURVE_STROKE)
+      .attr('stroke-width', 1);
+    pillG.append('text')
       .attr('x', sx)
-      .attr('y', labelY)
+      .attr('y', h + 20)
       .attr('text-anchor', 'middle')
-      .attr('fill', STAT_COLOR)
+      .attr('fill', '#333')
       .attr('font-size', '11px')
-      .attr('font-weight', '700')
       .text(labelText);
+
+    // Hide x-axis tick labels that overlap with the stat value pill
+    const pillLeft = sx - textWidth / 2 - 4;
+    const pillRight = sx + textWidth / 2 + 4;
+    d3Selection.select(frame.inner).selectAll('.x-axis .tick text').each(
+      /** @this {SVGTextElement} */
+      function () {
+        const tickX = parseFloat(this.parentElement?.getAttribute('transform')
+          ?.replace(/translate\(([^,)]+).*/, '$1') ?? '0');
+        if (tickX >= pillLeft && tickX <= pillRight) {
+          this.style.visibility = 'hidden';
+        }
+      }
+    );
   }
 
   // ── P-value pill in the shaded tail region ──
@@ -378,28 +401,29 @@ export function addInferenceAnnotations(chart, opts) {
   else pText = `p = ${pValue.toFixed(4)}`;
 
   const compText = (1 - pValue).toFixed(4);
-  const pillY = h * 0.22;
+  const pillY = h * 0.6;
 
   if (tail === 'both') {
-    // Two-tailed: single pill centered
+    // Two-tailed: p-value pill centered, show half-p in each tail
     const labelX = Math.max(60, Math.min(w - 60, w / 2));
     _addPill(annotations, `${pText}  (two-tailed)`, labelX, pillY, false);
   } else {
     const isLeft = tail === 'left';
-    const obsX = xScale(statValue);
+    const obsX = xScale(Math.max(domain[0], Math.min(domain[1], statValue)));
     const tailWidth = isLeft ? obsX : (w - obsX);
     const narrow = tailWidth < w * 0.25;
 
     if (narrow) {
-      // Pill floats above, with leader line to tail
+      // Pill floats above the main region, with leader line to tail
+      const floatY = h * 0.3;
       const pillX = isLeft
         ? Math.max(60, Math.min(w * 0.35, obsX))
         : Math.min(w - 40, Math.max(w * 0.78, obsX));
-      _addPill(annotations, pText, pillX, pillY, false);
+      _addPill(annotations, pText, pillX, floatY, false);
       const lineTargetX = Math.max(4, Math.min(w - 4, obsX));
       annotations.append('line')
         .attr('class', 'inf-annotation')
-        .attr('x1', pillX).attr('y1', pillY + 14)
+        .attr('x1', pillX).attr('y1', floatY + 14)
         .attr('x2', lineTargetX).attr('y2', h - 2)
         .attr('stroke', CURVE_STROKE)
         .attr('stroke-width', 1)
