@@ -111,11 +111,14 @@ export function drawBoxplot(container, data, options = {}) {
   const xPad = (xMax - xMin) * 0.05 || 0.5;
 
   // Auto-widen left margin for grouped boxplots based on longest group name
+  // On phone (CSS bumps chart font to 22px), chars are wider in viewBox units
+  const isPhone = typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 480px)').matches;
   const effectiveMargin = margin || (isGrouped
     ? (() => {
         const maxLen = Math.max(...groupNames.map(n => n.length));
-        // ~8 viewBox units per character at chart font size, plus 15 for tick mark + padding
-        const needed = Math.max(60, maxLen * 8 + 15);
+        const charWidth = isPhone ? 12 : 8;
+        const needed = Math.max(isPhone ? 80 : 60, maxLen * charWidth + 15);
         return { top: 28, right: 20, bottom: 50, left: needed };
       })()
     : undefined);
