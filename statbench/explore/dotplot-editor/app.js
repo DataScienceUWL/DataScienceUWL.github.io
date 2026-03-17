@@ -27,7 +27,8 @@ const MEAN_COLOR = '#569BBD';
 const MEDIAN_COLOR = '#D89A9E';
 const DOT_FILL = '#555';
 const DOT_STROKE = '#333';
-const DOT_RADIUS = window.matchMedia('(max-width: 600px)').matches ? 11 : 7;
+const IS_MOBILE = window.matchMedia('(max-width: 600px)').matches;
+const DOT_RADIUS = IS_MOBILE ? 14 : 7;
 const MAX_HISTORY = 100;
 const VIEW_WIDTH = 600;
 const VIEW_HEIGHT = 360;
@@ -190,8 +191,9 @@ function render() {
     dataMin = Math.min(dataMin, ...allFrozen);
     dataMax = Math.max(dataMax, ...allFrozen);
   }
-  const lo = Math.min(0, dataMin - 2);
-  const hi = Math.max(20, dataMax + 2);
+  // On mobile, clamp domain to [0, 20] so dots stay large
+  const lo = IS_MOBILE ? 0 : Math.min(0, dataMin - 2);
+  const hi = IS_MOBILE ? 20 : Math.max(20, dataMax + 2);
 
   // Create chart frame
   const frame = createChart(chartArea, {
@@ -250,7 +252,9 @@ function render() {
     .on('click', (event) => {
       const [mx] = d3.pointer(event);
       const rawVal = xScale.invert(mx);
-      const snapped = Math.round(rawVal);
+      const snapped = IS_MOBILE
+        ? Math.max(0, Math.min(20, Math.round(rawVal)))
+        : Math.round(rawVal);
       // Only add within a reasonable range of the domain
       if (snapped >= lo && snapped <= hi) {
         addPoint(snapped);
