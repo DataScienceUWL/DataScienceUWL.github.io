@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STAT 145: Elementary Statistics — Open Course Materials</title>
+  <meta name="description" content="Free, open-source materials for introductory statistics using a simulation-first approach. University of Wisconsin-La Crosse.">
+
+  <!-- Fonts (matching textbook + StatBench) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── IMSCOL Design System ── */
+    :root {
+      --ims-blue: #569BBD;
+      --ims-blue-dark: #3A7CA5;
+      --ims-green: #114B5F;
+      --ims-pink: #E97583;
+      --ims-red: #F05133;
+      --ims-gray: #6C6C6C;
+      --ims-lgray: #D9D9D9;
+      --ims-surface: #f8f8f8;
+      --ims-bg: #ffffff;
+      --ims-fg: #000000;
+    }
+
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
+      color: var(--ims-fg);
+      background: var(--ims-bg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--ims-blue-dark); text-decoration: underline; }
+    a:hover { color: var(--ims-green); }
+    a:focus-visible {
+      outline: 3px solid var(--ims-blue);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      background: var(--ims-green);
+      color: #fff;
+      padding: 2.5rem 1.5rem 2rem;
+      text-align: center;
+    }
+    .site-header h1 {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.25rem;
+    }
+    .site-header .subtitle {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      font-weight: 400;
+      opacity: 0.9;
+      margin-bottom: 0.5rem;
+    }
+    .site-header .tagline {
+      font-size: 0.95rem;
+      opacity: 0.75;
+      max-width: 40rem;
+      margin: 0 auto;
+    }
+    .site-header a { color: #fff; }
+
+    /* ── Main Content ── */
+    .container {
+      max-width: 60rem;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── Resource Cards ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .card {
+      border: 1px solid var(--ims-lgray);
+      border-radius: 8px;
+      padding: 1.5rem;
+      background: var(--ims-bg);
+      transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    .card:hover {
+      border-color: var(--ims-blue);
+      box-shadow: 0 2px 12px rgba(86, 155, 189, 0.15);
+    }
+
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .card h3 {
+      font-size: 1.15rem;
+      color: var(--ims-green);
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      color: var(--ims-gray);
+      margin-bottom: 1rem;
+    }
+
+    .card-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-primary {
+      background: var(--ims-blue);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: var(--ims-blue-dark);
+      color: #fff;
+    }
+    .btn-outline {
+      border: 1.5px solid var(--ims-blue);
+      color: var(--ims-blue-dark);
+      background: transparent;
+    }
+    .btn-outline:hover {
+      background: var(--ims-blue);
+      color: #fff;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      vertical-align: middle;
+      margin-left: 0.4rem;
+    }
+    .badge-wip {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .badge-ready {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    /* ── Section headings ── */
+    .section-heading {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--ims-green);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 2.5rem 0 0.5rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 2px solid var(--ims-lgray);
+    }
+
+    /* ── Course Structure Table ── */
+    .structure-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 2rem;
+      font-size: 0.95rem;
+    }
+    .structure-table th {
+      background: var(--ims-surface);
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      font-weight: 700;
+      color: var(--ims-green);
+      border-bottom: 2px solid var(--ims-lgray);
+    }
+    .structure-table td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--ims-lgray);
+    }
+    .structure-table tr:hover td {
+      background: rgba(86, 155, 189, 0.04);
+    }
+
+    /* ── Footer ── */
+    .site-footer {
+      border-top: 1px solid var(--ims-lgray);
+      padding: 1.5rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--ims-gray);
+    }
+    .site-footer a { color: var(--ims-blue-dark); }
+
+    /* ── Accessibility ── */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0, 0, 0, 0); border: 0;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .site-header { padding: 1.5rem 1rem; }
+      .container { padding: 1.5rem 1rem; }
+      .card-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header" role="banner">
+  <h1>STAT 145: Elementary Statistics</h1>
+  <div class="subtitle">A Simulation-First Approach</div>
+  <div class="tagline">
+    Free, open-source course materials developed at the
+    <a href="https://www.uwlax.edu/mathematics-statistics/">University of Wisconsin-La Crosse</a>
+  </div>
+</header>
+
+<main class="container" role="main">
+
+  <h2 class="section-heading">Course Materials</h2>
+
+  <div class="card-grid">
+
+    <!-- Textbook -->
+    <div class="card">
+      <span class="card-icon" aria-hidden="true">&#128214;</span>
+      <h3>Textbook <span class="badge badge-wip">In Development</span></h3>
+      <p>
+        <em>Introduction to Statistics: A Simulation-First Approach</em> &mdash;
+        28 chapters remixed from IMS and OpenIntro Statistics. CC&nbsp;BY-SA&nbsp;3.0.
+      </p>
+      <div class="card-links">
+        <a href="textbook/" class="btn btn-primary">Read Online</a>
+        <!-- <a href="textbook/Introduction-to-Statistics.pdf" class="btn btn-outline">PDF</a> -->
+      </div>
+    </div>
+
+    <!-- Coursepack -->
+    <div class="card">
+      <span class="card-icon" aria-hidden="true">&#128221;</span>
+      <h3>Coursepack <span class="badge badge-wip">In Development</span></h3>
+      <p>
+        Student workbook for UWL STAT&nbsp;145 &mdash; guided notes, practice problems,
+        and space for in-class work. Designed to complement the textbook.
+      </p>
+      <div class="card-links">
+        <!-- <a href="coursepack/" class="btn btn-primary">Read Online</a> -->
+        <!-- <a href="coursepack/coursepack.pdf" class="btn btn-outline">PDF</a> -->
+        <span style="font-size: 0.9rem; color: var(--ims-gray); font-style: italic;">Coming soon</span>
+      </div>
+    </div>
+
+    <!-- StatBench -->
+    <div class="card">
+      <span class="card-icon" aria-hidden="true">&#128202;</span>
+      <h3>StatBench <span class="badge badge-ready">Live</span></h3>
+      <p>
+        Browser-based statistics toolkit &mdash; bootstrap simulations,
+        randomization tests, distribution calculators, and data exploration.
+        No installation required.
+      </p>
+      <div class="card-links">
+        <a href="/statbench/" class="btn btn-primary">Launch StatBench</a>
+      </div>
+    </div>
+
+  </div>
+
+  <h2 class="section-heading">Textbook Structure</h2>
+
+  <table class="structure-table" aria-label="Textbook chapter structure">
+    <thead>
+      <tr>
+        <th scope="col">Part</th>
+        <th scope="col">Chapters</th>
+        <th scope="col">Topics</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>I. Explore</strong></td>
+        <td>1&ndash;5</td>
+        <td>Data types, study design, visualization, distributions, relationships</td>
+      </tr>
+      <tr>
+        <td><strong>II. Simulate</strong></td>
+        <td>6&ndash;9</td>
+        <td>Sampling variability, randomization tests, bootstrap CIs, sampling distributions</td>
+      </tr>
+      <tr>
+        <td><strong>III. Calculate</strong></td>
+        <td>10&ndash;13</td>
+        <td>Normal approximation, <em>t</em>-based CIs and tests, inference for proportions</td>
+      </tr>
+      <tr>
+        <td><strong>IV. Relationships</strong></td>
+        <td>14&ndash;20</td>
+        <td>Chi-square, ANOVA, multiple comparisons, correlation, regression, prediction</td>
+      </tr>
+      <tr>
+        <td><strong>V. Foundations</strong></td>
+        <td>21&ndash;25</td>
+        <td>Probability rules, random variables, expected value, binomial, normal distribution</td>
+      </tr>
+      <tr>
+        <td><strong>VI. Design</strong></td>
+        <td>26&ndash;28</td>
+        <td>Type II error, statistical power, sample size planning</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 class="section-heading">About</h2>
+
+  <p style="max-width: 42rem; margin-bottom: 1rem;">
+    These materials support a simulation-based inference (SBI) approach to introductory statistics,
+    following the pedagogical sequence:
+    <strong>EDA &rarr; Simulation &rarr; Theory &rarr; Application</strong>.
+    All resources are free and open-source under
+    <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC&nbsp;BY-SA&nbsp;3.0</a>.
+  </p>
+  <p style="max-width: 42rem;">
+    The textbook remixes content from
+    <a href="https://openintro-ims.netlify.app/"><em>Introduction to Modern Statistics</em></a> (IMS) and
+    <a href="https://www.openintro.org/book/os/"><em>OpenIntro Statistics</em></a>,
+    both published by the <a href="https://www.openintro.org/">OpenIntro</a> project.
+    StatBench was built at UW-La Crosse to provide accessible, browser-based simulation tools
+    that integrate with the textbook via seeded URLs for reproducible assignments.
+  </p>
+
+</main>
+
+<footer class="site-footer" role="contentinfo">
+  <p>
+    <a href="https://www.uwlax.edu/mathematics-statistics/">Department of Mathematics &amp; Statistics</a>
+    &middot; University of Wisconsin-La Crosse
+  </p>
+  <p>
+    Licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>.
+    Built with <a href="https://quarto.org/">Quarto</a> and <a href="https://github.com/">GitHub Pages</a>.
+  </p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>27&nbsp; Type II Error – Introduction to Statistics: A Simulation-First Approach</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/ch27-statistical-power.html" rel="next">
+<link href="../parts/part-vi.html" rel="prev">
+<link href="../images/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8a91fbd6dc43518bbcbbe5f3fb33f285.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-vi.html">Design</a></li><li class="breadcrumb-item"><a href="../chapters/ch26-type-ii-error.html"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Type II Error</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Introduction to Statistics: A Simulation-First Approach</a> 
+        <div class="sidebar-tools-main">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-i.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explore</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch01-intro-to-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Introduction to Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch02-study-design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Data Collection and Study Design</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch03-data-visualization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Data Visualization</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch04-describing-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Describing Distributions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch05-relationships.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Relationships Between Variables</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-ii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulate</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch06-sampling-variability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Sampling Variability</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch07-randomization-tests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Randomization Tests</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch08-bootstrap-ci.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Bootstrap Confidence Intervals</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch09-sampling-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Sampling Distributions via Simulation</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Calculate</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch10-normal-approximation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Normal Approximation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch11-ci-for-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Confidence Intervals for Means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch12-hypothesis-tests-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Hypothesis Tests for Means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch13-inference-proportions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Inference for Proportions</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Relationships</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch14-chisq-gof.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Chi-Square Goodness of Fit</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch15-chisq-independence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Chi-Square Test of Independence</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch16-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Analysis of Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch17-multiple-comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Multiple Comparisons</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch18-correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Correlation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch19-linear-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Linear Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch20-prediction-model-fit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Prediction and Model Fit</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-v.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundations</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch21-probability-rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Probability Rules</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch22-random-variables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Random Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch23-expected-value.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Expected Value and Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch24-binomial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Binomial Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch25-normal-distribution.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Normal Distribution</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-vi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Design</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch26-type-ii-error.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Type II Error</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch27-statistical-power.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Statistical Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ch28-sample-size.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Sample Size Planning</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/datasets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Datasets</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/statbench-guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">StatBench Quick Reference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/tables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Statistical Tables</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-review-type-i" id="toc-sec-review-type-i" class="nav-link active" data-scroll-target="#sec-review-type-i"><span class="header-section-number">27.1</span> Review: hypothesis testing and Type I error</a></li>
+  <li><a href="#sec-type-ii-error" id="toc-sec-type-ii-error" class="nav-link" data-scroll-target="#sec-type-ii-error"><span class="header-section-number">27.2</span> Type II error: missing a real effect</a></li>
+  <li><a href="#sec-decision-table" id="toc-sec-decision-table" class="nav-link" data-scroll-target="#sec-decision-table"><span class="header-section-number">27.3</span> The decision table</a></li>
+  <li><a href="#sec-error-rates" id="toc-sec-error-rates" class="nav-link" data-scroll-target="#sec-error-rates"><span class="header-section-number">27.4</span> Error rates: <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span></a></li>
+  <li><a href="#sec-tradeoff" id="toc-sec-tradeoff" class="nav-link" data-scroll-target="#sec-tradeoff"><span class="header-section-number">27.5</span> The tradeoff between <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span></a></li>
+  <li><a href="#sec-choosing-alpha" id="toc-sec-choosing-alpha" class="nav-link" data-scroll-target="#sec-choosing-alpha"><span class="header-section-number">27.6</span> Choosing a significance level</a></li>
+  <li><a href="#sec-visualizing-type-ii" id="toc-sec-visualizing-type-ii" class="nav-link" data-scroll-target="#sec-visualizing-type-ii"><span class="header-section-number">27.7</span> Visualizing Type II error</a></li>
+  <li><a href="#sec-factors-type-ii" id="toc-sec-factors-type-ii" class="nav-link" data-scroll-target="#sec-factors-type-ii"><span class="header-section-number">27.8</span> Factors that affect the Type II error rate</a></li>
+  <li><a href="#sec-practical-significance" id="toc-sec-practical-significance" class="nav-link" data-scroll-target="#sec-practical-significance"><span class="header-section-number">27.9</span> Practical vs.&nbsp;statistical significance revisited</a></li>
+  <li><a href="#sec-ch19-review" id="toc-sec-ch19-review" class="nav-link" data-scroll-target="#sec-ch19-review"><span class="header-section-number">27.10</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">27.10.1</span> Summary</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">27.10.2</span> Exercises</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-vi.html">Design</a></li><li class="breadcrumb-item"><a href="../chapters/ch26-type-ii-error.html"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Type II Error</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Type II Error</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>Extended Content.</strong> This chapter extends beyond UWL’s core STAT 145 curriculum. It is included for completeness and for instructors who wish to cover additional topics. Content is in draft form.</p>
+</div>
+</div>
+</div>
+<div class="chapterintro">
+<p>In Chapter 7, we introduced the hypothesis testing framework and saw how data can provide evidence against a null hypothesis. We focused on the risk of incorrectly rejecting a true null hypothesis — a Type I error. But there is a second, equally important kind of mistake: failing to detect a real effect. This chapter examines <strong>Type II error</strong>, explores the tradeoff between the two error types, and develops intuition for why some studies miss real effects.</p>
+</div>
+<div class="statbench">
+<p><strong>StatBench tools for this chapter</strong>: Use the randomization test simulators from Chapter 7 to explore Type II error. Run tests with small sample sizes or small effect sizes and notice how often the test fails to reject <span class="math inline">\(H_0\)</span> — those are Type II errors in action.</p>
+<p><a href="https://datascienceuwl.github.io/statbench/simulate/randomization-diff-means/" target="_blank">Launch Randomization Test: Difference in Means</a></p>
+</div>
+<section id="sec-review-type-i" class="level2" data-number="27.1">
+<h2 data-number="27.1" class="anchored" data-anchor-id="sec-review-type-i"><span class="header-section-number">27.1</span> Review: hypothesis testing and Type I error</h2>
+<p>Recall the basic structure of a hypothesis test. We begin with two competing claims:</p>
+<ul>
+<li><span class="math inline">\(H_0\)</span> (the <strong>null hypothesis</strong>): There is no effect, no difference, or no relationship.</li>
+<li><span class="math inline">\(H_A\)</span> (the <strong>alternative hypothesis</strong>): There <em>is</em> an effect, difference, or relationship.</li>
+</ul>
+<p>We collect data, compute a test statistic, and calculate a p-value — the probability of observing results at least as extreme as ours if <span class="math inline">\(H_0\)</span> were true. If the p-value is small enough (below our chosen significance level <span class="math inline">\(\alpha\)</span>), we reject <span class="math inline">\(H_0\)</span>.</p>
+<p>But rejecting <span class="math inline">\(H_0\)</span> when it is actually true is a mistake. This mistake has a name.</p>
+<div class="definition">
+<p>A <strong>Type I error</strong> occurs when we reject the null hypothesis <span class="math inline">\(H_0\)</span> even though <span class="math inline">\(H_0\)</span> is actually true. In other words, we conclude there is an effect when in reality there is none.</p>
+</div>
+<p>The probability of a Type I error is controlled by the significance level <span class="math inline">\(\alpha\)</span>. When we set <span class="math inline">\(\alpha = 0.05\)</span>, we are accepting a 5% chance of making this kind of mistake — declaring a “discovery” that is really just noise.</p>
+<div class="original">
+<p>Type I error is the kind of mistake that gets the most attention in introductory statistics, and for good reason: it is the error rate we directly control when we choose <span class="math inline">\(\alpha\)</span>. But controlling one kind of error does not mean we have eliminated all risk. There is a second kind of mistake lurking in every hypothesis test, and it can be just as costly — sometimes more so.</p>
+</div>
+</section>
+<section id="sec-type-ii-error" class="level2" data-number="27.2">
+<h2 data-number="27.2" class="anchored" data-anchor-id="sec-type-ii-error"><span class="header-section-number">27.2</span> Type II error: missing a real effect</h2>
+<div class="original">
+<p>Suppose a new medication truly does lower blood pressure compared to a placebo. A clinical trial is conducted, data are collected, and the researchers perform a hypothesis test. But the p-value comes back at 0.14 — not small enough to reject <span class="math inline">\(H_0\)</span> at the <span class="math inline">\(\alpha = 0.05\)</span> level. The researchers conclude: “We did not find sufficient evidence that the medication works.”</p>
+<p>But the medication <em>does</em> work. The study simply failed to detect the real effect. This is a <strong>Type II error</strong>.</p>
+</div>
+<div class="definition">
+<p>A <strong>Type II error</strong> occurs when we fail to reject the null hypothesis <span class="math inline">\(H_0\)</span> even though the alternative hypothesis <span class="math inline">\(H_A\)</span> is actually true. In other words, there is a real effect, but our test misses it.</p>
+</div>
+<div class="original">
+<p>Type II errors are sometimes called “false negatives” — the test comes back negative (fail to reject <span class="math inline">\(H_0\)</span>) when the truth is positive (the effect exists). In medical screening, this is analogous to a test that says “no disease” when the patient actually has the disease. In a court system, it is analogous to acquitting a guilty person.</p>
+</div>
+</section>
+<section id="sec-decision-table" class="level2" data-number="27.3">
+<h2 data-number="27.3" class="anchored" data-anchor-id="sec-decision-table"><span class="header-section-number">27.3</span> The decision table</h2>
+<p>Every hypothesis test ends with one of two decisions: reject <span class="math inline">\(H_0\)</span> or fail to reject <span class="math inline">\(H_0\)</span>. And the truth is one of two realities: <span class="math inline">\(H_0\)</span> is true or <span class="math inline">\(H_A\)</span> is true. Combining these gives four scenarios:</p>
+<div id="tbl-decision-table" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-decision-table-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;27.1: Four possible outcomes of a hypothesis test.
+</figcaption>
+<div aria-describedby="tbl-decision-table-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 40%">
+<col style="width: 29%">
+<col style="width: 29%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: center;"><span class="math inline">\(H_0\)</span> is true</th>
+<th style="text-align: center;"><span class="math inline">\(H_A\)</span> is true</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Reject</strong> <span class="math inline">\(H_0\)</span></td>
+<td style="text-align: center;">Type I error</td>
+<td style="text-align: center;">Correct decision</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Fail to reject</strong> <span class="math inline">\(H_0\)</span></td>
+<td style="text-align: center;">Correct decision</td>
+<td style="text-align: center;">Type II error</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>Two of the four outcomes are correct decisions:</p>
+<ul>
+<li>Rejecting <span class="math inline">\(H_0\)</span> when <span class="math inline">\(H_A\)</span> is true — we correctly detected the real effect.</li>
+<li>Failing to reject <span class="math inline">\(H_0\)</span> when <span class="math inline">\(H_0\)</span> is true — we correctly avoided a false alarm.</li>
+</ul>
+<p>The other two outcomes are errors:</p>
+<ul>
+<li><strong>Type I error</strong> (upper-left): We rejected <span class="math inline">\(H_0\)</span> but it was actually true. False alarm.</li>
+<li><strong>Type II error</strong> (lower-right): We failed to reject <span class="math inline">\(H_0\)</span> but <span class="math inline">\(H_A\)</span> was actually true. Missed detection.</li>
+</ul>
+<div class="workedexample">
+<p>In a US court, the defendant is either innocent (<span class="math inline">\(H_0\)</span>) or guilty (<span class="math inline">\(H_A\)</span>). What does a Type I error represent in this context? What does a Type II error represent? <a href="#tbl-decision-table" class="quarto-xref">Table&nbsp;<span>27.1</span></a> may be useful.</p>
+<hr>
+<p>If the court makes a Type I error, this means the defendant is innocent (<span class="math inline">\(H_0\)</span> true) but wrongly convicted. A Type II error means the court failed to reject <span class="math inline">\(H_0\)</span> (i.e., failed to convict the person) when they were in fact guilty (<span class="math inline">\(H_A\)</span> true).</p>
+</div>
+<div class="guidedpractice">
+<p>A pharmaceutical company tests whether a new drug reduces cholesterol more than a placebo. They set up <span class="math inline">\(H_0\)</span>: the drug has no effect, and <span class="math inline">\(H_A\)</span>: the drug reduces cholesterol. Describe what a Type I error and a Type II error would mean in this context.</p>
+<details>
+<summary>
+Show answer
+</summary>
+A Type I error would mean concluding the drug reduces cholesterol when it actually does not — the company might invest millions in producing an ineffective drug. A Type II error would mean failing to detect a real cholesterol-lowering effect — the company might shelve a drug that actually works.
+</details>
+</div>
+<div class="original">
+<div class="guidedpractice">
+<p>A quality control inspector tests whether a batch of light bulbs has a defect rate above 2%. She sets up <span class="math inline">\(H_0\)</span>: defect rate <span class="math inline">\(\leq 0.02\)</span> and <span class="math inline">\(H_A\)</span>: defect rate <span class="math inline">\(&gt; 0.02\)</span>. Which error is worse in this context: Type I or Type II? Why?</p>
+<details>
+<summary>
+Show answer
+</summary>
+A Type II error is arguably worse here: the inspector would fail to detect that the defect rate is too high, and defective bulbs would be shipped to customers. A Type I error means rejecting a good batch, which wastes product but doesn’t harm customers. The relative costs depend on the specific situation, but in quality control, missing a real problem (Type II) often has more serious consequences.
+</details>
+</div>
+</div>
+</section>
+<section id="sec-error-rates" class="level2" data-number="27.4">
+<h2 data-number="27.4" class="anchored" data-anchor-id="sec-error-rates"><span class="header-section-number">27.4</span> Error rates: <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span></h2>
+<div class="original">
+<p>We give the probabilities of the two error types their own Greek-letter names:</p>
+<div class="definition">
+<p>The <strong>Type I error rate</strong>, denoted <span class="math inline">\(\alpha\)</span>, is the probability of rejecting <span class="math inline">\(H_0\)</span> when <span class="math inline">\(H_0\)</span> is true:</p>
+<p><span class="math display">\[\alpha = P(\text{reject } H_0 \mid H_0 \text{ is true})\]</span></p>
+<p>The <strong>Type II error rate</strong>, denoted <span class="math inline">\(\beta\)</span>, is the probability of failing to reject <span class="math inline">\(H_0\)</span> when <span class="math inline">\(H_A\)</span> is true:</p>
+<p><span class="math display">\[\beta = P(\text{fail to reject } H_0 \mid H_A \text{ is true})\]</span></p>
+</div>
+<p>The significance level <span class="math inline">\(\alpha\)</span> is something we choose before the test — it is under our direct control. Common choices are <span class="math inline">\(\alpha = 0.05\)</span>, <span class="math inline">\(\alpha = 0.01\)</span>, and <span class="math inline">\(\alpha = 0.10\)</span>.</p>
+<p>The Type II error rate <span class="math inline">\(\beta\)</span>, on the other hand, is <strong>not</strong> something we directly choose. It depends on several factors that we will explore shortly: the true effect size, the sample size, the variability in the data, and the chosen significance level <span class="math inline">\(\alpha\)</span>. Unlike <span class="math inline">\(\alpha\)</span>, <span class="math inline">\(\beta\)</span> is usually unknown because we don’t know the true state of the world — if we knew <span class="math inline">\(H_A\)</span> were true and knew the exact effect size, we wouldn’t need to run the test.</p>
+<p>This asymmetry between <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> is a fundamental feature of the hypothesis testing framework. We control one error rate directly (<span class="math inline">\(\alpha\)</span>) and try to manage the other (<span class="math inline">\(\beta\)</span>) through careful study design.</p>
+</div>
+</section>
+<section id="sec-tradeoff" class="level2" data-number="27.5">
+<h2 data-number="27.5" class="anchored" data-anchor-id="sec-tradeoff"><span class="header-section-number">27.5</span> The tradeoff between <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span></h2>
+<div class="workedexample">
+<p>How could we reduce the Type I error rate in US courts? What influence would this have on the Type II error rate?</p>
+<hr>
+<p>To lower the Type I error rate, we might raise our standard for conviction from “beyond a reasonable doubt” to “beyond a conceivable doubt” so fewer people would be wrongly convicted. However, this would also make it more difficult to convict the people who are actually guilty, so we would make more Type II errors.</p>
+</div>
+<div class="guidedpractice">
+<p>How could we reduce the Type II error rate in US courts? What influence would this have on the Type I error rate?</p>
+<details>
+<summary>
+Show answer
+</summary>
+To lower the Type II error rate, we want to convict more guilty people. We could lower the standards for conviction from “beyond a reasonable doubt” to “beyond a little doubt”. Lowering the bar for guilt will also result in more wrongful convictions, raising the Type I error rate.
+</details>
+</div>
+<p>The example and guided practice above provide an important lesson: if we reduce how often we make one type of error, we generally make more of the other type.</p>
+<div class="original">
+<p>This tradeoff is not just a courtroom analogy — it is baked into the mathematics of hypothesis testing. Here is the core intuition:</p>
+<ul>
+<li><strong>Lowering <span class="math inline">\(\alpha\)</span></strong> means we require stronger evidence (a smaller p-value) before rejecting <span class="math inline">\(H_0\)</span>. This makes us less likely to reject <span class="math inline">\(H_0\)</span> when it is true (good), but also less likely to reject <span class="math inline">\(H_0\)</span> when it is false (bad). So <span class="math inline">\(\beta\)</span> increases.</li>
+<li><strong>Raising <span class="math inline">\(\alpha\)</span></strong> means we accept weaker evidence for rejecting <span class="math inline">\(H_0\)</span>. This makes us more likely to detect real effects (<span class="math inline">\(\beta\)</span> decreases), but also more likely to make false discoveries (<span class="math inline">\(\alpha\)</span> increases).</li>
+</ul>
+<div class="important">
+<p><strong>The <span class="math inline">\(\alpha\)</span>-<span class="math inline">\(\beta\)</span> tradeoff.</strong> For a fixed sample size and effect size, decreasing <span class="math inline">\(\alpha\)</span> increases <span class="math inline">\(\beta\)</span>, and vice versa. You cannot reduce both error rates simultaneously without changing something else — typically the sample size.</p>
+</div>
+<p>To see why this makes sense, imagine a number line representing all possible values of a test statistic. Under <span class="math inline">\(H_0\)</span>, the test statistic is centered at some null value. The rejection region is the set of values far enough from the null to trigger rejection. Making <span class="math inline">\(\alpha\)</span> smaller means shrinking the rejection region — fewer values lead to rejection. But if <span class="math inline">\(H_A\)</span> is true, the test statistic is centered somewhere else. A smaller rejection region means less of the alternative distribution falls inside it, so we are less likely to reject — <span class="math inline">\(\beta\)</span> goes up.</p>
+<p>The only way to reduce <em>both</em> <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> at the same time is to collect more data. More data makes the test statistic more precise (smaller standard error), which makes it easier to distinguish between <span class="math inline">\(H_0\)</span> and <span class="math inline">\(H_A\)</span> — allowing us to keep <span class="math inline">\(\alpha\)</span> small while also keeping <span class="math inline">\(\beta\)</span> small. This is why sample size planning (Chapter 28) is so important.</p>
+</div>
+</section>
+<section id="sec-choosing-alpha" class="level2" data-number="27.6">
+<h2 data-number="27.6" class="anchored" data-anchor-id="sec-choosing-alpha"><span class="header-section-number">27.6</span> Choosing a significance level</h2>
+<p>The <strong>significance level</strong> (also called the <strong>discernibility level</strong>) provides the cutoff for the p-value which will lead to a decision of “reject the null hypothesis.” The traditional level is 0.05. However, it is sometimes helpful to adjust the significance level based on the application. We may select a level that is smaller or larger than 0.05 depending on the consequences of any conclusions reached from the test.</p>
+<p>If making a Type I error is dangerous or especially costly, we should choose a small significance level (e.g., 0.01 or 0.001). If we want to be very cautious about rejecting the null hypothesis, we demand very strong evidence favoring the alternative <span class="math inline">\(H_A\)</span> before we would reject <span class="math inline">\(H_0\)</span>.</p>
+<p>If a Type II error is relatively more dangerous or much more costly than a Type I error, then we should choose a higher significance level (e.g., 0.10). Here we want to be cautious about failing to reject <span class="math inline">\(H_0\)</span> when the null is actually false.</p>
+<div class="important">
+<p><strong>Significance levels should reflect consequences of errors.</strong> The significance level selected for a test should reflect the real-world consequences associated with making a Type I or Type II error.</p>
+</div>
+<div class="original">
+<div class="workedexample">
+<p>A city water department tests whether the lead content in drinking water exceeds the safe limit. They set <span class="math inline">\(H_0\)</span>: lead level <span class="math inline">\(\leq\)</span> safe limit, and <span class="math inline">\(H_A\)</span>: lead level <span class="math inline">\(&gt;\)</span> safe limit. Should they use <span class="math inline">\(\alpha = 0.01\)</span> or <span class="math inline">\(\alpha = 0.10\)</span>?</p>
+<hr>
+<p>A Type II error here — failing to detect dangerous lead levels — could have serious public health consequences. A Type I error — declaring the water unsafe when it is actually fine — would cause inconvenience and expense but is far less harmful than allowing people to drink contaminated water. Therefore, the water department should use a larger <span class="math inline">\(\alpha\)</span> (like 0.10) to make it easier to detect real contamination, accepting a slightly higher chance of false alarms.</p>
+</div>
+<div class="workedexample">
+<p>A social media company wants to test whether a new recommendation algorithm increases average time spent on the platform. They set <span class="math inline">\(H_0\)</span>: no difference, <span class="math inline">\(H_A\)</span>: the new algorithm increases engagement. Should they use <span class="math inline">\(\alpha = 0.01\)</span> or <span class="math inline">\(\alpha = 0.10\)</span>?</p>
+<hr>
+<p>The stakes here are relatively low. A Type I error means rolling out an algorithm that doesn’t actually help — some wasted development effort. A Type II error means keeping the old algorithm when the new one would have been slightly better — a missed opportunity but not a disaster. A standard <span class="math inline">\(\alpha = 0.05\)</span> or even a conservative <span class="math inline">\(\alpha = 0.01\)</span> is reasonable, since the company can easily run another test with more data.</p>
+</div>
+</div>
+</section>
+<section id="sec-visualizing-type-ii" class="level2" data-number="27.7">
+<h2 data-number="27.7" class="anchored" data-anchor-id="sec-visualizing-type-ii"><span class="header-section-number">27.7</span> Visualizing Type II error</h2>
+<div class="original">
+<p>The most effective way to build intuition about Type II error is to think about what happens when there <em>is</em> a real effect but our test fails to detect it. Simulation makes this concrete.</p>
+<section id="a-simulation-thought-experiment" class="level3" data-number="27.7.1">
+<h3 data-number="27.7.1" class="anchored" data-anchor-id="a-simulation-thought-experiment"><span class="header-section-number">27.7.1</span> A simulation thought experiment</h3>
+<p>Imagine the following scenario. A tutoring program truly raises students’ exam scores by an average of 5 points (on a 100-point scale). The standard deviation of exam scores in the population is 15 points. A researcher recruits <span class="math inline">\(n = 20\)</span> students, has them go through the tutoring program, and compares their scores to the known population mean using a one-sample <span class="math inline">\(t\)</span>-test at <span class="math inline">\(\alpha = 0.05\)</span>.</p>
+<p>Here is what might happen:</p>
+<ul>
+<li><strong>The truth</strong>: <span class="math inline">\(\mu = 75\)</span> (population mean with tutoring), while <span class="math inline">\(\mu_0 = 70\)</span> (the null hypothesis value without tutoring). The real effect is <span class="math inline">\(\mu - \mu_0 = 5\)</span> points.</li>
+<li><strong>One simulated study</strong>: The researcher collects 20 scores. Due to natural variability, the sample mean might be <span class="math inline">\(\bar{x} = 73.2\)</span> with <span class="math inline">\(s = 14.8\)</span>. The test statistic is:</li>
+</ul>
+<p><span class="math display">\[t = \frac{73.2 - 70}{14.8 / \sqrt{20}} = \frac{3.2}{3.31} = 0.97\]</span></p>
+<p>The p-value for this test is about 0.17 — not significant at <span class="math inline">\(\alpha = 0.05\)</span>. The researcher fails to reject <span class="math inline">\(H_0\)</span>, even though the tutoring program really does work. This is a Type II error.</p>
+<ul>
+<li><strong>Another simulated study</strong>: A different random sample of 20 students happens to include several who benefited greatly from tutoring. The sample mean is <span class="math inline">\(\bar{x} = 76.8\)</span> with <span class="math inline">\(s = 13.5\)</span>. Now:</li>
+</ul>
+<p><span class="math display">\[t = \frac{76.8 - 70}{13.5 / \sqrt{20}} = \frac{6.8}{3.02} = 2.25\]</span></p>
+<p>The p-value is about 0.018 — significant at <span class="math inline">\(\alpha = 0.05\)</span>. This time the researcher correctly rejects <span class="math inline">\(H_0\)</span>. This is a correct decision.</p>
+</section>
+<section id="what-happens-across-many-studies" class="level3" data-number="27.7.2">
+<h3 data-number="27.7.2" class="anchored" data-anchor-id="what-happens-across-many-studies"><span class="header-section-number">27.7.2</span> What happens across many studies?</h3>
+<p>If we repeated this experiment 1,000 times — each time drawing a fresh sample of 20 students from a population where the true effect is 5 points — we would find that roughly 340 of those experiments reject <span class="math inline">\(H_0\)</span> and roughly 660 do not. That means:</p>
+<ul>
+<li>About 34% of the time, we correctly detect the real effect.</li>
+<li>About 66% of the time, we commit a Type II error.</li>
+</ul>
+<p>The Type II error rate is <span class="math inline">\(\beta \approx 0.66\)</span> — alarmingly high! Nearly two-thirds of studies with this design would miss the real effect. This is not because the effect doesn’t exist; it’s because the sample size is too small relative to the effect size and variability.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-type-ii-sim" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A dot plot showing the results of 1,000 simulated hypothesis tests. About 340 dots are colored green (reject H-null, correct decision) and about 660 dots are colored red (fail to reject H-null, Type II error). The green dots tend to have larger sample means, while the red dots cluster closer to the null hypothesis value.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-type-ii-sim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="ch26-type-ii-error_files/figure-html/fig-type-ii-sim-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;27.1: Visualization of 1,000 simulated hypothesis tests when the true effect is 5 points. Each dot represents one simulated study. The green dots are studies that correctly rejected H_0 (correct decisions), and the red dots are studies that failed to reject H_0 (Type II errors)."><img src="ch26-type-ii-error_files/figure-html/fig-type-ii-sim-1.png" class="img-fluid figure-img" alt="A dot plot showing the results of 1,000 simulated hypothesis tests. About 340 dots are colored green (reject H-null, correct decision) and about 660 dots are colored red (fail to reject H-null, Type II error). The green dots tend to have larger sample means, while the red dots cluster closer to the null hypothesis value." width="2100"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-type-ii-sim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;27.1: Visualization of 1,000 simulated hypothesis tests when the true effect is 5 points. Each dot represents one simulated study. The green dots are studies that correctly rejected <span class="math inline">\(H_0\)</span> (correct decisions), and the red dots are studies that failed to reject <span class="math inline">\(H_0\)</span> (Type II errors).
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="guidedpractice">
+<p>In the tutoring program simulation above, what would happen to the Type II error rate if the researcher increased the sample size from 20 to 100 students? Would <span class="math inline">\(\beta\)</span> increase, decrease, or stay the same?</p>
+<details>
+<summary>
+Show answer
+</summary>
+The Type II error rate would decrease substantially. With 100 students instead of 20, the standard error drops from <span class="math inline">\(15/\sqrt{20} = 3.35\)</span> to <span class="math inline">\(15/\sqrt{100} = 1.50\)</span>. The test becomes much more precise, making it easier to distinguish the true mean of 75 from the null value of 70. In fact, with <span class="math inline">\(n = 100\)</span>, the power would be about 94%, meaning <span class="math inline">\(\beta \approx 0.06\)</span> — the test would miss the real effect only about 6% of the time.
+</details>
+</div>
+</section>
+</div>
+<div class="original">
+<div class="statbench">
+<p><strong>StatBench: Power Simulation Tool.</strong> Use the Power Simulation Tool to explore Type II error visually. Set the true effect size, sample size, significance level, and population variability, then run 1,000 simulated experiments. Watch how the proportion of studies that reject <span class="math inline">\(H_0\)</span> changes as you adjust each parameter. The simulations that fail to reject <span class="math inline">\(H_0\)</span> represent Type II errors.</p>
+</div>
+</div>
+</section>
+<section id="sec-factors-type-ii" class="level2" data-number="27.8">
+<h2 data-number="27.8" class="anchored" data-anchor-id="sec-factors-type-ii"><span class="header-section-number">27.8</span> Factors that affect the Type II error rate</h2>
+<div class="original">
+<p>Four key factors determine how likely a study is to commit a Type II error:</p>
+<section id="effect-size" class="level3" data-number="27.8.1">
+<h3 data-number="27.8.1" class="anchored" data-anchor-id="effect-size"><span class="header-section-number">27.8.1</span> 1. Effect size</h3>
+<p>The <strong>effect size</strong> is the magnitude of the difference between the true parameter value and the null hypothesis value. Larger effects are easier to detect.</p>
+<ul>
+<li>If a tutoring program raises scores by 20 points, almost any reasonable study will detect it.</li>
+<li>If a tutoring program raises scores by 2 points, you need a very large or very precise study to detect it.</li>
+</ul>
+<p>Intuitively, a large effect “sticks out” from the noise, while a small effect can easily be hidden by random variability.</p>
+</section>
+<section id="sample-size" class="level3" data-number="27.8.2">
+<h3 data-number="27.8.2" class="anchored" data-anchor-id="sample-size"><span class="header-section-number">27.8.2</span> 2. Sample size</h3>
+<p>Larger samples provide more precise estimates and smaller standard errors. The standard error of the sample mean is <span class="math inline">\(SE = \sigma / \sqrt{n}\)</span>, which decreases as <span class="math inline">\(n\)</span> increases. A smaller standard error means the sampling distribution is narrower, making it easier to distinguish the true effect from zero.</p>
+<div class="important">
+<p><strong>More data, fewer missed effects.</strong> Increasing the sample size is the most common way to reduce the Type II error rate. This is why large clinical trials with thousands of participants are more likely to detect treatment effects than small pilot studies.</p>
+</div>
+</section>
+<section id="population-variability-sigma" class="level3" data-number="27.8.3">
+<h3 data-number="27.8.3" class="anchored" data-anchor-id="population-variability-sigma"><span class="header-section-number">27.8.3</span> 3. Population variability (<span class="math inline">\(\sigma\)</span>)</h3>
+<p>When individual observations are highly variable, it is harder to estimate the population mean precisely. The standard error depends directly on <span class="math inline">\(\sigma\)</span>: high variability means a wide sampling distribution, which makes it harder to distinguish <span class="math inline">\(H_A\)</span> from <span class="math inline">\(H_0\)</span>.</p>
+<p>For example, if exam scores range from 20 to 100 with <span class="math inline">\(\sigma = 25\)</span>, it is much harder to detect a 5-point effect than if scores range from 60 to 80 with <span class="math inline">\(\sigma = 5\)</span>.</p>
+<div class="guidedpractice">
+<p>A researcher is studying whether a dietary supplement improves reaction time. She can either recruit participants from the general population (where reaction times are highly variable) or from a group of trained athletes (where reaction times are more consistent). Which group would give her study a lower Type II error rate, assuming the supplement has the same true effect in both populations?</p>
+<details>
+<summary>
+Show answer
+</summary>
+The group of trained athletes would give a lower Type II error rate because their reaction times are less variable (smaller <span class="math inline">\(\sigma\)</span>). A smaller <span class="math inline">\(\sigma\)</span> leads to a smaller standard error, making it easier to detect the true effect of the supplement.
+</details>
+</div>
+</section>
+<section id="significance-level-alpha" class="level3" data-number="27.8.4">
+<h3 data-number="27.8.4" class="anchored" data-anchor-id="significance-level-alpha"><span class="header-section-number">27.8.4</span> 4. Significance level (<span class="math inline">\(\alpha\)</span>)</h3>
+<p>As we discussed in <a href="#sec-tradeoff" class="quarto-xref"><span>Section 27.5</span></a>, a smaller <span class="math inline">\(\alpha\)</span> makes the test more conservative — it demands stronger evidence before rejecting <span class="math inline">\(H_0\)</span>. This directly increases <span class="math inline">\(\beta\)</span> because the rejection region shrinks.</p>
+<p>The table below summarizes these four factors:</p>
+<div id="tbl-factors-beta" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-factors-beta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;27.2: How each factor affects the Type II error rate.
+</figcaption>
+<div aria-describedby="tbl-factors-beta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 31%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Factor</th>
+<th style="text-align: left;">Change</th>
+<th style="text-align: left;">Effect on <span class="math inline">\(\beta\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Effect size</td>
+<td style="text-align: left;">Larger effect</td>
+<td style="text-align: left;"><span class="math inline">\(\beta\)</span> decreases</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sample size (<span class="math inline">\(n\)</span>)</td>
+<td style="text-align: left;">Larger <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\beta\)</span> decreases</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Population variability (<span class="math inline">\(\sigma\)</span>)</td>
+<td style="text-align: left;">Larger <span class="math inline">\(\sigma\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\beta\)</span> increases</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Significance level (<span class="math inline">\(\alpha\)</span>)</td>
+<td style="text-align: left;">Smaller <span class="math inline">\(\alpha\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\beta\)</span> increases</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<div class="workedexample">
+<p>A researcher plans a two-sample <span class="math inline">\(t\)</span>-test to compare a new therapy to a standard therapy. She knows from pilot data that the standard deviation of patient outcomes is about <span class="math inline">\(\sigma = 12\)</span>. She is hoping to detect a difference of at least 4 points between the two therapies. Her initial plan calls for 30 patients per group with <span class="math inline">\(\alpha = 0.05\)</span>.</p>
+<p>The standard error for the difference in means is approximately:</p>
+<p><span class="math display">\[SE = \sqrt{\frac{12^2}{30} + \frac{12^2}{30}} = \sqrt{\frac{144}{30} + \frac{144}{30}} = \sqrt{9.6} = 3.10\]</span></p>
+<p>The rejection boundary for a two-sided test is approximately <span class="math inline">\(1.96 \times SE = 1.96 \times 3.10 = 6.07\)</span>. Since the true effect is only 4 points — smaller than the rejection boundary of 6.07 — the study will more often than not fail to detect the effect. The Type II error rate will be high.</p>
+<p>What could she change to reduce the Type II error rate?</p>
+<hr>
+<p>She has several options: (1) increase the sample size to reduce the standard error, (2) try to reduce variability through better measurement or a more homogeneous study population, or (3) increase <span class="math inline">\(\alpha\)</span> to 0.10 (though this increases the Type I error rate). The most practical option is usually to increase the sample size.</p>
+</div>
+</section>
+</div>
+</section>
+<section id="sec-practical-significance" class="level2" data-number="27.9">
+<h2 data-number="27.9" class="anchored" data-anchor-id="sec-practical-significance"><span class="header-section-number">27.9</span> Practical vs.&nbsp;statistical significance revisited</h2>
+<div class="original">
+<p>The concepts of Type I and Type II error are closely connected to the distinction between <strong>statistical significance</strong> and <strong>practical significance</strong> that we first encountered in earlier chapters.</p>
+<p><strong>Statistical significance</strong> means the data provide enough evidence to reject <span class="math inline">\(H_0\)</span> at our chosen <span class="math inline">\(\alpha\)</span> level. It says: “The effect is probably not zero.”</p>
+<p><strong>Practical significance</strong> means the effect is large enough to matter in the real world. It says: “The effect is big enough to be useful.”</p>
+<p>These are different questions, and they can give different answers:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 35%">
+<col style="width: 32%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Scenario</th>
+<th style="text-align: left;">Statistically significant?</th>
+<th style="text-align: left;">Practically significant?</th>
+<th style="text-align: left;">What happened?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Large effect, large <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">Ideal outcome</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Large effect, small <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;">Possibly not</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">Type II error risk — effect exists but may be missed</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Small effect, large <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">“Significant but trivial” — very large studies can detect tiny, unimportant effects</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Small effect, small <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">No news</td>
+</tr>
+</tbody>
+</table>
+<p>The lower-left cell is the Type II error danger zone: a real, important effect exists, but the study is too small to detect it. The upper-right cell represents a different problem: a large study that detects a trivially small effect that has no practical importance.</p>
+<div class="workedexample">
+<p>A study with 50,000 participants finds that a new teaching method raises test scores by 0.3 points on a 100-point scale, with <span class="math inline">\(p = 0.002\)</span>. Is this result practically significant?</p>
+<hr>
+<p>The result is statistically significant (<span class="math inline">\(p = 0.002 &lt; 0.05\)</span>), meaning we have strong evidence that the effect is not zero. However, a 0.3-point improvement on a 100-point scale is almost certainly too small to matter in practice. No school would adopt a new teaching method for a gain of one-third of a point. This is a case of statistical significance without practical significance — the study was so large that it detected a real but trivially small effect.</p>
+</div>
+<div class="important">
+<p><strong>Statistical significance is not the same as practical significance.</strong> A statistically significant result tells you the effect is probably real, but it does not tell you the effect is important. Always consider the <em>size</em> of the effect, not just whether it is statistically significant.</p>
+</div>
+<div class="guidedpractice">
+<p>A small pilot study with 12 participants finds that a new exercise program reduces resting heart rate by 8 beats per minute, but the result is not statistically significant (<span class="math inline">\(p = 0.09\)</span>). Does this mean the exercise program doesn’t work?</p>
+<details>
+<summary>
+Show answer
+</summary>
+Not necessarily. An 8 bpm reduction in resting heart rate is a clinically meaningful effect. The study may simply have been too small to detect it — this is a potential Type II error. The non-significant result means we don’t have enough evidence to be confident the effect is real, but it doesn’t prove the program is ineffective. A larger study with more participants would be warranted.
+</details>
+</div>
+</div>
+</section>
+<section id="sec-ch19-review" class="level2" data-number="27.10">
+<h2 data-number="27.10" class="anchored" data-anchor-id="sec-ch19-review"><span class="header-section-number">27.10</span> Chapter review</h2>
+<section id="summary" class="level3 original" data-number="27.10.1">
+<h3 data-number="27.10.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">27.10.1</span> Summary</h3>
+<p>A hypothesis test can go wrong in two ways. A <strong>Type I error</strong> occurs when we reject <span class="math inline">\(H_0\)</span> even though it is true — a false alarm. A <strong>Type II error</strong> occurs when we fail to reject <span class="math inline">\(H_0\)</span> even though <span class="math inline">\(H_A\)</span> is true — a missed detection. The probability of a Type I error is <span class="math inline">\(\alpha\)</span> (the significance level), and the probability of a Type II error is <span class="math inline">\(\beta\)</span>.</p>
+<p>There is a fundamental tradeoff: for a fixed sample size and effect size, decreasing <span class="math inline">\(\alpha\)</span> increases <span class="math inline">\(\beta\)</span>, and vice versa. The only way to reduce both error rates simultaneously is to increase the sample size, which makes the test more precise.</p>
+<p>Four factors affect the Type II error rate: the effect size (larger effects are easier to detect), the sample size (more data reduces <span class="math inline">\(\beta\)</span>), the population variability (more variability increases <span class="math inline">\(\beta\)</span>), and the significance level (smaller <span class="math inline">\(\alpha\)</span> increases <span class="math inline">\(\beta\)</span>).</p>
+<p>Finally, statistical significance and practical significance are not the same thing. A large study can detect trivially small effects, and a small study can miss important effects. Researchers should always consider both the statistical evidence and the practical importance of their findings.</p>
+</section>
+<section id="exercises" class="level3 exercises" data-number="27.10.2">
+<h3 class="exercises anchored" data-number="27.10.2" data-anchor-id="exercises"><span class="header-section-number">27.10.2</span> Exercises</h3>
+<div class="underconstruction">
+<p>Exercises for this chapter are under development.</p>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../parts/part-vi.html" class="pagination-link" aria-label="Design">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Design</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/ch27-statistical-power.html" class="pagination-link" aria-label="Statistical Power">
+        <span class="nav-page-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Statistical Power</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Introduction to Statistics: A Simulation-First Approach</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>. Built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
