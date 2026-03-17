@@ -9,6 +9,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Array from 'd3-array';
 import * as d3Axis from 'd3-axis';
 import { mean, median, sd, iqr, quantile, formatStat } from '../../js/stats.js';
+import { computeBoxplotStats } from '../../js/boxplot.js';
 import { createChart } from '../../js/chart-utils.js';
 import { initHelp, announce } from '../../js/page-utils.js';
 
@@ -29,8 +30,9 @@ const DOT_STROKE = '#333';
 const DOT_RADIUS = window.matchMedia('(max-width: 600px)').matches ? 11 : 7;
 const MAX_HISTORY = 100;
 const VIEW_WIDTH = 600;
-const VIEW_HEIGHT = 340;
+const VIEW_HEIGHT = 360;
 const MARGIN = { top: 20, right: 20, bottom: 65, left: 20 };
+const BOXPLOT_BAND = 45; // viewBox units reserved at top for boxplot
 
 // ─── DOM refs ───
 
@@ -38,6 +40,9 @@ const chartArea = /** @type {HTMLElement} */ (document.getElementById('chart-are
 const presetSelect = /** @type {HTMLSelectElement} */ (document.getElementById('preset-select'));
 const undoBtn = /** @type {HTMLButtonElement} */ (document.getElementById('undo-btn'));
 const clearBtn = /** @type {HTMLButtonElement} */ (document.getElementById('clear-btn'));
+const boxplotCheck = /** @type {HTMLInputElement} */ (document.getElementById('boxplot-check'));
+const freezeBtn = /** @type {HTMLButtonElement} */ (document.getElementById('freeze-btn'));
+const unfreezeBtn = /** @type {HTMLButtonElement} */ (document.getElementById('unfreeze-btn'));
 
 // Stat cells
 const statEls = {
@@ -62,6 +67,9 @@ let prevStats = {};
 let values = [];
 /** @type {number[][]} */
 let history = [];
+let showBoxplot = false;
+/** @type {import('../../js/boxplot.js').BoxplotStats|null} */
+let frozenBoxplot = null;
 
 // ─── Initialization ───
 
@@ -83,6 +91,35 @@ presetSelect.addEventListener('change', () => {
 // Undo / Clear
 undoBtn.addEventListener('click', undo);
 clearBtn.addEventListener('click', clearAll);
+
+// Boxplot toggle
+boxplotCheck.addEventListener('change', () => {
+  showBoxplot = boxplotCheck.checked;
+  freezeBtn.disabled = !showBoxplot;
+  if (!showBoxplot) {
+    frozenBoxplot = null;
+    unfreezeBtn.style.display = 'none';
+    freezeBtn.style.display = '';
+  }
+  render();
+});
+
+freezeBtn.addEventListener('click', () => {
+  if (values.length < 2) return;
+  frozenBoxplot = computeBoxplotStats(values);
+  freezeBtn.style.display = 'none';
+  unfreezeBtn.style.display = '';
+  render();
+  announce('Boxplot frozen. Edit the data to compare.');
+});
+
+unfreezeBtn.addEventListener('click', () => {
+  frozenBoxplot = null;
+  unfreezeBtn.style.display = 'none';
+  freezeBtn.style.display = '';
+  render();
+  announce('Boxplot unfrozen.');
+});
 
 // Keyboard: Ctrl+Z, ?
 document.addEventListener('keydown', (e) => {
@@ -226,7 +263,14 @@ function render() {
       }
     });
 
-  // Stack dots
+  // ─── Boxplot (above dots) ───
+  const bpTop = showBoxplot ? BOXPLOT_BAND : 0; // vertical offset for dots
+
+  if (showBoxplot) {
+    drawInlineBoxplot(g, xScale, frozenBoxplot, values, bpTop);
+  }
+
+  // ─── Stack dots ───
   /** @type {Map<number, number>} */
   const stacks = new Map();
   /** @type {Array<{value: number, stackIndex: number}>} */
@@ -240,7 +284,7 @@ function render() {
 
   // Compute dot radius — shrink if stacks get too tall
   const maxStack = Math.max(...stacks.values(), 1);
-  const availHeight = frame.height - 10; // leave a bit of padding at top
+  const availHeight = frame.height - bpTop - 10;
   const naturalR = DOT_RADIUS;
   const neededHeight = maxStack * naturalR * 2.2;
   const r = neededHeight > availHeight ? Math.max(3, availHeight / (maxStack * 2.2)) : naturalR;
@@ -357,4 +401,121 @@ function updateStats() {
   }
 
   prevStats = stats;
+}
+
+// ─── Inline boxplot renderer ───
+
+/**
+ * Draw a boxplot (and optional frozen ghost) in the top band of the chart.
+ * @param {d3.Selection} parent - D3 selection of the chart inner group
+ * @param {d3Scale.ScaleLinear<number,number>} xScale
+ * @param {import('../../js/boxplot.js').BoxplotStats|null} frozen
+ * @param {number[]} currentValues
+ * @param {number} bandHeight - height of the boxplot band
+ */
+function drawInlineBoxplot(parent, xScale, frozen, currentValues, bandHeight) {
+  const bpGroup = parent.append('g').attr('class', 'boxplot-overlay');
+  const midY = bandHeight / 2;
+  const boxHalf = 14; // half-height of the box
+
+  // Separator line between boxplot and dots
+  bpGroup.append('line')
+    .attr('x1', 0).attr('x2', /** @type {number} */ (xScale.range()[1]))
+    .attr('y1', bandHeight).attr('y2', bandHeight)
+    .attr('stroke', '#ddd').attr('stroke-width', 0.5).attr('stroke-dasharray', '4,3');
+
+  // Draw frozen ghost first (behind)
+  if (frozen) {
+    drawOneBoxplot(bpGroup, xScale, frozen, midY, boxHalf, {
+      fill: '#eee', stroke: '#aaa', strokeWidth: 1.5, dasharray: '4,2', opacity: 0.8, label: 'Frozen',
+    });
+  }
+
+  // Draw live boxplot
+  if (currentValues.length >= 2) {
+    const live = computeBoxplotStats(currentValues);
+    drawOneBoxplot(bpGroup, xScale, live, midY, boxHalf, {
+      fill: 'rgba(86,155,189,0.15)', stroke: '#569BBD', strokeWidth: 2, dasharray: '', opacity: 1, label: '',
+    });
+  }
+}
+
+/**
+ * @param {d3.Selection} parent
+ * @param {d3Scale.ScaleLinear<number,number>} xScale
+ * @param {import('../../js/boxplot.js').BoxplotStats} stats
+ * @param {number} midY
+ * @param {number} boxHalf
+ * @param {{fill:string, stroke:string, strokeWidth:number, dasharray:string, opacity:number, label:string}} style
+ */
+function drawOneBoxplot(parent, xScale, stats, midY, boxHalf, style) {
+  const bp = parent.append('g')
+    .attr('opacity', style.opacity)
+    .attr('pointer-events', 'none');
+
+  // Whisker lines
+  bp.append('line')
+    .attr('x1', xScale(stats.whiskerLo)).attr('x2', xScale(stats.q1))
+    .attr('y1', midY).attr('y2', midY)
+    .attr('stroke', style.stroke).attr('stroke-width', style.strokeWidth)
+    .attr('stroke-dasharray', style.dasharray);
+
+  bp.append('line')
+    .attr('x1', xScale(stats.q3)).attr('x2', xScale(stats.whiskerHi))
+    .attr('y1', midY).attr('y2', midY)
+    .attr('stroke', style.stroke).attr('stroke-width', style.strokeWidth)
+    .attr('stroke-dasharray', style.dasharray);
+
+  // Whisker caps
+  bp.append('line')
+    .attr('x1', xScale(stats.whiskerLo)).attr('x2', xScale(stats.whiskerLo))
+    .attr('y1', midY - boxHalf * 0.5).attr('y2', midY + boxHalf * 0.5)
+    .attr('stroke', style.stroke).attr('stroke-width', style.strokeWidth);
+
+  bp.append('line')
+    .attr('x1', xScale(stats.whiskerHi)).attr('x2', xScale(stats.whiskerHi))
+    .attr('y1', midY - boxHalf * 0.5).attr('y2', midY + boxHalf * 0.5)
+    .attr('stroke', style.stroke).attr('stroke-width', style.strokeWidth);
+
+  // Box (Q1 to Q3)
+  bp.append('rect')
+    .attr('x', xScale(stats.q1))
+    .attr('y', midY - boxHalf)
+    .attr('width', Math.max(1, xScale(stats.q3) - xScale(stats.q1)))
+    .attr('height', boxHalf * 2)
+    .attr('fill', style.fill)
+    .attr('stroke', style.stroke)
+    .attr('stroke-width', style.strokeWidth)
+    .attr('stroke-dasharray', style.dasharray);
+
+  // Median line
+  bp.append('line')
+    .attr('x1', xScale(stats.median)).attr('x2', xScale(stats.median))
+    .attr('y1', midY - boxHalf).attr('y2', midY + boxHalf)
+    .attr('stroke', style.stroke).attr('stroke-width', style.strokeWidth + 0.5);
+
+  // Outliers
+  const outliers = [...stats.mildOutliers, ...stats.extremeOutliers];
+  if (outliers.length > 0) {
+    bp.selectAll('.bp-outlier')
+      .data(outliers)
+      .join('circle')
+      .attr('class', 'bp-outlier')
+      .attr('cx', d => xScale(d))
+      .attr('cy', midY)
+      .attr('r', 3)
+      .attr('fill', 'none')
+      .attr('stroke', style.stroke)
+      .attr('stroke-width', 1);
+  }
+
+  // Label (for frozen)
+  if (style.label) {
+    bp.append('text')
+      .attr('x', xScale(stats.whiskerHi) + 6)
+      .attr('y', midY + 4)
+      .attr('font-size', '10px')
+      .attr('fill', style.stroke)
+      .text(style.label);
+  }
 }
