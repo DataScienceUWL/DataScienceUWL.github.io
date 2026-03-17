@@ -17,7 +17,7 @@ const FLOAT_PARAMS = new Set([
     'mu', 'sigma', 'p', 'min', 'max', 'mu1', 'mu2',
     'sigma1', 'sigma2', 'p1', 'p2', 'rho',
     'intercept', 'slope', 'sigma_error', 'x_min', 'x_max',
-    'decimals', 'clip_min', 'clip_max', 'null_value'
+    'decimals', 'clip_min', 'clip_max', 'null_value', 'alpha'
 ]);
 
 /** Parameters that should remain as sanitized strings */
@@ -25,7 +25,7 @@ const STRING_PARAMS = new Set([
     'seed', 'gen', 'stat', 'direction', 'tail', 'dataset', 'csv', 'json',
     'var', 'x', 'y', 'group', 'response', 'label', 'units', 'context',
     'success', 'failure', 'group1', 'group2', 'var1', 'var2',
-    'x_label', 'y_label'
+    'x_label', 'y_label', 'summary', 'alt'
 ]);
 
 /**
@@ -112,6 +112,15 @@ export function parseParams(queryString) {
             } else if (key === 'dataset') {
                 // Prevent path traversal
                 sanitized = sanitized.replace(/[^a-zA-Z0-9_-]/g, '');
+            } else if (key === 'summary') {
+                // Allow label:n:mean:sd,... format (colons, periods, commas, spaces, hyphens)
+                sanitized = sanitized.replace(/[^a-zA-Z0-9_.:, -]/g, '').slice(0, 2000);
+            } else if (key === 'alt') {
+                // Alternative hypothesis direction
+                sanitized = sanitized.replace(/[^a-z-]/g, '');
+                if (!['less', 'greater', 'two-sided'].includes(sanitized)) {
+                    continue;
+                }
             } else {
                 // General string params: alphanumeric + underscore
                 sanitized = sanitized.replace(/[^a-zA-Z0-9_ -]/g, '').toLowerCase();

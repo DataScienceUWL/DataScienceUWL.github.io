@@ -5,10 +5,9 @@
  */
 
 import * as jstat from 'jstat';
-import * as d3Selection from 'd3-selection';
 import { setJStat, pdfNormal } from '../../js/distributions.js';
 import { onePropZ } from '../../js/inference.js';
-import { drawCurve, computeDomain } from '../../js/curve.js';
+import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
 import { announce, initTabs, initDataPanel, initKeyboardShortcuts, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
@@ -431,46 +430,14 @@ function drawChart(r) {
   });
 
   if (chart && isFinite(r.zStat)) {
-    const { xScale, yScale, frame } = chart;
-    const overlays = d3Selection.select(frame.inner).select('.overlays');
-    const zX = xScale(r.zStat);
-    const yTop = yScale(pdfFn(r.zStat));
-
-    overlays.append('line')
-      .attr('class', 'z-stat-line')
-      .attr('x1', zX)
-      .attr('x2', zX)
-      .attr('y1', yScale(0))
-      .attr('y2', yTop)
-      .attr('stroke', '#7B2D8E')
-      .attr('stroke-width', 2)
-      .attr('stroke-dasharray', '4,3');
-
-    overlays.append('text')
-      .attr('class', 'z-stat-label')
-      .attr('x', zX)
-      .attr('y', yTop - 8)
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#7B2D8E')
-      .attr('font-size', '12px')
-      .attr('font-weight', '700')
-      .text(`z = ${r.zStat.toFixed(3)}`);
-
-    if (r.alternative === 'two-sided' && r.zStat !== 0) {
-      const mirrorZ = -r.zStat;
-      const mirrorX = xScale(mirrorZ);
-      const mirrorYTop = yScale(pdfFn(mirrorZ));
-
-      overlays.append('line')
-        .attr('class', 'z-stat-line')
-        .attr('x1', mirrorX)
-        .attr('x2', mirrorX)
-        .attr('y1', yScale(0))
-        .attr('y2', mirrorYTop)
-        .attr('stroke', '#7B2D8E')
-        .attr('stroke-width', 2)
-        .attr('stroke-dasharray', '4,3');
-    }
+    addInferenceAnnotations(chart, {
+      statValue: Math.abs(r.zStat),
+      statLabel: 'z',
+      pValue: r.pValue,
+      pdfFn,
+      tail,
+      statValueNeg: tail === 'both' ? -Math.abs(r.zStat) : undefined,
+    });
   }
 }
 

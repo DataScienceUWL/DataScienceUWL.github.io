@@ -8,9 +8,10 @@
 import * as jstatModule from 'jstat';
 import { setJStat, pdfF, fInv } from '../../js/distributions.js';
 import { anovaF, anovaFSummary } from '../../js/inference.js';
-import { drawCurve, computeDomain } from '../../js/curve.js';
+import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { drawBoxplot } from '../../js/boxplot.js';
-import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText, buildSimLink, parseGroupSummary } from '../../js/page-utils.js';
+import { parseParams } from '../../js/url-params.js';
 import { mean, sd, detectPrecision, formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
 
@@ -163,27 +164,7 @@ if (loadSummaryBtn) {
 
     if (names.length < 2) { announce('Need at least 2 groups.'); return; }
 
-    fromSummary = true;
-    parsedCache = null;
-    currentContext = null;
-    groupedData = {};
-    groupNames = names;
-    if (varSelectorsDiv) varSelectorsDiv.hidden = true;
-    if (dataPreview) dataPreview.hidden = true;
-
-    dataPrecision = Math.max(
-      ...meanArr.concat(sdArr).map(v => {
-        const str = String(v);
-        const dot = str.indexOf('.');
-        return dot === -1 ? 0 : str.length - dot - 1;
-      })
-    );
-
-    const result = anovaFSummary(meanArr, sdArr, nArr, names);
-    renderChart(result);
-    renderResults(result);
-    checkConditions(result, false);
-    announce(`Loaded summary: ${names.length} groups.`);
+    loadFromSummaryStats(names, nArr, meanArr, sdArr);
   });
 }
 
@@ -423,14 +404,22 @@ function renderChart(r) {
   const pdfFn = /** @param {number} x */ (x) => pdfF(x, dfB, dfW);
   const domain = computeDomain('F', { invCdf: (/** @type {number} */ p) => fInv(p, dfB, dfW) });
 
-  drawCurve(chartContainer, pdfFn, domain, {
+  const chart = drawCurve(chartContainer, pdfFn, domain, {
     xLabel: 'F',
     yLabel: 'Density',
-    titleText: `F-distribution (df₁ = ${dfB}, df₂ = ${dfW})`,
+    titleText: `F-distribution (df\u2081 = ${dfB}, df\u2082 = ${dfW})`,
     descText: `ANOVA F-test: F = ${r.fStat.toFixed(3)}, shaded area = p-value`,
     id: 'anova-f-curve',
     tail: 'right',
     critValue: r.fStat,
+  });
+
+  addInferenceAnnotations(chart, {
+    statValue: r.fStat,
+    statLabel: 'F',
+    pValue: r.pValue,
+    pdfFn,
+    tail: 'right',
   });
 }
 
@@ -574,6 +563,78 @@ function announceResult(r) {
     `ANOVA: F = ${formatStat(r.fStat, dataPrecision)}, df = (${r.dfBetween}, ${r.dfWithin}), ${pStr}.`
   );
 }
+
+// ── Load from summary stats (shared by button + URL) ────────────────
+
+/**
+ * Load ANOVA from pre-computed group summaries.
+ * @param {string[]} names
+ * @param {number[]} nArr
+ * @param {number[]} meanArr
+ * @param {number[]} sdArr
+ */
+function loadFromSummaryStats(names, nArr, meanArr, sdArr) {
+  fromSummary = true;
+  parsedCache = null;
+  currentContext = null;
+  groupedData = {};
+  groupNames = names;
+  if (varSelectorsDiv) varSelectorsDiv.hidden = true;
+  if (dataPreview) dataPreview.hidden = true;
+
+  dataPrecision = Math.max(
+    ...meanArr.concat(sdArr).map(v => {
+      const str = String(v);
+      const dot = str.indexOf('.');
+      return dot === -1 ? 0 : str.length - dot - 1;
+    })
+  );
+
+  const result = anovaFSummary(meanArr, sdArr, nArr, names);
+  renderChart(result);
+  renderResults(result);
+  checkConditions(result, false);
+  announce(`Loaded summary: ${names.length} groups.`);
+}
+
+// ── URL parameter auto-load ─────────────────────────────────────────
+
+dataPanel.ready.then(() => {
+  const params = parseParams();
+
+  // ?alpha= sets significance level
+  if (params.alpha != null && alphaSelect) {
+    const a = String(params.alpha);
+    if ([...alphaSelect.options].some(o => o.value === a)) {
+      alphaSelect.value = a;
+    }
+  }
+
+  // ?group= and ?response= set variable selectors (for dataset loads)
+  if (params.group && groupVarSelect) {
+    const opt = [...groupVarSelect.options].find(o => o.value === params.group);
+    if (opt) {
+      groupVarSelect.value = params.group;
+      if (params.response && responseVarSelect) {
+        const rOpt = [...responseVarSelect.options].find(o => o.value === params.response);
+        if (rOpt) responseVarSelect.value = params.response;
+      }
+      extractGroups();
+    }
+  }
+
+  // ?summary= auto-loads summary stats (overrides dataset)
+  if (params.summary) {
+    const parsed = parseGroupSummary(params.summary);
+    if (parsed) {
+      loadFromSummaryStats(parsed.labels, parsed.ns, parsed.means, parsed.sds);
+
+      // Collapse data panel since we auto-loaded
+      const dataPanelEl = document.getElementById('data-panel');
+      if (dataPanelEl) dataPanelEl.hidden = true;
+    }
+  }
+});
 
 // ── Utility ─────────────────────────────────────────────────────────
 

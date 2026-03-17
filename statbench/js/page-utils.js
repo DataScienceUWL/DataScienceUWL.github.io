@@ -1548,3 +1548,84 @@ export function consumeTransferData() {
     return JSON.parse(raw);
   } catch { return null; }
 }
+
+// ─── Summary URL parsing ────────────────────────────────────────────
+
+/**
+ * Parse a compact group summary string from a URL parameter.
+ * Format: "Label1:n:mean:sd,Label2:n:mean:sd,..."
+ * Labels may contain spaces (encoded as + or %20 in URLs).
+ *
+ * @param {string} summaryStr - The raw summary parameter value
+ * @returns {{ labels: string[], ns: number[], means: number[], sds: number[] } | null}
+ *   Returns null if parsing fails or fewer than 2 groups are found.
+ */
+export function parseGroupSummary(summaryStr) {
+  if (!summaryStr) return null;
+
+  const groups = summaryStr.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  if (groups.length < 2) return null;
+
+  /** @type {string[]} */
+  const labels = [];
+  /** @type {number[]} */
+  const ns = [];
+  /** @type {number[]} */
+  const means = [];
+  /** @type {number[]} */
+  const sds = [];
+
+  for (const g of groups) {
+    const parts = g.split(':');
+    if (parts.length < 4) return null;
+
+    // Label is everything except the last 3 parts (allows colons in labels, though unlikely)
+    const label = parts.slice(0, -3).join(':').trim();
+    const n = parseInt(parts[parts.length - 3], 10);
+    const m = parseFloat(parts[parts.length - 2]);
+    const sd = parseFloat(parts[parts.length - 1]);
+
+    if (!label || !isFinite(n) || n < 1 || !isFinite(m) || !isFinite(sd) || sd < 0) return null;
+
+    labels.push(label);
+    ns.push(n);
+    means.push(m);
+    sds.push(sd);
+  }
+
+  return { labels, ns, means, sds };
+}
+
+/**
+ * Parse a compact two-group summary string from a URL parameter.
+ * Format: "Label1:n:mean:sd,Label2:n:mean:sd"
+ *
+ * @param {string} summaryStr
+ * @returns {{ label1: string, n1: number, xbar1: number, s1: number, label2: string, n2: number, xbar2: number, s2: number } | null}
+ */
+export function parseTwoGroupSummary(summaryStr) {
+  const result = parseGroupSummary(summaryStr);
+  if (!result || result.labels.length !== 2) return null;
+  return {
+    label1: result.labels[0], n1: result.ns[0], xbar1: result.means[0], s1: result.sds[0],
+    label2: result.labels[1], n2: result.ns[1], xbar2: result.means[1], s2: result.sds[1],
+  };
+}
+
+/**
+ * Parse a compact one-sample summary string from a URL parameter.
+ * Format: "n:mean:sd"
+ *
+ * @param {string} summaryStr
+ * @returns {{ n: number, mean: number, sd: number } | null}
+ */
+export function parseOneSampleSummary(summaryStr) {
+  if (!summaryStr) return null;
+  const parts = summaryStr.split(':').map(s => s.trim());
+  if (parts.length < 3) return null;
+  const n = parseInt(parts[0], 10);
+  const m = parseFloat(parts[1]);
+  const sd = parseFloat(parts[2]);
+  if (!isFinite(n) || n < 1 || !isFinite(m) || !isFinite(sd) || sd < 0) return null;
+  return { n, mean: m, sd };
+}
