@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>One Quantitative Variable: Shape, Center, Spread – STAT 145 Course Pack</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../sections/ch02/sec2-04-boxplots-outliers.html" rel="next">
+<link href="../../sections/ch02/sec2-01-categorical-data.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-0e7bfd922d411307b3ad2ffcbaad6d00.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../sections/ch02/sec2-01-categorical-data.html">Chapter 2: Describing Data</a></li><li class="breadcrumb-item"><a href="../../sections/ch02/sec2-0203-quantitative-data.html"><span class="chapter-title">One Quantitative Variable: Shape, Center, Spread</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">STAT 145 Course Pack</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">STAT 145 Course Pack</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
+ <span class="menu-text">Chapter 1: Collecting Data</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch01/sec1-01-structure-of-data.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">The Structure of Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch01/sec1-02-sampling.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Sampling from a Population</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch01/sec1-03-experiments.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Experiments and Observational Studies</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Chapter 2: Describing Data</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch02/sec2-01-categorical-data.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Categorical Variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch02/sec2-0203-quantitative-data.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">One Quantitative Variable: Shape, Center, Spread</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch02/sec2-04-boxplots-outliers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Outliers, Boxplots, and Quantitative/Categorical Relationships</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">Chapter 3: Sampling and Estimation</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch03/sec3-01-sampling-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Sampling Distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch03/sec3-02-confidence-intervals.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Confidence Intervals</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch03/sec3-03-bootstrap.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Constructing Bootstrap Confidence Intervals</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch03/sec3-04-ci-practice.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Bootstrap Confidence Intervals Using Percentiles</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">Chapter 4: Hypothesis Testing</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch04/sec4-01-hypothesis-testing.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Introducing Hypothesis Tests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch04/sec4-02-randomization-tests.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Measuring Evidence with P-values</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch04/sec4-0305-significance.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Statistical Significance; CIs and Hypothesis Tests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch04/sec4-04-errors.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Creating Randomization Distributions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">Chapter 5: The Normal Distribution</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch05/sec5-01-normal-distribution.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Normal Distributions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">Chapter 6: Inference with Normal</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch06/sec6-01-single-proportions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Inference for Single Proportions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch06/sec6-02-single-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Inference for Single Means</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch06/sec6-03-difference-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Inference for Difference in Proportions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch06/sec6-04-paired-data.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Inference for Difference in Means</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch06/sec6-05-difference-proportions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Paired Difference in Means</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
+ <span class="menu-text">Chapter 7: Chi-Square Tests</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch07/sec7-01-chi-square-gof.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Goodness of Fit for a Single Categorical Variable</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch07/sec7-02-chi-square-independence.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Independence for Two Categorical Variables</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false">
+ <span class="menu-text">Chapter 8: ANOVA</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch08/sec8-01-anova.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Analysis of Variance</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch08/sec8-02-multiple-comparisons.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Analysis of Variance - Multiple Comparisons after ANOVA</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false">
+ <span class="menu-text">Chapter 9: Regression</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch09/sec9-01-correlation-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Inference for Slope and Correlation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch09/sec9-0203-inference-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Confidence and Prediction Intervals</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false">
+ <span class="menu-text">Chapter 11: Probability</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch11/sec11-01-probability.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Probability Rules</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch11/sec11-04-binomial.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Binomial Probability</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/data-sources.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Data Sources</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#describing-quantitative-data" id="toc-describing-quantitative-data" class="nav-link active" data-scroll-target="#describing-quantitative-data">Describing quantitative data</a></li>
+  <li><a href="#measures-of-center-mean-and-median" id="toc-measures-of-center-mean-and-median" class="nav-link" data-scroll-target="#measures-of-center-mean-and-median">Measures of center: Mean and median</a></li>
+  <li><a href="#measures-of-spread-iqr-range" id="toc-measures-of-spread-iqr-range" class="nav-link" data-scroll-target="#measures-of-spread-iqr-range">Measures of spread: IQR, range</a></li>
+  <li><a href="#measures-of-spread-standard-deviation" id="toc-measures-of-spread-standard-deviation" class="nav-link" data-scroll-target="#measures-of-spread-standard-deviation">Measures of spread: Standard deviation</a></li>
+  <li><a href="#estimating-summary-statistics-from-a-graphical-summary" id="toc-estimating-summary-statistics-from-a-graphical-summary" class="nav-link" data-scroll-target="#estimating-summary-statistics-from-a-graphical-summary">Estimating summary statistics from a graphical summary</a></li>
+  <li><a href="#choosing-the-best-summary-statistics" id="toc-choosing-the-best-summary-statistics" class="nav-link" data-scroll-target="#choosing-the-best-summary-statistics">Choosing the best summary statistics</a></li>
+  <li><a href="#percentiles" id="toc-percentiles" class="nav-link" data-scroll-target="#percentiles">Percentiles</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../sections/ch02/sec2-01-categorical-data.html">Chapter 2: Describing Data</a></li><li class="breadcrumb-item"><a href="../../sections/ch02/sec2-0203-quantitative-data.html"><span class="chapter-title">One Quantitative Variable: Shape, Center, Spread</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">One Quantitative Variable: Shape, Center, Spread</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="key-concepts" class="level3 concepts">
+<h3 class="anchored" data-anchor-id="key-concepts">Key Concepts</h3>
+<ul>
+<li>Understand the difference between displays of categorical and quantitative data</li>
+<li>Use a dotplot or histogram to describe the shape of a distribution</li>
+<li>Calculate the mean and the median for a set of data values, with appropriate notation</li>
+<li>Identify the approximate locations of the mean and the median on a dotplot or histogram</li>
+<li>Explain how outliers and skewness affect the values for the mean and median</li>
+<li>Use technology to compute summary statistics for a quantitative variable</li>
+<li>Recognize the uses and meaning of the standard deviation</li>
+<li>Interpret a five number summary or percentiles</li>
+<li>Use the range, the interquartile range, and the standard deviation as measures of spread</li>
+<li>Describe the advantages and disadvantages of the different measures of spread</li>
+<li>Identify outliers in a dataset based on the IQR method</li>
+</ul>
+</section>
+<section id="describing-quantitative-data" class="level2">
+<h2 class="anchored" data-anchor-id="describing-quantitative-data">Describing quantitative data</h2>
+<div class="def-card">
+<p>A distribution is considered <em>symmetric</em> if we can fold the plot over a vertical center line and both sides match closely.</p>
+</div>
+<div class="def-card">
+<p>A distribution is considered <em>skewed left</em> if the longer tail of the distribution is to the left.</p>
+</div>
+<div class="def-card">
+<p>A distribution is considered <em>skewed right</em> if the longer tail of the distribution is to the right.</p>
+</div>
+<p>One of the easiest ways to describe a quantitative variable is to make a <em>dot plot</em> or a <em>histogram</em> and look at the shape and center of the distribution. In fact, one of the major differences between the summaries of categorical and quantitative variables is that for quantitative variables, we often care about the shape and center of the distribution. When we say a distribution is <em>symmetric</em> it means that the left-side of a distribution is very similar to the right-side of the distribution. We say a distribution is <em>skewed left</em> when the tail of the distribution is longer on the left. Similarly, we say that a distribution is <em>skewed right</em> when the tail of the distribution is longer on the right.</p>
+<div style="page-break-after: always;"></div>
+<div class="example-box">
+<p><strong>Class Example 2.2.1: NBA Salaries</strong></p>
+<p>The histogram in the figure below shows the distribution of player salaries (in millions of dollars) for a sample of 467 players during the 2022 National Basketball Association (NBA) season.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="sec2-0203-quantitative-data_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<ol type="a">
+<li>Describe the shape of the distribution.</li>
+</ol>
+<div class="workspace">
+
+</div>
+</div>
+</section>
+<section id="measures-of-center-mean-and-median" class="level2">
+<h2 class="anchored" data-anchor-id="measures-of-center-mean-and-median">Measures of center: Mean and median</h2>
+<div class="def-card">
+<p>The <em>mean</em> of a data set is the sum of all its values divided by the number of observations.</p>
+</div>
+<div class="def-card">
+<p>The <em>median</em> of a dataset is the middle entry of an ordered list of data. If there are an even number of entries, then we take the average of the middle two values.</p>
+</div>
+<p>One type of numerical summaries you will see for a dataset is called measures of <em>center</em>. Measures of center, provide us with a single number that best describes a quantitative variable’s distribution. Essentially, they give us a guess of what a typical value would look like. There are two measures of center we will use in this class: the <em>mean</em> and <em>median</em>. The <em>mean</em> of a sample tells us the average. For a sample of observations<span class="math inline">\(x_1, x_2, \ldots, x_n\)</span>, the mean is given by <span class="math display">\[
+\text{Mean} = \frac{x_1 + x_2 + \cdots + x_n}{n} = \frac{\sum_{i=1}^n x_i}{ n }
+\]</span> where <span class="math inline">\(n\)</span>is the number of observations.</p>
+<div class="def-card">
+<p>Notation:</p>
+<p><span class="math inline">\(\mu\)</span>: population mean</p>
+<p><span class="math inline">\(\overline{x}\)</span>: sample mean</p>
+</div>
+<p>In this course, we will use <span class="math inline">\(\mu\)</span>to represent the population mean and <span class="math inline">\(\overline{x}\)</span>to represent the sample mean.</p>
+<div style="page-break-after: always;"></div>
+<p>The <em>median</em>, denoted <span class="math inline">\(m\)</span>, divides the sample into two groups of equal size. We find the median by following two steps:</p>
+<ol type="1">
+<li>Sort the sample values.</li>
+<li>Find the middle value:
+<ul>
+<li>If <span class="math inline">\(n\)</span>is odd, the median is the middle value in the sorted list.</li>
+<li>If <span class="math inline">\(n\)</span>is even, the median is the average (midpoint) of the middle two values in the ordered list.</li>
+</ul></li>
+</ol>
+<div class="example-box">
+<p><strong>Class Example 2.2.2: Ants on a sandwich</strong></p>
+<p>The number of ants climbing on a piece of a peanut butter sandwich left on the ground near an anthill for a few minutes was measured 7 different times, and the results are: 43, 59, 22, 25, 36, 47, 19</p>
+<ol type="a">
+<li>Calculate the mean number of ants.</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="2" type="a">
+<li>Calculate the median number of ants.</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="3" type="a">
+<li>Suppose one of the sandwich bits was extremely appealing to the ants, and instead of 59, the number of ants for that bit was actually 159, giving the 7 values as: 43, 159, 22, 25, 36, 47, 19. Compute the mean and median for this new dataset.</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="4" type="a">
+<li>Which statistic (mean or median) is impacted most by the outlier?</li>
+</ol>
+<div class="workspace">
+
+</div>
+</div>
+</section>
+<section id="measures-of-spread-iqr-range" class="level2">
+<h2 class="anchored" data-anchor-id="measures-of-spread-iqr-range">Measures of spread: IQR, range</h2>
+<div class="def-card">
+<p>A measure of <em>spread</em> tells us how much variability exists in the data.</p>
+</div>
+<div class="def-card">
+<p>The <em>IQR</em> (Interquartile range) is the difference between the 1st and 3rd quartiles of the data.</p>
+</div>
+<p>In addition to measures of center, we also should report measures of spread. A measure of spread is a statistic that indicates the type of variability we see for a single variable. The <em>IQR</em> (interquartile range) is a statistic that tells us the range of the middle 50% of the dataset. To find the IQR, we need to first estimate<span class="math inline">\(Q_1\)</span>and<span class="math inline">\(Q_3\)</span>, the first and third quartiles. To find<span class="math inline">\(Q_1\)</span>, we need to take the median of all the values below the median. To find<span class="math inline">\(Q_3\)</span>, we need to take the median of all the values above the median. The IQR is given by <span class="math display">\[
+IQR = Q_3 - Q_1.
+\]</span></p>
+<div class="def-card">
+<p>The <em>range</em> is the difference between the maximum and minimum of the data.</p>
+</div>
+<p>To find the <em>range</em> of the data, you take the difference between the maximum and minimum of the data.</p>
+<div class="example-box">
+<p><strong>Class Example 2.2.3: Ants revisited</strong></p>
+<p>In the previous example, we found that for the 7 different times, the results were 19, 22, 25, 36, 43, 47, 59 (sorted in ascending order)</p>
+<ol type="a">
+<li>Find the IQR for this data</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="2" type="a">
+<li>Find the range for this data</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="3" type="a">
+<li>Find the range and IQR if the value 59 was actually 159?</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="4" type="a">
+<li>Which statistic (range or IQR) is impacted most by the outlier</li>
+</ol>
+<div class="workspace">
+
+</div>
+</div>
+</section>
+<section id="measures-of-spread-standard-deviation" class="level2">
+<h2 class="anchored" data-anchor-id="measures-of-spread-standard-deviation">Measures of spread: Standard deviation</h2>
+<p>In addition to IQR, another commonly used measure of spread is the <em>standard deviation</em>.</p>
+<div class="def-card">
+<p>The <em>standard deviation</em> of a variable is a rough estimate of the typical distance of a data value from the mean.</p>
+</div>
+<p>The standard deviation gives is an estimate for the average distance each observation is from the mean and is given by <span class="math display">\[
+\text{Standard deviation} = \sqrt{ \frac{ \sum_{i=1}^n (x_i - \overline{x})^2 }{ n - 1}}.
+\]</span></p>
+<div class="def-card">
+<p>Notation:</p>
+<p><span class="math inline">\(\sigma\)</span>: population standard deviation</p>
+<p><span class="math inline">\(s\)</span>: sample standard deviation</p>
+</div>
+<p>In this course, we will use <span class="math inline">\(\sigma\)</span>to represent the population standard deviation and <span class="math inline">\(s\)</span>to represent the sample standard deviation. When the standard deviation is large, it means there is a lot of variability amongst the observations. When the standard deviation is small, it means there is a lot of consistency amongst the observations.</p>
+<div class="example-box">
+<p><strong>Class Example 2.2.4: Ants revisited</strong></p>
+<ol type="a">
+<li>Find the standard deviation of the ants on a sandwich data.</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="2" type="a">
+<li>Find the standard deviation of the data if the value 59 was actually 159.</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="3" type="a">
+<li>Why should we square the deviations before adding them up?</li>
+</ol>
+<div class="workspace">
+
+</div>
+</div>
+<section id="outliers" class="level3">
+<h3 class="anchored" data-anchor-id="outliers">Outliers</h3>
+<div class="def-card">
+<p>An <em>outlier</em> is a data point that is unusual given the rest of the data.</p>
+</div>
+<div class="def-card">
+<p>A statistic is <em>resistant</em> if it is not impacted by outliers.</p>
+</div>
+<p>In the last part of the previous example, we introduced an <em>outlier</em>, or unusual value, into the dataset. We can use a simple rule of thumb to determine whether an observation is an outlier. A data value,<span class="math inline">\(x_0\)</span>, is considered to be an outlier if <span class="math display">\[
+x_0 &lt; Q_1 - 1.5 (IQR) \quad \text{or} \quad x_0 &gt; Q_3 + 1.5 (IQR).
+\]</span> To pick an appropriate statistic to represent the data, we need to know if it will be impacted by outliers. We call a statistic <em>resistant</em> if it is not impacted by outliers.</p>
+<div class="example-box">
+<p><strong>Class Example 2.2.5: Resistant statistics</strong></p>
+<p>Look back at your answers to the questions about ants on a sandwich.</p>
+<ol type="a">
+<li>Which measures of center (mean, median) are resistant?</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="2" type="a">
+<li>Which measures of spread (IQR, range, standard deviation) are resistant?</li>
+</ol>
+<div class="workspace">
+
+</div>
+</div>
+</section>
+</section>
+<section id="estimating-summary-statistics-from-a-graphical-summary" class="level2">
+<h2 class="anchored" data-anchor-id="estimating-summary-statistics-from-a-graphical-summary">Estimating summary statistics from a graphical summary</h2>
+<p>We may not always have access to the full dataset to come up with the mean or median from a sample. Sometimes we need to estimate these values from a graphical summary. For symmetric data, the mean should be very close to the median. If the data are skewed left, then the mean will be less than the median. On the other hand, for skewed right data, the mean will be greater than the median.</p>
+<div style="page-break-after: always;"></div>
+<div class="example-box">
+<p><strong>Class Example 2.2.6: The Masters</strong></p>
+<p>The ages for all golfers who won The Masters from 1934 - 2023 is shown in the figure below. There are 87 champions (less than the number of years due to World War 2) represented in the dotplot.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="sec2-0203-quantitative-data_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="528"></p>
+</figure>
+</div>
+</div>
+</div>
+<ol type="a">
+<li>Use the dotplot to estimate the median age of a Masters Champion between 1934 and 2023.</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="2" type="a">
+<li>Should the mean age be lower than, about the same as, or higher than the median? Explain.</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="3" type="a">
+<li>Estimate the IQR of the age from all golfers.</li>
+</ol>
+<div class="workspace">
+
+</div>
+</div>
+<section id="estimating-standard-deviation-from-a-histogram" class="level3">
+<h3 class="anchored" data-anchor-id="estimating-standard-deviation-from-a-histogram">Estimating standard deviation from a histogram</h3>
+<p>As a general rule, for <em>symmetric</em> and <em>bell-shaped</em> histograms, about 95% of the data should fall within two standard deviations from the mean. About 100% of the data should fall within three standard deviations from the mean.</p>
+<div class="example-box">
+<p><strong>Class Example 2.2.7: Percent of Body Fat in Men</strong></p>
+<p>The variable <em>BodyFat</em> in the <code>BodyFat</code> dataset gives the percent of weight made up of body fat for 100 men. For this sample,<span class="math inline">\(\overline{x} = 18.6\)</span>and<span class="math inline">\(s = 8.0\)</span>. The distribution of body fat values is roughly symmetric and bell-shaped. Find an interval that is likely to contain approximately 95% of the data values.</p>
+</div>
+<div style="page-break-after: always;"></div>
+</section>
+</section>
+<section id="choosing-the-best-summary-statistics" class="level2">
+<h2 class="anchored" data-anchor-id="choosing-the-best-summary-statistics">Choosing the best summary statistics</h2>
+<p>When picking summary statistics to best represent the data, you should always consider the shape of your distribution. For <em>symmetric</em> and <em>bell-shaped</em> distributions, you should use <em>mean</em> and <em>standard deviation</em> to describe the center and spread of the data. If you have a distribution that is <em>skewed</em>, then you should use <em>resistant</em> statistics like <em>median</em> and <em>IQR</em> to describe the center and spread of the data.</p>
+<div class="example-box">
+<p><strong>Class Example 2.2.8: NBA Salaries revisited</strong></p>
+<p>Thinking back to the NBA salaries histogram.</p>
+<ol type="a">
+<li>Which statistic, mean or median, would be most appropriate to represent a typical NBA salary? Why did you select that statistic?</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="2" type="a">
+<li>Which statistic, IQR or standard deviation, would be most appropriate to represent the spread of the distribution for NBA salaries? Why did you select that statistic?</li>
+</ol>
+<div class="workspace">
+
+</div>
+</div>
+</section>
+<section id="percentiles" class="level2">
+<h2 class="anchored" data-anchor-id="percentiles">Percentiles</h2>
+<div class="def-card">
+<p>The <em><span class="math inline">\(P^{th}\)</span>percentile</em> is the value of a quantitative variable which is greater than <span class="math inline">\(P\)</span>percent of the data.</p>
+</div>
+<p>Most of you have seen a percentile at some point in the past. Perhaps it was given on the results of a standardized test, or maybe you have had an instructor who has given the median score for an exam or quiz. The <em><span class="math inline">\(P^{th}\)</span>percentile</em> tells us the value in the dataset that is larger than <span class="math inline">\(P\)</span>percent of the data.</p>
+<div class="example-box">
+<p><strong>Class Example 2.2.9: Three important percentiles</strong></p>
+<p>We have already discussed three important percentiles in class. Use what you know about the following statistics to determine which percentile it represents.</p>
+<ol type="a">
+<li>Q1</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="2" type="a">
+<li>Median</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="3" type="a">
+<li>Q3</li>
+</ol>
+<div class="workspace">
+
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../sections/ch02/sec2-01-categorical-data.html" class="pagination-link" aria-label="Categorical Variables">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Categorical Variables</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../sections/ch02/sec2-04-boxplots-outliers.html" class="pagination-link" aria-label="Outliers, Boxplots, and Quantitative/Categorical Relationships">
+        <span class="nav-page-text"><span class="chapter-title">Outliers, Boxplots, and Quantitative/Categorical Relationships</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
