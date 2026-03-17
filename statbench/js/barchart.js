@@ -11,7 +11,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels } from './chart-utils.js';
+import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels, autoRotateLabels } from './chart-utils.js';
 
 /** Bar stroke (white separator). */
 const BAR_STROKE = '#FFFFFF';
@@ -178,14 +178,18 @@ function drawSimpleBars(frame, values, mode, opts) {
 
   const xAxis = d3Axis.axisBottom(xScale);
   const yAxis = d3Axis.axisLeft(yScale).tickFormat(formatTick);
+  // Reduce y-axis ticks on phone to avoid crowding
+  const isPhone = typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 480px)').matches;
+  if (isPhone) yAxis.ticks(5);
 
   const axes = d3Selection.select(frame.inner).select('.axes');
   const xAxisG = axes.append('g').attr('class', 'x-axis')
     .attr('transform', `translate(0, ${frame.height})`).call(xAxis);
   axes.append('g').attr('class', 'y-axis').call(yAxis);
 
-  // Wrap long category labels on x-axis (band width sets max label width)
-  wrapTickLabels(xAxisG, xScale.bandwidth());
+  // Rotate category labels if they overlap (common on phone with many categories)
+  autoRotateLabels(xAxisG, frame.margin.bottom);
 
   if (opts.xLabel) {
     axes.append('text')
@@ -338,6 +342,8 @@ function drawLegend(frame, categories, colors, title) {
 function drawGroupedBars(frame, values, groupValues, mode, opts) {
   const { primaryCats, secondaryCats, table, primaryTotals } = computeGroupedFrequencies(values, groupValues);
   const colors = getColors(secondaryCats.length);
+  const isPhone = typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 480px)').matches;
 
   const xScale = d3Scale.scaleBand()
     .domain(primaryCats)
@@ -363,10 +369,12 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
     }
 
     const yScale = d3Scale.scaleLinear().domain([0, yMax || 1]).nice().range([frame.height, 0]);
+    const yAxisDodged = d3Axis.axisLeft(yScale).tickFormat(formatTick);
+    if (isPhone) yAxisDodged.ticks(5);
     const xAxisG2 = axes.append('g').attr('class', 'x-axis')
       .attr('transform', `translate(0, ${frame.height})`).call(d3Axis.axisBottom(xScale));
-    axes.append('g').attr('class', 'y-axis').call(d3Axis.axisLeft(yScale).tickFormat(formatTick));
-    wrapTickLabels(xAxisG2, xScale.bandwidth());
+    axes.append('g').attr('class', 'y-axis').call(yAxisDodged);
+    autoRotateLabels(xAxisG2, frame.margin.bottom);
 
     if (opts.xLabel) {
       axes.append('text').attr('class', 'x-label').attr('text-anchor', 'middle')
@@ -405,11 +413,13 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
     // Stacked or filled
     const yMax = mode === 'filled' ? 1 : d3Array.max(primaryCats.map(p => primaryTotals.get(p) ?? 0)) || 1;
     const yScale = d3Scale.scaleLinear().domain([0, yMax]).nice().range([frame.height, 0]);
+    const yAxisStacked = d3Axis.axisLeft(yScale).tickFormat(formatTick);
+    if (isPhone) yAxisStacked.ticks(5);
 
     const xAxisG3 = axes.append('g').attr('class', 'x-axis')
       .attr('transform', `translate(0, ${frame.height})`).call(d3Axis.axisBottom(xScale));
-    axes.append('g').attr('class', 'y-axis').call(d3Axis.axisLeft(yScale).tickFormat(formatTick));
-    wrapTickLabels(xAxisG3, xScale.bandwidth());
+    axes.append('g').attr('class', 'y-axis').call(yAxisStacked);
+    autoRotateLabels(xAxisG3, frame.margin.bottom);
 
     if (opts.xLabel) {
       axes.append('text').attr('class', 'x-label').attr('text-anchor', 'middle')

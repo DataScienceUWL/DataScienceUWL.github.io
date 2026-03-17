@@ -296,6 +296,23 @@ function detectPhoneMargin() {
 }
 
 /**
+ * Auto-rotate x-axis categorical tick labels when they overlap horizontally.
+ * Rotates to -35 degrees and adjusts anchor/position. Call after axis render.
+ * @param {d3Selection.Selection} axisG - The x-axis <g> element
+ * @param {number} maxBottomMargin - Available bottom margin for rotated labels
+ */
+export function autoRotateLabels(axisG, maxBottomMargin) {
+  const tickTexts = axisG.selectAll('.tick text').nodes();
+  if (!tickTexts.length || !_ticksOverlap(tickTexts)) return;
+
+  axisG.selectAll('.tick text')
+    .attr('text-anchor', 'end')
+    .attr('dx', '-0.5em')
+    .attr('dy', '0.25em')
+    .attr('transform', 'rotate(-35)');
+}
+
+/**
  * Wrap long tick labels in an axis group by splitting into multiple <tspan> lines.
  * Works for both x-axis (horizontal text) and y-axis (horizontal text on left axis).
  * Labels are split at natural break points (spaces, hyphens, underscores, camelCase).
