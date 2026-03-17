@@ -110,7 +110,17 @@ export function drawBoxplot(container, data, options = {}) {
   const xMax = d3Array.max(allValues);
   const xPad = (xMax - xMin) * 0.05 || 0.5;
 
-  const frame = createChart(container, { titleText, descText, id, margin });
+  // Auto-widen left margin for grouped boxplots based on longest group name
+  const effectiveMargin = margin || (isGrouped
+    ? (() => {
+        const maxLen = Math.max(...groupNames.map(n => n.length));
+        // ~8 viewBox units per character at chart font size, plus 15 for tick mark + padding
+        const needed = Math.max(60, maxLen * 8 + 15);
+        return { top: 28, right: 20, bottom: 50, left: needed };
+      })()
+    : undefined);
+
+  const frame = createChart(container, { titleText, descText, id, margin: effectiveMargin });
 
   const xScale = d3Scale.scaleLinear()
     .domain([xMin - xPad, xMax + xPad])
