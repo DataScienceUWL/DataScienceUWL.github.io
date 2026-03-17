@@ -711,8 +711,9 @@ export function initMechanismCollapse(mechanismStrip) {
  * Collapse the data panel to a compact summary bar after dataset loads.
  * Adds a "Change Data" button to re-expand. Idempotent.
  * @param {HTMLElement|null} dataPanel - The #data-panel element
+ * @param {object} [dataset] - Full dataset JSON (optional; used to render "About this data" info)
  */
-export function collapseDataPanel(dataPanel) {
+export function collapseDataPanel(dataPanel, dataset) {
   if (!dataPanel || dataPanel.classList.contains('collapsed')) return;
   dataPanel.classList.add('collapsed');
 
@@ -723,9 +724,81 @@ export function collapseDataPanel(dataPanel) {
     btn.textContent = 'Change Data';
     btn.addEventListener('click', () => {
       dataPanel.classList.remove('collapsed');
+      // Remove info panel when expanding (will be re-added on next collapse)
+      const info = dataPanel.querySelector('.dataset-info');
+      if (info) info.remove();
     });
     dataPanel.appendChild(btn);
   }
+
+  // Render "About this data" if enriched metadata is available
+  renderDatasetInfo(dataPanel, dataset);
+}
+
+/**
+ * Render an expandable "About this data" panel inside the collapsed data bar.
+ * Only renders if the dataset has studyDescription or variableDescriptions.
+ * @param {HTMLElement} panel
+ * @param {object} [ds]
+ */
+function renderDatasetInfo(panel, ds) {
+  // Remove any existing info panel
+  const existing = panel.querySelector('.dataset-info');
+  if (existing) existing.remove();
+
+  if (!ds) return;
+  const hasStudy = ds.studyDescription;
+  const hasVarDescs = ds.variableDescriptions && Object.keys(ds.variableDescriptions).length > 0;
+  const hasSource = ds.sourceDetail;
+  if (!hasStudy && !hasVarDescs && !hasSource) return;
+
+  const details = document.createElement('details');
+  details.className = 'dataset-info';
+
+  const summary = document.createElement('summary');
+  summary.textContent = 'About this data';
+  details.appendChild(summary);
+
+  const content = document.createElement('div');
+  content.className = 'dataset-info-content';
+
+  if (hasStudy) {
+    const p = document.createElement('p');
+    p.className = 'dataset-info-study';
+    p.textContent = ds.studyDescription;
+    content.appendChild(p);
+  }
+
+  if (hasVarDescs) {
+    const h = document.createElement('h4');
+    h.textContent = 'Variables';
+    content.appendChild(h);
+    const dl = document.createElement('dl');
+    dl.className = 'dataset-info-vars';
+    for (const [varName, desc] of Object.entries(ds.variableDescriptions)) {
+      // Find the label from the variables array if available
+      const varMeta = ds.variables?.find(/** @param {any} v */ v => v.name === varName);
+      const dt = document.createElement('dt');
+      dt.textContent = varMeta?.label || varName;
+      dl.appendChild(dt);
+      const dd = document.createElement('dd');
+      dd.textContent = /** @type {string} */ (desc);
+      dl.appendChild(dd);
+    }
+    content.appendChild(dl);
+  }
+
+  if (hasSource) {
+    const p = document.createElement('p');
+    p.className = 'dataset-info-source';
+    const em = document.createElement('em');
+    em.textContent = `Source: ${ds.sourceDetail}`;
+    p.appendChild(em);
+    content.appendChild(p);
+  }
+
+  details.appendChild(content);
+  panel.appendChild(details);
 }
 
 /**
@@ -1132,9 +1205,12 @@ export function initDataPanel(config) {
   const dataPanelEl = document.getElementById('data-panel');
   const dataPreviewEl = document.getElementById('data-preview');
 
+  /** @type {object|undefined} */
+  let lastLoadedDataset;
+
   function postLoadUI() {
     if (showPreview && dataPreviewEl) dataPreviewEl.hidden = false;
-    if (autoCollapse) collapseDataPanel(dataPanelEl);
+    if (autoCollapse) collapseDataPanel(dataPanelEl, lastLoadedDataset);
     if (stickyControls) {
       const ctrl = document.getElementById('controls');
       if (ctrl) ctrl.classList.add('sticky');
@@ -1218,6 +1294,7 @@ export function initDataPanel(config) {
         .then(ds => {
           currentDatasetId = id;
           currentSourceName = meta?.name || ds.name || id;
+          lastLoadedDataset = ds;
           onDataset(ds, meta);
           // Populate editor with dataset as CSV
           if (ds.rows && ds.variables) {
@@ -1250,6 +1327,7 @@ export function initDataPanel(config) {
       const text = pasteArea.value.trim();
       if (!text) return;
       currentSourceName = 'edited_data';
+      lastLoadedDataset = undefined;
       handleText(text, 'Edited data');
       postLoadUI();
     });
@@ -1258,6 +1336,7 @@ export function initDataPanel(config) {
   // ── File input ──
   if (fileInput) {
     setupFileInput(fileInput, (text, filename) => {
+      lastLoadedDataset = undefined;
       handleText(text, filename);
       populateEditor(text, filename);
       postLoadUI();

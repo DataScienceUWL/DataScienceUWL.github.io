@@ -117,6 +117,8 @@ export function initSimPage(config) {
   /** Dataset context for natural-language interpretations. */
   /** @type {{population?:string, parameter?:string, unit?:string, nullClaim?:string, successLabel?:string}} */
   let datasetContext = {};
+  /** Full dataset JSON for info panel. @type {object|undefined} */
+  let currentDatasetJSON;
 
   /** Track current data source name for save filename. */
   let currentSourceName = 'data';
@@ -798,7 +800,7 @@ export function initSimPage(config) {
     // Mechanism strip is deferred until first generate click (see generateSamples)
 
     // Collapse data panel to compact summary bar
-    collapseDataPanel(dataPanel);
+    collapseDataPanel(dataPanel, currentDatasetJSON);
 
     // Make controls sticky on desktop
     controlsSection?.classList.add('sticky');
@@ -1015,6 +1017,7 @@ export function initSimPage(config) {
         hideVarSelector();
         selectedVarName = '';
         datasetContext = ds.context || {};
+        currentDatasetJSON = ds;
 
         if (config.paired) {
           // Paired data: two numeric columns
