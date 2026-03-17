@@ -90,7 +90,7 @@ presetSelect.addEventListener('change', () => {
 
 // Undo / Clear
 undoBtn.addEventListener('click', undo);
-clearBtn.addEventListener('click', clearAll);
+clearBtn.addEventListener('click', resetData);
 
 // Boxplot toggle
 boxplotCheck.addEventListener('change', () => {
@@ -163,12 +163,14 @@ function undo() {
   announce('Undo.');
 }
 
-function clearAll() {
-  if (values.length === 0) return;
+function resetData() {
   pushHistory();
-  values = [];
+  const preset = PRESETS[/** @type {keyof typeof PRESETS} */ (presetSelect.value)];
+  values = preset ? [...preset] : [];
   render();
-  announce('Cleared all points.');
+  announce(preset && preset.length > 0
+    ? `Reset to ${presetSelect.value} preset. ${values.length} points.`
+    : 'Cleared all points.');
 }
 
 function addPoint(val) {
