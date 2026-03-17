@@ -30,7 +30,7 @@ const DOT_RADIUS = window.matchMedia('(max-width: 600px)').matches ? 11 : 7;
 const MAX_HISTORY = 100;
 const VIEW_WIDTH = 600;
 const VIEW_HEIGHT = 340;
-const MARGIN = { top: 20, right: 20, bottom: 55, left: 20 };
+const MARGIN = { top: 20, right: 20, bottom: 65, left: 20 };
 
 // ─── DOM refs ───
 
@@ -279,35 +279,40 @@ function render() {
     const m = mean(values);
     const med = median(values);
     const markerY = frame.height + 18;
-    const triSize = 6;
+    const triSize = 7;
 
-    // Mean marker (triangle pointing up toward axis)
     const mx = xScale(m);
+    const medX = xScale(med);
+    const tooClose = Math.abs(medX - mx) < 55; // viewBox units — ~width of "Mean: 8.0"
+
+    // Mean triangle
     g.append('polygon')
       .attr('points', `${mx - triSize},${markerY + triSize} ${mx + triSize},${markerY + triSize} ${mx},${markerY}`)
       .attr('fill', MEAN_COLOR)
       .attr('pointer-events', 'none');
-    g.append('text')
-      .attr('class', 'marker-label')
-      .attr('x', mx)
-      .attr('y', markerY + triSize + 12)
-      .attr('text-anchor', 'middle')
-      .attr('fill', MEAN_COLOR)
-      .text(`Mean: ${formatStat(m, 0)}`);
 
-    // Median marker
-    const medX = xScale(med);
-    // Only draw if it's not on top of the mean marker
+    // Median triangle (skip if exactly on top of mean)
     if (Math.abs(medX - mx) > 3) {
       g.append('polygon')
         .attr('points', `${medX - triSize},${markerY + triSize} ${medX + triSize},${markerY + triSize} ${medX},${markerY}`)
         .attr('fill', MEDIAN_COLOR)
         .attr('pointer-events', 'none');
     }
+
+    // Mean label — always on first row
+    g.append('text')
+      .attr('class', 'marker-label')
+      .attr('x', mx)
+      .attr('y', markerY + triSize + 14)
+      .attr('text-anchor', 'middle')
+      .attr('fill', MEAN_COLOR)
+      .text(`Mean: ${formatStat(m, 0)}`);
+
+    // Median label — drop to second row if too close to mean
     g.append('text')
       .attr('class', 'marker-label')
       .attr('x', medX)
-      .attr('y', markerY + triSize + 24)
+      .attr('y', markerY + triSize + (tooClose ? 28 : 14))
       .attr('text-anchor', 'middle')
       .attr('fill', MEDIAN_COLOR)
       .text(`Median: ${formatStat(med, 0)}`);
