@@ -422,33 +422,36 @@ function drawInlineBoxplot(parent, xScale, frozen, currentValues, bandHeight) {
     .attr('y1', bandHeight).attr('y2', bandHeight)
     .attr('stroke', '#ddd').attr('stroke-width', 0.5).attr('stroke-dasharray', '4,3');
 
+  // Mobile: bolder strokes and taller boxes so they're visible on small screens
+  const sw = IS_MOBILE ? 3 : 2;
+
   if (frozen && hasLive) {
     // Two boxplots (challenge mode): parallel rows
     const targetY = bandHeight * 0.28;
     const liveY = bandHeight * 0.72;
-    const boxHalf = 9;
+    const boxHalf = IS_MOBILE ? 12 : 9;
 
     drawOneBoxplot(bpGroup, xScale, frozen, targetY, boxHalf, {
-      fill: '#fff3cd', stroke: '#b8860b', strokeWidth: 2, dasharray: '', opacity: 0.9, label: 'Target',
+      fill: '#fff3cd', stroke: '#b8860b', strokeWidth: sw, dasharray: '', opacity: 0.9, label: 'Target',
     });
 
     const live = computeBoxplotStats(currentValues);
     drawOneBoxplot(bpGroup, xScale, live, liveY, boxHalf, {
-      fill: 'rgba(86,155,189,0.15)', stroke: '#569BBD', strokeWidth: 2, dasharray: '', opacity: 1, label: 'Yours',
+      fill: 'rgba(86,155,189,0.15)', stroke: '#569BBD', strokeWidth: sw, dasharray: '', opacity: 1, label: 'Yours',
     });
   } else {
     // Single boxplot (either target-only or live-only)
     const midY = bandHeight / 2;
-    const boxHalf = 14;
+    const boxHalf = IS_MOBILE ? 18 : 14;
 
     if (frozen) {
       drawOneBoxplot(bpGroup, xScale, frozen, midY, boxHalf, {
-        fill: '#fff3cd', stroke: '#b8860b', strokeWidth: 2, dasharray: '', opacity: 0.9, label: 'Target',
+        fill: '#fff3cd', stroke: '#b8860b', strokeWidth: sw, dasharray: '', opacity: 0.9, label: 'Target',
       });
     } else if (hasLive) {
       const live = computeBoxplotStats(currentValues);
       drawOneBoxplot(bpGroup, xScale, live, midY, boxHalf, {
-        fill: 'rgba(86,155,189,0.15)', stroke: '#569BBD', strokeWidth: 2, dasharray: '', opacity: 1, label: '',
+        fill: 'rgba(86,155,189,0.15)', stroke: '#569BBD', strokeWidth: sw, dasharray: '', opacity: 1, label: '',
       });
     }
   }
@@ -481,14 +484,15 @@ function drawOneBoxplot(parent, xScale, stats, midY, boxHalf, style) {
     .attr('stroke-dasharray', style.dasharray);
 
   // Whisker caps
+  const capFrac = IS_MOBILE ? 0.7 : 0.5;
   bp.append('line')
     .attr('x1', xScale(stats.whiskerLo)).attr('x2', xScale(stats.whiskerLo))
-    .attr('y1', midY - boxHalf * 0.5).attr('y2', midY + boxHalf * 0.5)
+    .attr('y1', midY - boxHalf * capFrac).attr('y2', midY + boxHalf * capFrac)
     .attr('stroke', style.stroke).attr('stroke-width', style.strokeWidth);
 
   bp.append('line')
     .attr('x1', xScale(stats.whiskerHi)).attr('x2', xScale(stats.whiskerHi))
-    .attr('y1', midY - boxHalf * 0.5).attr('y2', midY + boxHalf * 0.5)
+    .attr('y1', midY - boxHalf * capFrac).attr('y2', midY + boxHalf * capFrac)
     .attr('stroke', style.stroke).attr('stroke-width', style.strokeWidth);
 
   // Box (Q1 to Q3)
@@ -517,10 +521,10 @@ function drawOneBoxplot(parent, xScale, stats, midY, boxHalf, style) {
       .attr('class', 'bp-outlier')
       .attr('cx', d => xScale(d))
       .attr('cy', midY)
-      .attr('r', 3)
+      .attr('r', IS_MOBILE ? 5 : 3)
       .attr('fill', 'none')
       .attr('stroke', style.stroke)
-      .attr('stroke-width', 1);
+      .attr('stroke-width', IS_MOBILE ? 2 : 1);
   }
 
   // Label (for frozen)
