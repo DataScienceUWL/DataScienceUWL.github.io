@@ -109,7 +109,13 @@ export function drawBarChart(container, values, options = {}) {
   } = options;
 
   const isGrouped = groupValues != null && (mode === 'stacked' || mode === 'dodged' || mode === 'filled');
-  const frame = createChart(container, { titleText, descText, id, margin });
+  // Categorical x-axis needs more bottom margin on phone for rotated labels
+  const isPhone = typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 480px)').matches;
+  const effectiveMargin = margin || (isPhone
+    ? { top: 30, right: 15, bottom: 70, left: 55 }
+    : undefined);
+  const frame = createChart(container, { titleText, descText, id, margin: effectiveMargin });
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
   /** @type {{ categories: string[], colors: string[] } | undefined} */
@@ -189,9 +195,10 @@ function drawSimpleBars(frame, values, mode, opts) {
   axes.append('g').attr('class', 'y-axis').call(yAxis);
 
   // Rotate category labels if they overlap (common on phone with many categories)
-  autoRotateLabels(xAxisG, frame.margin.bottom);
+  const rotated = autoRotateLabels(xAxisG, frame.margin.bottom);
 
-  if (opts.xLabel) {
+  // Hide x-axis title when labels are rotated — it overlaps and is redundant
+  if (opts.xLabel && !rotated) {
     axes.append('text')
       .attr('class', 'x-label')
       .attr('text-anchor', 'middle')
@@ -374,9 +381,9 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
     const xAxisG2 = axes.append('g').attr('class', 'x-axis')
       .attr('transform', `translate(0, ${frame.height})`).call(d3Axis.axisBottom(xScale));
     axes.append('g').attr('class', 'y-axis').call(yAxisDodged);
-    autoRotateLabels(xAxisG2, frame.margin.bottom);
+    const rotated2 = autoRotateLabels(xAxisG2, frame.margin.bottom);
 
-    if (opts.xLabel) {
+    if (opts.xLabel && !rotated2) {
       axes.append('text').attr('class', 'x-label').attr('text-anchor', 'middle')
         .attr('x', frame.width / 2).attr('y', frame.height + frame.margin.bottom - 8).text(opts.xLabel);
     }
@@ -419,9 +426,9 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
     const xAxisG3 = axes.append('g').attr('class', 'x-axis')
       .attr('transform', `translate(0, ${frame.height})`).call(d3Axis.axisBottom(xScale));
     axes.append('g').attr('class', 'y-axis').call(yAxisStacked);
-    autoRotateLabels(xAxisG3, frame.margin.bottom);
+    const rotated3 = autoRotateLabels(xAxisG3, frame.margin.bottom);
 
-    if (opts.xLabel) {
+    if (opts.xLabel && !rotated3) {
       axes.append('text').attr('class', 'x-label').attr('text-anchor', 'middle')
         .attr('x', frame.width / 2).attr('y', frame.height + frame.margin.bottom - 8).text(opts.xLabel);
     }

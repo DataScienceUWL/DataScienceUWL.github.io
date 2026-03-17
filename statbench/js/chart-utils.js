@@ -297,19 +297,37 @@ function detectPhoneMargin() {
 
 /**
  * Auto-rotate x-axis categorical tick labels when they overlap horizontally.
- * Rotates to -35 degrees and adjusts anchor/position. Call after axis render.
+ * Rotates to -40 degrees, truncates labels that would overflow the bottom margin,
+ * and returns true if rotation was applied (so caller can hide x-axis title).
+ *
  * @param {d3Selection.Selection} axisG - The x-axis <g> element
- * @param {number} maxBottomMargin - Available bottom margin for rotated labels
+ * @param {number} maxBottomMargin - Available bottom margin (viewBox units)
+ * @returns {boolean} Whether rotation was applied
  */
 export function autoRotateLabels(axisG, maxBottomMargin) {
   const tickTexts = axisG.selectAll('.tick text').nodes();
-  if (!tickTexts.length || !_ticksOverlap(tickTexts)) return;
+  if (!tickTexts.length || !_ticksOverlap(tickTexts)) return false;
+
+  // Max label length (in characters) that fits within bottom margin at -40°.
+  // At ~7 viewBox units per char, rotated height ≈ len * 7 * sin(40°) ≈ len * 4.5.
+  // Leave 12 units for tick mark + gap.
+  const maxChars = Math.max(8, Math.floor((maxBottomMargin - 12) / 4.5));
+
+  axisG.selectAll('.tick text').each(function () {
+    const el = d3Selection.select(this);
+    const text = el.text();
+    if (text.length > maxChars) {
+      el.text(text.slice(0, maxChars - 1) + '…');
+    }
+  });
 
   axisG.selectAll('.tick text')
     .attr('text-anchor', 'end')
     .attr('dx', '-0.5em')
-    .attr('dy', '0.25em')
-    .attr('transform', 'rotate(-35)');
+    .attr('dy', '0.15em')
+    .attr('transform', 'rotate(-40)');
+
+  return true;
 }
 
 /**
