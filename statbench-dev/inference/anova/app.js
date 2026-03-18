@@ -9,6 +9,7 @@ import * as jstatModule from 'jstat';
 import { setJStat, pdfF, fInv } from '../../js/distributions.js';
 import { anovaF, anovaFSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
+import { drawBoxplot } from '../../js/boxplot.js';
 import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText, buildSimLink, parseGroupSummary } from '../../js/page-utils.js';
 import { parseParams } from '../../js/url-params.js';
 import { mean, sd, detectPrecision, formatStat } from '../../js/stats.js';
@@ -310,8 +311,7 @@ function clearData() {
   if (dataPreview) dataPreview.hidden = true;
   if (varSelectorsDiv) varSelectorsDiv.hidden = true;
   if (chartContainer) chartContainer.innerHTML = '';
-  if (boxplotContainer) boxplotContainer.innerHTML = '';
-  if (conditionsWarning) conditionsWarning.hidden = true;
+  if (conditionsCheckpoint) conditionsCheckpoint.hidden = true;
   if (resultDiv) {
     resultDiv.innerHTML = `<p class="placeholder">${getTabHintText(getActiveTabId(), 'enter data to see results')}</p>`;
   }
@@ -331,39 +331,66 @@ function runAnalysis() {
 
   renderChart(result);
   renderResults(result);
-  showConditionsCheckpoint(result);
+  showConditionsCheckpoint();
   announceResult(result);
 }
 
 // ── Conditions checkpoint ────────────────────────────────────────────
 
 /**
- * Show a "Check Conditions" link that opens the appropriate explore page.
- * Does NOT auto-diagnose — students must figure out what to look for.
- * @param {import('../../js/inference.js').AnovaResult} r
+ * Show an expandable "Check Conditions" panel with inline diagnostic plots.
+ * Does NOT auto-diagnose — students view the plots and decide for themselves.
  */
-function showConditionsCheckpoint(r) {
+function showConditionsCheckpoint() {
   if (!conditionsCheckpoint) return;
 
   const dsId = dataPanel.currentDatasetId;
-  const responseVar = responseVarSelect?.value || '';
-  const groupVar = groupVarSelect?.value || '';
-
-  // Link to grouped explore page with dataset pre-loaded
-  const exploreLink = dsId
-    ? buildSimLink('explore/grouped/', { dataset: dsId, params: { x: groupVar, y: responseVar } })
-    : buildSimLink('explore/grouped/');
-
-  // Link to simulation alternative
   const simLink = dsId
     ? buildSimLink('simulate/randomization-anova/', { dataset: dsId })
     : buildSimLink('simulate/randomization-anova/');
 
+  const hasRawData = !fromSummary && Object.keys(groupedData).length > 0;
+
   conditionsCheckpoint.innerHTML = `
-    <p><strong>Before interpreting:</strong> Have you checked the
-    <a href="${exploreLink}">conditions for the F-test</a>?</p>
-    <p>Alternative: <a href="${simLink}">ANOVA Randomization Test</a> (no conditions required).</p>`;
+    <p>${hasRawData
+      ? '<button type="button" class="conditions-toggle" aria-expanded="false" aria-controls="conditions-panel">Check Conditions</button>'
+      : '<strong>Check Conditions</strong> (no raw data available for diagnostic plots)'}
+    &nbsp; | &nbsp; Alternative: <a href="${simLink}">ANOVA Randomization Test</a> (no conditions required).</p>
+    ${hasRawData ? '<div id="conditions-panel" class="conditions-panel" hidden><div id="conditions-chart"></div></div>' : ''}`;
   conditionsCheckpoint.hidden = false;
+
+  // Wire up toggle
+  const toggle = conditionsCheckpoint.querySelector('.conditions-toggle');
+  const panel = conditionsCheckpoint.querySelector('#conditions-panel');
+  const chartEl = conditionsCheckpoint.querySelector('#conditions-chart');
+  if (toggle && panel && chartEl) {
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      panel.hidden = expanded;
+      if (!expanded && chartEl.children.length === 0) {
+        renderConditionsChart(/** @type {HTMLElement} */ (chartEl));
+      }
+    });
+  }
+}
+
+/**
+ * Render diagnostic plots into the conditions panel.
+ * @param {HTMLElement} container
+ */
+function renderConditionsChart(container) {
+  if (Object.keys(groupedData).length === 0) return;
+  const responseVar = responseVarSelect?.value || '';
+
+  drawBoxplot(container, groupedData, {
+    xLabel: responseVar,
+    titleText: `Boxplot of ${responseVar} by group`,
+    descText: `Side-by-side boxplots comparing ${responseVar} across ${groupNames.length} groups.`,
+    id: 'conditions-boxplots',
+    animate: false,
+    showOutliers: true,
+  });
 }
 
 // ── Chart rendering ─────────────────────────────────────────────────
@@ -552,7 +579,7 @@ function loadFromSummaryStats(names, nArr, meanArr, sdArr) {
   const result = anovaFSummary(meanArr, sdArr, nArr, names);
   renderChart(result);
   renderResults(result);
-  showConditionsCheckpoint(result);
+  showConditionsCheckpoint();
   announce(`Loaded summary: ${names.length} groups.`);
 }
 

@@ -9,6 +9,7 @@ import * as jstatModule from 'jstat';
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { twoMeanT, twoMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
+import { drawBoxplot } from '../../js/boxplot.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 
 initHelp();
@@ -308,26 +309,56 @@ function runAnalysis() {
   }
 
   // Conditions checkpoint
-  if (conditionsCheckpoint) {
-    const dsId = dataPanel.currentDatasetId;
-    const groupVar = groupVarSelect?.value || '';
-    const responseVar = responseVarSelect?.value || '';
-    const exploreLink = dsId
-      ? buildSimLink('explore/grouped/', { dataset: dsId, params: { x: groupVar, y: responseVar } })
-      : buildSimLink('explore/grouped/');
-    const bootLink = dsId
-      ? buildSimLink('simulate/bootstrap-two-means/', { dataset: dsId })
-      : buildSimLink('simulate/bootstrap-two-means/');
-    conditionsCheckpoint.innerHTML = `
-      <p><strong>Before interpreting:</strong> Have you checked the
-      <a href="${exploreLink}">conditions for the two-sample t-test</a>?</p>
-      <p>Alternative: <a href="${bootLink}">Bootstrap CI</a> (no conditions required).</p>`;
-    conditionsCheckpoint.hidden = false;
-  }
+  showConditionsCheckpoint();
 
   renderChart(result);
   renderResults(result);
   announceResult(result);
+}
+
+// ── Conditions checkpoint ────────────────────────────────────────────
+
+function showConditionsCheckpoint() {
+  if (!conditionsCheckpoint) return;
+
+  const dsId = dataPanel.currentDatasetId;
+  const bootLink = dsId
+    ? buildSimLink('simulate/bootstrap-two-means/', { dataset: dsId })
+    : buildSimLink('simulate/bootstrap-two-means/');
+
+  const hasRawData = !fromSummary && group1.length > 0 && group2.length > 0;
+
+  conditionsCheckpoint.innerHTML = `
+    <p>${hasRawData
+      ? '<button type="button" class="conditions-toggle" aria-expanded="false" aria-controls="conditions-panel">Check Conditions</button>'
+      : '<strong>Check Conditions</strong> (no raw data available for diagnostic plots)'}
+    &nbsp; | &nbsp; Alternative: <a href="${bootLink}">Bootstrap CI</a> (no conditions required).</p>
+    ${hasRawData ? '<div id="conditions-panel" class="conditions-panel" hidden><div id="conditions-chart"></div></div>' : ''}`;
+  conditionsCheckpoint.hidden = false;
+
+  const toggle = conditionsCheckpoint.querySelector('.conditions-toggle');
+  const panel = conditionsCheckpoint.querySelector('#conditions-panel');
+  const chartEl = conditionsCheckpoint.querySelector('#conditions-chart');
+  if (toggle && panel && chartEl) {
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      panel.hidden = expanded;
+      if (!expanded && chartEl.children.length === 0) {
+        const responseVar = responseVarSelect?.value || '';
+        drawBoxplot(/** @type {HTMLElement} */ (chartEl),
+          { [group1Name]: group1, [group2Name]: group2 },
+          {
+            xLabel: responseVar,
+            titleText: `Boxplot of ${responseVar} by group`,
+            descText: `Side-by-side boxplots comparing ${responseVar} between ${group1Name} and ${group2Name}.`,
+            id: 'conditions-boxplots',
+            animate: false,
+            showOutliers: true,
+          });
+      }
+    });
+  }
 }
 
 // ── Chart rendering ─────────────────────────────────────────────────

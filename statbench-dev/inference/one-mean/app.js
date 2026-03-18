@@ -8,6 +8,7 @@
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { oneMeanT, oneMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
+import { drawBoxplot } from '../../js/boxplot.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 
 initHelp();
@@ -275,21 +276,7 @@ function showResults() {
     : detectPrecision(currentData);
 
   // Conditions checkpoint
-  if (conditionsCheckpoint) {
-    const dsId = dataPanel.currentDatasetId;
-    const varName = varSelect?.value || '';
-    const exploreLink = dsId
-      ? buildSimLink('explore/descriptive/', { dataset: dsId, params: { var: varName } })
-      : buildSimLink('explore/descriptive/');
-    const bootLink = dsId
-      ? buildSimLink('simulate/bootstrap-mean/', { dataset: dsId })
-      : buildSimLink('simulate/bootstrap-mean/');
-    conditionsCheckpoint.innerHTML = `
-      <p><strong>Before interpreting:</strong> Have you checked the
-      <a href="${exploreLink}">conditions for the one-sample t-test</a>?</p>
-      <p>Alternative: <a href="${bootLink}">Bootstrap CI</a> (no conditions required).</p>`;
-    conditionsCheckpoint.hidden = false;
-  }
+  showConditionsCheckpoint();
 
   // Show sections
   controlsSection.hidden = false;
@@ -388,6 +375,49 @@ function renderResults(r, d, mu0, alternative, confLevel) {
       <p>${confPct}% CI for ${tex('\\mu')}: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>
     </div>
   `;
+}
+
+// ── Conditions checkpoint ────────────────────────────────────────────
+
+function showConditionsCheckpoint() {
+  if (!conditionsCheckpoint) return;
+
+  const dsId = dataPanel.currentDatasetId;
+  const bootLink = dsId
+    ? buildSimLink('simulate/bootstrap-mean/', { dataset: dsId })
+    : buildSimLink('simulate/bootstrap-mean/');
+
+  const hasRawData = !fromSummary && currentData && currentData.length > 0;
+
+  conditionsCheckpoint.innerHTML = `
+    <p>${hasRawData
+      ? '<button type="button" class="conditions-toggle" aria-expanded="false" aria-controls="conditions-panel">Check Conditions</button>'
+      : '<strong>Check Conditions</strong> (no raw data available for diagnostic plots)'}
+    &nbsp; | &nbsp; Alternative: <a href="${bootLink}">Bootstrap CI</a> (no conditions required).</p>
+    ${hasRawData ? '<div id="conditions-panel" class="conditions-panel" hidden><div id="conditions-chart"></div></div>' : ''}`;
+  conditionsCheckpoint.hidden = false;
+
+  const toggle = conditionsCheckpoint.querySelector('.conditions-toggle');
+  const panel = conditionsCheckpoint.querySelector('#conditions-panel');
+  const chartEl = conditionsCheckpoint.querySelector('#conditions-chart');
+  if (toggle && panel && chartEl) {
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      panel.hidden = expanded;
+      if (!expanded && chartEl.children.length === 0) {
+        const varName = varSelect?.value || '';
+        drawBoxplot(/** @type {HTMLElement} */ (chartEl), /** @type {number[]} */ (currentData), {
+          xLabel: varName,
+          titleText: `Boxplot of ${varName}`,
+          descText: `Boxplot showing the distribution of ${varName}.`,
+          id: 'conditions-boxplot',
+          animate: false,
+          showOutliers: true,
+        });
+      }
+    });
+  }
 }
 
 /**

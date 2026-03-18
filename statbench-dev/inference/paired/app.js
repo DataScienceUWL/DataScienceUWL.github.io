@@ -8,6 +8,7 @@
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { pairedT, pairedTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
+import { drawBoxplot } from '../../js/boxplot.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 
 initHelp();
@@ -247,20 +248,7 @@ function showResults() {
     : detectPrecision(currentDiffs);
 
   // Conditions checkpoint
-  if (conditionsCheckpoint) {
-    const dsId = dataPanel.currentDatasetId;
-    const exploreLink = dsId
-      ? buildSimLink('explore/descriptive/', { dataset: dsId })
-      : buildSimLink('explore/descriptive/');
-    const bootLink = dsId
-      ? buildSimLink('simulate/bootstrap-paired/', { dataset: dsId })
-      : buildSimLink('simulate/bootstrap-paired/');
-    conditionsCheckpoint.innerHTML = `
-      <p><strong>Before interpreting:</strong> Have you checked the
-      <a href="${exploreLink}">conditions for the paired t-test</a>?</p>
-      <p>Alternative: <a href="${bootLink}">Bootstrap Paired CI</a> (no conditions required).</p>`;
-    conditionsCheckpoint.hidden = false;
-  }
+  showConditionsCheckpoint();
 
   controlsSection.hidden = false;
   chartAndResults.hidden = false;
@@ -273,6 +261,51 @@ function showResults() {
     `p-value = ${formatStat(result.pValue, d, 'pvalue')}. ` +
     `${(confLevel * 100).toFixed(0)}% CI: (${formatStat(result.ciLower, d)}, ${formatStat(result.ciUpper, d)}).`
   );
+}
+
+// ── Conditions checkpoint ────────────────────────────────────────────
+
+function showConditionsCheckpoint() {
+  if (!conditionsCheckpoint) return;
+
+  const dsId = dataPanel.currentDatasetId;
+  const bootLink = dsId
+    ? buildSimLink('simulate/bootstrap-paired/', { dataset: dsId })
+    : buildSimLink('simulate/bootstrap-paired/');
+
+  const hasRawData = !fromSummary && currentDiffs && currentDiffs.length > 0;
+
+  conditionsCheckpoint.innerHTML = `
+    <p>${hasRawData
+      ? '<button type="button" class="conditions-toggle" aria-expanded="false" aria-controls="conditions-panel">Check Conditions</button>'
+      : '<strong>Check Conditions</strong> (no raw data available for diagnostic plots)'}
+    &nbsp; | &nbsp; Alternative: <a href="${bootLink}">Bootstrap Paired CI</a> (no conditions required).</p>
+    ${hasRawData ? '<div id="conditions-panel" class="conditions-panel" hidden><div id="conditions-chart"></div></div>' : ''}`;
+  conditionsCheckpoint.hidden = false;
+
+  const toggle = conditionsCheckpoint.querySelector('.conditions-toggle');
+  const panel = conditionsCheckpoint.querySelector('#conditions-panel');
+  const chartEl = conditionsCheckpoint.querySelector('#conditions-chart');
+  if (toggle && panel && chartEl) {
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      panel.hidden = expanded;
+      if (!expanded && chartEl.children.length === 0) {
+        const diffLabel = var1Name && var2Name
+          ? `${var1Name} \u2212 ${var2Name}`
+          : 'Differences';
+        drawBoxplot(/** @type {HTMLElement} */ (chartEl), /** @type {number[]} */ (currentDiffs), {
+          xLabel: diffLabel,
+          titleText: `Boxplot of paired differences`,
+          descText: `Boxplot showing the distribution of paired differences.`,
+          id: 'conditions-boxplot',
+          animate: false,
+          showOutliers: true,
+        });
+      }
+    });
+  }
 }
 
 /**

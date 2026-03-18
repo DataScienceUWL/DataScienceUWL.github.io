@@ -8,6 +8,7 @@
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { slopeT, slopeTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
+import { drawScatterplot } from '../../js/scatterplot.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 
 initHelp();
@@ -44,6 +45,9 @@ const dataSummary = document.getElementById('data-summary');
 let currentRows = [];
 /** @type {string[]} */
 let numericColumns = [];
+
+/** @type {import('../../js/inference.js').SlopeResult|null} */
+let lastSlopeResult = null;
 
 // Summary-input state
 let fromSummary = false;
@@ -245,23 +249,9 @@ function showResults() {
   controlsSection.hidden = false;
   chartAndResults.hidden = false;
 
-  // Conditions checkpoint
-  if (conditionsCheckpoint) {
-    const dsId = dataPanel.currentDatasetId;
-    const xVar = xVarSelect?.value || '';
-    const yVar = yVarSelect?.value || '';
-    const exploreLink = dsId
-      ? buildSimLink('explore/regression/', { dataset: dsId, params: { x: xVar, y: yVar } })
-      : buildSimLink('explore/regression/');
-    const bootLink = dsId
-      ? buildSimLink('simulate/bootstrap-slope/', { dataset: dsId })
-      : buildSimLink('simulate/bootstrap-slope/');
-    conditionsCheckpoint.innerHTML = `
-      <p><strong>Before interpreting:</strong> Have you checked the
-      <a href="${exploreLink}">conditions for the slope t-test</a>?</p>
-      <p>Alternative: <a href="${bootLink}">Bootstrap Slope CI</a> (no conditions required).</p>`;
-    conditionsCheckpoint.hidden = false;
-  }
+  // Conditions checkpoint — store current result for residual plot
+  lastSlopeResult = fromSummary ? null : result;
+  showConditionsCheckpoint();
 
   drawChart(result);
   renderResults(result, d, alternative, confLevel);
@@ -271,6 +261,63 @@ function showResults() {
     `p-value = ${formatStat(result.pValue, d, 'pvalue')}. ` +
     `${(confLevel * 100).toFixed(0)}% CI: (${formatStat(result.ciLower, d)}, ${formatStat(result.ciUpper, d)}).`
   );
+}
+
+// ── Conditions checkpoint ────────────────────────────────────────────
+
+function showConditionsCheckpoint() {
+  if (!conditionsCheckpoint) return;
+
+  const dsId = dataPanel.currentDatasetId;
+  const bootLink = dsId
+    ? buildSimLink('simulate/bootstrap-slope/', { dataset: dsId })
+    : buildSimLink('simulate/bootstrap-slope/');
+
+  const hasRawData = !fromSummary && lastSlopeResult != null;
+
+  conditionsCheckpoint.innerHTML = `
+    <p>${hasRawData
+      ? '<button type="button" class="conditions-toggle" aria-expanded="false" aria-controls="conditions-panel">Check Conditions</button>'
+      : '<strong>Check Conditions</strong> (no raw data available for diagnostic plots)'}
+    &nbsp; | &nbsp; Alternative: <a href="${bootLink}">Bootstrap Slope CI</a> (no conditions required).</p>
+    ${hasRawData ? '<div id="conditions-panel" class="conditions-panel" hidden><div id="conditions-chart"></div></div>' : ''}`;
+  conditionsCheckpoint.hidden = false;
+
+  const toggle = conditionsCheckpoint.querySelector('.conditions-toggle');
+  const panel = conditionsCheckpoint.querySelector('#conditions-panel');
+  const chartEl = conditionsCheckpoint.querySelector('#conditions-chart');
+  if (toggle && panel && chartEl) {
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      panel.hidden = expanded;
+      if (!expanded && chartEl.children.length === 0) {
+        renderResidualPlot(/** @type {HTMLElement} */ (chartEl));
+      }
+    });
+  }
+}
+
+/**
+ * Render a residual plot (fitted values vs residuals) for condition checking.
+ * @param {HTMLElement} container
+ */
+function renderResidualPlot(container) {
+  if (!lastSlopeResult) return;
+  const pair = extractXY();
+  if (!pair) return;
+
+  const { slope, intercept } = lastSlopeResult;
+  const fitted = pair.x.map(xi => intercept + slope * xi);
+  const residuals = pair.y.map((yi, i) => yi - fitted[i]);
+
+  drawScatterplot(container, fitted, residuals, {
+    xLabel: 'Fitted values',
+    yLabel: 'Residuals',
+    titleText: 'Residual plot',
+    descText: 'Residuals vs fitted values for checking regression conditions.',
+    id: 'conditions-residuals',
+  });
 }
 
 /**
