@@ -64,6 +64,10 @@ let handleRightY = 0;
 /** @type {ReturnType<typeof linreg> | null} */
 let lsResult = null;
 
+/** Cached LAD (L1) regression result. */
+/** @type {{ slope: number, intercept: number, sae: number } | null} */
+let ladResult = null;
+
 /** Current D3 scales and frame (set by renderChart). */
 /** @type {d3Scale.ScaleLinear<number,number> | null} */ let xScale = null;
 /** @type {d3Scale.ScaleLinear<number,number> | null} */ let yScale = null;
@@ -135,6 +139,62 @@ function computeResiduals(slope, intercept) {
     const sse = residuals.reduce((s, e) => s + e * e, 0);
     const sae = residuals.reduce((s, e) => s + Math.abs(e), 0);
     return { residuals, sse, sae };
+}
+
+/**
+ * Compute the Least Absolute Deviations (L1) regression line.
+ * The optimal LAD line passes through at least two data points.
+ * For n ≤ 50, check all pairs; for larger n, sample random pairs.
+ * @param {number[]} xs
+ * @param {number[]} ys
+ * @returns {{ slope: number, intercept: number, sae: number }}
+ */
+function ladRegression(xs, ys) {
+    const n = xs.length;
+    if (n < 2) return { slope: 0, intercept: 0, sae: 0 };
+
+    let bestSlope = 0;
+    let bestIntercept = 0;
+    let bestSae = Infinity;
+
+    /**
+     * @param {number} i
+     * @param {number} j
+     */
+    function tryPair(i, j) {
+        const dx = xs[j] - xs[i];
+        if (Math.abs(dx) < 1e-12) return;
+        const slope = (ys[j] - ys[i]) / dx;
+        const intercept = ys[i] - slope * xs[i];
+        let sae = 0;
+        for (let k = 0; k < n; k++) {
+            sae += Math.abs(ys[k] - (intercept + slope * xs[k]));
+        }
+        if (sae < bestSae) {
+            bestSae = sae;
+            bestSlope = slope;
+            bestIntercept = intercept;
+        }
+    }
+
+    if (n <= 50) {
+        // Exact: all n(n-1)/2 pairs
+        for (let i = 0; i < n - 1; i++) {
+            for (let j = i + 1; j < n; j++) {
+                tryPair(i, j);
+            }
+        }
+    } else {
+        // Heuristic: sample 200 random pairs
+        for (let k = 0; k < 200; k++) {
+            const i = Math.floor(Math.random() * n);
+            let j;
+            do { j = Math.floor(Math.random() * n); } while (j === i);
+            tryPair(i, j);
+        }
+    }
+
+    return { slope: bestSlope, intercept: bestIntercept, sae: bestSae };
 }
 
 /**
@@ -215,8 +275,9 @@ function renderChart() {
         return;
     }
 
-    // Compute LS regression
+    // Compute LS and LAD regression
     lsResult = linreg(xData, yData);
+    ladResult = ladRegression(xData, yData);
     dataPrecision = Math.max(detectPrecision(xData), detectPrecision(yData));
 
     // Clear and create chart frame
@@ -276,7 +337,7 @@ function renderChart() {
     // Draw interactive layers
     drawUserLine();
     drawResidualLayer();
-    drawLsLine();
+    drawBestFitLine();
     setupLineDrag();
     updateMetricOverlay();
 
@@ -518,21 +579,24 @@ function drawResidualLayer() {
     }
 }
 
-/** Draw or update the LS regression line. */
-function drawLsLine() {
-    if (!frame || !xScale || !yScale || !lsResult) return;
+/** Draw or update the best-fit line (LS in squared mode, LAD in absolute mode). */
+function drawBestFitLine() {
+    if (!frame || !xScale || !yScale) return;
     const overlays = d3Selection.select(frame.inner).select('.overlays');
     overlays.selectAll('.ls-line').remove();
 
     if (!showLsCheck.checked) return;
 
+    const bestFit = residualMode === 'squared' ? lsResult : ladResult;
+    if (!bestFit) return;
+
     const [x0, x1] = xScale.domain();
     overlays.append('line')
         .attr('class', 'ls-line')
         .attr('x1', xScale(x0))
-        .attr('y1', yScale(lsResult.intercept + lsResult.slope * x0))
+        .attr('y1', yScale(bestFit.intercept + bestFit.slope * x0))
         .attr('x2', xScale(x1))
-        .attr('y2', yScale(lsResult.intercept + lsResult.slope * x1))
+        .attr('y2', yScale(bestFit.intercept + bestFit.slope * x1))
         .attr('stroke', LS_COLOR)
         .attr('stroke-width', 2)
         .attr('stroke-dasharray', '6,4')
@@ -617,24 +681,26 @@ function updateStats() {
     const bestFitName = isSquared ? 'Least Squares Line' : 'Best-Fit Line';
     const metricLabel = isSquared ? 'Sum of Squared Errors' : 'Sum of Absolute Errors';
 
-    // LS equation block
-    if (showLsCheck.checked && lsResult) {
-        const lsB0 = formatStat(lsResult.intercept, d);
-        const lsB1 = formatStat(lsResult.slope, d);
-        const lsSign = lsResult.slope >= 0 ? ' + ' : ' ';
-        lsEqText.textContent = `ŷ = ${lsB0}${lsSign}${lsB1} · x`;
+    // Best-fit line equation block
+    const bestFit = isSquared ? lsResult : ladResult;
+    if (showLsCheck.checked && bestFit) {
+        const bfB0 = formatStat(bestFit.intercept, d);
+        const bfB1 = formatStat(bestFit.slope, d);
+        const bfSign = bestFit.slope >= 0 ? ' + ' : ' ';
+        lsEqText.textContent = `ŷ = ${bfB0}${bfSign}${bfB1} · x`;
         /** @type {HTMLElement} */ (lsEqBlock.querySelector('.eq-label')).textContent = bestFitName;
         lsEqBlock.hidden = false;
     } else {
         lsEqBlock.hidden = true;
     }
 
-    // Build stats cards
-    const lsSse = lsResult ? lsResult.residuals.reduce((s, e) => s + e * e, 0) : 0;
-    const lsSae = lsResult ? lsResult.residuals.reduce((s, e) => s + Math.abs(e), 0) : 0;
+    // Build stats cards — compute best-fit line's metric value
+    const bestFitResiduals = bestFit
+        ? computeResiduals(bestFit.slope, bestFit.intercept)
+        : { sse: 0, sae: 0 };
 
     const metricValue = isSquared ? sse : sae;
-    const lsMetricValue = isSquared ? lsSse : lsSae;
+    const lsMetricValue = isSquared ? bestFitResiduals.sse : bestFitResiduals.sae;
 
     let html = '';
 
@@ -644,8 +710,8 @@ function updateStats() {
             <div class="stat-label">${metricLabel}</div>
             <div class="stat-value">${formatStat(metricValue, d)}</div>
         </div>`;
-    if (showLsCheck.checked && lsResult) {
-        const isClose = isSquared ? (sse <= lsSse * 1.01) : (sae <= lsSae * 1.01);
+    if (showLsCheck.checked && bestFit) {
+        const isClose = metricValue <= lsMetricValue * 1.01;
         html += `
         <div class="stat-card ls${isClose ? ' winner' : ''}">
             <div class="stat-label">${bestFitName} ${metricLabel}</div>
@@ -655,9 +721,9 @@ function updateStats() {
     html += `</div>`;
 
     // Comparison text
-    if (showLsCheck.checked && lsResult) {
-        const userVal = isSquared ? sse : sae;
-        const lsVal = isSquared ? lsSse : lsSae;
+    if (showLsCheck.checked && bestFit) {
+        const userVal = metricValue;
+        const lsVal = lsMetricValue;
         if (lsVal > 0) {
             const pctHigher = ((userVal - lsVal) / lsVal * 100);
             if (pctHigher <= 1) {
@@ -781,6 +847,7 @@ toggleAbsoluteBtn.addEventListener('click', () => {
     residualMode = 'absolute';
     setToggleState();
     drawResidualLayer();
+    drawBestFitLine();
     updateStats();
     updateMetricOverlay();
 });
@@ -789,12 +856,13 @@ toggleSquaredBtn.addEventListener('click', () => {
     residualMode = 'squared';
     setToggleState();
     drawResidualLayer();
+    drawBestFitLine();
     updateStats();
     updateMetricOverlay();
 });
 
 showLsCheck.addEventListener('change', () => {
-    drawLsLine();
+    drawBestFitLine();
     updateStats();
 });
 
@@ -807,7 +875,7 @@ tryAgainBtn.addEventListener('click', () => {
     drawUserLine();
     updateHitArea();
     drawResidualLayer();
-    drawLsLine();
+    drawBestFitLine();
     updateStats();
     updateMetricOverlay();
     announce('Line reset. Try to minimize the errors.');
