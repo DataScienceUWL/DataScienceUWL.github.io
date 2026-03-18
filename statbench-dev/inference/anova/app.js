@@ -9,7 +9,6 @@ import * as jstatModule from 'jstat';
 import { setJStat, pdfF, fInv } from '../../js/distributions.js';
 import { anovaF, anovaFSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
-import { drawBoxplot } from '../../js/boxplot.js';
 import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText, buildSimLink, parseGroupSummary } from '../../js/page-utils.js';
 import { parseParams } from '../../js/url-params.js';
 import { mean, sd, detectPrecision, formatStat } from '../../js/stats.js';
@@ -27,9 +26,8 @@ setJStat(jStat);
 
 // ── DOM elements ────────────────────────────────────────────────────
 const chartContainer = document.getElementById('chart-container');
-const boxplotContainer = document.getElementById('boxplot-container');
 const resultDiv = document.getElementById('result-summary');
-const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
+const conditionsCheckpoint = /** @type {HTMLElement} */ (document.getElementById('conditions-checkpoint'));
 const dataSummary = document.getElementById('data-summary');
 const dataPreview = document.getElementById('data-preview');
 const varSelectorsDiv = document.getElementById('var-selectors');
@@ -333,59 +331,39 @@ function runAnalysis() {
 
   renderChart(result);
   renderResults(result);
-  checkConditions(result, true);
-  renderBoxplots();
+  showConditionsCheckpoint(result);
   announceResult(result);
 }
 
-// ── Condition checks ────────────────────────────────────────────────
+// ── Conditions checkpoint ────────────────────────────────────────────
 
 /**
+ * Show a "Check Conditions" link that opens the appropriate explore page.
+ * Does NOT auto-diagnose — students must figure out what to look for.
  * @param {import('../../js/inference.js').AnovaResult} r
- * @param {boolean} hasRawData
  */
-function checkConditions(r, hasRawData) {
-  if (!conditionsWarning) return;
+function showConditionsCheckpoint(r) {
+  if (!conditionsCheckpoint) return;
 
-  /** @type {string[]} */
-  const warnings = [];
+  const dsId = dataPanel.currentDatasetId;
+  const responseVar = responseVarSelect?.value || '';
+  const groupVar = groupVarSelect?.value || '';
 
-  // Equal variance check: max(SD) / min(SD) >= 2
-  const positiveSDs = r.groupSDs.filter(s => s > 0);
-  if (positiveSDs.length >= 2) {
-    const maxSD = Math.max(...positiveSDs);
-    const minSD = Math.min(...positiveSDs);
-    if (minSD > 0 && maxSD / minSD >= 2) {
-      warnings.push(
-        `<strong>Unequal variances:</strong> The ratio of the largest SD (${formatStat(maxSD, dataPrecision)}) ` +
-        `to the smallest SD (${formatStat(minSD, dataPrecision)}) is ${formatStat(maxSD / minSD, 1)}, ` +
-        `which exceeds the rule-of-thumb threshold of 2. The F-test may not be reliable.`
-      );
-    }
-  }
+  // Link to grouped explore page with dataset pre-loaded
+  const exploreLink = dsId
+    ? buildSimLink('explore/grouped/', { dataset: dsId, params: { x: groupVar, y: responseVar } })
+    : buildSimLink('explore/grouped/');
 
-  // Sample size / normality check
-  const smallGroups = r.groupNames.filter((_, i) => r.groupNs[i] < 30);
-  if (smallGroups.length > 0) {
-    warnings.push(
-      `<strong>Small sample(s):</strong> ${smallGroups.join(', ')} ${smallGroups.length === 1 ? 'has' : 'have'} n &lt; 30. ` +
-      `The F-test assumes approximately normal populations when sample sizes are small. ` +
-      `Check the boxplots for strong skewness or outliers.`
-    );
-  }
+  // Link to simulation alternative
+  const simLink = dsId
+    ? buildSimLink('simulate/randomization-anova/', { dataset: dsId })
+    : buildSimLink('simulate/randomization-anova/');
 
-  if (warnings.length > 0) {
-    const dsId = dataPanel.currentDatasetId;
-    const simLink = dsId
-      ? buildSimLink('simulate/randomization-anova/', { dataset: dsId })
-      : buildSimLink('simulate/randomization-anova/');
-
-    conditionsWarning.innerHTML = warnings.map(w => `<p>${w}</p>`).join('') +
-      `<p>If conditions are questionable, consider the <a href="${simLink}">ANOVA Randomization Test</a> instead.</p>`;
-    conditionsWarning.hidden = false;
-  } else {
-    conditionsWarning.hidden = true;
-  }
+  conditionsCheckpoint.innerHTML = `
+    <p><strong>Before interpreting:</strong> Have you checked the
+    <a href="${exploreLink}">conditions for the F-test</a>?</p>
+    <p>Alternative: <a href="${simLink}">ANOVA Randomization Test</a> (no conditions required).</p>`;
+  conditionsCheckpoint.hidden = false;
 }
 
 // ── Chart rendering ─────────────────────────────────────────────────
@@ -423,25 +401,6 @@ function renderChart(r) {
   });
 }
 
-/** Render side-by-side boxplots when raw data is available. */
-function renderBoxplots() {
-  if (!boxplotContainer || fromSummary) {
-    if (boxplotContainer) boxplotContainer.innerHTML = '';
-    return;
-  }
-
-  boxplotContainer.innerHTML = '';
-  const responseVar = responseVarSelect?.value || '';
-
-  drawBoxplot(boxplotContainer, groupedData, {
-    xLabel: responseVar,
-    titleText: `Boxplot of ${responseVar} by group`,
-    descText: `Side-by-side boxplots comparing ${responseVar} across ${groupNames.length} groups.`,
-    id: 'anova-boxplots',
-    animate: false,
-    showOutliers: true,
-  });
-}
 
 // ── Results rendering ───────────────────────────────────────────────
 
@@ -593,7 +552,7 @@ function loadFromSummaryStats(names, nArr, meanArr, sdArr) {
   const result = anovaFSummary(meanArr, sdArr, nArr, names);
   renderChart(result);
   renderResults(result);
-  checkConditions(result, false);
+  showConditionsCheckpoint(result);
   announce(`Loaded summary: ${names.length} groups.`);
 }
 

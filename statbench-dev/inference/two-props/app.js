@@ -30,7 +30,7 @@ const inputAlt = initHypToggle('input-alternative', () => {
 });
 const inputConfLevel = /** @type {HTMLInputElement} */ (document.getElementById('input-conf-level'));
 const computeBtn = /** @type {HTMLButtonElement} */ (document.getElementById('compute-btn'));
-const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
+const conditionsCheckpoint = /** @type {HTMLElement} */ (document.getElementById('conditions-checkpoint'));
 const resultBanner = /** @type {HTMLElement} */ (document.getElementById('result-summary'));
 const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('results-panel'));
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
@@ -274,29 +274,32 @@ function compute() {
     return;
   }
 
-  // ── Check conditions ──
+  // ── Conditions checkpoint ──
   const pHat1 = currentX1 / currentN1;
   const pHat2 = currentX2 / currentN2;
-  const cond1 = currentN1 * pHat1 >= 5;
-  const cond2 = currentN1 * (1 - pHat1) >= 5;
-  const cond3 = currentN2 * pHat2 >= 5;
-  const cond4 = currentN2 * (1 - pHat2) >= 5;
-  const conditionsMet = cond1 && cond2 && cond3 && cond4;
-  conditionsWarning.hidden = conditionsMet;
-  if (!conditionsMet) {
+  if (conditionsCheckpoint) {
     const dsId = dataPanel.currentDatasetId;
     const randLink = dsId
       ? buildSimLink('simulate/randomization-diff-props/', { dataset: dsId })
       : buildSimLink('simulate/randomization-diff-props/');
-    conditionsWarning.innerHTML = `<p><strong>Warning:</strong> Normal approximation conditions not met. Each group needs at least 5 successes and 5 failures.</p>
-    <p>Consider the <a href="${randLink}">Randomization Test</a> instead.</p>`;
+    const counts = [
+      `n\u2081p\u0302\u2081 = ${formatStat(currentN1 * pHat1, 0, 'stat')}`,
+      `n\u2081(1\u2212p\u0302\u2081) = ${formatStat(currentN1 * (1 - pHat1), 0, 'stat')}`,
+      `n\u2082p\u0302\u2082 = ${formatStat(currentN2 * pHat2, 0, 'stat')}`,
+      `n\u2082(1\u2212p\u0302\u2082) = ${formatStat(currentN2 * (1 - pHat2), 0, 'stat')}`,
+    ].join(', ');
+    conditionsCheckpoint.innerHTML = `
+      <p><strong>Before interpreting:</strong> Have you checked the conditions for the two-proportion z-test?
+      Verify each group has \u2265 5 successes and \u2265 5 failures: ${counts}.</p>
+      <p>Alternative: <a href="${randLink}">Randomization Test</a> (no conditions required).</p>`;
+    conditionsCheckpoint.hidden = false;
   }
 
   // ── Run test ──
   const result = twoPropZ(currentX1, currentN1, currentX2, currentN2, { alternative, confLevel });
 
   // ── Display results ──
-  displayResults(result, label1, label2, conditionsMet);
+  displayResults(result, label1, label2);
 
   // ── Draw chart ──
   drawChart(result);
@@ -313,9 +316,8 @@ function compute() {
  * @param {import('../../js/inference.js').TwoPropResult} r
  * @param {string} lbl1
  * @param {string} lbl2
- * @param {boolean} conditionsMet
  */
-function displayResults(r, lbl1, lbl2, conditionsMet) {
+function displayResults(r, lbl1, lbl2) {
   const altSymbol = r.alternative === 'two-sided' ? '\u2260'
     : r.alternative === 'less' ? '<' : '>';
   const altWord = r.alternative === 'two-sided' ? 'different from'
@@ -337,15 +339,6 @@ function displayResults(r, lbl1, lbl2, conditionsMet) {
   const confPct = (r.confLevel * 100).toFixed(0);
   const seCount = Math.abs(r.zStat);
   const seDirection = r.zStat > 0 ? 'above' : r.zStat < 0 ? 'below' : 'at';
-
-  const dsId2 = dataPanel.currentDatasetId;
-  const randLink = dsId2
-    ? buildSimLink('simulate/randomization-diff-props/', { dataset: dsId2 })
-    : buildSimLink('simulate/randomization-diff-props/');
-  const condWarning = conditionsMet ? '' :
-    `<p class="warning-text"><strong>Caution:</strong> Normal approximation conditions not satisfied.
-   Each group needs at least 5 successes and 5 failures. These results may be unreliable.</p>
-   <p class="warning-text">Consider the <a href="${randLink}">Randomization Test</a> instead.</p>`;
 
   // z* for CI
   const zStar = r.se > 0 ? ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3) : '—';
@@ -405,7 +398,6 @@ function displayResults(r, lbl1, lbl2, conditionsMet) {
         return html;
       })()}
       <p>${confPct}% CI: (${formatStat(r.ciLower, 0, 'proportion')}, ${formatStat(r.ciUpper, 0, 'proportion')}).</p>
-      ${condWarning}
     </div>
   `;
 

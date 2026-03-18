@@ -29,7 +29,7 @@ const controlsSection = /** @type {HTMLElement} */ (document.getElementById('con
 const chartAndResults = /** @type {HTMLElement} */ (document.getElementById('chart-and-results'));
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
 const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('results-panel'));
-const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
+const conditionsCheckpoint = /** @type {HTMLElement} */ (document.getElementById('conditions-checkpoint'));
 
 const inputMu0 = /** @type {HTMLInputElement} */ (document.getElementById('input-mu0'));
 const inputAlt = initHypToggle('input-alt', () => { if (currentDiffs || fromSummary) showResults(); });
@@ -246,26 +246,27 @@ function showResults() {
     ? Math.max(detectPrecision([summaryDbar]), detectPrecision([summarySd]))
     : detectPrecision(currentDiffs);
 
-  // ── Check conditions ──
-  const n = result.n;
-  const smallSample = n < 30;
-  conditionsWarning.hidden = !smallSample;
-  if (smallSample) {
+  // Conditions checkpoint
+  if (conditionsCheckpoint) {
     const dsId = dataPanel.currentDatasetId;
+    const exploreLink = dsId
+      ? buildSimLink('explore/descriptive/', { dataset: dsId })
+      : buildSimLink('explore/descriptive/');
     const bootLink = dsId
       ? buildSimLink('simulate/bootstrap-paired/', { dataset: dsId })
       : buildSimLink('simulate/bootstrap-paired/');
-    conditionsWarning.innerHTML = `<p><strong>Note:</strong> With n = ${n} (< 30) pairs, the paired t-test assumes
-      the population of differences is approximately normal. Check that the differences have no strong skewness or outliers.</p>
-      <p>If normality is questionable, consider the <a href="${bootLink}">Bootstrap Paired CI</a> instead.</p>`;
+    conditionsCheckpoint.innerHTML = `
+      <p><strong>Before interpreting:</strong> Have you checked the
+      <a href="${exploreLink}">conditions for the paired t-test</a>?</p>
+      <p>Alternative: <a href="${bootLink}">Bootstrap Paired CI</a> (no conditions required).</p>`;
+    conditionsCheckpoint.hidden = false;
   }
 
   controlsSection.hidden = false;
   chartAndResults.hidden = false;
 
   drawChart(result);
-  const conditionsMet = !smallSample;
-  renderResults(result, d, mu0, alternative, confLevel, conditionsMet);
+  renderResults(result, d, mu0, alternative, confLevel);
 
   announce(
     `t = ${result.tStat.toFixed(3)}, df = ${result.df}, ` +
@@ -281,9 +282,8 @@ function showResults() {
  * @param {number} mu0
  * @param {string} alternative
  * @param {number} confLevel
- * @param {boolean} [conditionsMet]
  */
-function renderResults(r, d, mu0, alternative, confLevel, conditionsMet = true) {
+function renderResults(r, d, mu0, alternative, confLevel) {
   const confPct = (confLevel * 100).toFixed(0);
   const pStr = formatStat(r.pValue, d, 'pvalue');
   const alpha = 1 - confLevel;
@@ -350,7 +350,6 @@ function renderResults(r, d, mu0, alternative, confLevel, conditionsMet = true) 
       <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
       ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
       <p>${confPct}% CI for ${tex('\\mu_d')}: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>
-      ${!conditionsMet ? `<p class="warning-text"><strong>Note:</strong> With n < 30 pairs, verify that the population of differences is approximately normal (no strong skew or outliers).</p>` : ''}
     </div>
   `;
 }

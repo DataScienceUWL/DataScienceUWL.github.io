@@ -299,7 +299,10 @@ export function initSettings() {
     modeSelect.addEventListener('change', () => {
       setSettings({ activityMode: modeSelect.value });
       applySettings();
-      location.reload();
+      // In iframes, reload can break the parent page — only reload in top-level context
+      if (window.parent === window) {
+        location.reload();
+      }
     });
   }
 
@@ -327,7 +330,9 @@ export function initSettings() {
     resetBtn.addEventListener('click', () => {
       resetSettings();
       dialog.close();
-      location.reload();
+      if (window.parent === window) {
+        location.reload();
+      }
     });
   }
 

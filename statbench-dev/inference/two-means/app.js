@@ -26,7 +26,7 @@ setJStat(jStat);
 // ── DOM elements ────────────────────────────────────────────────────
 const chartContainer = document.getElementById('chart-container');
 const resultDiv = document.getElementById('result-summary');
-const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
+const conditionsCheckpoint = /** @type {HTMLElement} */ (document.getElementById('conditions-checkpoint'));
 const dataSummary = document.getElementById('data-summary');
 const dataPreview = document.getElementById('data-preview');
 const varSelectorsDiv = document.getElementById('var-selectors');
@@ -307,24 +307,26 @@ function runAnalysis() {
     result = twoMeanT(group1, group2, { alternative, confLevel });
   }
 
-  const n1 = result.n1;
-  const n2 = result.n2;
-  const conditionsMet = n1 >= 30 && n2 >= 30;
-  if (conditionsWarning) {
-    conditionsWarning.hidden = conditionsMet;
-    if (!conditionsMet) {
-      const dsId = dataPanel.currentDatasetId;
-      const bootLink = dsId
-        ? buildSimLink('simulate/bootstrap-two-means/', { dataset: dsId })
-        : buildSimLink('simulate/bootstrap-two-means/');
-      conditionsWarning.innerHTML = `<p><strong>Note:</strong> With small sample size(s) (n₁ = ${n1}, n₂ = ${n2}), the t-test assumes
-        each population is approximately normal. Check that neither group has strong skewness or outliers.</p>
-        <p>If normality is questionable, consider the <a href="${bootLink}">Bootstrap Two-Sample CI</a> instead.</p>`;
-    }
+  // Conditions checkpoint
+  if (conditionsCheckpoint) {
+    const dsId = dataPanel.currentDatasetId;
+    const groupVar = groupVarSelect?.value || '';
+    const responseVar = responseVarSelect?.value || '';
+    const exploreLink = dsId
+      ? buildSimLink('explore/grouped/', { dataset: dsId, params: { x: groupVar, y: responseVar } })
+      : buildSimLink('explore/grouped/');
+    const bootLink = dsId
+      ? buildSimLink('simulate/bootstrap-two-means/', { dataset: dsId })
+      : buildSimLink('simulate/bootstrap-two-means/');
+    conditionsCheckpoint.innerHTML = `
+      <p><strong>Before interpreting:</strong> Have you checked the
+      <a href="${exploreLink}">conditions for the two-sample t-test</a>?</p>
+      <p>Alternative: <a href="${bootLink}">Bootstrap CI</a> (no conditions required).</p>`;
+    conditionsCheckpoint.hidden = false;
   }
 
   renderChart(result);
-  renderResults(result, conditionsMet);
+  renderResults(result);
   announceResult(result);
 }
 
@@ -391,9 +393,8 @@ function renderChart(r) {
 /**
  * Render the results panel.
  * @param {import('../../js/inference.js').TwoMeanResult} r
- * @param {boolean} conditionsMet
  */
-function renderResults(r, conditionsMet = true) {
+function renderResults(r) {
   if (!resultDiv) return;
 
   const d = dataPrecision;
@@ -482,7 +483,6 @@ function renderResults(r, conditionsMet = true) {
       <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
       ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
       <p>${confPct}% CI: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}). ${ciInterpretation}</p>
-      ${!conditionsMet ? `<p class="warning-inline"><strong>Caution:</strong> One or both sample sizes are small; verify normality within each group before trusting these results.</p>` : ''}
     </div>
   `;
 }

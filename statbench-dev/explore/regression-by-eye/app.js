@@ -129,6 +129,8 @@ const chartContainer = /** @type {HTMLDivElement} */ (document.getElementById('c
 const sidebar = /** @type {HTMLDivElement} */ (document.getElementById('sidebar'));
 
 const showResidualsCheck = /** @type {HTMLInputElement} */ (document.getElementById('show-residuals'));
+const showSquaresCheck = /** @type {HTMLInputElement} */ (document.getElementById('show-squares'));
+const showSquaresLabel = /** @type {HTMLElement} */ (document.getElementById('show-squares-label'));
 const showLsCheck = /** @type {HTMLInputElement} */ (document.getElementById('show-ls'));
 const showLsLabel = /** @type {HTMLLabelElement} */ (document.getElementById('show-ls-label'));
 const toggleAbsoluteBtn = /** @type {HTMLButtonElement} */ (document.getElementById('toggle-absolute'));
@@ -137,11 +139,6 @@ const toggleSquaredBtn = /** @type {HTMLButtonElement} */ (document.getElementBy
 /** @type {'absolute' | 'squared'} */
 let residualMode = 'squared';
 
-const yourEqBlock = /** @type {HTMLDivElement} */ (document.getElementById('your-equation'));
-const yourEqText = /** @type {HTMLDivElement} */ (document.getElementById('your-eq-text'));
-const lsEqBlock = /** @type {HTMLDivElement} */ (document.getElementById('ls-equation'));
-const lsEqText = /** @type {HTMLDivElement} */ (document.getElementById('ls-eq-text'));
-const statsArea = /** @type {HTMLDivElement} */ (document.getElementById('stats-area'));
 const sseComparison = /** @type {HTMLDivElement} */ (document.getElementById('sse-comparison'));
 const tryAgainBtn = /** @type {HTMLButtonElement} */ (document.getElementById('try-again-btn'));
 const generateRandomBtn = /** @type {HTMLButtonElement} */ (document.getElementById('generate-random-btn'));
@@ -161,6 +158,11 @@ if (urlHide.includes('toggle')) {
 // Hide residuals checkbox
 if (urlHide.includes('residuals')) {
     /** @type {HTMLElement} */ (showResidualsCheck.closest('label')).hidden = true;
+}
+
+// Hide squares checkbox
+if (urlHide.includes('squares')) {
+    showSquaresLabel.hidden = true;
 }
 
 // Metric mode from URL (overrides default)
@@ -336,11 +338,13 @@ function generateRandomData(n) {
 
     // Reset controls (respect URL overrides)
     showResidualsCheck.checked = urlShow.includes('residuals');
+    showSquaresCheck.checked = urlShow.includes('squares');
     showLsCheck.checked = urlShow.includes('bestfit') && !exerciseMode && !urlHide.includes('bestfit');
     if (!urlMetric) {
         residualMode = 'squared';
         setToggleState();
     }
+    syncSquaresVisibility();
 
     renderChart();
     announce(`Random dataset: ${count} observations.`);
@@ -417,6 +421,7 @@ function renderChart() {
     // Draw interactive layers
     drawUserLine();
     drawResidualLayer();
+    drawSquaresLayer();
     drawBestFitLine();
     setupLineDrag();
     updateMetricOverlay();
@@ -602,66 +607,74 @@ function updateHitArea() {
 }
 
 /**
- * Draw the residual visualization layer.
- * When mode = 'absolute': dashed vertical lines from each point to the user's line.
- * When mode = 'squared': literal squares whose area = e².
+ * Draw vertical residual lines from each data point to the user's line.
+ * Shown when "Show Residuals" is checked, regardless of metric mode.
  */
 function drawResidualLayer() {
     if (!frame || !xScale || !yScale) return;
     const overlays = d3Selection.select(frame.inner).select('.overlays');
-    overlays.selectAll('.residual-line, .residual-square').remove();
+    overlays.selectAll('.residual-line').remove();
 
     if (!showResidualsCheck.checked) return;
 
     const { slope, intercept } = userLineParams();
 
-    if (residualMode === 'absolute') {
-        // Dashed vertical lines
-        overlays.selectAll('.residual-line')
-            .data(xData.map((x, i) => ({ x, y: yData[i], yHat: intercept + slope * x })))
-            .join('line')
-            .attr('class', 'residual-line')
-            .attr('x1', d => /** @type {Function} */ (xScale)(d.x))
-            .attr('y1', d => /** @type {Function} */ (yScale)(d.y))
-            .attr('x2', d => /** @type {Function} */ (xScale)(d.x))
-            .attr('y2', d => /** @type {Function} */ (yScale)(d.yHat))
-            .attr('stroke', USER_COLOR_LIGHT)
-            .attr('stroke-width', 1.5)
-            .attr('stroke-dasharray', '4,3')
-            .style('pointer-events', 'none');
-    } else {
-        // Squared residual rectangles
-        const squareData = xData.map((x, i) => {
-            const yHat = intercept + slope * x;
-            const residual = yData[i] - yHat;
-            return { x, y: yData[i], yHat, residual };
-        });
+    overlays.selectAll('.residual-line')
+        .data(xData.map((x, i) => ({ x, y: yData[i], yHat: intercept + slope * x })))
+        .join('line')
+        .attr('class', 'residual-line')
+        .attr('x1', d => /** @type {Function} */ (xScale)(d.x))
+        .attr('y1', d => /** @type {Function} */ (yScale)(d.y))
+        .attr('x2', d => /** @type {Function} */ (xScale)(d.x))
+        .attr('y2', d => /** @type {Function} */ (yScale)(d.yHat))
+        .attr('stroke', USER_COLOR_LIGHT)
+        .attr('stroke-width', 1.5)
+        .attr('stroke-dasharray', '4,3')
+        .style('pointer-events', 'none');
+}
 
-        overlays.selectAll('.residual-square')
-            .data(squareData)
-            .join('rect')
-            .attr('class', 'residual-square')
-            .attr('aria-hidden', 'true')
-            .each(function (d) {
-                const el = d3Selection.select(this);
-                const absRes = Math.abs(d.residual);
-                const sideY = Math.abs(/** @type {Function} */ (yScale)(d.yHat) - /** @type {Function} */ (yScale)(d.yHat + absRes));
+/**
+ * Draw literal squares at each data point whose area = residual².
+ * Shown when "Show Squared Residuals" is checked (only available in squared mode).
+ */
+function drawSquaresLayer() {
+    if (!frame || !xScale || !yScale) return;
+    const overlays = d3Selection.select(frame.inner).select('.overlays');
+    overlays.selectAll('.residual-square').remove();
 
-                const px = /** @type {Function} */ (xScale)(d.x);
-                const pyPoint = /** @type {Function} */ (yScale)(d.y);
-                const pyHat = /** @type {Function} */ (yScale)(d.yHat);
-                const top = Math.min(pyPoint, pyHat);
+    if (!showSquaresCheck.checked) return;
 
-                el.attr('x', px)
-                    .attr('y', top)
-                    .attr('width', sideY)
-                    .attr('height', Math.abs(pyPoint - pyHat))
-                    .attr('fill', USER_SQUARE_FILL)
-                    .attr('stroke', USER_SQUARE_STROKE)
-                    .attr('stroke-width', 0.75);
-            })
-            .style('pointer-events', 'none');
-    }
+    const { slope, intercept } = userLineParams();
+    const squareData = xData.map((x, i) => {
+        const yHat = intercept + slope * x;
+        const residual = yData[i] - yHat;
+        return { x, y: yData[i], yHat, residual };
+    });
+
+    overlays.selectAll('.residual-square')
+        .data(squareData)
+        .join('rect')
+        .attr('class', 'residual-square')
+        .attr('aria-hidden', 'true')
+        .each(function (d) {
+            const el = d3Selection.select(this);
+            const absRes = Math.abs(d.residual);
+            const sideY = Math.abs(/** @type {Function} */ (yScale)(d.yHat) - /** @type {Function} */ (yScale)(d.yHat + absRes));
+
+            const px = /** @type {Function} */ (xScale)(d.x);
+            const pyPoint = /** @type {Function} */ (yScale)(d.y);
+            const pyHat = /** @type {Function} */ (yScale)(d.yHat);
+            const top = Math.min(pyPoint, pyHat);
+
+            el.attr('x', px)
+                .attr('y', top)
+                .attr('width', sideY)
+                .attr('height', Math.abs(pyPoint - pyHat))
+                .attr('fill', USER_SQUARE_FILL)
+                .attr('stroke', USER_SQUARE_STROKE)
+                .attr('stroke-width', 0.75);
+        })
+        .style('pointer-events', 'none');
 }
 
 /** Draw or update the best-fit line (LS in squared mode, LAD in absolute mode). */
@@ -693,6 +706,7 @@ function updateFromDrag() {
     drawUserLine();
     updateHitArea();
     drawResidualLayer();
+    drawSquaresLayer();
     updateStats();
     updateMetricOverlay();
 
@@ -710,7 +724,7 @@ function updateFromDrag() {
 
 // ─── Floating Metric Overlay ─────────────────────────────────────────────────
 
-/** Update the floating overlays on the chart (equation + metric). */
+/** Update the floating overlays on the chart (equation + metric + LS info). */
 function updateMetricOverlay() {
     // Remove any existing overlays
     chartContainer.querySelectorAll('.chart-overlay').forEach(el => el.remove());
@@ -720,8 +734,9 @@ function updateMetricOverlay() {
     const { slope, intercept } = userLineParams();
     const { sse, sae } = computeResiduals(slope, intercept);
     const d = dataPrecision;
+    const isSquared = residualMode === 'squared';
 
-    // Equation overlay (top-left)
+    // Your equation overlay (top-left)
     const b0 = formatStat(intercept, d);
     const b1 = formatStat(slope, d);
     const sign = slope >= 0 ? ' + ' : ' ';
@@ -731,15 +746,37 @@ function updateMetricOverlay() {
     eqOverlay.innerHTML = `<div class="overlay-label">Your Line</div>\u0177 = ${b0}${sign}${b1} \u00b7 x`;
     chartContainer.appendChild(eqOverlay);
 
-    // Metric overlay (top-right)
-    const isSquared = residualMode === 'squared';
-    const label = isSquared ? 'Sum of Squared Errors' : 'Sum of Absolute Errors';
-    const value = isSquared ? sse : sae;
+    // Your metric overlay (top-right)
+    const metricLabel = isSquared ? 'SSE' : 'SAE';
+    const metricValue = isSquared ? sse : sae;
     const metricOverlay = document.createElement('div');
     metricOverlay.className = 'chart-overlay metric-overlay';
     metricOverlay.setAttribute('aria-hidden', 'true');
-    metricOverlay.innerHTML = `<div class="overlay-label">${label}</div>${formatStat(value, d)}`;
+    metricOverlay.innerHTML = `<div class="overlay-label">${metricLabel} (yours)</div>${formatStat(metricValue, d)}`;
     chartContainer.appendChild(metricOverlay);
+
+    // LS / best-fit overlays (bottom corners, only when checked)
+    const bestFit = isSquared ? lsResult : ladResult;
+    if (showLsCheck.checked && bestFit) {
+        const bestFitName = isSquared ? 'LS Line' : 'LAD Line';
+        const bfB0 = formatStat(bestFit.intercept, d);
+        const bfB1 = formatStat(bestFit.slope, d);
+        const bfSign = bestFit.slope >= 0 ? ' + ' : ' ';
+
+        const lsEqOverlay = document.createElement('div');
+        lsEqOverlay.className = 'chart-overlay ls-overlay';
+        lsEqOverlay.setAttribute('aria-hidden', 'true');
+        lsEqOverlay.innerHTML = `<div class="overlay-label">${bestFitName}</div>\u0177 = ${bfB0}${bfSign}${bfB1} \u00b7 x`;
+        chartContainer.appendChild(lsEqOverlay);
+
+        const bestFitResiduals = computeResiduals(bestFit.slope, bestFit.intercept);
+        const lsMetricValue = isSquared ? bestFitResiduals.sse : bestFitResiduals.sae;
+        const lsMetricOverlay = document.createElement('div');
+        lsMetricOverlay.className = 'chart-overlay ls-metric-overlay';
+        lsMetricOverlay.setAttribute('aria-hidden', 'true');
+        lsMetricOverlay.innerHTML = `<div class="overlay-label">${metricLabel} (${bestFitName.toLowerCase()})</div>${formatStat(lsMetricValue, d)}`;
+        chartContainer.appendChild(lsMetricOverlay);
+    }
 }
 
 /** Sync toggle button aria-pressed states with residualMode. */
@@ -748,73 +785,38 @@ function setToggleState() {
     toggleSquaredBtn.setAttribute('aria-pressed', residualMode === 'squared' ? 'true' : 'false');
 }
 
+/** Show/hide the "Show Squares" checkbox based on metric mode. */
+function syncSquaresVisibility() {
+    if (residualMode === 'absolute') {
+        showSquaresLabel.hidden = true;
+        showSquaresCheck.checked = false;
+    } else {
+        showSquaresLabel.hidden = false;
+    }
+}
+
 // ─── Stats Display ──────────────────────────────────────────────────────────
 
+/** Update the sidebar comparison text (the overlays handle equation/metric display). */
 function updateStats() {
     const { slope, intercept } = userLineParams();
-    const { residuals, sse, sae } = computeResiduals(slope, intercept);
-    const d = dataPrecision;
-
-    // Your equation
-    const b0 = formatStat(intercept, d);
-    const b1 = formatStat(slope, d);
-    const sign = slope >= 0 ? ' + ' : ' ';
-    yourEqText.textContent = `ŷ = ${b0}${sign}${b1} · x`;
-
-    // Mode-dependent labels
+    const { sse, sae } = computeResiduals(slope, intercept);
     const isSquared = residualMode === 'squared';
-    const bestFitName = isSquared ? 'Least Squares Line' : 'Best-Fit Line';
-    const metricLabel = isSquared ? 'Sum of Squared Errors' : 'Sum of Absolute Errors';
-
-    // Best-fit line equation block
+    const bestFitName = isSquared ? 'least squares line' : 'best-fit line';
+    const metricLabel = isSquared ? 'SSE' : 'SAE';
     const bestFit = isSquared ? lsResult : ladResult;
+
     if (showLsCheck.checked && bestFit) {
-        const bfB0 = formatStat(bestFit.intercept, d);
-        const bfB1 = formatStat(bestFit.slope, d);
-        const bfSign = bestFit.slope >= 0 ? ' + ' : ' ';
-        lsEqText.textContent = `ŷ = ${bfB0}${bfSign}${bfB1} · x`;
-        /** @type {HTMLElement} */ (lsEqBlock.querySelector('.eq-label')).textContent = bestFitName;
-        lsEqBlock.hidden = false;
-    } else {
-        lsEqBlock.hidden = true;
-    }
+        const bestFitResiduals = computeResiduals(bestFit.slope, bestFit.intercept);
+        const metricValue = isSquared ? sse : sae;
+        const lsMetricValue = isSquared ? bestFitResiduals.sse : bestFitResiduals.sae;
 
-    // Build stats cards — compute best-fit line's metric value
-    const bestFitResiduals = bestFit
-        ? computeResiduals(bestFit.slope, bestFit.intercept)
-        : { sse: 0, sae: 0 };
-
-    const metricValue = isSquared ? sse : sae;
-    const lsMetricValue = isSquared ? bestFitResiduals.sse : bestFitResiduals.sae;
-
-    let html = '';
-
-    html += `
-    <div class="stats-grid">
-        <div class="stat-card yours">
-            <div class="stat-label">${metricLabel}</div>
-            <div class="stat-value">${formatStat(metricValue, d)}</div>
-        </div>`;
-    if (showLsCheck.checked && bestFit) {
-        const isClose = metricValue <= lsMetricValue * 1.01;
-        html += `
-        <div class="stat-card ls${isClose ? ' winner' : ''}">
-            <div class="stat-label">${bestFitName} ${metricLabel}</div>
-            <div class="stat-value">${formatStat(lsMetricValue, d)}</div>
-        </div>`;
-    }
-    html += `</div>`;
-
-    // Comparison text
-    if (showLsCheck.checked && bestFit) {
-        const userVal = metricValue;
-        const lsVal = lsMetricValue;
-        if (lsVal > 0) {
-            const pctHigher = ((userVal - lsVal) / lsVal * 100);
+        if (lsMetricValue > 0) {
+            const pctHigher = ((metricValue - lsMetricValue) / lsMetricValue * 100);
             if (pctHigher <= 1) {
-                sseComparison.innerHTML = `<strong>Excellent!</strong> Your line is very close to the ${bestFitName.toLowerCase()}.`;
+                sseComparison.innerHTML = `<strong>Excellent!</strong> Your line is very close to the ${bestFitName}.`;
             } else {
-                sseComparison.innerHTML = `${metricLabel} is <strong>${formatStat(pctHigher, 1)}% higher</strong> than the ${bestFitName.toLowerCase()}.`;
+                sseComparison.innerHTML = `Your ${metricLabel} is <strong>${formatStat(pctHigher, 1)}% higher</strong> than the ${bestFitName}.`;
             }
             sseComparison.hidden = false;
         } else {
@@ -823,8 +825,6 @@ function updateStats() {
     } else {
         sseComparison.hidden = true;
     }
-
-    statsArea.innerHTML = html;
 }
 
 // ─── Data Loading ───────────────────────────────────────────────────────────
@@ -937,10 +937,18 @@ showResidualsCheck.addEventListener('change', () => {
     updateMetricOverlay();
 });
 
+showSquaresCheck.addEventListener('change', () => {
+    drawSquaresLayer();
+    updateStats();
+    updateMetricOverlay();
+});
+
 toggleAbsoluteBtn.addEventListener('click', () => {
     residualMode = 'absolute';
     setToggleState();
+    syncSquaresVisibility();
     drawResidualLayer();
+    drawSquaresLayer();
     drawBestFitLine();
     updateStats();
     updateMetricOverlay();
@@ -949,7 +957,9 @@ toggleAbsoluteBtn.addEventListener('click', () => {
 toggleSquaredBtn.addEventListener('click', () => {
     residualMode = 'squared';
     setToggleState();
+    syncSquaresVisibility();
     drawResidualLayer();
+    drawSquaresLayer();
     drawBestFitLine();
     updateStats();
     updateMetricOverlay();
@@ -958,6 +968,7 @@ toggleSquaredBtn.addEventListener('click', () => {
 showLsCheck.addEventListener('change', () => {
     drawBestFitLine();
     updateStats();
+    updateMetricOverlay();
 });
 
 xVarSelect.addEventListener('change', loadSelectedVars);
@@ -969,6 +980,7 @@ tryAgainBtn.addEventListener('click', () => {
     drawUserLine();
     updateHitArea();
     drawResidualLayer();
+    drawSquaresLayer();
     drawBestFitLine();
     updateStats();
     updateMetricOverlay();

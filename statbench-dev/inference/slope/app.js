@@ -29,7 +29,7 @@ const chartAndResults = /** @type {HTMLElement} */ (document.getElementById('cha
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
 const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('results-panel'));
 
-const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
+const conditionsCheckpoint = /** @type {HTMLElement} */ (document.getElementById('conditions-checkpoint'));
 
 const inputAlt = initHypToggle('input-alt', () => { if (currentRows.length || fromSummary) showResults(); });
 const inputConf = /** @type {HTMLInputElement} */ (document.getElementById('input-conf'));
@@ -245,24 +245,26 @@ function showResults() {
   controlsSection.hidden = false;
   chartAndResults.hidden = false;
 
-  // ── Conditions check ─────────────────────────────────────────────
-  const n = result.n;
-  const conditionsMet = n >= 30;
-  if (!conditionsMet && conditionsWarning) {
+  // Conditions checkpoint
+  if (conditionsCheckpoint) {
     const dsId = dataPanel.currentDatasetId;
+    const xVar = xVarSelect?.value || '';
+    const yVar = yVarSelect?.value || '';
+    const exploreLink = dsId
+      ? buildSimLink('explore/regression/', { dataset: dsId, params: { x: xVar, y: yVar } })
+      : buildSimLink('explore/regression/');
     const bootLink = dsId
       ? buildSimLink('simulate/bootstrap-slope/', { dataset: dsId })
       : buildSimLink('simulate/bootstrap-slope/');
-    conditionsWarning.innerHTML = `<p><strong>Note:</strong> With n = ${n} (< 30), the t-test for slope assumes
-      that residuals are approximately normal with constant variance, and that the relationship is linear.</p>
-      <p>If conditions are questionable, consider the <a href="${bootLink}">Bootstrap Slope CI</a> which is less sensitive to these assumptions.</p>`;
-    conditionsWarning.hidden = false;
-  } else if (conditionsWarning) {
-    conditionsWarning.hidden = true;
+    conditionsCheckpoint.innerHTML = `
+      <p><strong>Before interpreting:</strong> Have you checked the
+      <a href="${exploreLink}">conditions for the slope t-test</a>?</p>
+      <p>Alternative: <a href="${bootLink}">Bootstrap Slope CI</a> (no conditions required).</p>`;
+    conditionsCheckpoint.hidden = false;
   }
 
   drawChart(result);
-  renderResults(result, d, alternative, confLevel, conditionsMet);
+  renderResults(result, d, alternative, confLevel);
 
   announce(
     `t = ${result.tStat.toFixed(3)}, df = ${result.df}, ` +
@@ -277,9 +279,8 @@ function showResults() {
  * @param {number} d
  * @param {string} alternative
  * @param {number} confLevel
- * @param {boolean} conditionsMet
  */
-function renderResults(r, d, alternative, confLevel, conditionsMet) {
+function renderResults(r, d, alternative, confLevel) {
   const confPct = (confLevel * 100).toFixed(0);
   const pStr = formatStat(r.pValue, d, 'pvalue');
   const alpha = 1 - confLevel;
@@ -357,7 +358,6 @@ function renderResults(r, d, alternative, confLevel, conditionsMet) {
     <div class="interpretation" aria-live="polite">
       ${regressionInterp}
       <p>Slope ${tex('b_1')} = ${formatStat(r.slope, d)} is ${Math.abs(r.tStat).toFixed(2)} SEs from zero.</p>
-      ${!conditionsMet ? `<p class="conditions-note"><strong>Conditions:</strong> With n = ${r.n} &lt; 30, verify that residuals are approximately normal, variability is roughly constant, and the relationship is linear before trusting this t-test.</p>` : ''}
       <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
       ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
       <p>${confPct}% CI for ${tex('\\beta_1')}: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>

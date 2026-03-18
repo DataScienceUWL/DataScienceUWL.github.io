@@ -78,75 +78,27 @@
         .chart-overlay {
             position: absolute;
             font-family: var(--font-mono);
-            font-size: 0.8rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: #009E73;
             background: rgba(255, 255, 255, 0.92);
             border: 1px solid var(--border);
             border-radius: 6px;
-            padding: 0.25rem 0.5rem;
+            padding: 0.35rem 0.6rem;
             pointer-events: none;
             z-index: 10;
-            line-height: 1.2;
+            line-height: 1.3;
         }
         .chart-overlay .overlay-label {
             font-family: var(--font-body);
-            font-size: 0.65rem;
+            font-size: 0.8rem;
             font-weight: 400;
             color: var(--ims-gray-text);
         }
         .equation-overlay { top: 6px; left: 6px; }
         .metric-overlay { top: 6px; right: 6px; }
-
-        /* ── Equation display ── */
-        .equation-block {
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
-            padding: 0.5rem 0.75rem;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            margin-bottom: 0.5rem;
-        }
-        .equation-block .eq-label {
-            font-family: var(--font-body);
-            font-size: 0.75rem;
-            color: var(--ims-gray-text);
-            margin-bottom: 0.15rem;
-        }
-        .equation-block .eq-formula {
-            font-weight: 600;
-        }
-        .equation-block.yours .eq-formula { color: #009E73; }
-        .equation-block.ls .eq-formula { color: #808080; }
-
-        /* ── Stats display ── */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.4rem;
-            margin-bottom: 0.75rem;
-        }
-        .stat-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 0.4rem 0.5rem;
-            text-align: center;
-        }
-        .stat-card .stat-label {
-            font-size: 0.7rem;
-            color: var(--ims-gray-text);
-            margin-bottom: 0.1rem;
-        }
-        .stat-card .stat-value {
-            font-family: var(--font-mono);
-            font-size: 0.95rem;
-            font-weight: 700;
-        }
-        .stat-card.yours .stat-value { color: #009E73; }
-        .stat-card.ls .stat-value { color: #808080; }
-        .stat-card.winner { border-color: #009E73; background: #009E7310; }
+        .ls-overlay { bottom: 6px; left: 6px; color: #808080; }
+        .ls-metric-overlay { bottom: 6px; right: 6px; color: #808080; }
 
         /* ── SSE comparison ── */
         .sse-comparison {
@@ -300,28 +252,17 @@
                             <input type="checkbox" id="show-residuals">
                             Show residuals
                         </label>
+                        <label id="show-squares-label">
+                            <input type="checkbox" id="show-squares">
+                            Show squared residuals
+                        </label>
                         <label id="show-ls-label">
                             <input type="checkbox" id="show-ls">
                             Show best-fit line
                         </label>
                     </div>
 
-                    <!-- Stats (SSE, SAE) -->
-                    <div id="stats-area"></div>
-
-                    <!-- Your equation (always visible) -->
-                    <div class="equation-block yours" id="your-equation">
-                        <div class="eq-label">Your Line</div>
-                        <div class="eq-formula" id="your-eq-text"></div>
-                    </div>
-
-                    <!-- LS equation (shown when checked) -->
-                    <div class="equation-block ls" id="ls-equation" hidden>
-                        <div class="eq-label">Least Squares Line</div>
-                        <div class="eq-formula" id="ls-eq-text"></div>
-                    </div>
-
-                    <!-- SSE comparison -->
+                    <!-- SSE comparison (% higher message) -->
                     <div id="sse-comparison" class="sse-comparison" hidden></div>
 
                     <!-- Action buttons -->
@@ -341,8 +282,9 @@
         <p class="help-intro">Drag the green line to fit the data as closely as you can. Use the controls to reveal residuals and compare your line to the mathematically optimal fit.</p>
         <dl>
             <dt>Grab the line</dt><dd>Grab near an end to pivot; grab near the middle to shift parallel</dd>
-            <dt>Show Residuals</dt><dd>Toggle the residual layer on/off</dd>
-            <dt>Absolute / Squared</dt><dd>Switch between residual lines (SAE) and residual squares (SSE)</dd>
+            <dt>Show Residuals</dt><dd>Show vertical lines from each point to your line</dd>
+            <dt>Show Squared Residuals</dt><dd>Show literal squares whose area equals the squared error at each point</dd>
+            <dt>Absolute / Squared</dt><dd>Switch between Sum of Absolute Errors (SAE) and Sum of Squared Errors (SSE)</dd>
             <dt>Show Best-Fit Line</dt><dd>Reveal the mathematically optimal line for the current metric</dd>
         </dl>
         <h3>Keyboard Shortcuts</h3>

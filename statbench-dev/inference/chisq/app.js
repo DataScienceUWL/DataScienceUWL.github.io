@@ -32,7 +32,7 @@ const controlsSection = /** @type {HTMLElement} */ (document.getElementById('con
 
 const chartSection = /** @type {HTMLElement} */ (document.getElementById('chart'));
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
-const warningBanner = /** @type {HTMLElement} */ (document.getElementById('warning-banner'));
+const conditionsCheckpoint = /** @type {HTMLElement} */ (document.getElementById('conditions-checkpoint'));
 const resultsSection = /** @type {HTMLElement} */ (document.getElementById('results'));
 const interpretationDiv = /** @type {HTMLElement} */ (document.getElementById('interpretation'));
 
@@ -136,7 +136,7 @@ const dataPanel = initDataPanel({
     controlsSection.hidden = true;
     chartSection.hidden = true;
     resultsSection.hidden = true;
-    warningBanner.hidden = true;
+    conditionsCheckpoint.hidden = true;
     interpretationDiv.hidden = true;
     chartContainer.innerHTML = '';
     observedContainer.innerHTML = '';
@@ -359,6 +359,7 @@ function showResults(observed, rowLabels, colLabels) {
   resDf.textContent = String(result.df);
   resP.textContent = formatStat(result.pValue, 0, 'pvalue');
 
+  // Check for low expected counts
   let lowExpected = false;
   for (const row of result.expected) {
     for (const val of row) {
@@ -366,15 +367,22 @@ function showResults(observed, rowLabels, colLabels) {
     }
     if (lowExpected) break;
   }
-  if (lowExpected) {
+
+  // Conditions checkpoint
+  if (conditionsCheckpoint) {
     const dsId = dataPanel.currentDatasetId;
     const randLink = dsId
       ? buildSimLink('simulate/randomization-chisq/', { dataset: dsId })
       : buildSimLink('simulate/randomization-chisq/');
-    warningBanner.innerHTML = `<p><strong>Caution:</strong> One or more expected counts are below 5. The chi-square approximation may not be accurate.</p>
-    <p>Consider the <a href="${randLink}">Simulation-Based Chi-Square Test</a> instead.</p>`;
+    const condNote = lowExpected
+      ? ' Note: one or more expected counts are below 5.'
+      : '';
+    conditionsCheckpoint.innerHTML = `
+      <p><strong>Before interpreting:</strong> Have you checked the conditions for the chi-square test?
+      Verify that all expected counts are \u2265 5.${condNote}</p>
+      <p>Alternative: <a href="${randLink}">Simulation-Based Chi-Square Test</a> (no conditions required).</p>`;
+    conditionsCheckpoint.hidden = false;
   }
-  warningBanner.hidden = !lowExpected;
 
   // Render formula display
   const formulaEl = document.getElementById('formula-container');
@@ -403,12 +411,11 @@ function showResults(observed, rowLabels, colLabels) {
     'Expected counts', true);
 
   drawChart(result);
-  writeInterpretation(result, lowExpected);
+  writeInterpretation(result);
 
   announce(
     `Chi-square = ${result.chiSq.toFixed(3)}, df = ${result.df}, ` +
-    `p-value = ${formatStat(result.pValue, 0, 'pvalue')}.` +
-    (lowExpected ? ' Warning: some expected counts are less than 5.' : '')
+    `p-value = ${formatStat(result.pValue, 0, 'pvalue')}.`
   );
 }
 
@@ -508,9 +515,8 @@ function drawChart(result) {
 
 /**
  * @param {import('../../js/inference.js').ChisqResult} result
- * @param {boolean} lowExpected
  */
-function writeInterpretation(result, lowExpected) {
+function writeInterpretation(result) {
   const { chiSq, df, pValue, rowLabels, colLabels } = result;
 
   const pPct = pValue < 0.0001
@@ -528,7 +534,7 @@ function writeInterpretation(result, lowExpected) {
     },
   });
 
-  let html = `
+  interpretationDiv.innerHTML = `
     <p><strong>Hypotheses:</strong>
       ${tex('H_0')}: The row variable and column variable are independent.
       ${tex('H_a')}: There is an association between the row and column variables.</p>
@@ -539,16 +545,4 @@ function writeInterpretation(result, lowExpected) {
     <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
     ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
   `;
-
-  if (lowExpected) {
-    const dsId2 = dataPanel.currentDatasetId;
-    const randLink = dsId2
-      ? buildSimLink('simulate/randomization-chisq/', { dataset: dsId2 })
-      : buildSimLink('simulate/randomization-chisq/');
-    html += `<p><strong>Caution:</strong> One or more expected counts are below 5.
-      The chi-square approximation may not be accurate. Consider merging categories
-      or using the <a href="${randLink}">Simulation-Based Chi-Square Test</a> instead.</p>`;
-  }
-
-  interpretationDiv.innerHTML = html;
 }

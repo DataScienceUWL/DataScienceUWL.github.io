@@ -28,7 +28,7 @@ const controlsSection = /** @type {HTMLElement} */ (document.getElementById('con
 const chartAndResults = /** @type {HTMLElement} */ (document.getElementById('chart-and-results'));
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
 const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('results-panel'));
-const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
+const conditionsCheckpoint = /** @type {HTMLElement} */ (document.getElementById('conditions-checkpoint'));
 
 const inputMu0 = /** @type {HTMLInputElement} */ (document.getElementById('input-mu0'));
 const inputAlt = initHypToggle('input-alt', () => { if (currentData || fromSummary) showResults(); });
@@ -274,21 +274,21 @@ function showResults() {
     ? Math.max(detectPrecision([summaryXbar]), detectPrecision([summaryS]))
     : detectPrecision(currentData);
 
-  // ── Check conditions ──
-  const n = result.n;
-  const smallSample = n < 30;
-  const hasRawData = !fromSummary && currentData;
-  conditionsWarning.hidden = !smallSample;
-  if (smallSample) {
+  // Conditions checkpoint
+  if (conditionsCheckpoint) {
     const dsId = dataPanel.currentDatasetId;
+    const varName = varSelect?.value || '';
+    const exploreLink = dsId
+      ? buildSimLink('explore/descriptive/', { dataset: dsId, params: { var: varName } })
+      : buildSimLink('explore/descriptive/');
     const bootLink = dsId
       ? buildSimLink('simulate/bootstrap-mean/', { dataset: dsId })
-      : hasRawData
-        ? buildSimLink('simulate/bootstrap-mean/', { data: /** @type {number[]} */ (currentData) })
-        : buildSimLink('simulate/bootstrap-mean/');
-    conditionsWarning.innerHTML = `<p><strong>Note:</strong> With n = ${n} (< 30), the t-test assumes
-      the population is approximately normal. Check that the data has no strong skewness or outliers.</p>
-      <p>If normality is questionable, consider the <a href="${bootLink}">Bootstrap CI</a> instead${hasRawData ? ' (data will carry over)' : ''}.</p>`;
+      : buildSimLink('simulate/bootstrap-mean/');
+    conditionsCheckpoint.innerHTML = `
+      <p><strong>Before interpreting:</strong> Have you checked the
+      <a href="${exploreLink}">conditions for the one-sample t-test</a>?</p>
+      <p>Alternative: <a href="${bootLink}">Bootstrap CI</a> (no conditions required).</p>`;
+    conditionsCheckpoint.hidden = false;
   }
 
   // Show sections
@@ -299,8 +299,7 @@ function showResults() {
   drawChart(result);
 
   // Render sidebar results + formulas
-  const conditionsMet = !smallSample;
-  renderResults(result, d, mu0, alternative, confLevel, conditionsMet);
+  renderResults(result, d, mu0, alternative, confLevel);
 
   // Screen reader announcement
   announce(
@@ -317,9 +316,8 @@ function showResults() {
  * @param {number} mu0
  * @param {string} alternative
  * @param {number} confLevel
- * @param {boolean} [conditionsMet]
  */
-function renderResults(r, d, mu0, alternative, confLevel, conditionsMet = true) {
+function renderResults(r, d, mu0, alternative, confLevel) {
   const altSymbol = alternative === 'less' ? '&lt;' :
                     alternative === 'greater' ? '&gt;' : '&ne;';
   const confPct = (confLevel * 100).toFixed(0);
@@ -388,7 +386,6 @@ function renderResults(r, d, mu0, alternative, confLevel, conditionsMet = true) 
       <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
       ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
       <p>${confPct}% CI for ${tex('\\mu')}: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>
-      ${!conditionsMet ? `<p class="warning-text"><strong>Note:</strong> With n < 30, verify that the population distribution is approximately normal (no strong skew or outliers).</p>` : ''}
     </div>
   `;
 }
