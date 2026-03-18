@@ -479,3 +479,74 @@ export function formatStat(value, d, type = 'stat') {
             return value.toFixed(d + 1);
     }
 }
+
+/**
+ * LOESS (locally weighted scatterplot smoothing).
+ * For each evaluation point, fits a weighted linear regression using a tricube kernel.
+ *
+ * @param {number[]} xValues - Predictor values
+ * @param {number[]} yValues - Response values
+ * @param {object} [options]
+ * @param {number} [options.span] - Proportion of data used per local fit (default: 0.75)
+ * @param {number} [options.numPoints] - Number of evaluation points to return (default: 100)
+ * @returns {Array<{x: number, y: number}>} Smoothed curve points, sorted by x
+ */
+export function loess(xValues, yValues, options = {}) {
+    const { span = 0.75, numPoints = 100 } = options;
+    const n = Math.min(xValues.length, yValues.length);
+    if (n < 3) return [];
+
+    // Sort by x for evaluation grid
+    const idx = Array.from({ length: n }, (_, i) => i).sort((a, b) => xValues[a] - xValues[b]);
+    const xs = idx.map(i => xValues[i]);
+    const ys = idx.map(i => yValues[i]);
+
+    const xMin = xs[0];
+    const xMax = xs[n - 1];
+    if (xMin === xMax) return [];
+
+    const k = Math.max(3, Math.ceil(span * n)); // number of neighbors
+
+    /** Tricube kernel weight */
+    function tricube(d) {
+        if (d >= 1) return 0;
+        const t = 1 - d * d * d;
+        return t * t * t;
+    }
+
+    const result = [];
+    for (let p = 0; p < numPoints; p++) {
+        const xEval = xMin + (xMax - xMin) * p / (numPoints - 1);
+
+        // Find distances and k nearest neighbors
+        const dists = xs.map(xi => Math.abs(xi - xEval));
+        const sortedDists = [...dists].sort((a, b) => a - b);
+        const maxDist = sortedDists[k - 1] || sortedDists[sortedDists.length - 1];
+        const h = Math.max(maxDist, 1e-10);
+
+        // Weighted linear regression: minimize Σ wᵢ(yᵢ - a - b·xᵢ)²
+        let sw = 0, swx = 0, swy = 0, swxx = 0, swxy = 0;
+        for (let i = 0; i < n; i++) {
+            const w = tricube(dists[i] / h);
+            if (w === 0) continue;
+            sw += w;
+            swx += w * xs[i];
+            swy += w * ys[i];
+            swxx += w * xs[i] * xs[i];
+            swxy += w * xs[i] * ys[i];
+        }
+
+        if (sw === 0) continue;
+
+        const det = sw * swxx - swx * swx;
+        if (Math.abs(det) < 1e-12) {
+            result.push({ x: xEval, y: swy / sw }); // fallback: weighted mean
+        } else {
+            const b = (sw * swxy - swx * swy) / det;
+            const a = (swy - b * swx) / sw;
+            result.push({ x: xEval, y: a + b * xEval });
+        }
+    }
+
+    return result;
+}

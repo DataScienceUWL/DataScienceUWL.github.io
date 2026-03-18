@@ -4,6 +4,7 @@
  * Histogram, dotplot, boxplot with summary statistics.
  */
 
+import * as d3Selection from 'd3-selection';
 import { parseCSV } from '../../js/csv-parser.js';
 import { mean, median, sd, quantile, iqr, range, detectPrecision, formatStat } from '../../js/stats.js';
 import { drawHistogram, sturgesBins } from '../../js/histogram.js';
@@ -62,6 +63,9 @@ let showDensity = false;
 
 /** Whether to show relative frequency (proportion) on y-axis. */
 let relativeFreq = false;
+
+/** Whether to show mean marker on dotplots and boxplots. */
+let showMeanMarker = false;
 
 const chartRadios = /** @type {NodeListOf<HTMLInputElement>} */ (
   document.querySelectorAll('input[name="chart-type"]')
@@ -158,6 +162,19 @@ function updateChartControls() {
       renderActiveChart();
     });
 
+  } else if (activeChart === 'dotplot') {
+    // Mean marker checkbox
+    const meanLabel = document.createElement('label');
+    meanLabel.innerHTML = '<input type="checkbox" id="show-mean-marker"> Show mean';
+    meanLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+    chartControls.appendChild(meanLabel);
+    const meanCb = /** @type {HTMLInputElement} */ (meanLabel.querySelector('input'));
+    meanCb.checked = showMeanMarker;
+    meanCb.addEventListener('change', () => {
+      showMeanMarker = meanCb.checked;
+      renderActiveChart();
+    });
+
   } else if (activeChart === 'boxplot') {
     const label = document.createElement('label');
     label.innerHTML = '<input type="checkbox" id="show-outliers" checked> Show outliers';
@@ -167,6 +184,18 @@ function updateChartControls() {
     cb.checked = showOutliers;
     cb.addEventListener('change', () => {
       showOutliers = cb.checked;
+      renderActiveChart();
+    });
+
+    // Mean marker checkbox
+    const meanLabel = document.createElement('label');
+    meanLabel.innerHTML = '<input type="checkbox" id="show-mean-box"> Show mean';
+    meanLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+    chartControls.appendChild(meanLabel);
+    const meanCb = /** @type {HTMLInputElement} */ (meanLabel.querySelector('input'));
+    meanCb.checked = showMeanMarker;
+    meanCb.addEventListener('change', () => {
+      showMeanMarker = meanCb.checked;
       renderActiveChart();
     });
   }
@@ -185,6 +214,7 @@ let currentBinCount = 7;
 
 /** Whether to show outliers in boxplot. */
 let showOutliers = true;
+
 
 /**
  * Current loaded dataset (raw JSON), null if pasted.
@@ -638,13 +668,31 @@ function renderActiveChart() {
       renderBinTable(histResult.bins, currentValues.length);
     }
   } else if (activeChart === 'dotplot') {
-    drawDotplot(chartArea, currentValues, {
+    const dotResult = drawDotplot(chartArea, currentValues, {
       xLabel,
       titleText: `Dotplot of ${xLabel}`,
       descText: `Dot plot showing individual values of ${xLabel}`,
       id: 'desc-dot',
       animate: false,
     });
+
+    // Mean marker: red triangle below the x-axis at the mean value
+    if (showMeanMarker && currentValues.length > 0 && dotResult) {
+      const meanVal = mean(currentValues);
+      const mx = dotResult.xScale(meanVal);
+      const triangleY = dotResult.frame.height + 12;
+      const size = 6;
+      const triangle = `M${mx},${triangleY - size} L${mx - size},${triangleY + size} L${mx + size},${triangleY + size} Z`;
+
+      const overlays = d3Selection.select(dotResult.frame.inner).select('.overlays');
+      overlays.append('path')
+        .attr('d', triangle)
+        .attr('fill', '#F05133')
+        .attr('stroke', 'none')
+        .attr('aria-label', `Mean = ${formatStat(meanVal, dataPrecision)}`)
+        .append('title')
+        .text(`Mean = ${formatStat(meanVal, dataPrecision)}`);
+    }
   } else if (activeChart === 'boxplot') {
     drawBoxplot(chartArea, currentValues, {
       xLabel,
@@ -653,6 +701,7 @@ function renderActiveChart() {
       id: 'desc-box',
       animate: false,
       showOutliers,
+      showMean: showMeanMarker,
     });
   }
 

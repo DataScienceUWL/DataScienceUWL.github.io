@@ -153,6 +153,8 @@ export function computeBins(values, options = {}) {
  * @param {number[]} [options.prevBinCounts] - Previous bin counts for stacked delta highlight
  * @param {number} [options.precision] - Decimal places for overlay value labels (default: 2)
  * @param {boolean} [options.relativeFrequency] - Show relative frequency (proportion) on y-axis instead of count
+ * @param {string} [options.fillColor] - Override default bar fill color (hex, will be used at 50% opacity)
+ * @param {number} [options.viewHeight] - Override default viewBox height (for compact stacked charts)
  * @returns {{ frame: ChartFrame, bins: d3Array.Bin<number, number>[], xScale: d3Scale.ScaleLinear<number,number>, yScale: d3Scale.ScaleLinear<number,number>, update: (values: number[], opts?: object) => void }}
  */
 export function drawHistogram(container, values, options = {}) {
@@ -174,10 +176,12 @@ export function drawHistogram(container, values, options = {}) {
     prevBinCounts,
     precision = 2,
     relativeFrequency = false,
+    fillColor,
+    viewHeight,
   } = options;
   const effectiveYLabel = yLabel ?? (relativeFrequency ? 'Rel. Frequency' : 'Frequency');
 
-  const frame = createChart(container, { titleText, descText, id, margin });
+  const frame = createChart(container, { titleText, descText, id, margin, ...(viewHeight != null && { viewHeight }) });
   const { bins, domain: finalDomain } = computeBins(values, { numBins, domain, thresholds });
 
   // Extend x-domain to encompass full first and last bins (no partial bars)
@@ -208,7 +212,7 @@ export function drawHistogram(container, values, options = {}) {
   addAxes(frame, xAxis, yAxis, xLabel, effectiveYLabel);
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
-  renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate, frame.inner, observedStat, ciLines, relativeFrequency, totalN);
+  renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate, frame.inner, observedStat, ciLines, relativeFrequency, totalN, fillColor);
 
   // Stacked delta highlight: show new portions of bars in orange
   if (prevBinCounts) {
@@ -341,7 +345,7 @@ function renderDeltaBars(group, bins, xScale, yScale, innerHeight, prevCounts) {
  * @param {number} [observedStat] - Observed stat value for split-bar rendering
  * @param {[number, number]} [ciLines] - CI bounds for split-bar rendering
  */
-function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, innerNode, observedStat, ciLines, relativeFrequency = false, totalN = 1) {
+function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, innerNode, observedStat, ciLines, relativeFrequency = false, totalN = 1, fillColor) {
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
   // Collect all boundary values that can split bars
@@ -356,8 +360,9 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, i
     const bin = bins[i];
     if (bin.length === 0) continue;
 
+    const defaultFill = fillColor ? fillColor + '80' : BAR_FILL;
     if (!isTail) {
-      barData.push({ x0: bin.x0, x1: bin.x1, length: bin.length, fill: BAR_FILL, binIndex: i, isSplit: false });
+      barData.push({ x0: bin.x0, x1: bin.x1, length: bin.length, fill: defaultFill, binIndex: i, isSplit: false });
       continue;
     }
 

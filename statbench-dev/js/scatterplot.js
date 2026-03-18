@@ -10,6 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
+import * as d3Shape from 'd3-shape';
 import { createChart, addAxes, formatTick, attachTooltip } from './chart-utils.js';
 
 /** IMS blue. */
@@ -21,8 +22,8 @@ const POINT_FILL = '#569BBD99';
 /** IMS red for highlighted point. */
 const IMS_RED = '#F05133';
 
-/** IMS gray for regression line. */
-const IMS_GRAY = '#808080';
+/** Regression line color — Okabe-Ito vermillion, visible against blue points. */
+const REGRESSION_COLOR = '#D55E00';
 
 /** Bootstrap line color (IMS blue at 8% opacity). */
 const BOOTSTRAP_LINE_OPACITY = 0.08;
@@ -51,6 +52,7 @@ export function pointRadius(n) {
  * @param {string} [options.id] - Unique ID prefix
  * @param {{slope: number, intercept: number}} [options.regression] - Regression line to overlay
  * @param {Array<{slope: number, intercept: number}>} [options.bootstrapLines] - Bootstrap regression lines (draws first 100)
+ * @param {Array<{x: number, y: number}>} [options.loessCurve] - LOESS smoothed curve points to overlay
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
  * @param {boolean} [options.minimal] - If true, hide axis labels and tick labels (show only dots + regression line)
  * @param {number} [options.yTicks] - Number of y-axis ticks (default: auto)
@@ -66,6 +68,7 @@ export function drawScatterplot(container, xValues, yValues, options = {}) {
     id,
     regression,
     bootstrapLines,
+    loessCurve,
     margin,
     minimal = false,
     yTicks,
@@ -129,8 +132,24 @@ export function drawScatterplot(container, xValues, yValues, options = {}) {
       .attr('y1', yScale(intercept + slope * xMin))
       .attr('x2', xScale(xMax))
       .attr('y2', yScale(intercept + slope * xMax))
-      .attr('stroke', IMS_GRAY)
+      .attr('stroke', REGRESSION_COLOR)
       .attr('stroke-width', 2);
+  }
+
+  // LOESS curve
+  if (loessCurve && loessCurve.length > 1) {
+    const line = d3Shape.line()
+      .x(d => xScale(d.x))
+      .y(d => yScale(d.y))
+      .curve(d3Shape.curveBasis);
+    overlays.append('path')
+      .attr('class', 'loess-curve')
+      .attr('d', line(loessCurve))
+      .attr('fill', 'none')
+      .attr('stroke', '#009E73')
+      .attr('stroke-width', 2)
+      .attr('stroke-dasharray', '6,3')
+      .attr('aria-label', 'LOESS smooth curve');
   }
 
   // Data points
@@ -207,7 +226,7 @@ export function drawResidualPlot(container, fitted, residuals, options = {}) {
     .attr('x2', result.frame.width)
     .attr('y1', result.yScale(0))
     .attr('y2', result.yScale(0))
-    .attr('stroke', IMS_GRAY)
+    .attr('stroke', '#808080')
     .attr('stroke-width', 1)
     .attr('stroke-dasharray', '4,3');
 

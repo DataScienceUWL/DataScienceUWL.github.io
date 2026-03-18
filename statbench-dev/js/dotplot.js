@@ -125,6 +125,8 @@ export function computeDotRadius(innerWidth, innerHeight, maxStack, numBins) {
  * @param {Set<number>} [options.highlightIndices] - Indices of batch-added dots to highlight (accent pulse)
  * @param {number} [options.precision] - Decimal places for overlay value labels (default: 2)
  * @param {boolean} [options.forceColumns] - Force filled-column mode even if dots would fit (for consistent grouped rendering)
+ * @param {string} [options.fillColor] - Override default dot fill color (hex)
+ * @param {number} [options.viewHeight] - Override default viewBox height (for compact stacked charts)
  * @returns {{ frame: ChartFrame, dots: Array<{value: number, binCenter: number, stackIndex: number}>, xScale: d3Scale.ScaleLinear<number,number>, maxStack: number, binWidth: number, update: (values: number[], opts?: object) => void }}
  */
 export function drawDotplot(container, values, options = {}) {
@@ -147,6 +149,8 @@ export function drawDotplot(container, values, options = {}) {
     highlightIndices,
     precision = 2,
     forceColumns = false,
+    fillColor,
+    viewHeight,
   } = options;
 
   const result = computeDots(values, { numBins, domain, binWidth: lockedBinWidth, binOrigin: lockedBinOrigin });
@@ -156,7 +160,7 @@ export function drawDotplot(container, values, options = {}) {
     ?? (lockedBinWidth && finalDomain ? Math.ceil((finalDomain[1] - finalDomain[0]) / lockedBinWidth) : null)
     ?? Math.min(values.length, 40);
 
-  const frame = createChart(container, { titleText, descText, id, margin });
+  const frame = createChart(container, { titleText, descText, id, margin, ...(viewHeight != null && { viewHeight }) });
 
   const xScale = d3Scale.scaleLinear()
     .domain(finalDomain)
@@ -199,9 +203,9 @@ export function drawDotplot(container, values, options = {}) {
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
   if (wouldOverflow) {
-    renderColumns(dataGroup, dots, xScale, /** @type {d3Scale.ScaleLinear<number,number>} */ (yScale), frame.height, isExtreme, highlightIndex, highlightIndices, frame.inner);
+    renderColumns(dataGroup, dots, xScale, /** @type {d3Scale.ScaleLinear<number,number>} */ (yScale), frame.height, isExtreme, highlightIndex, highlightIndices, frame.inner, fillColor);
   } else {
-    renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex, highlightIndices, frame.inner);
+    renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex, highlightIndices, frame.inner, fillColor);
   }
 
   // Observed statistic line
@@ -307,13 +311,15 @@ const HIGHLIGHT_FILL = '#E07020';
  * @param {Set<number>} [highlightIndices] - Batch new dots (+10): accent pulse
  * @param {SVGGElement} [innerNode] - chart-inner node for custom tooltips
  */
-function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate, highlightIndex = -1, highlightIndices, innerNode) {
+function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate, highlightIndex = -1, highlightIndices, innerNode, fillColor) {
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
+  const baseFill = fillColor || DOT_FILL;
+  const extremeFill = fillColor || EXTREME_FILL;
 
   /** Normal fill for a dot at index i. */
   function normalFill(d) {
-    if (!isExtreme) return DOT_FILL;
-    return isExtreme(d.value) ? EXTREME_FILL : DOT_FILL;
+    if (!isExtreme) return baseFill;
+    return isExtreme(d.value) ? extremeFill : baseFill;
   }
 
   const circles = group.selectAll('circle')
@@ -406,7 +412,7 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
  * @param {Set<number>} [highlightIndices] - Indices of batch-added dots
  * @param {SVGGElement} [innerNode]
  */
-function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, highlightIndex = -1, highlightIndices, innerNode) {
+function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, highlightIndex = -1, highlightIndices, innerNode, fillColor) {
   // Aggregate dots by binCenter → count
   /** @type {Map<number, {count: number}>} */
   const bins = new Map();
@@ -431,8 +437,10 @@ function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, high
 
   /** Color for a column based on its bin center value. */
   function colColor(center) {
-    if (!isExtreme) return DOT_FILL;
-    return isExtreme(center) ? EXTREME_FILL : DOT_FILL;
+    const baseFill = fillColor || DOT_FILL;
+    const extremeFill = fillColor || EXTREME_FILL;
+    if (!isExtreme) return baseFill;
+    return isExtreme(center) ? extremeFill : baseFill;
   }
 
   // Draw columns as lines with round linecap for rounded tops

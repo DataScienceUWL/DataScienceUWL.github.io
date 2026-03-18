@@ -13,6 +13,7 @@ import { drawBoxplot } from '../../js/boxplot.js';
 import { drawGroupedDensity } from '../../js/kde.js';
 import { createExportBar } from '../../js/export.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper, setPageTitle } from '../../js/page-utils.js';
+import { getColors } from '../../js/chart-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
 
 initHelp();
@@ -132,6 +133,9 @@ let currentBinCount = 7;
 /** Whether to show outliers in boxplot. */
 let showOutliers = true;
 
+/** Whether to show mean marker on boxplot. */
+let showMeanMarker = false;
+
 /** Whether to show relative frequency on histogram y-axis. */
 let relativeFreq = false;
 
@@ -187,6 +191,18 @@ function updateChartControls() {
     cb.checked = showOutliers;
     cb.addEventListener('change', () => {
       showOutliers = cb.checked;
+      renderActiveChart();
+    });
+
+    // Mean marker checkbox
+    const meanLabel = document.createElement('label');
+    meanLabel.innerHTML = '<input type="checkbox" id="show-mean-box"> Show mean';
+    meanLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+    chartControls.appendChild(meanLabel);
+    const meanCb = /** @type {HTMLInputElement} */ (meanLabel.querySelector('input'));
+    meanCb.checked = showMeanMarker;
+    meanCb.addEventListener('change', () => {
+      showMeanMarker = meanCb.checked;
       renderActiveChart();
     });
   }
@@ -565,6 +581,7 @@ function renderActiveChart() {
       id: 'grouped-box',
       animate: false,
       showOutliers,
+      showMean: showMeanMarker,
     });
   } else if (activeChart === 'dotplot') {
     renderStackedDotplots(groupNames);
@@ -601,6 +618,11 @@ function renderStackedDotplots(groupNames) {
   /** @type {[number, number]} */
   const domain = [xMin - pad, xMax + pad];
 
+  // Compact height: scale with max group size, clamp between 160–371
+  const maxGroupN = Math.max(...groupNames.map(g => groupedData[g].length));
+  const compactHeight = Math.min(371, Math.max(160, 100 + maxGroupN * 4));
+
+  const colors = getColors(groupNames.length);
   for (let i = 0; i < groupNames.length; i++) {
     const name = groupNames[i];
     const values = groupedData[name];
@@ -609,6 +631,7 @@ function renderStackedDotplots(groupNames) {
     const label = document.createElement('p');
     label.className = 'group-label';
     label.textContent = `${name} (n = ${values.length})`;
+    label.style.color = colors[i];
     wrapper.appendChild(label);
 
     const chartDiv = document.createElement('div');
@@ -622,6 +645,8 @@ function renderStackedDotplots(groupNames) {
       id: `grouped-dot-${i}`,
       animate: false,
       domain,
+      fillColor: colors[i],
+      viewHeight: compactHeight,
     });
   }
 }
@@ -641,6 +666,11 @@ function renderStackedHistograms(groupNames) {
   /** @type {[number, number]} */
   const domain = [/** @type {number} */ (sharedBins[0].x0), /** @type {number} */ (sharedBins[sharedBins.length - 1].x1)];
 
+  // Compact height: scale with max group size, clamp between 160–371
+  const maxGroupN = Math.max(...groupNames.map(g => groupedData[g].length));
+  const compactHeight = Math.min(371, Math.max(160, 100 + maxGroupN * 4));
+
+  const colors = getColors(groupNames.length);
   for (let i = 0; i < groupNames.length; i++) {
     const name = groupNames[i];
     const values = groupedData[name];
@@ -649,6 +679,7 @@ function renderStackedHistograms(groupNames) {
     const label = document.createElement('p');
     label.className = 'group-label';
     label.textContent = `${name} (n = ${values.length})`;
+    label.style.color = colors[i];
     wrapper.appendChild(label);
 
     const chartDiv = document.createElement('div');
@@ -664,6 +695,8 @@ function renderStackedHistograms(groupNames) {
       domain,
       thresholds,
       relativeFrequency: relativeFreq,
+      fillColor: colors[i],
+      viewHeight: compactHeight,
     });
   }
 
@@ -759,6 +792,9 @@ function renderStats() {
   const groupNames = Object.keys(groupedData);
   const d = dataPrecision;
 
+  // Group colors matching chart palette
+  const colors = getColors(groupNames.length);
+
   // Build header row
   statsThead.innerHTML = '';
   const headerRow = document.createElement('tr');
@@ -767,10 +803,11 @@ function renderStats() {
   thStat.textContent = 'Statistic';
   headerRow.appendChild(thStat);
 
-  for (const name of groupNames) {
+  for (let i = 0; i < groupNames.length; i++) {
     const th = document.createElement('th');
     th.scope = 'col';
-    th.textContent = name;
+    th.textContent = groupNames[i];
+    th.style.borderBottom = `3px solid ${colors[i % colors.length]}`;
     headerRow.appendChild(th);
   }
   statsThead.appendChild(headerRow);
@@ -799,9 +836,10 @@ function renderStats() {
     th.textContent = stat.label;
     tr.appendChild(th);
 
-    for (const name of groupNames) {
+    for (let i = 0; i < groupNames.length; i++) {
       const td = document.createElement('td');
-      td.textContent = stat.fn(groupedData[name]);
+      td.textContent = stat.fn(groupedData[groupNames[i]]);
+      td.style.backgroundColor = colors[i % colors.length] + '12';
       tr.appendChild(td);
     }
 
