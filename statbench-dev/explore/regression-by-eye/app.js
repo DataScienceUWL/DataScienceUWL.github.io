@@ -552,7 +552,7 @@ function updateFromDrag() {
     clearTimeout(announceTimer);
     announceTimer = window.setTimeout(() => {
         const { sse } = computeResiduals(...Object.values(userLineParams()));
-        announce(`Your SSE: ${formatStat(sse, dataPrecision)}`);
+        announce(`Sum of Squared Errors: ${formatStat(sse, dataPrecision)}`);
     }, ANNOUNCE_DEBOUNCE);
 }
 
@@ -588,13 +588,13 @@ function updateStats() {
     html += `
     <div class="stats-grid">
         <div class="stat-card yours">
-            <div class="stat-label">Your SSE</div>
+            <div class="stat-label">Sum of Squared Errors</div>
             <div class="stat-value">${formatStat(sse, d)}</div>
         </div>`;
     if (showLsCheck.checked && lsResult) {
         html += `
         <div class="stat-card ls${sse <= lsSse * 1.01 ? ' winner' : ''}">
-            <div class="stat-label">LS SSE</div>
+            <div class="stat-label">LS Sum of Squared Errors</div>
             <div class="stat-value">${formatStat(lsSse, d)}</div>
         </div>`;
     }
@@ -617,7 +617,7 @@ function updateStats() {
         if (pctHigher <= 1) {
             sseComparison.innerHTML = `<strong>Excellent!</strong> Your line is very close to the least-squares line.`;
         } else {
-            sseComparison.innerHTML = `Your SSE is <strong>${formatStat(pctHigher, 1)}% higher</strong> than the LS line.`;
+            sseComparison.innerHTML = `Sum of Squared Errors is <strong>${formatStat(pctHigher, 1)}% higher</strong> than the LS line.`;
         }
         sseComparison.hidden = false;
     } else {
