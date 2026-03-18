@@ -280,7 +280,9 @@ function showConditionsCheckpoint() {
       ? '<button type="button" class="conditions-toggle" aria-expanded="false" aria-controls="conditions-panel">Check Conditions</button>'
       : '<strong>Check Conditions</strong> (no raw data available for diagnostic plots)'}
     &nbsp; | &nbsp; Alternative: <a href="${bootLink}">Bootstrap Paired CI</a> (no conditions required).</p>
-    ${hasRawData ? '<div id="conditions-panel" class="conditions-panel" hidden><div id="conditions-chart"></div></div>' : ''}`;
+    ${hasRawData ? '<div id="conditions-panel" class="conditions-panel" hidden><div id="conditions-chart"></div>' +
+      (dsId ? `<p class="hint" style="margin-top:0.5rem">For further investigation, <a href="${buildSimLink('explore/descriptive/', { dataset: dsId })}" target="_blank" rel="noopener">explore this dataset</a> in a new tab.</p>` : '') +
+      '</div>' : ''}`;
   conditionsCheckpoint.hidden = false;
 
   const toggle = conditionsCheckpoint.querySelector('.conditions-toggle');
