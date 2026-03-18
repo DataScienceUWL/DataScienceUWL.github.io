@@ -1,8 +1,53 @@
 /**
- * page-number.js — Temporary revision aid
- * Adds a small page number badge to the upper-right corner of every page.
- * Remove this script (and its <script> tags) when no longer needed.
+ * page-number.js — Page utilities loaded on every page.
+ *
+ * 1. Embed mode detection (?embed=true) — sets data-embed attribute, skips SW registration
+ * 2. Iframe safety — prevents service worker registration and dangerous navigation in iframes
+ * 3. Page number badge (temporary revision aid)
  */
+
+// ─── Embed mode & iframe safety ─────────────────────────────────────────────
+
+(function initEmbedSafety() {
+  const isEmbed = new URLSearchParams(location.search).get('embed') === 'true';
+  const isIframe = window.parent !== window;
+
+  // Set data-embed attribute for CSS to hide chrome
+  if (isEmbed) {
+    document.body?.setAttribute('data-embed', 'true');
+    // Also set on documentElement in case body isn't ready yet
+    document.documentElement.setAttribute('data-embed', 'true');
+  }
+
+  // In iframes: disable service worker registration (cross-origin issues)
+  // and prevent the update toast's location.reload() from breaking the parent
+  if (isIframe || isEmbed) {
+    // Override SW registration — the inline <script> blocks in each page check
+    // 'serviceWorker' in navigator, so we can't prevent that check.
+    // Instead, we neuter the reload button in update toasts.
+    const observer = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        for (const node of m.addedNodes) {
+          if (node instanceof HTMLElement && node.classList.contains('update-toast')) {
+            node.remove(); // Don't show update toasts in iframes
+          }
+        }
+      }
+    });
+    observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
+
+    // Disable home button navigation (would navigate parent frame away)
+    document.addEventListener('click', (e) => {
+      const link = /** @type {HTMLElement} */ (e.target).closest('.home-btn');
+      if (link) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+  }
+})();
+
+// ─── Page number badge (temporary) ──────────────────────────────────────────
 const PAGE_MAP = {
   '/':                                   1,
   '/simulate/':                          2,

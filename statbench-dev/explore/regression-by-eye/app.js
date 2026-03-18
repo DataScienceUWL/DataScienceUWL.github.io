@@ -17,8 +17,48 @@ import { linreg, formatStat, detectPrecision, sum } from '../../js/stats.js';
 import { createChart, addAxes, formatTick } from '../../js/chart-utils.js';
 import { pointRadius } from '../../js/scatterplot.js';
 import { announce, initTabs, initDataPanel, initHelp } from '../../js/page-utils.js';
+import { parseParams } from '../../js/url-params.js';
+import { createRng, randNormal, randInt } from '../../js/prng.js';
 
 initHelp();
+
+// ─── URL Parameters ─────────────────────────────────────────────────────────
+
+const urlParams = parseParams();
+const searchParams = new URLSearchParams(location.search);
+
+/** Exercise mode — hides the best-fit line checkbox. */
+const exerciseMode = searchParams.get('exercise') === 'true';
+
+/** Embed mode — hides page chrome for iframe embedding. */
+const embedMode = searchParams.get('embed') === 'true';
+
+/** Readonly mode — disables dragging for post-grading review. */
+const readonlyMode = searchParams.get('readonly') === 'true';
+
+/** Metric mode override from URL. */
+const urlMetric = searchParams.get('metric');
+
+/** Controls to show on load (comma-separated: residuals,bestfit). */
+const urlShow = (searchParams.get('show') || '').split(',').map(s => s.trim()).filter(Boolean);
+
+/** Controls to hide (comma-separated: toggle,bestfit,residuals). */
+const urlHide = (searchParams.get('hide') || '').split(',').map(s => s.trim()).filter(Boolean);
+
+/** Sample size for random data generation. */
+const urlN = urlParams.n || null;
+
+/** True slope for random data generation. */
+const urlSlope = urlParams.slope ?? null;
+
+/** True intercept for random data generation. */
+const urlIntercept = urlParams.intercept ?? null;
+
+/** Noise level (0-1) for random data generation. */
+const urlNoise = urlParams.sigma_error ?? null;
+
+/** Seeded PRNG — used for deterministic random data when ?seed= is provided. */
+const seededRng = urlParams.seed ? createRng(urlParams.seed) : null;
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -79,9 +119,6 @@ let announceTimer = 0;
 /** Grab position during drag (0 = left end, 1 = right end). */
 let grabT = 0.5;
 
-/** Exercise mode — hides the LS line checkbox. */
-const exerciseMode = new URLSearchParams(location.search).get('exercise') === 'true';
-
 // ─── DOM Refs ───────────────────────────────────────────────────────────────
 
 const varPanel = /** @type {HTMLDivElement} */ (document.getElementById('var-panel'));
@@ -109,10 +146,38 @@ const sseComparison = /** @type {HTMLDivElement} */ (document.getElementById('ss
 const tryAgainBtn = /** @type {HTMLButtonElement} */ (document.getElementById('try-again-btn'));
 const generateRandomBtn = /** @type {HTMLButtonElement} */ (document.getElementById('generate-random-btn'));
 
-// ─── Exercise mode: hide LS checkbox ────────────────────────────────────────
+// ─── URL-driven mode setup ──────────────────────────────────────────────────
 
-if (exerciseMode) {
+// Exercise mode: hide the best-fit line checkbox
+if (exerciseMode || urlHide.includes('bestfit')) {
     showLsLabel.hidden = true;
+}
+
+// Hide toggle control
+if (urlHide.includes('toggle')) {
+    /** @type {HTMLElement} */ (document.querySelector('.residual-toggle-row')).hidden = true;
+}
+
+// Hide residuals checkbox
+if (urlHide.includes('residuals')) {
+    /** @type {HTMLElement} */ (showResidualsCheck.closest('label')).hidden = true;
+}
+
+// Metric mode from URL (overrides default)
+if (urlMetric === 'absolute' || urlMetric === 'squared') {
+    residualMode = urlMetric;
+    setToggleState();
+}
+
+// Embed mode: hide page chrome for iframe embedding
+if (embedMode) {
+    document.body.setAttribute('data-embed', 'true');
+}
+
+// Readonly mode: disable Try Again button
+if (readonlyMode) {
+    tryAgainBtn.disabled = true;
+    generateRandomBtn.disabled = true;
 }
 
 // ─── Utility ────────────────────────────────────────────────────────────────
@@ -187,14 +252,35 @@ function ladRegression(xs, ys) {
     } else {
         // Heuristic: sample 200 random pairs
         for (let k = 0; k < 200; k++) {
-            const i = Math.floor(Math.random() * n);
+            const i = Math.floor(_rng() * n);
             let j;
-            do { j = Math.floor(Math.random() * n); } while (j === i);
+            do { j = Math.floor(_rng() * n); } while (j === i);
             tryPair(i, j);
         }
     }
 
     return { slope: bestSlope, intercept: bestIntercept, sae: bestSae };
+}
+
+/**
+ * Get the next random float in [0, 1).
+ * Uses seeded PRNG if ?seed= is provided, otherwise Math.random().
+ */
+function _rng() {
+    return seededRng ? seededRng() : Math.random();
+}
+
+/**
+ * Get a normal random variate (mean=0, sd=1).
+ * Uses seeded PRNG if available.
+ */
+function _randNormal() {
+    return seededRng ? randNormal(0, 1, seededRng) : (() => {
+        let u;
+        do { u = Math.random(); } while (u === 0);
+        const v = Math.random();
+        return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+    })();
 }
 
 /**
@@ -205,33 +291,34 @@ function randomizeLine() {
     if (yData.length < 2 || !yScale) return;
     const yMean = sum(yData) / yData.length;
     const yRange = (d3Array.max(yData) ?? 0) - (d3Array.min(yData) ?? 0);
-    const offset = (Math.random() - 0.5) * yRange * 0.4;
-    const tilt = (Math.random() - 0.5) * yRange * 0.3;
+    const offset = (_rng() - 0.5) * yRange * 0.4;
+    const tilt = (_rng() - 0.5) * yRange * 0.3;
     handleLeftY = yMean + offset - tilt;
     handleRightY = yMean + offset + tilt;
 }
 
 /**
  * Generate a random XY dataset with a linear trend + noise.
- * Produces 15-25 points with varied correlation strengths.
- * @param {number} [n] - Number of points (default: random 15-25)
+ * When ?seed= is provided, output is fully deterministic.
+ * URL params ?n=, ?slope=, ?intercept=, ?sigma_error= control the generating model.
+ * @param {number} [n] - Number of points (default: URL param or random 15-25)
  */
 function generateRandomData(n) {
-    const count = n || Math.floor(Math.random() * 11) + 15; // 15-25
-    // Random parameters for the generating model
-    const xMin = Math.floor(Math.random() * 20);       // 0-19
-    const xRange = Math.floor(Math.random() * 30) + 10; // 10-39
-    const trueSlope = (Math.random() - 0.3) * 4;       // slight bias toward positive
-    const trueIntercept = Math.floor(Math.random() * 40) + 10;
+    const count = n || urlN || Math.floor(_rng() * 11) + 15; // 15-25
+    // Random parameters for the generating model (overridable via URL)
+    const xMin = Math.floor(_rng() * 20);                                // 0-19
+    const xRange = Math.floor(_rng() * 30) + 10;                         // 10-39
+    const trueSlope = urlSlope ?? (_rng() - 0.3) * 4;                    // slight bias toward positive
+    const trueIntercept = urlIntercept ?? Math.floor(_rng() * 40) + 10;
     // Noise level controls r: low noise → high r, high noise → low r
-    const noiseFrac = Math.random() * 0.6 + 0.1; // 0.1-0.7
+    const noiseFrac = urlNoise ?? _rng() * 0.6 + 0.1;                    // 0.1-0.7
     const yPredRange = Math.abs(trueSlope) * xRange || 10;
     const noiseSD = yPredRange * noiseFrac;
 
     /** @type {number[]} */ const xs = [];
     /** @type {number[]} */ const ys = [];
     for (let i = 0; i < count; i++) {
-        const x = xMin + Math.random() * xRange;
+        const x = xMin + _rng() * xRange;
         const y = trueIntercept + trueSlope * x + _randNormal() * noiseSD;
         // Round to 1 decimal for clean display
         xs.push(Math.round(x * 10) / 10);
@@ -247,23 +334,16 @@ function generateRandomData(n) {
     varPanel.hidden = true;
     dataSummary.textContent = `${count} random observations`;
 
-    // Reset controls
-    showResidualsCheck.checked = false;
-    showLsCheck.checked = false;
-    residualMode = 'squared';
-    setToggleState();
-
+    // Reset controls (respect URL overrides)
+    showResidualsCheck.checked = urlShow.includes('residuals');
+    showLsCheck.checked = urlShow.includes('bestfit') && !exerciseMode && !urlHide.includes('bestfit');
+    if (!urlMetric) {
+        residualMode = 'squared';
+        setToggleState();
+    }
 
     renderChart();
     announce(`Random dataset: ${count} observations.`);
-}
-
-/** Box-Muller normal random. */
-function _randNormal() {
-    let u, v;
-    do { u = Math.random(); } while (u === 0);
-    v = Math.random();
-    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 }
 
 // ─── Chart Rendering ────────────────────────────────────────────────────────
@@ -401,6 +481,9 @@ function setupLineDrag() {
     annotations.selectAll('.line-hit-area, .line-drag-focus').remove();
 
     const [x0, x1] = xScale.domain();
+
+    // Readonly mode — no dragging
+    if (readonlyMode) return;
 
     const drag = d3Drag.drag()
         .on('start', function (event) {
@@ -799,6 +882,14 @@ function populateVarSelectors() {
         yVarSelect.value = numericColumns[1];
     }
 
+    // URL param variable pre-selection (?x= and ?y=)
+    if (urlParams.x && numericColumns.includes(urlParams.x)) {
+        xVarSelect.value = urlParams.x;
+    }
+    if (urlParams.y && numericColumns.includes(urlParams.y)) {
+        yVarSelect.value = urlParams.y;
+    }
+
     xVar = xVarSelect.value;
     yVar = yVarSelect.value;
     varPanel.hidden = false;
@@ -827,12 +918,13 @@ function loadSelectedVars() {
         }
     }
 
-    // Reset controls for fresh data
-    showResidualsCheck.checked = false;
-    showLsCheck.checked = false;
-    residualMode = 'squared';
-    setToggleState();
-
+    // Reset controls for fresh data (respect URL overrides)
+    showResidualsCheck.checked = urlShow.includes('residuals');
+    showLsCheck.checked = urlShow.includes('bestfit') && !exerciseMode && !urlHide.includes('bestfit');
+    if (!urlMetric) {
+        residualMode = 'squared';
+        setToggleState();
+    }
 
     renderChart();
 }
