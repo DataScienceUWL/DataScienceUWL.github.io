@@ -2,6 +2,10 @@
 /**
  * Regression by Eye — drag a line to fit the data, see residual squares,
  * compare to the least-squares regression line.
+ *
+ * Interaction: grab the line anywhere. Where you grab determines behavior:
+ * - Near an end → pivots around the opposite end
+ * - Near the middle → parallel shift (translate up/down)
  */
 
 import * as d3Selection from 'd3-selection';
@@ -23,11 +27,17 @@ const USER_COLOR_LIGHT = '#009E7399';
 const USER_SQUARE_FILL = '#009E7322';
 const USER_SQUARE_STROKE = '#009E7366';
 const LS_COLOR = '#808080';
-const LS_SQUARE_FILL = '#80808018';
-const LS_SQUARE_STROKE = '#80808044';
 const POINT_FILL = '#569BBD99';
 const POINT_STROKE = '#569BBD';
-const HANDLE_RADIUS = 8; // viewBox units — large enough for touch
+
+/** Extra vertical padding factor (fraction of data range) for line manipulation room. */
+const Y_PAD_FACTOR = 0.25;
+
+/** Width of the invisible hit area for the draggable line (viewBox units). */
+const LINE_HIT_WIDTH = 16;
+
+/** Small endpoint indicators (viewBox units). */
+const ENDPOINT_RADIUS = 5;
 
 /** Debounce interval for screen reader announcements (ms). */
 const ANNOUNCE_DEBOUNCE = 500;
@@ -46,7 +56,7 @@ let dataPrecision = 0;
 /** @type {number[]} */ let xData = [];
 /** @type {number[]} */ let yData = [];
 
-/** Student's line defined by y-values at the left and right edges. */
+/** Student's line defined by y-values at the left and right edges of the x-domain. */
 let handleLeftY = 0;
 let handleRightY = 0;
 
@@ -61,6 +71,9 @@ let lsResult = null;
 
 /** Timer for debounced announcements. */
 let announceTimer = 0;
+
+/** Grab position during drag (0 = left end, 1 = right end). */
+let grabT = 0.5;
 
 /** Exercise mode — hides the LS line checkbox. */
 const exerciseMode = new URLSearchParams(location.search).get('exercise') === 'true';
@@ -121,7 +134,7 @@ function computeResiduals(slope, intercept) {
 
 /**
  * Set handle positions to a "reasonable but wrong" starting line.
- * Places the line at the mean of y ± some random offset.
+ * Roughly near the data but tilted/offset enough to need adjustment.
  */
 function randomizeLine() {
     if (yData.length < 2 || !yScale) return;
@@ -150,22 +163,29 @@ function renderChart() {
     chartContainer.innerHTML = '';
     frame = createChart(chartContainer, {
         titleText: `Regression by Eye: ${yVar} vs ${xVar}`,
-        descText: `Interactive scatterplot. Drag the green handles to fit a line to the data.`,
+        descText: `Interactive scatterplot. Drag the green line to fit the data.`,
         id: 'rbe-chart',
     });
 
-    // Scales with 5% padding
+    // Scales — extra vertical padding so the line can be dragged above/below data
     const xExtent = /** @type {[number,number]} */ (d3Array.extent(xData));
     const yExtent = /** @type {[number,number]} */ (d3Array.extent(yData));
     const xPad = (xExtent[1] - xExtent[0]) * 0.05 || 0.5;
-    const yPad = (yExtent[1] - yExtent[0]) * 0.05 || 0.5;
+    const yDataRange = yExtent[1] - yExtent[0] || 1;
+    const yPad = yDataRange * Y_PAD_FACTOR;
+
+    // Also account for where the LS line intercept falls — extend to include it
+    const lsYAtXMin = lsResult.intercept + lsResult.slope * (xExtent[0] - xPad);
+    const lsYAtXMax = lsResult.intercept + lsResult.slope * (xExtent[1] + xPad);
+    const yLo = Math.min(yExtent[0], lsYAtXMin, lsYAtXMax) - yPad;
+    const yHi = Math.max(yExtent[1], lsYAtXMin, lsYAtXMax) + yPad;
 
     xScale = d3Scale.scaleLinear()
         .domain([xExtent[0] - xPad, xExtent[1] + xPad])
         .range([0, frame.width]);
 
     yScale = d3Scale.scaleLinear()
-        .domain([yExtent[0] - yPad, yExtent[1] + yPad])
+        .domain([yLo, yHi])
         .nice()
         .range([frame.height, 0]);
 
@@ -190,7 +210,7 @@ function renderChart() {
         .attr('stroke', POINT_STROKE)
         .attr('stroke-width', 1);
 
-    // Initialize student line if not already set
+    // Initialize student line
     randomizeLine();
 
     // Draw interactive layers
@@ -198,20 +218,23 @@ function renderChart() {
     drawResiduals();
     drawSquares();
     drawLsLine();
-    drawHandles();
+    setupLineDrag();
 
     // Update sidebar
     sidebar.hidden = false;
     updateStats();
 }
 
-/** Draw or update the student's line. */
+/** Draw or update the student's line + endpoint indicators. */
 function drawUserLine() {
     if (!frame || !xScale || !yScale) return;
     const overlays = d3Selection.select(frame.inner).select('.overlays');
     const [x0, x1] = xScale.domain();
 
-    overlays.selectAll('.user-line').remove();
+    // Remove old line elements (keep the hit area)
+    overlays.selectAll('.user-line, .user-endpoint').remove();
+
+    // Visible line
     overlays.append('line')
         .attr('class', 'user-line')
         .attr('x1', xScale(x0))
@@ -221,6 +244,155 @@ function drawUserLine() {
         .attr('stroke', USER_COLOR)
         .attr('stroke-width', 2.5)
         .style('pointer-events', 'none');
+
+    // Small endpoint indicators
+    overlays.append('circle')
+        .attr('class', 'user-endpoint')
+        .attr('cx', xScale(x0))
+        .attr('cy', yScale(handleLeftY))
+        .attr('r', ENDPOINT_RADIUS)
+        .attr('fill', USER_COLOR)
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 1.5)
+        .style('pointer-events', 'none');
+
+    overlays.append('circle')
+        .attr('class', 'user-endpoint')
+        .attr('cx', xScale(x1))
+        .attr('cy', yScale(handleRightY))
+        .attr('r', ENDPOINT_RADIUS)
+        .attr('fill', USER_COLOR)
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 1.5)
+        .style('pointer-events', 'none');
+}
+
+/**
+ * Set up the invisible hit area for line dragging.
+ * Where you grab determines the behavior:
+ * - Near left end (t ≈ 0) → mostly moves left handle (pivots around right)
+ * - Near right end (t ≈ 1) → mostly moves right handle (pivots around left)
+ * - Near middle (t ≈ 0.5) → parallel shift (both handles move equally)
+ */
+function setupLineDrag() {
+    if (!frame || !xScale || !yScale) return;
+    const annotations = d3Selection.select(frame.inner).select('.annotations');
+    annotations.selectAll('.line-hit-area, .line-drag-focus').remove();
+
+    const [x0, x1] = xScale.domain();
+
+    const drag = d3Drag.drag()
+        .on('start', function (event) {
+            // Determine where along the line the user grabbed (0 = left, 1 = right)
+            const px = event.x;
+            const px0 = /** @type {Function} */ (xScale)(x0);
+            const px1 = /** @type {Function} */ (xScale)(x1);
+            grabT = Math.max(0, Math.min(1, (px - px0) / (px1 - px0)));
+        })
+        .on('drag', function (event) {
+            if (!yScale || !frame) return;
+            // Convert pixel dy to data dy
+            const dy = /** @type {Function} */ (yScale).invert(event.y) -
+                       /** @type {Function} */ (yScale).invert(event.y - event.dy);
+
+            // Weight: how much each handle moves based on grab position
+            // grabT=0 → left moves fully, right stays; grabT=1 → opposite
+            // grabT=0.5 → both move equally (parallel shift)
+            const leftWeight = 1 - grabT;   // 1.0 at left end, 0.0 at right end
+            const rightWeight = grabT;       // 0.0 at left end, 1.0 at right end
+
+            handleLeftY += dy * leftWeight;
+            handleRightY += dy * rightWeight;
+
+            updateFromDrag();
+        });
+
+    // Invisible wide hit area for easy grabbing
+    annotations.append('line')
+        .attr('class', 'line-hit-area')
+        .attr('x1', xScale(x0))
+        .attr('y1', yScale(handleLeftY))
+        .attr('x2', xScale(x1))
+        .attr('y2', yScale(handleRightY))
+        .attr('stroke', 'transparent')
+        .attr('stroke-width', LINE_HIT_WIDTH)
+        .style('cursor', 'grab')
+        .style('touch-action', 'none')
+        .call(/** @type {any} */ (drag))
+        .on('mousedown.cursor', function () {
+            d3Selection.select(this).style('cursor', 'grabbing');
+        })
+        .on('mouseup.cursor', function () {
+            d3Selection.select(this).style('cursor', 'grab');
+        });
+
+    // Focusable element for keyboard control
+    annotations.append('rect')
+        .attr('class', 'line-drag-focus')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', frame.width)
+        .attr('height', frame.height)
+        .attr('fill', 'none')
+        .attr('stroke', 'none')
+        .attr('tabindex', 0)
+        .attr('role', 'slider')
+        .attr('aria-label', 'Movable regression line. Use arrow keys to adjust.')
+        .attr('aria-valuenow', () => {
+            const { sse } = computeResiduals(...Object.values(userLineParams()));
+            return sse.toFixed(1);
+        })
+        .style('outline', 'none')
+        .on('focus', function () {
+            // Show a subtle outline around chart when focused
+            d3Selection.select(this).attr('stroke', USER_COLOR).attr('stroke-width', 1.5).attr('stroke-dasharray', '4,3');
+        })
+        .on('blur', function () {
+            d3Selection.select(this).attr('stroke', 'none');
+        })
+        .on('keydown', function (event) {
+            if (!yScale) return;
+            const [yMin, yMax] = yScale.domain();
+            const yRange = yMax - yMin;
+            const step = event.shiftKey ? yRange * 0.05 : yRange * 0.01;
+
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                // Parallel shift up
+                handleLeftY += step;
+                handleRightY += step;
+            } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                // Parallel shift down
+                handleLeftY -= step;
+                handleRightY -= step;
+            } else if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                // Increase slope (tilt clockwise)
+                handleLeftY -= step * 0.5;
+                handleRightY += step * 0.5;
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                // Decrease slope (tilt counter-clockwise)
+                handleLeftY += step * 0.5;
+                handleRightY -= step * 0.5;
+            } else {
+                return;
+            }
+
+            updateFromDrag();
+        });
+}
+
+/** Update the hit area position to match the current line. */
+function updateHitArea() {
+    if (!frame || !xScale || !yScale) return;
+    const annotations = d3Selection.select(frame.inner).select('.annotations');
+    const [x0, x1] = xScale.domain();
+
+    annotations.select('.line-hit-area')
+        .attr('y1', yScale(handleLeftY))
+        .attr('y2', yScale(handleRightY));
 }
 
 /** Draw or update residual lines (vertical dashed lines from point to user line). */
@@ -271,24 +443,20 @@ function drawSquares() {
         .each(function (d) {
             const el = d3Selection.select(this);
             const absRes = Math.abs(d.residual);
-            // Square side in pixels
-            const sideX = Math.abs(/** @type {Function} */ (xScale)(d.x + absRes) - /** @type {Function} */ (xScale)(d.x));
-            const sideY = Math.abs(/** @type {Function} */ (yScale)(d.yHat) - /** @type {Function} */ (yScale)(d.yHat + absRes));
-            // Use the smaller of the two for a proper square appearance
-            const side = Math.min(sideX, sideY);
 
-            // Position: corner at data point, extend toward the line
+            // Square side in pixels — use the y-scale to get a consistent square
+            // (same number of data units on both axes, rendered as pixels)
+            const sideY = Math.abs(/** @type {Function} */ (yScale)(d.yHat) - /** @type {Function} */ (yScale)(d.yHat + absRes));
+
             const px = /** @type {Function} */ (xScale)(d.x);
             const pyPoint = /** @type {Function} */ (yScale)(d.y);
             const pyHat = /** @type {Function} */ (yScale)(d.yHat);
-
-            // Square extends from the point toward the line vertically
             const top = Math.min(pyPoint, pyHat);
 
-            // Horizontal: extend to the right from the point
+            // Square extends to the right from the data point, height = residual
             el.attr('x', px)
                 .attr('y', top)
-                .attr('width', side)
+                .attr('width', sideY)
                 .attr('height', Math.abs(pyPoint - pyHat))
                 .attr('fill', USER_SQUARE_FILL)
                 .attr('stroke', USER_SQUARE_STROKE)
@@ -318,105 +486,13 @@ function drawLsLine() {
         .style('pointer-events', 'none');
 }
 
-/** Create draggable handles at the line endpoints. */
-function drawHandles() {
-    if (!frame || !xScale || !yScale) return;
-    const annotations = d3Selection.select(frame.inner).select('.annotations');
-    annotations.selectAll('.drag-handle').remove();
-
-    const [x0, x1] = xScale.domain();
-    const [yMin, yMax] = yScale.domain();
-
-    const handles = [
-        { id: 'left', dataX: x0, dataY: handleLeftY },
-        { id: 'right', dataX: x1, dataY: handleRightY },
-    ];
-
-    const drag = d3Drag.drag()
-        .on('drag', function (event) {
-            const handle = d3Selection.select(this);
-            const hid = handle.attr('data-handle');
-            // Clamp to y-scale range
-            const newPixelY = Math.max(0, Math.min(frame?.height ?? 0, event.y));
-            const newDataY = /** @type {Function} */ (yScale).invert(newPixelY);
-
-            if (hid === 'left') {
-                handleLeftY = newDataY;
-            } else {
-                handleRightY = newDataY;
-            }
-
-            handle.attr('cy', newPixelY);
-            updateFromDrag();
-        });
-
-    annotations.selectAll('.drag-handle')
-        .data(handles)
-        .join('circle')
-        .attr('class', 'drag-handle')
-        .attr('data-handle', d => d.id)
-        .attr('cx', d => /** @type {Function} */ (xScale)(d.dataX))
-        .attr('cy', d => /** @type {Function} */ (yScale)(d.dataY))
-        .attr('r', HANDLE_RADIUS)
-        .attr('fill', USER_COLOR)
-        .attr('stroke', '#fff')
-        .attr('stroke-width', 2)
-        .attr('tabindex', 0)
-        .attr('role', 'slider')
-        .attr('aria-label', d => `${d.id === 'left' ? 'Left' : 'Right'} handle`)
-        .attr('aria-valuemin', yMin)
-        .attr('aria-valuemax', yMax)
-        .attr('aria-valuenow', d => d.dataY.toFixed(1))
-        .style('cursor', 'ns-resize')
-        .style('touch-action', 'none')
-        .call(/** @type {any} */ (drag))
-        .on('keydown', function (event) {
-            const handle = d3Selection.select(this);
-            const hid = handle.attr('data-handle');
-            const yRange = yMax - yMin;
-            const step = event.shiftKey ? yRange * 0.05 : yRange * 0.01;
-            let newY = hid === 'left' ? handleLeftY : handleRightY;
-
-            if (event.key === 'ArrowUp') {
-                event.preventDefault();
-                newY += step;
-            } else if (event.key === 'ArrowDown') {
-                event.preventDefault();
-                newY -= step;
-            } else {
-                return;
-            }
-
-            // Clamp
-            newY = Math.max(yMin, Math.min(yMax, newY));
-
-            if (hid === 'left') {
-                handleLeftY = newY;
-            } else {
-                handleRightY = newY;
-            }
-
-            handle.attr('cy', /** @type {Function} */ (yScale)(newY))
-                .attr('aria-valuenow', newY.toFixed(1));
-            updateFromDrag();
-        });
-}
-
-/** Fast update during dragging — redraw line, residuals, squares, stats. */
+/** Fast update during dragging — redraw line, residuals, squares, hit area, stats. */
 function updateFromDrag() {
     drawUserLine();
+    updateHitArea();
     drawResiduals();
     drawSquares();
     updateStats();
-
-    // Update handle aria values
-    if (frame) {
-        const annotations = d3Selection.select(frame.inner).select('.annotations');
-        annotations.select('[data-handle="left"]')
-            .attr('aria-valuenow', handleLeftY.toFixed(1));
-        annotations.select('[data-handle="right"]')
-            .attr('aria-valuenow', handleRightY.toFixed(1));
-    }
 
     // Debounced screen reader announcement
     clearTimeout(announceTimer);
@@ -451,35 +527,26 @@ function updateStats() {
     }
 
     // Build stats cards
+    const lsSse = lsResult ? lsResult.residuals.reduce((s, e) => s + e * e, 0) : 0;
     let html = '';
 
-    // Always show slope and intercept separately (for exercise copying)
+    // SSE — always visible (the core metric for this tool)
     html += `
-        <div class="stats-grid">
-            <div class="stat-card yours">
-                <div class="stat-label">Your Slope</div>
-                <div class="stat-value">${formatStat(slope, d)}</div>
-            </div>
-            <div class="stat-card yours">
-                <div class="stat-label">Your Intercept</div>
-                <div class="stat-value">${formatStat(intercept, d)}</div>
-            </div>`;
-
+    <div class="stats-grid">
+        <div class="stat-card yours">
+            <div class="stat-label">Your SSE</div>
+            <div class="stat-value">${formatStat(sse, d)}</div>
+        </div>`;
     if (showLsCheck.checked && lsResult) {
         html += `
-            <div class="stat-card ls">
-                <div class="stat-label">LS Slope</div>
-                <div class="stat-value">${formatStat(lsResult.slope, d)}</div>
-            </div>
-            <div class="stat-card ls">
-                <div class="stat-label">LS Intercept</div>
-                <div class="stat-value">${formatStat(lsResult.intercept, d)}</div>
-            </div>`;
+        <div class="stat-card ls${sse <= lsSse * 1.01 ? ' winner' : ''}">
+            <div class="stat-label">LS SSE</div>
+            <div class="stat-value">${formatStat(lsSse, d)}</div>
+        </div>`;
     }
-
     html += `</div>`;
 
-    // SAE (when residuals visible)
+    // SAE (when residuals visible — ties to the residual lines visually)
     if (showResidualsCheck.checked) {
         html += `
         <div class="stats-grid" style="margin-top:0.4rem;">
@@ -490,36 +557,15 @@ function updateStats() {
         </div>`;
     }
 
-    // SSE (when squares visible)
-    if (showSquaresCheck.checked) {
-        const lsSse = lsResult ? lsResult.residuals.reduce((s, e) => s + e * e, 0) : 0;
-        html += `
-        <div class="stats-grid" style="margin-top:0.4rem;">
-            <div class="stat-card yours">
-                <div class="stat-label">Your SSE</div>
-                <div class="stat-value">${formatStat(sse, d)}</div>
-            </div>`;
-        if (showLsCheck.checked && lsResult) {
-            html += `
-            <div class="stat-card ls${sse <= lsSse * 1.01 ? ' winner' : ''}">
-                <div class="stat-label">LS SSE</div>
-                <div class="stat-value">${formatStat(lsSse, d)}</div>
-            </div>`;
-        }
-        html += `</div>`;
-
-        // SSE comparison text
-        if (showLsCheck.checked && lsResult && lsSse > 0) {
-            const pctHigher = ((sse - lsSse) / lsSse * 100);
-            if (pctHigher <= 1) {
-                sseComparison.innerHTML = `<strong>Excellent!</strong> Your line is very close to the least-squares line.`;
-            } else {
-                sseComparison.innerHTML = `Your SSE is <strong>${formatStat(pctHigher, 1)}% higher</strong> than the LS line.`;
-            }
-            sseComparison.hidden = false;
+    // SSE comparison text (when LS line visible)
+    if (showLsCheck.checked && lsResult && lsSse > 0) {
+        const pctHigher = ((sse - lsSse) / lsSse * 100);
+        if (pctHigher <= 1) {
+            sseComparison.innerHTML = `<strong>Excellent!</strong> Your line is very close to the least-squares line.`;
         } else {
-            sseComparison.hidden = true;
+            sseComparison.innerHTML = `Your SSE is <strong>${formatStat(pctHigher, 1)}% higher</strong> than the LS line.`;
         }
+        sseComparison.hidden = false;
     } else {
         sseComparison.hidden = true;
     }
@@ -642,10 +688,10 @@ tryAgainBtn.addEventListener('click', () => {
     showLsCheck.checked = false;
     randomizeLine();
     drawUserLine();
+    updateHitArea();
     drawResiduals();
     drawSquares();
     drawLsLine();
-    drawHandles();
     updateStats();
     announce('Line reset. Try to minimize the sum of squared errors.');
 });
