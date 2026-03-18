@@ -98,7 +98,7 @@ const toggleAbsoluteBtn = /** @type {HTMLButtonElement} */ (document.getElementB
 const toggleSquaredBtn = /** @type {HTMLButtonElement} */ (document.getElementById('toggle-squared'));
 
 /** @type {'absolute' | 'squared'} */
-let residualMode = 'absolute';
+let residualMode = 'squared';
 
 const yourEqBlock = /** @type {HTMLDivElement} */ (document.getElementById('your-equation'));
 const yourEqText = /** @type {HTMLDivElement} */ (document.getElementById('your-eq-text'));
@@ -250,7 +250,7 @@ function generateRandomData(n) {
     // Reset controls
     showResidualsCheck.checked = false;
     showLsCheck.checked = false;
-    residualMode = 'absolute';
+    residualMode = 'squared';
     setToggleState();
 
 
@@ -458,7 +458,9 @@ function setupLineDrag() {
         .attr('stroke', 'none')
         .attr('tabindex', 0)
         .attr('role', 'slider')
-        .attr('aria-label', 'Movable regression line. Use arrow keys to adjust.')
+        .attr('aria-label', 'Movable regression line. Use arrow keys to shift up/down, left/right to adjust slope.')
+        .attr('aria-valuemin', 0)
+        .attr('aria-valuemax', 999999)
         .attr('aria-valuenow', () => {
             const { sse } = computeResiduals(...Object.values(userLineParams()));
             return sse.toFixed(1);
@@ -828,7 +830,7 @@ function loadSelectedVars() {
     // Reset controls for fresh data
     showResidualsCheck.checked = false;
     showLsCheck.checked = false;
-    residualMode = 'absolute';
+    residualMode = 'squared';
     setToggleState();
 
 
