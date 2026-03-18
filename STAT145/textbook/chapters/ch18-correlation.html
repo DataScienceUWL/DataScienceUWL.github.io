@@ -702,91 +702,6 @@ Figure&nbsp;19.6: Six scatterplots of crop yield percentages across countries. E
 </div>
 </div></li>
 </ol>
-<!--- MOM ims-07-03
-ims_exercise: "7.3"
-title: "Identify relationships, I"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.3 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-$n = 80
-
-// Randomly pick one of several relationship types
-$type = rand(0, 5)
-
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = round(rrand(0, 6, 0.05), 2)
-}
-sort($x)
-
-if ($type == 0) {
-  // Strong positive linear
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round(3 * $x[$i] + 10 + normalrand(0, 2), 2)
-  }
-  $ans_strength = "Strong"
-  $ans_linear = "Yes"
-} elseif ($type == 1) {
-  // Weak positive linear
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round(3 * $x[$i] + 10 + normalrand(0, 15), 2)
-  }
-  $ans_strength = "Weak"
-  $ans_linear = "Yes"
-} elseif ($type == 2) {
-  // U-shaped (nonlinear)
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round(($x[$i] - 3) * ($x[$i] - 3) - 4 + normalrand(0, 1.5), 2)
-  }
-  $ans_strength = "Moderate"
-  $ans_linear = "No"
-} elseif ($type == 3) {
-  // Strong negative linear
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round(-5 * $x[$i] + 30 + normalrand(0, 2), 2)
-  }
-  $ans_strength = "Strong"
-  $ans_linear = "Yes"
-} elseif ($type == 4) {
-  // No relationship
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round(normalrand(0, 10), 2)
-  }
-  $ans_strength = "None"
-  $ans_linear = "No"
-} else {
-  // Inverted U (nonlinear)
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round(-1 * ($x[$i] - 3) * ($x[$i] - 3) + 10 + normalrand(0, 2), 2)
-  }
-  $ans_strength = "Moderate"
-  $ans_linear = "No"
-}
-
-$scatter = scatterplot($x, $y, label="x", ylabel="y")
-
-$strength_choices = array("Strong", "Moderate", "Weak", "None")
-$linear_choices = array("Yes", "No")
-
-// === Question Text ===
-// The scatterplot below shows the relationship between two variables.
-//
-// $scatter
-//
-// (a) What is the strength of the relationship? $answerbox[0]
-// (b) Would fitting a linear model be reasonable? $answerbox[1]
-
-// === Answer ===
-$answer[0] = $ans_strength
-$answer[1] = $ans_linear
-$displayformat[0] = "radio"
-$displayformat[1] = "radio"
-
-END MOM --->
 <ol start="2" type="1">
 <li><p><strong>Identify relationships, II.</strong> For each of the six plots, identify the strength of the relationship (e.g., weak, moderate, or strong) in the data and whether fitting a linear model would be reasonable.</p>
 <div class="cell">
@@ -799,194 +714,29 @@ END MOM --->
 </div>
 </div></li>
 </ol>
-<!--- MOM ims-07-04
-ims_exercise: "7.4"
-title: "Identify relationships, II"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.4 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-$n = 80
-
-$type = rand(0, 5)
-
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = round(rrand(-3, 4, 0.05), 2)
-}
-sort($x)
-
-if ($type == 0) {
-  // S-shaped (cubic)
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round(-0.5 * $x[$i] * $x[$i] * $x[$i] + $x[$i] * $x[$i] + $x[$i] + normalrand(0, 2), 2)
-  }
-  $ans_strength = "Moderate"
-  $ans_direction = "Nonlinear (S-shaped curve)"
-  $ans_linear = "No"
-} elseif ($type == 1) {
-  // Strong positive linear
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round(3 * $x[$i] + normalrand(0, 2), 2)
-  }
-  $ans_strength = "Strong"
-  $ans_direction = "Positive linear"
-  $ans_linear = "Yes"
-} elseif ($type == 2) {
-  // Weak positive linear
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round(3 * $x[$i] + normalrand(0, 15), 2)
-  }
-  $ans_strength = "Weak"
-  $ans_direction = "Positive linear"
-  $ans_linear = "Yes"
-} elseif ($type == 3) {
-  // Moderate negative linear
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round(-3 * $x[$i] + normalrand(0, 5), 2)
-  }
-  $ans_strength = "Moderate"
-  $ans_direction = "Negative linear"
-  $ans_linear = "Yes"
-} elseif ($type == 4) {
-  // Weak negative linear
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round(-3 * $x[$i] + normalrand(0, 10), 2)
-  }
-  $ans_strength = "Weak"
-  $ans_direction = "Negative linear"
-  $ans_linear = "Yes"
-} else {
-  // Hockey-stick (quartic)
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round(2 * pow($x[$i], 4) - 0.5 * pow($x[$i], 3) + normalrand(0, 30), 2)
-  }
-  $ans_strength = "Moderate"
-  $ans_direction = "Nonlinear (U-shaped curve)"
-  $ans_linear = "No"
-}
-
-$scatter = scatterplot($x, $y, label="x", ylabel="y")
-
-$strength_choices = array("Strong", "Moderate", "Weak", "None")
-$direction_choices = array("Positive linear", "Negative linear", "Nonlinear (U-shaped curve)", "Nonlinear (S-shaped curve)")
-$linear_choices = array("Yes", "No")
-
-// === Question Text ===
-// The scatterplot below shows the relationship between two variables.
-//
-// $scatter
-//
-// (a) What is the strength of the relationship? $answerbox[0]
-// (b) How would you describe the direction/form? $answerbox[1]
-// (c) Would fitting a linear model be reasonable? $answerbox[2]
-
-// === Answer ===
-$answer[0] = $ans_strength
-$answer[1] = $ans_direction
-$answer[2] = $ans_linear
-$displayformat[0] = "radio"
-$displayformat[1] = "radio"
-$displayformat[2] = "radio"
-
-END MOM --->
 <ol start="3" type="1">
 <li><p><strong>Midterms and final.</strong> The two scatterplots below show the relationship between the overall course average and two midterm exams (Exam 1 and Exam 2) recorded for 233 students during several years for a statistics course at a university.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="ch18-correlation_files/figure-html/unnamed-chunk-4-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="ch18-correlation_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="2100"></a></p>
+<p><a href="ch18-correlation_files/figure-html/unnamed-chunk-4-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="ch18-correlation_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" style="width:90.0%"></a></p>
 </figure>
 </div>
 </div>
 </div>
 <ol type="a">
 <li><p>Based on these graphs, which of the two exams has the strongest correlation with the course grade? Explain.</p></li>
-<li><p>Can you think of a reason why the correlation between the exam you chose in part (a) and the course grade is higher?</p></li>
+<li><p>Can you think of a reason why the correlation between the exam you chose in part (a) and the course grade is higher? </p></li>
 </ol></li>
 </ol>
-<!--- MOM ims-07-05
-ims_exercise: "7.5"
-title: "Midterms and final"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.5 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate course grades and two exam scores with different correlations
-$n = 40
-$course = normrand(75, 10, $n, 1)
-
-// Exam 1: weaker correlation with course grade
-$noise1 = rrand(12, 18, 1)
-for ($i = 0; $i < $n; $i++) {
-  $exam1[$i] = round($course[$i] * rrand(0.6, 0.8, 0.1) + rand(10, 25) + normalrand(0, $noise1), 1)
-}
-
-// Exam 2: stronger correlation with course grade
-$noise2 = rrand(4, 7, 1)
-for ($i = 0; $i < $n; $i++) {
-  $exam2[$i] = round($course[$i] * rrand(0.85, 1.0, 0.05) + rand(2, 10) + normalrand(0, $noise2), 1)
-}
-
-$reg1 = linreg($exam1, $course)
-$r1 = round(abs($reg1[0]), 3)
-$reg2 = linreg($exam2, $course)
-$r2 = round(abs($reg2[0]), 3)
-
-// Determine which is stronger
-if ($r2 > $r1) {
-  $correct = "Exam 2"
-  $explain = "Exam 2 has a correlation of $r2 with the course grade, which is stronger than Exam 1's correlation of $r1. The points in the Exam 2 scatterplot cluster more tightly around the regression line."
-} else {
-  $correct = "Exam 1"
-  $explain = "Exam 1 has a correlation of $r1 with the course grade, which is stronger than Exam 2's correlation of $r2."
-}
-
-$scatter1 = scatterplot($exam1, $course, label="Exam 1 grade", ylabel="Course grade")
-$scatter2 = scatterplot($exam2, $course, label="Exam 2 grade", ylabel="Course grade")
-
-$choices = array("Exam 1", "Exam 2")
-
-// === Question Text ===
-// The two scatterplots below show the relationship between the overall course grade
-// and two midterm exams for a statistics course.
-//
-// $scatter1
-//
-// $scatter2
-//
-// (a) Which exam has a stronger correlation with the course grade? $answerbox[0]
-//
-// (b) The correlation between Exam 1 and the course grade is r = $r1.
-//     The correlation between Exam 2 and the course grade is r = $r2.
-//     What is the difference |r&#8322; - r&#8321;|? $answerbox[1]
-//
-// [if showork]
-// $explain
-// [/if]
-
-// === Answer ===
-$answer[0] = $correct
-$displayformat[0] = "radio"
-$answer[1] = round(abs($r2 - $r1), 3)
-$abstolerance[1] = 0.01
-
-END MOM --->
 <ol start="4" type="1">
 <li><p><strong>Meat consumption and life expectancy.</strong> In data collected for <span class="citation" data-cites="You:2022">@You:2022</span>, total meat intake is associated with life expectancy (at birth) in 175 countries. Meat intake is measured in kg per capita per year (averaged over 2011 to 2013). Additionally, the authors collected data on carbohydrate crops (e.g., cereals, root, sugar, etc.) in kg per capita per year (averaged over 2011 and 2013). The scatterplot on the left shows the life expectancy at birth plotted against the per capita meat consumption. The scatterplot on the right shows the amount of carbohydrate consumption plotted against the per capita meat consumption.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="ch18-correlation_files/figure-html/unnamed-chunk-5-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="ch18-correlation_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="2100"></a></p>
+<p><a href="ch18-correlation_files/figure-html/unnamed-chunk-5-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="ch18-correlation_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" style="width:90.0%"></a></p>
 </figure>
 </div>
 </div>
@@ -998,89 +748,6 @@ END MOM --->
 <li><p>Data on consumption were originally collected in kilograms. How would the plots above and the correlation values change if the consumption variables were converted to pounds?</p></li>
 </ol></li>
 </ol>
-<!--- MOM ims-07-06
-ims_exercise: "7.6"
-title: "Meat consumption and life expectancy"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.6 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate two relationships: Y1 vs X (positive, moderate) and Y2 vs X (weaker or different)
-$n = 40
-
-// X: a consumption variable
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = round(rrand(5, 100, 0.1), 1)
-}
-sort($x)
-
-// Y1: positive moderate-to-strong relationship (e.g., life expectancy vs meat)
-$r1_target = rrand(0.55, 0.80, 0.01)
-$noise1 = rrand(4, 8, 1)
-for ($i = 0; $i < $n; $i++) {
-  $y1[$i] = round(0.15 * $x[$i] + 60 + normalrand(0, $noise1), 1)
-}
-
-// Y2: weaker positive relationship (e.g., carbs vs meat)
-$noise2 = rrand(15, 30, 1)
-for ($i = 0; $i < $n; $i++) {
-  $y2[$i] = round(0.8 * $x[$i] + 200 + normalrand(0, $noise2), 1)
-}
-
-$reg1 = linreg($x, $y1)
-$r1 = round($reg1[0], 3)
-$reg2 = linreg($x, $y2)
-$r2 = round($reg2[0], 3)
-
-// Determine direction for each
-if ($r1 > 0) { $dir1 = "Positive" } else { $dir1 = "Negative" }
-if ($r2 > 0) { $dir2 = "Positive" } else { $dir2 = "Negative" }
-
-// Which is stronger?
-if (abs($r1) > abs($r2)) {
-  $stronger = "Plot 1 (r = $r1)"
-} else {
-  $stronger = "Plot 2 (r = $r2)"
-}
-
-$scatter1 = scatterplot($x, $y1, label="Variable X", ylabel="Variable Y1")
-$scatter2 = scatterplot($x, $y2, label="Variable X", ylabel="Variable Y2")
-
-$dir_choices = array("Positive", "Negative", "No clear direction")
-$stronger_choices = array("Plot 1 (r = $r1)", "Plot 2 (r = $r2)")
-$unit_choices = array("The correlation would remain the same", "The correlation would increase", "The correlation would decrease")
-
-// === Question Text ===
-// The scatterplots below show the relationship between Variable X and two
-// different response variables (Y1 and Y2).
-//
-// <b>Plot 1: Y1 vs X</b>
-// $scatter1
-//
-// <b>Plot 2: Y2 vs X</b>
-// $scatter2
-//
-// (a) What is the direction of the relationship in Plot 1? $answerbox[0]
-// (b) What is the direction of the relationship in Plot 2? $answerbox[1]
-// (c) Which plot shows a stronger correlation? $answerbox[2]
-// (d) If the units of X were converted from kilograms to pounds,
-//     what would happen to the correlation? $answerbox[3]
-
-// === Answer ===
-$answer[0] = $dir1
-$answer[1] = $dir2
-$answer[2] = $stronger
-$answer[3] = "The correlation would remain the same"
-$displayformat[0] = "radio"
-$displayformat[1] = "radio"
-$displayformat[2] = "radio"
-$displayformat[3] = "radio"
-
-END MOM --->
 <ol start="5" type="1">
 <li><p><strong>Match the correlation, I.</strong> Match each correlation to the corresponding scatterplot.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
 <div class="cell">
@@ -1096,63 +763,9 @@ END MOM --->
 <li><p><span class="math inline">\(r = -0.7\)</span></p></li>
 <li><p><span class="math inline">\(r = 0.45\)</span></p></li>
 <li><p><span class="math inline">\(r = 0.06\)</span></p></li>
-<li><p><span class="math inline">\(r = 0.92\)</span></p></li>
+<li><p><span class="math inline">\(r = 0.92\)</span> </p></li>
 </ol></li>
 </ol>
-<!--- MOM ims-07-07
-ims_exercise: "7.7"
-title: "Match the correlation, I"
-type: multiple_choice
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.7 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-$n = 60
-
-// Generate data with a known target correlation
-$target_r_idx = rand(0, 4)
-$target_rs = array(-0.85, -0.45, 0.05, 0.50, 0.90)
-$target_r = $target_rs[$target_r_idx]
-
-// Construct data to approximate target correlation
-// Use: y = r*x + sqrt(1-r^2)*noise, with x ~ N(0,1)
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = round(normalrand(0, 1), 2)
-  $noise[$i] = normalrand(0, 1)
-  $y[$i] = round($target_r * $x[$i] + sqrt(1 - $target_r * $target_r) * $noise[$i], 2)
-}
-
-$reg = linreg($x, $y)
-$actual_r = round($reg[0], 2)
-
-$scatter = scatterplot($x, $y, label="x", ylabel="y")
-
-// Distractors: nearby r values
-$d1 = round($target_r + rrand(0.20, 0.35, 0.05), 2)
-$d2 = round($target_r - rrand(0.20, 0.35, 0.05), 2)
-$d3 = round(-1 * $target_r, 2)
-if ($d1 > 1) { $d1 = round($target_r - 0.40, 2) }
-if ($d2 < -1) { $d2 = round($target_r + 0.40, 2) }
-
-$choices = array("r = $actual_r", "r = $d1", "r = $d2", "r = $d3")
-shuffle($choices)
-
-// === Question Text ===
-// The scatterplot below shows the relationship between two variables.
-// Which of the following is the most likely value of the correlation coefficient r?
-//
-// $scatter
-//
-// $answerbox
-
-// === Answer ===
-$answer = "r = $actual_r"
-$displayformat = "radio"
-
-END MOM --->
 <ol start="6" type="1">
 <li><p><strong>Match the correlation, II.</strong> Match each correlation to the corresponding scatterplot.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
 <div class="cell">
@@ -1168,67 +781,16 @@ END MOM --->
 <li><p><span class="math inline">\(r = 0.49\)</span></p></li>
 <li><p><span class="math inline">\(r = -0.48\)</span></p></li>
 <li><p><span class="math inline">\(r = -0.03\)</span></p></li>
-<li><p><span class="math inline">\(r = -0.85\)</span></p></li>
+<li><p><span class="math inline">\(r = -0.85\)</span> </p></li>
 </ol></li>
 </ol>
-<!--- MOM ims-07-08
-ims_exercise: "7.8"
-title: "Match the correlation, II"
-type: multiple_choice
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.8 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-$n = 60
-
-// Generate data with a known target correlation (different set from 07-07)
-$target_r_idx = rand(0, 4)
-$target_rs = array(-0.70, -0.30, 0.10, 0.60, 0.80)
-$target_r = $target_rs[$target_r_idx]
-
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = round(normalrand(0, 1), 2)
-  $noise[$i] = normalrand(0, 1)
-  $y[$i] = round($target_r * $x[$i] + sqrt(1 - $target_r * $target_r) * $noise[$i], 2)
-}
-
-$reg = linreg($x, $y)
-$actual_r = round($reg[0], 2)
-
-$scatter = scatterplot($x, $y, label="x", ylabel="y")
-
-$d1 = round($target_r + rrand(0.25, 0.40, 0.05), 2)
-$d2 = round($target_r - rrand(0.25, 0.40, 0.05), 2)
-$d3 = round(-1 * $target_r, 2)
-if ($d1 > 1) { $d1 = round($target_r - 0.45, 2) }
-if ($d2 < -1) { $d2 = round($target_r + 0.45, 2) }
-
-$choices = array("r = $actual_r", "r = $d1", "r = $d2", "r = $d3")
-shuffle($choices)
-
-// === Question Text ===
-// The scatterplot below shows the relationship between two variables.
-// Which of the following is the most likely value of the correlation coefficient r?
-//
-// $scatter
-//
-// $answerbox
-
-// === Answer ===
-$answer = "r = $actual_r"
-$displayformat = "radio"
-
-END MOM --->
 <ol start="7" type="1">
 <li><p><strong>Body measurements, correlation.</strong> Researchers studying anthropometry collected body and skeletal diameter measurements, as well as age, weight, height and sex for 507 physically active individuals. The scatterplot below shows the relationship between height and shoulder girth (circumference of shoulders measured over deltoid muscles), both measured in centimeters.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> <span class="citation" data-cites="Heinz:2003">[@Heinz:2003]</span></p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="ch18-correlation_files/figure-html/unnamed-chunk-8-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-13"><img src="ch18-correlation_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="2100"></a></p>
+<p><a href="ch18-correlation_files/figure-html/unnamed-chunk-8-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-13"><img src="ch18-correlation_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" style="width:90.0%"></a></p>
 </figure>
 </div>
 </div>
@@ -1238,109 +800,16 @@ END MOM --->
 <li><p>How would the relationship change if shoulder girth was measured in inches while the units of height remained in centimeters?</p></li>
 </ol></li>
 </ol>
-<!--- MOM ims-07-09
-ims_exercise: "7.9"
-title: "Body measurements, correlation"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.9 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate body measurement data: x = girth-like, y = height-like
-$n = 50
-$slope_true = rrand(0.4, 0.8, 0.01)
-$intercept_true = rrand(120, 140, 1)
-$noise = rrand(4, 7, 0.5)
-
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = round(normalrand(107, 10), 1)
-  $y[$i] = round($slope_true * $x[$i] + $intercept_true + normalrand(0, $noise), 1)
-}
-
-$reg = linreg($x, $y)
-$r = round($reg[0], 3)
-
-$scatter = scatterplot($x, $y, label="Shoulder girth (cm)", ylabel="Height (cm)")
-
-// Part (a): Describe the direction
-if ($r > 0.3) {
-  $direction = "Positive"
-} elseif ($r < -0.3) {
-  $direction = "Negative"
-} else {
-  $direction = "No clear direction"
-}
-$dir_choices = array("Positive", "Negative", "No clear direction")
-
-// Part (b): If shoulder girth was measured in inches, would correlation change?
-$unit_choices = array("The correlation would remain the same", "The correlation would increase", "The correlation would decrease", "Cannot be determined")
-
-// === Question Text ===
-// The scatterplot below shows the relationship between shoulder girth (cm) and
-// height (cm) for a sample of physically active individuals.
-//
-// $scatter
-//
-// (a) What is the direction of the relationship? $answerbox[0]
-//
-// (b) The correlation for this data is r = $r.
-//     If shoulder girth were instead measured in inches (while height remained in cm),
-//     the correlation would: $answerbox[1]
-
-// === Answer ===
-$answer[0] = $direction
-$answer[1] = "The correlation would remain the same"
-$displayformat[0] = "radio"
-$displayformat[1] = "radio"
-
-END MOM --->
 <ol start="8" type="1">
-<li><strong>Compare correlations.</strong> Eduardo and Rosie are both collecting data on number of rainy days in a year and the total rainfall for the year. Eduardo records rainfall in inches and Rosie in centimeters. How will their correlation coefficients compare?</li>
+<li><strong>Compare correlations.</strong> Eduardo and Rosie are both collecting data on number of rainy days in a year and the total rainfall for the year. Eduardo records rainfall in inches and Rosie in centimeters. How will their correlation coefficients compare? </li>
 </ol>
-<!--- MOM ims-07-10
-ims_exercise: "7.10"
-title: "Compare correlations"
-type: multiple_choice
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.10 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-$scenarios = array(
-  array("Eduardo records rainfall in inches and Rosie in centimeters", "Their correlation coefficients will be exactly the same", "Correlation is unitless and not affected by changes of units."),
-  array("Eduardo measures temperature in Fahrenheit and Rosie in Celsius", "Their correlation coefficients will be exactly the same", "Correlation is unitless and not affected by linear transformations of units."),
-  array("Eduardo measures distance in miles and Rosie in kilometers", "Their correlation coefficients will be exactly the same", "Correlation is unitless and not affected by changes of units.")
-)
-$idx = rand(0, count($scenarios)-1)
-$scenario = $scenarios[$idx][0]
-$correct = $scenarios[$idx][1]
-$explain = $scenarios[$idx][2]
-$choices = array("Their correlation coefficients will be exactly the same", "Eduardo's correlation will be larger", "Rosie's correlation will be larger", "Cannot be determined without more information")
-
-// === Question Text ===
-// $scenario. How will their correlation coefficients compare?
-//
-// $answerbox
-//
-// [if showork]
-// $explain
-// [/if]
-
-// === Answer ===
-$answer = $correct
-$displayformat = "radio"
-
-END MOM --->
 <ol start="9" type="1">
 <li><p><strong>The Coast Starlight, correlation.</strong> The Coast Starlight Amtrak train runs from Seattle to Los Angeles. The scatterplot below displays the distance between each stop (in miles) and the amount of time it takes to travel from one stop to another (in minutes).<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="ch18-correlation_files/figure-html/unnamed-chunk-9-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-14"><img src="ch18-correlation_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="2100"></a></p>
+<p><a href="ch18-correlation_files/figure-html/unnamed-chunk-9-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-14"><img src="ch18-correlation_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" style="width:90.0%"></a></p>
 </figure>
 </div>
 </div>
@@ -1348,71 +817,15 @@ END MOM --->
 <ol type="a">
 <li><p>Describe the relationship between distance and travel time.</p></li>
 <li><p>How would the relationship change if travel time was instead measured in hours, and distance was instead measured in kilometers?</p></li>
-<li><p>Correlation between travel time (in miles) and distance (in minutes) is <span class="math inline">\(r = 0.636\)</span>. What is the correlation between travel time (in kilometers) and distance (in hours)?</p></li>
+<li><p>Correlation between travel time (in miles) and distance (in minutes) is <span class="math inline">\(r = 0.636\)</span>. What is the correlation between travel time (in kilometers) and distance (in hours)? </p></li>
 </ol></li>
 </ol>
-<!--- MOM ims-07-11
-ims_exercise: "7.11"
-title: "The Coast Starlight, correlation"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.11 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate distance-vs-time data
-$n = 30
-for ($i = 0; $i < $n; $i++) {
-  $dist[$i] = round(rand(10, 300), 0)
-  $time[$i] = round(1.1 * $dist[$i] + rand(5, 30) + normalrand(0, 20), 0)
-}
-
-$reg = linreg($dist, $time)
-$r = round($reg[0], 3)
-
-$scatter = scatterplot($dist, $time, label="Distance (miles)", ylabel="Travel time (minutes)")
-
-// Part (a): direction
-if ($r > 0) { $dir = "Positive" } else { $dir = "Negative" }
-$dir_choices = array("Positive", "Negative", "No clear direction")
-
-// Part (b): if units changed, what happens to r?
-$unit_choices = array("It would remain the same (r = $r)", "It would increase", "It would decrease", "It would change sign")
-
-// Part (c): numeric — the correlation value itself
-// Converting miles to km and minutes to hours is a linear transformation, so r is unchanged
-
-// === Question Text ===
-// The scatterplot below shows the relationship between distance (miles) and
-// travel time (minutes) for a commuter train.
-//
-// $scatter
-//
-// (a) What is the direction of the relationship? $answerbox[0]
-//
-// (b) The correlation between distance (miles) and travel time (minutes) is r = $r.
-//     If distance were converted to kilometers and travel time to hours,
-//     what would the correlation be? $answerbox[1]
-//
-// (c) Enter the numerical value of the correlation after the unit conversion: $answerbox[2]
-
-// === Answer ===
-$answer[0] = $dir
-$displayformat[0] = "radio"
-$answer[1] = "It would remain the same (r = $r)"
-$displayformat[1] = "radio"
-$answer[2] = $r
-$abstolerance[2] = 0.001
-
-END MOM --->
 <ol start="10" type="1">
 <li><strong>Crawling babies, correlation.</strong> A study conducted at the University of Denver investigated whether babies take longer to learn to crawl in cold months, when they are often bundled in clothes that restrict their movement, than in warmer months. Infants born during the study year were split into twelve groups, one for each birth month. We consider the average crawling age of babies in each group against the average temperature when the babies are six months old (that’s when babies often begin trying to crawl). Temperature is measured in degrees Fahrenheit (F) and age is measured in weeks.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a> <span class="citation" data-cites="Benson:1993">[@Benson:1993]</span></li>
 </ol>
 <pre><code>::: {.cell}
 ::: {.cell-output-display}
-![](ch18-correlation_files/figure-html/unnamed-chunk-10-1.png){width=2100}
+![](ch18-correlation_files/figure-html/unnamed-chunk-10-1.png){width=90%}
 :::
 :::
 
@@ -1426,60 +839,6 @@ b.  How would the relationship change if temperature was measured in degrees Cel
 
 c.  The correlation between temperature in F and age in weeks was $r=-0.70$.
     If we converted the temperature to C and age to months, what would the correlation be?</code></pre>
-<!--- MOM ims-07-12
-ims_exercise: "7.12"
-title: "Crawling babies, correlation"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.12 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate temperature-vs-crawling-age data (negative relationship)
-$n = 12
-for ($i = 0; $i < $n; $i++) {
-  $temp[$i] = round(rand(30, 80), 0)
-  $age[$i] = round(35 - 0.08 * $temp[$i] + normalrand(0, 1.5), 1)
-}
-
-$reg = linreg($temp, $age)
-$r = round($reg[0], 2)
-
-$scatter = scatterplot($temp, $age, label="Temperature (F)", ylabel="Average crawling age (weeks)")
-
-// Part (a): direction
-if ($r > 0) { $dir = "Positive" } else { $dir = "Negative" }
-$dir_choices = array("Positive", "Negative", "No clear direction")
-
-// Part (b): if units changed (F to C, weeks to months), what happens to r?
-$unit_choices = array("The correlation would stay the same", "The correlation would change sign", "The correlation would become stronger", "The correlation would become weaker")
-
-// === Question Text ===
-// A study investigated whether babies take longer to learn to crawl in cold months.
-// The scatterplot below shows the average crawling age (weeks) vs. temperature (F)
-// for babies born in each month.
-//
-// $scatter
-//
-// (a) What is the direction of the relationship? $answerbox[0]
-//
-// (b) The correlation between temperature (F) and crawling age (weeks) is r = $r.
-//     If temperature were converted to Celsius and age were measured in months,
-//     what would happen to the correlation? $answerbox[1]
-//
-// (c) Enter the numerical value of the correlation after these unit conversions: $answerbox[2]
-
-// === Answer ===
-$answer[0] = $dir
-$displayformat[0] = "radio"
-$answer[1] = "The correlation would stay the same"
-$displayformat[1] = "radio"
-$answer[2] = $r
-$abstolerance[2] = 0.005
-
-END MOM --->
 <ol start="11" type="1">
 <li><strong>Meat and carbohydrate consumption.</strong> What would be the correlation between the per capita meat consumption and per capita carbohydrate consumption if, for each country, people always consumed</li>
 </ol>
@@ -1488,41 +847,6 @@ END MOM --->
 2.  2 kg less of meat than of carbohydrates each year?
 
 3.  half as much meat as carbohydrates each year?</code></pre>
-<!--- MOM ims-07-13
-ims_exercise: "7.13"
-title: "Meat and carbohydrate consumption"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.13 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-// Randomize the constants in each perfect linear relationship
-$a = rand(2, 6)
-$b = rand(1, 5)
-$c = rand(2, 5)
-
-// All three are perfect positive linear relationships, so r = 1
-$ans_a = 1
-$ans_b = 1
-$ans_c = 1
-
-// === Question Text ===
-// What would be the correlation between two variables X and Y if, for each observation:
-//
-// (a) Y was always exactly $a more than X? $answerbox[0]
-// (b) Y was always exactly $b less than X? $answerbox[1]
-// (c) Y was always exactly $c times X? $answerbox[2]
-//
-// <em>Hint: If the relationship between X and Y is a perfect linear function with a positive slope, what is the correlation?</em>
-
-// === Answer ===
-$answer[0] = $ans_a
-$answer[1] = $ans_b
-$answer[2] = $ans_c
-$abstolerance = 0
-
-END MOM --->
 <ol start="12" type="1">
 <li><strong>Graduate degrees and salaries.</strong> What would be the correlation between the annual salaries of people with and without a graduate degree at a company if, for a certain type of position, someone with a graduate degree always made</li>
 </ol>
@@ -1531,89 +855,12 @@ END MOM --->
 b.  25% more than those without a graduate degree?
 
 c.  15% less than those without a graduate degree?</code></pre>
-<!--- MOM ims-07-14
-ims_exercise: "7.14"
-title: "Graduate degrees and salaries"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.14 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-// Randomize the constants
-$bonus = rand(3, 8) * 1000
-$pct_more = rand(10, 30)
-$pct_less = rand(5, 20)
-
-// All are perfect positive linear relationships: y = x + c, y = kx (k > 0)
-// so r = 1 in all cases
-$ans_a = 1
-$ans_b = 1
-$ans_c = 1
-
-// === Question Text ===
-// What would be the correlation between the annual salaries of people with and without a
-// graduate degree at a company if, for a certain type of position, someone with a graduate
-// degree always made:
-//
-// (a) $$bonus more than those without a graduate degree? $answerbox[0]
-// (b) $pct_more% more than those without a graduate degree? $answerbox[1]
-// (c) $pct_less% less than those without a graduate degree? $answerbox[2]
-//
-// <em>Hint: Each scenario describes a perfect linear relationship (y = a + bx with b &gt; 0).
-// What does that imply about the correlation?</em>
-
-// === Answer ===
-$answer[0] = $ans_a
-$answer[1] = $ans_b
-$answer[2] = $ans_c
-$abstolerance = 0
-
-END MOM --->
 <ol start="13" type="1">
 <li><strong>True / False.</strong> Determine if the following statements are true or false. If false, explain why.</li>
 </ol>
 <pre><code>a.  A correlation coefficient of -0.90 indicates a stronger linear relationship than a correlation of 0.5.
 
 b.  Correlation is a measure of the association between any two variables.</code></pre>
-<!--- MOM ims-07-29
-ims_exercise: "7.29"
-title: "True / False"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.29 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-// Randomize the two r values for part (a)
-$r_neg = -1 * rrand(0.80, 0.95, 0.01)
-$r_pos = rrand(0.40, 0.60, 0.01) where (abs($r_pos) < abs($r_neg))
-
-$choices_tf = array("True", "False")
-
-// Part (a): |r_neg| > |r_pos|, so the negative one indicates a stronger linear relationship
-$ans_a = "True"
-
-// Part (b): Correlation measures linear association between two NUMERICAL variables, not any two variables
-$ans_b = "False"
-
-// === Question Text ===
-// Determine if the following statements are true or false.
-//
-// (a) A correlation coefficient of $r_neg indicates a stronger linear relationship
-//     than a correlation of $r_pos. $answerbox[0]
-//
-// (b) Correlation is a measure of the association between any two variables. $answerbox[1]
-//
-// <em>If false, think about what type of variables correlation applies to.</em>
-
-// === Answer ===
-$answer[0] = $ans_a
-$answer[1] = $ans_b
-$displayformat[0] = "radio"
-$displayformat[1] = "radio"
-
-END MOM --->
 <ol start="14" type="1">
 <li><strong>Cherry trees.</strong> The scatterplots below show the relationship between height, diameter, and volume of timber in 31 felled black cherry trees. The diameter of the tree is measured 4.5 feet above the ground.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a></li>
 </ol>
@@ -1634,88 +881,6 @@ b.  Describe the relationship between volume and diameter of these trees.
 c.  Suppose you have height and diameter measurements for another black cherry tree.
     Which of these variables would be preferable to use to predict the volume of timber in this tree using a simple linear regression model?
     Explain your reasoning.</code></pre>
-<!--- MOM ims-07-30
-ims_exercise: "7.30"
-title: "Cherry trees"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.30 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate two predictors for a response variable, with different correlation strengths
-$n = 30
-
-// Response: volume-like
-for ($i = 0; $i < $n; $i++) {
-  $volume[$i] = round(rrand(10, 70, 0.1), 1)
-}
-
-// Predictor 1: weaker correlation (height-like)
-$noise1 = rrand(10, 18, 1)
-for ($i = 0; $i < $n; $i++) {
-  $height[$i] = round(0.3 * $volume[$i] + 60 + normalrand(0, $noise1), 0)
-}
-
-// Predictor 2: stronger correlation (diameter-like)
-$noise2 = rrand(1, 3, 0.5)
-for ($i = 0; $i < $n; $i++) {
-  $diameter[$i] = round(0.15 * $volume[$i] + 8 + normalrand(0, $noise2), 1)
-}
-
-$reg1 = linreg($height, $volume)
-$r1 = round($reg1[0], 3)
-$reg2 = linreg($diameter, $volume)
-$r2 = round($reg2[0], 3)
-
-$scatter1 = scatterplot($height, $volume, label="Height (feet)", ylabel="Volume (cubic feet)")
-$scatter2 = scatterplot($diameter, $volume, label="Diameter (inches)", ylabel="Volume (cubic feet)")
-
-// Which predictor is better?
-if (abs($r2) > abs($r1)) {
-  $better = "Diameter"
-  $explain = "Diameter has a stronger correlation with volume (r = $r2) compared to height (r = $r1), so it would be the better predictor in a simple linear regression."
-} else {
-  $better = "Height"
-  $explain = "Height has a stronger correlation with volume (r = $r1) compared to diameter (r = $r2)."
-}
-
-$predictor_choices = array("Height", "Diameter")
-
-// === Question Text ===
-// The scatterplots below show the relationship between the volume of timber in
-// felled trees and two different predictors: height and diameter.
-//
-// <b>Plot 1: Volume vs Height</b>
-// $scatter1
-//
-// <b>Plot 2: Volume vs Diameter</b>
-// $scatter2
-//
-// (a) The correlation between height and volume is r = $r1.
-//     The correlation between diameter and volume is r = $r2.
-//     Which variable would be preferable to use to predict volume using
-//     simple linear regression? $answerbox[0]
-//
-// (b) What is R&sup2; for the better predictor? $answerbox[1]
-//
-// [if showork]
-// $explain
-// [/if]
-
-// === Answer ===
-$answer[0] = $better
-$displayformat[0] = "radio"
-if (abs($r2) > abs($r1)) {
-  $answer[1] = round($r2 * $r2, 4)
-} else {
-  $answer[1] = round($r1 * $r1, 4)
-}
-$abstolerance[1] = 0.01
-
-END MOM --->
 <ol start="15" type="1">
 <li><strong>Match the correlation, III.</strong> Match each correlation to the corresponding scatterplot.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a></li>
 </ol>
@@ -1736,58 +901,6 @@ b.  r = 0.09
 c.  r = -0.91
 
 d.  r = 0.97</code></pre>
-<!--- MOM ims-07-31
-ims_exercise: "7.31"
-title: "Match the correlation, III"
-type: multiple_choice
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.31 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-$n = 50
-
-// Pick a target r and generate matching data
-$target_r_idx = rand(0, 4)
-$target_rs = array(-0.90, -0.55, 0.02, 0.45, 0.75)
-$target_r = $target_rs[$target_r_idx]
-
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = round(normalrand(50, 20), 1)
-  $noise[$i] = normalrand(0, 1)
-  $y[$i] = round($target_r * ($x[$i] - 50) / 20 + sqrt(1 - $target_r * $target_r) * $noise[$i], 2)
-}
-
-$reg = linreg($x, $y)
-$actual_r = round($reg[0], 2)
-
-$scatter = scatterplot($x, $y, label="x", ylabel="y")
-
-// Generate distractors
-$d1 = round($target_r + 0.30, 2)
-$d2 = round($target_r - 0.30, 2)
-$d3 = round(-1 * $target_r + rrand(-0.05, 0.05, 0.01), 2)
-if ($d1 > 1) { $d1 = round($target_r - 0.50, 2) }
-if ($d2 < -1) { $d2 = round($target_r + 0.50, 2) }
-
-$choices = array("r = $actual_r", "r = $d1", "r = $d2", "r = $d3")
-shuffle($choices)
-
-// === Question Text ===
-// The scatterplot below shows data for two variables.
-// Which of the following is the most likely value of the correlation coefficient?
-//
-// $scatter
-//
-// $answerbox
-
-// === Answer ===
-$answer = "r = $actual_r"
-$displayformat = "radio"
-
-END MOM --->
 
 
 </section>

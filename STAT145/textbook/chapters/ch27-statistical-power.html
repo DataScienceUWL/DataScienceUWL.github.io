@@ -848,154 +848,15 @@ With <span class="math inline">\(n = 250\)</span>: <span class="math inline">\(S
 <li><p>The standard error of <span class="math inline">\(\hat{p}\)</span> when (i)&nbsp;<span class="math inline">\(n = 125\)</span> or (ii)&nbsp;<span class="math inline">\(n = 500\)</span>.</p></li>
 <li><p>The margin of error of a confidence interval when the confidence level is (i)&nbsp;90% or (ii)&nbsp;80%.</p></li>
 <li><p>The p-value for a Z-statistic of 2.5 calculated based on a (i)&nbsp;sample with <span class="math inline">\(n = 500\)</span> or based on a (ii)&nbsp;sample with <span class="math inline">\(n = 1000\)</span>.</p></li>
-<li><p>The probability of making a Type II error when the alternative hypothesis is true and the discernibility level is (i)&nbsp;0.05 or (ii)&nbsp;0.10.</p></li>
+<li><p>The probability of making a Type II error when the alternative hypothesis is true and the discernibility level is (i)&nbsp;0.05 or (ii)&nbsp;0.10. </p></li>
 </ol></li>
 </ol>
-<!--- MOM ims-14-03
-ims_exercise: "14.3"
-title: "Which is higher?"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 14.3 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-// Part a: SE when n is smaller vs larger
-$n_small = randfrom(100, 125, 150, 200)
-$n_large = randfrom(400, 500, 600, 800)
-
-// Part b: ME when confidence level is higher vs lower
-$cl_high = randfrom(90, 95, 99)
-$cl_low_options = array(array(90,80), array(95,90), array(99,95))
-$cl_idx = rand(0, count($cl_low_options)-1)
-$cl_i = $cl_low_options[$cl_idx][0]
-$cl_ii = $cl_low_options[$cl_idx][1]
-
-// Part c: p-value for same Z from different n
-$zval = rrand(1.5, 3.0, 0.1)
-$n_c1 = randfrom(200, 500, 800)
-$n_c2 = randfrom(1000, 1500, 2000)
-
-// Part d: P(Type II) at different alpha levels
-$alpha_strict = randfrom(0.01, 0.05)
-$alpha_lenient = randfrom(0.05, 0.10)
-// Ensure strict < lenient
-if ($alpha_strict >= $alpha_lenient) { $alpha_strict = 0.01; $alpha_lenient = 0.10; }
-
-$compare_choices = array("Scenario (i)", "Scenario (ii)", "Equal")
-
-// Answers
-$ans_a = "Scenario (i)"
-$ans_b = "Scenario (i)"
-$ans_c = "Equal"
-$ans_d = "Scenario (i)"
-
-// === Question Text ===
-// <p>In each part below, there is a value of interest and two scenarios: (i) and (ii).
-// For each part, report if the value of interest is larger under scenario (i), scenario (ii), or whether the value is equal under the scenarios.</p>
-//
-// <p>(a) The standard error of `hat p` when (i) n = $n_small or (ii) n = $n_large.</p>
-// <p>$answerbox[0]</p>
-//
-// <p>(b) The margin of error of a confidence interval when the confidence level is (i) $cl_i% or (ii) $cl_ii%.</p>
-// <p>$answerbox[1]</p>
-//
-// <p>(c) The p-value for a Z-statistic of $zval calculated based on a (i) sample with n = $n_c1 or based on a (ii) sample with n = $n_c2.</p>
-// <p>$answerbox[2]</p>
-//
-// <p>(d) The probability of making a Type II error when the alternative hypothesis is true and the discernibility level is (i) $alpha_strict or (ii) $alpha_lenient.</p>
-// <p>$answerbox[3]</p>
-
-// === Answer ===
-$displayformat[0] = "radio"
-$displayformat[1] = "radio"
-$displayformat[2] = "radio"
-$displayformat[3] = "radio"
-$answer[0] = $ans_a
-$answer[1] = $ans_b
-$answer[2] = $ans_c
-$answer[3] = $ans_d
-$questions[0] = $compare_choices
-$questions[1] = $compare_choices
-$questions[2] = $compare_choices
-$questions[3] = $compare_choices
-
-// === Solution ===
-// <p>(a) Scenario (i). A smaller sample size produces a larger standard error.</p>
-// <p>(b) Scenario (i). A higher confidence level requires a larger margin of error.</p>
-// <p>(c) Equal. The p-value depends on the Z-statistic, not directly on n. Since Z is given as $zval for both, the p-values are the same.</p>
-// <p>(d) Scenario (i). A stricter (lower) alpha makes it harder to reject H0, so we are more likely to make a Type II error when HA is true.</p>
-
-END MOM --->
 <ol start="2" type="1">
-<li><strong>Same observation, different sample size.</strong> Suppose you conduct a hypothesis test based on a sample where the sample size is <span class="math inline">\(n = 50\)</span>, and arrive at a p-value of 0.08. You then refer back to your notes and discover that you made a careless mistake, the sample size should have been <span class="math inline">\(n = 500\)</span>. Will your p-value increase, decrease, or stay the same? Explain.</li>
+<li><strong>Same observation, different sample size.</strong> Suppose you conduct a hypothesis test based on a sample where the sample size is <span class="math inline">\(n = 50\)</span>, and arrive at a p-value of 0.08. You then refer back to your notes and discover that you made a careless mistake, the sample size should have been <span class="math inline">\(n = 500\)</span>. Will your p-value increase, decrease, or stay the same? Explain. </li>
 </ol>
-<!--- MOM ims-14-06
-ims_exercise: "14.6"
-title: "Same observation, different sample size"
-type: calculated
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 14.6 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-$n_small = randfrom(30, 40, 50, 60, 75)
-$n_large = $n_small * randfrom(5, 8, 10)
-$pval_orig = rrand(0.04, 0.12, 0.01)
-
-$choices = array(
-  "The p-value will decrease",
-  "The p-value will increase",
-  "The p-value will stay the same"
-)
-$answer_val = "The p-value will decrease"
-
-// === Question Text ===
-// <p>Suppose you conduct a hypothesis test based on a sample where the sample size is n = $n_small, and arrive at a p-value of $pval_orig. You then refer back to your notes and discover that you made a careless mistake — the sample size should have been n = $n_large.</p>
-// <p>Will your p-value increase, decrease, or stay the same? (Assume the sample proportion or sample mean stays the same.)</p>
-// <p>$answerbox</p>
-
-// === Answer ===
-$displayformat = "radio"
-$answer = $answer_val
-$questions = $choices
-
-// === Solution ===
-// <p>The p-value will decrease. A larger sample size decreases the standard error, which increases the magnitude of the test statistic, which in turn decreases the p-value (assuming the observed effect stays the same).</p>
-
-END MOM --->
 <ol start="3" type="1">
-<li><strong>Practical importance vs.&nbsp;statistical discernibility.</strong> Determine whether the following statement is true or false, and explain your reasoning: “With large sample sizes, even small differences between the null value and the observed point estimate can be statistically discernible.”</li>
+<li><strong>Practical importance vs.&nbsp;statistical discernibility.</strong> Determine whether the following statement is true or false, and explain your reasoning: “With large sample sizes, even small differences between the null value and the observed point estimate can be statistically discernible.” </li>
 </ol>
-<!--- MOM ims-14-09
-ims_exercise: "14.9"
-title: "Practical importance vs. statistical discernibility"
-type: calculated
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 14.9 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-$choices = array(
-  "True — with large samples, the standard error shrinks, so even tiny differences from the null value produce large test statistics and small p-values.",
-  "False — sample size has no effect on whether differences are statistically discernible."
-)
-$answer_val = "True — with large samples, the standard error shrinks, so even tiny differences from the null value produce large test statistics and small p-values."
-
-// === Question Text ===
-// <p>Determine whether the following statement is true or false, and select the best explanation:</p>
-// <p><em>"With large sample sizes, even small differences between the null value and the observed point estimate can be statistically discernible."</em></p>
-// <p>$answerbox</p>
-
-// === Answer ===
-$displayformat = "radio"
-$answer = $answer_val
-$questions = $choices
-
-// === Solution ===
-// <p>True. As n increases, SE decreases. A smaller SE means even a small difference between the point estimate and null value yields a large test statistic, making the result statistically discernible. This is why statistical significance does not always imply practical importance.</p>
-
-END MOM --->
 
 
 </section>

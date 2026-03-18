@@ -705,262 +705,37 @@ Figure&nbsp;21.4: A scatterplot with a regression line and both 95% confidence b
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-2-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="1800"></a></p>
+<p><a href="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-2-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" style="width:90.0%"></a></p>
 </figure>
 </div>
 </div>
 </div></li>
 </ol>
-<!--- MOM ims-07-01
-ims_exercise: "7.1"
-title: "Visualizing residuals"
-type: multiple_choice
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.1 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate a linear dataset with either constant or fan-shaped spread
-$n = 50
-$slope = rrand(1.5, 4.0, 0.1)
-$intercept = rrand(5, 20, 1)
-
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = round(($i + 1) * 2 + rand(-1, 1), 1)
-}
-
-$pattern = rand(0, 2)
-if ($pattern == 0) {
-  // Constant spread (good residuals)
-  $noise = rrand(8, 15, 1)
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round($slope * $x[$i] + $intercept + normalrand(0, $noise), 2)
-  }
-  $correct = "Residuals would show a random scatter around zero with roughly constant spread"
-  $explain = "The scatterplot shows a linear relationship with constant variability, so residuals should be randomly scattered around zero."
-} elseif ($pattern == 1) {
-  // Fan shape (increasing spread)
-  for ($i = 0; $i < $n; $i++) {
-    $sd_i = 2 + 0.3 * $x[$i]
-    $y[$i] = round($slope * $x[$i] + $intercept + normalrand(0, $sd_i), 2)
-  }
-  $correct = "Residuals would fan out, showing increasing spread as the predicted value increases"
-  $explain = "The scatterplot shows increasing variability as x increases (heteroscedasticity), so residuals fan out."
-} else {
-  // Fan shape decreasing
-  for ($i = 0; $i < $n; $i++) {
-    $sd_i = 2 + 0.3 * ($n * 2 - $x[$i])
-    $y[$i] = round($slope * $x[$i] + $intercept + normalrand(0, $sd_i), 2)
-  }
-  $correct = "Residuals would fan out, showing decreasing spread as the predicted value increases"
-  $explain = "The scatterplot shows decreasing variability as x increases, so residuals show a funnel that narrows."
-}
-
-$scatter = scatterplot($x, $y, label="x", ylabel="y")
-
-$choices = array(
-  "Residuals would show a random scatter around zero with roughly constant spread",
-  "Residuals would fan out, showing increasing spread as the predicted value increases",
-  "Residuals would fan out, showing decreasing spread as the predicted value increases",
-  "Residuals would show a clear curved pattern"
-)
-
-// === Question Text ===
-// The scatterplot below shows data with a superimposed regression line.
-// If we were to construct a residual plot (residuals versus x) for this data,
-// which best describes what the residual plot would look like?
-//
-// $scatter
-//
-// $answerbox
-//
-// [if showork]
-// $explain
-// [/if]
-
-// === Answer ===
-$answer = $correct
-$displayformat = "radio"
-
-END MOM --->
 <ol start="2" type="1">
 <li><p><strong>Trends in residuals.</strong> Shown below are two plots of residuals remaining after fitting a linear model to two different sets of data. For each plot, describe important features and determine if a linear model would be appropriate for these data. Explain your reasoning.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-3-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="1800"></a></p>
+<p><a href="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-3-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" style="width:90.0%"></a></p>
 </figure>
 </div>
 </div>
 </div></li>
 </ol>
-<!--- MOM ims-07-02
-ims_exercise: "7.2"
-title: "Trends in residuals"
-type: multiple_choice
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.2 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-$n = 60
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = round(($i + 1) * 1.5 + rand(-1, 1), 1)
-}
-
-$pattern = rand(0, 2)
-if ($pattern == 0) {
-  // Fan-shaped residuals (heteroscedastic)
-  for ($i = 0; $i < $n; $i++) {
-    $sd_i = 1 + 0.25 * $x[$i]
-    $y[$i] = round(2.5 * $x[$i] + 10 + normalrand(0, $sd_i), 2)
-  }
-  $correct = "No; the residuals show a fan shape (increasing spread), violating the constant variance condition"
-  $explain = "The residual plot would show a fan pattern — the spread of residuals increases with x. This means the constant variance condition is not met, so a linear model is not fully appropriate."
-} elseif ($pattern == 1) {
-  // Curved residuals (nonlinear)
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round(0.02 * $x[$i] * $x[$i] + 5 + normalrand(0, 3), 2)
-  }
-  $correct = "No; the residuals show a curved (U-shaped) pattern, indicating the relationship is not linear"
-  $explain = "The residual plot would show a clear curved pattern, indicating the true relationship is nonlinear. A linear model would systematically over-predict in the middle and under-predict at the extremes."
-} else {
-  // Good residuals (linear is appropriate)
-  $noise = rrand(6, 12, 1)
-  for ($i = 0; $i < $n; $i++) {
-    $y[$i] = round(2.0 * $x[$i] + 15 + normalrand(0, $noise), 2)
-  }
-  $correct = "Yes; the residuals show random scatter with no clear pattern, so a linear model is appropriate"
-  $explain = "The residual plot would show random scatter around zero with roughly constant spread — no fan shape, no curve. The conditions for a linear model are met."
-}
-
-$scatter = scatterplot($x, $y, label="x", ylabel="y")
-
-$choices = array(
-  "Yes; the residuals show random scatter with no clear pattern, so a linear model is appropriate",
-  "No; the residuals show a fan shape (increasing spread), violating the constant variance condition",
-  "No; the residuals show a curved (U-shaped) pattern, indicating the relationship is not linear"
-)
-
-// === Question Text ===
-// The scatterplot below shows the relationship between two variables.
-// Would a linear model be appropriate for these data?
-// Consider what the residual plot would look like.
-//
-// $scatter
-//
-// $answerbox
-//
-// [if showork]
-// $explain
-// [/if]
-
-// === Answer ===
-$answer = $correct
-$displayformat = "radio"
-
-END MOM --->
 <ol start="3" type="1">
-<li><strong>Over-under, I.</strong> Suppose we fit a regression line to predict the shelf life of an apple based on its weight. For a particular apple, we predict the shelf life to be 4.6 days. The apple’s residual is -0.6 days. Did we over or under estimate the shelf-life of the apple? Explain your reasoning.</li>
+<li><strong>Over-under, I.</strong> Suppose we fit a regression line to predict the shelf life of an apple based on its weight. For a particular apple, we predict the shelf life to be 4.6 days. The apple’s residual is -0.6 days. Did we over or under estimate the shelf-life of the apple? Explain your reasoning. </li>
 </ol>
-<!--- MOM ims-07-17
-ims_exercise: "7.17"
-title: "Over-under, I"
-type: multiple_choice
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.17 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-$predicted = rrand(2.0, 15.0, 0.1)
-$residual_sign = randfrom(-1, 1)
-$residual_abs = rrand(0.3, 2.0, 0.1)
-$residual = $residual_sign * $residual_abs
-$observed = round($predicted + $residual, 1)
-
-if ($residual < 0) {
-  $correct = "Over-estimate"
-  $explain = "Since the residual (observed - predicted = $observed - $predicted = $residual) is negative, the predicted value is higher than the observed value, so we over-estimated."
-} else {
-  $correct = "Under-estimate"
-  $explain = "Since the residual (observed - predicted = $observed - $predicted = $residual) is positive, the predicted value is lower than the observed value, so we under-estimated."
-}
-$choices = array("Over-estimate", "Under-estimate")
-
-$items = array("shelf life of an apple (days)", "fuel efficiency of a car (mpg)", "price of a house (thousands of dollars)", "test score of a student (points)", "weight of a package (pounds)")
-$item = $items[rand(0, count($items)-1)]
-
-// === Question Text ===
-// Suppose we fit a regression line to predict the $item.
-// For a particular observation, we predict the value to be $predicted.
-// The residual for this observation is $residual.
-//
-// Did we over-estimate or under-estimate the actual value?
-//
-// $answerbox
-//
-// [if showork]
-// $explain
-// [/if]
-
-// === Answer ===
-$answer = $correct
-$displayformat = "radio"
-
-END MOM --->
 <ol start="4" type="1">
-<li><strong>Over-under, II.</strong> Suppose we fit a regression line to predict the number of incidents of skin cancer per 1,000 people from the number of sunny days in a year. For a particular year, we predict the incidence of skin cancer to be 1.5 per 1,000 people, and the residual for this year is 0.5. Did we over or under estimate the incidence of skin cancer? Explain your reasoning.</li>
+<li><strong>Over-under, II.</strong> Suppose we fit a regression line to predict the number of incidents of skin cancer per 1,000 people from the number of sunny days in a year. For a particular year, we predict the incidence of skin cancer to be 1.5 per 1,000 people, and the residual for this year is 0.5. Did we over or under estimate the incidence of skin cancer? Explain your reasoning. </li>
 </ol>
-<!--- MOM ims-07-18
-ims_exercise: "7.18"
-title: "Over-under, II"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.18 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-$predicted = rrand(1.0, 10.0, 0.1)
-$residual_sign = randfrom(-1, 1)
-$residual_abs = rrand(0.2, 1.5, 0.1)
-$residual = $residual_sign * $residual_abs
-$observed = round($predicted + $residual, 1)
-
-if ($residual < 0) {
-  $correct = "Over-estimate"
-} else {
-  $correct = "Under-estimate"
-}
-
-$choices = array("Over-estimate", "Under-estimate")
-
-// === Question Text ===
-// Suppose we fit a regression line to predict the incidence of a disease per 1,000 people
-// from a weather variable. For a particular year, we predict the incidence to be
-// $predicted per 1,000 people, and the residual for this year is $residual.
-//
-// (a) Did we over-estimate or under-estimate the incidence? $answerbox[0]
-// (b) What was the actual observed incidence per 1,000 people? $answerbox[1]
-
-// === Answer ===
-$answer[0] = $correct
-$displayformat[0] = "radio"
-$answer[1] = $observed
-$abstolerance[1] = 0.01
-
-END MOM --->
 <ol start="5" type="1">
 <li><p><strong>Starbucks, calories, and protein.</strong> The scatterplot below shows the relationship between the number of calories and amount of protein (in grams) Starbucks food menu items contain. Since Starbucks only lists the number of calories on the display items, we might be interested in predicting the amount of protein a menu item has based on its calorie content.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-4-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="2100"></a></p>
+<p><a href="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-4-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" style="width:90.0%"></a></p>
 </figure>
 </div>
 </div>
@@ -969,101 +744,16 @@ END MOM --->
 <li><p>Describe the relationship between number of calories and amount of protein (in grams) that Starbucks food menu items contain.</p></li>
 <li><p>In this scenario, what are the predictor and outcome variables?</p></li>
 <li><p>Why might we want to fit a regression line to these data?</p></li>
-<li><p>What does the residuals vs.&nbsp;predicted plot tell us about the variability in prediction errors based on this model for items with lower vs.&nbsp;higher predicted protein?</p></li>
+<li><p>What does the residuals vs.&nbsp;predicted plot tell us about the variability in prediction errors based on this model for items with lower vs.&nbsp;higher predicted protein? </p></li>
 </ol></li>
 </ol>
-<!--- MOM ims-07-19
-ims_exercise: "7.19"
-title: "Starbucks, calories, and protein"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.19 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate calories-vs-protein-like data with slight heteroscedasticity
-$n = 40
-$spread_type = rand(0, 1)
-
-for ($i = 0; $i < $n; $i++) {
-  $calories[$i] = round(rand(100, 500), 0)
-}
-sort($calories)
-
-if ($spread_type == 0) {
-  // Roughly constant spread (good conditions)
-  for ($i = 0; $i < $n; $i++) {
-    $protein[$i] = round(0.04 * $calories[$i] + 3 + normalrand(0, 5), 1)
-  }
-  $residual_ans = "The variability in prediction errors is roughly constant for items with lower and higher predicted values"
-  $conditions_met = "Yes"
-} else {
-  // Increasing spread (heteroscedastic)
-  for ($i = 0; $i < $n; $i++) {
-    $sd_i = 2 + 0.015 * $calories[$i]
-    $protein[$i] = round(0.04 * $calories[$i] + 3 + normalrand(0, $sd_i), 1)
-  }
-  $residual_ans = "The variability in prediction errors increases for items with higher predicted values (fan shape)"
-  $conditions_met = "No"
-}
-
-$reg = linreg($calories, $protein)
-$r = round($reg[0], 3)
-
-$scatter = scatterplot($calories, $protein, label="Calories", ylabel="Protein (g)")
-
-// Direction
-if ($r > 0.3) {
-  $dir = "Positive"
-} elseif ($r < -0.3) {
-  $dir = "Negative"
-} else {
-  $dir = "No clear direction"
-}
-$dir_choices = array("Positive", "Negative", "No clear direction")
-$predictor_choices = array("Calories", "Protein")
-$residual_choices = array(
-  "The variability in prediction errors is roughly constant for items with lower and higher predicted values",
-  "The variability in prediction errors increases for items with higher predicted values (fan shape)",
-  "The residuals show a clear curved pattern"
-)
-$conditions_choices = array("Yes", "No")
-
-// === Question Text ===
-// The scatterplot below shows the relationship between the number of calories
-// and amount of protein (in grams) for food menu items.
-//
-// $scatter
-//
-// (a) What is the direction of the relationship? $answerbox[0]
-//
-// (b) Which is the predictor variable? $answerbox[1]
-//
-// (c) Which best describes what a residual plot would show about the variability
-//     in prediction errors? $answerbox[2]
-//
-// (d) Is the constant variance condition met? $answerbox[3]
-
-// === Answer ===
-$answer[0] = $dir
-$answer[1] = "Calories"
-$answer[2] = $residual_ans
-$answer[3] = $conditions_met
-$displayformat[0] = "radio"
-$displayformat[1] = "radio"
-$displayformat[2] = "radio"
-$displayformat[3] = "radio"
-
-END MOM --->
 <ol start="6" type="1">
 <li><p><strong>Starbucks, calories, and carbs.</strong> The scatterplot below shows the relationship between the number of calories and amount of carbohydrates (in grams) Starbucks food menu items contain. Since Starbucks only lists the number of calories on the display items, we might be interested in predicting the amount of carbs a menu item has based on its calorie content.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-5-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="2100"></a></p>
+<p><a href="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-5-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="ch20-prediction-model-fit_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" style="width:90.0%"></a></p>
 </figure>
 </div>
 </div>
@@ -1072,92 +762,9 @@ END MOM --->
 <li><p>Describe the relationship between number of calories and amount of carbohydrates (in grams) that Starbucks food menu items contain.</p></li>
 <li><p>In this scenario, what are the predictor and outcome variables?</p></li>
 <li><p>Why might we want to fit a regression line to these data?</p></li>
-<li><p>What does the residuals vs.&nbsp;predicted plot tell us about the variability in prediction errors based on this model for items with lower vs.&nbsp;higher predicted carbs?</p></li>
+<li><p>What does the residuals vs.&nbsp;predicted plot tell us about the variability in prediction errors based on this model for items with lower vs.&nbsp;higher predicted carbs? </p></li>
 </ol></li>
 </ol>
-<!--- MOM ims-07-20
-ims_exercise: "7.20"
-title: "Starbucks, calories, and carbs"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.20 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate calories-vs-carbs-like data
-$n = 40
-$spread_type = rand(0, 1)
-
-for ($i = 0; $i < $n; $i++) {
-  $calories[$i] = round(rand(100, 500), 0)
-}
-sort($calories)
-
-if ($spread_type == 0) {
-  // Roughly constant spread
-  for ($i = 0; $i < $n; $i++) {
-    $carbs[$i] = round(0.08 * $calories[$i] + 10 + normalrand(0, 8), 1)
-  }
-  $residual_ans = "The variability in prediction errors is roughly constant across all predicted values"
-  $conditions_met = "Yes"
-} else {
-  // Increasing spread
-  for ($i = 0; $i < $n; $i++) {
-    $sd_i = 3 + 0.02 * $calories[$i]
-    $carbs[$i] = round(0.08 * $calories[$i] + 10 + normalrand(0, $sd_i), 1)
-  }
-  $residual_ans = "The variability in prediction errors increases for items with higher predicted values"
-  $conditions_met = "No"
-}
-
-$reg = linreg($calories, $carbs)
-$r = round($reg[0], 3)
-
-$scatter = scatterplot($calories, $carbs, label="Calories", ylabel="Carbs (g)")
-
-if ($r > 0.3) {
-  $dir = "Positive"
-} elseif ($r < -0.3) {
-  $dir = "Negative"
-} else {
-  $dir = "No clear direction"
-}
-$dir_choices = array("Positive", "Negative", "No clear direction")
-$predictor_choices = array("Calories", "Carbs")
-$residual_choices = array(
-  "The variability in prediction errors is roughly constant across all predicted values",
-  "The variability in prediction errors increases for items with higher predicted values",
-  "The residuals show a clear curved pattern"
-)
-$conditions_choices = array("Yes", "No")
-
-// === Question Text ===
-// The scatterplot below shows the relationship between the number of calories
-// and amount of carbohydrates (in grams) for food menu items.
-//
-// $scatter
-//
-// (a) What is the direction of the relationship? $answerbox[0]
-//
-// (b) Which is the predictor variable? $answerbox[1]
-//
-// (c) Which best describes the variability in prediction errors? $answerbox[2]
-//
-// (d) Is the constant variance condition met? $answerbox[3]
-
-// === Answer ===
-$answer[0] = $dir
-$answer[1] = "Calories"
-$answer[2] = $residual_ans
-$answer[3] = $conditions_met
-$displayformat[0] = "radio"
-$displayformat[1] = "radio"
-$displayformat[2] = "radio"
-$displayformat[3] = "radio"
-
-END MOM --->
 <ol start="7" type="1">
 <li><p><strong>Outliers, I.</strong> Identify the outliers in the scatterplots shown below, and determine what type of outliers they are. Explain your reasoning.</p>
 <div class="cell">
@@ -1170,81 +777,6 @@ END MOM --->
 </div>
 </div></li>
 </ol>
-<!--- MOM ims-07-25
-ims_exercise: "7.25"
-title: "Outliers, I"
-type: multiple_choice
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.25 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-$n = 40
-$slope = rrand(1.5, 3.5, 0.1)
-$intercept = rrand(5, 20, 1)
-$noise = rrand(5, 10, 1)
-
-// Generate base linear data
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = round(($i + 1) * 2 + rand(-1, 1), 1)
-  $y[$i] = round($slope * $x[$i] + $intercept + normalrand(0, $noise), 2)
-}
-
-// Add one outlier of a random type
-$outlier_type = rand(0, 2)
-
-if ($outlier_type == 0) {
-  // High leverage, influential: far from x-range, pulls the line
-  $x[$n] = round(max($x) + rand(40, 60), 1)
-  $y[$n] = round($intercept + normalrand(0, $noise * 3), 2)
-  $correct = "A high-leverage, influential point — it is far from the other x-values and pulls the regression line toward it"
-  $explain = "This point is far from the rest of the data in the x-direction (high leverage) and does not follow the linear trend, so it substantially changes the slope of the regression line (influential)."
-} elseif ($outlier_type == 1) {
-  // High leverage, NOT influential: far from x-range, but on the line
-  $x[$n] = round(max($x) + rand(40, 60), 1)
-  $y[$n] = round($slope * $x[$n] + $intercept + normalrand(0, $noise), 2)
-  $correct = "A high-leverage point that is not very influential — it is far from the other x-values but falls near the regression line"
-  $explain = "This point has high leverage (far from the other x-values) but falls close to the trend line, so removing it would not substantially change the slope."
-} else {
-  // Outlier in y, NOT high leverage: within x-range, large residual
-  $outlier_idx = rand(15, 25)
-  $y[$outlier_idx] = round($y[$outlier_idx] + rand(5, 8) * $noise, 2)
-  $x[$n] = $x[$outlier_idx]
-  $y[$n] = $y[$outlier_idx]
-  // Remove the duplicate — just overwrite
-  $x[$outlier_idx] = $x[$n]
-  $y[$outlier_idx] = $y[$n]
-  $correct = "An outlier with a large residual but not high leverage — it falls within the range of x-values but far from the regression line"
-  $explain = "This point is within the range of x-values (not high leverage) but has a very large residual. It may or may not be influential depending on the sample size."
-}
-
-$scatter = scatterplot($x, $y, label="x", ylabel="y")
-
-$choices = array(
-  "A high-leverage, influential point — it is far from the other x-values and pulls the regression line toward it",
-  "A high-leverage point that is not very influential — it is far from the other x-values but falls near the regression line",
-  "An outlier with a large residual but not high leverage — it falls within the range of x-values but far from the regression line"
-)
-
-// === Question Text ===
-// The scatterplot below shows data with a potential outlier.
-// Which best describes the type of outlier?
-//
-// $scatter
-//
-// $answerbox
-//
-// [if showork]
-// $explain
-// [/if]
-
-// === Answer ===
-$answer = $correct
-$displayformat = "radio"
-
-END MOM --->
 <ol start="8" type="1">
 <li><p><strong>Outliers, II.</strong> Identify the outliers in the scatterplots shown below and determine what type of outliers they are. Explain your reasoning.</p>
 <div class="cell">
@@ -1257,51 +789,6 @@ END MOM --->
 </div>
 </div></li>
 </ol>
-<!--- MOM ims-07-26
-ims_exercise: "7.26"
-title: "Outliers, II"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.26 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-$n = 40
-$slope = rrand(2.0, 4.0, 0.1)
-$intercept = rrand(3, 15, 1)
-$noise = rrand(5, 10, 1)
-
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = round(($i + 1) * 2 + rand(-1, 1), 1)
-  $y[$i] = round($slope * $x[$i] + $intercept + normalrand(0, $noise), 2)
-}
-
-// Add an influential outlier far in x-direction, off the trend
-$x[$n] = round(max($x) + rand(50, 70), 1)
-$y[$n] = round($intercept - rand(20, 50), 2)
-
-$scatter = scatterplot($x, $y, label="x", ylabel="y")
-
-$choices_leverage = array("Yes", "No")
-$choices_influential = array("Yes", "No")
-
-// === Question Text ===
-// The scatterplot below shows data with a potential outlier in the far right of the plot.
-//
-// $scatter
-//
-// (a) Does the outlier have high leverage (is it far from the center of the x-values)? $answerbox[0]
-// (b) Is the outlier likely influential (would removing it substantially change the regression line)? $answerbox[1]
-
-// === Answer ===
-$answer[0] = "Yes"
-$answer[1] = "Yes"
-$displayformat[0] = "radio"
-$displayformat[1] = "radio"
-
-END MOM --->
 <ol start="9" type="1">
 <li><p><strong>Urban homeowners, outliers.</strong> The scatterplot below shows the percent of families who own their home vs.&nbsp;the percent of the population living in urban areas. There are 52 observations, each corresponding to a state in the US. Puerto Rico and District of Columbia are also included.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
 <div>
@@ -1335,137 +822,14 @@ END MOM --->
 </div>
 </div></li>
 </ol>
-<!--- MOM ims-07-27
-ims_exercise: "7.27"
-title: "Urban homeowners, outliers"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.27 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate urban-population vs homeownership data (negative relationship)
-$n = 45
-$noise = rrand(4, 8, 1)
-
-for ($i = 0; $i < $n; $i++) {
-  $urban[$i] = round(rand(25, 90), 0)
-  $owner[$i] = round(80 - 0.25 * $urban[$i] + normalrand(0, $noise), 1)
-}
-
-// Add an outlier: very high urban %, very low homeownership (like DC)
-$urban[$n] = 100
-$owner[$n] = round(rand(30, 42), 1)
-
-$scatter = scatterplot($urban, $owner, label="Percent urban population", ylabel="Percent homeownership")
-
-$reg = linreg($urban, $owner)
-$r = round($reg[0], 3)
-
-// Direction
-if ($r < 0) {
-  $dir = "Negative"
-} else {
-  $dir = "Positive"
-}
-$dir_choices = array("Positive", "Negative", "No clear direction")
-
-// The outlier at 100% urban has high leverage (extreme x) and is influential
-$outlier_choices = array(
-  "High leverage and influential — it is at an extreme x-value and likely pulls the regression line",
-  "High leverage but not influential — it is at an extreme x-value but follows the general trend",
-  "Not high leverage — it is within the range of x-values"
-)
-
-// === Question Text ===
-// The scatterplot below shows the percent of families who own their home vs.
-// the percent of the population living in urban areas for a set of regions.
-// One region (at the far right) has 100% urban population.
-//
-// $scatter
-//
-// (a) What is the direction of the relationship? $answerbox[0]
-//
-// (b) The region at the far right corner (100% urban) is an outlier.
-//     What type of outlier is it? $answerbox[1]
-
-// === Answer ===
-$answer[0] = $dir
-$answer[1] = "High leverage and influential — it is at an extreme x-value and likely pulls the regression line"
-$displayformat[0] = "radio"
-$displayformat[1] = "radio"
-
-END MOM --->
 <ol start="10" type="1">
 <li><strong>Crawling babies, outliers.</strong> A study conducted at the University of Denver investigated whether babies take longer to learn to crawl in cold months, when they are often bundled in clothes that restrict their movement, than in warmer months. The plot below shows the relationship between average crawling age of babies born in each month and the average temperature in the month when the babies are six months old. The plot reveals a potential outlying month when the average temperature is about 53F and average crawling age is about 28.5 weeks. Does this point have high leverage? Is it an influential point?<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> <span class="citation" data-cites="Benson:1993">[@Benson:1993]</span></li>
 </ol>
 <pre><code>::: {.cell}
 ::: {.cell-output-display}
-![](ch20-prediction-model-fit_files/figure-html/unnamed-chunk-9-1.png){width=2100}
+![](ch20-prediction-model-fit_files/figure-html/unnamed-chunk-9-1.png){width=90%}
 :::
 :::</code></pre>
-<!--- MOM ims-07-28
-ims_exercise: "7.28"
-title: "Crawling babies, outliers"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 7.28 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate temperature-vs-crawling-age data with one potential outlier
-$n = 11
-for ($i = 0; $i < $n; $i++) {
-  $temp[$i] = round(rand(30, 75), 0)
-  $age[$i] = round(33 - 0.07 * $temp[$i] + normalrand(0, 1.2), 1)
-}
-
-// Add an outlier: moderate temperature but unusually high crawling age
-$outlier_type = rand(0, 1)
-if ($outlier_type == 0) {
-  // Middle x, large residual — NOT high leverage
-  $temp[$n] = rand(45, 60)
-  $age[$n] = round(33 - 0.07 * $temp[$n] + rand(4, 6), 1)
-  $ans_leverage = "No"
-  $ans_influential = "No"
-  $explain = "The point is near the center of the x-values, so it does not have high leverage. Because it lacks leverage, it is unlikely to be influential even though it has a large residual."
-} else {
-  // Extreme x, off trend — high leverage AND influential
-  $temp[$n] = rand(5, 15)
-  $age[$n] = round(25 + normalrand(0, 1), 1)
-  $ans_leverage = "Yes"
-  $ans_influential = "Yes"
-  $explain = "The point is far from the center of the x-values (high leverage) and does not follow the general trend, so removing it would substantially change the regression line (influential)."
-}
-
-$scatter = scatterplot($temp, $age, label="Temperature (F)", ylabel="Average crawling age (weeks)")
-
-$choices = array("Yes", "No")
-
-// === Question Text ===
-// The scatterplot below shows temperature (F) vs. average crawling age (weeks).
-// One point appears to be an outlier.
-//
-// $scatter
-//
-// (a) Does the potential outlier have high leverage? $answerbox[0]
-// (b) Is it likely an influential point? $answerbox[1]
-//
-// [if showork]
-// $explain
-// [/if]
-
-// === Answer ===
-$answer[0] = $ans_leverage
-$answer[1] = $ans_influential
-$displayformat[0] = "radio"
-$displayformat[1] = "radio"
-
-END MOM --->
 <ol start="11" type="1">
 <li><strong>Body measurements, conditions.</strong> The scatterplot below shows the residuals (on the y-axis) from the linear model of weight vs.&nbsp;height from a dataset of body measurements from 507 physically active individuals. The x-axis is the height of the individuals, in cm. <span class="citation" data-cites="Heinz:2003">[@Heinz:2003]</span></li>
 </ol>
@@ -1488,67 +852,6 @@ b.  Examine the residual plot.
     What do you observe?
     Is a simple least squares fit appropriate for these data?
     Which of the LINE conditions are met or not met?</code></pre>
-<!--- MOM ims-24-09
-ims_exercise: "24.9"
-title: "Body measurements, conditions"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 24.9 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate SLR data, compute R^2, ask for r and LINE assessment
-$n = rand(40, 80)
-$beta0 = rrand(-130, -80, 0.1)
-$beta1 = rrand(0.6, 1.2, 0.01)
-$sigma = rrand(8, 14, 0.1)
-
-$x = array()
-$y = array()
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = rrand(150, 195, 0.1)
-  $y[$i] = round($beta0 + $beta1 * $x[$i] + normrand(0, $sigma, 1, 1)[0], 1)
-}
-
-$reg = linreg($x, $y)
-$r = round($reg[0], 4)
-$r2_pct = round($r * $r * 100, 1)
-
-// Compute residuals and fitted values
-$fitted = array()
-$resid = array()
-for ($i = 0; $i < $n; $i++) {
-  $fitted[$i] = round($reg[2] + $reg[1] * $x[$i], 2)
-  $resid[$i] = round($y[$i] - $fitted[$i], 2)
-}
-
-$resid_plot = scatterplot($x, $resid, "Predictor", "Residuals")
-
-// Correlation from R^2
-$r_from_r2 = round(sqrt($r2_pct / 100), 2)
-
-$abstolerance = 0.02
-
-// === Question Text ===
-// <p>A linear model predicts weight (kg) from height (cm) for $n physically active individuals. The residual plot is shown below.</p>
-// $resid_plot
-// <p>For these data, R&sup2; = $r2_pct%.</p>
-// <p>(a) What is the correlation coefficient r? $answerbox[0]</p>
-// <p>(b) Is the correlation positive or negative? $answerbox[1]</p>
-// <p>(c) Based on the residual plot, are the LINE conditions met for this regression? $answerbox[2]</p>
-
-// === Answer ===
-$answer[0] = $r_from_r2
-$answer[1] = "Positive"
-$displayformat[1] = "radio"
-$choices[1] = array("Positive", "Negative")
-$answer[2] = "Yes"
-$displayformat[2] = "radio"
-$choices[2] = array("Yes", "No")
-
-END MOM --->
 <ol start="12" type="1">
 <li><strong>Baby’s weight and father’s age, conditions.</strong> The scatterplot below shows the residuals (on the y-axis) from the linear model of baby’s weight (measured in pounds) vs.&nbsp;father’s age for a random sample of babies. Father’s age is on the x-axis. <span class="citation" data-cites="data:births14">[@data:births14]</span></li>
 </ol>
@@ -1571,68 +874,6 @@ b.  Examine the residual plot.
     What do you observe?
     Is a simple least squares fit appropriate for these data?
     Which of the LINE conditions are met or not met?</code></pre>
-<!--- MOM ims-24-10
-ims_exercise: "24.10"
-title: "Baby's weight and father's age, conditions"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 24.10 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Weak relationship, large sample — conditions mostly met but weak R^2
-$n = rand(200, 400)
-$b0 = rrand(6.5, 7.5, 0.01)
-$b1 = rrand(-0.005, 0.015, 0.001) where (abs($b1) > 0.002)
-$sigma = rrand(1.0, 1.8, 0.01)
-
-$x = array()
-$y = array()
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = rand(18, 55)
-  $y[$i] = round($b0 + $b1 * $x[$i] + normrand(0, $sigma, 1, 2)[0], 2)
-}
-
-$reg = linreg($x, $y)
-$r = round($reg[0], 4)
-$r2_pct = round($r * $r * 100, 1)
-
-// Residuals
-$fitted = array()
-$resid = array()
-for ($i = 0; $i < $n; $i++) {
-  $fitted[$i] = round($reg[2] + $reg[1] * $x[$i], 2)
-  $resid[$i] = round($y[$i] - $fitted[$i], 2)
-}
-
-$resid_plot = scatterplot($x, $resid, "Father's age", "Residuals")
-
-$r_from_r2 = round(sqrt($r2_pct / 100), 2)
-// Direction: positive if slope positive, negative if slope negative
-$sign = ($reg[1] > 0) ? "Positive" : "Negative"
-
-$abstolerance = 0.02
-
-// === Question Text ===
-// <p>A linear model predicts baby's weight (pounds) from father's age (years) for $n births. The residual plot is shown below.</p>
-// $resid_plot
-// <p>R&sup2; = $r2_pct%.</p>
-// <p>(a) What is the correlation coefficient r? $answerbox[0]</p>
-// <p>(b) Is the correlation positive or negative? $answerbox[1]</p>
-// <p>(c) Is a simple least squares fit appropriate for these data? $answerbox[2]</p>
-
-// === Answer ===
-$answer[0] = $r_from_r2
-$answer[1] = $sign
-$displayformat[1] = "radio"
-$choices[1] = array("Positive", "Negative")
-$answer[2] = "Yes"
-$displayformat[2] = "radio"
-$choices[2] = array("Yes", "No")
-
-END MOM --->
 <ol start="13" type="1">
 <li><strong>Murders and poverty, conditions.</strong> The scatterplot below shows the annual murders per million vs.&nbsp;percentage living in poverty in a random sample of 20 metropolitan areas. The second figure plots residuals on the y-axis and percent living in poverty on the x-axis.</li>
 </ol>
@@ -1658,66 +899,6 @@ b.  Examine the residual plot.
     What do you observe?
     Is a simple least squares fit appropriate for the data?
     Which of the LINE conditions are met or not met?</code></pre>
-<!--- MOM ims-24-15
-ims_exercise: "24.15"
-title: "Murders and poverty, conditions"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 24.15 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate SLR data for murder rate vs poverty, compute residuals
-$n = rand(15, 30)
-$beta0 = rrand(-25, -5, 0.1)
-$beta1 = rrand(1.5, 3.5, 0.01)
-$sigma = rrand(3, 8, 0.1)
-
-$x = array()
-$y = array()
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = rrand(5, 30, 0.1)
-  $y[$i] = round($beta0 + $beta1 * $x[$i] + normrand(0, $sigma, 1, 1)[0], 1)
-}
-
-$reg = linreg($x, $y)
-$r = round($reg[0], 4)
-$r2_pct = round($r * $r * 100, 1)
-
-// Residuals vs fitted
-$fitted = array()
-$resid = array()
-for ($i = 0; $i < $n; $i++) {
-  $fitted[$i] = round($reg[2] + $reg[1] * $x[$i], 2)
-  $resid[$i] = round($y[$i] - $fitted[$i], 2)
-}
-
-$resid_plot = scatterplot($x, $resid, "% Poverty", "Residuals")
-
-$r_from_r2 = round(sqrt($r2_pct / 100), 2)
-
-$abstolerance = 0.02
-
-// === Question Text ===
-// <p>A linear model predicts annual murders per million from percentage living in poverty for $n metropolitan areas. Below is a residual plot.</p>
-// $resid_plot
-// <p>R&sup2; = $r2_pct%.</p>
-// <p>(a) What is the correlation coefficient r? $answerbox[0]</p>
-// <p>(b) Is the correlation positive or negative? $answerbox[1]</p>
-// <p>(c) Based on the residual plot, is a simple least squares fit appropriate for these data? $answerbox[2]</p>
-
-// === Answer ===
-$answer[0] = $r_from_r2
-$answer[1] = "Positive"
-$displayformat[1] = "radio"
-$choices[1] = array("Positive", "Negative")
-$answer[2] = "Yes"
-$displayformat[2] = "radio"
-$choices[2] = array("Yes", "No")
-
-END MOM --->
 <ol start="14" type="1">
 <li><strong>Urban homeowners, conditions.</strong> The scatterplot below shows the percent of families who own their home vs.&nbsp;the percent of the population living in urban areas. <span class="citation" data-cites="data:urbanOwner">[@data:urbanOwner]</span> There are 52 observations, each corresponding to a state in the US. Puerto Rico and District of Columbia are also included. The second figure plots residuals on the y-axis and percent of the population living in urban areas on the x-axis.</li>
 </ol>
@@ -1743,72 +924,12 @@ b.  Examine the residual plot.
     What do you observe?
     Is a simple least squares fit appropriate for the data?
     Which of the LINE conditions are met or not met?</code></pre>
-<!--- MOM ims-24-18
-ims_exercise: "24.18"
-title: "Urban homeowners, conditions"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 24.18 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate SLR data: homeownership vs urbanization (negative relationship)
-$n = rand(40, 60)
-$beta0 = rrand(70, 80, 0.1)
-$beta1 = rrand(-0.20, -0.05, 0.001)
-$sigma = rrand(4, 8, 0.1)
-
-$x = array()
-$y = array()
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = rrand(30, 100, 0.1)
-  $y[$i] = round($beta0 + $beta1 * $x[$i] + normrand(0, $sigma, 1, 1)[0], 1)
-}
-
-$reg = linreg($x, $y)
-$r = round($reg[0], 4)
-$r2_pct = round($r * $r * 100, 1)
-
-// Residuals
-$fitted = array()
-$resid = array()
-for ($i = 0; $i < $n; $i++) {
-  $fitted[$i] = round($reg[2] + $reg[1] * $x[$i], 2)
-  $resid[$i] = round($y[$i] - $fitted[$i], 2)
-}
-
-$resid_plot = scatterplot($x, $resid, "% Urban population", "Residuals")
-
-$r_from_r2 = round(sqrt($r2_pct / 100), 2)
-
-$abstolerance = 0.02
-
-// === Question Text ===
-// <p>A linear model predicts the percent of families who own their home from the percent of the population living in urban areas for $n states.</p>
-// $resid_plot
-// <p>R&sup2; = $r2_pct%.</p>
-// <p>(a) What is the correlation coefficient r? $answerbox[0]</p>
-// <p>(b) Is the correlation positive or negative? $answerbox[1]</p>
-// <p>(c) Based on the residual plot, is a simple least squares fit appropriate? $answerbox[2]</p>
-
-// === Answer ===
-$answer[0] = $r_from_r2
-$answer[1] = "Negative"
-$displayformat[1] = "radio"
-$choices[1] = array("Positive", "Negative")
-$answer[2] = "Yes"
-$displayformat[2] = "radio"
-$choices[2] = array("Yes", "No")
-
-END MOM --->
 <ol start="15" type="1">
 <li><strong>I heart cats, LINE conditions.</strong> Researchers collected data on heart and body weights of 144 domestic adult cats. The figure below shows the output of the predicted values and residuals generated from a linear model predicting heart weight (measured in grams) from body weight (measured in kilograms) of these cats.</li>
 </ol>
 <pre><code>::: {.cell}
 ::: {.cell-output-display}
-![](ch20-prediction-model-fit_files/figure-html/unnamed-chunk-14-1.png){width=2100}
+![](ch20-prediction-model-fit_files/figure-html/unnamed-chunk-14-1.png){width=90%}
 :::
 :::
 
@@ -1822,67 +943,12 @@ a.  Examine the residual plot.
 
 b.  If the LINE condtion described in part (a) is violated, might it lead to an incorrect conclusion about the model (i.e., the least squares regression line itself), the inference of the model (i.e., the p-value associated with the least squares regression line), neither, or both?
     Explain your reasoning.</code></pre>
-<!--- MOM ims-24-19
-ims_exercise: "24.19"
-title: "I heart cats, LINE conditions"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 24.19 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Generate data with heteroscedastic residuals (variance increases with x)
-// This mimics the cats dataset where residual spread increases with predicted values
-$n = rand(80, 150)
-$beta0 = rrand(-1, 1, 0.1)
-$beta1 = rrand(3.5, 4.5, 0.01)
-
-$x = array()
-$y = array()
-$fitted = array()
-$resid = array()
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = rrand(2.0, 4.0, 0.01)
-  // Variance proportional to x (heteroscedasticity)
-  $sigma_i = 0.5 + 1.5 * ($x[$i] - 2.0)
-  $y[$i] = round($beta0 + $beta1 * $x[$i] + normrand(0, $sigma_i, 1, 2)[0], 2)
-}
-
-$reg = linreg($x, $y)
-for ($i = 0; $i < $n; $i++) {
-  $fitted[$i] = round($reg[2] + $reg[1] * $x[$i], 2)
-  $resid[$i] = round($y[$i] - $fitted[$i], 2)
-}
-
-$resid_plot = scatterplot($fitted, $resid, "Predicted values", "Residuals")
-
-// Correct answer: Equal variance (E in LINE) is violated
-$abstolerance = 0
-
-// === Question Text ===
-// <p>A linear model predicts heart weight (grams) from body weight (kg) for $n domestic cats. The residual plot below shows residuals vs. predicted values.</p>
-// $resid_plot
-// <p>Notice that for small predicted values the residuals have a smaller magnitude than the larger residuals seen with larger predicted values.</p>
-// <p>(a) The change in magnitude of the residuals across the predicted values is an indication of violation of which LINE condition? $answerbox[0]</p>
-// <p>(b) If this condition is violated, might it lead to an incorrect conclusion about: $answerbox[1]</p>
-
-// === Answer ===
-$answer[0] = "Equal variance (E)"
-$displayformat[0] = "radio"
-$choices[0] = array("Linearity (L)", "Independence (I)", "Normality (N)", "Equal variance (E)")
-$answer[1] = "The inference (p-value), not the model itself"
-$displayformat[1] = "radio"
-$choices[1] = array("The model (regression line) itself", "The inference (p-value), not the model itself", "Both the model and the inference", "Neither the model nor the inference")
-
-END MOM --->
 <ol start="16" type="1">
 <li><strong>Beer and blood alcohol content, LINE conditions.</strong> The figure below shows the output of the predicted values and residuals generated from a linear model predicting the blood alcohol content (BAC) from number of cans of beer drunk by sixteen student volunteers at Ohio State University.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> <span class="citation" data-cites="Malkevitc+Lesser:2008">[@Malkevitc+Lesser:2008]</span></li>
 </ol>
 <pre><code>::: {.cell}
 ::: {.cell-output-display}
-![](ch20-prediction-model-fit_files/figure-html/unnamed-chunk-15-1.png){width=2100}
+![](ch20-prediction-model-fit_files/figure-html/unnamed-chunk-15-1.png){width=90%}
 :::
 :::
 
@@ -1896,57 +962,6 @@ a.  Examine the residual plot.
 
 b.  Is there anything about the residual plot which would make you hesitate about using the linear model for inference about all students?
     Is there anything about the experimental design of the study which would make you hesitate about using the linear model for inference about all students?</code></pre>
-<!--- MOM ims-24-20
-ims_exercise: "24.20"
-title: "Beer and blood alcohol content, LINE conditions"
-type: multipart
-license: "CC BY-SA 3.0 — Based on IMS 2e Exercise 24.20 (Çetinkaya-Rundel & Hardin)"
-status: draft
-uwl_equiv: null
-
-// === Common Control ===
-loadlibrary("stats")
-
-// Small sample residual plot — hard to detect patterns
-$n = rand(12, 20)
-$beta0 = rrand(-0.02, 0.01, 0.001)
-$beta1 = rrand(0.015, 0.025, 0.001)
-$sigma = rrand(0.01, 0.02, 0.001)
-
-$x = array()
-$y = array()
-$fitted = array()
-$resid = array()
-for ($i = 0; $i < $n; $i++) {
-  $x[$i] = rand(1, 9)
-  $y[$i] = round($beta0 + $beta1 * $x[$i] + normrand(0, $sigma, 1, 4)[0], 4)
-}
-
-$reg = linreg($x, $y)
-for ($i = 0; $i < $n; $i++) {
-  $fitted[$i] = round($reg[2] + $reg[1] * $x[$i], 4)
-  $resid[$i] = round($y[$i] - $fitted[$i], 4)
-}
-
-$resid_plot = scatterplot($fitted, $resid, "Predicted values", "Residuals")
-
-$abstolerance = 0
-
-// === Question Text ===
-// <p>A linear model predicts blood alcohol content (BAC) from number of beers consumed for $n student volunteers. The residual plot is shown below.</p>
-// $resid_plot
-// <p>(a) With only $n observations, is it difficult to assess the LINE conditions from this residual plot? $answerbox[0]</p>
-// <p>(b) What is the primary concern about using this model for inference about <em>all</em> students? $answerbox[1]</p>
-
-// === Answer ===
-$answer[0] = "Yes"
-$displayformat[0] = "radio"
-$choices[0] = array("Yes", "No")
-$answer[1] = "The sample is small and may not be representative of all students"
-$displayformat[1] = "radio"
-$choices[1] = array("The sample is small and may not be representative of all students", "The residuals show a clear nonlinear pattern", "The residuals show clear heteroscedasticity", "The data were collected independently")
-
-END MOM --->
 
 
 </section>
