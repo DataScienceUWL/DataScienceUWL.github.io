@@ -90,7 +90,6 @@ const sidebar = /** @type {HTMLDivElement} */ (document.getElementById('sidebar'
 const showResidualsCheck = /** @type {HTMLInputElement} */ (document.getElementById('show-residuals'));
 const showLsCheck = /** @type {HTMLInputElement} */ (document.getElementById('show-ls'));
 const showLsLabel = /** @type {HTMLLabelElement} */ (document.getElementById('show-ls-label'));
-const residualToggleRow = /** @type {HTMLDivElement} */ (document.getElementById('residual-toggle-row'));
 const toggleAbsoluteBtn = /** @type {HTMLButtonElement} */ (document.getElementById('toggle-absolute'));
 const toggleSquaredBtn = /** @type {HTMLButtonElement} */ (document.getElementById('toggle-squared'));
 
@@ -104,7 +103,6 @@ const lsEqText = /** @type {HTMLDivElement} */ (document.getElementById('ls-eq-t
 const statsArea = /** @type {HTMLDivElement} */ (document.getElementById('stats-area'));
 const sseComparison = /** @type {HTMLDivElement} */ (document.getElementById('sse-comparison'));
 const tryAgainBtn = /** @type {HTMLButtonElement} */ (document.getElementById('try-again-btn'));
-const randomDataBtn = /** @type {HTMLButtonElement} */ (document.getElementById('random-data-btn'));
 const generateRandomBtn = /** @type {HTMLButtonElement} */ (document.getElementById('generate-random-btn'));
 
 // ─── Exercise mode: hide LS checkbox ────────────────────────────────────────
@@ -194,7 +192,7 @@ function generateRandomData(n) {
     showLsCheck.checked = false;
     residualMode = 'absolute';
     setToggleState();
-    residualToggleRow.hidden = true;
+
 
     renderChart();
     announce(`Random dataset: ${count} observations.`);
@@ -569,7 +567,7 @@ function updateMetricOverlay() {
     const existing = chartContainer.querySelector('.metric-overlay');
     if (existing) existing.remove();
 
-    if (!showResidualsCheck.checked || xData.length < 2) return;
+    if (xData.length < 2) return;
 
     const { slope, intercept } = userLineParams();
     const { sse, sae } = computeResiduals(slope, intercept);
@@ -623,30 +621,28 @@ function updateStats() {
 
     let html = '';
 
-    if (showResidualsCheck.checked) {
-        const metricLabel = isSquared ? 'Sum of Squared Errors' : 'Sum of Absolute Errors';
-        const metricValue = isSquared ? sse : sae;
-        const lsMetricValue = isSquared ? lsSse : lsSae;
+    const metricLabel = isSquared ? 'Sum of Squared Errors' : 'Sum of Absolute Errors';
+    const metricValue = isSquared ? sse : sae;
+    const lsMetricValue = isSquared ? lsSse : lsSae;
 
+    html += `
+    <div class="stats-grid">
+        <div class="stat-card yours">
+            <div class="stat-label">${metricLabel}</div>
+            <div class="stat-value">${formatStat(metricValue, d)}</div>
+        </div>`;
+    if (showLsCheck.checked && lsResult) {
+        const isClose = isSquared ? (sse <= lsSse * 1.01) : (sae <= lsSae * 1.01);
         html += `
-        <div class="stats-grid">
-            <div class="stat-card yours">
-                <div class="stat-label">${metricLabel}</div>
-                <div class="stat-value">${formatStat(metricValue, d)}</div>
-            </div>`;
-        if (showLsCheck.checked && lsResult) {
-            const isClose = isSquared ? (sse <= lsSse * 1.01) : (sae <= lsSae * 1.01);
-            html += `
-            <div class="stat-card ls${isClose ? ' winner' : ''}">
-                <div class="stat-label">LS ${metricLabel}</div>
-                <div class="stat-value">${formatStat(lsMetricValue, d)}</div>
-            </div>`;
-        }
-        html += `</div>`;
+        <div class="stat-card ls${isClose ? ' winner' : ''}">
+            <div class="stat-label">LS ${metricLabel}</div>
+            <div class="stat-value">${formatStat(lsMetricValue, d)}</div>
+        </div>`;
     }
+    html += `</div>`;
 
     // Comparison text (when LS line visible and residuals shown)
-    if (showLsCheck.checked && lsResult && showResidualsCheck.checked) {
+    if (showLsCheck.checked && lsResult) {
         const userVal = isSquared ? sse : sae;
         const lsVal = isSquared ? lsSse : lsSae;
         if (lsVal > 0) {
@@ -756,7 +752,7 @@ function loadSelectedVars() {
     showLsCheck.checked = false;
     residualMode = 'absolute';
     setToggleState();
-    residualToggleRow.hidden = true;
+
 
     renderChart();
 }
@@ -764,7 +760,6 @@ function loadSelectedVars() {
 // ─── Event Listeners ────────────────────────────────────────────────────────
 
 showResidualsCheck.addEventListener('change', () => {
-    residualToggleRow.hidden = !showResidualsCheck.checked;
     drawResidualLayer();
     updateStats();
     updateMetricOverlay();
@@ -804,10 +799,6 @@ tryAgainBtn.addEventListener('click', () => {
     updateStats();
     updateMetricOverlay();
     announce('Line reset. Try to minimize the errors.');
-});
-
-randomDataBtn.addEventListener('click', () => {
-    generateRandomData();
 });
 
 generateRandomBtn.addEventListener('click', () => {
