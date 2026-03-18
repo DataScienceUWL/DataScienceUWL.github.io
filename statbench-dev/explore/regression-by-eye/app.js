@@ -99,6 +99,7 @@ const lsEqText = /** @type {HTMLDivElement} */ (document.getElementById('ls-eq-t
 const statsArea = /** @type {HTMLDivElement} */ (document.getElementById('stats-area'));
 const sseComparison = /** @type {HTMLDivElement} */ (document.getElementById('sse-comparison'));
 const tryAgainBtn = /** @type {HTMLButtonElement} */ (document.getElementById('try-again-btn'));
+const randomDataBtn = /** @type {HTMLButtonElement} */ (document.getElementById('random-data-btn'));
 
 // ─── Exercise mode: hide LS checkbox ────────────────────────────────────────
 
@@ -144,6 +145,59 @@ function randomizeLine() {
     const tilt = (Math.random() - 0.5) * yRange * 0.3;
     handleLeftY = yMean + offset - tilt;
     handleRightY = yMean + offset + tilt;
+}
+
+/**
+ * Generate a random XY dataset with a linear trend + noise.
+ * Produces 15-25 points with varied correlation strengths.
+ * @param {number} [n] - Number of points (default: random 15-25)
+ */
+function generateRandomData(n) {
+    const count = n || Math.floor(Math.random() * 11) + 15; // 15-25
+    // Random parameters for the generating model
+    const xMin = Math.floor(Math.random() * 20);       // 0-19
+    const xRange = Math.floor(Math.random() * 30) + 10; // 10-39
+    const trueSlope = (Math.random() - 0.3) * 4;       // slight bias toward positive
+    const trueIntercept = Math.floor(Math.random() * 40) + 10;
+    // Noise level controls r: low noise → high r, high noise → low r
+    const noiseFrac = Math.random() * 0.6 + 0.1; // 0.1-0.7
+    const yPredRange = Math.abs(trueSlope) * xRange || 10;
+    const noiseSD = yPredRange * noiseFrac;
+
+    /** @type {number[]} */ const xs = [];
+    /** @type {number[]} */ const ys = [];
+    for (let i = 0; i < count; i++) {
+        const x = xMin + Math.random() * xRange;
+        const y = trueIntercept + trueSlope * x + _randNormal() * noiseSD;
+        // Round to 1 decimal for clean display
+        xs.push(Math.round(x * 10) / 10);
+        ys.push(Math.round(y * 10) / 10);
+    }
+
+    xData = xs;
+    yData = ys;
+    xVar = 'x';
+    yVar = 'y';
+
+    // Update UI — hide var selectors, clear data panel state
+    varPanel.hidden = true;
+    dataSummary.textContent = `${count} random observations`;
+
+    // Reset checkboxes
+    showResidualsCheck.checked = false;
+    showSquaresCheck.checked = false;
+    showLsCheck.checked = false;
+
+    renderChart();
+    announce(`Random dataset: ${count} observations.`);
+}
+
+/** Box-Muller normal random. */
+function _randNormal() {
+    let u, v;
+    do { u = Math.random(); } while (u === 0);
+    v = Math.random();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 }
 
 // ─── Chart Rendering ────────────────────────────────────────────────────────
@@ -696,12 +750,21 @@ tryAgainBtn.addEventListener('click', () => {
     announce('Line reset. Try to minimize the sum of squared errors.');
 });
 
+randomDataBtn.addEventListener('click', () => {
+    generateRandomData();
+});
+
 // Global keyboard shortcuts
 document.addEventListener('keydown', (e) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
     if (e.key === 'r' || e.key === 'R') {
         if (!e.ctrlKey && !e.metaKey) {
             tryAgainBtn.click();
+        }
+    }
+    if (e.key === 'n' || e.key === 'N') {
+        if (!e.ctrlKey && !e.metaKey) {
+            randomDataBtn.click();
         }
     }
 });
