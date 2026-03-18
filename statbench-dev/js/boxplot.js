@@ -11,7 +11,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import { quantile } from './stats.js';
-import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip } from './chart-utils.js';
+import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels } from './chart-utils.js';
 
 /** IMS blue for strokes and fills. */
 const IMS_BLUE = '#569BBD';
@@ -110,7 +110,20 @@ export function drawBoxplot(container, data, options = {}) {
   const xMax = d3Array.max(allValues);
   const xPad = (xMax - xMin) * 0.05 || 0.5;
 
-  const frame = createChart(container, { titleText, descText, id, margin });
+  // Auto-widen left margin for grouped boxplots based on longest group name
+  // On phone (CSS bumps chart font to 22px), chars are wider in viewBox units
+  const isPhone = typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 480px)').matches;
+  const effectiveMargin = margin || (isGrouped
+    ? (() => {
+        const maxLen = Math.max(...groupNames.map(n => n.length));
+        const charWidth = isPhone ? 12 : 8;
+        const needed = Math.max(isPhone ? 80 : 60, maxLen * charWidth + 15);
+        return { top: 28, right: 20, bottom: 50, left: needed };
+      })()
+    : undefined);
+
+  const frame = createChart(container, { titleText, descText, id, margin: effectiveMargin });
 
   const xScale = d3Scale.scaleLinear()
     .domain([xMin - xPad, xMax + xPad])
@@ -144,9 +157,11 @@ export function drawBoxplot(container, data, options = {}) {
   // Y axis (group labels) — only for grouped
   if (isGrouped) {
     const yAxis = d3Axis.axisLeft(yScale);
-    axes.append('g')
+    const yAxisG = axes.append('g')
       .attr('class', 'y-axis')
       .call(yAxis);
+    // Wrap long group labels (e.g., "Nonsmoker" → "Non-\nsmoker" on narrow screens)
+    wrapTickLabels(yAxisG, frame.margin.left - 15);
   }
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');

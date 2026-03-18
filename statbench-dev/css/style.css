@@ -530,6 +530,29 @@ input[aria-invalid="true"] {
   outline: 2px solid var(--ims-blue, #569BBD);
   outline-offset: 2px;
 }
+@media (max-width: 480px) {
+  .hyp-toggle {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.3rem 0.6rem;
+    font-size: 1.1rem;
+  }
+  .hypothesis-display input[type="number"] {
+    min-height: 44px;
+    padding: 0.3rem 0.4rem;
+  }
+  .seg-control {
+    font-size: 0.85rem;
+  }
+  .seg-control button {
+    padding: 0.3rem 0.6rem;
+    min-height: 44px;
+  }
+  .expert-toggle {
+    font-size: 0.9rem;
+    padding: 0.3rem 0;
+  }
+}
 .hypothesis-display input[type="number"] {
   font-family: inherit;
   font-size: inherit;
@@ -891,7 +914,7 @@ input[aria-invalid="true"] {
   border: 1px solid var(--border);
   border-radius: 4px;
   overflow: hidden;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
 }
 
 .seg-control button {
@@ -936,10 +959,27 @@ input[aria-invalid="true"] {
   font-weight: 600;
 }
 
+/* Subtle highlight for resample statistic — brief bold pulse, auto-fades */
+.highlight-last.mech-stat-value,
 #resample-mean.highlight-last,
+#mech-shuffled-chisq.highlight-last,
+#mech-shuffled-r.highlight-last,
 .mechanism-collapsed-summary .highlight-last {
   color: var(--highlight-orange);
   font-weight: 700;
+  animation: stat-text-fade 1.2s ease-out forwards;
+}
+@keyframes stat-text-fade {
+  0%   { color: var(--highlight-orange); font-weight: 700; }
+  100% { color: inherit; font-weight: 600; }
+}
+
+/* Mini boxplot in mechanism strip */
+.mech-minibox {
+  display: block;
+  margin: 4px 0;
+  max-width: 100%;
+  height: auto;
 }
 
 .mechanism-desc {
@@ -949,14 +989,10 @@ input[aria-invalid="true"] {
   font-style: italic;
 }
 
-/* Flash animation for +1 mechanism highlight */
+/* Mechanism strip flash — disabled (was too stroby during auto-play).
+   Kept as class hook in case we want a subtler version later. */
 .mechanism-flash .mechanism-stat {
-  animation: stat-flash 0.4s ease-out;
-}
-
-@keyframes stat-flash {
-  0% { background: var(--highlight-orange); }
-  100% { background: transparent; }
+  /* no-op — animation removed */
 }
 /* Observed statistic highlight — matches chart overlay line color */
 .observed-highlight,
@@ -1018,7 +1054,37 @@ input[aria-invalid="true"] {
   width: fit-content;
 }
 .mech-diff.highlight-last {
-  color: #E07020;
+  animation: stat-text-fade 1.2s ease-out forwards;
+}
+.mech-box-container {
+  margin: 2px 0 4px;
+}
+/* Proportion bar visualization in two-group mechanism strip */
+.mech-prop-bar {
+  position: relative;
+  height: 14px;
+  background: var(--ims-lgray);
+  border-radius: 3px;
+  margin: 2px 0 6px;
+  overflow: hidden;
+}
+.mech-prop-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px 0 0 3px;
+  transition: width 0.3s ease;
+}
+.mech-prop-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  pointer-events: none;
+  text-shadow: 0 0 3px rgba(0,0,0,0.5);
 }
 
 .sample-dots {
@@ -1058,7 +1124,7 @@ input[aria-invalid="true"] {
 }
 
 .draw-count {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 700;
   margin-left: 1px;
 }
@@ -1284,6 +1350,16 @@ input[aria-invalid="true"] {
   min-width: 0;   /* prevent SVG overflow */
 }
 
+/* On mobile, chart fills container naturally — no forced min-width.
+   Long axis labels are wrapped via wrapTickLabels() in JS.
+   overflow-x: auto is a safety net in case anything still overflows. */
+@media (max-width: 600px) {
+  .app-main {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 .app-sidebar {
   display: flex;
   flex-direction: column;
@@ -1300,7 +1376,7 @@ body[data-hide-interpretations="true"] .interpretation { display: none !importan
 
 /* On-page "More options" / "Fewer options" toggle link */
 .expert-toggle {
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   color: var(--ims-gray-text);
   background: none;
   border: none;
@@ -1321,6 +1397,7 @@ body[data-hide-interpretations="true"] .interpretation { display: none !importan
   display: none;
 }
 #data-panel.collapsed {
+  position: relative;
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.35rem 0.75rem;
@@ -1349,6 +1426,63 @@ body[data-hide-interpretations="true"] .interpretation { display: none !importan
 .data-panel-expand-btn:hover {
   color: var(--accent);
   border-color: var(--accent);
+}
+
+/* ===== Dataset Info Panel (expandable) ===== */
+/* Summary stays inline in the collapsed bar; content drops below as a full-width block */
+.dataset-info {
+  /* Keep the <details> from growing — summary stays in its flex position */
+  flex-shrink: 0;
+}
+.dataset-info summary {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.dataset-info summary:hover {
+  text-decoration: underline;
+}
+.dataset-info-content {
+  /* Break out of the flex row: position below the entire collapsed bar */
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 10;
+  margin-top: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.dataset-info-content p {
+  margin: 0 0 0.4rem;
+}
+.dataset-info-content h4 {
+  margin: 0.5rem 0 0.2rem;
+  font-size: 0.82rem;
+  color: var(--ims-gray-text);
+}
+.dataset-info-vars {
+  margin: 0;
+}
+.dataset-info-vars dt {
+  font-weight: 600;
+  margin-top: 0.3rem;
+}
+.dataset-info-vars dd {
+  margin-left: 1rem;
+  margin-bottom: 0;
+}
+.dataset-info-source {
+  margin-top: 0.5rem;
+  color: var(--ims-gray-text);
 }
 
 /* ===== Sticky Controls (desktop only) ===== */
@@ -1418,11 +1552,15 @@ body[data-hide-interpretations="true"] .interpretation { display: none !importan
   font-size: 0.85rem;
 }
 
-/* Sidebar stats compact table */
+/* Sidebar stats table */
 .sidebar-stats {
   width: 100%;
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
+}
+.sidebar-stats th,
+.sidebar-stats td {
+  padding: 0.25rem 0.4rem;
 }
 
 .sidebar-stats td:last-child {
@@ -1636,6 +1774,17 @@ svg[role="img"] .crit-label {
   font-family: var(--font-mono);
 }
 
+/* Tablet/small screen: intermediate chart font scaling */
+@media (max-width: 600px) {
+  :root { --font-size-chart: 18px; }
+  svg[role="img"] .x-label,
+  svg[role="img"] .y-label        { font-size: 19px; }
+  svg[role="img"] .overlay-value  { font-size: 18px; }
+  svg[role="img"] .prob-label     { font-size: 18px; }
+  svg[role="img"] .prob-complement { font-size: 16px; }
+  svg[role="img"] .crit-label     { font-size: 18px; }
+}
+
 /* Phone: charts are full-width (~350px container, 0.58× scale).
    Bump viewBox font sizes so text stays readable. */
 @media (max-width: 480px) {
@@ -1773,14 +1922,14 @@ kbd {
 }
 
 .preset-label {
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   color: var(--muted);
   white-space: nowrap;
 }
 
 .preset-btn {
   font-family: "Source Code Pro", monospace;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   padding: 0.2rem 0.5rem;
   min-height: 32px;
   border: 1px solid var(--border);
@@ -2142,7 +2291,11 @@ body[data-mode="discover"] .present-only { display: none !important; }
     width: 100%;
   }
 
-  input[type="number"],
+  input[type="number"] {
+    width: 100%;
+  }
+
+  /* Selects: full-width in control contexts, but compact in var-selectors */
   select {
     width: 100%;
   }
@@ -2152,8 +2305,57 @@ body[data-mode="discover"] .present-only { display: none !important; }
     width: 3.5rem;
   }
 
-  /* Phone: SVG is full-width (~340px), scale ≈ 0.57×.
-     Use same viewBox sizes as desktop — 30vb → ~17px physical. */
+  /* Variable selectors (explore pages): compact inline layout */
+  .var-selectors {
+    gap: 0.3rem 1rem;
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+  }
+  .var-selectors label {
+    gap: 0.3rem;
+    font-size: 0.85rem;
+  }
+  .var-selectors select {
+    font-size: 0.85rem;
+    min-width: 0;
+    width: auto;
+    max-width: 55vw;
+    min-height: 44px;
+  }
+
+  /* Chart type selector: compact on phone */
+  .chart-selector {
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+  .chart-selector label {
+    gap: 0.2rem;
+    font-size: 0.85rem;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Stats tables: compact on phone */
+  .sidebar-stats {
+    font-size: 0.82rem;
+  }
+  .sidebar-stats th,
+  .sidebar-stats td {
+    padding: 0.2rem 0.3rem;
+  }
+
+  /* Collapsed data panel: tighter on phone */
+  #data-panel.collapsed {
+    padding: 0.25rem 0.5rem;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+  }
+  #data-panel.collapsed #data-preview output {
+    font-size: 0.78rem;
+    line-height: 1.3;
+  }
 
   /* On phone: df row stacks, stepper buttons get full 44px targets */
   .df-inline-row {
@@ -2175,6 +2377,23 @@ body[data-mode="discover"] .present-only { display: none !important; }
   /* Tail buttons: 44px min touch targets */
   .tail-btn {
     min-height: 44px;
+  }
+}
+
+/* ===== Landscape on small screens ===== */
+/* When phone is rotated, vertical space is tight (~360px height).
+   Compact sidebar/stats so chart gets more room. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .sidebar-stats {
+    font-size: 0.78rem;
+  }
+  .sidebar-stats th,
+  .sidebar-stats td {
+    padding: 0.15rem 0.25rem;
+  }
+  .app-sidebar h2 {
+    font-size: 0.9rem;
+    margin-bottom: 0.15rem;
   }
 }
 

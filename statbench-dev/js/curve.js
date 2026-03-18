@@ -19,6 +19,9 @@ const CURVE_STROKE = '#569BBD';
 /** Shaded area fill (IMS blue at 50% opacity). */
 const SHADE_FILL = '#569BBD80';
 
+/** Purple for observed test statistic annotations. */
+const STAT_COLOR = '#7B2D8E';
+
 /** Number of evaluation points for the curve. */
 const N_POINTS = 200;
 
@@ -297,4 +300,168 @@ function updateShading(overlays, curveData, xScale, yScale, opts) {
       }
     }
   }
+}
+
+/**
+ * Add inference annotations to a distribution curve chart:
+ * a dashed vertical line at the test statistic, a stat-value label,
+ * and a p-value pill in the shaded tail region.
+ *
+ * Shared across all inference pages (one-mean, two-means, paired,
+ * one-prop, two-props, chi-square, slope, ANOVA) to ensure
+ * consistent visual output matching distribution calculator pages.
+ *
+ * @param {object} chart - Return value from drawCurve()
+ * @param {ChartFrame} chart.frame
+ * @param {import('d3-scale').ScaleLinear<number,number>} chart.xScale
+ * @param {import('d3-scale').ScaleLinear<number,number>} chart.yScale
+ * @param {object} opts
+ * @param {number} opts.statValue - Test statistic value (t, z, F, χ²)
+ * @param {string} opts.statLabel - Label prefix (e.g., "t", "F", "χ²", "z")
+ * @param {number} opts.pValue - P-value
+ * @param {(x: number) => number} opts.pdfFn - PDF function for computing curve height
+ * @param {'left'|'right'|'both'} opts.tail - Tail direction
+ * @param {number} [opts.statValueNeg] - Negative stat value for two-tailed (plotted on left)
+ * @param {number} [opts.decimals=3] - Decimal places for stat label
+ */
+export function addInferenceAnnotations(chart, opts) {
+  const { frame, xScale, yScale } = chart;
+  const { statValue, statLabel, pValue, pdfFn, tail, statValueNeg, decimals = 3 } = opts;
+  const w = frame.width;
+  const h = frame.height;
+
+  const annotations = d3Selection.select(frame.inner).select('.annotations');
+  annotations.selectAll('.inf-annotation').remove();
+
+  const domain = xScale.domain();
+
+  // ── Solid line(s) at the test statistic ──
+  // Matches simulation page observed-stat styling: solid purple, full height,
+  // "observed" label + stat value above the line.
+  // Visual continuity: students recognize "this is my observed statistic on a
+  // distribution" — same concept as the simulation pages, now theoretical.
+  const statPoints = tail === 'both' && statValueNeg != null
+    ? [statValueNeg, statValue]
+    : [statValue];
+
+  for (const sv of statPoints) {
+    // Clamp to domain edge so extreme stats still show a line at chart boundary
+    const svClamped = Math.max(domain[0], Math.min(domain[1], sv));
+    const sx = xScale(svClamped);
+
+    // Solid vertical line — full chart height (matches simulation pages)
+    annotations.append('line')
+      .attr('class', 'inf-annotation inf-stat-line')
+      .attr('x1', sx)
+      .attr('x2', sx)
+      .attr('y1', 0)
+      .attr('y2', h)
+      .attr('stroke', STAT_COLOR)
+      .attr('stroke-width', 2.5);
+
+    // "observed" label above the line (matches simulation pages)
+    annotations.append('text')
+      .attr('class', 'inf-annotation')
+      .attr('x', sx).attr('y', -16)
+      .attr('text-anchor', 'middle')
+      .attr('fill', STAT_COLOR)
+      .attr('font-size', '9px')
+      .text('observed');
+
+    // Stat value below "observed" (e.g., "F = 3.48")
+    const valueText = `${statLabel} = ${sv.toFixed(decimals)}`;
+    annotations.append('text')
+      .attr('class', 'inf-annotation inf-stat-label')
+      .attr('x', sx).attr('y', -4)
+      .attr('text-anchor', 'middle')
+      .attr('fill', STAT_COLOR)
+      .attr('font-size', '9px')
+      .text(valueText);
+  }
+
+  // ── P-value pill in the shaded tail region ──
+  let pText;
+  if (pValue === 0) pText = 'p \u2248 0';
+  else if (pValue < 0.0001) pText = 'p < 0.0001';
+  else pText = `p = ${pValue.toFixed(4)}`;
+
+  const compText = (1 - pValue).toFixed(4);
+  const pillY = h * 0.6;
+
+  if (tail === 'both') {
+    // Two-tailed: p-value pill centered, show half-p in each tail
+    const labelX = Math.max(60, Math.min(w - 60, w / 2));
+    _addPill(annotations, `${pText}  (two-tailed)`, labelX, pillY, false);
+  } else {
+    const isLeft = tail === 'left';
+    const obsX = xScale(Math.max(domain[0], Math.min(domain[1], statValue)));
+    const tailWidth = isLeft ? obsX : (w - obsX);
+    const narrow = tailWidth < w * 0.25;
+
+    if (narrow) {
+      // Pill floats above the main region, with leader line to tail
+      const floatY = h * 0.3;
+      const pillX = isLeft
+        ? Math.max(60, Math.min(w * 0.35, obsX))
+        : Math.min(w - 40, Math.max(w * 0.78, obsX));
+      _addPill(annotations, pText, pillX, floatY, false);
+      const lineTargetX = Math.max(4, Math.min(w - 4, obsX));
+      annotations.append('line')
+        .attr('class', 'inf-annotation')
+        .attr('x1', pillX).attr('y1', floatY + 14)
+        .attr('x2', lineTargetX).attr('y2', h - 2)
+        .attr('stroke', CURVE_STROKE)
+        .attr('stroke-width', 1)
+        .attr('stroke-dasharray', '3,2')
+        .style('pointer-events', 'none');
+    } else {
+      // Normal: pill centered in tail
+      const tailX = isLeft
+        ? Math.max(50, Math.min(obsX - 10, obsX / 2))
+        : Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2));
+      _addPill(annotations, pText, tailX, pillY, false);
+    }
+
+    // Complement pill in the body
+    const bodyX = isLeft
+      ? Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2))
+      : Math.max(50, Math.min(obsX - 10, obsX / 2));
+    _addPill(annotations, compText, bodyX, pillY, true);
+  }
+}
+
+/**
+ * Render a single pill (rounded rect + text) for inference annotations.
+ * Matches the styling of renderSimPills in chart-utils.js.
+ * @param {d3Selection.Selection} group
+ * @param {string} text
+ * @param {number} cx - Center x
+ * @param {number} cy - Center y
+ * @param {boolean} isComplement
+ */
+function _addPill(group, text, cx, cy, isComplement) {
+  const g = group.append('g').attr('class', 'inf-annotation');
+  const isPhone = typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 480px)').matches;
+  const textWidth = text.length * (isPhone ? 13 : 8.5) + 16;
+  const pillH = isPhone ? 34 : 24;
+  g.append('rect')
+    .attr('x', cx - textWidth / 2)
+    .attr('y', cy - pillH / 2)
+    .attr('width', textWidth)
+    .attr('height', pillH)
+    .attr('rx', 4)
+    .attr('fill', isComplement ? '#f5f5f5' : '#e8f4f8')
+    .attr('stroke', isComplement ? '#ccc' : CURVE_STROKE)
+    .attr('stroke-width', 1)
+    .style('pointer-events', 'none');
+  g.append('text')
+    .attr('class', isComplement ? 'prob-label prob-complement' : 'prob-label')
+    .attr('x', cx)
+    .attr('y', cy)
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'central')
+    .attr('fill', isComplement ? '#6B6B6B' : STAT_COLOR)
+    .style('pointer-events', 'none')
+    .text(text);
 }

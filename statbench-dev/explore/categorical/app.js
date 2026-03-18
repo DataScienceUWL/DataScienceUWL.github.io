@@ -136,18 +136,21 @@ function loadParsedData(parsed, sourceName) {
   showDataLoaded(sourceName);
 }
 
-/** Group label for categorical datasets. @param {any} ds */
-function catGroupFn(ds) {
-  if (ds.type === 'chisq' || ds.type === 'randomization_prop') return '1:Two Categorical Variables';
-  return '2:One Categorical Variable';
+/** Filter: show only datasets with 2+ categorical variables and no numeric. @param {any} ds */
+function twoCatFilter(ds) {
+  if (ds.hasNumeric) return false;
+  if (!ds.hasCategorical) return false;
+  const vars = ds.variables || [];
+  const catCount = vars.filter(/** @param {any} v */ v =>
+    typeof v === 'object' ? v.type === 'categorical' : true
+  ).length;
+  return catCount >= 2;
 }
 
 initDataPanel({
   autoCollapse: true,
   showPreview: true,
-  datasetFilter: (/** @type {any} */ ds) =>
-    ds.hasCategorical === true && !ds.hasNumeric,
-  datasetGroupFn: catGroupFn,
+  datasetFilter: twoCatFilter,
   onDataset: (ds) => {
     const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
     if (catVars.length === 0) {
@@ -296,6 +299,9 @@ chartModeSelect.addEventListener('change', () => updateDisplay());
  * @param {string} sourceName
  */
 function showDataLoaded(sourceName) {
+  // Reset controls to defaults on new data
+  if (tableModeSelect) tableModeSelect.value = 'counts';
+  if (chartModeSelect) chartModeSelect.value = 'stacked';
   if (dataSummary) dataSummary.textContent = `${sourceName} (n = ${rawRows.length})`;
   updateDisplay();
   announce(`${rawRows.length} observations.`);
@@ -304,14 +310,12 @@ function showDataLoaded(sourceName) {
 function updateDisplay() {
   if (rawRows.length === 0) return;
 
-  // For single-variable case
-  const isSingleVar = catVarNames.length === 1 || rowVar === colVar;
+  if (rowVar === colVar) {
+    announce('Select two different variables.');
+    return;
+  }
 
-  if (isSingleVar) {
-    const values = rawRows.map(r => r[rowVar]);
-    renderSingleVarTable(values, rowVar);
-    renderChart(values, rowVar);
-  } else {
+  {
     const rowValues = rawRows.map(r => r[rowVar]);
     const colValues = rawRows.map(r => r[colVar]);
 
@@ -332,50 +336,7 @@ function updateDisplay() {
   if (resultsSection) resultsSection.hidden = false;
 }
 
-// ── Single-variable table ────────────────────────────────────────────
-
-/**
- * @param {string[]} values
- * @param {string} varName
- */
-function renderSingleVarTable(values, varName) {
-  if (!tableContainer) return;
-  const mode = tableModeSelect.value;
-
-  // Count frequencies
-  /** @type {Map<string, number>} */
-  const counts = new Map();
-  /** @type {string[]} */
-  const cats = [];
-  for (const v of values) {
-    counts.set(v, (counts.get(v) ?? 0) + 1);
-    if (!cats.includes(v)) cats.push(v);
-  }
-  const total = values.length;
-
-  let html = '<table class="contingency-table" aria-label="Frequency table">';
-  html += `<thead><tr><th scope="col">${varName}</th>`;
-  html += mode === 'counts'
-    ? '<th scope="col">Count</th>'
-    : '<th scope="col">Proportion</th>';
-  html += '</tr></thead><tbody>';
-
-  for (const cat of cats) {
-    const count = counts.get(cat) ?? 0;
-    const display = mode === 'counts' ? count : formatStat(count / total, 0, 'proportion');
-    html += `<tr><th scope="row">${cat}</th><td>${display}</td></tr>`;
-  }
-
-  html += '</tbody>';
-  html += '<tfoot><tr class="total-row">';
-  html += `<th scope="row">Total</th><td>${mode === 'counts' ? total : formatStat(1, 0, 'proportion')}</td>`;
-  html += '</tr></tfoot></table>';
-
-  tableContainer.innerHTML = html;
-  if (proportionNote) proportionNote.hidden = true;
-}
-
-// ── Two-variable contingency table ───────────────────────────────────
+// ── Contingency table ─────────────────────────────────────────────────
 
 /**
  * @param {string[]} rowValues

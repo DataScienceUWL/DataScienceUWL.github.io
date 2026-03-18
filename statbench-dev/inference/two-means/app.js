@@ -8,7 +8,7 @@
 import * as jstatModule from 'jstat';
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { twoMeanT, twoMeanTSummary } from '../../js/inference.js';
-import { drawCurve, computeDomain } from '../../js/curve.js';
+import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 
 initHelp();
@@ -364,7 +364,7 @@ function renderChart(r) {
     critHigh = Math.abs(r.tStat);
   }
 
-  drawCurve(chartContainer, pdfFn, domain, {
+  const chart = drawCurve(chartContainer, pdfFn, domain, {
     xLabel: 't',
     yLabel: 'Density',
     titleText: `t-distribution (df = ${r.df.toFixed(1)})`,
@@ -374,6 +374,15 @@ function renderChart(r) {
     critValue,
     critLow,
     critHigh,
+  });
+
+  addInferenceAnnotations(chart, {
+    statValue: Math.abs(r.tStat),
+    statLabel: 't',
+    pValue: r.pValue,
+    pdfFn,
+    tail: /** @type {'left'|'right'|'both'} */ (tail),
+    statValueNeg: tail === 'both' ? -Math.abs(r.tStat) : undefined,
   });
 }
 

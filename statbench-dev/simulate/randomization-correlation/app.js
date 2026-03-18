@@ -9,7 +9,7 @@ import { createRng, shuffle } from '../../js/prng.js';
 import { cor, formatStat } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, getTabHintText, getActiveTabId } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, getTabHintText, getActiveTabId } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
 
 // ─── DOM elements ───
@@ -179,6 +179,7 @@ function showDataLoaded() {
   if (hypothesisDisplay) hypothesisDisplay.hidden = false;
 
   // Draw observed scatterplot in mechanism (stays hidden until first generate)
+  const mechMargin = { top: 8, right: 8, bottom: 28, left: 22 };
   if (mechObservedPlot) {
     mechObservedPlot.innerHTML = '';
     drawScatterplot(mechObservedPlot, xValues, yValues, {
@@ -186,6 +187,8 @@ function showDataLoaded() {
       titleText: 'Original Data',
       id: 'mech-obs',
       regression: computeRegression(xValues, yValues),
+      margin: mechMargin,
+      minimal: true,
     });
   }
   if (mechObservedR) mechObservedR.textContent = formatStat(observedR, 4);
@@ -242,14 +245,23 @@ function generateSimulations(count) {
   // Update mechanism strip with last shuffle
   if (mechShuffledPlot) {
     mechShuffledPlot.innerHTML = '';
+    const sMargin = { top: 8, right: 8, bottom: 28, left: 22 };
     drawScatterplot(mechShuffledPlot, xValues, lastShuffledY, {
       xLabel, yLabel,
       titleText: count === 1 ? 'This Shuffle' : 'Last Shuffle',
       id: 'mech-shuf',
       regression: computeRegression(xValues, lastShuffledY),
+      margin: sMargin,
+      minimal: true,
     });
   }
-  if (mechShuffledR) mechShuffledR.textContent = formatStat(lastR, 4);
+  if (mechShuffledR) {
+    mechShuffledR.textContent = formatStat(lastR, 4);
+    mechShuffledR.classList.toggle('highlight-last', count === 1);
+    if (count === 1) {
+      setTimeout(() => mechShuffledR.classList.remove('highlight-last'), 1500);
+    }
+  }
   if (mechanismDescEl) {
     mechanismDescEl.textContent = 'Shuffle y-values, keeping x-values fixed';
     mechanismDescEl.hidden = false;
@@ -275,14 +287,11 @@ function generateSimulations(count) {
 
   if (count === 1) {
     setTimeout(() => {
-      flashMechanism(mechanismStrip);
-      setTimeout(() => {
-        renderChart(allStats, observedR, direction, hlIndex, hlIndices, prevBinCounts, hlDomain, lockedThresholds);
-        const dropSource = document.getElementById('mech-shuffled-r');
-        const chartCont = document.getElementById('chart-container');
-        if (dropSource && chartCont) animateDropToChart(dropSource, chartCont);
-      }, 120);
-    }, 120);
+      renderChart(allStats, observedR, direction, hlIndex, hlIndices, prevBinCounts, hlDomain, lockedThresholds);
+      const dropSource = document.getElementById('mech-shuffled-r');
+      const chartCont = document.getElementById('chart-container');
+      if (dropSource && chartCont) animateDropToChart(dropSource, chartCont);
+    }, 150);
   } else {
     renderChart(allStats, observedR, direction, hlIndex, hlIndices, prevBinCounts, hlDomain, lockedThresholds);
   }

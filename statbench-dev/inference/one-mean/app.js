@@ -7,14 +7,13 @@
 
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { oneMeanT, oneMeanTSummary } from '../../js/inference.js';
-import { drawCurve, computeDomain } from '../../js/curve.js';
+import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
 
 initHelp();
 import { parseCSV } from '../../js/csv-parser.js';
 import { formatStat, detectPrecision, mean, sd } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
-import * as d3Selection from 'd3-selection';
 
 /** Render LaTeX to HTML string via KaTeX. */
 const tex = (/** @type {string} */ latex, display = false) =>
@@ -429,7 +428,7 @@ function drawChart(result) {
   const titleText = `t distribution (df = ${df})`;
   const descText = `t-distribution curve with df = ${df}, shaded region showing p-value area`;
 
-  const { xScale, yScale, frame } = drawCurve(chartContainer, pdfFn, domain, {
+  const chart = drawCurve(chartContainer, pdfFn, domain, {
     xLabel: 't',
     yLabel: 'Density',
     titleText,
@@ -441,31 +440,12 @@ function drawChart(result) {
     critHigh,
   });
 
-  // Add vertical line at the test statistic
-  const overlays = d3Selection.select(frame.inner).select('.overlays');
-  const tX = xScale(tStat);
-  const yTop = yScale(pdfFn(tStat));
-
-  if (tStat >= domain[0] && tStat <= domain[1]) {
-    overlays.append('line')
-      .attr('class', 't-stat-line')
-      .attr('x1', tX)
-      .attr('x2', tX)
-      .attr('y1', yScale(0))
-      .attr('y2', yTop)
-      .attr('stroke', '#7B2D8E')
-      .attr('stroke-width', 2)
-      .attr('stroke-dasharray', '6 3');
-
-    const labelY = Math.max(yTop - 12, 4);
-    overlays.append('text')
-      .attr('class', 't-stat-label')
-      .attr('x', tX)
-      .attr('y', labelY)
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#7B2D8E')
-      .attr('font-size', '11px')
-      .attr('font-weight', '700')
-      .text(`t = ${tStat.toFixed(3)}`);
-  }
+  addInferenceAnnotations(chart, {
+    statValue: Math.abs(tStat),
+    statLabel: 't',
+    pValue: result.pValue,
+    pdfFn,
+    tail: /** @type {'left'|'right'|'both'} */ (tail),
+    statValueNeg: tail === 'both' ? -Math.abs(tStat) : undefined,
+  });
 }

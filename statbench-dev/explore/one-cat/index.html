@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>One Categorical Variable | StatBench</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+    <style>
+        .freq-table {
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin: 0.75rem 0;
+        }
+        .freq-table th,
+        .freq-table td {
+            border: 1px solid var(--border);
+            padding: 0.3rem 0.6rem;
+            text-align: right;
+        }
+        .freq-table th {
+            background: var(--bg-alt, #f5f5f5);
+            text-align: center;
+            font-weight: 700;
+        }
+        .freq-table th[scope="row"] {
+            text-align: left;
+        }
+        .freq-table .total-row td,
+        .freq-table .total-row th {
+            font-weight: 700;
+            border-top: 2px solid var(--border);
+        }
+        .display-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            margin: 1rem 0;
+        }
+        .display-controls label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+        }
+        .display-controls select {
+            width: auto;
+            min-width: 10rem;
+        }
+        .chart-panel {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem;
+            margin: 1rem 0;
+        }
+        .chart-panel svg {
+            font-family: var(--font-body);
+            font-size: var(--font-size-chart);
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#data-panel">Skip to Data</a>
+        <a href="#results-section">Skip to Results</a>
+    </nav>
+
+    <main>
+        <h1>One Categorical Variable<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatBench home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatBench</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
+
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-dataset" aria-selected="true"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Edit Data</button>
+                <button role="tab" id="tab-file" aria-selected="false"
+                    aria-controls="panel-file">Open File</button>
+            </div>
+
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset">
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </label>
+                <p id="dataset-desc" class="hint"></p>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <div class="cat-editors">
+                    <div id="paste-spreadsheet">
+                        <p class="hint" style="margin:0 0 0.3rem;">Type values one per row:</p>
+                        <div class="spreadsheet" aria-label="Data editor">
+                            <table>
+                                <thead><tr><th class="row-num">#</th><th>Value</th></tr></thead>
+                                <tbody id="cat-sheet-body">
+                                    <!-- Rows injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="paste-summary" class="summary-table-wrap">
+                        <p class="hint" style="margin:0 0 0.3rem;">Or enter summary counts:</p>
+                        <label for="num-categories" class="hint">Categories:
+                            <input type="number" id="num-categories" value="3" min="2" max="20"
+                                   style="width:3.5rem; padding:0.15rem 0.3rem; font-size:0.85rem;">
+                        </label>
+                        <table class="summary-table" aria-label="Summary counts">
+                            <thead><tr><th>Category</th><th>Count</th></tr></thead>
+                            <tbody id="summary-table-body">
+                                <!-- Rows injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <details style="margin-top:0.5rem;">
+                    <summary class="hint">Paste CSV data</summary>
+                    <label for="paste-area">Paste CSV with a categorical column:
+                        <textarea id="paste-area" rows="6"
+                                  placeholder="response&#10;approve&#10;disapprove&#10;approve&#10;no opinion"></textarea>
+                    </label>
+                </details>
+                <div class="btn-row">
+                    <button type="button" id="load-pasted">Apply</button>
+                    <button type="button" id="save-btn" class="btn-secondary">Save</button>
+                    <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+
+
+            <div role="tabpanel" id="panel-file" aria-labelledby="tab-file" hidden>
+                <label for="file-input">Open a CSV or TSV file:
+                    <input type="file" id="file-input" accept=".csv,.tsv,.txt">
+                </label>
+            </div>
+
+            <div id="data-preview" hidden>
+                <output id="data-summary"></output>
+            </div>
+        </section>
+
+        <section id="results-section" aria-label="Chart and table" hidden>
+            <div class="app-body">
+                <!-- Left: Bar chart -->
+                <div class="app-main">
+                    <div class="display-controls">
+                        <label for="chart-mode">Chart:
+                            <select id="chart-mode">
+                                <option value="frequency" selected>Frequency</option>
+                                <option value="relative">Relative Frequency</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div id="chart-container"></div>
+                </div>
+
+                <!-- Right: Frequency table -->
+                <div class="app-sidebar">
+                    <h2 style="font-size:1rem; margin:0;">Frequency Table</h2>
+                    <div id="table-container"></div>
+                </div>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+
+    <dialog id="page-help" aria-label="Help">
+        <h2>Help</h2>
+        <p class="help-intro">Load a dataset to explore a single categorical variable with a bar chart and frequency table.</p>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

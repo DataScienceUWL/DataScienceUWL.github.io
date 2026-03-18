@@ -11,7 +11,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip } from './chart-utils.js';
+import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels, autoRotateLabels } from './chart-utils.js';
 
 /** Bar stroke (white separator). */
 const BAR_STROKE = '#FFFFFF';
@@ -109,7 +109,13 @@ export function drawBarChart(container, values, options = {}) {
   } = options;
 
   const isGrouped = groupValues != null && (mode === 'stacked' || mode === 'dodged' || mode === 'filled');
-  const frame = createChart(container, { titleText, descText, id, margin });
+  // Categorical x-axis needs more bottom margin on phone for rotated labels
+  const isPhone = typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 480px)').matches;
+  const effectiveMargin = margin || (isPhone
+    ? { top: 30, right: 15, bottom: 70, left: 55 }
+    : undefined);
+  const frame = createChart(container, { titleText, descText, id, margin: effectiveMargin });
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
   /** @type {{ categories: string[], colors: string[] } | undefined} */
@@ -178,13 +184,21 @@ function drawSimpleBars(frame, values, mode, opts) {
 
   const xAxis = d3Axis.axisBottom(xScale);
   const yAxis = d3Axis.axisLeft(yScale).tickFormat(formatTick);
+  // Reduce y-axis ticks on phone to avoid crowding
+  const isPhone = typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 480px)').matches;
+  if (isPhone) yAxis.ticks(5);
 
   const axes = d3Selection.select(frame.inner).select('.axes');
-  axes.append('g').attr('class', 'x-axis')
+  const xAxisG = axes.append('g').attr('class', 'x-axis')
     .attr('transform', `translate(0, ${frame.height})`).call(xAxis);
   axes.append('g').attr('class', 'y-axis').call(yAxis);
 
-  if (opts.xLabel) {
+  // Rotate category labels if they overlap (common on phone with many categories)
+  const rotated = autoRotateLabels(xAxisG, frame.margin.bottom);
+
+  // Hide x-axis title when labels are rotated — it overlaps and is redundant
+  if (opts.xLabel && !rotated) {
     axes.append('text')
       .attr('class', 'x-label')
       .attr('text-anchor', 'middle')
@@ -291,30 +305,41 @@ function drawLegend(frame, categories, colors, title) {
     yOff += lineHeight;
   }
 
-  // Measure and add background rect
-  try {
-    const bbox = /** @type {SVGGElement} */ (g.node()).getBBox();
-    const bgPad = 4;
-    g.insert('rect', ':first-child')
-      .attr('x', bbox.x - bgPad)
-      .attr('y', bbox.y - bgPad)
-      .attr('width', bbox.width + bgPad * 2)
-      .attr('height', bbox.height + bgPad * 2)
-      .attr('fill', 'white')
-      .attr('fill-opacity', 0.9)
-      .attr('stroke', '#ccc')
-      .attr('stroke-width', 0.5)
-      .attr('rx', 4);
-  } catch { /* getBBox fails in JSDOM */ }
-
-  // Position top-right
+  // Position top-right (initial estimate before text is laid out)
   g.attr('transform', `translate(${frame.width - 120}, 0)`);
 
-  // Adjust position based on measured width
-  try {
-    const bbox = /** @type {SVGGElement} */ (g.node()).getBBox();
-    g.attr('transform', `translate(${frame.width - bbox.width - 4}, 0)`);
-  } catch { /* JSDOM fallback */ }
+  // Defer getBBox measurements until the browser has rendered text —
+  // on first load, fonts may not be ready, causing getBBox to return
+  // near-zero width and pushing the legend off the right edge.
+  const measureAndPosition = () => {
+    try {
+      const bbox = /** @type {SVGGElement} */ (g.node()).getBBox();
+      // Add background rect sized to actual content
+      const bgPad = 4;
+      if (!g.select('.legend-bg').size()) {
+        g.insert('rect', ':first-child')
+          .attr('class', 'legend-bg')
+          .attr('fill', 'white')
+          .attr('fill-opacity', 0.9)
+          .attr('stroke', '#ccc')
+          .attr('stroke-width', 0.5)
+          .attr('rx', 4);
+      }
+      g.select('.legend-bg')
+        .attr('x', bbox.x - bgPad)
+        .attr('y', bbox.y - bgPad)
+        .attr('width', bbox.width + bgPad * 2)
+        .attr('height', bbox.height + bgPad * 2);
+      // Position based on measured width
+      g.attr('transform', `translate(${frame.width - bbox.width - 4}, 0)`);
+    } catch { /* getBBox fails in JSDOM */ }
+  };
+
+  // Try immediately (works when fonts are cached), then again after layout
+  measureAndPosition();
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(measureAndPosition);
+  }
 }
 
 /**
@@ -324,6 +349,8 @@ function drawLegend(frame, categories, colors, title) {
 function drawGroupedBars(frame, values, groupValues, mode, opts) {
   const { primaryCats, secondaryCats, table, primaryTotals } = computeGroupedFrequencies(values, groupValues);
   const colors = getColors(secondaryCats.length);
+  const isPhone = typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 480px)').matches;
 
   const xScale = d3Scale.scaleBand()
     .domain(primaryCats)
@@ -349,11 +376,14 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
     }
 
     const yScale = d3Scale.scaleLinear().domain([0, yMax || 1]).nice().range([frame.height, 0]);
-    axes.append('g').attr('class', 'x-axis')
+    const yAxisDodged = d3Axis.axisLeft(yScale).tickFormat(formatTick);
+    if (isPhone) yAxisDodged.ticks(5);
+    const xAxisG2 = axes.append('g').attr('class', 'x-axis')
       .attr('transform', `translate(0, ${frame.height})`).call(d3Axis.axisBottom(xScale));
-    axes.append('g').attr('class', 'y-axis').call(d3Axis.axisLeft(yScale).tickFormat(formatTick));
+    axes.append('g').attr('class', 'y-axis').call(yAxisDodged);
+    const rotated2 = autoRotateLabels(xAxisG2, frame.margin.bottom);
 
-    if (opts.xLabel) {
+    if (opts.xLabel && !rotated2) {
       axes.append('text').attr('class', 'x-label').attr('text-anchor', 'middle')
         .attr('x', frame.width / 2).attr('y', frame.height + frame.margin.bottom - 8).text(opts.xLabel);
     }
@@ -390,12 +420,15 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
     // Stacked or filled
     const yMax = mode === 'filled' ? 1 : d3Array.max(primaryCats.map(p => primaryTotals.get(p) ?? 0)) || 1;
     const yScale = d3Scale.scaleLinear().domain([0, yMax]).nice().range([frame.height, 0]);
+    const yAxisStacked = d3Axis.axisLeft(yScale).tickFormat(formatTick);
+    if (isPhone) yAxisStacked.ticks(5);
 
-    axes.append('g').attr('class', 'x-axis')
+    const xAxisG3 = axes.append('g').attr('class', 'x-axis')
       .attr('transform', `translate(0, ${frame.height})`).call(d3Axis.axisBottom(xScale));
-    axes.append('g').attr('class', 'y-axis').call(d3Axis.axisLeft(yScale).tickFormat(formatTick));
+    axes.append('g').attr('class', 'y-axis').call(yAxisStacked);
+    const rotated3 = autoRotateLabels(xAxisG3, frame.margin.bottom);
 
-    if (opts.xLabel) {
+    if (opts.xLabel && !rotated3) {
       axes.append('text').attr('class', 'x-label').attr('text-anchor', 'middle')
         .attr('x', frame.width / 2).attr('y', frame.height + frame.margin.bottom - 8).text(opts.xLabel);
     }

@@ -654,12 +654,20 @@ export function initMechanismCollapse(mechanismStrip) {
       summary.innerHTML = parent ? parent.innerHTML : `χ² = ${chisqStat.innerHTML}`;
       return;
     }
+
+    // Try correlation: #mech-shuffled-r — copy parent <p> which has "r = <span>..."
+    const corrStat = strip.querySelector('#mech-shuffled-r');
+    if (corrStat && corrStat.textContent.trim() && corrStat.textContent !== '\u2014') {
+      const parent = corrStat.closest('.mechanism-stat');
+      summary.innerHTML = parent ? parent.innerHTML : `r = ${corrStat.innerHTML}`;
+      return;
+    }
   }
 
   // Watch for sim stat changes so collapsed summary stays current.
   // Observe stat elements and their containers (for dynamically created content like .mech-diff).
   const watchTargets = strip.querySelectorAll(
-    '#mech-sim-stat, #resample-mean, #mech-shuffled-chisq, #mech-resample-content, #resample-content'
+    '#mech-sim-stat, #resample-mean, #mech-shuffled-chisq, #mech-shuffled-r, #mech-resample-content, #resample-content'
   );
   for (const el of watchTargets) {
     const observer = new MutationObserver(syncSummary);
@@ -703,8 +711,9 @@ export function initMechanismCollapse(mechanismStrip) {
  * Collapse the data panel to a compact summary bar after dataset loads.
  * Adds a "Change Data" button to re-expand. Idempotent.
  * @param {HTMLElement|null} dataPanel - The #data-panel element
+ * @param {object} [dataset] - Full dataset JSON (optional; used to render "About this data" info)
  */
-export function collapseDataPanel(dataPanel) {
+export function collapseDataPanel(dataPanel, dataset) {
   if (!dataPanel || dataPanel.classList.contains('collapsed')) return;
   dataPanel.classList.add('collapsed');
 
@@ -715,9 +724,88 @@ export function collapseDataPanel(dataPanel) {
     btn.textContent = 'Change Data';
     btn.addEventListener('click', () => {
       dataPanel.classList.remove('collapsed');
+      // Remove info panel when expanding (will be re-added on next collapse)
+      const info = dataPanel.querySelector('.dataset-info');
+      if (info) info.remove();
     });
     dataPanel.appendChild(btn);
   }
+
+  // Render "About this data" if enriched metadata is available
+  renderDatasetInfo(dataPanel, dataset);
+}
+
+/**
+ * Render an expandable "About this data" panel inside the collapsed data bar.
+ * Only renders if the dataset has studyDescription or variableDescriptions.
+ * @param {HTMLElement} panel
+ * @param {object} [ds]
+ */
+function renderDatasetInfo(panel, ds) {
+  // Remove any existing info panel
+  const existing = panel.querySelector('.dataset-info');
+  if (existing) existing.remove();
+
+  if (!ds) return;
+  const hasStudy = ds.studyDescription;
+  const hasVarDescs = ds.variableDescriptions && Object.keys(ds.variableDescriptions).length > 0;
+  const hasSource = ds.sourceDetail;
+  if (!hasStudy && !hasVarDescs && !hasSource) return;
+
+  const details = document.createElement('details');
+  details.className = 'dataset-info';
+
+  const summary = document.createElement('summary');
+  summary.textContent = 'About this data';
+  details.appendChild(summary);
+
+  const content = document.createElement('div');
+  content.className = 'dataset-info-content';
+
+  if (hasStudy) {
+    const p = document.createElement('p');
+    p.className = 'dataset-info-study';
+    p.textContent = ds.studyDescription;
+    content.appendChild(p);
+  }
+
+  if (hasVarDescs) {
+    const h = document.createElement('h4');
+    h.textContent = 'Variables';
+    content.appendChild(h);
+    const dl = document.createElement('dl');
+    dl.className = 'dataset-info-vars';
+    for (const [varName, desc] of Object.entries(ds.variableDescriptions)) {
+      // Find the label from the variables array if available
+      const varMeta = ds.variables?.find(/** @param {any} v */ v => v.name === varName);
+      const dt = document.createElement('dt');
+      dt.textContent = varMeta?.label || varName;
+      dl.appendChild(dt);
+      const dd = document.createElement('dd');
+      dd.textContent = /** @type {string} */ (desc);
+      dl.appendChild(dd);
+    }
+    content.appendChild(dl);
+  }
+
+  if (hasSource) {
+    const p = document.createElement('p');
+    p.className = 'dataset-info-source';
+    const em = document.createElement('em');
+    em.textContent = `Source: ${ds.sourceDetail}`;
+    p.appendChild(em);
+    content.appendChild(p);
+  }
+
+  details.appendChild(content);
+  panel.appendChild(details);
+
+  // Close on click outside
+  document.addEventListener('click', function closeOutside(e) {
+    if (!details.open) return;
+    if (details.contains(/** @type {Node} */ (e.target))) return;
+    details.open = false;
+  });
 }
 
 /**
@@ -1124,9 +1212,12 @@ export function initDataPanel(config) {
   const dataPanelEl = document.getElementById('data-panel');
   const dataPreviewEl = document.getElementById('data-preview');
 
+  /** @type {object|undefined} */
+  let lastLoadedDataset;
+
   function postLoadUI() {
     if (showPreview && dataPreviewEl) dataPreviewEl.hidden = false;
-    if (autoCollapse) collapseDataPanel(dataPanelEl);
+    if (autoCollapse) collapseDataPanel(dataPanelEl, lastLoadedDataset);
     if (stickyControls) {
       const ctrl = document.getElementById('controls');
       if (ctrl) ctrl.classList.add('sticky');
@@ -1210,6 +1301,7 @@ export function initDataPanel(config) {
         .then(ds => {
           currentDatasetId = id;
           currentSourceName = meta?.name || ds.name || id;
+          lastLoadedDataset = ds;
           onDataset(ds, meta);
           // Populate editor with dataset as CSV
           if (ds.rows && ds.variables) {
@@ -1242,6 +1334,7 @@ export function initDataPanel(config) {
       const text = pasteArea.value.trim();
       if (!text) return;
       currentSourceName = 'edited_data';
+      lastLoadedDataset = undefined;
       handleText(text, 'Edited data');
       postLoadUI();
     });
@@ -1250,6 +1343,7 @@ export function initDataPanel(config) {
   // ── File input ──
   if (fileInput) {
     setupFileInput(fileInput, (text, filename) => {
+      lastLoadedDataset = undefined;
       handleText(text, filename);
       populateEditor(text, filename);
       postLoadUI();
@@ -1453,4 +1547,85 @@ export function consumeTransferData() {
     sessionStorage.removeItem('statbench-transfer');
     return JSON.parse(raw);
   } catch { return null; }
+}
+
+// ─── Summary URL parsing ────────────────────────────────────────────
+
+/**
+ * Parse a compact group summary string from a URL parameter.
+ * Format: "Label1:n:mean:sd,Label2:n:mean:sd,..."
+ * Labels may contain spaces (encoded as + or %20 in URLs).
+ *
+ * @param {string} summaryStr - The raw summary parameter value
+ * @returns {{ labels: string[], ns: number[], means: number[], sds: number[] } | null}
+ *   Returns null if parsing fails or fewer than 2 groups are found.
+ */
+export function parseGroupSummary(summaryStr) {
+  if (!summaryStr) return null;
+
+  const groups = summaryStr.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  if (groups.length < 2) return null;
+
+  /** @type {string[]} */
+  const labels = [];
+  /** @type {number[]} */
+  const ns = [];
+  /** @type {number[]} */
+  const means = [];
+  /** @type {number[]} */
+  const sds = [];
+
+  for (const g of groups) {
+    const parts = g.split(':');
+    if (parts.length < 4) return null;
+
+    // Label is everything except the last 3 parts (allows colons in labels, though unlikely)
+    const label = parts.slice(0, -3).join(':').trim();
+    const n = parseInt(parts[parts.length - 3], 10);
+    const m = parseFloat(parts[parts.length - 2]);
+    const sd = parseFloat(parts[parts.length - 1]);
+
+    if (!label || !isFinite(n) || n < 1 || !isFinite(m) || !isFinite(sd) || sd < 0) return null;
+
+    labels.push(label);
+    ns.push(n);
+    means.push(m);
+    sds.push(sd);
+  }
+
+  return { labels, ns, means, sds };
+}
+
+/**
+ * Parse a compact two-group summary string from a URL parameter.
+ * Format: "Label1:n:mean:sd,Label2:n:mean:sd"
+ *
+ * @param {string} summaryStr
+ * @returns {{ label1: string, n1: number, xbar1: number, s1: number, label2: string, n2: number, xbar2: number, s2: number } | null}
+ */
+export function parseTwoGroupSummary(summaryStr) {
+  const result = parseGroupSummary(summaryStr);
+  if (!result || result.labels.length !== 2) return null;
+  return {
+    label1: result.labels[0], n1: result.ns[0], xbar1: result.means[0], s1: result.sds[0],
+    label2: result.labels[1], n2: result.ns[1], xbar2: result.means[1], s2: result.sds[1],
+  };
+}
+
+/**
+ * Parse a compact one-sample summary string from a URL parameter.
+ * Format: "n:mean:sd"
+ *
+ * @param {string} summaryStr
+ * @returns {{ n: number, mean: number, sd: number } | null}
+ */
+export function parseOneSampleSummary(summaryStr) {
+  if (!summaryStr) return null;
+  const parts = summaryStr.split(':').map(s => s.trim());
+  if (parts.length < 3) return null;
+  const n = parseInt(parts[0], 10);
+  const m = parseFloat(parts[1]);
+  const sd = parseFloat(parts[2]);
+  if (!isFinite(n) || n < 1 || !isFinite(m) || !isFinite(sd) || sd < 0) return null;
+  return { n, mean: m, sd };
 }

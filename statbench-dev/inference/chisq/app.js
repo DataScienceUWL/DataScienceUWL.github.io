@@ -8,11 +8,10 @@
 
 import { setJStat, pdfChisq, chisqInv } from '../../js/distributions.js';
 import { chisqTest } from '../../js/inference.js';
-import { drawCurve, computeDomain } from '../../js/curve.js';
+import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
 import { announce, initTabs, initDataPanel, initKeyboardShortcuts, buildSimLink } from '../../js/page-utils.js';
-import * as d3Selection from 'd3-selection';
 
 /** Render LaTeX to HTML string via KaTeX. */
 const tex = (/** @type {string} */ latex, display = false) =>
@@ -486,7 +485,7 @@ function drawChart(result) {
   const titleText = `Chi-square distribution (df = ${df})`;
   const descText = `Chi-square curve with df = ${df}, right-tail shaded at test statistic ${chiSq.toFixed(3)}`;
 
-  const { xScale, yScale, frame } = drawCurve(chartContainer, pdfFn, domain, {
+  const chart = drawCurve(chartContainer, pdfFn, domain, {
     xLabel: '\u03C7\u00B2',
     yLabel: 'Density',
     titleText,
@@ -496,32 +495,13 @@ function drawChart(result) {
     critValue: chiSq,
   });
 
-  const overlays = d3Selection.select(frame.inner).select('.overlays');
-  const statX = xScale(chiSq);
-  const yTop = yScale(pdfFn(chiSq));
-
-  if (chiSq >= domain[0] && chiSq <= domain[1]) {
-    overlays.append('line')
-      .attr('class', 'chisq-stat-line')
-      .attr('x1', statX)
-      .attr('x2', statX)
-      .attr('y1', yScale(0))
-      .attr('y2', yTop)
-      .attr('stroke', '#7B2D8E')
-      .attr('stroke-width', 2)
-      .attr('stroke-dasharray', '6 3');
-
-    const labelY = Math.max(yTop - 12, 4);
-    overlays.append('text')
-      .attr('class', 'chisq-stat-label')
-      .attr('x', statX)
-      .attr('y', labelY)
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#7B2D8E')
-      .attr('font-size', '11px')
-      .attr('font-weight', '700')
-      .text(`\u03C7\u00B2 = ${chiSq.toFixed(3)}`);
-  }
+  addInferenceAnnotations(chart, {
+    statValue: chiSq,
+    statLabel: '\u03C7\u00B2',
+    pValue: result.pValue,
+    pdfFn,
+    tail: 'right',
+  });
 }
 
 // ── Interpretation ──────────────────────────────────────────────────

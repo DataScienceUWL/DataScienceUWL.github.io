@@ -292,12 +292,6 @@ function handleApply() {
 
 // ── Dataset grouping ─────────────────────────────────────────────────
 
-/** Group label for quantitative-mode datasets (prefix controls sort order). @param {any} ds */
-function quantGroupFn(ds) {
-  if (ds.type === 'explore') return '1:Explore';
-  return '2:One Quantitative Variable';
-}
-
 /**
  * Show a cross-link hint when a dataset belongs to a non-primary group.
  * @param {any} meta - Dataset metadata from the index
@@ -414,7 +408,6 @@ const dataPanel = initDataPanel({
   datasetFilter: (/** @type {any} */ ds) =>
     ds.hasNumeric === true && !ds.hasCategorical &&
     ds.type !== 'regression' && ds.type !== 'paired',
-  datasetGroupFn: quantGroupFn,
   onDataset: (ds, meta) => {
     loadedDataset = ds;
     showCrosslink(meta);
@@ -510,6 +503,16 @@ function setData(values, varLabel, sourceName) {
   currentVarLabel = varLabel;
   dataPrecision = detectPrecision(values);
   currentBinCount = sturgesBins(values.length);
+
+  // Reset controls to defaults on new data
+  activeChart = 'histogram';
+  showOutliers = true;
+  showDensity = false;
+  relativeFreq = false;
+  const histRadio = /** @type {HTMLInputElement|null} */ (
+    document.querySelector('input[name="chart-type"][value="histogram"]'));
+  if (histRadio) histRadio.checked = true;
+  if (groupSelect) groupSelect.value = '';
 
   // Populate spreadsheet editor
   if (quantSheetBody) populateSheet(quantSheetBody, 'number', values.map(String));

@@ -296,6 +296,127 @@ function detectPhoneMargin() {
 }
 
 /**
+ * Auto-rotate x-axis categorical tick labels when they overlap horizontally.
+ * Rotates to -40 degrees, truncates labels that would overflow the bottom margin,
+ * and returns true if rotation was applied (so caller can hide x-axis title).
+ *
+ * @param {d3Selection.Selection} axisG - The x-axis <g> element
+ * @param {number} maxBottomMargin - Available bottom margin (viewBox units)
+ * @returns {boolean} Whether rotation was applied
+ */
+export function autoRotateLabels(axisG, maxBottomMargin) {
+  const tickTexts = axisG.selectAll('.tick text').nodes();
+  if (!tickTexts.length || !_ticksOverlap(tickTexts)) return false;
+
+  // Max label length (in characters) that fits within bottom margin at -40°.
+  // At ~7 viewBox units per char, rotated height ≈ len * 7 * sin(40°) ≈ len * 4.5.
+  // Leave 12 units for tick mark + gap.
+  const maxChars = Math.max(8, Math.floor((maxBottomMargin - 12) / 4.5));
+
+  axisG.selectAll('.tick text').each(function () {
+    const el = d3Selection.select(this);
+    const text = el.text();
+    if (text.length > maxChars) {
+      el.text(text.slice(0, maxChars - 1) + '…');
+    }
+  });
+
+  axisG.selectAll('.tick text')
+    .attr('text-anchor', 'end')
+    .attr('dx', '-0.5em')
+    .attr('dy', '0.15em')
+    .attr('transform', 'rotate(-40)');
+
+  return true;
+}
+
+/**
+ * Wrap long tick labels in an axis group by splitting into multiple <tspan> lines.
+ * Works for both x-axis (horizontal text) and y-axis (horizontal text on left axis).
+ * Labels are split at natural break points (spaces, hyphens, underscores, camelCase).
+ *
+ * @param {d3Selection.Selection} axisG - The axis <g> element (e.g., `.y-axis`)
+ * @param {number} maxWidth - Maximum allowed width in viewBox units before wrapping
+ */
+export function wrapTickLabels(axisG, maxWidth) {
+  axisG.selectAll('.tick text').each(function () {
+    const textEl = d3Selection.select(this);
+    const fullText = textEl.text();
+
+    // Quick check: does the label even need wrapping?
+    let textWidth = 0;
+    try { textWidth = /** @type {SVGTextElement} */ (this).getBBox().width; }
+    catch { return; /* getBBox fails in JSDOM */ }
+    if (textWidth <= maxWidth) return;
+
+    // Split at spaces, hyphens (keep hyphen), underscores, or camelCase boundaries
+    const words = fullText
+      .replace(/([a-z])([A-Z])/g, '$1 $2')      // camelCase → separate words
+      .replace(/[_]/g, ' ')                       // underscores → spaces
+      .split(/\s+/)                                // split on whitespace
+      .filter(Boolean);
+
+    if (words.length <= 1) return; // can't split a single word
+
+    const x = textEl.attr('x') || '0';
+    const dy = parseFloat(textEl.attr('dy') || '0');
+    const anchor = textEl.attr('text-anchor') || 'end';
+
+    textEl.text(null); // clear existing text
+
+    let currentLine = '';
+    let lineNumber = 0;
+    const lineHeight = 1.1; // em
+
+    for (let i = 0; i < words.length; i++) {
+      const testLine = currentLine ? currentLine + ' ' + words[i] : words[i];
+      const tspan = textEl.append('tspan')
+        .attr('x', x)
+        .attr('text-anchor', anchor)
+        .text(testLine);
+
+      let tspanWidth = 0;
+      try { tspanWidth = /** @type {SVGTSpanElement} */ (tspan.node()).getComputedTextLength(); }
+      catch { tspanWidth = testLine.length * 7; } // fallback estimate
+
+      if (tspanWidth > maxWidth && currentLine) {
+        // This word pushes over — finalize previous line, start new one
+        tspan.text(currentLine);
+        tspan.attr('dy', lineNumber === 0 ? '0em' : `${lineHeight}em`);
+        currentLine = words[i];
+        lineNumber++;
+      } else {
+        currentLine = testLine;
+        tspan.remove(); // will re-add on finalize
+      }
+    }
+
+    // Add final line
+    if (currentLine) {
+      const lastTspan = textEl.append('tspan')
+        .attr('x', x)
+        .attr('text-anchor', anchor)
+        .attr('dy', lineNumber === 0 ? '0em' : `${lineHeight}em`)
+        .text(currentLine);
+    }
+
+    // Re-center vertically: shift up by half the total height added
+    const totalLines = lineNumber + 1;
+    if (totalLines > 1) {
+      const shiftUp = ((totalLines - 1) * lineHeight) / 2;
+      textEl.selectAll('tspan').each(function (_, i) {
+        const ts = d3Selection.select(this);
+        if (i === 0) {
+          ts.attr('dy', `-${shiftUp}em`);
+        } else {
+          ts.attr('dy', `${lineHeight}em`);
+        }
+      });
+    }
+  });
+}
+
+/**
  * Render a statistical label in SVG, converting combining overline (U+0304)
  * into proper SVG `<tspan text-decoration="overline">` for reliable rendering.
  *
@@ -546,4 +667,121 @@ export function attachTooltip(selection, innerNode, tooltipFn) {
       showTooltip(innerNode, lines, x, y);
     })
     .on('focusout', () => hideTooltip(innerNode));
+}
+
+// ─── Mechanism strip utilities ──────────────────────────────────────
+
+/**
+ * Build HTML for a mechanism stat line with highlight on the NUMBER only.
+ * Returns e.g. `<span class="mech-stat-label">Resample mean</span> = <span class="mech-stat-value highlight-last">12.34</span>`
+ *
+ * @param {string} label - Text label (e.g. "Resample mean", "χ²", "diff")
+ * @param {string} formattedValue - Already-formatted number string
+ * @param {boolean} [highlight=false] - Whether to apply orange highlight to the value
+ * @returns {string} HTML string
+ */
+export function formatMechStat(label, formattedValue, highlight = false) {
+  const hlClass = highlight ? ' highlight-last' : '';
+  return `<span class="mech-stat-label">${label}</span> = <span class="mech-stat-value${hlClass}">${formattedValue}</span>`;
+}
+
+/**
+ * Draw a minimal inline-SVG boxplot into a mechanism strip container.
+ * No D3 dependency — uses plain DOM. Horizontal orientation.
+ *
+ * @param {HTMLElement} container - DOM element to render into (cleared first)
+ * @param {number[]} values - Numeric data
+ * @param {object} [options]
+ * @param {number} [options.width=200] - SVG width
+ * @param {number} [options.height=32] - SVG height
+ * @param {number} [options.meanValue] - If provided, draw a mean marker (diamond)
+ * @param {boolean} [options.highlightMean=false] - Draw mean marker in orange
+ * @param {[number, number]} [options.domain] - Fixed x domain [lo, hi]; auto if omitted
+ * @param {string} [options.color='#569BBD'] - Box/whisker color
+ * @param {string} [options.label] - aria-label for the SVG
+ */
+export function drawMiniBoxplot(container, values, options = {}) {
+  const {
+    width = 200,
+    height = 32,
+    meanValue,
+    highlightMean = false,
+    domain,
+    color = '#569BBD',
+    label = 'Mini boxplot',
+  } = options;
+
+  if (!values || values.length < 2) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const n = sorted.length;
+
+  // Quartiles (R type=7 compatible via linear interpolation)
+  const q = (/** @type {number} */ p) => {
+    const h = (n - 1) * p;
+    const lo = Math.floor(h);
+    const hi = Math.ceil(h);
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (h - lo);
+  };
+  const q1 = q(0.25);
+  const med = q(0.5);
+  const q3 = q(0.75);
+  const iqr = q3 - q1;
+
+  const lowerFence = q1 - 1.5 * iqr;
+  const upperFence = q3 + 1.5 * iqr;
+  const whiskerLo = sorted.find(d => d >= lowerFence) ?? q1;
+  const whiskerHi = sorted.findLast(d => d <= upperFence) ?? q3;
+  const outliers = sorted.filter(d => d < lowerFence || d > upperFence);
+
+  // Scale
+  const pad = 6; // px padding
+  const allPts = domain ? [] : [...sorted];
+  if (meanValue !== undefined && !domain) allPts.push(meanValue);
+  const lo = domain ? domain[0] : Math.min(...allPts);
+  const hi = domain ? domain[1] : Math.max(...allPts);
+  const range = hi - lo || 1;
+  const x = (/** @type {number} */ v) => pad + ((v - lo) / range) * (width - 2 * pad);
+
+  const cy = height / 2;
+  const boxH = height * 0.55;
+  const boxTop = cy - boxH / 2;
+
+  let svg = `<svg class="mech-minibox" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">`;
+
+  // Whisker lines
+  svg += `<line x1="${x(whiskerLo)}" x2="${x(q1)}" y1="${cy}" y2="${cy}" stroke="${color}" stroke-width="1.5"/>`;
+  svg += `<line x1="${x(q3)}" x2="${x(whiskerHi)}" y1="${cy}" y2="${cy}" stroke="${color}" stroke-width="1.5"/>`;
+
+  // Whisker caps
+  const capH = boxH * 0.5;
+  svg += `<line x1="${x(whiskerLo)}" x2="${x(whiskerLo)}" y1="${cy - capH/2}" y2="${cy + capH/2}" stroke="${color}" stroke-width="1.5"/>`;
+  svg += `<line x1="${x(whiskerHi)}" x2="${x(whiskerHi)}" y1="${cy - capH/2}" y2="${cy + capH/2}" stroke="${color}" stroke-width="1.5"/>`;
+
+  // Box
+  const bx = x(q1);
+  const bw = x(q3) - bx;
+  svg += `<rect x="${bx}" y="${boxTop}" width="${Math.max(bw, 1)}" height="${boxH}" fill="${color}30" stroke="${color}" stroke-width="1.5" rx="1"/>`;
+
+  // Median line
+  svg += `<line x1="${x(med)}" x2="${x(med)}" y1="${boxTop}" y2="${boxTop + boxH}" stroke="${color}" stroke-width="2"/>`;
+
+  // Outliers
+  for (const o of outliers) {
+    svg += `<circle cx="${x(o)}" cy="${cy}" r="2" fill="none" stroke="${color}" stroke-width="1"/>`;
+  }
+
+  // Mean marker (diamond)
+  if (meanValue !== undefined) {
+    const mx = x(meanValue);
+    const ms = 4; // half-size
+    const mColor = highlightMean ? '#E07020' : color;
+    svg += `<polygon points="${mx},${cy - ms} ${mx + ms},${cy} ${mx},${cy + ms} ${mx - ms},${cy}" fill="${mColor}" stroke="${mColor}" stroke-width="0.5"/>`;
+  }
+
+  svg += '</svg>';
+  container.innerHTML = svg;
 }

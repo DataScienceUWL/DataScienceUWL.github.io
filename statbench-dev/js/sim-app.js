@@ -13,7 +13,7 @@ import * as d3Selection from 'd3-selection';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { drawSpike } from './spike.js';
-import { renderSimPills } from './chart-utils.js';
+import { renderSimPills, formatMechStat, drawMiniBoxplot } from './chart-utils.js';
 import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
@@ -117,6 +117,8 @@ export function initSimPage(config) {
   /** Dataset context for natural-language interpretations. */
   /** @type {{population?:string, parameter?:string, unit?:string, nullClaim?:string, successLabel?:string}} */
   let datasetContext = {};
+  /** Full dataset JSON for info panel. @type {object|undefined} */
+  let currentDatasetJSON;
 
   /** Track current data source name for save filename. */
   let currentSourceName = 'data';
@@ -762,9 +764,9 @@ export function initSimPage(config) {
       if (config.paired) {
         const diffs = data2.map((v, i) => v - data1[i]);
         const m = mean(diffs);
-        dataSummary.textContent =
-          `${namePrefix}${data1.length} pairs | ${group1Name}: x̄ = ${formatStat(mean(data1), dataPrecision)} | ` +
-          `${group2Name}: x̄ = ${formatStat(mean(data2), dataPrecision)} | Mean diff = ${formatStat(m, dataPrecision)}`;
+        dataSummary.innerHTML =
+          `${namePrefix}${data1.length} pairs | ${group1Name}: <span class="x-bar">x</span> = ${formatStat(mean(data1), dataPrecision)} | ` +
+          `${group2Name}: <span class="x-bar">x</span> = ${formatStat(mean(data2), dataPrecision)} | Mean diff (${group2Name} \u2212 ${group1Name}) = ${formatStat(m, dataPrecision)}`;
       } else if (config.proportion && !config.twoGroup) {
         const p1 = mean(data1);
         const s1 = data1.filter(v => v === 1).length;
@@ -779,9 +781,9 @@ export function initSimPage(config) {
           `${namePrefix}${group1Name}: ${s1}/${data1.length} (p̂ = ${formatStat(p1, dataPrecision, 'proportion')}) | ` +
           `${group2Name}: ${s2}/${data2.length} (p̂ = ${formatStat(p2, dataPrecision, 'proportion')})`;
       } else if (config.twoGroup && data2.length > 0) {
-        dataSummary.textContent =
-          `${namePrefix}${group1Name}: n = ${data1.length}, x̄ = ${formatStat(mean(data1), dataPrecision)} | ` +
-          `${group2Name}: n = ${data2.length}, x̄ = ${formatStat(mean(data2), dataPrecision)}`;
+        dataSummary.innerHTML =
+          `${namePrefix}${group1Name}: n = ${data1.length}, <span class="x-bar">x</span> = ${formatStat(mean(data1), dataPrecision)} | ` +
+          `${group2Name}: n = ${data2.length}, <span class="x-bar">x</span> = ${formatStat(mean(data2), dataPrecision)}`;
       } else {
         const n = data1.length;
         const m = mean(data1);
@@ -798,15 +800,15 @@ export function initSimPage(config) {
     // Mechanism strip is deferred until first generate click (see generateSamples)
 
     // Collapse data panel to compact summary bar
-    collapseDataPanel(dataPanel);
+    collapseDataPanel(dataPanel, currentDatasetJSON);
 
     // Make controls sticky on desktop
     controlsSection?.classList.add('sticky');
 
     // Show hypothesis display (randomization tests)
-    if (config.mode === 'randomization' && config.twoGroup && hypothesisDisplay) {
+    if (config.mode === 'randomization' && (config.twoGroup || config.paired) && hypothesisDisplay) {
       hypothesisDisplay.hidden = false;
-      updateHypothesisDisplay();
+      if (config.twoGroup) updateHypothesisDisplay();
     }
     // Show group order (two-sample bootstrap)
     const groupOrderEl = document.getElementById('group-order');
@@ -832,8 +834,8 @@ export function initSimPage(config) {
    * then render an empty chart (0 dots, just axes, no observed line).
    */
   function renderEmptyChart() {
-    const PRE_SIM_N = 100;
-    const TRIM = 5;
+    const PRE_SIM_N = 2000;
+    const TRIM = 5; // 5/2000 = 0.25th percentile — captures extreme tails
     const preRng = createRng('presim-' + Date.now());
     const preStats = [];
 
@@ -846,6 +848,13 @@ export function initSimPage(config) {
         for (let i = 0; i < PRE_SIM_N; i++) preStats.push(statFn(resample(data1, preRng)) - statFn(resample(data2, preRng)));
       } else {
         for (let i = 0; i < PRE_SIM_N; i++) preStats.push(statFn(resample(data1, preRng)));
+      }
+    } else if (config.paired && data2.length > 0) {
+      // Paired randomization: sign-flip pre-sim
+      const diffs = data2.map((v, i) => v - data1[i]);
+      for (let i = 0; i < PRE_SIM_N; i++) {
+        const flipped = diffs.map(d => preRng() < 0.5 ? d : -d);
+        preStats.push(mean(flipped));
       }
     } else if (config.testStat) {
       for (let i = 0; i < PRE_SIM_N; i++) {
@@ -864,7 +873,12 @@ export function initSimPage(config) {
     preSimDomain = [lo - pad, hi + pad];
 
     // Lock the dotplot bin grid so dots don't shift as domain grows
-    const gridNumBins = config.proportion ? data1.length : (userBinCount ?? 40);
+    // For two-group proportions, use same effective sample size as renderChart
+    const gridNumBins = config.proportion
+      ? (config.twoGroup && data2.length > 0
+          ? Math.round(data1.length * data2.length / (data1.length + data2.length))
+          : data1.length)
+      : (userBinCount ?? 40);
     const gridBinWidth = (preSimDomain[1] - preSimDomain[0]) / gridNumBins;
     lockedDotGrid = { binWidth: gridBinWidth, binOrigin: preSimDomain[0] };
 
@@ -948,6 +962,7 @@ export function initSimPage(config) {
         const relevant = index.filter(ds => {
           if (config.paired) return ds.type === 'paired';
           if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) return ds.type === 'bootstrap_prop';
+          if (config.mode === 'bootstrap' && config.twoGroup && config.proportion) return ds.type === 'randomization_prop';
           if (config.mode === 'bootstrap' && config.twoGroup) return ds.type === 'randomization';
           if (config.mode === 'bootstrap') return ds.type === 'bootstrap';
           if (config.proportion) return ds.type === 'randomization_prop';
@@ -1002,6 +1017,7 @@ export function initSimPage(config) {
         hideVarSelector();
         selectedVarName = '';
         datasetContext = ds.context || {};
+        currentDatasetJSON = ds;
 
         if (config.paired) {
           // Paired data: two numeric columns
@@ -1112,7 +1128,9 @@ export function initSimPage(config) {
       altDirectionBtn.dataset.value = vals[next];
       altDirectionBtn.textContent = labels[next];
       if (allStats.length > 0) {
-        const observedStat = config.testStat(data1, data2);
+        const observedStat = config.paired
+          ? mean(data2.map((v, i) => v - data1[i]))
+          : config.testStat(data1, data2);
         const direction = getDirection();
         renderChart(allStats, null, observedStat, direction);
         const { pValue, extremeCount } = permutationPValue(allStats, observedStat, direction);
@@ -1177,7 +1195,8 @@ export function initSimPage(config) {
 
     // Update resample panel title
     if (resampleTitleEl) {
-      resampleTitleEl.textContent = count === 1 ? 'This Resample' : 'Last Resample';
+      const verb = config.mode === 'randomization' ? 'Shuffle' : 'Resample';
+      resampleTitleEl.textContent = count === 1 ? `This ${verb}` : `Last ${verb}`;
     }
 
     if (config.mode === 'bootstrap') {
@@ -1205,7 +1224,7 @@ export function initSimPage(config) {
           const stat = statFn(rs1) - statFn(rs2);
           allStats.push(stat);
         }
-        showTwoGroupMechanism(lastRs1, lastRs2, false);
+        showTwoGroupMechanism(lastRs1, lastRs2, false, count === 1);
       } else {
         // One-sample bootstrap
         for (let i = 0; i < count; i++) {
@@ -1274,21 +1293,23 @@ export function initSimPage(config) {
 
       if (count === 1) {
         lastWasSingle = true;
-        // Staggered animation: mechanism update → 120ms → flash → 120ms → dot appears → drop animation
         if (showOneSampleMech) {
           lastResample = lastResampleValues;
           showResample(lastResampleValues, false, true);
         }
+        // For two-group, get the diff value element for drop animation
+        const bootDiffEl = !showOneSampleMech
+          ? document.querySelector('#mech-resample-content .mech-diff')
+          : null;
+        const bootDiffValueEl = bootDiffEl?.querySelector('.mech-stat-value') ?? null;
+        // Brief pause for mechanism to update visually, then render chart + drop
         setTimeout(() => {
-          flashMechanism();
-          setTimeout(() => {
-            renderChart(allStats, ciForChart);
-            // Drop animation: flying dot from resample mean to chart
-            if (resampleMeanEl && chartContainer) {
-              animateDropToChart(resampleMeanEl, chartContainer);
-            }
-          }, 120);
-        }, 120);
+          renderChart(allStats, ciForChart);
+          const dropSource = bootDiffValueEl || bootDiffEl || resampleMeanEl;
+          if (dropSource && chartContainer) {
+            animateDropToChart(/** @type {HTMLElement} */ (dropSource), chartContainer);
+          }
+        }, 150);
       } else {
         lastWasSingle = false;
         renderChart(allStats, ciForChart);
@@ -1299,6 +1320,68 @@ export function initSimPage(config) {
       }
 
       announce(`Generated ${count} resample${count > 1 ? 's' : ''}. Total: ${allStats.length}`);
+    } else if (config.paired) {
+      // ─── Paired randomization: sign-flip test ───
+      const diffs = data2.map((v, i) => v - data1[i]);
+      const observedStat = mean(diffs);
+      const direction = getDirection();
+
+      /** @type {number[]} */ let lastFlipped = [];
+      for (let i = 0; i < count; i++) {
+        const flipped = diffs.map(d => rng() < 0.5 ? d : -d);
+        lastFlipped = flipped;
+        allStats.push(mean(flipped));
+      }
+
+      // Show mechanism (reuse one-sample mechanism strip)
+      lastResample = lastFlipped;
+      showResample(lastFlipped, false, count === 1);
+
+      // Highlights
+      if (count === 1) {
+        lastStatIndex = allStats.length - 1;
+      } else {
+        batchHighlightIndices = new Set();
+        for (let j = prevLength; j < allStats.length; j++) {
+          batchHighlightIndices.add(j);
+        }
+      }
+      // Histogram delta for batch
+      if (allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
+        const rVals = [...allStats, observedStat];
+        let rLo = Math.min(...rVals);
+        let rHi = Math.max(...rVals);
+        const rPad = (rHi - rLo) * 0.05 || 0.5;
+        rLo -= rPad; rHi += rPad;
+        if (preSimDomain) {
+          rLo = Math.min(rLo, preSimDomain[0]);
+          rHi = Math.max(rHi, preSimDomain[1]);
+        }
+        /** @type {[number,number]} */
+        const rDomain = [rLo, rHi];
+        const { bins: fullBins } = computeBins(allStats, { domain: rDomain });
+        const lockedThresholds = fullBins.slice(1).map(b => b.x0);
+        const prevStats = allStats.slice(0, prevLength);
+        const { bins: prevBins } = computeBins(prevStats, { domain: rDomain, thresholds: lockedThresholds });
+        prevBinCounts = prevBins.map(b => b.length);
+      }
+
+      const { pValue, extremeCount } = permutationPValue(allStats, observedStat, direction);
+      displayRandomizationResults(allStats, observedStat, pValue, extremeCount, direction);
+
+      if (count === 1) {
+        lastWasSingle = true;
+        setTimeout(() => {
+          renderChart(allStats, null, observedStat, direction);
+          if (resampleMeanEl && chartContainer) {
+            animateDropToChart(resampleMeanEl, chartContainer);
+          }
+        }, 150);
+      } else {
+        lastWasSingle = false;
+        renderChart(allStats, null, observedStat, direction);
+      }
+      announce(`Generated ${count} shuffle${count > 1 ? 's' : ''}. Total: ${allStats.length}`);
     } else {
       const observedStat = config.testStat(data1, data2);
       const direction = getDirection();
@@ -1357,33 +1440,17 @@ export function initSimPage(config) {
       displayRandomizationResults(allStats, observedStat, pValue, extremeCount, direction);
 
       if (count === 1) {
-        // The diff is already highlighted orange via showTwoGroupMechanism(…, highlight=true)
-        // IMPORTANT: scope to #mech-resample-content — there are TWO .mech-diff elements
-        // (one in original panel, one in shuffled panel); we want the shuffled one.
+        // The diff value gets highlight-last via showTwoGroupMechanism(…, highlight=true)
+        // CSS auto-fades it via stat-text-fade animation (1.2s)
         const mechDiffEl = document.querySelector('#mech-resample-content .mech-diff');
-        // Remove highlight after animation completes (120+120+~500ms = ~740ms)
+        // Brief pause for mechanism to update, then render chart + drop
         setTimeout(() => {
-          const el = document.querySelector('#mech-resample-content .mech-diff');
-          if (el) el.classList.remove('highlight-last');
-          // Also clear from collapsed summary
-          const summary = document.querySelector('.mechanism-collapsed-summary');
-          const hl = summary?.querySelector('.highlight-last');
-          if (hl) {
-            hl.classList.remove('highlight-last');
+          renderChart(allStats, null, observedStat, direction);
+          const dropSourceEl = mechDiffEl || resampleMeanEl;
+          if (dropSourceEl && chartContainer) {
+            animateDropToChart(/** @type {HTMLElement} */ (dropSourceEl), chartContainer);
           }
-        }, 1500);
-        // Staggered: mechanism update → 120ms → flash → 120ms → dot appears → drop animation
-        setTimeout(() => {
-          flashMechanism();
-          setTimeout(() => {
-            renderChart(allStats, null, observedStat, direction);
-            // Drop animation: flying dot from shuffled diff to chart
-            const dropSourceEl = mechDiffEl || resampleMeanEl;
-            if (dropSourceEl && chartContainer) {
-              animateDropToChart(/** @type {HTMLElement} */ (dropSourceEl), chartContainer);
-            }
-          }, 120);
-        }, 120);
+        }, 150);
       } else {
         renderChart(allStats, null, observedStat, direction);
       }
@@ -1430,6 +1497,11 @@ export function initSimPage(config) {
 
       if (origNEl) origNEl.textContent = `${diffs.length} pairs`;
       if (origMeanEl) origMeanEl.textContent = formatStat(mean(diffs), dataPrecision);
+      // Update title to show difference direction
+      const diffTitleEl = document.getElementById('orig-diff-title');
+      if (diffTitleEl) {
+        diffTitleEl.textContent = `Differences (${group2Name} \u2212 ${group1Name})`;
+      }
       return;
     }
 
@@ -1490,45 +1562,133 @@ export function initSimPage(config) {
 
   // ─── Two-group mechanism strip ───
 
+  /**
+   * Build HTML for a two-group panel (shared by original and resample).
+   * @param {number[]} g1 - Group 1 values
+   * @param {number[]} g2 - Group 2 values
+   * @param {boolean} [highlightDiff] - Highlight diff in orange
+   * @returns {string} HTML string
+   */
+  /** Shared x-domain for two-group mini boxplots (set from original data). */
+  let twoGroupBoxDomain = /** @type {[number,number]|null} */ (null);
+
+  /**
+   * Build HTML for a two-group panel (shared by original and resample).
+   * For non-proportion data, includes mini boxplots. For proportions, shows prop bars.
+   * @param {number[]} g1 - Group 1 values
+   * @param {number[]} g2 - Group 2 values
+   * @param {boolean} [highlightDiff] - Highlight diff value in orange
+   * @param {boolean} [isOriginal] - True if rendering the original (left) panel
+   * @returns {string} HTML string (boxplot containers are populated after innerHTML set)
+   */
+  function buildTwoGroupHTML(g1, g2, highlightDiff = false, isOriginal = false) {
+    const statFn = config.mode === 'bootstrap' ? getBootstrapStat().fn : mean;
+    const statSymbol = config.proportion ? 'p̂' : '<span class="x-bar">x</span>';
+    const s1 = statFn(g1);
+    const s2 = statFn(g2);
+    const fmtType = config.proportion ? 'proportion' : undefined;
+    const diffVal = formatStat(s1 - s2, dataPrecision, fmtType);
+
+    let html = '';
+
+    if (config.proportion) {
+      // Proportion groups: show S/F chip bars + stats
+      const succ1 = g1.filter(v => v === 1).length;
+      const fail1 = g1.length - succ1;
+      const succ2 = g2.filter(v => v === 1).length;
+      const fail2 = g2.length - succ2;
+      const pct1 = g1.length > 0 ? (succ1 / g1.length * 100) : 0;
+      const pct2 = g2.length > 0 ? (succ2 / g2.length * 100) : 0;
+
+      html += `
+        <div class="mech-group-row"><span class="mech-group-name">${group1Name}:</span>
+          <span class="mech-group-stat">n = ${g1.length}, ${statSymbol} = ${formatStat(s1, dataPrecision, fmtType)}</span></div>
+        <div class="mech-prop-bar" aria-label="${succ1} successes, ${fail1} failures">
+          <div class="mech-prop-fill" style="width:${pct1}%"></div>
+          <span class="mech-prop-label">${succ1} S / ${fail1} F</span>
+        </div>
+        <div class="mech-group-row"><span class="mech-group-name">${group2Name}:</span>
+          <span class="mech-group-stat">n = ${g2.length}, ${statSymbol} = ${formatStat(s2, dataPrecision, fmtType)}</span></div>
+        <div class="mech-prop-bar" aria-label="${succ2} successes, ${fail2} failures">
+          <div class="mech-prop-fill" style="width:${pct2}%"></div>
+          <span class="mech-prop-label">${succ2} S / ${fail2} F</span>
+        </div>`;
+    } else {
+      // Means: text stats + mini boxplots
+      const tag = isOriginal ? 'orig' : 'resamp';
+      html += `
+        <div class="mech-group-row"><span class="mech-group-name">${group1Name}:</span>
+          <span class="mech-group-stat">n = ${g1.length}, ${statSymbol} = ${formatStat(s1, dataPrecision, fmtType)}</span></div>
+        <div id="mech-box-${tag}-1" class="mech-box-container"></div>
+        <div class="mech-group-row"><span class="mech-group-name">${group2Name}:</span>
+          <span class="mech-group-stat">n = ${g2.length}, ${statSymbol} = ${formatStat(s2, dataPrecision, fmtType)}</span></div>
+        <div id="mech-box-${tag}-2" class="mech-box-container"></div>`;
+    }
+
+    const hlClass = highlightDiff ? ' highlight-last' : '';
+    html += `<div class="mech-diff">diff = <span class="mech-stat-value${hlClass}">${diffVal}</span></div>`;
+    return html;
+  }
+
+  /**
+   * Render mini boxplots into the two-group mechanism containers.
+   * Must be called AFTER innerHTML is set (so the containers exist in DOM).
+   * @param {number[]} g1 - Group 1 values
+   * @param {number[]} g2 - Group 2 values
+   * @param {string} tag - 'orig' or 'resamp'
+   * @param {boolean} [highlightMean=false] - Highlight mean markers in orange
+   */
+  function renderTwoGroupBoxplots(g1, g2, tag, highlightMean = false) {
+    if (config.proportion) return;
+    const statFn = config.mode === 'bootstrap' ? getBootstrapStat().fn : mean;
+
+    // Set domain from original data (stable across resamples)
+    if (tag === 'orig') {
+      const allVals = [...g1, ...g2];
+      const lo = Math.min(...allVals);
+      const hi = Math.max(...allVals);
+      const pad = (hi - lo) * 0.08 || 0.5;
+      twoGroupBoxDomain = [lo - pad, hi + pad];
+    }
+
+    const box1 = document.getElementById(`mech-box-${tag}-1`);
+    const box2 = document.getElementById(`mech-box-${tag}-2`);
+    if (box1 && g1.length >= 2) {
+      drawMiniBoxplot(box1, g1, {
+        domain: twoGroupBoxDomain ?? undefined,
+        meanValue: statFn(g1),
+        highlightMean,
+        label: `${tag === 'orig' ? 'Original' : 'Resampled'} ${group1Name} distribution`,
+      });
+    }
+    if (box2 && g2.length >= 2) {
+      drawMiniBoxplot(box2, g2, {
+        domain: twoGroupBoxDomain ?? undefined,
+        meanValue: statFn(g2),
+        highlightMean,
+        label: `${tag === 'orig' ? 'Original' : 'Resampled'} ${group2Name} distribution`,
+      });
+    }
+  }
+
   /** Render original group summaries in the mechanism strip. */
   function renderTwoGroupOriginal() {
     if (!mechOriginalContent) return;
-    const statFn = config.mode === 'bootstrap' ? getBootstrapStat().fn : mean;
-    const statSymbol = config.proportion ? 'p̂' : 'x̄';
-    const s1 = statFn(data1);
-    const s2 = statFn(data2);
-    const fmtType = config.proportion ? 'proportion' : undefined;
-    mechOriginalContent.innerHTML = `
-      <div class="mech-group-row"><span class="mech-group-name">${group1Name}:</span>
-        <span class="mech-group-stat">n = ${data1.length}, ${statSymbol} = ${formatStat(s1, dataPrecision, fmtType)}</span></div>
-      <div class="mech-group-row"><span class="mech-group-name">${group2Name}:</span>
-        <span class="mech-group-stat">n = ${data2.length}, ${statSymbol} = ${formatStat(s2, dataPrecision, fmtType)}</span></div>
-      <div class="mech-diff">diff = ${formatStat(s1 - s2, dataPrecision, fmtType)}</div>
-    `;
+    mechOriginalContent.innerHTML = buildTwoGroupHTML(data1, data2, false, true);
+    renderTwoGroupBoxplots(data1, data2, 'orig');
   }
 
   /**
    * Show the two-group mechanism after a simulation step.
    * @param {number[]} g1 - Group 1 values (resample or shuffled)
    * @param {number[]} g2 - Group 2 values (resample or shuffled)
-   * @param {boolean} [flash]
-   * @param {boolean} [highlight] - Highlight diff orange (+1 animation)
+   * @param {boolean} [_flash] - Unused (kept for call-site compat)
+   * @param {boolean} [highlight] - Highlight diff value (+1 animation, auto-fades via CSS)
    */
-  function showTwoGroupMechanism(g1, g2, flash = false, highlight = false) {
+  function showTwoGroupMechanism(g1, g2, _flash = false, highlight = false) {
     if (!mechResampleContent || !mechanismDescEl) return;
-    const statFn = config.mode === 'bootstrap' ? getBootstrapStat().fn : mean;
-    const statSymbol = config.proportion ? 'p̂' : 'x̄';
-    const s1 = statFn(g1);
-    const s2 = statFn(g2);
-    const fmtType = config.proportion ? 'proportion' : undefined;
-    const hlClass = highlight ? ' highlight-last' : '';
-    mechResampleContent.innerHTML = `
-      <div class="mech-group-row"><span class="mech-group-name">${group1Name}:</span>
-        <span class="mech-group-stat">n = ${g1.length}, ${statSymbol} = ${formatStat(s1, dataPrecision, fmtType)}</span></div>
-      <div class="mech-group-row"><span class="mech-group-name">${group2Name}:</span>
-        <span class="mech-group-stat">n = ${g2.length}, ${statSymbol} = ${formatStat(s2, dataPrecision, fmtType)}</span></div>
-      <div class="mech-diff${hlClass}">diff = ${formatStat(s1 - s2, dataPrecision, fmtType)}</div>
-    `;
+    mechResampleContent.innerHTML = buildTwoGroupHTML(g1, g2, highlight);
+    renderTwoGroupBoxplots(g1, g2, 'resamp', highlight);
 
     if (config.mode === 'bootstrap') {
       mechanismDescEl.textContent = 'Resample each group independently with replacement';
@@ -1536,12 +1696,6 @@ export function initSimPage(config) {
       mechanismDescEl.textContent = 'Shuffle group labels · same values, new grouping';
     }
     mechanismDescEl.hidden = false;
-
-    if (flash && mechanismStrip) {
-      mechanismStrip.classList.remove('mechanism-flash');
-      void mechanismStrip.offsetWidth;
-      mechanismStrip.classList.add('mechanism-flash');
-    }
   }
 
   /**
@@ -1554,7 +1708,7 @@ export function initSimPage(config) {
    * @param {boolean} [flash] - Trigger mechanism flash animation
    * @param {boolean} [highlightStat] - Highlight resample stat orange (+1 only)
    */
-  function showResample(resampleValues, flash = false, highlightStat = false) {
+  function showResample(resampleValues, _flash = false, highlightStat = false) {
     if (!resampleContentEl || !bootstrapSampleEl) return;
     bootstrapSampleEl.hidden = false;
 
@@ -1611,18 +1765,6 @@ export function initSimPage(config) {
       mechanismDescEl.hidden = false;
     }
 
-    // Flash animation for +1 to emphasize statistic → dot connection
-    if (flash && mechanismStrip) {
-      flashMechanism();
-    }
-  }
-
-  /** Trigger the CSS flash animation on the mechanism strip. */
-  function flashMechanism() {
-    if (!mechanismStrip) return;
-    mechanismStrip.classList.remove('mechanism-flash');
-    void mechanismStrip.offsetWidth; // force reflow to restart animation
-    mechanismStrip.classList.add('mechanism-flash');
   }
 
   /**
@@ -2085,7 +2227,7 @@ export function initSimPage(config) {
     if (config.proportion) {
       obsLabel = `p̂<sub>${group1Name}</sub> − p̂<sub>${group2Name}</sub> = <span class="observed-value">${formatStat(observedStat, dataPrecision, 'proportion')}</span>`;
     } else if (config.twoGroup) {
-      obsLabel = `x̄<sub>${group1Name}</sub> − x̄<sub>${group2Name}</sub> = <span class="observed-value">${formatStat(observedStat, dataPrecision)}</span>`;
+      obsLabel = `<span class="x-bar">x</span><sub>${group1Name}</sub> − <span class="x-bar">x</span><sub>${group2Name}</sub> = <span class="observed-value">${formatStat(observedStat, dataPrecision)}</span>`;
     } else {
       obsLabel = `<span class="observed-value">${formatStat(observedStat, dataPrecision)}</span>`;
     }

@@ -8,7 +8,7 @@
 import { createRng, shuffle } from '../../js/prng.js';
 import { chisqStat, formatStat } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, flashMechanism, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
 
 // ─── DOM elements ───
@@ -323,6 +323,10 @@ function generateSimulations(count) {
   if (mechShuffledTable && mechShuffledChisq) {
     mechShuffledTable.innerHTML = renderTableHTML(lastShuffledTable, rowLabels, colLabels);
     mechShuffledChisq.textContent = formatStat(lastChisq, 2);
+    mechShuffledChisq.classList.toggle('highlight-last', count === 1);
+    if (count === 1) {
+      setTimeout(() => mechShuffledChisq.classList.remove('highlight-last'), 1500);
+    }
   }
   if (mechanismDescEl) {
     mechanismDescEl.textContent = 'Shuffle group labels, keeping outcomes fixed';
@@ -344,14 +348,11 @@ function generateSimulations(count) {
 
   if (count === 1) {
     setTimeout(() => {
-      flashMechanism(mechanismStrip);
-      setTimeout(() => {
-        renderChart(allStats, observedChisq, hlIndex, hlIndices, prevBinCounts, hlDomain, lockedThresholds);
-        const dropSource = document.getElementById('mech-shuffled-chisq');
-        const chartCont = document.getElementById('chart-container');
-        if (dropSource && chartCont) animateDropToChart(dropSource, chartCont);
-      }, 120);
-    }, 120);
+      renderChart(allStats, observedChisq, hlIndex, hlIndices, prevBinCounts, hlDomain, lockedThresholds);
+      const dropSource = document.getElementById('mech-shuffled-chisq');
+      const chartCont = document.getElementById('chart-container');
+      if (dropSource && chartCont) animateDropToChart(dropSource, chartCont);
+    }, 150);
   } else {
     renderChart(allStats, observedChisq, hlIndex, hlIndices, prevBinCounts, hlDomain, lockedThresholds);
   }
