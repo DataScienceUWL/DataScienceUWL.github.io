@@ -26,6 +26,7 @@ for (const f of files) {
         chapter: ds.chapter || '',
         n: ds.rows.length,
         variables: (ds.variables || []).map(v => v.name),
+        hasNumeric: (ds.variables || []).some(v => v.type === 'numeric'),
         hasCategorical: (ds.variables || []).some(v => v.type === 'categorical'),
       });
     }
