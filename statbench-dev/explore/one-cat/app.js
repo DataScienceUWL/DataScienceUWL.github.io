@@ -6,11 +6,12 @@
 
 import { drawBarChart } from '../../js/barchart.js';
 import { formatStat } from '../../js/stats.js';
-import { announce, initTabs, initDataPanel, initHelp } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
 import { initSheet, handleSheetPaste, readSheetValues, populateSheet } from '../../js/spreadsheet.js';
 
 initHelp();
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── DOM ──────────────────────────────────────────────────────────────
 
@@ -125,6 +126,7 @@ function loadValues(values, varName, sourceName) {
   if (chartModeSelect) chartModeSelect.value = 'frequency';
   if (dataSummary) dataSummary.textContent = `${sourceName} (n = ${values.length})`;
   updateDisplay();
+  setPageTitle(baseTitle, sourceName, { variable: varName, n: values.length });
   announce(`${values.length} observations loaded.`);
 }
 

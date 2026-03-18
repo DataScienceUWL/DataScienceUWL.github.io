@@ -10,7 +10,7 @@ import { setJStat, pdfT } from '../../js/distributions.js';
 import { twoMeanT, twoMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { drawBoxplot } from '../../js/boxplot.js';
-import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
 import { mean, detectPrecision, formatStat } from '../../js/stats.js';
@@ -19,6 +19,8 @@ import { generateConclusions, findContext } from '../../js/conclusions.js';
 /** Render LaTeX to HTML string via KaTeX. */
 const tex = (/** @type {string} */ latex, display = false) =>
   katex.renderToString(latex, { throwOnError: false, displayMode: display });
+
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── Initialize jStat ────────────────────────────────────────────────
 const jStat = jstatModule.default || jstatModule;
@@ -429,6 +431,7 @@ function renderChart(r) {
  */
 function renderResults(r) {
   if (!resultDiv) return;
+  setPageTitle(baseTitle, dataPanel.currentSourceName, { n: group1.length + group2.length });
 
   const d = dataPrecision;
   const altSymbol = r.alternative === 'less' ? '&lt;' :

@@ -1634,3 +1634,30 @@ export function parseOneSampleSummary(summaryStr) {
   if (!isFinite(n) || n < 1 || !isFinite(m) || !isFinite(sd) || sd < 0) return null;
   return { n, mean: m, sd };
 }
+
+// ─── Dynamic page title ─────────────────────────────────────────────
+
+/**
+ * Update document.title with data context for accessibility and Playwright scraping.
+ * Format: "Page Label — Dataset: Variable | StatBench"
+ *
+ * @param {string} pageLabel - Base page title (e.g. "Bootstrap CI: One Mean")
+ * @param {string} [datasetName] - Dataset or source name (e.g. "Penny Ages")
+ * @param {object} [opts]
+ * @param {string} [opts.variable] - Variable name
+ * @param {number} [opts.n] - Sample size
+ * @param {string} [opts.extra] - Additional context (e.g. "Left Tail")
+ */
+export function setPageTitle(pageLabel, datasetName, opts) {
+  let title = pageLabel;
+  const parts = [];
+  if (datasetName && datasetName !== 'edited_data' && datasetName !== 'URL data') {
+    parts.push(datasetName);
+  }
+  if (opts?.variable) parts.push(opts.variable);
+  if (parts.length) title += ` \u2014 ${parts.join(': ')}`;
+  if (opts?.n) title += ` (n=${opts.n})`;
+  if (opts?.extra) title += ` \u2014 ${opts.extra}`;
+  title += ' | StatBench';
+  document.title = title;
+}

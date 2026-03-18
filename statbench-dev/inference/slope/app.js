@@ -9,7 +9,7 @@ import { setJStat, pdfT } from '../../js/distributions.js';
 import { slopeT, slopeTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
-import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
 import { parseCSV } from '../../js/csv-parser.js';
@@ -19,6 +19,8 @@ import { generateConclusions, findContext } from '../../js/conclusions.js';
 /** Render LaTeX to HTML string via KaTeX. */
 const tex = (/** @type {string} */ latex, display = false) =>
   katex.renderToString(latex, { throwOnError: false, displayMode: display });
+
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── Initialize jStat before anything else ──────────────────────────
 const jstatMod = await import('jstat');
@@ -248,6 +250,9 @@ function showResults() {
 
   controlsSection.hidden = false;
   chartAndResults.hidden = false;
+
+  // Update page title
+  setPageTitle(baseTitle, dataPanel.currentSourceName, { n: currentRows.length });
 
   // Conditions checkpoint — store current result for residual plot
   lastSlopeResult = fromSummary ? null : result;

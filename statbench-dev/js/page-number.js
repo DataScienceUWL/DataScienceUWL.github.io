@@ -9,13 +9,24 @@
 // ─── Embed mode & iframe safety ─────────────────────────────────────────────
 
 (function initEmbedSafety() {
-  const isEmbed = new URLSearchParams(location.search).get('embed') === 'true';
+  const params = new URLSearchParams(location.search);
+  const isEmbed = params.get('embed') === 'true';
+  const isStatic = params.get('static') === 'true';
   const isIframe = window.parent !== window;
 
   // Set data-embed attribute for CSS to hide chrome
   if (isEmbed) {
     document.body?.setAttribute('data-embed', 'true');
     // Also set on documentElement in case body isn't ready yet
+    document.documentElement.setAttribute('data-embed', 'true');
+  }
+
+  // Set data-static attribute for screenshot-optimized rendering
+  if (isStatic) {
+    document.body?.setAttribute('data-static', 'true');
+    document.documentElement.setAttribute('data-static', 'true');
+    // Also implies embed mode
+    document.body?.setAttribute('data-embed', 'true');
     document.documentElement.setAttribute('data-embed', 'true');
   }
 

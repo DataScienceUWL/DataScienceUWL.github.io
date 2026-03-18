@@ -13,7 +13,7 @@ import { mean, sd, detectPrecision, formatStat } from './stats.js';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { renderSimPills, formatMechStat, drawMiniBoxplot } from './chart-utils.js';
-import { announce, initKeyboardShortcuts, initPlayPause, initTabs, animateDropToChart, initDataPanel, computeHighlights, initHelp, initSettings, initMechanismCollapse, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
+import { announce, initKeyboardShortcuts, initPlayPause, initTabs, animateDropToChart, initDataPanel, computeHighlights, initHelp, initSettings, initMechanismCollapse, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from './page-utils.js';
 import { parseParams } from './url-params.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, dotplotBins, histogramThresholds, renderSimChart, createBinAdjuster } from './chart-defaults.js';
@@ -148,6 +148,8 @@ export function initOneSamplePage(config) {
   let mechanismInitialized = false;
   /** @type {{ population?: string, parameter?: string, nullClaim?: string, successLabel?: string }} */
   let datasetContext = {};
+  /** Base page title (before dataset context). */
+  const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
   /** Track current data source name for display. */
   let currentSourceName = '';
 
@@ -384,6 +386,7 @@ export function initOneSamplePage(config) {
             </div>`;
         }
         propDataApi.triggerPostLoad();
+        setPageTitle(baseTitle, currentSourceName, { n });
         announce(`Data loaded: n = ${n}, successes = ${k}`);
         scrollToControls();
       });
@@ -422,6 +425,7 @@ export function initOneSamplePage(config) {
         }
       }
       computePreSimDomain();
+      setPageTitle(baseTitle, currentSourceName, { n: sampleN });
       scrollToControls();
     }
 

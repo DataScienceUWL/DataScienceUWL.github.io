@@ -6,11 +6,12 @@
 
 import { drawBarChart, computeGroupedFrequencies } from '../../js/barchart.js';
 import { formatStat } from '../../js/stats.js';
-import { announce, initTabs, initDataPanel, initHelp } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
 import { initSheet, handleSheetPaste, readSheetValues, populateSheet } from '../../js/spreadsheet.js';
 
 initHelp();
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── DOM ──────────────────────────────────────────────────────────────
 
@@ -304,6 +305,7 @@ function showDataLoaded(sourceName) {
   if (chartModeSelect) chartModeSelect.value = 'stacked';
   if (dataSummary) dataSummary.textContent = `${sourceName} (n = ${rawRows.length})`;
   updateDisplay();
+  setPageTitle(baseTitle, sourceName, { n: rawRows.length });
   announce(`${rawRows.length} observations.`);
 }
 

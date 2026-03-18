@@ -9,13 +9,14 @@ import { mean, median, sd, quantile, iqr, range, detectPrecision, formatStat } f
 import { drawHistogram, sturgesBins } from '../../js/histogram.js';
 import { drawDotplot, computeDots } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
-import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper, setPageTitle } from '../../js/page-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
 import { overlayDensityOnHistogram } from '../../js/kde.js';
 import { createExportBar } from '../../js/export.js';
 import { initSheet, handleSheetPaste, readSheetValues, populateSheet } from '../../js/spreadsheet.js';
 
 initHelp();
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── DOM elements ──────────────────────────────────────────────────────
 
@@ -526,6 +527,7 @@ function setData(values, varLabel, sourceName) {
   computeAndDisplay(values);
   updateChartControls();
   renderActiveChart();
+  setPageTitle(baseTitle, sourceName, { variable: varLabel, n: values.length });
   announce(`${values.length} values. Statistics and chart updated.`);
 }
 

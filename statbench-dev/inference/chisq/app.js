@@ -11,11 +11,13 @@ import { chisqTest } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
-import { announce, initTabs, initDataPanel, initKeyboardShortcuts, buildSimLink } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initKeyboardShortcuts, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 /** Render LaTeX to HTML string via KaTeX. */
 const tex = (/** @type {string} */ latex, display = false) =>
   katex.renderToString(latex, { throwOnError: false, displayMode: display });
+
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── Initialize jStat ────────────────────────────────────────────────
 const jstatMod = await import('jstat');
@@ -350,6 +352,8 @@ computeBtn.addEventListener('click', () => {
  */
 function showResults(observed, rowLabels, colLabels) {
   const result = chisqTest(observed, rowLabels, colLabels);
+  const totalN = observed.flat().reduce((a, b) => a + b, 0);
+  setPageTitle(baseTitle, dataPanel.currentSourceName, { n: totalN });
 
   chartSection.hidden = false;
   resultsSection.hidden = false;

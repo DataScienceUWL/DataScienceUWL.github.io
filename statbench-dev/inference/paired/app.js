@@ -9,7 +9,7 @@ import { setJStat, pdfT } from '../../js/distributions.js';
 import { pairedT, pairedTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { drawBoxplot } from '../../js/boxplot.js';
-import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
 import { parseCSV } from '../../js/csv-parser.js';
@@ -20,6 +20,8 @@ import * as d3Selection from 'd3-selection';
 /** Render LaTeX to HTML string via KaTeX. */
 const tex = (/** @type {string} */ latex, display = false) =>
   katex.renderToString(latex, { throwOnError: false, displayMode: display });
+
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── Initialize jStat before anything else ──────────────────────────
 const jstatMod = await import('jstat');
@@ -255,6 +257,9 @@ function showResults() {
 
   drawChart(result);
   renderResults(result, d, mu0, alternative, confLevel);
+
+  // Update page title
+  setPageTitle(baseTitle, dataPanel.currentSourceName, { n: currentDiffs?.length });
 
   announce(
     `t = ${result.tStat.toFixed(3)}, df = ${result.df}, ` +

@@ -12,10 +12,11 @@ import { drawDotplot, computeDots } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { drawGroupedDensity } from '../../js/kde.js';
 import { createExportBar } from '../../js/export.js';
-import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper, setPageTitle } from '../../js/page-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
 
 initHelp();
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── DOM elements ──────────────────────────────────────────────────────
 
@@ -489,6 +490,7 @@ function loadGroupedData(quantVar, groupVar, ds, sourceName) {
   renderStats();
   updateChartControls();
   renderActiveChart();
+  setPageTitle(baseTitle, sourceName, { variable: currentVarLabel, n: allValues.length });
   announce(`${allValues.length} values in ${groupNames.length} groups. Chart and statistics updated.`);
 }
 

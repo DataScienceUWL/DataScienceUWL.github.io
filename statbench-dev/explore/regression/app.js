@@ -6,10 +6,11 @@
 
 import { drawScatterplot, drawResidualPlot } from '../../js/scatterplot.js';
 import { linreg, detectPrecision, formatStat } from '../../js/stats.js';
-import { announce, initTabs, initDataPanel, initHelp } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../../js/page-utils.js';
 import { createExportBar } from '../../js/export.js';
 
 initHelp();
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── State ──────────────────────────────────────────────────────────────────
 
@@ -75,6 +76,7 @@ function loadParsedData(parsed, sourceName) {
 
     dataSummary.textContent = `${currentRows.length} observations, ${numericColumns.length} numeric variables`;
 
+    setPageTitle(baseTitle, sourceName, { n: currentRows.length });
     announce(`${sourceName}: ${currentRows.length} observations.`);
     updateChart();
 }

@@ -10,9 +10,10 @@ import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import * as d3Shape from 'd3-shape';
 import { formatTick } from '../../js/chart-utils.js';
-import { initHelp } from '../../js/page-utils.js';
+import { initHelp, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ─── DOM ───
 
@@ -125,6 +126,7 @@ function update() {
   displayResult(k, type, prob);
   renderChart(data, n, p, k, shadedKs, mu, sigma, prob, type);
   renderTable(data, shadedKs);
+  setPageTitle(baseTitle, undefined, { extra: `n=${n}, p=${p}` });
   announce(`${typeLabel(k, type)} = ${prob.toFixed(6)}`);
 }
 

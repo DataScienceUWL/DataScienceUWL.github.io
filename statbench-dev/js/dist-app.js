@@ -16,7 +16,7 @@ import { parseParams } from './url-params.js';
 import { drawCurve, computeDomain } from './curve.js';
 import { debounce } from './chart-utils.js';
 import { enableHorizontalDrag, showInlineEdit, formatEditValue } from './chart-interactions.js';
-import { initHelp } from './page-utils.js';
+import { initHelp, setPageTitle } from './page-utils.js';
 import * as d3Selection from 'd3-selection';
 
 /**
@@ -38,6 +38,7 @@ import * as d3Selection from 'd3-selection';
 export function initDistCalculator(config) {
   initHelp();
   const urlParams = parseParams(window.location.search);
+  const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
   // --- DOM references ---
   const paramInputs = {};
@@ -196,6 +197,10 @@ export function initDistCalculator(config) {
     const pdfFn = config.pdfFactory(params);
     const domainParams = config.domainParams(params);
     const domain = computeDomain(config.type, domainParams);
+
+    // Update document.title with distribution parameters
+    const paramStr = config.params.map(p => `${p.label}=${params[p.paramKey]}`).join(', ');
+    setPageTitle(baseTitle, undefined, { extra: paramStr });
 
     // Clear and redraw chart
     chartContainer.innerHTML = '';

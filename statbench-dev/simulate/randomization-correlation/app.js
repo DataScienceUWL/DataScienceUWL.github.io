@@ -9,7 +9,7 @@ import { createRng, shuffle } from '../../js/prng.js';
 import { cor, formatStat } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, getTabHintText, getActiveTabId } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, getTabHintText, getActiveTabId, setPageTitle } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
 
 // ─── DOM elements ───
@@ -58,6 +58,7 @@ let xLabel = 'x';
 let yLabel = 'y';
 let observedR = 0;
 let currentSourceName = '';
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ─── Hypothesis direction ───
 
@@ -193,6 +194,7 @@ function showDataLoaded() {
   }
   if (mechObservedR) mechObservedR.textContent = formatStat(observedR, 4);
 
+  setPageTitle(baseTitle, currentSourceName, { n: xValues.length });
   announce(`Data loaded: n = ${xValues.length}, r = ${formatStat(observedR, 4)}`);
 
   setTimeout(() => {

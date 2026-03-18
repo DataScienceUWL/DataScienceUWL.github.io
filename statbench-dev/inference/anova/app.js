@@ -10,7 +10,7 @@ import { setJStat, pdfF, fInv } from '../../js/distributions.js';
 import { anovaF, anovaFSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { drawBoxplot } from '../../js/boxplot.js';
-import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText, buildSimLink, parseGroupSummary } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText, buildSimLink, parseGroupSummary, setPageTitle } from '../../js/page-utils.js';
 import { parseParams } from '../../js/url-params.js';
 import { mean, sd, detectPrecision, formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
@@ -20,6 +20,8 @@ initHelp();
 /** Render LaTeX to HTML string via KaTeX. */
 const tex = (/** @type {string} */ latex, display = false) =>
   katex.renderToString(latex, { throwOnError: false, displayMode: display });
+
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── Initialize jStat ────────────────────────────────────────────────
 const jStat = jstatModule.default || jstatModule;
@@ -438,6 +440,8 @@ function renderChart(r) {
  */
 function renderResults(r) {
   if (!resultDiv) return;
+  const totalN = r.groupNs.reduce((a, b) => a + b, 0);
+  setPageTitle(baseTitle, dataPanel.currentSourceName, { n: totalN });
 
   const d = dataPrecision;
   const alpha = getAlpha();

@@ -16,11 +16,12 @@ import * as d3Drag from 'd3-drag';
 import { linreg, formatStat, detectPrecision, sum } from '../../js/stats.js';
 import { createChart, addAxes, formatTick } from '../../js/chart-utils.js';
 import { pointRadius } from '../../js/scatterplot.js';
-import { announce, initTabs, initDataPanel, initHelp } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../../js/page-utils.js';
 import { parseParams } from '../../js/url-params.js';
 import { createRng, randNormal, randInt } from '../../js/prng.js';
 
 initHelp();
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ─── URL Parameters ─────────────────────────────────────────────────────────
 
@@ -857,6 +858,7 @@ function loadParsedData(parsed, sourceName) {
     numericColumns = numericHeaders;
     populateVarSelectors();
     dataSummary.textContent = `${currentRows.length} observations, ${numericColumns.length} numeric variables`;
+    setPageTitle(baseTitle, sourceName, { n: currentRows.length });
     announce(`${sourceName}: ${currentRows.length} observations.`);
     loadSelectedVars();
 }

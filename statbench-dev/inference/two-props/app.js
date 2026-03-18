@@ -10,13 +10,15 @@ import { twoPropZ } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
-import { announce, initTabs, initDataPanel, initKeyboardShortcuts, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initKeyboardShortcuts, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 /** Render LaTeX to HTML string via KaTeX. */
 const tex = (/** @type {string} */ latex, display = false) =>
   katex.renderToString(latex, { throwOnError: false, displayMode: display });
 
 setJStat(jstat);
+
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── DOM references ──────────────────────────────────────────────────
 const inputLabel1 = /** @type {HTMLInputElement} */ (document.getElementById('input-label1'));
@@ -318,6 +320,7 @@ function compute() {
  * @param {string} lbl2
  */
 function displayResults(r, lbl1, lbl2) {
+  setPageTitle(baseTitle, dataPanel.currentSourceName, { n: currentN1 + currentN2 });
   const altSymbol = r.alternative === 'two-sided' ? '\u2260'
     : r.alternative === 'less' ? '<' : '>';
   const altWord = r.alternative === 'two-sided' ? 'different from'

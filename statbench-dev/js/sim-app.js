@@ -14,7 +14,7 @@ import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.j
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { drawSpike } from './spike.js';
 import { renderSimPills, formatMechStat, drawMiniBoxplot } from './chart-utils.js';
-import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
+import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
@@ -119,6 +119,9 @@ export function initSimPage(config) {
   let datasetContext = {};
   /** Full dataset JSON for info panel. @type {object|undefined} */
   let currentDatasetJSON;
+
+  /** Base page title (before dataset context is added). */
+  const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
   /** Track current data source name for save filename. */
   let currentSourceName = 'data';
@@ -817,6 +820,13 @@ export function initSimPage(config) {
       groupOrderEl.hidden = false;
       groupOrderLabel.textContent = `${group1Name} − ${group2Name}`;
     }
+    // Update document.title with dataset context
+    const totalN = config.twoGroup || config.paired ? data1.length + data2.length : data1.length;
+    setPageTitle(baseTitle, currentSourceName, {
+      variable: selectedVarName || undefined,
+      n: totalN,
+    });
+
     announce(`Data loaded: n = ${data1.length}`);
 
     // Render empty chart with sensible axis limits by running a silent pre-simulation

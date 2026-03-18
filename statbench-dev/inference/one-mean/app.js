@@ -9,7 +9,7 @@ import { setJStat, pdfT } from '../../js/distributions.js';
 import { oneMeanT, oneMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { drawBoxplot } from '../../js/boxplot.js';
-import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
 import { parseCSV } from '../../js/csv-parser.js';
@@ -19,6 +19,8 @@ import { generateConclusions, findContext } from '../../js/conclusions.js';
 /** Render LaTeX to HTML string via KaTeX. */
 const tex = (/** @type {string} */ latex, display = false) =>
   katex.renderToString(latex, { throwOnError: false, displayMode: display });
+
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── Initialize jStat before anything else ──────────────────────────
 const jstatMod = await import('jstat');
@@ -287,6 +289,9 @@ function showResults() {
 
   // Render sidebar results + formulas
   renderResults(result, d, mu0, alternative, confLevel);
+
+  // Update page title
+  setPageTitle(baseTitle, dataPanel.currentSourceName, { variable: varSelect?.value, n: currentData?.length });
 
   // Screen reader announcement
   announce(
