@@ -105,6 +105,7 @@ const statsArea = /** @type {HTMLDivElement} */ (document.getElementById('stats-
 const sseComparison = /** @type {HTMLDivElement} */ (document.getElementById('sse-comparison'));
 const tryAgainBtn = /** @type {HTMLButtonElement} */ (document.getElementById('try-again-btn'));
 const randomDataBtn = /** @type {HTMLButtonElement} */ (document.getElementById('random-data-btn'));
+const generateRandomBtn = /** @type {HTMLButtonElement} */ (document.getElementById('generate-random-btn'));
 
 // ─── Exercise mode: hide LS checkbox ────────────────────────────────────────
 
@@ -809,6 +810,10 @@ randomDataBtn.addEventListener('click', () => {
     generateRandomData();
 });
 
+generateRandomBtn.addEventListener('click', () => {
+    generateRandomData();
+});
+
 // Global keyboard shortcuts
 document.addEventListener('keydown', (e) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
@@ -819,7 +824,7 @@ document.addEventListener('keydown', (e) => {
     }
     if (e.key === 'n' || e.key === 'N') {
         if (!e.ctrlKey && !e.metaKey) {
-            randomDataBtn.click();
+            generateRandomData();
         }
     }
 });
@@ -860,3 +865,6 @@ initDataPanel({
         varPanel.hidden = true;
     },
 });
+
+// Auto-generate random data on page load so the tool is immediately usable
+generateRandomData();
