@@ -612,12 +612,18 @@ function updateStats() {
     const sign = slope >= 0 ? ' + ' : ' ';
     yourEqText.textContent = `ŷ = ${b0}${sign}${b1} · x`;
 
-    // LS equation
+    // Mode-dependent labels
+    const isSquared = residualMode === 'squared';
+    const bestFitName = isSquared ? 'Least Squares Line' : 'Best-Fit Line';
+    const metricLabel = isSquared ? 'Sum of Squared Errors' : 'Sum of Absolute Errors';
+
+    // LS equation block
     if (showLsCheck.checked && lsResult) {
         const lsB0 = formatStat(lsResult.intercept, d);
         const lsB1 = formatStat(lsResult.slope, d);
         const lsSign = lsResult.slope >= 0 ? ' + ' : ' ';
         lsEqText.textContent = `ŷ = ${lsB0}${lsSign}${lsB1} · x`;
+        /** @type {HTMLElement} */ (lsEqBlock.querySelector('.eq-label')).textContent = bestFitName;
         lsEqBlock.hidden = false;
     } else {
         lsEqBlock.hidden = true;
@@ -626,13 +632,11 @@ function updateStats() {
     // Build stats cards
     const lsSse = lsResult ? lsResult.residuals.reduce((s, e) => s + e * e, 0) : 0;
     const lsSae = lsResult ? lsResult.residuals.reduce((s, e) => s + Math.abs(e), 0) : 0;
-    const isSquared = residualMode === 'squared';
 
-    let html = '';
-
-    const metricLabel = isSquared ? 'Sum of Squared Errors' : 'Sum of Absolute Errors';
     const metricValue = isSquared ? sse : sae;
     const lsMetricValue = isSquared ? lsSse : lsSae;
+
+    let html = '';
 
     html += `
     <div class="stats-grid">
@@ -644,23 +648,22 @@ function updateStats() {
         const isClose = isSquared ? (sse <= lsSse * 1.01) : (sae <= lsSae * 1.01);
         html += `
         <div class="stat-card ls${isClose ? ' winner' : ''}">
-            <div class="stat-label">LS ${metricLabel}</div>
+            <div class="stat-label">${bestFitName} ${metricLabel}</div>
             <div class="stat-value">${formatStat(lsMetricValue, d)}</div>
         </div>`;
     }
     html += `</div>`;
 
-    // Comparison text (when LS line visible and residuals shown)
+    // Comparison text
     if (showLsCheck.checked && lsResult) {
         const userVal = isSquared ? sse : sae;
         const lsVal = isSquared ? lsSse : lsSae;
         if (lsVal > 0) {
             const pctHigher = ((userVal - lsVal) / lsVal * 100);
             if (pctHigher <= 1) {
-                sseComparison.innerHTML = `<strong>Excellent!</strong> Your line is very close to the least-squares line.`;
+                sseComparison.innerHTML = `<strong>Excellent!</strong> Your line is very close to the ${bestFitName.toLowerCase()}.`;
             } else {
-                const label = isSquared ? 'Sum of Squared Errors' : 'Sum of Absolute Errors';
-                sseComparison.innerHTML = `${label} is <strong>${formatStat(pctHigher, 1)}% higher</strong> than the LS line.`;
+                sseComparison.innerHTML = `${metricLabel} is <strong>${formatStat(pctHigher, 1)}% higher</strong> than the ${bestFitName.toLowerCase()}.`;
             }
             sseComparison.hidden = false;
         } else {
