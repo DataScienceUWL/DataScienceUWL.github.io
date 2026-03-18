@@ -492,11 +492,12 @@ function renderResults(r) {
   // F formula via KaTeX
   const V = '\\textcolor{#569BBD}';
   const R = '\\textcolor{#2e7d32}';
+  const S = '\\textcolor{#7B2D8E}';
 
   const fFormula = tex(`\\begin{aligned}
     F &= \\frac{\\text{MS}_{\\text{between}}}{\\text{MS}_{\\text{within}}}
     = \\frac{${V}{${formatStat(r.msBetween, d)}}}{${V}{${formatStat(r.msWithin, d)}}}
-    = ${R}{${formatStat(r.fStat, d)}}
+    = ${S}{${formatStat(r.fStat, d)}}
   \\end{aligned}`, true);
 
   // Conclusions

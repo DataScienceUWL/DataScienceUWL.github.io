@@ -5,6 +5,7 @@
  * a quantitative variable across levels of a categorical grouping variable.
  */
 
+import * as d3Selection from 'd3-selection';
 import { parseCSV } from '../../js/csv-parser.js';
 import { mean, median, sd, quantile, iqr, range, detectPrecision, formatStat } from '../../js/stats.js';
 import { drawHistogram, computeBins, sturgesBins } from '../../js/histogram.js';
@@ -194,18 +195,19 @@ function updateChartControls() {
       renderActiveChart();
     });
 
-    // Mean marker checkbox
-    const meanLabel = document.createElement('label');
-    meanLabel.innerHTML = '<input type="checkbox" id="show-mean-box"> Show mean';
-    meanLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
-    chartControls.appendChild(meanLabel);
-    const meanCb = /** @type {HTMLInputElement} */ (meanLabel.querySelector('input'));
-    meanCb.checked = showMeanMarker;
-    meanCb.addEventListener('change', () => {
-      showMeanMarker = meanCb.checked;
-      renderActiveChart();
-    });
   }
+
+  // Mean marker checkbox — available for all chart types
+  const meanLabel = document.createElement('label');
+  meanLabel.innerHTML = '<input type="checkbox" id="show-mean-grouped"> Show mean';
+  meanLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+  chartControls.appendChild(meanLabel);
+  const meanCb = /** @type {HTMLInputElement} */ (meanLabel.querySelector('input'));
+  meanCb.checked = showMeanMarker;
+  meanCb.addEventListener('change', () => {
+    showMeanMarker = meanCb.checked;
+    renderActiveChart();
+  });
 }
 
 // ── Spreadsheet editor ────────────────────────────────────────────────
@@ -588,12 +590,31 @@ function renderActiveChart() {
   } else if (activeChart === 'histogram') {
     renderStackedHistograms(groupNames);
   } else if (activeChart === 'density') {
-    drawGroupedDensity(chartArea, groupedData, {
+    const densityResult = drawGroupedDensity(chartArea, groupedData, {
       xLabel: currentVarLabel,
       titleText: `Density of ${currentVarLabel} by ${currentGroupLabel}`,
       descText: `Overlaid density curves comparing ${currentVarLabel} across groups of ${currentGroupLabel}`,
       id: 'grouped-density',
     });
+
+    // Mean markers: vertical red dashed lines at each group mean
+    if (showMeanMarker && densityResult) {
+      const colors = getColors(groupNames.length);
+      const overlays = d3Selection.select(densityResult.frame.inner).select('.overlays');
+      for (let i = 0; i < groupNames.length; i++) {
+        const vals = groupedData[groupNames[i]];
+        if (vals.length === 0) continue;
+        const meanVal = mean(vals);
+        const mx = densityResult.xScale(meanVal);
+        overlays.append('line')
+          .attr('x1', mx).attr('x2', mx)
+          .attr('y1', 0).attr('y2', densityResult.frame.height)
+          .attr('stroke', colors[i])
+          .attr('stroke-width', 2)
+          .attr('stroke-dasharray', '6,3')
+          .attr('aria-label', `${groupNames[i]} mean = ${formatStat(meanVal, dataPrecision)}`);
+      }
+    }
   }
 
   // Export bar
@@ -638,7 +659,7 @@ function renderStackedDotplots(groupNames) {
     wrapper.appendChild(chartDiv);
     chartArea.appendChild(wrapper);
 
-    drawDotplot(chartDiv, values, {
+    const dotResult = drawDotplot(chartDiv, values, {
       xLabel: i === groupNames.length - 1 ? currentVarLabel : '',
       titleText: `Dotplot of ${currentVarLabel} for ${name}`,
       descText: `Dot plot of ${currentVarLabel} for group ${name}`,
@@ -648,6 +669,23 @@ function renderStackedDotplots(groupNames) {
       fillColor: colors[i],
       viewHeight: compactHeight,
     });
+
+    // Mean marker: red triangle below x-axis
+    if (showMeanMarker && values.length > 0) {
+      const meanVal = mean(values);
+      const mx = dotResult.xScale(meanVal);
+      const triangleY = dotResult.frame.height + 12;
+      const size = 6;
+      const triangle = `M${mx},${triangleY - size} L${mx - size},${triangleY + size} L${mx + size},${triangleY + size} Z`;
+      const overlays = d3Selection.select(dotResult.frame.inner).select('.overlays');
+      overlays.append('path')
+        .attr('d', triangle)
+        .attr('fill', '#F05133')
+        .attr('stroke', 'none')
+        .attr('aria-label', `Mean = ${formatStat(meanVal, dataPrecision)}`)
+        .append('title')
+        .text(`Mean = ${formatStat(meanVal, dataPrecision)}`);
+    }
   }
 }
 
@@ -686,7 +724,7 @@ function renderStackedHistograms(groupNames) {
     wrapper.appendChild(chartDiv);
     chartArea.appendChild(wrapper);
 
-    drawHistogram(chartDiv, values, {
+    const histResult = drawHistogram(chartDiv, values, {
       xLabel: i === groupNames.length - 1 ? currentVarLabel : '',
       titleText: `Histogram of ${currentVarLabel} for ${name}`,
       descText: `Histogram of ${currentVarLabel} for group ${name}`,
@@ -698,6 +736,20 @@ function renderStackedHistograms(groupNames) {
       fillColor: colors[i],
       viewHeight: compactHeight,
     });
+
+    // Mean marker: vertical red dashed line
+    if (showMeanMarker && values.length > 0) {
+      const meanVal = mean(values);
+      const mx = histResult.xScale(meanVal);
+      const overlays = d3Selection.select(histResult.frame.inner).select('.overlays');
+      overlays.append('line')
+        .attr('x1', mx).attr('x2', mx)
+        .attr('y1', 0).attr('y2', histResult.frame.height)
+        .attr('stroke', '#F05133')
+        .attr('stroke-width', 2)
+        .attr('stroke-dasharray', '6,3')
+        .attr('aria-label', `Mean = ${formatStat(meanVal, dataPrecision)}`);
+    }
   }
 
   // Bin frequency table (collapsed by default)

@@ -461,7 +461,7 @@ function _addPill(group, text, cx, cy, isComplement) {
     .attr('y', cy)
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'central')
-    .attr('fill', isComplement ? '#6B6B6B' : STAT_COLOR)
+    .attr('fill', isComplement ? '#6B6B6B' : '#2e7d32')
     .style('pointer-events', 'none')
     .text(text);
 }

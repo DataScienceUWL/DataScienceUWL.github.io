@@ -467,11 +467,12 @@ function renderResults(r) {
 
   const V = '\\textcolor{#569BBD}';
   const R = '\\textcolor{#2e7d32}';
+  const S = '\\textcolor{#7B2D8E}';
 
   const testFormula = tex(`\\begin{aligned}
     t &= \\frac{\\bar{x}_1 - \\bar{x}_2}{\\sqrt{\\dfrac{s_1^2}{n_1} + \\dfrac{s_2^2}{n_2}}} \\\\[10pt]
     &= \\frac{${V}{${formatStat(r.xbar1, d)}} - ${V}{${formatStat(r.xbar2, d)}}}{\\sqrt{\\dfrac{${V}{${formatStat(r.s1, d)}}^2}{${V}{${r.n1}}} + \\dfrac{${V}{${formatStat(r.s2, d)}}^2}{${V}{${r.n2}}}}} \\\\[10pt]
-    &= ${R}{${r.tStat.toFixed(4)}}
+    &= ${S}{${r.tStat.toFixed(4)}}
   \\end{aligned}`, true);
 
   const ciFormula = tex(`\\begin{aligned}

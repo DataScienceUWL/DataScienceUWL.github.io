@@ -358,6 +358,7 @@ function renderResults(r, d, alternative, confLevel) {
 
   const V = '\\textcolor{#569BBD}';
   const R = '\\textcolor{#2e7d32}';
+  const S = '\\textcolor{#7B2D8E}';
 
   let regressionRows = '';
   if (hasFullRegression) {
@@ -378,7 +379,7 @@ function renderResults(r, d, alternative, confLevel) {
   const testFormula = tex(`\\begin{aligned}
     t &= \\frac{b_1 - 0}{SE_{b_1}} \\\\[8pt]
     &= \\frac{${V}{${formatStat(r.slope, d)}}}{${V}{${formatStat(r.se, d)}}} \\\\[8pt]
-    &= ${R}{${r.tStat.toFixed(4)}}
+    &= ${S}{${r.tStat.toFixed(4)}}
   \\end{aligned}`, true);
 
   const ciFormula = tex(`\\begin{aligned}

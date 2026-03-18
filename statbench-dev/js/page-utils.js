@@ -1202,6 +1202,7 @@ export function initDataPanel(config) {
   /** @type {(value?: any) => void} */
   let resolveReady = /** @type {(value?: any) => void} */ (() => {});
   const ready = new Promise(resolve => { resolveReady = resolve; });
+  ready.then(() => document.body.setAttribute('data-loaded', 'true'));
 
   /**
    * Populate the edit textarea with CSV text from loaded data.

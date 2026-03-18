@@ -119,6 +119,7 @@ const PAGE_MAP = {
   if (!num) return;
 
   const badge = document.createElement('div');
+  badge.className = 'page-number';
   badge.textContent = `P${num}`;
   badge.title = `Page ${num} of ${Object.keys(PAGE_MAP).length} — revision reference`;
   badge.setAttribute('aria-hidden', 'true'); // decorative, not for screen readers

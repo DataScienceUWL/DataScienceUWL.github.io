@@ -313,11 +313,12 @@ function displayResults(r, successLabel) {
 
   const V = '\\textcolor{#569BBD}';
   const R = '\\textcolor{#2e7d32}';
+  const S = '\\textcolor{#7B2D8E}';
 
   const testFormula = tex(`\\begin{aligned}
     z &= \\frac{\\hat{p} - p_0}{\\sqrt{\\dfrac{p_0(1-p_0)}{n}}} \\\\[10pt]
     &= \\frac{${V}{${formatStat(r.pHat, 0, 'proportion')}} - ${V}{${formatStat(r.p0, 0, 'proportion')}}}{\\sqrt{\\dfrac{${V}{${formatStat(r.p0, 0, 'proportion')}} \\cdot ${V}{${formatStat(1 - r.p0, 0, 'proportion')}}}{${V}{${r.n}}}}} \\\\[10pt]
-    &= ${R}{${formatStat(r.zStat, 0, 'correlation')}}
+    &= ${S}{${formatStat(r.zStat, 0, 'correlation')}}
   \\end{aligned}`, true);
 
   const ciFormula = tex(`\\begin{aligned}

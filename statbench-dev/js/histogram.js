@@ -397,8 +397,16 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, i
     .attr('x', d => xScale(d.x0))
     .attr('width', d => Math.max(0, xScale(d.x1) - xScale(d.x0)))
     .attr('fill', d => d.fill)
-    .attr('stroke', d => d.isSplit ? 'none' : BAR_STROKE)
-    .attr('stroke-width', d => d.isSplit ? 0 : 1)
+    .attr('stroke', d => {
+      if (d.isSplit) return 'none';
+      const w = xScale(d.x1) - xScale(d.x0);
+      return w < 2 ? 'none' : BAR_STROKE;
+    })
+    .attr('stroke-width', d => {
+      if (d.isSplit) return 0;
+      const w = xScale(d.x1) - xScale(d.x0);
+      return w < 4 ? 0.5 : 1;
+    })
     .attr('role', 'listitem')
     .attr('aria-label', d => `${d.x0} to ${d.x1}: ${d.length}`);
 

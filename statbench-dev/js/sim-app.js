@@ -1094,6 +1094,7 @@ export function initSimPage(config) {
         currentSourceName = ds.name || id;
 
         showDataLoaded();
+        document.body.setAttribute('data-loaded', 'true');
 
         // Populate editor with dataset as CSV
         if (pasteArea && ds.rows && ds.variables) {

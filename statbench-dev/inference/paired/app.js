@@ -347,11 +347,12 @@ function renderResults(r, d, mu0, alternative, confLevel) {
 
   const V = '\\textcolor{#569BBD}';
   const R = '\\textcolor{#2e7d32}';
+  const S = '\\textcolor{#7B2D8E}';
 
   const testFormula = tex(`\\begin{aligned}
     t &= \\frac{\\bar{d} - \\mu_0}{s_d \\,/\\, \\sqrt{n}} \\\\[8pt]
     &= \\frac{${V}{${formatStat(r.dbar, d)}} - ${V}{${mu0}}}{${V}{${formatStat(r.sd, d)}} \\,/\\, \\sqrt{${V}{${r.n}}}} \\\\[8pt]
-    &= ${R}{${r.tStat.toFixed(4)}}
+    &= ${S}{${r.tStat.toFixed(4)}}
   \\end{aligned}`, true);
 
   const ciFormula = tex(`\\begin{aligned}

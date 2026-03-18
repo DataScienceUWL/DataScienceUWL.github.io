@@ -348,11 +348,12 @@ function displayResults(r, lbl1, lbl2) {
 
   const V = '\\textcolor{#569BBD}';
   const R = '\\textcolor{#2e7d32}';
+  const S = '\\textcolor{#7B2D8E}';
 
   const testFormula = tex(`\\begin{aligned}
     z &= \\frac{\\hat{p}_1 - \\hat{p}_2}{\\sqrt{\\hat{p}(1-\\hat{p})\\left(\\frac{1}{n_1} + \\frac{1}{n_2}\\right)}} \\\\[10pt]
     &= \\frac{${V}{${formatStat(r.pHat1, 0, 'proportion')}} - ${V}{${formatStat(r.pHat2, 0, 'proportion')}}}{${V}{${formatStat(r.sePooled, 0, 'proportion')}}} \\\\[10pt]
-    &= ${R}{${formatStat(r.zStat, 0, 'correlation')}}
+    &= ${S}{${formatStat(r.zStat, 0, 'correlation')}}
   \\end{aligned}`, true);
 
   const ciFormula = tex(`\\begin{aligned}
