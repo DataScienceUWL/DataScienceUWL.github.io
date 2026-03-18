@@ -561,11 +561,10 @@ function updateFromDrag() {
 
 // ─── Floating Metric Overlay ─────────────────────────────────────────────────
 
-/** Update the floating metric pill on the chart. */
+/** Update the floating overlays on the chart (equation + metric). */
 function updateMetricOverlay() {
-    // Remove any existing overlay
-    const existing = chartContainer.querySelector('.metric-overlay');
-    if (existing) existing.remove();
+    // Remove any existing overlays
+    chartContainer.querySelectorAll('.chart-overlay').forEach(el => el.remove());
 
     if (xData.length < 2) return;
 
@@ -573,15 +572,25 @@ function updateMetricOverlay() {
     const { sse, sae } = computeResiduals(slope, intercept);
     const d = dataPrecision;
 
+    // Equation overlay (top-left)
+    const b0 = formatStat(intercept, d);
+    const b1 = formatStat(slope, d);
+    const sign = slope >= 0 ? ' + ' : ' ';
+    const eqOverlay = document.createElement('div');
+    eqOverlay.className = 'chart-overlay equation-overlay';
+    eqOverlay.setAttribute('aria-hidden', 'true');
+    eqOverlay.innerHTML = `<div class="overlay-label">Your Line</div>\u0177 = ${b0}${sign}${b1} \u00b7 x`;
+    chartContainer.appendChild(eqOverlay);
+
+    // Metric overlay (top-right)
     const isSquared = residualMode === 'squared';
     const label = isSquared ? 'Sum of Squared Errors' : 'Sum of Absolute Errors';
     const value = isSquared ? sse : sae;
-
-    const overlay = document.createElement('div');
-    overlay.className = 'metric-overlay';
-    overlay.setAttribute('aria-hidden', 'true');
-    overlay.innerHTML = `<div class="metric-label">${label}</div>${formatStat(value, d)}`;
-    chartContainer.appendChild(overlay);
+    const metricOverlay = document.createElement('div');
+    metricOverlay.className = 'chart-overlay metric-overlay';
+    metricOverlay.setAttribute('aria-hidden', 'true');
+    metricOverlay.innerHTML = `<div class="overlay-label">${label}</div>${formatStat(value, d)}`;
+    chartContainer.appendChild(metricOverlay);
 }
 
 /** Sync toggle button aria-pressed states with residualMode. */
