@@ -88,9 +88,14 @@ const chartContainer = /** @type {HTMLDivElement} */ (document.getElementById('c
 const sidebar = /** @type {HTMLDivElement} */ (document.getElementById('sidebar'));
 
 const showResidualsCheck = /** @type {HTMLInputElement} */ (document.getElementById('show-residuals'));
-const showSquaresCheck = /** @type {HTMLInputElement} */ (document.getElementById('show-squares'));
 const showLsCheck = /** @type {HTMLInputElement} */ (document.getElementById('show-ls'));
 const showLsLabel = /** @type {HTMLLabelElement} */ (document.getElementById('show-ls-label'));
+const residualToggleRow = /** @type {HTMLDivElement} */ (document.getElementById('residual-toggle-row'));
+const toggleAbsoluteBtn = /** @type {HTMLButtonElement} */ (document.getElementById('toggle-absolute'));
+const toggleSquaredBtn = /** @type {HTMLButtonElement} */ (document.getElementById('toggle-squared'));
+
+/** @type {'absolute' | 'squared'} */
+let residualMode = 'absolute';
 
 const yourEqBlock = /** @type {HTMLDivElement} */ (document.getElementById('your-equation'));
 const yourEqText = /** @type {HTMLDivElement} */ (document.getElementById('your-eq-text'));
@@ -183,10 +188,12 @@ function generateRandomData(n) {
     varPanel.hidden = true;
     dataSummary.textContent = `${count} random observations`;
 
-    // Reset checkboxes
+    // Reset controls
     showResidualsCheck.checked = false;
-    showSquaresCheck.checked = false;
     showLsCheck.checked = false;
+    residualMode = 'absolute';
+    setToggleState();
+    residualToggleRow.hidden = true;
 
     renderChart();
     announce(`Random dataset: ${count} observations.`);
@@ -269,10 +276,10 @@ function renderChart() {
 
     // Draw interactive layers
     drawUserLine();
-    drawResiduals();
-    drawSquares();
+    drawResidualLayer();
     drawLsLine();
     setupLineDrag();
+    updateMetricOverlay();
 
     // Update sidebar
     sidebar.hidden = false;
@@ -449,74 +456,67 @@ function updateHitArea() {
         .attr('y2', yScale(handleRightY));
 }
 
-/** Draw or update residual lines (vertical dashed lines from point to user line). */
-function drawResiduals() {
+/**
+ * Draw the residual visualization layer.
+ * When mode = 'absolute': dashed vertical lines from each point to the user's line.
+ * When mode = 'squared': literal squares whose area = e².
+ */
+function drawResidualLayer() {
     if (!frame || !xScale || !yScale) return;
     const overlays = d3Selection.select(frame.inner).select('.overlays');
-    overlays.selectAll('.residual-line').remove();
+    overlays.selectAll('.residual-line, .residual-square').remove();
 
     if (!showResidualsCheck.checked) return;
 
     const { slope, intercept } = userLineParams();
 
-    overlays.selectAll('.residual-line')
-        .data(xData.map((x, i) => ({ x, y: yData[i], yHat: intercept + slope * x })))
-        .join('line')
-        .attr('class', 'residual-line')
-        .attr('x1', d => /** @type {Function} */ (xScale)(d.x))
-        .attr('y1', d => /** @type {Function} */ (yScale)(d.y))
-        .attr('x2', d => /** @type {Function} */ (xScale)(d.x))
-        .attr('y2', d => /** @type {Function} */ (yScale)(d.yHat))
-        .attr('stroke', USER_COLOR_LIGHT)
-        .attr('stroke-width', 1.5)
-        .attr('stroke-dasharray', '4,3')
-        .style('pointer-events', 'none');
-}
+    if (residualMode === 'absolute') {
+        // Dashed vertical lines
+        overlays.selectAll('.residual-line')
+            .data(xData.map((x, i) => ({ x, y: yData[i], yHat: intercept + slope * x })))
+            .join('line')
+            .attr('class', 'residual-line')
+            .attr('x1', d => /** @type {Function} */ (xScale)(d.x))
+            .attr('y1', d => /** @type {Function} */ (yScale)(d.y))
+            .attr('x2', d => /** @type {Function} */ (xScale)(d.x))
+            .attr('y2', d => /** @type {Function} */ (yScale)(d.yHat))
+            .attr('stroke', USER_COLOR_LIGHT)
+            .attr('stroke-width', 1.5)
+            .attr('stroke-dasharray', '4,3')
+            .style('pointer-events', 'none');
+    } else {
+        // Squared residual rectangles
+        const squareData = xData.map((x, i) => {
+            const yHat = intercept + slope * x;
+            const residual = yData[i] - yHat;
+            return { x, y: yData[i], yHat, residual };
+        });
 
-/** Draw or update squared residual rectangles. */
-function drawSquares() {
-    if (!frame || !xScale || !yScale) return;
-    const overlays = d3Selection.select(frame.inner).select('.overlays');
-    overlays.selectAll('.residual-square').remove();
+        overlays.selectAll('.residual-square')
+            .data(squareData)
+            .join('rect')
+            .attr('class', 'residual-square')
+            .attr('aria-hidden', 'true')
+            .each(function (d) {
+                const el = d3Selection.select(this);
+                const absRes = Math.abs(d.residual);
+                const sideY = Math.abs(/** @type {Function} */ (yScale)(d.yHat) - /** @type {Function} */ (yScale)(d.yHat + absRes));
 
-    if (!showSquaresCheck.checked) return;
+                const px = /** @type {Function} */ (xScale)(d.x);
+                const pyPoint = /** @type {Function} */ (yScale)(d.y);
+                const pyHat = /** @type {Function} */ (yScale)(d.yHat);
+                const top = Math.min(pyPoint, pyHat);
 
-    const { slope, intercept } = userLineParams();
-
-    const squareData = xData.map((x, i) => {
-        const yHat = intercept + slope * x;
-        const residual = yData[i] - yHat;
-        return { x, y: yData[i], yHat, residual };
-    });
-
-    overlays.selectAll('.residual-square')
-        .data(squareData)
-        .join('rect')
-        .attr('class', 'residual-square')
-        .attr('aria-hidden', 'true')
-        .each(function (d) {
-            const el = d3Selection.select(this);
-            const absRes = Math.abs(d.residual);
-
-            // Square side in pixels — use the y-scale to get a consistent square
-            // (same number of data units on both axes, rendered as pixels)
-            const sideY = Math.abs(/** @type {Function} */ (yScale)(d.yHat) - /** @type {Function} */ (yScale)(d.yHat + absRes));
-
-            const px = /** @type {Function} */ (xScale)(d.x);
-            const pyPoint = /** @type {Function} */ (yScale)(d.y);
-            const pyHat = /** @type {Function} */ (yScale)(d.yHat);
-            const top = Math.min(pyPoint, pyHat);
-
-            // Square extends to the right from the data point, height = residual
-            el.attr('x', px)
-                .attr('y', top)
-                .attr('width', sideY)
-                .attr('height', Math.abs(pyPoint - pyHat))
-                .attr('fill', USER_SQUARE_FILL)
-                .attr('stroke', USER_SQUARE_STROKE)
-                .attr('stroke-width', 0.75);
-        })
-        .style('pointer-events', 'none');
+                el.attr('x', px)
+                    .attr('y', top)
+                    .attr('width', sideY)
+                    .attr('height', Math.abs(pyPoint - pyHat))
+                    .attr('fill', USER_SQUARE_FILL)
+                    .attr('stroke', USER_SQUARE_STROKE)
+                    .attr('stroke-width', 0.75);
+            })
+            .style('pointer-events', 'none');
+    }
 }
 
 /** Draw or update the LS regression line. */
@@ -540,20 +540,55 @@ function drawLsLine() {
         .style('pointer-events', 'none');
 }
 
-/** Fast update during dragging — redraw line, residuals, squares, hit area, stats. */
+/** Fast update during dragging — redraw line, residual layer, hit area, stats. */
 function updateFromDrag() {
     drawUserLine();
     updateHitArea();
-    drawResiduals();
-    drawSquares();
+    drawResidualLayer();
     updateStats();
+    updateMetricOverlay();
 
     // Debounced screen reader announcement
     clearTimeout(announceTimer);
     announceTimer = window.setTimeout(() => {
-        const { sse } = computeResiduals(...Object.values(userLineParams()));
-        announce(`Sum of Squared Errors: ${formatStat(sse, dataPrecision)}`);
+        const { sse, sae } = computeResiduals(...Object.values(userLineParams()));
+        if (residualMode === 'squared') {
+            announce(`Sum of Squared Errors: ${formatStat(sse, dataPrecision)}`);
+        } else {
+            announce(`Sum of Absolute Errors: ${formatStat(sae, dataPrecision)}`);
+        }
     }, ANNOUNCE_DEBOUNCE);
+}
+
+// ─── Floating Metric Overlay ─────────────────────────────────────────────────
+
+/** Update the floating metric pill on the chart. */
+function updateMetricOverlay() {
+    // Remove any existing overlay
+    const existing = chartContainer.querySelector('.metric-overlay');
+    if (existing) existing.remove();
+
+    if (!showResidualsCheck.checked || xData.length < 2) return;
+
+    const { slope, intercept } = userLineParams();
+    const { sse, sae } = computeResiduals(slope, intercept);
+    const d = dataPrecision;
+
+    const isSquared = residualMode === 'squared';
+    const label = isSquared ? 'Sum of Squared Errors' : 'Sum of Absolute Errors';
+    const value = isSquared ? sse : sae;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'metric-overlay';
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.innerHTML = `<div class="metric-label">${label}</div>${formatStat(value, d)}`;
+    chartContainer.appendChild(overlay);
+}
+
+/** Sync toggle button aria-pressed states with residualMode. */
+function setToggleState() {
+    toggleAbsoluteBtn.setAttribute('aria-pressed', residualMode === 'absolute' ? 'true' : 'false');
+    toggleSquaredBtn.setAttribute('aria-pressed', residualMode === 'squared' ? 'true' : 'false');
 }
 
 // ─── Stats Display ──────────────────────────────────────────────────────────
@@ -582,44 +617,49 @@ function updateStats() {
 
     // Build stats cards
     const lsSse = lsResult ? lsResult.residuals.reduce((s, e) => s + e * e, 0) : 0;
+    const lsSae = lsResult ? lsResult.residuals.reduce((s, e) => s + Math.abs(e), 0) : 0;
+    const isSquared = residualMode === 'squared';
+
     let html = '';
 
-    // SSE — always visible (the core metric for this tool)
-    html += `
-    <div class="stats-grid">
-        <div class="stat-card yours">
-            <div class="stat-label">Sum of Squared Errors</div>
-            <div class="stat-value">${formatStat(sse, d)}</div>
-        </div>`;
-    if (showLsCheck.checked && lsResult) {
-        html += `
-        <div class="stat-card ls${sse <= lsSse * 1.01 ? ' winner' : ''}">
-            <div class="stat-label">LS Sum of Squared Errors</div>
-            <div class="stat-value">${formatStat(lsSse, d)}</div>
-        </div>`;
-    }
-    html += `</div>`;
-
-    // SAE (when residuals visible — ties to the residual lines visually)
     if (showResidualsCheck.checked) {
+        const metricLabel = isSquared ? 'Sum of Squared Errors' : 'Sum of Absolute Errors';
+        const metricValue = isSquared ? sse : sae;
+        const lsMetricValue = isSquared ? lsSse : lsSae;
+
         html += `
-        <div class="stats-grid" style="margin-top:0.4rem;">
-            <div class="stat-card yours" style="grid-column: 1 / -1;">
-                <div class="stat-label">Sum of Absolute Errors (SAE)</div>
-                <div class="stat-value">${formatStat(sae, d)}</div>
-            </div>
-        </div>`;
+        <div class="stats-grid">
+            <div class="stat-card yours">
+                <div class="stat-label">${metricLabel}</div>
+                <div class="stat-value">${formatStat(metricValue, d)}</div>
+            </div>`;
+        if (showLsCheck.checked && lsResult) {
+            const isClose = isSquared ? (sse <= lsSse * 1.01) : (sae <= lsSae * 1.01);
+            html += `
+            <div class="stat-card ls${isClose ? ' winner' : ''}">
+                <div class="stat-label">LS ${metricLabel}</div>
+                <div class="stat-value">${formatStat(lsMetricValue, d)}</div>
+            </div>`;
+        }
+        html += `</div>`;
     }
 
-    // SSE comparison text (when LS line visible)
-    if (showLsCheck.checked && lsResult && lsSse > 0) {
-        const pctHigher = ((sse - lsSse) / lsSse * 100);
-        if (pctHigher <= 1) {
-            sseComparison.innerHTML = `<strong>Excellent!</strong> Your line is very close to the least-squares line.`;
+    // Comparison text (when LS line visible and residuals shown)
+    if (showLsCheck.checked && lsResult && showResidualsCheck.checked) {
+        const userVal = isSquared ? sse : sae;
+        const lsVal = isSquared ? lsSse : lsSae;
+        if (lsVal > 0) {
+            const pctHigher = ((userVal - lsVal) / lsVal * 100);
+            if (pctHigher <= 1) {
+                sseComparison.innerHTML = `<strong>Excellent!</strong> Your line is very close to the least-squares line.`;
+            } else {
+                const label = isSquared ? 'Sum of Squared Errors' : 'Sum of Absolute Errors';
+                sseComparison.innerHTML = `${label} is <strong>${formatStat(pctHigher, 1)}% higher</strong> than the LS line.`;
+            }
+            sseComparison.hidden = false;
         } else {
-            sseComparison.innerHTML = `Sum of Squared Errors is <strong>${formatStat(pctHigher, 1)}% higher</strong> than the LS line.`;
+            sseComparison.hidden = true;
         }
-        sseComparison.hidden = false;
     } else {
         sseComparison.hidden = true;
     }
@@ -710,10 +750,12 @@ function loadSelectedVars() {
         }
     }
 
-    // Reset checkboxes for fresh data
+    // Reset controls for fresh data
     showResidualsCheck.checked = false;
-    showSquaresCheck.checked = false;
     showLsCheck.checked = false;
+    residualMode = 'absolute';
+    setToggleState();
+    residualToggleRow.hidden = true;
 
     renderChart();
 }
@@ -721,13 +763,26 @@ function loadSelectedVars() {
 // ─── Event Listeners ────────────────────────────────────────────────────────
 
 showResidualsCheck.addEventListener('change', () => {
-    drawResiduals();
+    residualToggleRow.hidden = !showResidualsCheck.checked;
+    drawResidualLayer();
     updateStats();
+    updateMetricOverlay();
 });
 
-showSquaresCheck.addEventListener('change', () => {
-    drawSquares();
+toggleAbsoluteBtn.addEventListener('click', () => {
+    residualMode = 'absolute';
+    setToggleState();
+    drawResidualLayer();
     updateStats();
+    updateMetricOverlay();
+});
+
+toggleSquaredBtn.addEventListener('click', () => {
+    residualMode = 'squared';
+    setToggleState();
+    drawResidualLayer();
+    updateStats();
+    updateMetricOverlay();
 });
 
 showLsCheck.addEventListener('change', () => {
@@ -743,11 +798,11 @@ tryAgainBtn.addEventListener('click', () => {
     randomizeLine();
     drawUserLine();
     updateHitArea();
-    drawResiduals();
-    drawSquares();
+    drawResidualLayer();
     drawLsLine();
     updateStats();
-    announce('Line reset. Try to minimize the sum of squared errors.');
+    updateMetricOverlay();
+    announce('Line reset. Try to minimize the errors.');
 });
 
 randomDataBtn.addEventListener('click', () => {

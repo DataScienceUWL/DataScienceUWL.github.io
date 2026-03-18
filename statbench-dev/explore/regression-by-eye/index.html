@@ -59,6 +59,45 @@
             height: 1.1rem;
         }
 
+        /* ── Residual toggle row ── */
+        .residual-toggle-row {
+            padding-left: 1.5rem;
+        }
+        .seg-control-sm {
+            font-size: 0.75rem;
+        }
+        .seg-control-sm button {
+            padding: 0.2rem 0.6rem;
+            min-height: 0;
+        }
+
+        /* ── Floating metric overlay on chart ── */
+        #chart-container {
+            position: relative;
+        }
+        .metric-overlay {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #009E73;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.25rem 0.5rem;
+            pointer-events: none;
+            z-index: 10;
+            line-height: 1.2;
+        }
+        .metric-overlay .metric-label {
+            font-family: var(--font-body);
+            font-size: 0.65rem;
+            font-weight: 400;
+            color: var(--ims-gray-text);
+        }
+
         /* ── Equation display ── */
         .equation-block {
             font-family: var(--font-mono);
@@ -229,10 +268,12 @@
                             <input type="checkbox" id="show-residuals">
                             Show residuals
                         </label>
-                        <label>
-                            <input type="checkbox" id="show-squares">
-                            Show squared residuals
-                        </label>
+                        <div class="residual-toggle-row" id="residual-toggle-row" hidden>
+                            <div class="seg-control seg-control-sm" role="group" aria-label="Residual display type">
+                                <button type="button" id="toggle-absolute" aria-pressed="true">Absolute</button>
+                                <button type="button" id="toggle-squared" aria-pressed="false">Squared</button>
+                            </div>
+                        </div>
                         <label id="show-ls-label">
                             <input type="checkbox" id="show-ls">
                             Show LS regression line
@@ -272,11 +313,11 @@
 
     <dialog id="page-help" aria-label="Help">
         <h2>Help</h2>
-        <p class="help-intro">Drag the green line to fit the data as closely as you can. Use the checkboxes to reveal residuals, squared residuals, and the true least-squares regression line.</p>
+        <p class="help-intro">Drag the green line to fit the data as closely as you can. Use the controls to reveal residuals and the true least-squares regression line.</p>
         <dl>
-            <dt>Drag handles</dt><dd>Move the green circles up or down to change the line</dd>
-            <dt>Show Residuals</dt><dd>Vertical lines from each point to your line</dd>
-            <dt>Show Squared Residuals</dt><dd>Squares whose area equals the squared error</dd>
+            <dt>Grab the line</dt><dd>Grab near an end to pivot; grab near the middle to shift parallel</dd>
+            <dt>Show Residuals</dt><dd>Toggle the residual layer on/off</dd>
+            <dt>Absolute / Squared</dt><dd>Switch between residual lines (SAE) and residual squares (SSE)</dd>
             <dt>Show LS Line</dt><dd>Reveal the mathematically optimal line</dd>
         </dl>
         <h3>Keyboard Shortcuts</h3>
