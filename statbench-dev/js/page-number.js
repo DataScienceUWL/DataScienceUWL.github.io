@@ -37,6 +37,17 @@
     document.documentElement.setAttribute('data-embed', 'true');
   }
 
+  // Activity panel: load guided instructions from JSON
+  if (params.get('activity')) {
+    // Dynamically load the activity panel script
+    const link = document.querySelector('link[rel="stylesheet"][href*="style.css"]');
+    const prefix = link ? link.getAttribute('href')?.replace(/css\/style\.css$/, '') || '' : '';
+    const script = document.createElement('script');
+    script.src = `${prefix}js/activity-panel.js`;
+    script.defer = true;
+    (document.body || document.documentElement).appendChild(script);
+  }
+
   // In iframes: disable service worker registration (cross-origin issues)
   // and prevent the update toast's location.reload() from breaking the parent
   if (isIframe || isEmbed) {
