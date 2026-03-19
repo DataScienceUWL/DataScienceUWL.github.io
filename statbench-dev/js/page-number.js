@@ -37,6 +37,16 @@
     document.documentElement.setAttribute('data-embed', 'true');
   }
 
+  // Share button: inject on all pages (not embed)
+  if (!isEmbed && !isStatic) {
+    const shareScript = document.createElement('script');
+    const shareLink = document.querySelector('link[rel="stylesheet"][href*="style.css"]');
+    const sharePrefix = shareLink ? shareLink.getAttribute('href')?.replace(/css\/style\.css$/, '') || '' : '';
+    shareScript.src = `${sharePrefix}js/share.js`;
+    shareScript.defer = true;
+    (document.body || document.documentElement).appendChild(shareScript);
+  }
+
   // Activity panel: load guided instructions from JSON
   if (params.get('activity')) {
     // Dynamically load the activity panel script
