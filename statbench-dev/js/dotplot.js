@@ -12,11 +12,11 @@ import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
 
-/** Default dot fill (non-extreme). */
-const DOT_FILL = '#808080';
+/** Default dot fill — IMS blue (light). */
+const DOT_FILL = '#569BBD';
 
-/** Extreme dot fill (in tail). */
-const EXTREME_FILL = '#569BBD';
+/** Extreme dot fill (in tail) — darker blue for contrast with DOT_FILL. */
+const EXTREME_FILL = '#2171B5';
 
 /** Observed statistic line color (deep purple — distinct from orange highlight). */
 const OBSERVED_COLOR = '#7B2D8E';

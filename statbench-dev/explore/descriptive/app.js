@@ -162,19 +162,6 @@ function updateChartControls() {
       renderActiveChart();
     });
 
-  } else if (activeChart === 'dotplot') {
-    // Mean marker checkbox
-    const meanLabel = document.createElement('label');
-    meanLabel.innerHTML = '<input type="checkbox" id="show-mean-marker"> Show mean';
-    meanLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
-    chartControls.appendChild(meanLabel);
-    const meanCb = /** @type {HTMLInputElement} */ (meanLabel.querySelector('input'));
-    meanCb.checked = showMeanMarker;
-    meanCb.addEventListener('change', () => {
-      showMeanMarker = meanCb.checked;
-      renderActiveChart();
-    });
-
   } else if (activeChart === 'boxplot') {
     const label = document.createElement('label');
     label.innerHTML = '<input type="checkbox" id="show-outliers" checked> Show outliers';
@@ -186,19 +173,19 @@ function updateChartControls() {
       showOutliers = cb.checked;
       renderActiveChart();
     });
-
-    // Mean marker checkbox
-    const meanLabel = document.createElement('label');
-    meanLabel.innerHTML = '<input type="checkbox" id="show-mean-box"> Show mean';
-    meanLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
-    chartControls.appendChild(meanLabel);
-    const meanCb = /** @type {HTMLInputElement} */ (meanLabel.querySelector('input'));
-    meanCb.checked = showMeanMarker;
-    meanCb.addEventListener('change', () => {
-      showMeanMarker = meanCb.checked;
-      renderActiveChart();
-    });
   }
+
+  // Show mean checkbox — available for all chart types
+  const meanLabel = document.createElement('label');
+  meanLabel.innerHTML = '<input type="checkbox" id="show-mean-marker"> Show mean';
+  meanLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+  chartControls.appendChild(meanLabel);
+  const meanCb = /** @type {HTMLInputElement} */ (meanLabel.querySelector('input'));
+  meanCb.checked = showMeanMarker;
+  meanCb.addEventListener('change', () => {
+    showMeanMarker = meanCb.checked;
+    renderActiveChart();
+  });
 }
 
 // ── State ─────────────────────────────────────────────────────────────
@@ -663,6 +650,23 @@ function renderActiveChart() {
       const lastX1 = /** @type {number} */ (histResult.bins[histResult.bins.length - 1].x1);
       const avgBinWidth = (lastX1 - firstX0) / histResult.bins.length;
       overlayDensityOnHistogram(histResult.frame.inner, currentValues, histResult.xScale, histResult.yScale, avgBinWidth);
+    }
+    // Mean marker: red dashed vertical line
+    if (showMeanMarker && histResult && currentValues.length > 0) {
+      const meanVal = mean(currentValues);
+      const mx = histResult.xScale(meanVal);
+      const overlays = d3Selection.select(histResult.frame.inner).select('.overlays');
+      overlays.append('line')
+        .attr('x1', mx).attr('x2', mx)
+        .attr('y1', 0).attr('y2', histResult.frame.height)
+        .attr('stroke', '#F05133').attr('stroke-width', 2)
+        .attr('stroke-dasharray', '6,3')
+        .attr('aria-label', `Mean = ${formatStat(meanVal, dataPrecision)}`);
+      overlays.append('text')
+        .attr('x', mx).attr('y', -6)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#F05133').attr('font-size', '11px')
+        .text(`x̄ = ${formatStat(meanVal, dataPrecision)}`);
     }
     if (histResult && histResult.bins && histResult.bins.length > 0) {
       renderBinTable(histResult.bins, currentValues.length);
