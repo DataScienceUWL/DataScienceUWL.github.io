@@ -342,6 +342,8 @@ export function renderSimChart(container, stats, opts) {
       highlightIndex: opts.highlightIndex ?? -1,
       highlightIndices: opts.highlightIndices,
       precision: opts.precision,
+      baseFill: opts.baseFill,
+      extremeFill: opts.extremeFill,
     });
     frame = r.frame;
     xScale = r.xScale;

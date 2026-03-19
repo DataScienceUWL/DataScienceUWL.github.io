@@ -125,7 +125,9 @@ export function computeDotRadius(innerWidth, innerHeight, maxStack, numBins) {
  * @param {Set<number>} [options.highlightIndices] - Indices of batch-added dots to highlight (accent pulse)
  * @param {number} [options.precision] - Decimal places for overlay value labels (default: 2)
  * @param {boolean} [options.forceColumns] - Force filled-column mode even if dots would fit (for consistent grouped rendering)
- * @param {string} [options.fillColor] - Override default dot fill color (hex)
+ * @param {string} [options.fillColor] - Override default dot fill color (hex, sets both base and extreme)
+ * @param {string} [options.baseFill] - Override non-extreme dot fill (when isExtreme returns false)
+ * @param {string} [options.extremeFill] - Override extreme dot fill (when isExtreme returns true)
  * @param {number} [options.viewHeight] - Override default viewBox height (for compact stacked charts)
  * @returns {{ frame: ChartFrame, dots: Array<{value: number, binCenter: number, stackIndex: number}>, xScale: d3Scale.ScaleLinear<number,number>, maxStack: number, binWidth: number, update: (values: number[], opts?: object) => void }}
  */
@@ -150,6 +152,8 @@ export function drawDotplot(container, values, options = {}) {
     precision = 2,
     forceColumns = false,
     fillColor,
+    baseFill: optBaseFill,
+    extremeFill: optExtremeFill,
     viewHeight,
   } = options;
 
@@ -203,9 +207,9 @@ export function drawDotplot(container, values, options = {}) {
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
   if (wouldOverflow) {
-    renderColumns(dataGroup, dots, xScale, /** @type {d3Scale.ScaleLinear<number,number>} */ (yScale), frame.height, isExtreme, highlightIndex, highlightIndices, frame.inner, fillColor);
+    renderColumns(dataGroup, dots, xScale, /** @type {d3Scale.ScaleLinear<number,number>} */ (yScale), frame.height, isExtreme, highlightIndex, highlightIndices, frame.inner, fillColor, optBaseFill, optExtremeFill);
   } else {
-    renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex, highlightIndices, frame.inner, fillColor);
+    renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex, highlightIndices, frame.inner, fillColor, optBaseFill, optExtremeFill);
   }
 
   // Observed statistic line
@@ -253,7 +257,7 @@ export function drawDotplot(container, values, options = {}) {
         axes.selectAll('*').remove();
         addAxes(frame, xAxis, yAxisFn, xLabel, 'Frequency');
 
-        renderColumns(dataGroup, newResult.dots, xScale, yScale, frame.height, newIsExtreme, newHighlight, newHighlightSet, frame.inner);
+        renderColumns(dataGroup, newResult.dots, xScale, yScale, frame.height, newIsExtreme, newHighlight, newHighlightSet, frame.inner, undefined, optBaseFill, optExtremeFill);
       } else {
         // Dot mode — remove y-axis if it was added
         if (yScale) {
@@ -279,7 +283,7 @@ export function drawDotplot(container, values, options = {}) {
 
         const newRadius = computeDotRadius(
           frame.width, frame.height, newResult.maxStack, newEffectiveBins);
-        renderDots(dataGroup, newResult.dots, xScale, frame.height, newRadius, newIsExtreme, animate, newHighlight, newHighlightSet, frame.inner);
+        renderDots(dataGroup, newResult.dots, xScale, frame.height, newRadius, newIsExtreme, animate, newHighlight, newHighlightSet, frame.inner, undefined, optBaseFill, optExtremeFill);
       }
 
       const overlays = d3Selection.select(frame.inner).select('.overlays');
@@ -311,10 +315,10 @@ const HIGHLIGHT_FILL = '#E07020';
  * @param {Set<number>} [highlightIndices] - Batch new dots (+10): accent pulse
  * @param {SVGGElement} [innerNode] - chart-inner node for custom tooltips
  */
-function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate, highlightIndex = -1, highlightIndices, innerNode, fillColor) {
+function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate, highlightIndex = -1, highlightIndices, innerNode, fillColor, optBaseFill, optExtremeFill) {
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
-  const baseFill = fillColor || DOT_FILL;
-  const extremeFill = fillColor || EXTREME_FILL;
+  const baseFill = optBaseFill || fillColor || DOT_FILL;
+  const extremeFill = optExtremeFill || fillColor || EXTREME_FILL;
 
   /** Normal fill for a dot at index i. */
   function normalFill(d) {
@@ -412,7 +416,7 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
  * @param {Set<number>} [highlightIndices] - Indices of batch-added dots
  * @param {SVGGElement} [innerNode]
  */
-function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, highlightIndex = -1, highlightIndices, innerNode, fillColor) {
+function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, highlightIndex = -1, highlightIndices, innerNode, fillColor, optBaseFill, optExtremeFill) {
   // Aggregate dots by binCenter → count
   /** @type {Map<number, {count: number}>} */
   const bins = new Map();
@@ -437,10 +441,10 @@ function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, high
 
   /** Color for a column based on its bin center value. */
   function colColor(center) {
-    const baseFill = fillColor || DOT_FILL;
-    const extremeFill = fillColor || EXTREME_FILL;
-    if (!isExtreme) return baseFill;
-    return isExtreme(center) ? extremeFill : baseFill;
+    const base = optBaseFill || fillColor || DOT_FILL;
+    const extreme = optExtremeFill || fillColor || EXTREME_FILL;
+    if (!isExtreme) return base;
+    return isExtreme(center) ? extreme : base;
   }
 
   // Draw columns as lines with round linecap for rounded tops

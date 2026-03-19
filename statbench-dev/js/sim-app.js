@@ -1736,7 +1736,12 @@ export function initSimPage(config) {
         ? formatStat(resampleVal, dataPrecision, 'proportion')
         : formatStat(resampleVal, dataPrecision);
       // Orange highlight only on +1 to visually link to persistent dot
-      resampleMeanEl.classList.toggle('highlight-last', highlightStat);
+      // Force-restart animation by removing and re-adding the class
+      resampleMeanEl.classList.remove('highlight-last');
+      if (highlightStat) {
+        void resampleMeanEl.offsetWidth; // reflow to restart animation
+        resampleMeanEl.classList.add('highlight-last');
+      }
       const statLabelEl = document.getElementById('resample-stat-label');
       if (statLabelEl) {
         if (config.proportion) {
@@ -2075,6 +2080,12 @@ export function initSimPage(config) {
     let chartResult;
     /** @type {any} */
     let chartXScale;
+    // Bootstrap: inside CI = blue (region), outside = gray (de-emphasized)
+    // Randomization: tail = darker blue (extreme), body = blue (normal)
+    const isBootstrap = config.mode === 'bootstrap';
+    const dotBaseFill = isBootstrap && ci ? '#a0a0a0' : undefined;   // gray for outside-CI
+    const dotExtremeFill = isBootstrap && ci ? '#569BBD' : undefined; // blue for inside-CI
+
     if (activeChart === 'dotplot') {
       const r = drawDotplot(chartContainer, stats, {
         id: 'sim-chart',
@@ -2091,6 +2102,8 @@ export function initSimPage(config) {
         highlightIndex,
         highlightIndices,
         precision: config.proportion ? Math.max(dataPrecision + 1, 3) : dataPrecision + 1,
+        baseFill: dotBaseFill,
+        extremeFill: dotExtremeFill,
       });
       chartResult = r.frame;
       chartXScale = r.xScale;

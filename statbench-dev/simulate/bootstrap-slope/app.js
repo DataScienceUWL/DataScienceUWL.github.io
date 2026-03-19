@@ -288,6 +288,8 @@ function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts
     thresholds: hlThresholds,
     pillMode: ci ? 'bootstrap' : undefined,
     precision: dataPrecision + 1,
+    baseFill: ci ? '#a0a0a0' : undefined,
+    extremeFill: ci ? '#569BBD' : undefined,
   });
 }
 
