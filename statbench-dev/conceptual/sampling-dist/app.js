@@ -11,6 +11,7 @@ import { drawHistogram, computeBins } from '../../js/histogram.js';
 import { drawDotplot, computeDots, computeDotRadius } from '../../js/dotplot.js';
 import { announce, initKeyboardShortcuts, initPlayPause, computeHighlights } from '../../js/page-utils.js';
 import { resolveChartType } from '../../js/chart-defaults.js';
+import { renderStatLabel } from '../../js/chart-utils.js';
 import * as d3Shape from 'd3-shape';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
@@ -324,8 +325,8 @@ function showSampleOnPopulation(sample, sampleMean) {
       .attr('fill', '#F05133')
       .attr('opacity', 0);
 
-    // Set label text
-    g.select('.mean-label').text(`x̄ = ${sampleMean.toFixed(2)}`);
+    // Set label text — use renderStatLabel for proper SVG overline on x̄
+    renderStatLabel(g.select('.mean-label'), `x\u0304 = ${sampleMean.toFixed(2)}`);
 
     // Fade in marker + label
     g.select('.mean-marker').each(function () {

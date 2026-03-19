@@ -12,6 +12,7 @@ import { drawDotplot, computeDots } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper, setPageTitle } from '../../js/page-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
+import { renderStatLabel } from '../../js/chart-utils.js';
 import { overlayDensityOnHistogram } from '../../js/kde.js';
 import { createExportBar } from '../../js/export.js';
 import { initSheet, handleSheetPaste, readSheetValues, populateSheet } from '../../js/spreadsheet.js';
@@ -662,11 +663,11 @@ function renderActiveChart() {
         .attr('stroke', '#F05133').attr('stroke-width', 2)
         .attr('stroke-dasharray', '6,3')
         .attr('aria-label', `Mean = ${formatStat(meanVal, dataPrecision)}`);
-      overlays.append('text')
+      const meanText = overlays.append('text')
         .attr('x', mx).attr('y', -6)
         .attr('text-anchor', 'middle')
-        .attr('fill', '#F05133').attr('font-size', '11px')
-        .text(`x̄ = ${formatStat(meanVal, dataPrecision)}`);
+        .attr('fill', '#F05133').attr('font-size', '11px');
+      renderStatLabel(meanText, `x\u0304 = ${formatStat(meanVal, dataPrecision)}`);
     }
     if (histResult && histResult.bins && histResult.bins.length > 0) {
       renderBinTable(histResult.bins, currentValues.length);
