@@ -1014,12 +1014,13 @@ export function initPlayPause(genBtns, resetBtn, options) {
   });
   observer.observe(oneBtn, { attributes: true, attributeFilter: ['disabled'] });
 
-  // Insert before gen-label (or append)
-  const label = generateBar.querySelector('.gen-label');
-  if (label) {
-    generateBar.insertBefore(playBtn, label);
+  // Insert before reset button (so order is: +N… ▶ ↺ label)
+  const resetEl = generateBar.querySelector('#reset-btn');
+  if (resetEl) {
+    generateBar.insertBefore(playBtn, resetEl);
   } else {
-    generateBar.appendChild(playBtn);
+    const label = generateBar.querySelector('.gen-label');
+    generateBar.insertBefore(playBtn, label);
   }
 
   // Space bar toggles play/pause (keyboard shortcut)
