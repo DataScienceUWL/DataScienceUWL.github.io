@@ -88,8 +88,9 @@ export function initOneSamplePage(config) {
   /** @type {((type: string) => void)|null} */
   let setToggleSelected = null;
   // ─── Bin adjuster (continuous data only — proportions have fixed k/n bins) ───
+  const DEFAULT_BINS = 20;
   /** @type {number|undefined} */
-  let userBinCount;
+  let userBinCount = isProp ? undefined : DEFAULT_BINS;
   /** @type {import('./chart-defaults.js').BinAdjusterControl|null} */
   let binAdjuster = null;
 
@@ -762,7 +763,7 @@ export function initOneSamplePage(config) {
     if (result.bins && result.bins.length > 0) {
       lastHistResult = { xScale: result.xScale, yScale: result.yScale, bins: result.bins, domain };
     } else if (activeChart === 'dotplot' && result.maxStack > 0) {
-      const effectiveBins = isProp ? sampleN : (userBinCount ?? Math.min(n, 40));
+      const effectiveBins = isProp ? sampleN : (userBinCount ?? DEFAULT_BINS);
       lastDotResult = { xScale: result.xScale, frame: result.frame, domain, maxStack: result.maxStack, numBins: effectiveBins };
     }
 

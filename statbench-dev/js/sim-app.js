@@ -214,8 +214,9 @@ export function initSimPage(config) {
   }
 
   // ─── Bin adjuster (continuous data only — proportions have fixed k/n bins) ───
+  const DEFAULT_BINS = 20;
   /** @type {number|undefined} */
-  let userBinCount;
+  let userBinCount = config.proportion ? undefined : DEFAULT_BINS;
   /** @type {import('./chart-defaults.js').BinAdjusterControl|null} */
   let binAdjuster = null;
   if (toggleFieldset && !config.proportion) {
@@ -2110,7 +2111,7 @@ export function initSimPage(config) {
       const maxStack = r.dots.reduce((m, d) => Math.max(m, d.stackIndex + 1), 0);
       const effectiveBins = (config.proportion ? sampleSize : userBinCount)
         ?? (lockedDotGrid && domain ? Math.ceil((domain[1] - domain[0]) / lockedDotGrid.binWidth) : null)
-        ?? Math.min(n, 40);
+        ?? DEFAULT_BINS;
       lastDotResult = { xScale: r.xScale, frame: r.frame, domain: domain || [0, 1], maxStack, numBins: effectiveBins };
       lastHistResult = null;
     } else if (activeChart === 'spike') {

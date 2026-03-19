@@ -11,6 +11,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
+import { sturgesBins } from './histogram.js';
 
 /** Default dot fill — IMS blue (light). */
 const DOT_FILL = '#569BBD';
@@ -59,7 +60,7 @@ export function computeDots(values, options = {}) {
   }
 
   const domain = options.domain ?? /** @type {[number, number]} */ ([xMin, xMax]);
-  const numBins = options.numBins ?? Math.min(n, 40);
+  const numBins = options.numBins ?? sturgesBins(n);
   // Allow locked binWidth (for stable dotplot grids across re-renders)
   const binWidth = options.binWidth ?? (domain[1] - domain[0]) / numBins;
   // Use the bin origin from the locked grid if provided, else from domain
@@ -162,7 +163,7 @@ export function drawDotplot(container, values, options = {}) {
   // Compute effective bin count from locked grid + domain when available
   const effectiveBins = numBins
     ?? (lockedBinWidth && finalDomain ? Math.ceil((finalDomain[1] - finalDomain[0]) / lockedBinWidth) : null)
-    ?? Math.min(values.length, 40);
+    ?? sturgesBins(values.length);
 
   const frame = createChart(container, { titleText, descText, id, margin, ...(viewHeight != null && { viewHeight }) });
 
@@ -236,7 +237,7 @@ export function drawDotplot(container, values, options = {}) {
       const newHighlight = opts.highlightIndex ?? -1;
       const newHighlightSet = opts.highlightIndices;
       const newResult = computeDots(newValues, { numBins: newNumBins });
-      const newEffectiveBins = newNumBins ?? Math.min(newValues.length, 40);
+      const newEffectiveBins = newNumBins ?? sturgesBins(newValues.length);
       const newOverflow = newResult.maxStack > 0 && newResult.maxStack * MIN_RADIUS * 2 > frame.height;
 
       xScale.domain(newResult.domain);
