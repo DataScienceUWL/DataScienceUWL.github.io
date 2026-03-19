@@ -1269,8 +1269,10 @@ export function initSimPage(config) {
       if (allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
         // Histogram mode: compute previous bin counts for stacked delta
         // Must use EXACT same domain + thresholds as renderChart to align bins
-        let lo = Math.min(...allStats);
-        let hi = Math.max(...allStats);
+        // Include observedStat in domain — matches renderChart's domain logic
+        const domainVals = observedStat != null ? [...allStats, observedStat] : allStats;
+        let lo = Math.min(...domainVals);
+        let hi = Math.max(...domainVals);
         const dPad = (hi - lo) * 0.05 || 0.5;
         lo -= dPad; hi += dPad;
         if (preSimDomain) {
@@ -1286,8 +1288,10 @@ export function initSimPage(config) {
           ? snappedPropThresholds(histSampleSize, fullDomain, allStats.length)
           : undefined;
         // Bin the FULL dataset first to lock in bin edges
+        // Pass same numBins as renderChart to ensure identical bin edges
         const { bins: fullBins } = computeBins(allStats, {
           domain: fullDomain, thresholds: histThresholds,
+          numBins: config.proportion ? undefined : userBinCount,
         });
         // Extract interior edges so prev data bins with identical edges
         const lockedThresholds = fullBins.slice(1).map(b => b.x0);
@@ -1371,7 +1375,7 @@ export function initSimPage(config) {
         }
         /** @type {[number,number]} */
         const rDomain = [rLo, rHi];
-        const { bins: fullBins } = computeBins(allStats, { domain: rDomain });
+        const { bins: fullBins } = computeBins(allStats, { domain: rDomain, numBins: userBinCount });
         const lockedThresholds = fullBins.slice(1).map(b => b.x0);
         const prevStats = allStats.slice(0, prevLength);
         const { bins: prevBins } = computeBins(prevStats, { domain: rDomain, thresholds: lockedThresholds });
@@ -1438,8 +1442,10 @@ export function initSimPage(config) {
           ? snappedPropThresholds(rHistSampleSize, rDomain, allStats.length)
           : undefined;
         // Bin the FULL dataset first to lock in bin edges
+        // Pass same numBins as renderChart to ensure identical bin edges
         const { bins: fullBins } = computeBins(allStats, {
           domain: rDomain, thresholds: rThresholds,
+          numBins: config.proportion ? undefined : userBinCount,
         });
         const lockedThresholds = fullBins.slice(1).map(b => b.x0);
         const prevStats = allStats.slice(0, prevLength);

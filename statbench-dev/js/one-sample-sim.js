@@ -676,15 +676,16 @@ export function initOneSamplePage(config) {
     const hlDomain = /** @type {[number,number]} */ ([lo, hi]);
 
     // Thresholds: snapped for proportions, default for means
+    // Pass numBins to match renderChart so delta bars align correctly
     const thresholdOpts = isProp
       ? { domain: hlDomain, thresholds: snappedPropThresholds(sampleN, hlDomain, allStats.length) }
-      : { domain: hlDomain };
+      : { domain: hlDomain, numBins: userBinCount };
     const { bins: fullBins } = computeBins(allStats, thresholdOpts);
     const lockedThresholds = fullBins.slice(1).map(b => b.x0);
 
     const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(
       allStats, prevLength, count, computeBins,
-      { domain: hlDomain, thresholds: lockedThresholds });
+      { domain: hlDomain, thresholds: lockedThresholds, numBins: isProp ? undefined : userBinCount });
 
     const { pValue, extremeCount } = computePValue(allStats, observedStat, direction);
     displayResults(allStats, observedStat, pValue, extremeCount, direction);
