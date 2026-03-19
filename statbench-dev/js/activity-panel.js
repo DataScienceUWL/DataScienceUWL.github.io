@@ -26,6 +26,7 @@
     })
     .then(activity => {
       applyDefaultParams(activity.params || {});
+      triggerDatasetLoad(activity.params || {});
       renderPanel(activity);
     })
     .catch(err => {
@@ -69,6 +70,45 @@
     if (changed) {
       history.replaceState(null, '', '?' + current.toString());
     }
+  }
+
+  /**
+   * After injecting params into the URL, trigger dataset loading if the page
+   * already initialized its data panel (race condition fix for REQ-004).
+   * The dataset select is already populated by the time this fetch completes —
+   * we just need to set its value and fire change to load the data.
+   */
+  function triggerDatasetLoad(defaults) {
+    // Set CI level if specified (page already parsed URL before our params were injected)
+    if (defaults.ci) {
+      const ciSel = /** @type {HTMLSelectElement|null} */ (document.getElementById('ci-level'));
+      if (ciSel) {
+        ciSel.value = String(defaults.ci);
+        ciSel.dispatchEvent(new Event('change'));
+      }
+    }
+
+    const dsId = defaults.dataset;
+    if (!dsId) return;
+    const sel = /** @type {HTMLSelectElement|null} */ (document.getElementById('dataset-select'));
+    if (!sel) return;
+    // Only trigger if no dataset is already loaded
+    if (sel.value) return;
+    // The dataset select options may still be populating (datasets.json fetch in progress)
+    const trySet = () => {
+      const opt = sel.querySelector(`option[value="${dsId}"]`);
+      if (opt) {
+        sel.value = dsId;
+        sel.dispatchEvent(new Event('change'));
+      } else {
+        // Retry after datasets.json fetch completes
+        setTimeout(() => {
+          sel.value = dsId;
+          sel.dispatchEvent(new Event('change'));
+        }, 500);
+      }
+    };
+    trySet();
   }
 
   /**
