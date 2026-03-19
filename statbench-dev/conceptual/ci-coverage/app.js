@@ -11,7 +11,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import * as d3Array from 'd3-array';
-import { announce, initKeyboardShortcuts, initPlayPause } from '../../js/page-utils.js';
+import { announce, initKeyboardShortcuts, initPlayPause, fetchDataset } from '../../js/page-utils.js';
 
 // ─── DOM ───
 
@@ -22,13 +22,25 @@ const ciContainer = document.getElementById('ci-container');
 const resultDiv = document.getElementById('result-summary');
 const resetBtn = /** @type {HTMLButtonElement} */ (document.getElementById('reset-btn'));
 const popInfoEl = document.getElementById('pop-info');
+const settingsSection = document.getElementById('settings');
 
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
   document.querySelectorAll('.gen-btn'));
 
+// ─── URL params ───
+
+const params = new URLSearchParams(location.search);
+const urlDataset = params.get('dataset');
+const urlMu = params.has('mu') ? parseFloat(params.get('mu')) : null;
+const urlSigma = params.has('sigma') ? parseFloat(params.get('sigma')) : null;
+const urlN = params.has('n') ? parseInt(params.get('n'), 10) : null;
+const urlCi = params.has('ci') ? params.get('ci') : null;
+
 // ─── Population ───
 
 const POP_SIZE = 10000;
+/** @type {string|null} */
+let datasetName = null;
 
 /**
  * @param {string} shape
@@ -93,10 +105,59 @@ let seed = Math.random().toString(36).slice(2, 10);
 
 // ─── Initialize ───
 
+/**
+ * Set population from a dataset's numeric column.
+ * The actual data rows become the population — subsamples are drawn from them.
+ * @param {string} datasetId
+ */
+async function loadDatasetPopulation(datasetId) {
+  try {
+    const ds = await fetchDataset(datasetId);
+    // Find the first numeric variable
+    const numVar = (ds.variables || []).find(v => v.type === 'numeric');
+    if (!numVar) {
+      console.warn('CI Coverage: no numeric variable in dataset', datasetId);
+      initPopulation();
+      return;
+    }
+    population = ds.rows.map(r => r[numVar.name]).filter(v => v != null && !isNaN(v));
+    if (population.length < 2) {
+      console.warn('CI Coverage: too few numeric values in dataset', datasetId);
+      initPopulation();
+      return;
+    }
+    popMu = mean(population);
+    datasetName = ds.name || datasetId;
+
+    const popSigma = sd(population);
+    if (popInfoEl) {
+      popInfoEl.textContent = `Population: ${datasetName} — ${numVar.label || numVar.name} (N = ${population.length}, μ = ${popMu.toFixed(2)}, σ = ${popSigma.toFixed(2)})`;
+    }
+    // Hide the shape selector since we're using a dataset
+    if (popShapeSelect && popShapeSelect.closest('.coverage-controls')) {
+      const shapeLabel = popShapeSelect.closest('label');
+      if (shapeLabel) shapeLabel.style.display = 'none';
+    }
+    resetSimulation();
+  } catch (err) {
+    console.warn('CI Coverage: failed to load dataset', datasetId, err);
+    initPopulation();
+  }
+}
+
 function initPopulation() {
   const shape = popShapeSelect.value;
   const popRng = createRng('cov-' + shape);
-  population = generatePopulation(shape, popRng);
+
+  // Use custom mu/sigma if provided via URL
+  if (urlMu != null && !isNaN(urlMu) && urlSigma != null && !isNaN(urlSigma)) {
+    population = [];
+    for (let i = 0; i < POP_SIZE; i++) population.push(randNormal(urlMu, urlSigma, popRng));
+    // Lock shape selector to normal since we used custom params
+    popShapeSelect.value = 'normal';
+  } else {
+    population = generatePopulation(shape, popRng);
+  }
   popMu = mean(population);
 
   const popSigma = sd(population);
@@ -315,7 +376,10 @@ for (const btn of genBtns) {
   });
 }
 
-popShapeSelect.addEventListener('change', () => initPopulation());
+popShapeSelect.addEventListener('change', () => {
+  datasetName = null; // switching shape clears any loaded dataset
+  initPopulation();
+});
 
 sampleSizeInput.addEventListener('change', () => {
   const val = parseInt(sampleSizeInput.value, 10);
@@ -347,4 +411,16 @@ initPlayPause(genBtns, resetBtn);
 
 // ─── Init ───
 
-initPopulation();
+// Apply URL params to inputs before initializing
+if (urlN != null && !isNaN(urlN) && urlN >= 2 && urlN <= 500) {
+  sampleSizeInput.value = String(urlN);
+}
+if (urlCi && ['90', '95', '99'].includes(urlCi)) {
+  ciLevelSelect.value = urlCi;
+}
+
+if (urlDataset) {
+  loadDatasetPopulation(urlDataset);
+} else {
+  initPopulation();
+}
