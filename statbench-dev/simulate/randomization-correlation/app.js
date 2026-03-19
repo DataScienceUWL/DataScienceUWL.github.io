@@ -260,9 +260,6 @@ function generateSimulations(count) {
   if (mechShuffledR) {
     mechShuffledR.textContent = formatStat(lastR, 4);
     mechShuffledR.classList.toggle('highlight-last', count === 1);
-    if (count === 1) {
-      setTimeout(() => mechShuffledR.classList.remove('highlight-last'), 1500);
-    }
   }
   if (mechanismDescEl) {
     mechanismDescEl.textContent = 'Shuffle y-values, keeping x-values fixed';

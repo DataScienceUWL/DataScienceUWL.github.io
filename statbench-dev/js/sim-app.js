@@ -1459,7 +1459,6 @@ export function initSimPage(config) {
 
       if (count === 1) {
         // The diff value gets highlight-last via showTwoGroupMechanism(…, highlight=true)
-        // CSS auto-fades it via stat-text-fade animation (1.2s)
         const mechDiffEl = document.querySelector('#mech-resample-content .mech-diff');
         // Brief pause for mechanism to update, then render chart + drop
         setTimeout(() => {

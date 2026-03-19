@@ -652,13 +652,7 @@ export function initOneSamplePage(config) {
         }
       }
 
-      // Remove highlight after delay
-      if (isSingle) {
-        const hlEl = mechSimStat.querySelector('.mech-stat-value.highlight-last');
-        if (hlEl) {
-          setTimeout(() => hlEl.classList.remove('highlight-last'), 1500);
-        }
-      }
+      // highlight-last persists until next +1 (re-toggled) or reset
     }
 
     const direction = getDirection();

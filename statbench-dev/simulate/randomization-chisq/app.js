@@ -326,9 +326,6 @@ function generateSimulations(count) {
     mechShuffledTable.innerHTML = renderTableHTML(lastShuffledTable, rowLabels, colLabels);
     mechShuffledChisq.textContent = formatStat(lastChisq, 2);
     mechShuffledChisq.classList.toggle('highlight-last', count === 1);
-    if (count === 1) {
-      setTimeout(() => mechShuffledChisq.classList.remove('highlight-last'), 1500);
-    }
   }
   if (mechanismDescEl) {
     mechanismDescEl.textContent = 'Shuffle group labels, keeping outcomes fixed';

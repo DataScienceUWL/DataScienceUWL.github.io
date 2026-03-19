@@ -354,9 +354,6 @@ function generateSimulations(count) {
   if (mechShuffledF) {
     mechShuffledF.textContent = formatStat(lastF, 2);
     mechShuffledF.classList.toggle('highlight-last', count === 1);
-    if (count === 1) {
-      setTimeout(() => mechShuffledF.classList.remove('highlight-last'), 1500);
-    }
   }
   if (mechanismDescEl) {
     mechanismDescEl.textContent = 'Shuffle group labels, keeping response values fixed';
