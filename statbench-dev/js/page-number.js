@@ -21,6 +21,13 @@
     document.documentElement.setAttribute('data-embed', 'true');
   }
 
+  // Set data-guided attribute for textbook embed mode (hides controls row)
+  // Only meaningful when embed mode is also active
+  if (isEmbed && params.get('guided') === 'true') {
+    document.body?.setAttribute('data-guided', 'true');
+    document.documentElement.setAttribute('data-guided', 'true');
+  }
+
   // Set data-static attribute for screenshot-optimized rendering
   if (isStatic) {
     document.body?.setAttribute('data-static', 'true');
