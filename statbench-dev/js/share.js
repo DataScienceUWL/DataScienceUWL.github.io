@@ -23,8 +23,8 @@
   btn.setAttribute('aria-label', 'Share page');
   btn.title = 'Share';
   btn.type = 'button';
-  // Share icon (box with arrow)
-  btn.innerHTML = '<svg aria-hidden="true" viewBox="0 0 20 20" width="16" height="16"><path d="M13 3l4 4-4 4m4-4H7a4 4 0 00-4 4v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  // Share icon (three dots connected by two lines)
+  btn.innerHTML = '<svg aria-hidden="true" viewBox="0 0 20 20" width="16" height="16"><circle cx="14" cy="4" r="2.5" fill="currentColor"/><circle cx="14" cy="16" r="2.5" fill="currentColor"/><circle cx="4" cy="10" r="2.5" fill="currentColor"/><line x1="6.2" y1="8.9" x2="11.8" y2="5.1" stroke="currentColor" stroke-width="1.5"/><line x1="6.2" y1="11.1" x2="11.8" y2="14.9" stroke="currentColor" stroke-width="1.5"/></svg>';
 
   // Insert before help button
   const helpBtn = actions.querySelector('.help-btn');
