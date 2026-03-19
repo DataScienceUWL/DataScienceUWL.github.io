@@ -1245,6 +1245,34 @@ input[aria-invalid="true"] {
   }
 }
 
+/* Mobile: move generate bar below mechanism strip (between mechanism + chart)
+   so it doesn't scroll out of view when the tall mechanism strip is showing.
+   Uses display:contents on the parent section to "dissolve" it, then reorders. */
+@media (max-width: 600px) {
+  main:has(.mechanism-strip) {
+    display: flex;
+    flex-direction: column;
+  }
+  main:has(.mechanism-strip) > #controls {
+    display: contents;
+  }
+  main:has(.mechanism-strip) > #controls > .control-row {
+    order: 1;
+  }
+  main:has(.mechanism-strip) > #data-panel {
+    order: 0;
+  }
+  main:has(.mechanism-strip) > .mechanism-strip {
+    order: 2;
+  }
+  main:has(.mechanism-strip) > #controls > .generate-bar {
+    order: 3;
+  }
+  main:has(.mechanism-strip) > #chart-and-results {
+    order: 4;
+  }
+}
+
 @media (max-width: 480px) {
   .generate-bar {
     gap: 0.3rem;
