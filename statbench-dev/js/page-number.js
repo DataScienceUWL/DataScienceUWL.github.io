@@ -42,7 +42,7 @@
     const shareScript = document.createElement('script');
     const shareLink = document.querySelector('link[rel="stylesheet"][href*="style.css"]');
     const sharePrefix = shareLink ? shareLink.getAttribute('href')?.replace(/css\/style\.css$/, '') || '' : '';
-    shareScript.src = `${sharePrefix}js/share.js`;
+    shareScript.src = `${sharePrefix}js/share.js?v=${Date.now()}`;
     shareScript.defer = true;
     (document.body || document.documentElement).appendChild(shareScript);
   }
