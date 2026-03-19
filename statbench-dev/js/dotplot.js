@@ -303,6 +303,9 @@ export function drawDotplot(container, values, options = {}) {
 /** Highlight color for new dots (accessible warm orange, 3.4:1 on white). */
 const HIGHLIGHT_FILL = '#E07020';
 
+/** Pending highlight timeouts — cancelled on re-render to prevent stale animations. */
+let pendingHighlightTimers = [];
+
 /**
  * Render dots into a D3 selection.
  * @param {d3Selection.Selection} group
@@ -317,6 +320,9 @@ const HIGHLIGHT_FILL = '#E07020';
  * @param {SVGGElement} [innerNode] - chart-inner node for custom tooltips
  */
 function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate, highlightIndex = -1, highlightIndices, innerNode, fillColor, optBaseFill, optExtremeFill) {
+  // Cancel any pending highlight timers from previous render
+  for (const t of pendingHighlightTimers) clearTimeout(t);
+  pendingHighlightTimers = [];
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
   const baseFill = optBaseFill || fillColor || DOT_FILL;
   const extremeFill = optExtremeFill || fillColor || EXTREME_FILL;
@@ -369,7 +375,7 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
       .attr('r', radius * 1.5);
     // Shrink back to normal size but keep orange fill — persists until next render
     // connects visually to the orange resample mean in the mechanism strip
-    setTimeout(() => {
+    pendingHighlightTimers.push(setTimeout(() => {
       selected.each(function() {
         if (reducedMotion) {
           this.setAttribute('stroke', HIGHLIGHT_FILL);
@@ -379,7 +385,7 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
           animateDotRevert(this, HIGHLIGHT_FILL, radius, 400);
         }
       });
-    }, 800);
+    }, 800));
   } else if (highlightIndices && highlightIndices.size > 0) {
     const selected = circles.filter((d, i) => highlightIndices.has(i));
     selected
@@ -387,7 +393,7 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
       .attr('stroke', '#000')
       .attr('stroke-width', 1.5)
       .attr('r', radius * 1.2);
-    setTimeout(() => {
+    pendingHighlightTimers.push(setTimeout(() => {
       selected.each(function(d) {
         if (reducedMotion) {
           this.setAttribute('fill', normalFill(d));
@@ -398,7 +404,7 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
           animateDotRevert(this, normalFill(d), radius, 400);
         }
       });
-    }, 800);
+    }, 800));
   }
 }
 
@@ -418,6 +424,9 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
  * @param {SVGGElement} [innerNode]
  */
 function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, highlightIndex = -1, highlightIndices, innerNode, fillColor, optBaseFill, optExtremeFill) {
+  // Cancel any pending highlight timers from previous render
+  for (const t of pendingHighlightTimers) clearTimeout(t);
+  pendingHighlightTimers = [];
   // Aggregate dots by binCenter → count
   /** @type {Map<number, {count: number}>} */
   const bins = new Map();
@@ -501,7 +510,7 @@ function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, high
     // Revert: for +1, keep last highlight persistent; for batches, fade out
     const reducedMotion = prefersReducedMotion();
     if (!isOneShot) {
-      setTimeout(() => {
+      pendingHighlightTimers.push(setTimeout(() => {
         if (reducedMotion) {
           hlLines.remove();
         } else {
@@ -510,12 +519,12 @@ function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, high
             animateColumnRevert(el, 'transparent', 0, 400, () => el.remove());
           });
         }
-      }, 800);
+      }, 800));
     } else {
       // +1: shrink to normal width but keep orange — persists until next render
-      setTimeout(() => {
+      pendingHighlightTimers.push(setTimeout(() => {
         hlLines.attr('stroke-width', colWidth);
-      }, 800);
+      }, 800));
     }
   }
 

@@ -951,7 +951,7 @@ export function setupFileInput(fileInput, onLoad) {
  * @returns {{ stop: () => void } | null}
  */
 export function initPlayPause(genBtns, resetBtn, options) {
-  const delay = options?.delay ?? 300;
+  const delay = options?.delay ?? 600;
   const oneBtn = /** @type {HTMLButtonElement|undefined} */ (
     Array.from(genBtns).find(b => b.dataset.count === '1'));
   if (!oneBtn) return null;
