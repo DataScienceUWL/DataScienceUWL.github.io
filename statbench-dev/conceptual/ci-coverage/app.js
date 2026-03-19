@@ -175,7 +175,7 @@ function renderChart() {
   const shown = intervals.slice(-maxShow);
   const startIdx = Math.max(0, total - maxShow);
 
-  const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+  const margin = { top: 34, right: 30, bottom: 40, left: 50 };
   const width = 560;
   const barHeight = Math.min(5, 400 / shown.length);
   const height = Math.max(200, shown.length * (barHeight + 1) + margin.top + margin.bottom);
@@ -221,9 +221,9 @@ function renderChart() {
   // μ label
   g.append('text')
     .attr('x', xScale(popMu))
-    .attr('y', -5)
+    .attr('y', -4)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '10px')
+    .attr('font-size', '11px')
     .attr('fill', '#7B2D8E')
     .attr('font-weight', 700)
     .text(`μ = ${popMu.toFixed(2)}`);
