@@ -41,7 +41,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-8a91fbd6dc43518bbcbbe5f3fb33f285.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-6ea2a4998b9121ec9b7d82524644d15d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
@@ -470,8 +470,8 @@ window.Quarto = {
 </div>
 <section id="sec-bootstrap-idea" class="level2" data-number="9.1">
 <h2 data-number="9.1" class="anchored" data-anchor-id="sec-bootstrap-idea"><span class="header-section-number">9.1</span> The big idea: resampling</h2>
-<p>Imagine you want to estimate the average height of all UW-La Crosse students. You take a random sample of 30 students and compute the sample mean: <span class="math inline">\(\bar{x} = 170.2\)</span> cm.</p>
-<p>How confident should you be that <span class="math inline">\(\bar{x} = 170.2\)</span> is close to the true population mean <span class="math inline">\(\mu\)</span>? If you took a different sample, you’d get a different <span class="math inline">\(\bar{x}\)</span>. But you can’t keep taking new samples from the population — you only have the one sample you collected.</p>
+<p>In 2011, researchers collected a sample of 648 pennies in circulation and recorded how old each penny was (current year minus year minted). The question: what is the average age of <em>all</em> pennies currently in circulation in the United States?</p>
+<p>The sample mean is <span class="math inline">\(\bar{x} = 10.4\)</span> years. This is our <strong>point estimate</strong> of the population mean <span class="math inline">\(\mu\)</span>. But how precise is this estimate? If we collected a different sample of 648 pennies, we’d get a different <span class="math inline">\(\bar{x}\)</span>. We can’t keep collecting new samples — we only have this one.</p>
 <p><strong>The bootstrap idea</strong>: Treat your sample as a stand-in for the population and resample <em>from it</em>. Each <strong>bootstrap resample</strong> is drawn with replacement from your original sample, at the same sample size <span class="math inline">\(n\)</span>.</p>
 <div class="definition">
 <p>A <strong>bootstrap resample</strong> is a sample of size <span class="math inline">\(n\)</span> drawn <strong>with replacement</strong> from the original sample. The statistic computed from a bootstrap resample is called a <strong>bootstrap statistic</strong>. The collection of many bootstrap statistics forms the <strong>bootstrap distribution</strong>.</p>
@@ -480,29 +480,29 @@ window.Quarto = {
 </section>
 <section id="sec-bootstrap-action" class="level2" data-number="9.2">
 <h2 data-number="9.2" class="anchored" data-anchor-id="sec-bootstrap-action"><span class="header-section-number">9.2</span> Bootstrapping a sample mean</h2>
-<p>Let’s build a bootstrap confidence interval step by step using a concrete example.</p>
+<p>Let’s build a bootstrap confidence interval step by step.</p>
 <section id="step-1-collect-data" class="level3" data-number="9.2.1">
 <h3 data-number="9.2.1" class="anchored" data-anchor-id="step-1-collect-data"><span class="header-section-number">9.2.1</span> Step 1: Collect data</h3>
-<p>Suppose we have a random sample of <span class="math inline">\(n = 30\)</span> heights (in cm) from UW-La Crosse students:</p>
+<p>Our sample of 648 pennies has a right-skewed distribution — many young pennies and a long tail of older ones:</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-original-sample" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-original-sample-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="ch08-bootstrap-ci_files/figure-html/fig-original-sample-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;9.1: Dot plot of our original sample of 30 student heights. The sample mean is shown as a red triangle."><img src="ch08-bootstrap-ci_files/figure-html/fig-original-sample-1.png" class="img-fluid figure-img" width="2100"></a>
+<a href="ch08-bootstrap-ci_files/figure-html/fig-original-sample-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;9.1: Distribution of ages for 648 pennies sampled from circulation. The distribution is right-skewed with a mean of about 10.4 years. The sample mean is marked with a red triangle."><img src="ch08-bootstrap-ci_files/figure-html/fig-original-sample-1.png" class="img-fluid figure-img" width="2100"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-original-sample-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9.1: Dot plot of our original sample of 30 student heights. The sample mean is shown as a red triangle.
+Figure&nbsp;9.1: Distribution of ages for 648 pennies sampled from circulation. The distribution is right-skewed with a mean of about 10.4 years. The sample mean is marked with a red triangle.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>The sample mean is <span class="math inline">\(\bar{x} = 170.8\)</span> cm. This is our <strong>point estimate</strong> of the population mean <span class="math inline">\(\mu\)</span>. But how precise is this estimate?</p>
+<p>The sample mean is <span class="math inline">\(\bar{x} = 10.4\)</span> years. Notice the distribution is clearly not bell-shaped — it’s skewed right. Bootstrapping doesn’t care. It works regardless of the population shape.</p>
 </section>
 <section id="step-2-resample-with-replacement" class="level3" data-number="9.2.2">
 <h3 data-number="9.2.2" class="anchored" data-anchor-id="step-2-resample-with-replacement"><span class="header-section-number">9.2.2</span> Step 2: Resample with replacement</h3>
-<p>We draw a new sample of 30 values from the original 30, <em>with replacement</em>. Some values will appear more than once; others will be left out. Each such draw is one <strong>bootstrap resample</strong>, and the mean of that resample is a <strong>bootstrap statistic</strong> <span class="math inline">\(\bar{x}^*\)</span>.</p>
+<p>We draw a new sample of 648 values from the original 648, <em>with replacement</em>. Some pennies will appear more than once; others will be left out. Each such draw is one <strong>bootstrap resample</strong>, and the mean of that resample is a <strong>bootstrap statistic</strong> <span class="math inline">\(\bar{x}^*\)</span>.</p>
 </section>
 <section id="step-3-repeat-many-times" class="level3" data-number="9.2.3">
 <h3 data-number="9.2.3" class="anchored" data-anchor-id="step-3-repeat-many-times"><span class="header-section-number">9.2.3</span> Step 3: Repeat many times</h3>
@@ -512,16 +512,24 @@ Figure&nbsp;9.1: Dot plot of our original sample of 30 student heights. The samp
 <div id="fig-bootstrap-buildup" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bootstrap-buildup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="ch08-bootstrap-ci_files/figure-html/fig-bootstrap-buildup-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;9.2: Building up the bootstrap distribution. With 10 resamples we see only a rough sketch; by 1,000 resamples the shape of the distribution is clear."><img src="ch08-bootstrap-ci_files/figure-html/fig-bootstrap-buildup-1.png" class="img-fluid figure-img" width="2700"></a>
+<a href="ch08-bootstrap-ci_files/figure-html/fig-bootstrap-buildup-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;9.2: Building up the bootstrap distribution. With 10 resamples we see only a rough sketch; by 1,000 resamples the shape of the distribution is clear — and approximately bell-shaped (normal), even though the original data are skewed."><img src="ch08-bootstrap-ci_files/figure-html/fig-bootstrap-buildup-1.png" class="img-fluid figure-img" width="2700"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bootstrap-buildup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9.2: Building up the bootstrap distribution. With 10 resamples we see only a rough sketch; by 1,000 resamples the shape of the distribution is clear.
+Figure&nbsp;9.2: Building up the bootstrap distribution. With 10 resamples we see only a rough sketch; by 1,000 resamples the shape of the distribution is clear — and approximately bell-shaped (normal), even though the original data are skewed.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>Notice that the bootstrap distribution is centered near the original sample mean (dashed red line). This is expected: the bootstrap resamples come from the original data, so their means cluster around <span class="math inline">\(\bar{x}\)</span>.</p>
+<p>Notice two things: (1) the bootstrap distribution is centered near the original sample mean (dashed red line), and (2) even though the penny ages are right-skewed, the bootstrap distribution of the <em>mean</em> is approximately bell-shaped (what statisticians call a <strong>normal</strong> shape — recall this term from the empirical rule in <a href="ch04-describing-distributions.html#sec-empirical-rule" class="quarto-xref"><span>Section 5.5</span></a>). This is the Central Limit Theorem at work — we’ll explore it more in the next chapter.</p>
+<div class="statbench">
+<p><strong>See it in action.</strong> Open the <a href="http://localhost:8088/simulate/bootstrap-mean/?dataset=penny_ages&amp;seed=ch8demo&amp;ci=95" target="_blank">Bootstrap CI: One Mean tool with penny ages data</a> and try it step by step:</p>
+<ol type="1">
+<li>Click <strong>+1</strong> a few times. Watch the “This Resample” panel — some pennies appear multiple times (that’s “with replacement”). Each resample gives a slightly different mean.</li>
+<li>Click <strong>+10</strong> or <strong>+100</strong> to speed up. The bootstrap distribution starts taking shape.</li>
+<li>Click <strong>+1000</strong> to fill it out. Notice the bell shape and the 95% confidence interval bounds.</li>
+</ol>
+</div>
 </section>
 <section id="step-4-find-the-confidence-interval" class="level3" data-number="9.2.4">
 <h3 data-number="9.2.4" class="anchored" data-anchor-id="step-4-find-the-confidence-interval"><span class="header-section-number">9.2.4</span> Step 4: Find the confidence interval</h3>
@@ -531,27 +539,16 @@ Figure&nbsp;9.2: Building up the bootstrap distribution. With 10 resamples we se
 <div id="fig-bootstrap-ci" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bootstrap-ci-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="ch08-bootstrap-ci_files/figure-html/fig-bootstrap-ci-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;9.3: Bootstrap distribution of 1,000 sample means with the middle 95% shaded in blue. The 2.5th and 97.5th percentiles form the 95% confidence interval."><img src="ch08-bootstrap-ci_files/figure-html/fig-bootstrap-ci-1.png" class="img-fluid figure-img" width="2100"></a>
+<a href="ch08-bootstrap-ci_files/figure-html/fig-bootstrap-ci-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;9.3: Bootstrap distribution of 1,000 sample means with the middle 95% shaded in blue. The 2.5th and 97.5th percentiles form the 95% confidence interval for the mean penny age."><img src="ch08-bootstrap-ci_files/figure-html/fig-bootstrap-ci-1.png" class="img-fluid figure-img" width="2100"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bootstrap-ci-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9.3: Bootstrap distribution of 1,000 sample means with the middle 95% shaded in blue. The 2.5th and 97.5th percentiles form the 95% confidence interval.
+Figure&nbsp;9.3: Bootstrap distribution of 1,000 sample means with the middle 95% shaded in blue. The 2.5th and 97.5th percentiles form the 95% confidence interval for the mean penny age.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>The 95% bootstrap confidence interval for the mean height is approximately (168.5, 173.1) cm.</p>
-<div class="statbench">
-<p><strong>Try it yourself!</strong> Use StatBench to generate a bootstrap distribution and confidence interval:</p>
-<p><a href="https://datascienceuwl.github.io/statbench/simulate/bootstrap-mean/" target="_blank">Launch Bootstrap CI for One Sample</a></p>
-<ol type="1">
-<li>Paste the heights data (or use StatBench’s built-in dataset).</li>
-<li>Click <strong>+1000</strong> to generate 1,000 bootstrap resamples.</li>
-<li>Observe the bootstrap distribution forming.</li>
-<li>Read the 95% confidence interval from the output.</li>
-</ol>
-<p>How does the bootstrap distribution relate to the original sample mean?</p>
-</div>
+<p>The 95% bootstrap confidence interval for the mean penny age is approximately (9.7, 11.2) years.</p>
 </section>
 </section>
 <section id="sec-ci-interpretation" class="level2" data-number="9.3">
@@ -567,31 +564,34 @@ Figure&nbsp;9.3: Bootstrap distribution of 1,000 sample means with the middle 95
 <div id="fig-ci-concept" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-ci-concept-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="ch08-bootstrap-ci_files/figure-html/fig-ci-concept-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;9.4: Twenty-five 95% confidence intervals from 25 different random samples. The true population mean is shown as a vertical dashed line. Approximately 95% of intervals capture the true mean; a few (shown in red) miss it."><img src="ch08-bootstrap-ci_files/figure-html/fig-ci-concept-1.png" class="img-fluid figure-img" width="2100"></a>
+<a href="ch08-bootstrap-ci_files/figure-html/fig-ci-concept-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;9.4: Twenty-five 95% confidence intervals from 25 different random samples of pennies. The true population mean is shown as a vertical dashed line. Approximately 95% of intervals capture the true mean; a few (shown in red) miss it."><img src="ch08-bootstrap-ci_files/figure-html/fig-ci-concept-1.png" class="img-fluid figure-img" width="2100"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ci-concept-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9.4: Twenty-five 95% confidence intervals from 25 different random samples. The true population mean is shown as a vertical dashed line. Approximately 95% of intervals capture the true mean; a few (shown in red) miss it.
+Figure&nbsp;9.4: Twenty-five 95% confidence intervals from 25 different random samples of pennies. The true population mean is shown as a vertical dashed line. Approximately 95% of intervals capture the true mean; a few (shown in red) miss it.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
 <p>Each horizontal line in <a href="#fig-ci-concept" class="quarto-xref">Figure&nbsp;<span>9.4</span></a> represents a 95% CI from a different sample. Most intervals (blue) capture the true mean, but a few (red) miss it entirely. Over many samples, roughly 95% of the intervals succeed. This is the meaning of “95% confidence.”</p>
+<div class="statbench">
+<p><strong>Try it interactively.</strong> Open the <a href="http://localhost:8088/conceptual/ci-coverage/" target="_blank">CI Coverage demo</a> and draw many confidence intervals from a known population. Watch how most intervals (blue) capture the true mean while a few (red) miss it. As you draw more samples, the coverage rate settles near 95%.</p>
+</div>
 <div class="caution">
 <p><strong>Common misinterpretation</strong>: “There is a 95% probability that the true mean is in this interval.” This statement treats the population mean as random and the interval as fixed. In fact, the population mean is fixed (we just don’t know it) and the interval is random (it depends on which sample we happened to collect).</p>
 </div>
 <div class="guidedpractice">
-<p>A 95% bootstrap CI for the mean height of UW-La Crosse students is (167.8, 174.6). Which of the following interpretations is correct?</p>
+<p>A 95% bootstrap CI for the mean age of pennies in circulation is (9.7, 11.1). Which of the following interpretations is correct?</p>
 <ol type="a">
-<li>95% of all UW-La Crosse students have heights between 167.8 and 174.6 cm.</li>
-<li>There is a 95% probability that the true mean height is between 167.8 and 174.6.</li>
-<li>We are 95% confident that the true mean height of all UW-La Crosse students is between 167.8 and 174.6 cm.</li>
+<li>95% of all pennies in circulation have ages between 9.7 and 11.1 years.</li>
+<li>There is a 95% probability that the true mean penny age is between 9.7 and 11.1.</li>
+<li>We are 95% confident that the true mean age of all pennies in circulation is between 9.7 and 11.1 years.</li>
 </ol>
 <details>
 <summary>
 Show answer
 </summary>
-Only (c) is correct. Statement (a) describes individual heights, not the mean. Statement (b) assigns a probability to the fixed parameter, which is incorrect. Statement (c) correctly describes confidence in the procedure.
+Only (c) is correct. Statement (a) describes individual penny ages, not the mean. Statement (b) assigns a probability to the fixed parameter, which is incorrect. Statement (c) correctly describes confidence in the procedure.
 </details>
 </div>
 </section>
@@ -614,6 +614,26 @@ Show answer
 </summary>
 The interval gets wider. A 99% CI must capture the true parameter more often than a 95% CI, so it must cast a wider net. The 0.5th percentile is farther from the center than the 2.5th percentile.
 </details>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Explore: Effect of confidence level on CI width
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Open the <a href="http://localhost:8088/simulate/bootstrap-mean/?dataset=penny_ages&amp;seed=ch8explore" target="_blank">Bootstrap CI tool with the penny ages data</a> and try this:</p>
+<ol type="1">
+<li>Click <strong>+1000</strong> to generate 1,000 bootstrap resamples.</li>
+<li>Note the 95% confidence interval bounds.</li>
+<li>Change the confidence level to <strong>90%</strong>. How does the interval change?</li>
+<li>Change it to <strong>99%</strong>. What happens now?</li>
+<li>Which gives the most precise estimate? Which gives the most reliable?</li>
+</ol>
+</div>
 </div>
 </section>
 <section id="sec-medical-consultant" class="level2" data-number="9.5">
@@ -641,6 +661,9 @@ Figure&nbsp;9.5: Bootstrap distribution of 10,000 resampled complication rates. 
 </div>
 </div>
 <p>The 95% bootstrap CI is approximately (0, 0.113). Because the interval includes 0.10 (the national average), we cannot conclude that the consultant’s complication rate is lower than the national rate.</p>
+<div class="statbench">
+<p><strong>Replicate this analysis.</strong> Open the <a href="http://localhost:8088/simulate/bootstrap-prop/?dataset=medical_consultant&amp;seed=ch8med&amp;ci=95" target="_blank">Bootstrap CI: One Proportion tool with medical consultant data</a>. Click <strong>+1</strong> a few times to see individual resamples, then <strong>+1000</strong> to build the full bootstrap distribution. Does your 95% CI include 0.10?</p>
+</div>
 <div class="guidedpractice">
 <p>Suppose the consultant had facilitated 620 surgeries (instead of 62) with the same complication rate of 4.8% (about 30 complications). How would the bootstrap CI change? Would the conclusion change?</p>
 <details>
@@ -693,22 +716,33 @@ Yes, very convincing evidence. The value 50% (0.50) is far outside the 95% CI, a
 <div id="fig-sample-size-effect" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-sample-size-effect-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="ch08-bootstrap-ci_files/figure-html/fig-sample-size-effect-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;9.7: The effect of sample size on the bootstrap distribution. Larger samples produce narrower bootstrap distributions, leading to narrower confidence intervals."><img src="ch08-bootstrap-ci_files/figure-html/fig-sample-size-effect-1.png" class="img-fluid figure-img" width="2700"></a>
+<a href="ch08-bootstrap-ci_files/figure-html/fig-sample-size-effect-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;9.7: The effect of sample size on the bootstrap distribution. Larger samples produce narrower bootstrap distributions, leading to narrower confidence intervals. All three panels use the same population of penny ages."><img src="ch08-bootstrap-ci_files/figure-html/fig-sample-size-effect-1.png" class="img-fluid figure-img" width="2700"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-sample-size-effect-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9.7: The effect of sample size on the bootstrap distribution. Larger samples produce narrower bootstrap distributions, leading to narrower confidence intervals.
+Figure&nbsp;9.7: The effect of sample size on the bootstrap distribution. Larger samples produce narrower bootstrap distributions, leading to narrower confidence intervals. All three panels use the same population of penny ages.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
 <p>As sample size increases, the bootstrap distribution becomes tighter around the sample mean. This is why large studies produce more precise estimates than small ones.</p>
-<div class="statbench">
-<p><strong>Explore it!</strong> Return to the <a href="https://datascienceuwl.github.io/statbench/simulate/bootstrap-mean/" target="_blank">Bootstrap CI tool</a> and experiment:</p>
-<ul>
-<li>Try different sample sizes. How does the CI width change?</li>
-<li>Try 90% vs 95% vs 99% confidence levels. What happens?</li>
-</ul>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Explore: Sample size and CI width
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Open the <a href="http://localhost:8088/simulate/bootstrap-mean/?dataset=penny_ages" target="_blank">Bootstrap CI tool</a> and experiment:</p>
+<ol type="1">
+<li>Generate 1,000 resamples with the full penny ages dataset (<span class="math inline">\(n = 648\)</span>). Note the CI width.</li>
+<li>Now try a smaller dataset. How does the CI width change with fewer observations?</li>
+<li>Try 90% vs 95% vs 99% confidence levels. What’s the trade-off between confidence and precision?</li>
+</ol>
+</div>
 </div>
 </section>
 <section id="sec-bootstrap-conditions" class="level2" data-number="9.8">
@@ -720,7 +754,7 @@ Figure&nbsp;9.7: The effect of sample size on the bootstrap distribution. Larger
 <li><p><strong>Sufficient sample size</strong>: Very small samples (e.g., <span class="math inline">\(n &lt; 10\)</span>) may not contain enough information about the population’s shape. With small <span class="math inline">\(n\)</span>, the bootstrap distribution can be unreliable.</p></li>
 </ol>
 <div class="important">
-<p>Bootstrapping does <strong>not</strong> require the population to be normally distributed. This is one of its greatest strengths compared to traditional formula-based methods. The bootstrap lets the data “speak for themselves.”</p>
+<p>Bootstrapping does <strong>not</strong> require the population to follow a bell-shaped (normal) distribution. This is one of its greatest strengths compared to traditional formula-based methods, which often do require normality. The penny ages data are clearly right-skewed (<a href="#fig-original-sample" class="quarto-xref">Figure&nbsp;<span>9.1</span></a>), yet the bootstrap procedure works perfectly well. The bootstrap lets the data “speak for themselves.”</p>
 </div>
 <div class="guidedpractice">
 <p>A researcher surveys 8 of her friends about their study hours and computes a bootstrap CI. What condition is most clearly violated?</p>
@@ -745,9 +779,9 @@ Two conditions are violated: (1) the sample is a convenience sample of friends, 
 <div class="statbench">
 <p>StatBench provides bootstrap CI tools for several statistics:</p>
 <ul>
-<li><a href="https://datascienceuwl.github.io/statbench/simulate/bootstrap-prop/" target="_blank">Bootstrap CI: One Proportion</a></li>
-<li><a href="https://datascienceuwl.github.io/statbench/simulate/bootstrap-paired/" target="_blank">Bootstrap CI: Paired Differences</a></li>
-<li><a href="https://datascienceuwl.github.io/statbench/simulate/bootstrap-two-means/" target="_blank">Bootstrap CI: Two Samples</a></li>
+<li><a href="http://localhost:8088/simulate/bootstrap-prop/" target="_blank">Bootstrap CI: One Proportion</a></li>
+<li><a href="http://localhost:8088/simulate/bootstrap-paired/" target="_blank">Bootstrap CI: Paired Differences</a></li>
+<li><a href="http://localhost:8088/simulate/bootstrap-two-means/" target="_blank">Bootstrap CI: Two Samples</a></li>
 </ul>
 </div>
 </section>
@@ -762,7 +796,7 @@ Two conditions are violated: (1) the sample is a convenience sample of friends, 
 <li>A <strong>95% confidence interval</strong> means that if we repeated the study many times, about 95% of the resulting intervals would capture the true parameter.</li>
 <li>CI width depends on sample size, data variability, and confidence level.</li>
 <li>Bootstrap CIs work for any statistic — means, medians, proportions, differences, and more.</li>
-<li>Bootstrapping requires independent observations from a representative sample with sufficient sample size, but does <strong>not</strong> require normality.</li>
+<li>Bootstrapping requires independent observations from a representative sample with sufficient sample size, but does <strong>not</strong> require the population to be bell-shaped (normal).</li>
 </ul>
 </section>
 <section id="key-terms" class="level3" data-number="9.10.2">
