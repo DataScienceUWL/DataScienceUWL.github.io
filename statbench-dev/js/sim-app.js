@@ -974,7 +974,7 @@ export function initSimPage(config) {
           if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) return ds.type === 'bootstrap_prop';
           if (config.mode === 'bootstrap' && config.twoGroup && config.proportion) return ds.type === 'randomization_prop';
           if (config.mode === 'bootstrap' && config.twoGroup) return ds.type === 'randomization';
-          if (config.mode === 'bootstrap') return ds.type === 'bootstrap';
+          if (config.mode === 'bootstrap') return ds.hasNumeric === true && ds.hasCategorical !== true && ds.type !== 'regression' && ds.type !== 'paired';
           if (config.proportion) return ds.type === 'randomization_prop';
           if (config.twoGroup) return ds.type === 'randomization';
           return ds.type === 'randomization' || ds.type === 'randomization_prop';
