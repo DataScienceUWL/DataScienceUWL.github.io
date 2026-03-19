@@ -19,15 +19,9 @@ const popShapeSelect = /** @type {HTMLSelectElement} */ (document.getElementById
 const sampleSizeInput = /** @type {HTMLInputElement} */ (document.getElementById('sample-size'));
 const ciLevelSelect = /** @type {HTMLSelectElement} */ (document.getElementById('ci-level'));
 const ciContainer = document.getElementById('ci-container');
-const coverageStats = document.getElementById('coverage-stats');
 const resultDiv = document.getElementById('result-summary');
 const resetBtn = /** @type {HTMLButtonElement} */ (document.getElementById('reset-btn'));
 const popInfoEl = document.getElementById('pop-info');
-
-const nCisEl = document.getElementById('n-cis');
-const nCapturedEl = document.getElementById('n-captured');
-const nMissedEl = document.getElementById('n-missed');
-const coverageRateEl = document.getElementById('coverage-rate');
 
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
   document.querySelectorAll('.gen-btn'));
@@ -141,24 +135,11 @@ function drawCIs(count) {
     intervals.push({ lo, hi, xbar, captures });
   }
 
-  updateStats();
   renderChart();
   displayInterpretation();
 
   if (resetBtn) resetBtn.hidden = false;
   announce(`Drew ${count} CI${count > 1 ? 's' : ''}. Total: ${intervals.length}`);
-}
-
-function updateStats() {
-  const total = intervals.length;
-  const captured = intervals.filter(ci => ci.captures).length;
-  const missed = total - captured;
-
-  if (coverageStats) coverageStats.hidden = false;
-  if (nCisEl) nCisEl.textContent = String(total);
-  if (nCapturedEl) nCapturedEl.textContent = String(captured);
-  if (nMissedEl) nMissedEl.textContent = String(missed);
-  if (coverageRateEl) coverageRateEl.textContent = total > 0 ? `${(captured / total * 100).toFixed(1)}%` : '\u2014';
 }
 
 // ─── Chart: horizontal CI segments ───
@@ -265,6 +246,43 @@ function renderChart() {
     .attr('text-anchor', 'middle')
     .attr('font-size', '11px')
     .text('Value');
+
+  // Coverage stats overlay (top-right corner, always visible)
+  const captured = shown.filter(c => c.captures).length;
+  const missed = shown.length - captured;
+  const rate = (intervals.filter(c => c.captures).length / total * 100).toFixed(1);
+  const statsG = svg.append('g')
+    .attr('transform', `translate(${width - margin.right - 4}, ${margin.top + 4})`);
+
+  // Background rect for readability
+  const statsLines = [
+    `${total} CIs drawn`,
+    `${intervals.filter(c => c.captures).length} captured μ  ·  ${total - intervals.filter(c => c.captures).length} missed`,
+    `Coverage: ${rate}%`,
+  ];
+  const lineH = 14;
+  const boxH = statsLines.length * lineH + 8;
+  const boxW = 138;
+  statsG.append('rect')
+    .attr('x', -boxW)
+    .attr('y', 0)
+    .attr('width', boxW)
+    .attr('height', boxH)
+    .attr('rx', 4)
+    .attr('fill', 'white')
+    .attr('fill-opacity', 0.9)
+    .attr('stroke', '#ccc')
+    .attr('stroke-width', 0.5);
+
+  statsLines.forEach((line, i) => {
+    statsG.append('text')
+      .attr('x', -boxW + 6)
+      .attr('y', lineH * (i + 1))
+      .attr('font-size', '10px')
+      .attr('fill', i === 2 ? '#114B5F' : '#333')
+      .attr('font-weight', i === 2 ? 700 : 400)
+      .text(line);
+  });
 }
 
 // ─── Interpretation ───
@@ -320,7 +338,6 @@ function resetSimulation() {
   rng = null;
   seed = Math.random().toString(36).slice(2, 10);
   if (ciContainer) ciContainer.innerHTML = '';
-  if (coverageStats) coverageStats.hidden = true;
   if (resultDiv) resultDiv.innerHTML = '<p class="placeholder">Click a button to draw samples and build confidence intervals.</p>';
   if (resetBtn) resetBtn.hidden = true;
 }
