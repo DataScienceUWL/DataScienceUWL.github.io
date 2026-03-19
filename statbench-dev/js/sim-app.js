@@ -1181,7 +1181,15 @@ export function initSimPage(config) {
    * Generate N samples/permutations and add to the accumulation.
    * @param {number} count
    */
+  /** @type {ReturnType<typeof setTimeout>|null} */
+  let pendingChartTimer = null;
+
   function generateSamples(count) {
+    // Cancel any pending deferred chart render from a previous +1
+    if (pendingChartTimer !== null) {
+      clearTimeout(pendingChartTimer);
+      pendingChartTimer = null;
+    }
     if (!rng) rng = createRng(seed);
 
     // Initialize mechanism strip on first generate (deferred from data load)
@@ -1270,7 +1278,8 @@ export function initSimPage(config) {
         // Histogram mode: compute previous bin counts for stacked delta
         // Must use EXACT same domain + thresholds as renderChart to align bins
         // Include observedStat in domain — matches renderChart's domain logic
-        const domainVals = observedStat != null ? [...allStats, observedStat] : allStats;
+        // (bootstrap mode has no observedStat; randomization paths declare it locally)
+        const domainVals = allStats;
         let lo = Math.min(...domainVals);
         let hi = Math.max(...domainVals);
         const dPad = (hi - lo) * 0.05 || 0.5;
@@ -1319,7 +1328,8 @@ export function initSimPage(config) {
           : null;
         const bootDiffValueEl = bootDiffEl?.querySelector('.mech-stat-value') ?? null;
         // Brief pause for mechanism to update visually, then render chart + drop
-        setTimeout(() => {
+        pendingChartTimer = setTimeout(() => {
+          pendingChartTimer = null;
           renderChart(allStats, ciForChart);
           const dropSource = bootDiffValueEl || bootDiffEl || resampleMeanEl;
           if (dropSource && chartContainer) {
@@ -1387,7 +1397,8 @@ export function initSimPage(config) {
 
       if (count === 1) {
         lastWasSingle = true;
-        setTimeout(() => {
+        pendingChartTimer = setTimeout(() => {
+          pendingChartTimer = null;
           renderChart(allStats, null, observedStat, direction);
           if (resampleMeanEl && chartContainer) {
             animateDropToChart(resampleMeanEl, chartContainer);
@@ -1461,7 +1472,8 @@ export function initSimPage(config) {
         // The diff value gets highlight-last via showTwoGroupMechanism(…, highlight=true)
         const mechDiffEl = document.querySelector('#mech-resample-content .mech-diff');
         // Brief pause for mechanism to update, then render chart + drop
-        setTimeout(() => {
+        pendingChartTimer = setTimeout(() => {
+          pendingChartTimer = null;
           renderChart(allStats, null, observedStat, direction);
           const dropSourceEl = mechDiffEl || resampleMeanEl;
           if (dropSourceEl && chartContainer) {
