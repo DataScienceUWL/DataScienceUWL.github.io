@@ -257,7 +257,7 @@ function renderChart() {
   // Background rect for readability
   const statsLines = [
     `${total} CIs drawn`,
-    `${intervals.filter(c => c.captures).length} captured μ  ·  ${total - intervals.filter(c => c.captures).length} missed`,
+    `${intervals.filter(c => c.captures).length} captured μ,  ${total - intervals.filter(c => c.captures).length} missed`,
     `Coverage: ${rate}%`,
   ];
   const lineH = 14;
