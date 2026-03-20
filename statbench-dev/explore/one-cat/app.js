@@ -227,7 +227,7 @@ chartRadios.forEach(radio => {
     updateDisplay();
   });
 });
-chartModeSelect.addEventListener('change', () => updateDisplay());
+if (chartModeSelect) chartModeSelect.addEventListener('change', () => updateDisplay());
 
 // ── Render ───────────────────────────────────────────────────────────
 
@@ -277,7 +277,7 @@ function renderChart() {
   if (!chartContainer) return;
   chartContainer.innerHTML = '';
 
-  const chartMode = chartModeSelect.value;
+  const chartMode = chartModeSelect?.value ?? 'frequency';
 
   if (activeChart === 'pie') {
     drawPieChart(chartContainer, currentValues, {
