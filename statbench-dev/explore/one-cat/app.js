@@ -5,6 +5,8 @@
  */
 
 import { drawBarChart } from '../../js/barchart.js';
+import { drawPieChart } from '../../js/pie.js';
+import { drawWaffleChart } from '../../js/waffle.js';
 import { formatStat } from '../../js/stats.js';
 import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
@@ -20,7 +22,9 @@ const dataPreview = document.getElementById('data-preview');
 const resultsSection = document.getElementById('results-section');
 const tableContainer = document.getElementById('table-container');
 const chartContainer = document.getElementById('chart-container');
+const chartTypeSelect = /** @type {HTMLSelectElement} */ (document.getElementById('chart-type'));
 const chartModeSelect = /** @type {HTMLSelectElement} */ (document.getElementById('chart-mode'));
+const chartModeLabel = document.getElementById('chart-mode-label');
 const catSheetBody = /** @type {HTMLElement} */ (document.getElementById('cat-sheet-body'));
 const numCategoriesInput = /** @type {HTMLInputElement} */ (document.getElementById('num-categories'));
 const summaryTableBody = /** @type {HTMLElement} */ (document.getElementById('summary-table-body'));
@@ -212,6 +216,12 @@ if (loadPastedBtn) {
 
 // ── Display controls ─────────────────────────────────────────────────
 
+chartTypeSelect.addEventListener('change', () => {
+  // Hide frequency/relative toggle for pie and waffle (they always show proportions)
+  const isBars = chartTypeSelect.value === 'bar';
+  if (chartModeLabel) chartModeLabel.hidden = !isBars;
+  updateDisplay();
+});
 chartModeSelect.addEventListener('change', () => updateDisplay());
 
 // ── Render ───────────────────────────────────────────────────────────
@@ -262,12 +272,28 @@ function renderChart() {
   if (!chartContainer) return;
   chartContainer.innerHTML = '';
 
+  const chartType = chartTypeSelect.value;
   const chartMode = chartModeSelect.value;
-  drawBarChart(chartContainer, currentValues, {
-    mode: chartMode === 'relative' ? 'relative' : 'frequency',
-    xLabel: currentVarName,
-    titleText: currentVarName,
-    id: 'cat-chart',
-    animate: false,
-  });
+
+  if (chartType === 'pie') {
+    drawPieChart(chartContainer, currentValues, {
+      xLabel: currentVarName,
+      titleText: currentVarName,
+      id: 'cat-chart',
+    });
+  } else if (chartType === 'waffle') {
+    drawWaffleChart(chartContainer, currentValues, {
+      xLabel: currentVarName,
+      titleText: currentVarName,
+      id: 'cat-chart',
+    });
+  } else {
+    drawBarChart(chartContainer, currentValues, {
+      mode: chartMode === 'relative' ? 'relative' : 'frequency',
+      xLabel: currentVarName,
+      titleText: currentVarName,
+      id: 'cat-chart',
+      animate: false,
+    });
+  }
 }
