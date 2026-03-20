@@ -919,7 +919,14 @@ export function initSimPage(config) {
       opt.textContent = o;
       successOutcomeSelect.appendChild(opt);
     }
-    successOutcome = outcomes[0];
+    // Check URL param ?success= to pre-select the success outcome
+    const urlSuccess = new URLSearchParams(location.search).get('success');
+    if (urlSuccess && outcomes.includes(urlSuccess)) {
+      successOutcomeSelect.value = urlSuccess;
+      successOutcome = urlSuccess;
+    } else {
+      successOutcome = outcomes[0];
+    }
     successSelector.hidden = false;
   }
 

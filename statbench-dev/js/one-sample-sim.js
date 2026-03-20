@@ -280,7 +280,11 @@ export function initOneSamplePage(config) {
         opt.textContent = lev;
         successOutcome.appendChild(opt);
       }
-      if (autoSelect && levels.includes(autoSelect)) {
+      // URL param ?success= takes priority over dataset context hint
+      const urlSuccess = new URLSearchParams(location.search).get('success');
+      if (urlSuccess && levels.includes(urlSuccess)) {
+        successOutcome.value = urlSuccess;
+      } else if (autoSelect && levels.includes(autoSelect)) {
         successOutcome.value = autoSelect;
       }
       successSelector.hidden = false;
