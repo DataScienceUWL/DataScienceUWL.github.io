@@ -5,6 +5,7 @@
  */
 
 import { prefersReducedMotion } from './chart-utils.js';
+import { quantile } from './stats.js';
 
 /** Resamples per animation frame (~50 * 60fps = 3000/sec). */
 const BATCH_SIZE = 50;
@@ -108,11 +109,12 @@ export function runSimulation(config) {
  * @returns {{ ci: [number, number], se: number }}
  */
 export function bootstrapCI(bootStats, ciLevel) {
-  bootStats.sort((a, b) => a - b);
   const B = bootStats.length;
   const alpha = (100 - ciLevel) / 100;
-  const lo = bootStats[Math.floor((alpha / 2) * B)];
-  const hi = bootStats[Math.floor((1 - alpha / 2) * B)];
+  // Use R type-7 interpolated quantiles for stable CI bounds
+  // (Math.floor indexing jumps discretely with discrete data like proportions)
+  const lo = quantile(bootStats, alpha / 2);
+  const hi = quantile(bootStats, 1 - alpha / 2);
 
   // Standard error
   const mean = bootStats.reduce((s, v) => s + v, 0) / B;
