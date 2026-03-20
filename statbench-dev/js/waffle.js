@@ -38,7 +38,7 @@ export function drawWaffleChart(container, values, options = {}) {
     descText,
     id,
     viewHeight: 420,
-    margin: { top: 28, right: 160, bottom: 20, left: 20 },
+    margin: { top: 28, right: 200, bottom: 20, left: 20 },
   });
 
   const { categories, counts, total } = computeFrequencies(values, categoryOrder);

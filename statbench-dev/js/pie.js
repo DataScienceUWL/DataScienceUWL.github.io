@@ -38,7 +38,7 @@ export function drawPieChart(container, values, options = {}) {
     descText,
     id,
     viewHeight: 400,
-    margin: { top: 28, right: 140, bottom: 20, left: 20 },
+    margin: { top: 28, right: 200, bottom: 20, left: 20 },
   });
 
   const { categories, counts, total } = computeFrequencies(values, categoryOrder);
