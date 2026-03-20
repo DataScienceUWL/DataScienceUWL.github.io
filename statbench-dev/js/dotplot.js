@@ -13,11 +13,14 @@ import * as d3Axis from 'd3-axis';
 import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
 import { sturgesBins } from './histogram.js';
 
-/** Default dot fill — IMS blue (light). */
+/** Default dot fill — IMS blue. */
 const DOT_FILL = '#569BBD';
 
-/** Extreme dot fill (in tail) — darker blue for contrast with DOT_FILL. */
-const EXTREME_FILL = '#2171B5';
+/** Extreme dot fill (in tail) — same bold IMS blue. */
+const EXTREME_FILL = '#569BBD';
+
+/** Non-extreme dot fill when isExtreme is active — subdued gray. */
+const BODY_FILL = '#a0a0a0';
 
 /** Observed statistic line color (deep purple — distinct from orange highlight). */
 const OBSERVED_COLOR = '#7B2D8E';
@@ -375,8 +378,8 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
   for (const t of pendingHighlightTimers) clearTimeout(t);
   pendingHighlightTimers = [];
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
-  const baseFill = optBaseFill || fillColor || DOT_FILL;
   const extremeFill = optExtremeFill || fillColor || EXTREME_FILL;
+  const baseFill = optBaseFill || fillColor || (isExtreme ? BODY_FILL : DOT_FILL);
 
   /** Normal fill for a dot at index i. */
   function normalFill(d) {
@@ -502,8 +505,8 @@ function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, high
 
   /** Color for a column based on its bin center value. */
   function colColor(center) {
-    const base = optBaseFill || fillColor || DOT_FILL;
     const extreme = optExtremeFill || fillColor || EXTREME_FILL;
+    const base = optBaseFill || fillColor || (isExtreme ? BODY_FILL : DOT_FILL);
     if (!isExtreme) return base;
     return isExtreme(center) ? extreme : base;
   }
