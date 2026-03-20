@@ -491,8 +491,8 @@ function renderResults(r) {
 
   // F formula via KaTeX
   const V = '\\textcolor{#569BBD}';
-  const R = '\\textcolor{#2e7d32}';
   const S = '\\textcolor{#7B2D8E}';
+  const P = '\\textcolor{#2e7d32}';
 
   const fFormula = tex(`\\begin{aligned}
     F &= \\frac{\\text{MS}_{\\text{between}}}{\\text{MS}_{\\text{within}}}
@@ -535,8 +535,8 @@ function renderResults(r) {
     <div class="formula-display">
       <h3>F Statistic</h3>
       ${fFormula}
-      <p class="formula-detail">${tex(`\\text{df}_{\\text{between}} = ${R}{${r.dfBetween}}, \\quad \\text{df}_{\\text{within}} = ${R}{${r.dfWithin}}`)}</p>
-      <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${pStr}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{df}_{\\text{between}} = ${P}{${r.dfBetween}}, \\quad \\text{df}_{\\text{within}} = ${P}{${r.dfWithin}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{p-value} = ${P}{${pStr}}`)}</p>
     </div>
 
     <div class="interpretation">

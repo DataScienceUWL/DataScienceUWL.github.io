@@ -347,8 +347,8 @@ function displayResults(r, lbl1, lbl2) {
   const zStar = r.se > 0 ? ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3) : '—';
 
   const V = '\\textcolor{#569BBD}';
-  const R = '\\textcolor{#2e7d32}';
   const S = '\\textcolor{#7B2D8E}';
+  const P = '\\textcolor{#2e7d32}';
 
   const testFormula = tex(`\\begin{aligned}
     z &= \\frac{\\hat{p}_1 - \\hat{p}_2}{\\sqrt{\\hat{p}(1-\\hat{p})\\left(\\frac{1}{n_1} + \\frac{1}{n_2}\\right)}} \\\\[10pt]
@@ -359,7 +359,7 @@ function displayResults(r, lbl1, lbl2) {
   const ciFormula = tex(`\\begin{aligned}
     &(\\hat{p}_1 - \\hat{p}_2) \\pm z^* \\cdot SE \\\\[8pt]
     &${V}{${formatStat(r.diff, 0, 'proportion')}} \\pm ${V}{${zStar}} \\cdot ${V}{${formatStat(r.se, 0, 'proportion')}} \\\\[8pt]
-    &= ${R}{(${formatStat(r.ciLower, 0, 'proportion')},\\; ${formatStat(r.ciUpper, 0, 'proportion')})}
+    &= ${P}{(${formatStat(r.ciLower, 0, 'proportion')},\\; ${formatStat(r.ciUpper, 0, 'proportion')})}
   \\end{aligned}`, true);
 
   resultsPanel.innerHTML = `
@@ -379,7 +379,7 @@ function displayResults(r, lbl1, lbl2) {
       <h3>Test Statistic</h3>
       ${testFormula}
       <p class="formula-detail">${tex(`\\text{Pooled } \\hat{p} = ${V}{${formatStat(r.pooledP, 0, 'proportion')}}`)}</p>
-      <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${formatStat(r.pValue, 0, 'pvalue')}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{p-value} = ${P}{${formatStat(r.pValue, 0, 'pvalue')}}`)}</p>
     </div>
 
     <div class="formula-display formula-ci">

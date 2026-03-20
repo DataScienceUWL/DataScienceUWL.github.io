@@ -466,8 +466,8 @@ function renderResults(r) {
   const tStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
 
   const V = '\\textcolor{#569BBD}';
-  const R = '\\textcolor{#2e7d32}';
   const S = '\\textcolor{#7B2D8E}';
+  const P = '\\textcolor{#2e7d32}';
 
   const testFormula = tex(`\\begin{aligned}
     t &= \\frac{\\bar{x}_1 - \\bar{x}_2}{\\sqrt{\\dfrac{s_1^2}{n_1} + \\dfrac{s_2^2}{n_2}}} \\\\[10pt]
@@ -478,7 +478,7 @@ function renderResults(r) {
   const ciFormula = tex(`\\begin{aligned}
     &(\\bar{x}_1 - \\bar{x}_2) \\pm t^{\\!*} \\cdot SE \\\\[8pt]
     &${V}{${formatStat(r.diff, d)}} \\pm ${V}{${tStar}} \\cdot ${V}{${formatStat(r.se, d)}} \\\\[8pt]
-    &= ${R}{(${formatStat(r.ciLower, d)},\\; ${formatStat(r.ciUpper, d)})}
+    &= ${P}{(${formatStat(r.ciLower, d)},\\; ${formatStat(r.ciUpper, d)})}
   \\end{aligned}`, true);
 
   resultDiv.innerHTML = `
@@ -506,8 +506,8 @@ function renderResults(r) {
     <div class="formula-display">
       <h3>Test Statistic</h3>
       ${testFormula}
-      <p class="formula-detail">${tex(`\\text{Welch df} = ${R}{${r.df.toFixed(1)}}`)}</p>
-      <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${pStr}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{Welch df} = ${P}{${r.df.toFixed(1)}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{p-value} = ${P}{${pStr}}`)}</p>
     </div>
 
     <div class="formula-display formula-ci">

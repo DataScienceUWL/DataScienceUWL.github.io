@@ -237,8 +237,8 @@ export function addAxes(frame, xAxis, yAxis, xLabel, yLabel) {
   // Reduce y-axis ticks for phone viewports or compact charts
   const isPhone = detectPhoneMargin();
   if (typeof yAxis.ticks === 'function') {
-    if (frame.height < 120) yAxis.ticks(3);
-    else if (isPhone || frame.height < 200) yAxis.ticks(5);
+    if (frame.height < 200) yAxis.ticks(3);
+    else if (isPhone || frame.height < 280) yAxis.ticks(5);
   }
 
   // X axis — render, then auto-reduce ticks if labels overlap

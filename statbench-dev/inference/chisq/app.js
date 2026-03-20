@@ -393,8 +393,8 @@ function showResults(observed, rowLabels, colLabels) {
   if (formulaEl) {
     const nR = rowLabels.length;
     const nC = colLabels.length;
-    const R = '\\textcolor{#2e7d32}';
     const S = '\\textcolor{#7B2D8E}';
+    const P = '\\textcolor{#2e7d32}';
 
     const chiFormula = tex(`\\chi^2 = \\sum \\frac{(O - E)^2}{E}`, true);
 
@@ -402,9 +402,9 @@ function showResults(observed, rowLabels, colLabels) {
       <div class="formula-display">
         <h3>Test Statistic</h3>
         ${chiFormula}
-        <p class="formula-detail">${tex(`\\text{df} = (${nR} - 1)(${nC} - 1) = ${R}{${result.df}}`)}</p>
+        <p class="formula-detail">${tex(`\\text{df} = (${nR} - 1)(${nC} - 1) = ${P}{${result.df}}`)}</p>
         <p class="formula-detail">${tex(`\\chi^2 = ${S}{${result.chiSq.toFixed(4)}}`)}</p>
-        <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${formatStat(result.pValue, 0, 'pvalue')}}`)}</p>
+        <p class="formula-detail">${tex(`\\text{p-value} = ${P}{${formatStat(result.pValue, 0, 'pvalue')}}`)}</p>
       </div>
     `;
     formulaEl.hidden = false;

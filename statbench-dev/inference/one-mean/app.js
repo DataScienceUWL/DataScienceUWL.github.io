@@ -335,8 +335,8 @@ function renderResults(r, d, mu0, alternative, confLevel) {
   const tStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
 
   const V = '\\textcolor{#569BBD}';
-  const R = '\\textcolor{#2e7d32}';
   const S = '\\textcolor{#7B2D8E}';
+  const P = '\\textcolor{#2e7d32}';
 
   const testFormula = tex(`\\begin{aligned}
     t &= \\frac{\\bar{x} - \\mu_0}{s \\,/\\, \\sqrt{n}} \\\\[8pt]
@@ -347,7 +347,7 @@ function renderResults(r, d, mu0, alternative, confLevel) {
   const ciFormula = tex(`\\begin{aligned}
     &\\bar{x} \\pm t^{\\!*} \\cdot \\frac{s}{\\sqrt{n}} \\\\[8pt]
     &${V}{${formatStat(r.xbar, d)}} \\pm ${V}{${tStar}} \\cdot \\frac{${V}{${formatStat(r.s, d)}}}{\\sqrt{${V}{${r.n}}}} \\\\[8pt]
-    &= ${R}{(${formatStat(r.ciLower, d)},\\; ${formatStat(r.ciUpper, d)})}
+    &= ${P}{(${formatStat(r.ciLower, d)},\\; ${formatStat(r.ciUpper, d)})}
   \\end{aligned}`, true);
 
   resultsPanel.innerHTML = `
@@ -364,8 +364,8 @@ function renderResults(r, d, mu0, alternative, confLevel) {
     <div class="formula-display">
       <h3>Test Statistic</h3>
       ${testFormula}
-      <p class="formula-detail">${tex(`\\text{df} = n - 1 = ${r.n} - 1 = ${R}{${r.df}}`)}</p>
-      <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${pStr}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{df} = n - 1 = ${r.n} - 1 = ${P}{${r.df}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{p-value} = ${P}{${pStr}}`)}</p>
     </div>
 
     <div class="formula-display formula-ci">
