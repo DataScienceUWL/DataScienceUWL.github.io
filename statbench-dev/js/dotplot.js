@@ -227,20 +227,25 @@ export function drawDotplot(container, values, options = {}) {
       .call(xAxis);
     autoReduceTicks(xAxisG, xAxis);
 
-    // Faint vertical grid lines at tick positions
-    const tickValues = xScale.ticks();
+    // Faint vertical grid lines aligned to the rendered axis ticks
     const gridGroup = d3Selection.select(frame.inner).select('.data');
-    for (const tv of tickValues) {
-      gridGroup.append('line')
-        .attr('class', 'grid-line')
-        .attr('x1', xScale(tv))
-        .attr('x2', xScale(tv))
-        .attr('y1', 0)
-        .attr('y2', frame.height)
-        .attr('stroke', '#d0d0d0')
-        .attr('stroke-width', 0.5)
-        .attr('stroke-dasharray', '2,2');
-    }
+    xAxisG.selectAll('.tick').each(function () {
+      // Each tick <g> has transform="translate(x, 0)" — extract x
+      const transform = d3Selection.select(this).attr('transform');
+      const m = transform && transform.match(/translate\(\s*([\d.e+-]+)/);
+      if (m) {
+        const tx = parseFloat(m[1]);
+        gridGroup.append('line')
+          .attr('class', 'grid-line')
+          .attr('x1', tx)
+          .attr('x2', tx)
+          .attr('y1', 0)
+          .attr('y2', frame.height)
+          .attr('stroke', '#d0d0d0')
+          .attr('stroke-width', 0.5)
+          .attr('stroke-dasharray', '2,2');
+      }
+    });
 
     if (xLabel) {
       axes.append('text')
