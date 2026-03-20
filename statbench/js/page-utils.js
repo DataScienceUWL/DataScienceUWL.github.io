@@ -299,7 +299,10 @@ export function initSettings() {
     modeSelect.addEventListener('change', () => {
       setSettings({ activityMode: modeSelect.value });
       applySettings();
-      location.reload();
+      // In iframes, reload can break the parent page — only reload in top-level context
+      if (window.parent === window) {
+        location.reload();
+      }
     });
   }
 
@@ -327,7 +330,9 @@ export function initSettings() {
     resetBtn.addEventListener('click', () => {
       resetSettings();
       dialog.close();
-      location.reload();
+      if (window.parent === window) {
+        location.reload();
+      }
     });
   }
 
@@ -946,7 +951,7 @@ export function setupFileInput(fileInput, onLoad) {
  * @returns {{ stop: () => void } | null}
  */
 export function initPlayPause(genBtns, resetBtn, options) {
-  const delay = options?.delay ?? 300;
+  const delay = options?.delay ?? 600;
   const oneBtn = /** @type {HTMLButtonElement|undefined} */ (
     Array.from(genBtns).find(b => b.dataset.count === '1'));
   if (!oneBtn) return null;
@@ -1009,12 +1014,13 @@ export function initPlayPause(genBtns, resetBtn, options) {
   });
   observer.observe(oneBtn, { attributes: true, attributeFilter: ['disabled'] });
 
-  // Insert before gen-label (or append)
-  const label = generateBar.querySelector('.gen-label');
-  if (label) {
-    generateBar.insertBefore(playBtn, label);
+  // Insert before reset button (so order is: +N… ▶ ↺ label)
+  const resetEl = generateBar.querySelector('#reset-btn');
+  if (resetEl) {
+    generateBar.insertBefore(playBtn, resetEl);
   } else {
-    generateBar.appendChild(playBtn);
+    const label = generateBar.querySelector('.gen-label');
+    generateBar.insertBefore(playBtn, label);
   }
 
   // Space bar toggles play/pause (keyboard shortcut)
@@ -1197,6 +1203,7 @@ export function initDataPanel(config) {
   /** @type {(value?: any) => void} */
   let resolveReady = /** @type {(value?: any) => void} */ (() => {});
   const ready = new Promise(resolve => { resolveReady = resolve; });
+  ready.then(() => document.body.setAttribute('data-loaded', 'true'));
 
   /**
    * Populate the edit textarea with CSV text from loaded data.
@@ -1628,4 +1635,31 @@ export function parseOneSampleSummary(summaryStr) {
   const sd = parseFloat(parts[2]);
   if (!isFinite(n) || n < 1 || !isFinite(m) || !isFinite(sd) || sd < 0) return null;
   return { n, mean: m, sd };
+}
+
+// ─── Dynamic page title ─────────────────────────────────────────────
+
+/**
+ * Update document.title with data context for accessibility and Playwright scraping.
+ * Format: "Page Label — Dataset: Variable | StatBench"
+ *
+ * @param {string} pageLabel - Base page title (e.g. "Bootstrap CI: One Mean")
+ * @param {string} [datasetName] - Dataset or source name (e.g. "Penny Ages")
+ * @param {object} [opts]
+ * @param {string} [opts.variable] - Variable name
+ * @param {number} [opts.n] - Sample size
+ * @param {string} [opts.extra] - Additional context (e.g. "Left Tail")
+ */
+export function setPageTitle(pageLabel, datasetName, opts) {
+  let title = pageLabel;
+  const parts = [];
+  if (datasetName && datasetName !== 'edited_data' && datasetName !== 'URL data') {
+    parts.push(datasetName);
+  }
+  if (opts?.variable) parts.push(opts.variable);
+  if (parts.length) title += ` \u2014 ${parts.join(': ')}`;
+  if (opts?.n) title += ` (n=${opts.n})`;
+  if (opts?.extra) title += ` \u2014 ${opts.extra}`;
+  title += ' | StatBench';
+  document.title = title;
 }

@@ -8,15 +8,18 @@ import * as jstat from 'jstat';
 import { setJStat, pdfNormal } from '../../js/distributions.js';
 import { twoPropZ } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
+import { addChartSaveButton } from '../../js/export.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
-import { announce, initTabs, initDataPanel, initKeyboardShortcuts, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initKeyboardShortcuts, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 /** Render LaTeX to HTML string via KaTeX. */
 const tex = (/** @type {string} */ latex, display = false) =>
   katex.renderToString(latex, { throwOnError: false, displayMode: display });
 
 setJStat(jstat);
+
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── DOM references ──────────────────────────────────────────────────
 const inputLabel1 = /** @type {HTMLInputElement} */ (document.getElementById('input-label1'));
@@ -30,7 +33,7 @@ const inputAlt = initHypToggle('input-alternative', () => {
 });
 const inputConfLevel = /** @type {HTMLInputElement} */ (document.getElementById('input-conf-level'));
 const computeBtn = /** @type {HTMLButtonElement} */ (document.getElementById('compute-btn'));
-const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
+const conditionsCheckpoint = /** @type {HTMLElement} */ (document.getElementById('conditions-checkpoint'));
 const resultBanner = /** @type {HTMLElement} */ (document.getElementById('result-summary'));
 const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('results-panel'));
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
@@ -274,29 +277,32 @@ function compute() {
     return;
   }
 
-  // ── Check conditions ──
+  // ── Conditions checkpoint ──
   const pHat1 = currentX1 / currentN1;
   const pHat2 = currentX2 / currentN2;
-  const cond1 = currentN1 * pHat1 >= 5;
-  const cond2 = currentN1 * (1 - pHat1) >= 5;
-  const cond3 = currentN2 * pHat2 >= 5;
-  const cond4 = currentN2 * (1 - pHat2) >= 5;
-  const conditionsMet = cond1 && cond2 && cond3 && cond4;
-  conditionsWarning.hidden = conditionsMet;
-  if (!conditionsMet) {
+  if (conditionsCheckpoint) {
     const dsId = dataPanel.currentDatasetId;
     const randLink = dsId
       ? buildSimLink('simulate/randomization-diff-props/', { dataset: dsId })
       : buildSimLink('simulate/randomization-diff-props/');
-    conditionsWarning.innerHTML = `<p><strong>Warning:</strong> Normal approximation conditions not met. Each group needs at least 5 successes and 5 failures.</p>
-    <p>Consider the <a href="${randLink}">Randomization Test</a> instead.</p>`;
+    const counts = [
+      `n\u2081p\u0302\u2081 = ${formatStat(currentN1 * pHat1, 0, 'stat')}`,
+      `n\u2081(1\u2212p\u0302\u2081) = ${formatStat(currentN1 * (1 - pHat1), 0, 'stat')}`,
+      `n\u2082p\u0302\u2082 = ${formatStat(currentN2 * pHat2, 0, 'stat')}`,
+      `n\u2082(1\u2212p\u0302\u2082) = ${formatStat(currentN2 * (1 - pHat2), 0, 'stat')}`,
+    ].join(', ');
+    conditionsCheckpoint.innerHTML = `
+      <p><strong>Before interpreting:</strong> Have you checked the conditions for the two-proportion z-test?
+      Verify each group has \u2265 5 successes and \u2265 5 failures: ${counts}.</p>
+      <p>Alternative: <a href="${randLink}">Randomization Test</a> (no conditions required).</p>`;
+    conditionsCheckpoint.hidden = false;
   }
 
   // ── Run test ──
   const result = twoPropZ(currentX1, currentN1, currentX2, currentN2, { alternative, confLevel });
 
   // ── Display results ──
-  displayResults(result, label1, label2, conditionsMet);
+  displayResults(result, label1, label2);
 
   // ── Draw chart ──
   drawChart(result);
@@ -313,9 +319,9 @@ function compute() {
  * @param {import('../../js/inference.js').TwoPropResult} r
  * @param {string} lbl1
  * @param {string} lbl2
- * @param {boolean} conditionsMet
  */
-function displayResults(r, lbl1, lbl2, conditionsMet) {
+function displayResults(r, lbl1, lbl2) {
+  setPageTitle(baseTitle, dataPanel.currentSourceName, { n: currentN1 + currentN2 });
   const altSymbol = r.alternative === 'two-sided' ? '\u2260'
     : r.alternative === 'less' ? '<' : '>';
   const altWord = r.alternative === 'two-sided' ? 'different from'
@@ -338,31 +344,23 @@ function displayResults(r, lbl1, lbl2, conditionsMet) {
   const seCount = Math.abs(r.zStat);
   const seDirection = r.zStat > 0 ? 'above' : r.zStat < 0 ? 'below' : 'at';
 
-  const dsId2 = dataPanel.currentDatasetId;
-  const randLink = dsId2
-    ? buildSimLink('simulate/randomization-diff-props/', { dataset: dsId2 })
-    : buildSimLink('simulate/randomization-diff-props/');
-  const condWarning = conditionsMet ? '' :
-    `<p class="warning-text"><strong>Caution:</strong> Normal approximation conditions not satisfied.
-   Each group needs at least 5 successes and 5 failures. These results may be unreliable.</p>
-   <p class="warning-text">Consider the <a href="${randLink}">Randomization Test</a> instead.</p>`;
-
   // z* for CI
   const zStar = r.se > 0 ? ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3) : '—';
 
   const V = '\\textcolor{#569BBD}';
-  const R = '\\textcolor{#2e7d32}';
+  const S = '\\textcolor{#7B2D8E}';
+  const P = '\\textcolor{#2e7d32}';
 
   const testFormula = tex(`\\begin{aligned}
     z &= \\frac{\\hat{p}_1 - \\hat{p}_2}{\\sqrt{\\hat{p}(1-\\hat{p})\\left(\\frac{1}{n_1} + \\frac{1}{n_2}\\right)}} \\\\[10pt]
     &= \\frac{${V}{${formatStat(r.pHat1, 0, 'proportion')}} - ${V}{${formatStat(r.pHat2, 0, 'proportion')}}}{${V}{${formatStat(r.sePooled, 0, 'proportion')}}} \\\\[10pt]
-    &= ${R}{${formatStat(r.zStat, 0, 'correlation')}}
+    &= ${S}{${formatStat(r.zStat, 0, 'correlation')}}
   \\end{aligned}`, true);
 
   const ciFormula = tex(`\\begin{aligned}
     &(\\hat{p}_1 - \\hat{p}_2) \\pm z^* \\cdot SE \\\\[8pt]
     &${V}{${formatStat(r.diff, 0, 'proportion')}} \\pm ${V}{${zStar}} \\cdot ${V}{${formatStat(r.se, 0, 'proportion')}} \\\\[8pt]
-    &= ${R}{(${formatStat(r.ciLower, 0, 'proportion')},\\; ${formatStat(r.ciUpper, 0, 'proportion')})}
+    &= ${P}{(${formatStat(r.ciLower, 0, 'proportion')},\\; ${formatStat(r.ciUpper, 0, 'proportion')})}
   \\end{aligned}`, true);
 
   resultsPanel.innerHTML = `
@@ -382,7 +380,7 @@ function displayResults(r, lbl1, lbl2, conditionsMet) {
       <h3>Test Statistic</h3>
       ${testFormula}
       <p class="formula-detail">${tex(`\\text{Pooled } \\hat{p} = ${V}{${formatStat(r.pooledP, 0, 'proportion')}}`)}</p>
-      <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${formatStat(r.pValue, 0, 'pvalue')}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{p-value} = ${P}{${formatStat(r.pValue, 0, 'pvalue')}}`)}</p>
     </div>
 
     <div class="formula-display formula-ci">
@@ -405,7 +403,6 @@ function displayResults(r, lbl1, lbl2, conditionsMet) {
         return html;
       })()}
       <p>${confPct}% CI: (${formatStat(r.ciLower, 0, 'proportion')}, ${formatStat(r.ciUpper, 0, 'proportion')}).</p>
-      ${condWarning}
     </div>
   `;
 
@@ -468,6 +465,8 @@ function drawChart(r) {
       statValueNeg: tail === 'both' ? -Math.abs(r.zStat) : undefined,
     });
   }
+
+  addChartSaveButton(chartContainer, 'two_props_z_test.png');
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────

@@ -5,11 +5,12 @@
  */
 
 import { drawScatterplot, drawResidualPlot } from '../../js/scatterplot.js';
-import { linreg, detectPrecision, formatStat } from '../../js/stats.js';
-import { announce, initTabs, initDataPanel, initHelp } from '../../js/page-utils.js';
-import { createExportBar } from '../../js/export.js';
+import { linreg, loess, detectPrecision, formatStat } from '../../js/stats.js';
+import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../../js/page-utils.js';
+import { createExportBar, addChartSaveButton } from '../../js/export.js';
 
 initHelp();
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── State ──────────────────────────────────────────────────────────────────
 
@@ -39,6 +40,7 @@ const chartContainer = /** @type {HTMLDivElement} */ (document.getElementById('c
 const residualContainer = /** @type {HTMLDivElement} */ (document.getElementById('residual-container'));
 const residualChartContainer = /** @type {HTMLDivElement} */ (document.getElementById('residual-chart-container'));
 const showLineCheckbox = /** @type {HTMLInputElement} */ (document.getElementById('show-line'));
+const showLoessCheckbox = /** @type {HTMLInputElement} */ (document.getElementById('show-loess'));
 const showResidualsCheckbox = /** @type {HTMLInputElement} */ (document.getElementById('show-residuals'));
 const equationDisplay = /** @type {HTMLDivElement} */ (document.getElementById('equation-display'));
 const statsDisplay = /** @type {HTMLDivElement} */ (document.getElementById('stats-display'));
@@ -75,6 +77,7 @@ function loadParsedData(parsed, sourceName) {
 
     dataSummary.textContent = `${currentRows.length} observations, ${numericColumns.length} numeric variables`;
 
+    setPageTitle(baseTitle, sourceName, { n: currentRows.length });
     announce(`${sourceName}: ${currentRows.length} observations.`);
     updateChart();
 }
@@ -155,6 +158,10 @@ function updateChart() {
     dataPrecision = Math.max(detectPrecision(xClean), detectPrecision(yClean));
     const d = dataPrecision;
 
+    // LOESS curve
+    const showLoess = showLoessCheckbox.checked;
+    const loessCurveData = showLoess ? loess(xClean, yClean) : undefined;
+
     // Draw scatterplot
     chartContainer.innerHTML = '';
     drawScatterplot(chartContainer, xClean, yClean, {
@@ -164,6 +171,7 @@ function updateChart() {
         descText: `Scatterplot with ${xClean.length} points showing ${yVar} on the y-axis and ${xVar} on the x-axis.`,
         id: 'scatter-main',
         regression: showLine ? { slope: reg.slope, intercept: reg.intercept } : undefined,
+        loessCurve: loessCurveData,
     });
 
     // Export bar for scatterplot
@@ -171,6 +179,8 @@ function updateChart() {
         chartContainer: chartContainer,
         chartFilename: `${yVar}_vs_${xVar}_scatter.png`.replace(/\s+/g, '_'),
     });
+
+    addChartSaveButton(chartContainer, `${yVar}_vs_${xVar}_scatter.png`.replace(/\s+/g, '_'));
 
     // Equation display
     const b0 = formatStat(reg.intercept, d);
@@ -251,6 +261,7 @@ initDataPanel({
 
         // Reset controls to defaults on new data
         showLineCheckbox.checked = true;
+        showLoessCheckbox.checked = false;
         showResidualsCheckbox.checked = false;
 
         populateVarSelectors();
@@ -274,4 +285,5 @@ initDataPanel({
 xVarSelect.addEventListener('change', updateChart);
 yVarSelect.addEventListener('change', updateChart);
 showLineCheckbox.addEventListener('change', updateChart);
+showLoessCheckbox.addEventListener('change', updateChart);
 showResidualsCheckbox.addEventListener('change', updateChart);

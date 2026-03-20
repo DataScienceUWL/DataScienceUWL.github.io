@@ -13,10 +13,11 @@ import { mean, sd, detectPrecision, formatStat } from './stats.js';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { renderSimPills, formatMechStat, drawMiniBoxplot } from './chart-utils.js';
-import { announce, initKeyboardShortcuts, initPlayPause, initTabs, animateDropToChart, initDataPanel, computeHighlights, initHelp, initSettings, initMechanismCollapse, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
+import { announce, initKeyboardShortcuts, initPlayPause, initTabs, animateDropToChart, initDataPanel, computeHighlights, initHelp, initSettings, initMechanismCollapse, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from './page-utils.js';
 import { parseParams } from './url-params.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, dotplotBins, histogramThresholds, renderSimChart, createBinAdjuster } from './chart-defaults.js';
+import { addChartSaveButton } from './export.js';
 
 /**
  * @typedef {object} OneSampleSimConfig
@@ -88,8 +89,9 @@ export function initOneSamplePage(config) {
   /** @type {((type: string) => void)|null} */
   let setToggleSelected = null;
   // ─── Bin adjuster (continuous data only — proportions have fixed k/n bins) ───
+  const DEFAULT_BINS = 20;
   /** @type {number|undefined} */
-  let userBinCount;
+  let userBinCount = isProp ? undefined : DEFAULT_BINS;
   /** @type {import('./chart-defaults.js').BinAdjusterControl|null} */
   let binAdjuster = null;
 
@@ -148,6 +150,8 @@ export function initOneSamplePage(config) {
   let mechanismInitialized = false;
   /** @type {{ population?: string, parameter?: string, nullClaim?: string, successLabel?: string }} */
   let datasetContext = {};
+  /** Base page title (before dataset context). */
+  const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
   /** Track current data source name for display. */
   let currentSourceName = '';
 
@@ -277,7 +281,11 @@ export function initOneSamplePage(config) {
         opt.textContent = lev;
         successOutcome.appendChild(opt);
       }
-      if (autoSelect && levels.includes(autoSelect)) {
+      // URL param ?success= takes priority over dataset context hint
+      const urlSuccess = new URLSearchParams(location.search).get('success');
+      if (urlSuccess && levels.includes(urlSuccess)) {
+        successOutcome.value = urlSuccess;
+      } else if (autoSelect && levels.includes(autoSelect)) {
         successOutcome.value = autoSelect;
       }
       successSelector.hidden = false;
@@ -384,6 +392,7 @@ export function initOneSamplePage(config) {
             </div>`;
         }
         propDataApi.triggerPostLoad();
+        setPageTitle(baseTitle, currentSourceName, { n });
         announce(`Data loaded: n = ${n}, successes = ${k}`);
         scrollToControls();
       });
@@ -422,6 +431,7 @@ export function initOneSamplePage(config) {
         }
       }
       computePreSimDomain();
+      setPageTitle(baseTitle, currentSourceName, { n: sampleN });
       scrollToControls();
     }
 
@@ -435,7 +445,7 @@ export function initOneSamplePage(config) {
       autoCollapse: true,
       stickyControls: true,
       showPreview: true,
-      datasetFilter: (/** @type {any} */ ds) => ds.hasNumeric !== false,
+      datasetFilter: (/** @type {any} */ ds) => ds.hasNumeric === true && ds.hasCategorical === false,
       onDataset: (/** @type {any} */ ds) => {
         const numVar = ds.variables.find(/** @param {any} v */ v => v.type === 'numeric') || ds.variables[0];
         if (!numVar) { announce('No numeric variable found.'); return; }
@@ -647,13 +657,7 @@ export function initOneSamplePage(config) {
         }
       }
 
-      // Remove highlight after delay
-      if (isSingle) {
-        const hlEl = mechSimStat.querySelector('.mech-stat-value.highlight-last');
-        if (hlEl) {
-          setTimeout(() => hlEl.classList.remove('highlight-last'), 1500);
-        }
-      }
+      // highlight-last persists until next +1 (re-toggled) or reset
     }
 
     const direction = getDirection();
@@ -671,15 +675,16 @@ export function initOneSamplePage(config) {
     const hlDomain = /** @type {[number,number]} */ ([lo, hi]);
 
     // Thresholds: snapped for proportions, default for means
+    // Pass numBins to match renderChart so delta bars align correctly
     const thresholdOpts = isProp
       ? { domain: hlDomain, thresholds: snappedPropThresholds(sampleN, hlDomain, allStats.length) }
-      : { domain: hlDomain };
+      : { domain: hlDomain, numBins: userBinCount };
     const { bins: fullBins } = computeBins(allStats, thresholdOpts);
     const lockedThresholds = fullBins.slice(1).map(b => b.x0);
 
     const { hlIndex, hlIndices, prevBinCounts } = computeHighlights(
       allStats, prevLength, count, computeBins,
-      { domain: hlDomain, thresholds: lockedThresholds });
+      { domain: hlDomain, thresholds: lockedThresholds, numBins: isProp ? undefined : userBinCount });
 
     const { pValue, extremeCount } = computePValue(allStats, observedStat, direction);
     displayResults(allStats, observedStat, pValue, extremeCount, direction);
@@ -758,7 +763,7 @@ export function initOneSamplePage(config) {
     if (result.bins && result.bins.length > 0) {
       lastHistResult = { xScale: result.xScale, yScale: result.yScale, bins: result.bins, domain };
     } else if (activeChart === 'dotplot' && result.maxStack > 0) {
-      const effectiveBins = isProp ? sampleN : (userBinCount ?? Math.min(n, 40));
+      const effectiveBins = isProp ? sampleN : (userBinCount ?? DEFAULT_BINS);
       lastDotResult = { xScale: result.xScale, frame: result.frame, domain, maxStack: result.maxStack, numBins: effectiveBins };
     }
 
@@ -766,6 +771,9 @@ export function initOneSamplePage(config) {
     if (theoryOverlayOn && (activeChart === 'histogram' || activeChart === 'dotplot')) {
       applyTheoryOverlay();
     }
+
+    // Floating save button
+    addChartSaveButton(chartContainer, 'null_distribution.png');
   }
 
   // ─── P-value & extremes ───

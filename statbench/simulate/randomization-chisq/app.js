@@ -8,8 +8,9 @@
 import { createRng, shuffle } from '../../js/prng.js';
 import { chisqStat, formatStat } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
+import { addChartSaveButton } from '../../js/export.js';
 
 // ─── DOM elements ───
 
@@ -67,6 +68,7 @@ let observedTable = [];
 let observedChisq = 0;
 let totalN = 0;
 let currentSourceName = '';
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 /** @type {Array<{group: string, outcome: string}>} */
 let rawData = [];
@@ -236,6 +238,7 @@ function showDataLoaded() {
     if (mechObservedChisq) mechObservedChisq.textContent = formatStat(observedChisq, 2);
   }
 
+  setPageTitle(baseTitle, currentSourceName, { n: totalN });
   announce(`Data loaded: ${rowLabels.length} × ${colLabels.length} table, n = ${totalN}`);
 
   // Scroll controls into view after DOM settles
@@ -324,9 +327,6 @@ function generateSimulations(count) {
     mechShuffledTable.innerHTML = renderTableHTML(lastShuffledTable, rowLabels, colLabels);
     mechShuffledChisq.textContent = formatStat(lastChisq, 2);
     mechShuffledChisq.classList.toggle('highlight-last', count === 1);
-    if (count === 1) {
-      setTimeout(() => mechShuffledChisq.classList.remove('highlight-last'), 1500);
-    }
   }
   if (mechanismDescEl) {
     mechanismDescEl.textContent = 'Shuffle group labels, keeping outcomes fixed';
@@ -397,6 +397,9 @@ function renderChart(stats, observed, highlightIndex = -1, highlightIndices, pre
     pillMode: stats.length > 0 ? 'randomization' : undefined,
     pValue,
   });
+
+  // Floating save button
+  addChartSaveButton(chartContainer, 'randomization_chisq_distribution.png');
 }
 
 /**

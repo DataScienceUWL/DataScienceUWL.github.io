@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Regression by Eye | StatBench</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-drag":      "https://cdn.jsdelivr.net/npm/d3-drag@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+
+    <style>
+        .var-selectors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-top: 0.75rem;
+        }
+        .var-selectors select { width: 12rem; }
+
+        /* ── Sidebar controls ── */
+        .layer-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .layer-controls label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 400;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .layer-controls input[type="checkbox"] {
+            accent-color: var(--ims-blue);
+            width: 1.1rem;
+            height: 1.1rem;
+        }
+
+        /* ── Residual toggle row ── */
+        .residual-toggle-row {
+            margin-bottom: 0.25rem;
+        }
+        .seg-control-sm {
+            font-size: 0.75rem;
+        }
+        .seg-control-sm button {
+            padding: 0.2rem 0.6rem;
+            min-height: 0;
+        }
+
+        /* ── Floating metric overlay on chart ── */
+        #chart-container {
+            position: relative;
+        }
+        .chart-overlay {
+            position: absolute;
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #009E73;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.35rem 0.6rem;
+            pointer-events: none;
+            z-index: 10;
+            line-height: 1.3;
+        }
+        .chart-overlay .overlay-label {
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: var(--ims-gray-text);
+        }
+        .equation-overlay { top: 6px; left: 6px; }
+        .metric-overlay { top: 6px; right: 6px; }
+        .ls-overlay { bottom: 6px; left: 6px; color: #808080; }
+        .ls-metric-overlay { bottom: 6px; right: 6px; color: #808080; }
+
+        /* ── SSE comparison ── */
+        .sse-comparison {
+            font-size: 0.8rem;
+            color: var(--ims-gray-text);
+            text-align: center;
+            margin-bottom: 0.75rem;
+            padding: 0.4rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+        .sse-comparison strong { color: var(--text); }
+
+        /* ── Buttons ── */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .action-buttons button {
+            width: 100%;
+        }
+
+        /* ── Drag handles ── */
+        .drag-handle {
+            cursor: ns-resize;
+            touch-action: none;
+        }
+        .drag-handle:hover, .drag-handle:focus-visible {
+            filter: brightness(1.2);
+        }
+
+        /* ── Chart container needs position for overlay ── */
+        #chart-container svg {
+            touch-action: pan-x;
+        }
+
+        /* ── Embed mode — compact layout for iframe embedding ── */
+        body[data-embed="true"] h1,
+        body[data-embed="true"] #data-panel,
+        body[data-embed="true"] .skip-links,
+        body[data-embed="true"] .page-number {
+            display: none !important;
+        }
+        body[data-embed="true"] main {
+            padding: 0.25rem;
+            max-width: none;
+        }
+        body[data-embed="true"] #results {
+            margin-top: 0;
+        }
+
+        @media (max-width: 480px) {
+            .var-selectors { flex-direction: column; }
+            .var-selectors select { width: 100%; }
+            .seg-control-sm button {
+                min-height: 44px;
+                padding: 0.3rem 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#data-panel">Skip to Data</a>
+        <a href="#chart-container">Skip to Chart</a>
+        <a href="#results">Skip to Results</a>
+    </nav>
+
+    <main>
+        <h1>Regression by Eye<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatBench home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatBench</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">&#x2699;</button></span></h1>
+
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-random" aria-selected="true"
+                        aria-controls="panel-random">Random Data</button>
+                <button role="tab" id="tab-dataset" aria-selected="false"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Edit Data</button>
+                <button role="tab" id="tab-file" aria-selected="false"
+                    aria-controls="panel-file">Open File</button>
+            </div>
+
+            <div role="tabpanel" id="panel-random" aria-labelledby="tab-random">
+                <p class="hint">Generate a random dataset with a linear trend. Each click produces new data with a different slope, spread, and sample size.</p>
+                <button type="button" id="generate-random-btn">Generate Random Data</button>
+            </div>
+
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset" hidden>
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </label>
+                <p id="dataset-desc" class="hint"></p>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <label for="paste-area">Edit or paste two-column data (CSV with headers):
+                    <textarea id="paste-area" rows="8"
+                              placeholder="x,y&#10;1.2,3.4&#10;2.5,5.1&#10;3.8,7.2&#10;4.1,8.0"></textarea>
+                </label>
+                <div class="btn-row">
+                    <button type="button" id="load-pasted">Apply</button>
+                    <button type="button" id="save-btn" class="btn-secondary">Save</button>
+                    <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+
+            <div role="tabpanel" id="panel-file" aria-labelledby="tab-file" hidden>
+                <label for="file-input">Open a CSV or TSV file:
+                    <input type="file" id="file-input" accept=".csv,.tsv,.txt">
+                </label>
+            </div>
+
+            <div id="var-panel" hidden>
+                <div class="var-selectors">
+                    <label for="x-var">X variable (predictor):
+                        <select id="x-var"></select>
+                    </label>
+                    <label for="y-var">Y variable (response):
+                        <select id="y-var"></select>
+                    </label>
+                </div>
+            </div>
+
+            <div id="data-preview" hidden>
+                <output id="data-summary"></output>
+            </div>
+        </section>
+
+        <section id="results" aria-label="Scatterplot and regression results">
+            <div class="app-body">
+                <!-- Left: Chart -->
+                <div class="app-main">
+                    <div id="chart-container"></div>
+                </div>
+
+                <!-- Right: Controls + Stats sidebar -->
+                <div class="app-sidebar" id="sidebar" hidden>
+                    <div class="layer-controls">
+                        <div class="residual-toggle-row">
+                            <div class="seg-control seg-control-sm" role="group" aria-label="Error metric type">
+                                <button type="button" id="toggle-absolute" aria-pressed="false">Absolute</button>
+                                <button type="button" id="toggle-squared" aria-pressed="true">Squared</button>
+                            </div>
+                        </div>
+                        <label>
+                            <input type="checkbox" id="show-residuals">
+                            Show residuals
+                        </label>
+                        <label id="show-squares-label">
+                            <input type="checkbox" id="show-squares">
+                            Show squared residuals
+                        </label>
+                        <label id="show-ls-label">
+                            <input type="checkbox" id="show-ls">
+                            Show best-fit line
+                        </label>
+                    </div>
+
+                    <!-- SSE comparison (% higher message) -->
+                    <div id="sse-comparison" class="sse-comparison" hidden></div>
+
+                    <!-- Action buttons -->
+                    <div class="action-buttons">
+                        <button type="button" id="try-again-btn" class="btn-secondary">Try Again</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <dialog id="page-help" aria-label="Help">
+        <h2>Help</h2>
+        <p class="help-intro">Drag the green line to fit the data as closely as you can. Use the controls to reveal residuals and compare your line to the mathematically optimal fit.</p>
+        <dl>
+            <dt>Grab the line</dt><dd>Grab near an end to pivot; grab near the middle to shift parallel</dd>
+            <dt>Show Residuals</dt><dd>Show vertical lines from each point to your line</dd>
+            <dt>Show Squared Residuals</dt><dd>Show literal squares whose area equals the squared error at each point</dd>
+            <dt>Absolute / Squared</dt><dd>Switch between Sum of Absolute Errors (SAE) and Sum of Squared Errors (SSE)</dd>
+            <dt>Show Best-Fit Line</dt><dd>Reveal the mathematically optimal line for the current metric</dd>
+        </dl>
+        <h3>Keyboard Shortcuts</h3>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>&uarr;</kbd> / <kbd>&darr;</kbd></dt><dd>Shift line up/down (parallel move)</dd>
+            <dt><kbd>&larr;</kbd> / <kbd>&rarr;</kbd></dt><dd>Adjust slope (tilt left/right)</dd>
+            <dt><kbd>Shift</kbd>+arrow</dt><dd>Move in larger steps</dd>
+            <dt><kbd>R</kbd></dt><dd>Try Again (reset your line)</dd>
+            <dt><kbd>N</kbd></dt><dd>Generate new random data</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

@@ -5,6 +5,7 @@
  * - downloadChartPNG: SVG → Canvas → PNG download
  * - copyTableToClipboard: HTML table → tab-delimited clipboard text
  * - createExportBar: builds a small button bar for chart/table export
+ * - addChartSaveButton: floating save icon overlaid on chart container
  */
 
 /**
@@ -205,4 +206,58 @@ export function createExportBar(opts) {
   if (parent) parent.appendChild(bar);
 
   return bar;
+}
+
+/**
+ * Add a floating save-as-PNG button to a chart container.
+ * The button appears as a small camera icon in the top-right corner,
+ * semi-transparent until hovered. Clicking downloads the chart as PNG.
+ *
+ * Safe to call repeatedly — removes any existing button first.
+ * Hidden in embed/static mode automatically via CSS.
+ *
+ * @param {HTMLElement} container - The element containing an SVG chart
+ * @param {string} [filename='chart.png'] - Download filename
+ * @returns {HTMLButtonElement} The save button element
+ */
+export function addChartSaveButton(container, filename = 'chart.png') {
+  // Remove existing button to prevent duplicates on re-render
+  const existing = container.querySelector('.chart-save-btn');
+  if (existing) existing.remove();
+
+  // Ensure container is positioned for absolute child
+  const pos = typeof getComputedStyle === 'function'
+    ? getComputedStyle(container).position : '';
+  if (pos === 'static' || pos === '') {
+    container.style.position = 'relative';
+  }
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'chart-save-btn';
+  btn.setAttribute('aria-label', 'Save chart as PNG');
+  btn.title = 'Save chart as PNG';
+
+  // Download icon (arrow pointing down into tray)
+  btn.innerHTML = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+    <path d="M10 2v10M10 12l-3.5-3.5M10 12l3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M3 14v2a1 1 0 001 1h12a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  </svg>`;
+
+  btn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const svg = /** @type {SVGSVGElement|null} */ (container.querySelector('svg'));
+    if (!svg) return;
+    btn.classList.add('saving');
+    try {
+      await downloadChartPNG(svg, filename);
+    } catch (err) {
+      console.error('Chart save failed:', err);
+    }
+    btn.classList.remove('saving');
+  });
+
+  container.appendChild(btn);
+  return btn;
 }

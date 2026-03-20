@@ -194,8 +194,8 @@ main {
 }
 
 @media (max-width: 600px) {
-  .help-btn, .settings-btn, .home-btn { width: 44px; height: 44px; font-size: 1.1rem; }
-  .home-btn svg { width: 20px; height: 20px; }
+  .help-btn, .settings-btn, .home-btn, .share-btn { width: 44px; height: 44px; font-size: 1.1rem; }
+  .home-btn svg, .share-btn svg { width: 20px; height: 20px; }
   .site-brand { display: none; }
 }
 
@@ -233,6 +233,173 @@ main {
   align-items: center;
   gap: 0.4rem;
   order: -1;
+}
+
+/* ===== Share Button & Dialog ===== */
+
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+}
+.share-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+.share-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.share-dialog {
+  max-width: 380px;
+  width: 90vw;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  padding: 1.25rem;
+  font-family: var(--font-body);
+}
+.share-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.3);
+}
+.share-dialog h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  color: var(--ims-green);
+}
+.share-url-row {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+.share-url-input {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--fg);
+  min-width: 0;
+}
+.share-copy-btn {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.share-copy-btn:hover {
+  opacity: 0.9;
+}
+.share-qr-container {
+  display: flex;
+  justify-content: center;
+  margin: 0.75rem 0;
+}
+.share-qr-container svg {
+  max-width: 240px;
+  height: auto;
+}
+.share-qr-loading, .share-qr-error {
+  color: var(--ims-gray-text);
+  font-size: 0.85rem;
+  text-align: center;
+}
+.share-qr-error { color: var(--ims-red); }
+.share-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}
+.share-download-btn {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.share-download-btn:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+}
+.share-download-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.share-close-btn {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--fg);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+}
+.share-close-btn:hover {
+  background: var(--border);
+}
+.share-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+.share-toggle input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--accent);
+}
+.share-param-summary {
+  margin-bottom: 0.75rem;
+}
+.share-param-table {
+  width: 100%;
+  font-size: 0.78rem;
+  border-collapse: collapse;
+}
+.share-param-table td {
+  padding: 0.15rem 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.share-param-key {
+  color: var(--ims-gray-text);
+  white-space: nowrap;
+  width: 1%;
+}
+.share-param-val {
+  font-family: var(--font-mono);
+  color: var(--fg);
+  word-break: break-all;
+}
+.share-param-hint {
+  font-size: 0.8rem;
+  color: var(--ims-gray-text);
+  font-style: italic;
+  margin: 0;
 }
 
 /* ===== Settings Dialog ===== */
@@ -335,16 +502,9 @@ main {
     min-height: 44px;
     font-size: 1.3rem;
   }
-  .gen-btn, .play-btn {
+  .gen-btn, .play-btn, .reset-btn {
     min-height: 44px;
     min-width: 44px;
-  }
-  /* Reset and expert toggle on their own row, full width, with top margin for clear separation */
-  .generate-bar #reset-btn {
-    flex-basis: 100%;
-    margin-left: 0;
-    margin-top: 0.4rem;
-    order: 10;
   }
   .generate-bar .expert-toggle {
     flex-basis: 100%;
@@ -783,9 +943,24 @@ input[aria-invalid="true"] {
   cursor: not-allowed;
 }
 
-/* Reset button: push to far right on desktop, own row on mobile */
-.generate-bar #reset-btn {
-  margin-left: auto;
+/* Reset button: icon-only (↺), same style as play button */
+.reset-btn {
+  padding: 0.4rem 0.6rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--ims-gray-text);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  line-height: 1;
+}
+
+.reset-btn:hover:not(:disabled),
+.reset-btn:focus-visible:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .play-btn {
@@ -959,7 +1134,7 @@ input[aria-invalid="true"] {
   font-weight: 600;
 }
 
-/* Subtle highlight for resample statistic — brief bold pulse, auto-fades */
+/* Persistent highlight for resample statistic — stays orange until next +1 or reset */
 .highlight-last.mech-stat-value,
 #resample-mean.highlight-last,
 #mech-shuffled-chisq.highlight-last,
@@ -967,11 +1142,6 @@ input[aria-invalid="true"] {
 .mechanism-collapsed-summary .highlight-last {
   color: var(--highlight-orange);
   font-weight: 700;
-  animation: stat-text-fade 1.2s ease-out forwards;
-}
-@keyframes stat-text-fade {
-  0%   { color: var(--highlight-orange); font-weight: 700; }
-  100% { color: inherit; font-weight: 600; }
 }
 
 /* Mini boxplot in mechanism strip */
@@ -1054,7 +1224,7 @@ input[aria-invalid="true"] {
   width: fit-content;
 }
 .mech-diff.highlight-last {
-  animation: stat-text-fade 1.2s ease-out forwards;
+  color: var(--highlight-orange);
 }
 .mech-box-container {
   margin: 2px 0 4px;
@@ -1242,6 +1412,34 @@ input[aria-invalid="true"] {
     align-self: center;
     transform: rotate(90deg);
     padding: 0;
+  }
+}
+
+/* Mobile: move generate bar below mechanism strip (between mechanism + chart)
+   so it doesn't scroll out of view when the tall mechanism strip is showing.
+   Uses display:contents on the parent section to "dissolve" it, then reorders. */
+@media (max-width: 600px) {
+  main:has(.mechanism-strip) {
+    display: flex;
+    flex-direction: column;
+  }
+  main:has(.mechanism-strip) > #controls {
+    display: contents;
+  }
+  main:has(.mechanism-strip) > #controls > .control-row {
+    order: 1;
+  }
+  main:has(.mechanism-strip) > #data-panel {
+    order: 0;
+  }
+  main:has(.mechanism-strip) > .mechanism-strip {
+    order: 2;
+  }
+  main:has(.mechanism-strip) > #controls > .generate-bar {
+    order: 3;
+  }
+  main:has(.mechanism-strip) > #chart-and-results {
+    order: 4;
   }
 }
 
@@ -1542,6 +1740,45 @@ body[data-hide-interpretations="true"] .interpretation { display: none !importan
   padding: 0.2rem 0.6rem;
   min-height: 28px;
 }
+
+/* Floating chart save button — overlaid top-right of chart container */
+.chart-save-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ims-gray-text, #555);
+  cursor: pointer;
+  opacity: 0.35;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+}
+.chart-save-btn:hover,
+.chart-save-btn:focus-visible {
+  opacity: 1;
+  background: #fff;
+  border-color: var(--border, #ccc);
+  color: var(--ims-blue, #569BBD);
+}
+.chart-save-btn:active {
+  background: var(--surface, #f0f0f0);
+}
+.chart-save-btn.saving {
+  opacity: 0.5;
+  pointer-events: none;
+}
+/* Hide in embed/static/print modes */
+body[data-embed="true"] .chart-save-btn,
+body[data-static="true"] .chart-save-btn { display: none; }
+@media print { .chart-save-btn { display: none; } }
 
 .chart-controls-bar label {
   display: inline-flex;
@@ -2458,6 +2695,57 @@ body[data-mode="discover"] .present-only { display: none !important; }
   font-size: 0.85em;
 }
 
+.conditions-checkpoint {
+  background: var(--bg-alt, #f5f5f5);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--ims-blue, #569BBD);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+  font-size: 0.88rem;
+}
+.conditions-checkpoint p {
+  margin: 0.25rem 0;
+}
+.conditions-checkpoint p:first-child { margin-top: 0; }
+.conditions-checkpoint p:last-child { margin-bottom: 0; }
+.conditions-checkpoint a {
+  color: var(--ims-blue, #569BBD);
+  font-weight: 600;
+  text-decoration: underline;
+}
+.conditions-toggle {
+  background: none;
+  border: none;
+  color: var(--ims-blue, #569BBD);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+.conditions-toggle:hover,
+.conditions-toggle:focus-visible {
+  color: var(--ims-dark, #114B5F);
+}
+.conditions-toggle::before {
+  content: '\25B6\00a0';
+  display: inline-block;
+  font-size: 0.7em;
+  transition: transform 0.15s ease;
+}
+.conditions-toggle[aria-expanded="true"]::before {
+  transform: rotate(90deg);
+}
+.conditions-panel {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+.conditions-panel[hidden] {
+  display: none;
+}
+
 .results-table {
   width: 100%;
   border-collapse: collapse;
@@ -2614,4 +2902,348 @@ body[data-mode="discover"] .present-only { display: none !important; }
 @keyframes toast-in {
   from { opacity: 0; transform: translateX(-50%) translateY(1rem); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* Embed mode — compact layout for iframe embedding in LMS       */
+/* Activated by ?embed=true → body[data-embed="true"]            */
+/* ═══════════════════════════════════════════════════════════════ */
+
+body[data-embed="true"] h1,
+body[data-embed="true"] .skip-links,
+body[data-embed="true"] .page-number,
+body[data-embed="true"] .site-footer,
+body[data-embed="true"] .update-toast {
+  display: none !important;
+}
+
+body[data-embed="true"] #data-panel {
+  display: none !important;
+}
+
+body[data-embed="true"] main {
+  padding: 0.25rem;
+  max-width: none;
+}
+
+body[data-embed="true"] section:first-of-type {
+  margin-top: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* Guided mode — textbook iframe embed with pre-set parameters    */
+/* Activated by ?embed=true&guided=true → body[data-guided]       */
+/* Hides controls row (stat/CI dropdowns) but keeps generate bar, */
+/* mechanism strip, chart, and results fully visible.              */
+/* ═══════════════════════════════════════════════════════════════ */
+
+body[data-guided="true"] .control-row {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* Static mode — screenshot-optimized rendering for textbook PDF  */
+/* Activated by ?static=true → body[data-static="true"]           */
+/* Implies embed mode; hides all controls, expands chart to fill  */
+/* ═══════════════════════════════════════════════════════════════ */
+
+body[data-static="true"] #controls,
+body[data-static="true"] #variable-selector,
+body[data-static="true"] #var-selectors,
+body[data-static="true"] .generate-bar,
+body[data-static="true"] #mechanism-strip,
+body[data-static="true"] .chart-selector,
+body[data-static="true"] .chart-controls-bar,
+body[data-static="true"] .hypothesis-display,
+body[data-static="true"] #conditions-checkpoint,
+body[data-static="true"] .step-progress,
+body[data-static="true"] .discover-only,
+body[data-static="true"] .present-only,
+body[data-static="true"] #page-help,
+body[data-static="true"] #data-preview,
+body[data-static="true"] #settings,
+body[data-static="true"] .coverage-controls {
+  display: none !important;
+}
+
+body[data-static="true"] .app-sidebar {
+  display: none !important;
+}
+
+body[data-static="true"] .app-body {
+  display: block;
+}
+
+body[data-static="true"] .app-main {
+  width: 100%;
+  max-width: none;
+}
+
+body[data-static="true"] main {
+  padding: 0.5rem;
+  max-width: none;
+}
+
+/* Ensure SVG charts aren't clipped in static mode */
+body[data-static="true"] svg {
+  overflow: visible !important;
+}
+
+/* Slightly larger axis labels for print legibility */
+body[data-static="true"] .tick text {
+  font-size: 16px !important;
+}
+
+/* Force reduced motion for deterministic screenshots */
+body[data-static="true"] *,
+body[data-static="true"] *::before,
+body[data-static="true"] *::after {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* Activity Panel — guided step-by-step instructions from JSON    */
+/* Activated by ?activity=URL → body[data-activity="true"]        */
+/* Desktop: fixed left side panel. Mobile: bottom sheet + FAB.    */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Hide data panel when activity is active (dataset comes from URL params) */
+body[data-activity="true"] #data-panel {
+  display: none !important;
+}
+
+/* ─── Desktop: left side panel ──────────────────────────────── */
+
+.activity-panel {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .activity-panel {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 320px;
+    background: #f8f9fa;
+    border-right: 2px solid #569BBD;
+    padding: 1.25rem 1rem;
+    overflow-y: auto;
+    z-index: 100;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  body[data-activity="true"] main {
+    margin-left: 340px;
+    max-width: 800px;
+  }
+
+  /* Hide mobile elements on desktop */
+  .activity-fab,
+  .activity-sheet,
+  .activity-sheet-backdrop {
+    display: none !important;
+  }
+}
+
+/* ─── Mobile: FAB + bottom sheet ────────────────────────────── */
+
+@media (max-width: 768px) {
+  .activity-panel {
+    display: none !important;
+  }
+
+  .activity-fab {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #569BBD;
+    color: #fff;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    cursor: pointer;
+    z-index: 200;
+    transition: transform 0.2s, opacity 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .activity-fab.hidden {
+    transform: scale(0);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .activity-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 299;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .activity-sheet-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .activity-sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 70vh;
+    background: #fff;
+    border-radius: 16px 16px 0 0;
+    padding: 0.75rem 1rem 1.5rem;
+    overflow-y: auto;
+    z-index: 300;
+    transform: translateY(100%);
+    transition: transform 0.3s ease-out;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .activity-sheet.open {
+    transform: translateY(0);
+  }
+
+  .activity-sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: #ccc;
+    border-radius: 2px;
+    margin: 0 auto 0.75rem;
+  }
+
+  .activity-sheet-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: #666;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+  }
+}
+
+/* ─── Shared panel content styles ───────────────────────────── */
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.activity-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #114B5F;
+}
+
+.activity-step-count {
+  font-size: 0.8rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+.activity-instruction {
+  margin-bottom: 0.75rem;
+  color: #212529;
+}
+
+.activity-observe {
+  background: #EBF5FB;
+  border-left: 3px solid #569BBD;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.85rem;
+}
+
+.activity-observe-label {
+  font-weight: 700;
+  color: #569BBD;
+}
+
+.activity-reveal-section {
+  margin-bottom: 0.75rem;
+}
+
+.activity-reveal-btn {
+  background: none;
+  border: 1px solid #569BBD;
+  color: #569BBD;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  transition: background 0.15s;
+}
+
+.activity-reveal-btn:hover {
+  background: #EBF5FB;
+}
+
+.activity-reveal {
+  display: none;
+  background: #f0faf0;
+  border-left: 3px solid #2e7d32;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.85rem;
+  color: #1b5e20;
+}
+
+.activity-reveal.open {
+  display: block;
+}
+
+.activity-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.activity-nav button {
+  background: #569BBD;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.activity-nav button:hover:not(:disabled) {
+  background: #457a99;
+}
+
+.activity-nav button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }

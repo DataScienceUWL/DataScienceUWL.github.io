@@ -11,7 +11,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import * as d3Array from 'd3-array';
-import { announce, initKeyboardShortcuts, initPlayPause } from '../../js/page-utils.js';
+import { announce, initKeyboardShortcuts, initPlayPause, fetchDataset } from '../../js/page-utils.js';
 
 // ─── DOM ───
 
@@ -19,22 +19,28 @@ const popShapeSelect = /** @type {HTMLSelectElement} */ (document.getElementById
 const sampleSizeInput = /** @type {HTMLInputElement} */ (document.getElementById('sample-size'));
 const ciLevelSelect = /** @type {HTMLSelectElement} */ (document.getElementById('ci-level'));
 const ciContainer = document.getElementById('ci-container');
-const coverageStats = document.getElementById('coverage-stats');
 const resultDiv = document.getElementById('result-summary');
 const resetBtn = /** @type {HTMLButtonElement} */ (document.getElementById('reset-btn'));
 const popInfoEl = document.getElementById('pop-info');
-
-const nCisEl = document.getElementById('n-cis');
-const nCapturedEl = document.getElementById('n-captured');
-const nMissedEl = document.getElementById('n-missed');
-const coverageRateEl = document.getElementById('coverage-rate');
+const settingsSection = document.getElementById('settings');
 
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
   document.querySelectorAll('.gen-btn'));
 
+// ─── URL params ───
+
+const params = new URLSearchParams(location.search);
+const urlDataset = params.get('dataset');
+const urlMu = params.has('mu') ? parseFloat(params.get('mu')) : null;
+const urlSigma = params.has('sigma') ? parseFloat(params.get('sigma')) : null;
+const urlN = params.has('n') ? parseInt(params.get('n'), 10) : null;
+const urlCi = params.has('ci') ? params.get('ci') : null;
+
 // ─── Population ───
 
 const POP_SIZE = 10000;
+/** @type {string|null} */
+let datasetName = null;
 
 /**
  * @param {string} shape
@@ -99,10 +105,59 @@ let seed = Math.random().toString(36).slice(2, 10);
 
 // ─── Initialize ───
 
+/**
+ * Set population from a dataset's numeric column.
+ * The actual data rows become the population — subsamples are drawn from them.
+ * @param {string} datasetId
+ */
+async function loadDatasetPopulation(datasetId) {
+  try {
+    const ds = await fetchDataset(datasetId);
+    // Find the first numeric variable
+    const numVar = (ds.variables || []).find(v => v.type === 'numeric');
+    if (!numVar) {
+      console.warn('CI Coverage: no numeric variable in dataset', datasetId);
+      initPopulation();
+      return;
+    }
+    population = ds.rows.map(r => r[numVar.name]).filter(v => v != null && !isNaN(v));
+    if (population.length < 2) {
+      console.warn('CI Coverage: too few numeric values in dataset', datasetId);
+      initPopulation();
+      return;
+    }
+    popMu = mean(population);
+    datasetName = ds.name || datasetId;
+
+    const popSigma = sd(population);
+    if (popInfoEl) {
+      popInfoEl.textContent = `Population: ${datasetName} — ${numVar.label || numVar.name} (N = ${population.length}, μ = ${popMu.toFixed(2)}, σ = ${popSigma.toFixed(2)})`;
+    }
+    // Hide the shape selector since we're using a dataset
+    if (popShapeSelect && popShapeSelect.closest('.coverage-controls')) {
+      const shapeLabel = popShapeSelect.closest('label');
+      if (shapeLabel) shapeLabel.style.display = 'none';
+    }
+    resetSimulation();
+  } catch (err) {
+    console.warn('CI Coverage: failed to load dataset', datasetId, err);
+    initPopulation();
+  }
+}
+
 function initPopulation() {
   const shape = popShapeSelect.value;
   const popRng = createRng('cov-' + shape);
-  population = generatePopulation(shape, popRng);
+
+  // Use custom mu/sigma if provided via URL
+  if (urlMu != null && !isNaN(urlMu) && urlSigma != null && !isNaN(urlSigma)) {
+    population = [];
+    for (let i = 0; i < POP_SIZE; i++) population.push(randNormal(urlMu, urlSigma, popRng));
+    // Lock shape selector to normal since we used custom params
+    popShapeSelect.value = 'normal';
+  } else {
+    population = generatePopulation(shape, popRng);
+  }
   popMu = mean(population);
 
   const popSigma = sd(population);
@@ -141,24 +196,11 @@ function drawCIs(count) {
     intervals.push({ lo, hi, xbar, captures });
   }
 
-  updateStats();
   renderChart();
   displayInterpretation();
 
   if (resetBtn) resetBtn.hidden = false;
   announce(`Drew ${count} CI${count > 1 ? 's' : ''}. Total: ${intervals.length}`);
-}
-
-function updateStats() {
-  const total = intervals.length;
-  const captured = intervals.filter(ci => ci.captures).length;
-  const missed = total - captured;
-
-  if (coverageStats) coverageStats.hidden = false;
-  if (nCisEl) nCisEl.textContent = String(total);
-  if (nCapturedEl) nCapturedEl.textContent = String(captured);
-  if (nMissedEl) nMissedEl.textContent = String(missed);
-  if (coverageRateEl) coverageRateEl.textContent = total > 0 ? `${(captured / total * 100).toFixed(1)}%` : '\u2014';
 }
 
 // ─── Chart: horizontal CI segments ───
@@ -175,7 +217,7 @@ function renderChart() {
   const shown = intervals.slice(-maxShow);
   const startIdx = Math.max(0, total - maxShow);
 
-  const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+  const margin = { top: 34, right: 30, bottom: 40, left: 50 };
   const width = 560;
   const barHeight = Math.min(5, 400 / shown.length);
   const height = Math.max(200, shown.length * (barHeight + 1) + margin.top + margin.bottom);
@@ -221,9 +263,9 @@ function renderChart() {
   // μ label
   g.append('text')
     .attr('x', xScale(popMu))
-    .attr('y', -5)
+    .attr('y', -4)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '10px')
+    .attr('font-size', '11px')
     .attr('fill', '#7B2D8E')
     .attr('font-weight', 700)
     .text(`μ = ${popMu.toFixed(2)}`);
@@ -265,6 +307,43 @@ function renderChart() {
     .attr('text-anchor', 'middle')
     .attr('font-size', '11px')
     .text('Value');
+
+  // Coverage stats overlay (top-right corner, always visible)
+  const captured = shown.filter(c => c.captures).length;
+  const missed = shown.length - captured;
+  const rate = (intervals.filter(c => c.captures).length / total * 100).toFixed(1);
+  const statsG = svg.append('g')
+    .attr('transform', `translate(${width - margin.right - 4}, ${margin.top + 4})`);
+
+  // Background rect for readability
+  const statsLines = [
+    `${total} CIs drawn`,
+    `${intervals.filter(c => c.captures).length} captured μ,  ${total - intervals.filter(c => c.captures).length} missed`,
+    `Coverage: ${rate}%`,
+  ];
+  const lineH = 14;
+  const boxH = statsLines.length * lineH + 8;
+  const boxW = 138;
+  statsG.append('rect')
+    .attr('x', -boxW)
+    .attr('y', 0)
+    .attr('width', boxW)
+    .attr('height', boxH)
+    .attr('rx', 4)
+    .attr('fill', 'white')
+    .attr('fill-opacity', 0.9)
+    .attr('stroke', '#ccc')
+    .attr('stroke-width', 0.5);
+
+  statsLines.forEach((line, i) => {
+    statsG.append('text')
+      .attr('x', -boxW + 6)
+      .attr('y', lineH * (i + 1))
+      .attr('font-size', '10px')
+      .attr('fill', i === 2 ? '#114B5F' : '#333')
+      .attr('font-weight', i === 2 ? 700 : 400)
+      .text(line);
+  });
 }
 
 // ─── Interpretation ───
@@ -297,7 +376,10 @@ for (const btn of genBtns) {
   });
 }
 
-popShapeSelect.addEventListener('change', () => initPopulation());
+popShapeSelect.addEventListener('change', () => {
+  datasetName = null; // switching shape clears any loaded dataset
+  initPopulation();
+});
 
 sampleSizeInput.addEventListener('change', () => {
   const val = parseInt(sampleSizeInput.value, 10);
@@ -320,7 +402,6 @@ function resetSimulation() {
   rng = null;
   seed = Math.random().toString(36).slice(2, 10);
   if (ciContainer) ciContainer.innerHTML = '';
-  if (coverageStats) coverageStats.hidden = true;
   if (resultDiv) resultDiv.innerHTML = '<p class="placeholder">Click a button to draw samples and build confidence intervals.</p>';
   if (resetBtn) resetBtn.hidden = true;
 }
@@ -330,4 +411,16 @@ initPlayPause(genBtns, resetBtn);
 
 // ─── Init ───
 
-initPopulation();
+// Apply URL params to inputs before initializing
+if (urlN != null && !isNaN(urlN) && urlN >= 2 && urlN <= 500) {
+  sampleSizeInput.value = String(urlN);
+}
+if (urlCi && ['90', '95', '99'].includes(urlCi)) {
+  ciLevelSelect.value = urlCi;
+}
+
+if (urlDataset) {
+  loadDatasetPopulation(urlDataset);
+} else {
+  initPopulation();
+}

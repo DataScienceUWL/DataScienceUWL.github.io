@@ -254,5 +254,5 @@ export function drawGroupedDensity(container, groupedData, opts) {
 
   frame.inner.appendChild(legendG);
 
-  return { frame };
+  return { frame, xScale };
 }

@@ -8,7 +8,9 @@
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { oneMeanT, oneMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
-import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { addChartSaveButton } from '../../js/export.js';
+import { drawBoxplot } from '../../js/boxplot.js';
+import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
 import { parseCSV } from '../../js/csv-parser.js';
@@ -19,6 +21,8 @@ import { generateConclusions, findContext } from '../../js/conclusions.js';
 const tex = (/** @type {string} */ latex, display = false) =>
   katex.renderToString(latex, { throwOnError: false, displayMode: display });
 
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
+
 // ── Initialize jStat before anything else ──────────────────────────
 const jstatMod = await import('jstat');
 setJStat(jstatMod.default || jstatMod);
@@ -28,7 +32,7 @@ const controlsSection = /** @type {HTMLElement} */ (document.getElementById('con
 const chartAndResults = /** @type {HTMLElement} */ (document.getElementById('chart-and-results'));
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
 const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('results-panel'));
-const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
+const conditionsCheckpoint = /** @type {HTMLElement} */ (document.getElementById('conditions-checkpoint'));
 
 const inputMu0 = /** @type {HTMLInputElement} */ (document.getElementById('input-mu0'));
 const inputAlt = initHypToggle('input-alt', () => { if (currentData || fromSummary) showResults(); });
@@ -198,7 +202,7 @@ function handleText(parsed, sourceName) {
 
 const dataPanel = initDataPanel({
   autoCollapse: true, stickyControls: true, showPreview: true,
-  datasetFilter: ds => ds.hasNumeric !== false,
+  datasetFilter: ds => ds.hasNumeric === true && ds.hasCategorical === false,
   onDataset: handleDataset,
   onText: handleText,
   onClear: () => {
@@ -274,22 +278,8 @@ function showResults() {
     ? Math.max(detectPrecision([summaryXbar]), detectPrecision([summaryS]))
     : detectPrecision(currentData);
 
-  // ── Check conditions ──
-  const n = result.n;
-  const smallSample = n < 30;
-  const hasRawData = !fromSummary && currentData;
-  conditionsWarning.hidden = !smallSample;
-  if (smallSample) {
-    const dsId = dataPanel.currentDatasetId;
-    const bootLink = dsId
-      ? buildSimLink('simulate/bootstrap-mean/', { dataset: dsId })
-      : hasRawData
-        ? buildSimLink('simulate/bootstrap-mean/', { data: /** @type {number[]} */ (currentData) })
-        : buildSimLink('simulate/bootstrap-mean/');
-    conditionsWarning.innerHTML = `<p><strong>Note:</strong> With n = ${n} (< 30), the t-test assumes
-      the population is approximately normal. Check that the data has no strong skewness or outliers.</p>
-      <p>If normality is questionable, consider the <a href="${bootLink}">Bootstrap CI</a> instead${hasRawData ? ' (data will carry over)' : ''}.</p>`;
-  }
+  // Conditions checkpoint
+  showConditionsCheckpoint();
 
   // Show sections
   controlsSection.hidden = false;
@@ -299,8 +289,10 @@ function showResults() {
   drawChart(result);
 
   // Render sidebar results + formulas
-  const conditionsMet = !smallSample;
-  renderResults(result, d, mu0, alternative, confLevel, conditionsMet);
+  renderResults(result, d, mu0, alternative, confLevel);
+
+  // Update page title
+  setPageTitle(baseTitle, dataPanel.currentSourceName, { variable: varSelect?.value, n: currentData?.length });
 
   // Screen reader announcement
   announce(
@@ -317,9 +309,8 @@ function showResults() {
  * @param {number} mu0
  * @param {string} alternative
  * @param {number} confLevel
- * @param {boolean} [conditionsMet]
  */
-function renderResults(r, d, mu0, alternative, confLevel, conditionsMet = true) {
+function renderResults(r, d, mu0, alternative, confLevel) {
   const altSymbol = alternative === 'less' ? '&lt;' :
                     alternative === 'greater' ? '&gt;' : '&ne;';
   const confPct = (confLevel * 100).toFixed(0);
@@ -345,18 +336,19 @@ function renderResults(r, d, mu0, alternative, confLevel, conditionsMet = true) 
   const tStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
 
   const V = '\\textcolor{#569BBD}';
-  const R = '\\textcolor{#2e7d32}';
+  const S = '\\textcolor{#7B2D8E}';
+  const P = '\\textcolor{#2e7d32}';
 
   const testFormula = tex(`\\begin{aligned}
     t &= \\frac{\\bar{x} - \\mu_0}{s \\,/\\, \\sqrt{n}} \\\\[8pt]
     &= \\frac{${V}{${formatStat(r.xbar, d)}} - ${V}{${mu0}}}{${V}{${formatStat(r.s, d)}} \\,/\\, \\sqrt{${V}{${r.n}}}} \\\\[8pt]
-    &= ${R}{${r.tStat.toFixed(4)}}
+    &= ${S}{${r.tStat.toFixed(4)}}
   \\end{aligned}`, true);
 
   const ciFormula = tex(`\\begin{aligned}
     &\\bar{x} \\pm t^{\\!*} \\cdot \\frac{s}{\\sqrt{n}} \\\\[8pt]
     &${V}{${formatStat(r.xbar, d)}} \\pm ${V}{${tStar}} \\cdot \\frac{${V}{${formatStat(r.s, d)}}}{\\sqrt{${V}{${r.n}}}} \\\\[8pt]
-    &= ${R}{(${formatStat(r.ciLower, d)},\\; ${formatStat(r.ciUpper, d)})}
+    &= ${P}{(${formatStat(r.ciLower, d)},\\; ${formatStat(r.ciUpper, d)})}
   \\end{aligned}`, true);
 
   resultsPanel.innerHTML = `
@@ -373,8 +365,8 @@ function renderResults(r, d, mu0, alternative, confLevel, conditionsMet = true) 
     <div class="formula-display">
       <h3>Test Statistic</h3>
       ${testFormula}
-      <p class="formula-detail">${tex(`\\text{df} = n - 1 = ${r.n} - 1 = ${R}{${r.df}}`)}</p>
-      <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${pStr}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{df} = n - 1 = ${r.n} - 1 = ${P}{${r.df}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{p-value} = ${P}{${pStr}}`)}</p>
     </div>
 
     <div class="formula-display formula-ci">
@@ -388,9 +380,53 @@ function renderResults(r, d, mu0, alternative, confLevel, conditionsMet = true) 
       <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
       ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
       <p>${confPct}% CI for ${tex('\\mu')}: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>
-      ${!conditionsMet ? `<p class="warning-text"><strong>Note:</strong> With n < 30, verify that the population distribution is approximately normal (no strong skew or outliers).</p>` : ''}
     </div>
   `;
+}
+
+// ── Conditions checkpoint ────────────────────────────────────────────
+
+function showConditionsCheckpoint() {
+  if (!conditionsCheckpoint) return;
+
+  const dsId = dataPanel.currentDatasetId;
+  const bootLink = dsId
+    ? buildSimLink('simulate/bootstrap-mean/', { dataset: dsId })
+    : buildSimLink('simulate/bootstrap-mean/');
+
+  const hasRawData = !fromSummary && currentData && currentData.length > 0;
+
+  conditionsCheckpoint.innerHTML = `
+    <p>${hasRawData
+      ? '<button type="button" class="conditions-toggle" aria-expanded="false" aria-controls="conditions-panel">Check Conditions</button>'
+      : '<strong>Check Conditions</strong> (no raw data available for diagnostic plots)'}
+    &nbsp; | &nbsp; Alternative: <a href="${bootLink}">Bootstrap CI</a> (no conditions required).</p>
+    ${hasRawData ? '<div id="conditions-panel" class="conditions-panel" hidden><div id="conditions-chart"></div>' +
+      (dsId ? `<p class="hint" style="margin-top:0.5rem">For further investigation, <a href="${buildSimLink('explore/descriptive/', { dataset: dsId })}" target="_blank" rel="noopener">explore this dataset</a> in a new tab.</p>` : '') +
+      '</div>' : ''}`;
+  conditionsCheckpoint.hidden = false;
+
+  const toggle = conditionsCheckpoint.querySelector('.conditions-toggle');
+  const panel = conditionsCheckpoint.querySelector('#conditions-panel');
+  const chartEl = conditionsCheckpoint.querySelector('#conditions-chart');
+  if (toggle && panel && chartEl) {
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      panel.hidden = expanded;
+      if (!expanded && chartEl.children.length === 0) {
+        const varName = varSelect?.value || '';
+        drawBoxplot(/** @type {HTMLElement} */ (chartEl), /** @type {number[]} */ (currentData), {
+          xLabel: varName,
+          titleText: `Boxplot of ${varName}`,
+          descText: `Boxplot showing the distribution of ${varName}.`,
+          id: 'conditions-boxplot',
+          animate: false,
+          showOutliers: true,
+        });
+      }
+    });
+  }
 }
 
 /**
@@ -448,4 +484,6 @@ function drawChart(result) {
     tail: /** @type {'left'|'right'|'both'} */ (tail),
     statValueNeg: tail === 'both' ? -Math.abs(tStat) : undefined,
   });
+
+  addChartSaveButton(chartContainer, 'one_mean_t_test.png');
 }

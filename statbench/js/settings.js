@@ -61,6 +61,8 @@ function loadSettings() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const stored = raw ? JSON.parse(raw) : {};
+    // expertMode is session-only — ignore any previously persisted value
+    delete stored.expertMode;
     _cache = { ...DEFAULTS, ...stored };
   } catch {
     _cache = { ...DEFAULTS };
@@ -94,10 +96,12 @@ export function setSettings(updates) {
   Object.assign(current, updates);
   _cache = current;
   try {
-    // Only persist keys that differ from defaults
+    // Only persist keys that differ from defaults.
+    // expertMode is session-only — never persist (students shouldn't get stuck).
     /** @type {Record<string, any>} */
     const toStore = {};
     for (const [k, v] of Object.entries(current)) {
+      if (k === 'expertMode') continue;
       if (v !== DEFAULTS[k]) toStore[k] = v;
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));

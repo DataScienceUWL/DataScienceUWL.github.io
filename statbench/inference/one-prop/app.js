@@ -8,9 +8,10 @@ import * as jstat from 'jstat';
 import { setJStat, pdfNormal } from '../../js/distributions.js';
 import { onePropZ } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
+import { addChartSaveButton } from '../../js/export.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
-import { announce, initTabs, initDataPanel, initKeyboardShortcuts, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initKeyboardShortcuts, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
 
 /** Render LaTeX to HTML string via KaTeX. */
@@ -18,6 +19,8 @@ const tex = (/** @type {string} */ latex, display = false) =>
   katex.renderToString(latex, { throwOnError: false, displayMode: display });
 
 setJStat(jstat);
+
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── DOM references ──────────────────────────────────────────────────
 const inputSuccesses = /** @type {HTMLInputElement} */ (document.getElementById('input-successes'));
@@ -29,7 +32,7 @@ const inputAlt = initHypToggle('input-alternative', () => {
 });
 const inputConfLevel = /** @type {HTMLInputElement} */ (document.getElementById('input-conf-level'));
 const computeBtn = /** @type {HTMLButtonElement} */ (document.getElementById('compute-btn'));
-const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
+const conditionsCheckpoint = /** @type {HTMLElement} */ (document.getElementById('conditions-checkpoint'));
 const resultBanner = /** @type {HTMLElement} */ (document.getElementById('result-summary'));
 const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('results-panel'));
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
@@ -244,12 +247,10 @@ function compute() {
     return;
   }
 
-  // ── Check conditions ──
+  // ── Conditions checkpoint ──
   const np0 = currentN * p0;
   const nq0 = currentN * (1 - p0);
-  const conditionsMet = np0 >= 10 && nq0 >= 10;
-  conditionsWarning.hidden = conditionsMet;
-  if (!conditionsMet) {
+  if (conditionsCheckpoint) {
     const dsId = dataPanel.currentDatasetId;
     const linkBase = dsId
       ? { dataset: dsId }
@@ -259,16 +260,18 @@ function compute() {
       params: { p: p0, direction: alternative },
     });
     const bootLink = buildSimLink('simulate/bootstrap-prop/', linkBase);
-    conditionsWarning.innerHTML = `<p><strong>Warning:</strong> Normal approximation conditions not met
-      (np\u2080 = ${formatStat(np0, 0, 'stat')}, n(1\u2212p\u2080) = ${formatStat(nq0, 0, 'stat')}; both should be \u2265 10).</p>
-      <p>Consider the <a href="${randLink}">Randomization Test</a> or <a href="${bootLink}">Bootstrap CI</a> instead.</p>`;
+    conditionsCheckpoint.innerHTML = `
+      <p><strong>Before interpreting:</strong> Have you checked the conditions for the one-proportion z-test?
+      Verify: np\u2080 = ${formatStat(np0, 0, 'stat')} and n(1\u2212p\u2080) = ${formatStat(nq0, 0, 'stat')} (both should be \u2265 10).</p>
+      <p>Alternatives: <a href="${randLink}">Randomization Test</a> | <a href="${bootLink}">Bootstrap CI</a> (no conditions required).</p>`;
+    conditionsCheckpoint.hidden = false;
   }
 
   // ── Run test ──
   const result = onePropZ(currentSuccesses, currentN, { p0, alternative, confLevel });
 
   // ── Display results ──
-  displayResults(result, currentSuccessLabel, conditionsMet);
+  displayResults(result, currentSuccessLabel);
 
   // ── Draw chart ──
   drawChart(result);
@@ -283,9 +286,9 @@ function compute() {
 /**
  * @param {import('../../js/inference.js').OnePropResult} r
  * @param {string} successLabel
- * @param {boolean} conditionsMet
  */
-function displayResults(r, successLabel, conditionsMet) {
+function displayResults(r, successLabel) {
+  setPageTitle(baseTitle, dataPanel.currentSourceName, { n: currentN });
   const altSymbol = r.alternative === 'two-sided' ? '\u2260'
     : r.alternative === 'less' ? '<' : '>';
 
@@ -306,40 +309,23 @@ function displayResults(r, successLabel, conditionsMet) {
   const seCount = Math.abs(r.zStat);
   const seDirection = r.zStat > 0 ? 'above' : r.zStat < 0 ? 'below' : 'at';
 
-  let condWarning = '';
-  if (!conditionsMet) {
-    const dsId2 = dataPanel.currentDatasetId;
-    const lb2 = dsId2
-      ? { dataset: dsId2 }
-      : { data: Array(r.successes).fill(1).concat(Array(r.n - r.successes).fill(0)) };
-    const bootLink = buildSimLink('simulate/bootstrap-prop/', lb2);
-    const randLink = buildSimLink('simulate/randomization-one-prop/', {
-      ...lb2,
-      params: { p: r.p0, direction: r.alternative === 'two-sided' ? 'two-sided' : r.alternative },
-    });
-    condWarning = `<p class="warning-text"><strong>Caution:</strong> Normal approximation conditions not satisfied
-      (np\u2080 = ${formatStat(r.n * r.p0, 0, 'stat')} and n(1\u2212p\u2080) = ${formatStat(r.n * (1 - r.p0), 0, 'stat')};
-      both should be \u2265 10). These results may be unreliable.</p>
-      <p class="warning-text">Try the <a href="${randLink}">Randomization Test</a> for hypothesis testing
-      or <a href="${bootLink}">Bootstrap CI</a> for confidence intervals \u2014 no sample size conditions required.</p>`;
-  }
-
   // z* for CI
   const zStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
 
   const V = '\\textcolor{#569BBD}';
-  const R = '\\textcolor{#2e7d32}';
+  const S = '\\textcolor{#7B2D8E}';
+  const P = '\\textcolor{#2e7d32}';
 
   const testFormula = tex(`\\begin{aligned}
     z &= \\frac{\\hat{p} - p_0}{\\sqrt{\\dfrac{p_0(1-p_0)}{n}}} \\\\[10pt]
     &= \\frac{${V}{${formatStat(r.pHat, 0, 'proportion')}} - ${V}{${formatStat(r.p0, 0, 'proportion')}}}{\\sqrt{\\dfrac{${V}{${formatStat(r.p0, 0, 'proportion')}} \\cdot ${V}{${formatStat(1 - r.p0, 0, 'proportion')}}}{${V}{${r.n}}}}} \\\\[10pt]
-    &= ${R}{${formatStat(r.zStat, 0, 'correlation')}}
+    &= ${S}{${formatStat(r.zStat, 0, 'correlation')}}
   \\end{aligned}`, true);
 
   const ciFormula = tex(`\\begin{aligned}
     &\\hat{p} \\pm z^* \\cdot \\sqrt{\\frac{\\hat{p}(1-\\hat{p})}{n}} \\\\[8pt]
     &${V}{${formatStat(r.pHat, 0, 'proportion')}} \\pm ${V}{${zStar}} \\cdot ${V}{${formatStat(r.se, 0, 'proportion')}} \\\\[8pt]
-    &= ${R}{(${formatStat(r.ciLower, 0, 'proportion')},\\; ${formatStat(r.ciUpper, 0, 'proportion')})}
+    &= ${P}{(${formatStat(r.ciLower, 0, 'proportion')},\\; ${formatStat(r.ciUpper, 0, 'proportion')})}
   \\end{aligned}`, true);
 
   resultsPanel.innerHTML = `
@@ -355,7 +341,7 @@ function displayResults(r, successLabel, conditionsMet) {
     <div class="formula-display">
       <h3>Test Statistic</h3>
       ${testFormula}
-      <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${formatStat(r.pValue, 0, 'pvalue')}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{p-value} = ${P}{${formatStat(r.pValue, 0, 'pvalue')}}`)}</p>
     </div>
 
     <div class="formula-display formula-ci">
@@ -376,7 +362,6 @@ function displayResults(r, successLabel, conditionsMet) {
         return c.formal + (c.practical ? `</p><p><strong>Practical conclusion:</strong> ${c.practical}` : '');
       })()}</p>
       <p>${confPct}% CI: (${formatStat(r.ciLower, 0, 'proportion')}, ${formatStat(r.ciUpper, 0, 'proportion')}).</p>
-      ${condWarning}
     </div>
   `;
 
@@ -439,6 +424,8 @@ function drawChart(r) {
       statValueNeg: tail === 'both' ? -Math.abs(r.zStat) : undefined,
     });
   }
+
+  addChartSaveButton(chartContainer, 'one_prop_z_test.png');
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────

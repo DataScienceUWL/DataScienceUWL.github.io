@@ -234,10 +234,11 @@ export function addAxes(frame, xAxis, yAxis, xLabel, yLabel) {
   const inner = d3Selection.select(frame.inner);
   const axes = inner.select('.axes');
 
-  // On phone viewports, reduce y-axis ticks
+  // Reduce y-axis ticks for phone viewports or compact charts
   const isPhone = detectPhoneMargin();
-  if (isPhone) {
-    if (typeof yAxis.ticks === 'function') yAxis.ticks(5);
+  if (typeof yAxis.ticks === 'function') {
+    if (frame.height < 200) yAxis.ticks(3);
+    else if (isPhone || frame.height < 280) yAxis.ticks(5);
   }
 
   // X axis — render, then auto-reduce ticks if labels overlap

@@ -5,6 +5,7 @@
  */
 
 import { prefersReducedMotion } from './chart-utils.js';
+import { quantile } from './stats.js';
 
 /** Resamples per animation frame (~50 * 60fps = 3000/sec). */
 const BATCH_SIZE = 50;
@@ -102,17 +103,22 @@ export function runSimulation(config) {
 
 /**
  * Compute a bootstrap confidence interval from an array of bootstrap statistics.
+ * Uses R type-7 interpolated quantiles (the standard percentile method).
  *
- * @param {number[]} bootStats - Array of bootstrap statistics (will be sorted in place)
+ * Note: For discrete data (proportions), CI bounds are constrained to
+ * multiples of 1/n and may shift as more resamples are added. This is
+ * inherent to the percentile method — more resamples (5000+) stabilize
+ * the bounds.
+ *
+ * @param {number[]} bootStats - Array of bootstrap statistics
  * @param {number} ciLevel - Confidence level in percent (e.g., 95)
  * @returns {{ ci: [number, number], se: number }}
  */
 export function bootstrapCI(bootStats, ciLevel) {
-  bootStats.sort((a, b) => a - b);
   const B = bootStats.length;
   const alpha = (100 - ciLevel) / 100;
-  const lo = bootStats[Math.floor((alpha / 2) * B)];
-  const hi = bootStats[Math.floor((1 - alpha / 2) * B)];
+  const lo = quantile(bootStats, alpha / 2);
+  const hi = quantile(bootStats, 1 - alpha / 2);
 
   // Standard error
   const mean = bootStats.reduce((s, v) => s + v, 0) / B;

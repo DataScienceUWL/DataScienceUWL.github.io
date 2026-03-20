@@ -11,12 +11,16 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
+import { sturgesBins } from './histogram.js';
 
-/** Default dot fill (non-extreme). */
-const DOT_FILL = '#808080';
+/** Default dot fill — IMS blue. */
+const DOT_FILL = '#569BBD';
 
-/** Extreme dot fill (in tail). */
+/** Extreme dot fill (in tail) — same bold IMS blue. */
 const EXTREME_FILL = '#569BBD';
+
+/** Non-extreme dot fill when isExtreme is active — subdued gray. */
+const BODY_FILL = '#a0a0a0';
 
 /** Observed statistic line color (deep purple — distinct from orange highlight). */
 const OBSERVED_COLOR = '#7B2D8E';
@@ -24,18 +28,49 @@ const OBSERVED_COLOR = '#7B2D8E';
 /** Minimum dot radius. */
 const MIN_RADIUS = 2;
 
-/** Maximum dot radius. */
-const MAX_RADIUS = 8;
+/** Maximum dot radius (explore dotplots may go up to this). */
+const MAX_RADIUS = 12;
 
 /** Maximum column stroke-width when in filled-column mode. */
 const COLUMN_MAX_WIDTH = 6;
+
+/**
+ * Compute default bin count for dotplots — finer than Sturges so dots form
+ * a cohesive shape (matching R/ggplot2 visual density).
+ * Uses Freedman-Diaconis when IQR is available, otherwise range/30.
+ * @param {number[]} values - Numeric data (unsorted is fine)
+ * @returns {number}
+ */
+export function dotplotBins(values) {
+  const n = values.length;
+  if (n <= 1) return 3;
+  const sorted = [...values].sort((a, b) => a - b);
+  const xMin = sorted[0];
+  const xMax = sorted[n - 1];
+  const range = xMax - xMin;
+  if (range === 0) return 3;
+  // Freedman-Diaconis bin width
+  const q1 = sorted[Math.floor(n * 0.25)];
+  const q3 = sorted[Math.floor(n * 0.75)];
+  const iqrVal = q3 - q1;
+  let bins;
+  if (iqrVal > 0) {
+    const fdWidth = 2 * iqrVal * Math.pow(n, -1 / 3);
+    bins = Math.ceil(range / fdWidth);
+  } else {
+    // Fallback: range/30 (ggplot2 default for dotplots)
+    bins = 30;
+  }
+  // Dotplots need finer resolution than histograms — at least 15 bins
+  return Math.min(40, Math.max(15, bins));
+}
 
 /**
  * Compute stacked dot positions from numeric data.
  *
  * @param {number[]} values - Numeric data
  * @param {object} [options]
- * @param {number} [options.numBins] - Number of bins for stacking (default: min(n, 40))
+ * @param {number} [options.numBins] - Number of bins for stacking (default: dotplotBins heuristic)
  * @param {[number, number]} [options.domain] - [min, max] domain override
  * @param {number} [options.binWidth] - Locked bin width (overrides domain/numBins computation)
  * @param {number} [options.binOrigin] - Locked bin origin for grid alignment (default: domain[0])
@@ -59,7 +94,7 @@ export function computeDots(values, options = {}) {
   }
 
   const domain = options.domain ?? /** @type {[number, number]} */ ([xMin, xMax]);
-  const numBins = options.numBins ?? Math.min(n, 40);
+  const numBins = options.numBins ?? dotplotBins(values);
   // Allow locked binWidth (for stable dotplot grids across re-renders)
   const binWidth = options.binWidth ?? (domain[1] - domain[0]) / numBins;
   // Use the bin origin from the locked grid if provided, else from domain
@@ -94,8 +129,8 @@ export function computeDotRadius(innerWidth, innerHeight, maxStack, numBins) {
   return Math.max(
     MIN_RADIUS,
     Math.min(
-      innerHeight / (maxStack * 2.2),
-      innerWidth / (numBins * 2.2),
+      innerHeight / (maxStack * 2.05),
+      innerWidth / (numBins * 2.05),
       MAX_RADIUS,
     ),
   );
@@ -125,6 +160,10 @@ export function computeDotRadius(innerWidth, innerHeight, maxStack, numBins) {
  * @param {Set<number>} [options.highlightIndices] - Indices of batch-added dots to highlight (accent pulse)
  * @param {number} [options.precision] - Decimal places for overlay value labels (default: 2)
  * @param {boolean} [options.forceColumns] - Force filled-column mode even if dots would fit (for consistent grouped rendering)
+ * @param {string} [options.fillColor] - Override default dot fill color (hex, sets both base and extreme)
+ * @param {string} [options.baseFill] - Override non-extreme dot fill (when isExtreme returns false)
+ * @param {string} [options.extremeFill] - Override extreme dot fill (when isExtreme returns true)
+ * @param {number} [options.viewHeight] - Override default viewBox height (for compact stacked charts)
  * @returns {{ frame: ChartFrame, dots: Array<{value: number, binCenter: number, stackIndex: number}>, xScale: d3Scale.ScaleLinear<number,number>, maxStack: number, binWidth: number, update: (values: number[], opts?: object) => void }}
  */
 export function drawDotplot(container, values, options = {}) {
@@ -147,6 +186,10 @@ export function drawDotplot(container, values, options = {}) {
     highlightIndices,
     precision = 2,
     forceColumns = false,
+    fillColor,
+    baseFill: optBaseFill,
+    extremeFill: optExtremeFill,
+    viewHeight,
   } = options;
 
   const result = computeDots(values, { numBins, domain, binWidth: lockedBinWidth, binOrigin: lockedBinOrigin });
@@ -154,9 +197,9 @@ export function drawDotplot(container, values, options = {}) {
   // Compute effective bin count from locked grid + domain when available
   const effectiveBins = numBins
     ?? (lockedBinWidth && finalDomain ? Math.ceil((finalDomain[1] - finalDomain[0]) / lockedBinWidth) : null)
-    ?? Math.min(values.length, 40);
+    ?? dotplotBins(values);
 
-  const frame = createChart(container, { titleText, descText, id, margin });
+  const frame = createChart(container, { titleText, descText, id, margin, ...(viewHeight != null && { viewHeight }) });
 
   const xScale = d3Scale.scaleLinear()
     .domain(finalDomain)
@@ -187,6 +230,26 @@ export function drawDotplot(container, values, options = {}) {
       .call(xAxis);
     autoReduceTicks(xAxisG, xAxis);
 
+    // Faint vertical grid lines aligned to the rendered axis ticks
+    const gridGroup = d3Selection.select(frame.inner).select('.data');
+    xAxisG.selectAll('.tick').each(function () {
+      // Each tick <g> has transform="translate(x, 0)" — extract x
+      const transform = d3Selection.select(this).attr('transform');
+      const m = transform && transform.match(/translate\(\s*([\d.e+-]+)/);
+      if (m) {
+        const tx = parseFloat(m[1]);
+        gridGroup.append('line')
+          .attr('class', 'grid-line')
+          .attr('x1', tx)
+          .attr('x2', tx)
+          .attr('y1', 0)
+          .attr('y2', frame.height)
+          .attr('stroke', '#d0d0d0')
+          .attr('stroke-width', 0.5)
+          .attr('stroke-dasharray', '2,2');
+      }
+    });
+
     if (xLabel) {
       axes.append('text')
         .attr('class', 'x-label')
@@ -199,9 +262,9 @@ export function drawDotplot(container, values, options = {}) {
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
   if (wouldOverflow) {
-    renderColumns(dataGroup, dots, xScale, /** @type {d3Scale.ScaleLinear<number,number>} */ (yScale), frame.height, isExtreme, highlightIndex, highlightIndices, frame.inner);
+    renderColumns(dataGroup, dots, xScale, /** @type {d3Scale.ScaleLinear<number,number>} */ (yScale), frame.height, isExtreme, highlightIndex, highlightIndices, frame.inner, fillColor, optBaseFill, optExtremeFill);
   } else {
-    renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex, highlightIndices, frame.inner);
+    renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex, highlightIndices, frame.inner, fillColor, optBaseFill, optExtremeFill);
   }
 
   // Observed statistic line
@@ -228,7 +291,7 @@ export function drawDotplot(container, values, options = {}) {
       const newHighlight = opts.highlightIndex ?? -1;
       const newHighlightSet = opts.highlightIndices;
       const newResult = computeDots(newValues, { numBins: newNumBins });
-      const newEffectiveBins = newNumBins ?? Math.min(newValues.length, 40);
+      const newEffectiveBins = newNumBins ?? dotplotBins(newValues);
       const newOverflow = newResult.maxStack > 0 && newResult.maxStack * MIN_RADIUS * 2 > frame.height;
 
       xScale.domain(newResult.domain);
@@ -249,7 +312,7 @@ export function drawDotplot(container, values, options = {}) {
         axes.selectAll('*').remove();
         addAxes(frame, xAxis, yAxisFn, xLabel, 'Frequency');
 
-        renderColumns(dataGroup, newResult.dots, xScale, yScale, frame.height, newIsExtreme, newHighlight, newHighlightSet, frame.inner);
+        renderColumns(dataGroup, newResult.dots, xScale, yScale, frame.height, newIsExtreme, newHighlight, newHighlightSet, frame.inner, undefined, optBaseFill, optExtremeFill);
       } else {
         // Dot mode — remove y-axis if it was added
         if (yScale) {
@@ -275,7 +338,7 @@ export function drawDotplot(container, values, options = {}) {
 
         const newRadius = computeDotRadius(
           frame.width, frame.height, newResult.maxStack, newEffectiveBins);
-        renderDots(dataGroup, newResult.dots, xScale, frame.height, newRadius, newIsExtreme, animate, newHighlight, newHighlightSet, frame.inner);
+        renderDots(dataGroup, newResult.dots, xScale, frame.height, newRadius, newIsExtreme, animate, newHighlight, newHighlightSet, frame.inner, undefined, optBaseFill, optExtremeFill);
       }
 
       const overlays = d3Selection.select(frame.inner).select('.overlays');
@@ -294,6 +357,9 @@ export function drawDotplot(container, values, options = {}) {
 /** Highlight color for new dots (accessible warm orange, 3.4:1 on white). */
 const HIGHLIGHT_FILL = '#E07020';
 
+/** Pending highlight timeouts — cancelled on re-render to prevent stale animations. */
+let pendingHighlightTimers = [];
+
 /**
  * Render dots into a D3 selection.
  * @param {d3Selection.Selection} group
@@ -307,13 +373,18 @@ const HIGHLIGHT_FILL = '#E07020';
  * @param {Set<number>} [highlightIndices] - Batch new dots (+10): accent pulse
  * @param {SVGGElement} [innerNode] - chart-inner node for custom tooltips
  */
-function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate, highlightIndex = -1, highlightIndices, innerNode) {
+function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate, highlightIndex = -1, highlightIndices, innerNode, fillColor, optBaseFill, optExtremeFill) {
+  // Cancel any pending highlight timers from previous render
+  for (const t of pendingHighlightTimers) clearTimeout(t);
+  pendingHighlightTimers = [];
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
+  const extremeFill = optExtremeFill || fillColor || EXTREME_FILL;
+  const baseFill = optBaseFill || fillColor || (isExtreme ? BODY_FILL : DOT_FILL);
 
   /** Normal fill for a dot at index i. */
   function normalFill(d) {
-    if (!isExtreme) return DOT_FILL;
-    return isExtreme(d.value) ? EXTREME_FILL : DOT_FILL;
+    if (!isExtreme) return baseFill;
+    return isExtreme(d.value) ? extremeFill : baseFill;
   }
 
   const circles = group.selectAll('circle')
@@ -358,7 +429,7 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
       .attr('r', radius * 1.5);
     // Shrink back to normal size but keep orange fill — persists until next render
     // connects visually to the orange resample mean in the mechanism strip
-    setTimeout(() => {
+    pendingHighlightTimers.push(setTimeout(() => {
       selected.each(function() {
         if (reducedMotion) {
           this.setAttribute('stroke', HIGHLIGHT_FILL);
@@ -368,7 +439,7 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
           animateDotRevert(this, HIGHLIGHT_FILL, radius, 400);
         }
       });
-    }, 800);
+    }, 800));
   } else if (highlightIndices && highlightIndices.size > 0) {
     const selected = circles.filter((d, i) => highlightIndices.has(i));
     selected
@@ -376,7 +447,7 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
       .attr('stroke', '#000')
       .attr('stroke-width', 1.5)
       .attr('r', radius * 1.2);
-    setTimeout(() => {
+    pendingHighlightTimers.push(setTimeout(() => {
       selected.each(function(d) {
         if (reducedMotion) {
           this.setAttribute('fill', normalFill(d));
@@ -387,7 +458,7 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
           animateDotRevert(this, normalFill(d), radius, 400);
         }
       });
-    }, 800);
+    }, 800));
   }
 }
 
@@ -406,7 +477,10 @@ function renderDots(group, dots, xScale, innerHeight, radius, isExtreme, animate
  * @param {Set<number>} [highlightIndices] - Indices of batch-added dots
  * @param {SVGGElement} [innerNode]
  */
-function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, highlightIndex = -1, highlightIndices, innerNode) {
+function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, highlightIndex = -1, highlightIndices, innerNode, fillColor, optBaseFill, optExtremeFill) {
+  // Cancel any pending highlight timers from previous render
+  for (const t of pendingHighlightTimers) clearTimeout(t);
+  pendingHighlightTimers = [];
   // Aggregate dots by binCenter → count
   /** @type {Map<number, {count: number}>} */
   const bins = new Map();
@@ -431,8 +505,10 @@ function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, high
 
   /** Color for a column based on its bin center value. */
   function colColor(center) {
-    if (!isExtreme) return DOT_FILL;
-    return isExtreme(center) ? EXTREME_FILL : DOT_FILL;
+    const extreme = optExtremeFill || fillColor || EXTREME_FILL;
+    const base = optBaseFill || fillColor || (isExtreme ? BODY_FILL : DOT_FILL);
+    if (!isExtreme) return base;
+    return isExtreme(center) ? extreme : base;
   }
 
   // Draw columns as lines with round linecap for rounded tops
@@ -488,7 +564,7 @@ function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, high
     // Revert: for +1, keep last highlight persistent; for batches, fade out
     const reducedMotion = prefersReducedMotion();
     if (!isOneShot) {
-      setTimeout(() => {
+      pendingHighlightTimers.push(setTimeout(() => {
         if (reducedMotion) {
           hlLines.remove();
         } else {
@@ -497,12 +573,12 @@ function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, high
             animateColumnRevert(el, 'transparent', 0, 400, () => el.remove());
           });
         }
-      }, 800);
+      }, 800));
     } else {
       // +1: shrink to normal width but keep orange — persists until next render
-      setTimeout(() => {
+      pendingHighlightTimers.push(setTimeout(() => {
         hlLines.attr('stroke-width', colWidth);
-      }, 800);
+      }, 800));
     }
   }
 

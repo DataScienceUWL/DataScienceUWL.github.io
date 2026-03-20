@@ -9,13 +9,16 @@
 import { setJStat, pdfChisq, chisqInv } from '../../js/distributions.js';
 import { chisqTest } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
+import { addChartSaveButton } from '../../js/export.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
-import { announce, initTabs, initDataPanel, initKeyboardShortcuts, buildSimLink } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initKeyboardShortcuts, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 /** Render LaTeX to HTML string via KaTeX. */
 const tex = (/** @type {string} */ latex, display = false) =>
   katex.renderToString(latex, { throwOnError: false, displayMode: display });
+
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── Initialize jStat ────────────────────────────────────────────────
 const jstatMod = await import('jstat');
@@ -32,7 +35,7 @@ const controlsSection = /** @type {HTMLElement} */ (document.getElementById('con
 
 const chartSection = /** @type {HTMLElement} */ (document.getElementById('chart'));
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
-const warningBanner = /** @type {HTMLElement} */ (document.getElementById('warning-banner'));
+const conditionsCheckpoint = /** @type {HTMLElement} */ (document.getElementById('conditions-checkpoint'));
 const resultsSection = /** @type {HTMLElement} */ (document.getElementById('results'));
 const interpretationDiv = /** @type {HTMLElement} */ (document.getElementById('interpretation'));
 
@@ -136,7 +139,7 @@ const dataPanel = initDataPanel({
     controlsSection.hidden = true;
     chartSection.hidden = true;
     resultsSection.hidden = true;
-    warningBanner.hidden = true;
+    conditionsCheckpoint.hidden = true;
     interpretationDiv.hidden = true;
     chartContainer.innerHTML = '';
     observedContainer.innerHTML = '';
@@ -350,6 +353,8 @@ computeBtn.addEventListener('click', () => {
  */
 function showResults(observed, rowLabels, colLabels) {
   const result = chisqTest(observed, rowLabels, colLabels);
+  const totalN = observed.flat().reduce((a, b) => a + b, 0);
+  setPageTitle(baseTitle, dataPanel.currentSourceName, { n: totalN });
 
   chartSection.hidden = false;
   resultsSection.hidden = false;
@@ -359,6 +364,7 @@ function showResults(observed, rowLabels, colLabels) {
   resDf.textContent = String(result.df);
   resP.textContent = formatStat(result.pValue, 0, 'pvalue');
 
+  // Check for low expected counts
   let lowExpected = false;
   for (const row of result.expected) {
     for (const val of row) {
@@ -366,22 +372,30 @@ function showResults(observed, rowLabels, colLabels) {
     }
     if (lowExpected) break;
   }
-  if (lowExpected) {
+
+  // Conditions checkpoint
+  if (conditionsCheckpoint) {
     const dsId = dataPanel.currentDatasetId;
     const randLink = dsId
       ? buildSimLink('simulate/randomization-chisq/', { dataset: dsId })
       : buildSimLink('simulate/randomization-chisq/');
-    warningBanner.innerHTML = `<p><strong>Caution:</strong> One or more expected counts are below 5. The chi-square approximation may not be accurate.</p>
-    <p>Consider the <a href="${randLink}">Simulation-Based Chi-Square Test</a> instead.</p>`;
+    const condNote = lowExpected
+      ? ' Note: one or more expected counts are below 5.'
+      : '';
+    conditionsCheckpoint.innerHTML = `
+      <p><strong>Before interpreting:</strong> Have you checked the conditions for the chi-square test?
+      Verify that all expected counts are \u2265 5.${condNote}</p>
+      <p>Alternative: <a href="${randLink}">Simulation-Based Chi-Square Test</a> (no conditions required).</p>`;
+    conditionsCheckpoint.hidden = false;
   }
-  warningBanner.hidden = !lowExpected;
 
   // Render formula display
   const formulaEl = document.getElementById('formula-container');
   if (formulaEl) {
     const nR = rowLabels.length;
     const nC = colLabels.length;
-    const R = '\\textcolor{#2e7d32}';
+    const S = '\\textcolor{#7B2D8E}';
+    const P = '\\textcolor{#2e7d32}';
 
     const chiFormula = tex(`\\chi^2 = \\sum \\frac{(O - E)^2}{E}`, true);
 
@@ -389,9 +403,9 @@ function showResults(observed, rowLabels, colLabels) {
       <div class="formula-display">
         <h3>Test Statistic</h3>
         ${chiFormula}
-        <p class="formula-detail">${tex(`\\text{df} = (${nR} - 1)(${nC} - 1) = ${R}{${result.df}}`)}</p>
-        <p class="formula-detail">${tex(`\\chi^2 = ${R}{${result.chiSq.toFixed(4)}}`)}</p>
-        <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${formatStat(result.pValue, 0, 'pvalue')}}`)}</p>
+        <p class="formula-detail">${tex(`\\text{df} = (${nR} - 1)(${nC} - 1) = ${P}{${result.df}}`)}</p>
+        <p class="formula-detail">${tex(`\\chi^2 = ${S}{${result.chiSq.toFixed(4)}}`)}</p>
+        <p class="formula-detail">${tex(`\\text{p-value} = ${P}{${formatStat(result.pValue, 0, 'pvalue')}}`)}</p>
       </div>
     `;
     formulaEl.hidden = false;
@@ -403,12 +417,11 @@ function showResults(observed, rowLabels, colLabels) {
     'Expected counts', true);
 
   drawChart(result);
-  writeInterpretation(result, lowExpected);
+  writeInterpretation(result);
 
   announce(
     `Chi-square = ${result.chiSq.toFixed(3)}, df = ${result.df}, ` +
-    `p-value = ${formatStat(result.pValue, 0, 'pvalue')}.` +
-    (lowExpected ? ' Warning: some expected counts are less than 5.' : '')
+    `p-value = ${formatStat(result.pValue, 0, 'pvalue')}.`
   );
 }
 
@@ -502,15 +515,16 @@ function drawChart(result) {
     pdfFn,
     tail: 'right',
   });
+
+  addChartSaveButton(chartContainer, 'chisq_test.png');
 }
 
 // ── Interpretation ──────────────────────────────────────────────────
 
 /**
  * @param {import('../../js/inference.js').ChisqResult} result
- * @param {boolean} lowExpected
  */
-function writeInterpretation(result, lowExpected) {
+function writeInterpretation(result) {
   const { chiSq, df, pValue, rowLabels, colLabels } = result;
 
   const pPct = pValue < 0.0001
@@ -528,7 +542,7 @@ function writeInterpretation(result, lowExpected) {
     },
   });
 
-  let html = `
+  interpretationDiv.innerHTML = `
     <p><strong>Hypotheses:</strong>
       ${tex('H_0')}: The row variable and column variable are independent.
       ${tex('H_a')}: There is an association between the row and column variables.</p>
@@ -539,16 +553,4 @@ function writeInterpretation(result, lowExpected) {
     <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
     ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
   `;
-
-  if (lowExpected) {
-    const dsId2 = dataPanel.currentDatasetId;
-    const randLink = dsId2
-      ? buildSimLink('simulate/randomization-chisq/', { dataset: dsId2 })
-      : buildSimLink('simulate/randomization-chisq/');
-    html += `<p><strong>Caution:</strong> One or more expected counts are below 5.
-      The chi-square approximation may not be accurate. Consider merging categories
-      or using the <a href="${randLink}">Simulation-Based Chi-Square Test</a> instead.</p>`;
-  }
-
-  interpretationDiv.innerHTML = html;
 }

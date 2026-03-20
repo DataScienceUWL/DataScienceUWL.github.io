@@ -8,7 +8,9 @@
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { pairedT, pairedTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
-import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { addChartSaveButton } from '../../js/export.js';
+import { drawBoxplot } from '../../js/boxplot.js';
+import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
 import { parseCSV } from '../../js/csv-parser.js';
@@ -20,6 +22,8 @@ import * as d3Selection from 'd3-selection';
 const tex = (/** @type {string} */ latex, display = false) =>
   katex.renderToString(latex, { throwOnError: false, displayMode: display });
 
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
+
 // ── Initialize jStat before anything else ──────────────────────────
 const jstatMod = await import('jstat');
 setJStat(jstatMod.default || jstatMod);
@@ -29,7 +33,7 @@ const controlsSection = /** @type {HTMLElement} */ (document.getElementById('con
 const chartAndResults = /** @type {HTMLElement} */ (document.getElementById('chart-and-results'));
 const chartContainer = /** @type {HTMLElement} */ (document.getElementById('chart-container'));
 const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('results-panel'));
-const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
+const conditionsCheckpoint = /** @type {HTMLElement} */ (document.getElementById('conditions-checkpoint'));
 
 const inputMu0 = /** @type {HTMLInputElement} */ (document.getElementById('input-mu0'));
 const inputAlt = initHypToggle('input-alt', () => { if (currentDiffs || fromSummary) showResults(); });
@@ -246,32 +250,70 @@ function showResults() {
     ? Math.max(detectPrecision([summaryDbar]), detectPrecision([summarySd]))
     : detectPrecision(currentDiffs);
 
-  // ── Check conditions ──
-  const n = result.n;
-  const smallSample = n < 30;
-  conditionsWarning.hidden = !smallSample;
-  if (smallSample) {
-    const dsId = dataPanel.currentDatasetId;
-    const bootLink = dsId
-      ? buildSimLink('simulate/bootstrap-paired/', { dataset: dsId })
-      : buildSimLink('simulate/bootstrap-paired/');
-    conditionsWarning.innerHTML = `<p><strong>Note:</strong> With n = ${n} (< 30) pairs, the paired t-test assumes
-      the population of differences is approximately normal. Check that the differences have no strong skewness or outliers.</p>
-      <p>If normality is questionable, consider the <a href="${bootLink}">Bootstrap Paired CI</a> instead.</p>`;
-  }
+  // Conditions checkpoint
+  showConditionsCheckpoint();
 
   controlsSection.hidden = false;
   chartAndResults.hidden = false;
 
   drawChart(result);
-  const conditionsMet = !smallSample;
-  renderResults(result, d, mu0, alternative, confLevel, conditionsMet);
+  renderResults(result, d, mu0, alternative, confLevel);
+
+  // Update page title
+  setPageTitle(baseTitle, dataPanel.currentSourceName, { n: currentDiffs?.length });
 
   announce(
     `t = ${result.tStat.toFixed(3)}, df = ${result.df}, ` +
     `p-value = ${formatStat(result.pValue, d, 'pvalue')}. ` +
     `${(confLevel * 100).toFixed(0)}% CI: (${formatStat(result.ciLower, d)}, ${formatStat(result.ciUpper, d)}).`
   );
+}
+
+// ── Conditions checkpoint ────────────────────────────────────────────
+
+function showConditionsCheckpoint() {
+  if (!conditionsCheckpoint) return;
+
+  const dsId = dataPanel.currentDatasetId;
+  const bootLink = dsId
+    ? buildSimLink('simulate/bootstrap-paired/', { dataset: dsId })
+    : buildSimLink('simulate/bootstrap-paired/');
+
+  const hasRawData = !fromSummary && currentDiffs && currentDiffs.length > 0;
+
+  conditionsCheckpoint.innerHTML = `
+    <p>${hasRawData
+      ? '<button type="button" class="conditions-toggle" aria-expanded="false" aria-controls="conditions-panel">Check Conditions</button>'
+      : '<strong>Check Conditions</strong> (no raw data available for diagnostic plots)'}
+    &nbsp; | &nbsp; Alternative: <a href="${bootLink}">Bootstrap Paired CI</a> (no conditions required).</p>
+    ${hasRawData ? '<div id="conditions-panel" class="conditions-panel" hidden><div id="conditions-chart"></div>' +
+      (dsId ? `<p class="hint" style="margin-top:0.5rem">For further investigation, <a href="${buildSimLink('explore/descriptive/', { dataset: dsId })}" target="_blank" rel="noopener">explore this dataset</a> in a new tab.</p>` : '') +
+      '</div>' : ''}`;
+  conditionsCheckpoint.hidden = false;
+
+  const toggle = conditionsCheckpoint.querySelector('.conditions-toggle');
+  const panel = conditionsCheckpoint.querySelector('#conditions-panel');
+  const chartEl = conditionsCheckpoint.querySelector('#conditions-chart');
+  if (toggle && panel && chartEl) {
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      panel.hidden = expanded;
+      if (!expanded && chartEl.children.length === 0) {
+        const diffLabel = var1Name && var2Name
+          ? `${var1Name} \u2212 ${var2Name}`
+          : 'Differences';
+        drawBoxplot(/** @type {HTMLElement} */ (chartEl), /** @type {number[]} */ (currentDiffs), {
+          xLabel: diffLabel,
+          titleText: `Boxplot of paired differences`,
+          descText: `Boxplot showing the distribution of paired differences.`,
+          id: 'conditions-boxplot',
+          animate: false,
+          showOutliers: true,
+        });
+      }
+    });
+  }
 }
 
 /**
@@ -281,9 +323,8 @@ function showResults() {
  * @param {number} mu0
  * @param {string} alternative
  * @param {number} confLevel
- * @param {boolean} [conditionsMet]
  */
-function renderResults(r, d, mu0, alternative, confLevel, conditionsMet = true) {
+function renderResults(r, d, mu0, alternative, confLevel) {
   const confPct = (confLevel * 100).toFixed(0);
   const pStr = formatStat(r.pValue, d, 'pvalue');
   const alpha = 1 - confLevel;
@@ -306,18 +347,19 @@ function renderResults(r, d, mu0, alternative, confLevel, conditionsMet = true) 
     : 'group 1 \u2212 group 2';
 
   const V = '\\textcolor{#569BBD}';
-  const R = '\\textcolor{#2e7d32}';
+  const S = '\\textcolor{#7B2D8E}';
+  const P = '\\textcolor{#2e7d32}';
 
   const testFormula = tex(`\\begin{aligned}
     t &= \\frac{\\bar{d} - \\mu_0}{s_d \\,/\\, \\sqrt{n}} \\\\[8pt]
     &= \\frac{${V}{${formatStat(r.dbar, d)}} - ${V}{${mu0}}}{${V}{${formatStat(r.sd, d)}} \\,/\\, \\sqrt{${V}{${r.n}}}} \\\\[8pt]
-    &= ${R}{${r.tStat.toFixed(4)}}
+    &= ${S}{${r.tStat.toFixed(4)}}
   \\end{aligned}`, true);
 
   const ciFormula = tex(`\\begin{aligned}
     &\\bar{d} \\pm t^{\\!*} \\cdot \\frac{s_d}{\\sqrt{n}} \\\\[8pt]
     &${V}{${formatStat(r.dbar, d)}} \\pm ${V}{${tStar}} \\cdot \\frac{${V}{${formatStat(r.sd, d)}}}{\\sqrt{${V}{${r.n}}}} \\\\[8pt]
-    &= ${R}{(${formatStat(r.ciLower, d)},\\; ${formatStat(r.ciUpper, d)})}
+    &= ${P}{(${formatStat(r.ciLower, d)},\\; ${formatStat(r.ciUpper, d)})}
   \\end{aligned}`, true);
 
   resultsPanel.innerHTML = `
@@ -334,8 +376,8 @@ function renderResults(r, d, mu0, alternative, confLevel, conditionsMet = true) 
     <div class="formula-display">
       <h3>Test Statistic</h3>
       ${testFormula}
-      <p class="formula-detail">${tex(`\\text{df} = n - 1 = ${r.n} - 1 = ${R}{${r.df}}`)}</p>
-      <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${pStr}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{df} = n - 1 = ${r.n} - 1 = ${P}{${r.df}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{p-value} = ${P}{${pStr}}`)}</p>
     </div>
 
     <div class="formula-display formula-ci">
@@ -350,7 +392,6 @@ function renderResults(r, d, mu0, alternative, confLevel, conditionsMet = true) 
       <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
       ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
       <p>${confPct}% CI for ${tex('\\mu_d')}: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}).</p>
-      ${!conditionsMet ? `<p class="warning-text"><strong>Note:</strong> With n < 30 pairs, verify that the population of differences is approximately normal (no strong skew or outliers).</p>` : ''}
     </div>
   `;
 }
@@ -391,4 +432,6 @@ function drawChart(result) {
     tail: /** @type {'left'|'right'|'both'} */ (tail),
     statValueNeg: tail === 'both' ? -Math.abs(tStat) : undefined,
   });
+
+  addChartSaveButton(chartContainer, 'paired_t_test.png');
 }

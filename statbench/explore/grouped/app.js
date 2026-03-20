@@ -5,17 +5,20 @@
  * a quantitative variable across levels of a categorical grouping variable.
  */
 
+import * as d3Selection from 'd3-selection';
 import { parseCSV } from '../../js/csv-parser.js';
 import { mean, median, sd, quantile, iqr, range, detectPrecision, formatStat } from '../../js/stats.js';
 import { drawHistogram, computeBins, sturgesBins } from '../../js/histogram.js';
 import { drawDotplot, computeDots } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { drawGroupedDensity } from '../../js/kde.js';
-import { createExportBar } from '../../js/export.js';
-import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper } from '../../js/page-utils.js';
+import { createExportBar, addChartSaveButton } from '../../js/export.js';
+import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper, setPageTitle } from '../../js/page-utils.js';
+import { getColors } from '../../js/chart-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
 
 initHelp();
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── DOM elements ──────────────────────────────────────────────────────
 
@@ -131,6 +134,9 @@ let currentBinCount = 7;
 /** Whether to show outliers in boxplot. */
 let showOutliers = true;
 
+/** Whether to show mean marker on boxplot. */
+let showMeanMarker = false;
+
 /** Whether to show relative frequency on histogram y-axis. */
 let relativeFreq = false;
 
@@ -188,7 +194,20 @@ function updateChartControls() {
       showOutliers = cb.checked;
       renderActiveChart();
     });
+
   }
+
+  // Mean marker checkbox — available for all chart types
+  const meanLabel = document.createElement('label');
+  meanLabel.innerHTML = '<input type="checkbox" id="show-mean-grouped"> Show mean';
+  meanLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+  chartControls.appendChild(meanLabel);
+  const meanCb = /** @type {HTMLInputElement} */ (meanLabel.querySelector('input'));
+  meanCb.checked = showMeanMarker;
+  meanCb.addEventListener('change', () => {
+    showMeanMarker = meanCb.checked;
+    renderActiveChart();
+  });
 }
 
 // ── Spreadsheet editor ────────────────────────────────────────────────
@@ -489,6 +508,7 @@ function loadGroupedData(quantVar, groupVar, ds, sourceName) {
   renderStats();
   updateChartControls();
   renderActiveChart();
+  setPageTitle(baseTitle, sourceName, { variable: currentVarLabel, n: allValues.length });
   announce(`${allValues.length} values in ${groupNames.length} groups. Chart and statistics updated.`);
 }
 
@@ -563,18 +583,38 @@ function renderActiveChart() {
       id: 'grouped-box',
       animate: false,
       showOutliers,
+      showMean: showMeanMarker,
     });
   } else if (activeChart === 'dotplot') {
     renderStackedDotplots(groupNames);
   } else if (activeChart === 'histogram') {
     renderStackedHistograms(groupNames);
   } else if (activeChart === 'density') {
-    drawGroupedDensity(chartArea, groupedData, {
+    const densityResult = drawGroupedDensity(chartArea, groupedData, {
       xLabel: currentVarLabel,
       titleText: `Density of ${currentVarLabel} by ${currentGroupLabel}`,
       descText: `Overlaid density curves comparing ${currentVarLabel} across groups of ${currentGroupLabel}`,
       id: 'grouped-density',
     });
+
+    // Mean markers: vertical red dashed lines at each group mean
+    if (showMeanMarker && densityResult) {
+      const colors = getColors(groupNames.length);
+      const overlays = d3Selection.select(densityResult.frame.inner).select('.overlays');
+      for (let i = 0; i < groupNames.length; i++) {
+        const vals = groupedData[groupNames[i]];
+        if (vals.length === 0) continue;
+        const meanVal = mean(vals);
+        const mx = densityResult.xScale(meanVal);
+        overlays.append('line')
+          .attr('x1', mx).attr('x2', mx)
+          .attr('y1', 0).attr('y2', densityResult.frame.height)
+          .attr('stroke', colors[i])
+          .attr('stroke-width', 2)
+          .attr('stroke-dasharray', '6,3')
+          .attr('aria-label', `${groupNames[i]} mean = ${formatStat(meanVal, dataPrecision)}`);
+      }
+    }
   }
 
   // Export bar
@@ -585,6 +625,8 @@ function renderActiveChart() {
     chartFilename: `${currentVarLabel.replace(/\s+/g, '_')}_by_${currentGroupLabel.replace(/\s+/g, '_')}_${activeChart}.png`,
     table: statsTable ?? undefined,
   });
+
+  addChartSaveButton(chartArea, `${currentVarLabel.replace(/\s+/g, '_')}_by_${currentGroupLabel.replace(/\s+/g, '_')}_${activeChart}.png`);
 }
 
 /**
@@ -599,6 +641,11 @@ function renderStackedDotplots(groupNames) {
   /** @type {[number, number]} */
   const domain = [xMin - pad, xMax + pad];
 
+  // Compact height: scale with max group size, clamp between 160–371
+  const maxGroupN = Math.max(...groupNames.map(g => groupedData[g].length));
+  const compactHeight = Math.min(371, Math.max(160, 100 + maxGroupN * 4));
+
+  const colors = getColors(groupNames.length);
   for (let i = 0; i < groupNames.length; i++) {
     const name = groupNames[i];
     const values = groupedData[name];
@@ -607,20 +654,40 @@ function renderStackedDotplots(groupNames) {
     const label = document.createElement('p');
     label.className = 'group-label';
     label.textContent = `${name} (n = ${values.length})`;
+    label.style.color = colors[i];
     wrapper.appendChild(label);
 
     const chartDiv = document.createElement('div');
     wrapper.appendChild(chartDiv);
     chartArea.appendChild(wrapper);
 
-    drawDotplot(chartDiv, values, {
+    const dotResult = drawDotplot(chartDiv, values, {
       xLabel: i === groupNames.length - 1 ? currentVarLabel : '',
       titleText: `Dotplot of ${currentVarLabel} for ${name}`,
       descText: `Dot plot of ${currentVarLabel} for group ${name}`,
       id: `grouped-dot-${i}`,
       animate: false,
       domain,
+      fillColor: colors[i],
+      viewHeight: compactHeight,
     });
+
+    // Mean marker: red triangle below x-axis
+    if (showMeanMarker && values.length > 0) {
+      const meanVal = mean(values);
+      const mx = dotResult.xScale(meanVal);
+      const triangleY = dotResult.frame.height + 12;
+      const size = 6;
+      const triangle = `M${mx},${triangleY - size} L${mx - size},${triangleY + size} L${mx + size},${triangleY + size} Z`;
+      const overlays = d3Selection.select(dotResult.frame.inner).select('.overlays');
+      overlays.append('path')
+        .attr('d', triangle)
+        .attr('fill', '#F05133')
+        .attr('stroke', 'none')
+        .attr('aria-label', `Mean = ${formatStat(meanVal, dataPrecision)}`)
+        .append('title')
+        .text(`Mean = ${formatStat(meanVal, dataPrecision)}`);
+    }
   }
 }
 
@@ -639,6 +706,11 @@ function renderStackedHistograms(groupNames) {
   /** @type {[number, number]} */
   const domain = [/** @type {number} */ (sharedBins[0].x0), /** @type {number} */ (sharedBins[sharedBins.length - 1].x1)];
 
+  // Compact height: scale with max group size, clamp between 160–371
+  const maxGroupN = Math.max(...groupNames.map(g => groupedData[g].length));
+  const compactHeight = Math.min(371, Math.max(160, 100 + maxGroupN * 4));
+
+  const colors = getColors(groupNames.length);
   for (let i = 0; i < groupNames.length; i++) {
     const name = groupNames[i];
     const values = groupedData[name];
@@ -647,13 +719,14 @@ function renderStackedHistograms(groupNames) {
     const label = document.createElement('p');
     label.className = 'group-label';
     label.textContent = `${name} (n = ${values.length})`;
+    label.style.color = colors[i];
     wrapper.appendChild(label);
 
     const chartDiv = document.createElement('div');
     wrapper.appendChild(chartDiv);
     chartArea.appendChild(wrapper);
 
-    drawHistogram(chartDiv, values, {
+    const histResult = drawHistogram(chartDiv, values, {
       xLabel: i === groupNames.length - 1 ? currentVarLabel : '',
       titleText: `Histogram of ${currentVarLabel} for ${name}`,
       descText: `Histogram of ${currentVarLabel} for group ${name}`,
@@ -662,7 +735,23 @@ function renderStackedHistograms(groupNames) {
       domain,
       thresholds,
       relativeFrequency: relativeFreq,
+      fillColor: colors[i],
+      viewHeight: compactHeight,
     });
+
+    // Mean marker: vertical red dashed line
+    if (showMeanMarker && values.length > 0) {
+      const meanVal = mean(values);
+      const mx = histResult.xScale(meanVal);
+      const overlays = d3Selection.select(histResult.frame.inner).select('.overlays');
+      overlays.append('line')
+        .attr('x1', mx).attr('x2', mx)
+        .attr('y1', 0).attr('y2', histResult.frame.height)
+        .attr('stroke', '#F05133')
+        .attr('stroke-width', 2)
+        .attr('stroke-dasharray', '6,3')
+        .attr('aria-label', `Mean = ${formatStat(meanVal, dataPrecision)}`);
+    }
   }
 
   // Bin frequency table (collapsed by default)
@@ -757,6 +846,9 @@ function renderStats() {
   const groupNames = Object.keys(groupedData);
   const d = dataPrecision;
 
+  // Group colors matching chart palette
+  const colors = getColors(groupNames.length);
+
   // Build header row
   statsThead.innerHTML = '';
   const headerRow = document.createElement('tr');
@@ -765,10 +857,11 @@ function renderStats() {
   thStat.textContent = 'Statistic';
   headerRow.appendChild(thStat);
 
-  for (const name of groupNames) {
+  for (let i = 0; i < groupNames.length; i++) {
     const th = document.createElement('th');
     th.scope = 'col';
-    th.textContent = name;
+    th.textContent = groupNames[i];
+    th.style.borderBottom = `3px solid ${colors[i % colors.length]}`;
     headerRow.appendChild(th);
   }
   statsThead.appendChild(headerRow);
@@ -797,9 +890,10 @@ function renderStats() {
     th.textContent = stat.label;
     tr.appendChild(th);
 
-    for (const name of groupNames) {
+    for (let i = 0; i < groupNames.length; i++) {
       const td = document.createElement('td');
-      td.textContent = stat.fn(groupedData[name]);
+      td.textContent = stat.fn(groupedData[groupNames[i]]);
+      td.style.backgroundColor = colors[i % colors.length] + '12';
       tr.appendChild(td);
     }
 

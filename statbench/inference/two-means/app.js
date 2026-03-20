@@ -9,7 +9,9 @@ import * as jstatModule from 'jstat';
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { twoMeanT, twoMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
-import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink } from '../../js/page-utils.js';
+import { addChartSaveButton } from '../../js/export.js';
+import { drawBoxplot } from '../../js/boxplot.js';
+import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
 import { mean, detectPrecision, formatStat } from '../../js/stats.js';
@@ -19,6 +21,8 @@ import { generateConclusions, findContext } from '../../js/conclusions.js';
 const tex = (/** @type {string} */ latex, display = false) =>
   katex.renderToString(latex, { throwOnError: false, displayMode: display });
 
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
+
 // ── Initialize jStat ────────────────────────────────────────────────
 const jStat = jstatModule.default || jstatModule;
 setJStat(jStat);
@@ -26,7 +30,7 @@ setJStat(jStat);
 // ── DOM elements ────────────────────────────────────────────────────
 const chartContainer = document.getElementById('chart-container');
 const resultDiv = document.getElementById('result-summary');
-const conditionsWarning = /** @type {HTMLElement} */ (document.getElementById('conditions-warning'));
+const conditionsCheckpoint = /** @type {HTMLElement} */ (document.getElementById('conditions-checkpoint'));
 const dataSummary = document.getElementById('data-summary');
 const dataPreview = document.getElementById('data-preview');
 const varSelectorsDiv = document.getElementById('var-selectors');
@@ -307,25 +311,59 @@ function runAnalysis() {
     result = twoMeanT(group1, group2, { alternative, confLevel });
   }
 
-  const n1 = result.n1;
-  const n2 = result.n2;
-  const conditionsMet = n1 >= 30 && n2 >= 30;
-  if (conditionsWarning) {
-    conditionsWarning.hidden = conditionsMet;
-    if (!conditionsMet) {
-      const dsId = dataPanel.currentDatasetId;
-      const bootLink = dsId
-        ? buildSimLink('simulate/bootstrap-two-means/', { dataset: dsId })
-        : buildSimLink('simulate/bootstrap-two-means/');
-      conditionsWarning.innerHTML = `<p><strong>Note:</strong> With small sample size(s) (n₁ = ${n1}, n₂ = ${n2}), the t-test assumes
-        each population is approximately normal. Check that neither group has strong skewness or outliers.</p>
-        <p>If normality is questionable, consider the <a href="${bootLink}">Bootstrap Two-Sample CI</a> instead.</p>`;
-    }
-  }
+  // Conditions checkpoint
+  showConditionsCheckpoint();
 
   renderChart(result);
-  renderResults(result, conditionsMet);
+  renderResults(result);
   announceResult(result);
+}
+
+// ── Conditions checkpoint ────────────────────────────────────────────
+
+function showConditionsCheckpoint() {
+  if (!conditionsCheckpoint) return;
+
+  const dsId = dataPanel.currentDatasetId;
+  const bootLink = dsId
+    ? buildSimLink('simulate/bootstrap-two-means/', { dataset: dsId })
+    : buildSimLink('simulate/bootstrap-two-means/');
+
+  const hasRawData = !fromSummary && group1.length > 0 && group2.length > 0;
+
+  conditionsCheckpoint.innerHTML = `
+    <p>${hasRawData
+      ? '<button type="button" class="conditions-toggle" aria-expanded="false" aria-controls="conditions-panel">Check Conditions</button>'
+      : '<strong>Check Conditions</strong> (no raw data available for diagnostic plots)'}
+    &nbsp; | &nbsp; Alternative: <a href="${bootLink}">Bootstrap CI</a> (no conditions required).</p>
+    ${hasRawData ? '<div id="conditions-panel" class="conditions-panel" hidden><div id="conditions-chart"></div>' +
+      (dsId ? `<p class="hint" style="margin-top:0.5rem">For further investigation, <a href="${buildSimLink('explore/grouped/', { dataset: dsId })}" target="_blank" rel="noopener">explore this dataset</a> in a new tab.</p>` : '') +
+      '</div>' : ''}`;
+  conditionsCheckpoint.hidden = false;
+
+  const toggle = conditionsCheckpoint.querySelector('.conditions-toggle');
+  const panel = conditionsCheckpoint.querySelector('#conditions-panel');
+  const chartEl = conditionsCheckpoint.querySelector('#conditions-chart');
+  if (toggle && panel && chartEl) {
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      panel.hidden = expanded;
+      if (!expanded && chartEl.children.length === 0) {
+        const responseVar = responseVarSelect?.value || '';
+        drawBoxplot(/** @type {HTMLElement} */ (chartEl),
+          { [group1Name]: group1, [group2Name]: group2 },
+          {
+            xLabel: responseVar,
+            titleText: `Boxplot of ${responseVar} by group`,
+            descText: `Side-by-side boxplots comparing ${responseVar} between ${group1Name} and ${group2Name}.`,
+            id: 'conditions-boxplots',
+            animate: false,
+            showOutliers: true,
+          });
+      }
+    });
+  }
 }
 
 // ── Chart rendering ─────────────────────────────────────────────────
@@ -384,6 +422,8 @@ function renderChart(r) {
     tail: /** @type {'left'|'right'|'both'} */ (tail),
     statValueNeg: tail === 'both' ? -Math.abs(r.tStat) : undefined,
   });
+
+  addChartSaveButton(chartContainer, 'two_means_t_test.png');
 }
 
 // ── Results rendering ───────────────────────────────────────────────
@@ -391,10 +431,10 @@ function renderChart(r) {
 /**
  * Render the results panel.
  * @param {import('../../js/inference.js').TwoMeanResult} r
- * @param {boolean} conditionsMet
  */
-function renderResults(r, conditionsMet = true) {
+function renderResults(r) {
   if (!resultDiv) return;
+  setPageTitle(baseTitle, dataPanel.currentSourceName, { n: group1.length + group2.length });
 
   const d = dataPrecision;
   const altSymbol = r.alternative === 'less' ? '&lt;' :
@@ -429,18 +469,19 @@ function renderResults(r, conditionsMet = true) {
   const tStar = ((r.ciUpper - r.ciLower) / 2 / r.se).toFixed(3);
 
   const V = '\\textcolor{#569BBD}';
-  const R = '\\textcolor{#2e7d32}';
+  const S = '\\textcolor{#7B2D8E}';
+  const P = '\\textcolor{#2e7d32}';
 
   const testFormula = tex(`\\begin{aligned}
     t &= \\frac{\\bar{x}_1 - \\bar{x}_2}{\\sqrt{\\dfrac{s_1^2}{n_1} + \\dfrac{s_2^2}{n_2}}} \\\\[10pt]
     &= \\frac{${V}{${formatStat(r.xbar1, d)}} - ${V}{${formatStat(r.xbar2, d)}}}{\\sqrt{\\dfrac{${V}{${formatStat(r.s1, d)}}^2}{${V}{${r.n1}}} + \\dfrac{${V}{${formatStat(r.s2, d)}}^2}{${V}{${r.n2}}}}} \\\\[10pt]
-    &= ${R}{${r.tStat.toFixed(4)}}
+    &= ${S}{${r.tStat.toFixed(4)}}
   \\end{aligned}`, true);
 
   const ciFormula = tex(`\\begin{aligned}
     &(\\bar{x}_1 - \\bar{x}_2) \\pm t^{\\!*} \\cdot SE \\\\[8pt]
     &${V}{${formatStat(r.diff, d)}} \\pm ${V}{${tStar}} \\cdot ${V}{${formatStat(r.se, d)}} \\\\[8pt]
-    &= ${R}{(${formatStat(r.ciLower, d)},\\; ${formatStat(r.ciUpper, d)})}
+    &= ${P}{(${formatStat(r.ciLower, d)},\\; ${formatStat(r.ciUpper, d)})}
   \\end{aligned}`, true);
 
   resultDiv.innerHTML = `
@@ -468,8 +509,8 @@ function renderResults(r, conditionsMet = true) {
     <div class="formula-display">
       <h3>Test Statistic</h3>
       ${testFormula}
-      <p class="formula-detail">${tex(`\\text{Welch df} = ${R}{${r.df.toFixed(1)}}`)}</p>
-      <p class="formula-detail">${tex(`\\text{p-value} = ${R}{${pStr}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{Welch df} = ${P}{${r.df.toFixed(1)}}`)}</p>
+      <p class="formula-detail">${tex(`\\text{p-value} = ${P}{${pStr}}`)}</p>
     </div>
 
     <div class="formula-display formula-ci">
@@ -482,7 +523,6 @@ function renderResults(r, conditionsMet = true) {
       <p><strong>Formal conclusion:</strong> ${conclusions.formal}</p>
       ${conclusions.practical ? `<p><strong>Practical conclusion:</strong> ${conclusions.practical}</p>` : ''}
       <p>${confPct}% CI: (${formatStat(r.ciLower, d)}, ${formatStat(r.ciUpper, d)}). ${ciInterpretation}</p>
-      ${!conditionsMet ? `<p class="warning-inline"><strong>Caution:</strong> One or both sample sizes are small; verify normality within each group before trusting these results.</p>` : ''}
     </div>
   `;
 }

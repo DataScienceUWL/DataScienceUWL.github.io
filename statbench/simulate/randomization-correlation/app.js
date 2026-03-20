@@ -9,8 +9,9 @@ import { createRng, shuffle } from '../../js/prng.js';
 import { cor, formatStat } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, getTabHintText, getActiveTabId } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, getTabHintText, getActiveTabId, setPageTitle } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
+import { addChartSaveButton } from '../../js/export.js';
 
 // ─── DOM elements ───
 
@@ -58,6 +59,7 @@ let xLabel = 'x';
 let yLabel = 'y';
 let observedR = 0;
 let currentSourceName = '';
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ─── Hypothesis direction ───
 
@@ -193,6 +195,7 @@ function showDataLoaded() {
   }
   if (mechObservedR) mechObservedR.textContent = formatStat(observedR, 4);
 
+  setPageTitle(baseTitle, currentSourceName, { n: xValues.length });
   announce(`Data loaded: n = ${xValues.length}, r = ${formatStat(observedR, 4)}`);
 
   setTimeout(() => {
@@ -258,9 +261,6 @@ function generateSimulations(count) {
   if (mechShuffledR) {
     mechShuffledR.textContent = formatStat(lastR, 4);
     mechShuffledR.classList.toggle('highlight-last', count === 1);
-    if (count === 1) {
-      setTimeout(() => mechShuffledR.classList.remove('highlight-last'), 1500);
-    }
   }
   if (mechanismDescEl) {
     mechanismDescEl.textContent = 'Shuffle y-values, keeping x-values fixed';
@@ -339,6 +339,9 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
     pValue,
     precision: 4,
   });
+
+  // Floating save button
+  addChartSaveButton(chartContainer, 'randomization_correlation_distribution.png');
 }
 
 /**

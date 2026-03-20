@@ -11,8 +11,9 @@ import { bootstrapCI } from '../../js/sim-engine.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
 import { computeBins } from '../../js/histogram.js';
 import { parseCSV } from '../../js/csv-parser.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initDataPanel, computeHighlights, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initDataPanel, computeHighlights, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType, createChartToggle, computeDomain } from '../../js/chart-defaults.js';
+import { addChartSaveButton } from '../../js/export.js';
 
 // ─── DOM ───
 
@@ -53,6 +54,7 @@ let yLabel = 'y';
 /** @type {{population?:string, parameter?:string, unit?:string}} */
 let datasetContext = {};
 let currentSourceName = '';
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 /** @type {number[]} */
 let allSlopes = [];
@@ -150,6 +152,7 @@ function showDataLoaded() {
 
   renderScatter();
 
+  setPageTitle(baseTitle, currentSourceName, { n: xData.length });
   announce(`Data loaded: n = ${xData.length}`);
 
   // Scroll controls into view after DOM settles
@@ -286,7 +289,12 @@ function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts
     thresholds: hlThresholds,
     pillMode: ci ? 'bootstrap' : undefined,
     precision: dataPrecision + 1,
+    baseFill: ci ? '#a0a0a0' : undefined,
+    extremeFill: ci ? '#569BBD' : undefined,
   });
+
+  // Floating save button
+  addChartSaveButton(histContainer, 'bootstrap_slope_distribution.png');
 }
 
 /**

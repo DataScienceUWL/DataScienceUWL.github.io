@@ -4,18 +4,21 @@
  * Histogram, dotplot, boxplot with summary statistics.
  */
 
+import * as d3Selection from 'd3-selection';
 import { parseCSV } from '../../js/csv-parser.js';
 import { mean, median, sd, quantile, iqr, range, detectPrecision, formatStat } from '../../js/stats.js';
 import { drawHistogram, sturgesBins } from '../../js/histogram.js';
-import { drawDotplot, computeDots } from '../../js/dotplot.js';
+import { drawDotplot, computeDots, dotplotBins } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
-import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper, setPageTitle } from '../../js/page-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
+import { renderStatLabel } from '../../js/chart-utils.js';
 import { overlayDensityOnHistogram } from '../../js/kde.js';
-import { createExportBar } from '../../js/export.js';
+import { createExportBar, addChartSaveButton } from '../../js/export.js';
 import { initSheet, handleSheetPaste, readSheetValues, populateSheet } from '../../js/spreadsheet.js';
 
 initHelp();
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 
 // ── DOM elements ──────────────────────────────────────────────────────
 
@@ -61,6 +64,9 @@ let showDensity = false;
 
 /** Whether to show relative frequency (proportion) on y-axis. */
 let relativeFreq = false;
+
+/** Whether to show mean marker on dotplots and boxplots. */
+let showMeanMarker = false;
 
 const chartRadios = /** @type {NodeListOf<HTMLInputElement>} */ (
   document.querySelectorAll('input[name="chart-type"]')
@@ -157,6 +163,24 @@ function updateChartControls() {
       renderActiveChart();
     });
 
+  } else if (activeChart === 'dotplot') {
+    const label = document.createElement('label');
+    label.innerHTML = 'Stacks: <input type="number" id="dot-bin-count" min="3" max="50" step="1">';
+    label.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+    chartControls.appendChild(label);
+    const input = /** @type {HTMLInputElement} */ (label.querySelector('input'));
+    input.style.cssText = 'width:3.5rem;padding:0.15rem 0.3rem;font-size:0.85rem;';
+    if (currentValues.length > 0) {
+      input.value = String(currentDotBinCount ?? dotplotBins(currentValues));
+    }
+    wrapWithStepper(input);
+    input.addEventListener('input', () => {
+      const n = parseInt(input.value, 10);
+      if (!isFinite(n) || n < 3) return;
+      currentDotBinCount = n;
+      renderActiveChart();
+    });
+
   } else if (activeChart === 'boxplot') {
     const label = document.createElement('label');
     label.innerHTML = '<input type="checkbox" id="show-outliers" checked> Show outliers';
@@ -169,6 +193,18 @@ function updateChartControls() {
       renderActiveChart();
     });
   }
+
+  // Show mean checkbox — available for all chart types
+  const meanLabel = document.createElement('label');
+  meanLabel.innerHTML = '<input type="checkbox" id="show-mean-marker"> Show mean';
+  meanLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+  chartControls.appendChild(meanLabel);
+  const meanCb = /** @type {HTMLInputElement} */ (meanLabel.querySelector('input'));
+  meanCb.checked = showMeanMarker;
+  meanCb.addEventListener('change', () => {
+    showMeanMarker = meanCb.checked;
+    renderActiveChart();
+  });
 }
 
 // ── State ─────────────────────────────────────────────────────────────
@@ -182,8 +218,12 @@ let dataPrecision = 0;
 /** Current bin count for histogram. */
 let currentBinCount = 7;
 
+/** Current bin count for dotplot (null = auto via Sturges). */
+let currentDotBinCount = /** @type {number|null} */ (null);
+
 /** Whether to show outliers in boxplot. */
 let showOutliers = true;
+
 
 /**
  * Current loaded dataset (raw JSON), null if pasted.
@@ -503,6 +543,7 @@ function setData(values, varLabel, sourceName) {
   currentVarLabel = varLabel;
   dataPrecision = detectPrecision(values);
   currentBinCount = sturgesBins(values.length);
+  currentDotBinCount = null; // reset to auto (Sturges) for new data
 
   // Reset controls to defaults on new data
   activeChart = 'histogram';
@@ -526,6 +567,7 @@ function setData(values, varLabel, sourceName) {
   computeAndDisplay(values);
   updateChartControls();
   renderActiveChart();
+  setPageTitle(baseTitle, sourceName, { variable: varLabel, n: values.length });
   announce(`${values.length} values. Statistics and chart updated.`);
 }
 
@@ -632,17 +674,53 @@ function renderActiveChart() {
       const avgBinWidth = (lastX1 - firstX0) / histResult.bins.length;
       overlayDensityOnHistogram(histResult.frame.inner, currentValues, histResult.xScale, histResult.yScale, avgBinWidth);
     }
+    // Mean marker: red dashed vertical line
+    if (showMeanMarker && histResult && currentValues.length > 0) {
+      const meanVal = mean(currentValues);
+      const mx = histResult.xScale(meanVal);
+      const overlays = d3Selection.select(histResult.frame.inner).select('.overlays');
+      overlays.append('line')
+        .attr('x1', mx).attr('x2', mx)
+        .attr('y1', 0).attr('y2', histResult.frame.height)
+        .attr('stroke', '#F05133').attr('stroke-width', 2)
+        .attr('stroke-dasharray', '6,3')
+        .attr('aria-label', `Mean = ${formatStat(meanVal, dataPrecision)}`);
+      const meanText = overlays.append('text')
+        .attr('x', mx).attr('y', -6)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#F05133').attr('font-size', '11px');
+      renderStatLabel(meanText, `x\u0304 = ${formatStat(meanVal, dataPrecision)}`);
+    }
     if (histResult && histResult.bins && histResult.bins.length > 0) {
       renderBinTable(histResult.bins, currentValues.length);
     }
   } else if (activeChart === 'dotplot') {
-    drawDotplot(chartArea, currentValues, {
+    const dotResult = drawDotplot(chartArea, currentValues, {
       xLabel,
       titleText: `Dotplot of ${xLabel}`,
       descText: `Dot plot showing individual values of ${xLabel}`,
       id: 'desc-dot',
       animate: false,
+      numBins: currentDotBinCount ?? undefined,
     });
+
+    // Mean marker: red triangle below the x-axis at the mean value
+    if (showMeanMarker && currentValues.length > 0 && dotResult) {
+      const meanVal = mean(currentValues);
+      const mx = dotResult.xScale(meanVal);
+      const triangleY = dotResult.frame.height + 12;
+      const size = 6;
+      const triangle = `M${mx},${triangleY - size} L${mx - size},${triangleY + size} L${mx + size},${triangleY + size} Z`;
+
+      const overlays = d3Selection.select(dotResult.frame.inner).select('.overlays');
+      overlays.append('path')
+        .attr('d', triangle)
+        .attr('fill', '#F05133')
+        .attr('stroke', 'none')
+        .attr('aria-label', `Mean = ${formatStat(meanVal, dataPrecision)}`)
+        .append('title')
+        .text(`Mean = ${formatStat(meanVal, dataPrecision)}`);
+    }
   } else if (activeChart === 'boxplot') {
     drawBoxplot(chartArea, currentValues, {
       xLabel,
@@ -651,6 +729,7 @@ function renderActiveChart() {
       id: 'desc-box',
       animate: false,
       showOutliers,
+      showMean: showMeanMarker,
     });
   }
 
@@ -662,6 +741,8 @@ function renderActiveChart() {
     chartFilename: `${xLabel.replace(/\s+/g, '_')}_${activeChart}.png`,
     table: statsTable ?? undefined,
   });
+
+  addChartSaveButton(chartArea, `${xLabel.replace(/\s+/g, '_')}_${activeChart}.png`);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────

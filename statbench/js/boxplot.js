@@ -11,13 +11,16 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import { quantile } from './stats.js';
-import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels } from './chart-utils.js';
+import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels, getColors } from './chart-utils.js';
 
 /** IMS blue for strokes and fills. */
 const IMS_BLUE = '#569BBD';
 
 /** Box fill (IMS blue at ~19% opacity). */
 const BOX_FILL = '#569BBD30';
+
+/** Outlier color — IMS red, distinct from box blue (matches textbook convention). */
+const OUTLIER_COLOR = '#F05133';
 
 /** Outlier dot radius. */
 const OUTLIER_RADIUS = 3;
@@ -77,6 +80,7 @@ export function computeBoxplotStats(values) {
  * @param {string} [options.id] - Unique ID prefix
  * @param {boolean} [options.animate] - Whether to animate (default: true)
  * @param {boolean} [options.showOutliers] - Whether to use 1.5×IQR fences and show outliers (default: true). When false, whiskers extend to min/max.
+ * @param {boolean} [options.showMean] - Whether to show a diamond marker at the mean (default: false).
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
  * @returns {{ frame: ChartFrame, stats: Record<string, BoxplotStats> }}
  */
@@ -88,6 +92,7 @@ export function drawBoxplot(container, data, options = {}) {
     id,
     animate = true,
     showOutliers = true,
+    showMean = false,
     margin,
   } = options;
 
@@ -167,7 +172,14 @@ export function drawBoxplot(container, data, options = {}) {
   const dataGroup = d3Selection.select(frame.inner).select('.data');
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
-  for (const name of groupNames) {
+  // Per-group colors: use Okabe-Ito palette for grouped boxplots, IMS blue for single
+  const groupColors = isGrouped
+    ? getColors(groupNames.length).map(c => ({ stroke: c, fill: c + '30' }))
+    : [{ stroke: IMS_BLUE, fill: BOX_FILL }];
+
+  for (let gi = 0; gi < groupNames.length; gi++) {
+    const name = groupNames[gi];
+    const gc = groupColors[gi % groupColors.length];
     const s = stats[name];
     const vals = groups[name];
     const bandY = yScale(name);
@@ -194,8 +206,8 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('y', boxY)
       .attr('width', shouldAnimate ? 0 : xScale(s.q3) - xScale(s.q1))
       .attr('height', boxH)
-      .attr('fill', BOX_FILL)
-      .attr('stroke', IMS_BLUE)
+      .attr('fill', gc.fill)
+      .attr('stroke', gc.stroke)
       .attr('stroke-width', 1.5);
 
     if (shouldAnimate) {
@@ -212,7 +224,7 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('x2', xScale(s.median))
       .attr('y1', boxY)
       .attr('y2', boxY + boxH)
-      .attr('stroke', IMS_BLUE)
+      .attr('stroke', gc.stroke)
       .attr('stroke-width', 2);
 
     // Lower whisker
@@ -222,7 +234,7 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('x2', xScale(s.q1))
       .attr('y1', bandY + bandH / 2)
       .attr('y2', bandY + bandH / 2)
-      .attr('stroke', IMS_BLUE)
+      .attr('stroke', gc.stroke)
       .attr('stroke-width', 1);
 
     // Upper whisker
@@ -232,7 +244,7 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('x2', xScale(wHi))
       .attr('y1', bandY + bandH / 2)
       .attr('y2', bandY + bandH / 2)
-      .attr('stroke', IMS_BLUE)
+      .attr('stroke', gc.stroke)
       .attr('stroke-width', 1);
 
     // Lower whisker cap
@@ -242,7 +254,7 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('x2', xScale(wLo))
       .attr('y1', capY)
       .attr('y2', capY + capH)
-      .attr('stroke', IMS_BLUE)
+      .attr('stroke', gc.stroke)
       .attr('stroke-width', 1);
 
     // Upper whisker cap
@@ -252,7 +264,7 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('x2', xScale(wHi))
       .attr('y1', capY)
       .attr('y2', capY + capH)
-      .attr('stroke', IMS_BLUE)
+      .attr('stroke', gc.stroke)
       .attr('stroke-width', 1);
 
     // Actual data min/max for five-number summary tooltip
@@ -324,7 +336,7 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('cy', outlierCy)
         .attr('r', OUTLIER_RADIUS)
         .attr('fill', 'none')
-        .attr('stroke', IMS_BLUE)
+        .attr('stroke', OUTLIER_COLOR)
         .attr('stroke-width', 1.5)
         .attr('role', 'listitem')
         .attr('aria-label', d => `Mild outlier: ${d}`);
@@ -337,8 +349,8 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('cx', d => xScale(d))
         .attr('cy', outlierCy)
         .attr('r', OUTLIER_RADIUS)
-        .attr('fill', IMS_BLUE)
-        .attr('stroke', IMS_BLUE)
+        .attr('fill', OUTLIER_COLOR)
+        .attr('stroke', OUTLIER_COLOR)
         .attr('stroke-width', 1.5)
         .attr('role', 'listitem')
         .attr('aria-label', d => `Extreme outlier: ${d}`);
@@ -357,6 +369,35 @@ export function drawBoxplot(container, data, options = {}) {
         x: xScale(d),
         y: outlierCy - OUTLIER_RADIUS * 3,
       }));
+    }
+
+    // Mean marker (diamond)
+    if (showMean) {
+      const meanVal = d3Array.mean(vals);
+      if (meanVal != null) {
+        const mx = xScale(meanVal);
+        const my = bandY + bandH / 2;
+        const ds = boxH * 0.22; // diamond half-size
+        g.append('path')
+          .attr('class', 'mean-marker')
+          .attr('d', `M${mx},${my - ds} L${mx + ds},${my} L${mx},${my + ds} L${mx - ds},${my} Z`)
+          .attr('fill', '#F05133')
+          .attr('stroke', '#fff')
+          .attr('stroke-width', 1)
+          .attr('aria-label', `Mean: ${meanVal.toFixed(2)}`);
+
+        // Hit zone for tooltip
+        const meanHit = g.append('circle')
+          .attr('cx', mx)
+          .attr('cy', my)
+          .attr('r', Math.max(ds * 2, 8))
+          .attr('fill', 'transparent');
+        attachTooltip(meanHit, frame.inner, () => ({
+          lines: [`Mean: ${meanVal.toFixed(2)}`],
+          x: mx,
+          y: my - ds - 4,
+        }));
+      }
     }
   }
 

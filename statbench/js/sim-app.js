@@ -14,10 +14,11 @@ import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.j
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { drawSpike } from './spike.js';
 import { renderSimPills, formatMechStat, drawMiniBoxplot } from './chart-utils.js';
-import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText } from './page-utils.js';
+import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
+import { addChartSaveButton } from './export.js';
 /**
  * @typedef {object} SimConfig
  * @property {'bootstrap'|'randomization'} mode
@@ -120,6 +121,9 @@ export function initSimPage(config) {
   /** Full dataset JSON for info panel. @type {object|undefined} */
   let currentDatasetJSON;
 
+  /** Base page title (before dataset context is added). */
+  const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
+
   /** Track current data source name for save filename. */
   let currentSourceName = 'data';
 
@@ -211,8 +215,9 @@ export function initSimPage(config) {
   }
 
   // ─── Bin adjuster (continuous data only — proportions have fixed k/n bins) ───
+  const DEFAULT_BINS = 20;
   /** @type {number|undefined} */
-  let userBinCount;
+  let userBinCount = config.proportion ? undefined : DEFAULT_BINS;
   /** @type {import('./chart-defaults.js').BinAdjusterControl|null} */
   let binAdjuster = null;
   if (toggleFieldset && !config.proportion) {
@@ -817,6 +822,13 @@ export function initSimPage(config) {
       groupOrderEl.hidden = false;
       groupOrderLabel.textContent = `${group1Name} − ${group2Name}`;
     }
+    // Update document.title with dataset context
+    const totalN = config.twoGroup || config.paired ? data1.length + data2.length : data1.length;
+    setPageTitle(baseTitle, currentSourceName, {
+      variable: selectedVarName || undefined,
+      n: totalN,
+    });
+
     announce(`Data loaded: n = ${data1.length}`);
 
     // Render empty chart with sensible axis limits by running a silent pre-simulation
@@ -908,7 +920,14 @@ export function initSimPage(config) {
       opt.textContent = o;
       successOutcomeSelect.appendChild(opt);
     }
-    successOutcome = outcomes[0];
+    // Check URL param ?success= to pre-select the success outcome
+    const urlSuccess = new URLSearchParams(location.search).get('success');
+    if (urlSuccess && outcomes.includes(urlSuccess)) {
+      successOutcomeSelect.value = urlSuccess;
+      successOutcome = urlSuccess;
+    } else {
+      successOutcome = outcomes[0];
+    }
     successSelector.hidden = false;
   }
 
@@ -964,7 +983,7 @@ export function initSimPage(config) {
           if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) return ds.type === 'bootstrap_prop';
           if (config.mode === 'bootstrap' && config.twoGroup && config.proportion) return ds.type === 'randomization_prop';
           if (config.mode === 'bootstrap' && config.twoGroup) return ds.type === 'randomization';
-          if (config.mode === 'bootstrap') return ds.type === 'bootstrap';
+          if (config.mode === 'bootstrap') return ds.hasNumeric === true && ds.hasCategorical !== true && ds.type !== 'regression' && ds.type !== 'paired';
           if (config.proportion) return ds.type === 'randomization_prop';
           if (config.twoGroup) return ds.type === 'randomization';
           return ds.type === 'randomization' || ds.type === 'randomization_prop';
@@ -1084,6 +1103,7 @@ export function initSimPage(config) {
         currentSourceName = ds.name || id;
 
         showDataLoaded();
+        document.body.setAttribute('data-loaded', 'true');
 
         // Populate editor with dataset as CSV
         if (pasteArea && ds.rows && ds.variables) {
@@ -1169,7 +1189,15 @@ export function initSimPage(config) {
    * Generate N samples/permutations and add to the accumulation.
    * @param {number} count
    */
+  /** @type {ReturnType<typeof setTimeout>|null} */
+  let pendingChartTimer = null;
+
   function generateSamples(count) {
+    // Cancel any pending deferred chart render from a previous +1
+    if (pendingChartTimer !== null) {
+      clearTimeout(pendingChartTimer);
+      pendingChartTimer = null;
+    }
     if (!rng) rng = createRng(seed);
 
     // Initialize mechanism strip on first generate (deferred from data load)
@@ -1257,8 +1285,11 @@ export function initSimPage(config) {
       if (allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
         // Histogram mode: compute previous bin counts for stacked delta
         // Must use EXACT same domain + thresholds as renderChart to align bins
-        let lo = Math.min(...allStats);
-        let hi = Math.max(...allStats);
+        // Include observedStat in domain — matches renderChart's domain logic
+        // (bootstrap mode has no observedStat; randomization paths declare it locally)
+        const domainVals = allStats;
+        let lo = Math.min(...domainVals);
+        let hi = Math.max(...domainVals);
         const dPad = (hi - lo) * 0.05 || 0.5;
         lo -= dPad; hi += dPad;
         if (preSimDomain) {
@@ -1274,8 +1305,10 @@ export function initSimPage(config) {
           ? snappedPropThresholds(histSampleSize, fullDomain, allStats.length)
           : undefined;
         // Bin the FULL dataset first to lock in bin edges
+        // Pass same numBins as renderChart to ensure identical bin edges
         const { bins: fullBins } = computeBins(allStats, {
           domain: fullDomain, thresholds: histThresholds,
+          numBins: config.proportion ? undefined : userBinCount,
         });
         // Extract interior edges so prev data bins with identical edges
         const lockedThresholds = fullBins.slice(1).map(b => b.x0);
@@ -1303,7 +1336,8 @@ export function initSimPage(config) {
           : null;
         const bootDiffValueEl = bootDiffEl?.querySelector('.mech-stat-value') ?? null;
         // Brief pause for mechanism to update visually, then render chart + drop
-        setTimeout(() => {
+        pendingChartTimer = setTimeout(() => {
+          pendingChartTimer = null;
           renderChart(allStats, ciForChart);
           const dropSource = bootDiffValueEl || bootDiffEl || resampleMeanEl;
           if (dropSource && chartContainer) {
@@ -1359,7 +1393,7 @@ export function initSimPage(config) {
         }
         /** @type {[number,number]} */
         const rDomain = [rLo, rHi];
-        const { bins: fullBins } = computeBins(allStats, { domain: rDomain });
+        const { bins: fullBins } = computeBins(allStats, { domain: rDomain, numBins: userBinCount });
         const lockedThresholds = fullBins.slice(1).map(b => b.x0);
         const prevStats = allStats.slice(0, prevLength);
         const { bins: prevBins } = computeBins(prevStats, { domain: rDomain, thresholds: lockedThresholds });
@@ -1371,7 +1405,8 @@ export function initSimPage(config) {
 
       if (count === 1) {
         lastWasSingle = true;
-        setTimeout(() => {
+        pendingChartTimer = setTimeout(() => {
+          pendingChartTimer = null;
           renderChart(allStats, null, observedStat, direction);
           if (resampleMeanEl && chartContainer) {
             animateDropToChart(resampleMeanEl, chartContainer);
@@ -1426,8 +1461,10 @@ export function initSimPage(config) {
           ? snappedPropThresholds(rHistSampleSize, rDomain, allStats.length)
           : undefined;
         // Bin the FULL dataset first to lock in bin edges
+        // Pass same numBins as renderChart to ensure identical bin edges
         const { bins: fullBins } = computeBins(allStats, {
           domain: rDomain, thresholds: rThresholds,
+          numBins: config.proportion ? undefined : userBinCount,
         });
         const lockedThresholds = fullBins.slice(1).map(b => b.x0);
         const prevStats = allStats.slice(0, prevLength);
@@ -1441,10 +1478,10 @@ export function initSimPage(config) {
 
       if (count === 1) {
         // The diff value gets highlight-last via showTwoGroupMechanism(…, highlight=true)
-        // CSS auto-fades it via stat-text-fade animation (1.2s)
         const mechDiffEl = document.querySelector('#mech-resample-content .mech-diff');
         // Brief pause for mechanism to update, then render chart + drop
-        setTimeout(() => {
+        pendingChartTimer = setTimeout(() => {
+          pendingChartTimer = null;
           renderChart(allStats, null, observedStat, direction);
           const dropSourceEl = mechDiffEl || resampleMeanEl;
           if (dropSourceEl && chartContainer) {
@@ -1725,7 +1762,12 @@ export function initSimPage(config) {
         ? formatStat(resampleVal, dataPrecision, 'proportion')
         : formatStat(resampleVal, dataPrecision);
       // Orange highlight only on +1 to visually link to persistent dot
-      resampleMeanEl.classList.toggle('highlight-last', highlightStat);
+      // Force-restart animation by removing and re-adding the class
+      resampleMeanEl.classList.remove('highlight-last');
+      if (highlightStat) {
+        void resampleMeanEl.offsetWidth; // reflow to restart animation
+        resampleMeanEl.classList.add('highlight-last');
+      }
       const statLabelEl = document.getElementById('resample-stat-label');
       if (statLabelEl) {
         if (config.proportion) {
@@ -2064,6 +2106,12 @@ export function initSimPage(config) {
     let chartResult;
     /** @type {any} */
     let chartXScale;
+    // Bootstrap: inside CI = blue (region), outside = gray (de-emphasized)
+    // Randomization: tail = darker blue (extreme), body = blue (normal)
+    const isBootstrap = config.mode === 'bootstrap';
+    const dotBaseFill = isBootstrap && ci ? '#a0a0a0' : undefined;   // gray for outside-CI
+    const dotExtremeFill = isBootstrap && ci ? '#569BBD' : undefined; // blue for inside-CI
+
     if (activeChart === 'dotplot') {
       const r = drawDotplot(chartContainer, stats, {
         id: 'sim-chart',
@@ -2080,13 +2128,15 @@ export function initSimPage(config) {
         highlightIndex,
         highlightIndices,
         precision: config.proportion ? Math.max(dataPrecision + 1, 3) : dataPrecision + 1,
+        baseFill: dotBaseFill,
+        extremeFill: dotExtremeFill,
       });
       chartResult = r.frame;
       chartXScale = r.xScale;
       const maxStack = r.dots.reduce((m, d) => Math.max(m, d.stackIndex + 1), 0);
       const effectiveBins = (config.proportion ? sampleSize : userBinCount)
         ?? (lockedDotGrid && domain ? Math.ceil((domain[1] - domain[0]) / lockedDotGrid.binWidth) : null)
-        ?? Math.min(n, 40);
+        ?? DEFAULT_BINS;
       lastDotResult = { xScale: r.xScale, frame: r.frame, domain: domain || [0, 1], maxStack, numBins: effectiveBins };
       lastHistResult = null;
     } else if (activeChart === 'spike') {
@@ -2145,6 +2195,10 @@ export function initSimPage(config) {
     if (theoryOverlayOn && (activeChart === 'histogram' || activeChart === 'dotplot') && config.mode === 'bootstrap') {
       applyTheoryOverlay(stats);
     }
+
+    // Floating save button
+    const simLabel = config.mode === 'bootstrap' ? 'bootstrap' : 'randomization';
+    addChartSaveButton(chartContainer, `${simLabel}_distribution.png`);
 
     lastStatIndex = -1; // Reset after rendering
     batchHighlightIndices = null;
@@ -2205,7 +2259,7 @@ export function initSimPage(config) {
     resultDiv.innerHTML = `
       <p><strong>Bootstrap Distribution</strong> (${stats.length} resamples)</p>
       <p>${paramLabel}: ${fmt(m)}</p>
-      <p>SE: ${formatStat(se, dataPrecision)}</p>
+      <p>SE: ${fmt(se)}</p>
       <p><strong>${ciLevel}% Confidence Interval:</strong> (${ciLo}, ${ciHi})</p>
       <p class="interpretation">The middle ${ciLevel}% of bootstrap ${bootLong}s fall between ${ciLo}${unitSuffix} and ${ciHi}${unitSuffix}.</p>
       <p class="interpretation">We are ${ciLevel}% confident that the ${ctxParam}${popPhrase} is between ${ciLo}${unitSuffix} and ${ciHi}${unitSuffix}.</p>

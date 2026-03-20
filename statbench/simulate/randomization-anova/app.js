@@ -9,8 +9,9 @@ import { createRng, shuffle } from '../../js/prng.js';
 import { fStat, mean, sd, formatStat, detectPrecision } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
 import { drawBoxplot } from '../../js/boxplot.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, initHelp } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, initHelp, setPageTitle } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
+import { addChartSaveButton } from '../../js/export.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
 
 initHelp();
@@ -68,6 +69,7 @@ let allValues = [];
 let observedF = 0;
 let totalN = 0;
 let currentSourceName = '';
+const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
 let dataPrecision = 2;
 
 /** @type {Array<Record<string, any>>} */
@@ -244,6 +246,7 @@ function showDataLoaded() {
   renderMiniBoxplots(mechObservedBoxplots, groupedValues);
   if (mechObservedF) mechObservedF.textContent = formatStat(observedF, 2);
 
+  setPageTitle(baseTitle, currentSourceName, { n: totalN });
   announce(`Data loaded: ${groupNames.length} groups, n = ${totalN}`);
 
   // Scroll controls into view
@@ -352,9 +355,6 @@ function generateSimulations(count) {
   if (mechShuffledF) {
     mechShuffledF.textContent = formatStat(lastF, 2);
     mechShuffledF.classList.toggle('highlight-last', count === 1);
-    if (count === 1) {
-      setTimeout(() => mechShuffledF.classList.remove('highlight-last'), 1500);
-    }
   }
   if (mechanismDescEl) {
     mechanismDescEl.textContent = 'Shuffle group labels, keeping response values fixed';
@@ -425,6 +425,9 @@ function renderChart(stats, observed, highlightIndex = -1, highlightIndices, pre
     pillMode: stats.length > 0 ? 'randomization' : undefined,
     pValue,
   });
+
+  // Floating save button
+  addChartSaveButton(chartContainer, 'randomization_anova_distribution.png');
 }
 
 /**
