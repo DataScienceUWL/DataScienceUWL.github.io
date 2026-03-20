@@ -104,24 +104,74 @@ export function runSimulation(config) {
 /**
  * Compute a bootstrap confidence interval from an array of bootstrap statistics.
  *
- * @param {number[]} bootStats - Array of bootstrap statistics (will be sorted in place)
+ * @param {number[]} bootStats - Array of bootstrap statistics
  * @param {number} ciLevel - Confidence level in percent (e.g., 95)
+ * @param {{ smooth?: boolean }} [options] - If smooth=true, apply continuity
+ *   smoothing for discrete data (proportions). Spreads tied values uniformly
+ *   across the gap to adjacent values so quantile interpolation works smoothly.
  * @returns {{ ci: [number, number], se: number }}
  */
-export function bootstrapCI(bootStats, ciLevel) {
+export function bootstrapCI(bootStats, ciLevel, { smooth = false } = {}) {
   const B = bootStats.length;
   const alpha = (100 - ciLevel) / 100;
-  // Use R type-7 interpolated quantiles for stable CI bounds
-  // (Math.floor indexing jumps discretely with discrete data like proportions)
-  const lo = quantile(bootStats, alpha / 2);
-  const hi = quantile(bootStats, 1 - alpha / 2);
 
-  // Standard error
+  const statsForCI = smooth ? smoothDiscrete(bootStats) : bootStats;
+  const lo = quantile(statsForCI, alpha / 2);
+  const hi = quantile(statsForCI, 1 - alpha / 2);
+
+  // Standard error (always from raw stats)
   const mean = bootStats.reduce((s, v) => s + v, 0) / B;
   const variance = bootStats.reduce((s, v) => s + (v - mean) ** 2, 0) / (B - 1);
   const se = Math.sqrt(variance);
 
   return { ci: [lo, hi], se };
+}
+
+/**
+ * Smooth discrete bootstrap statistics for stable quantile computation.
+ * Each group of identical values is spread uniformly across the gap to
+ * the next distinct value. This is a continuity correction that prevents
+ * CI bounds from jumping between discrete levels (e.g., k/n and (k+1)/n
+ * for proportion data).
+ *
+ * The histogram/dotplot still displays the original discrete values —
+ * smoothing is only used internally for CI bound computation.
+ *
+ * @param {number[]} values - Bootstrap statistics (not necessarily sorted)
+ * @returns {number[]} Smoothed copy (same length)
+ */
+function smoothDiscrete(values) {
+  const sorted = values.slice().sort((a, b) => a - b);
+  const n = sorted.length;
+  if (n <= 1) return sorted;
+
+  // Find the minimum nonzero gap between unique values
+  let minGap = Infinity;
+  for (let i = 1; i < n; i++) {
+    const gap = sorted[i] - sorted[i - 1];
+    if (gap > 0 && gap < minGap) minGap = gap;
+  }
+  // If all values are identical or data is already continuous, return as-is
+  if (!isFinite(minGap) || minGap === 0) return sorted;
+
+  // Spread each run of identical values uniformly within [-gap/2, +gap/2]
+  const result = new Array(n);
+  let i = 0;
+  while (i < n) {
+    const v = sorted[i];
+    let j = i;
+    while (j < n && sorted[j] === v) j++;
+    const count = j - i;
+    if (count === 1) {
+      result[i] = v;
+    } else {
+      for (let k = 0; k < count; k++) {
+        result[i + k] = v + minGap * ((k + 0.5) / count - 0.5);
+      }
+    }
+    i = j;
+  }
+  return result;
 }
 
 /**
