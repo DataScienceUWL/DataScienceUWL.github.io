@@ -22,9 +22,12 @@ const dataPreview = document.getElementById('data-preview');
 const resultsSection = document.getElementById('results-section');
 const tableContainer = document.getElementById('table-container');
 const chartContainer = document.getElementById('chart-container');
-const chartTypeSelect = /** @type {HTMLSelectElement} */ (document.getElementById('chart-type'));
+const chartRadios = /** @type {NodeListOf<HTMLInputElement>} */ (
+  document.querySelectorAll('input[name="chart-type"]')
+);
 const chartModeSelect = /** @type {HTMLSelectElement} */ (document.getElementById('chart-mode'));
 const chartModeLabel = document.getElementById('chart-mode-label');
+let activeChart = 'bar';
 const catSheetBody = /** @type {HTMLElement} */ (document.getElementById('cat-sheet-body'));
 const numCategoriesInput = /** @type {HTMLInputElement} */ (document.getElementById('num-categories'));
 const summaryTableBody = /** @type {HTMLElement} */ (document.getElementById('summary-table-body'));
@@ -216,11 +219,13 @@ if (loadPastedBtn) {
 
 // ── Display controls ─────────────────────────────────────────────────
 
-chartTypeSelect.addEventListener('change', () => {
-  // Hide frequency/relative toggle for pie and waffle (they always show proportions)
-  const isBars = chartTypeSelect.value === 'bar';
-  if (chartModeLabel) chartModeLabel.hidden = !isBars;
-  updateDisplay();
+chartRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    activeChart = /** @type {'bar'|'pie'|'waffle'} */ (radio.value);
+    // Hide frequency/relative toggle for pie and waffle (they always show proportions)
+    if (chartModeLabel) chartModeLabel.hidden = activeChart !== 'bar';
+    updateDisplay();
+  });
 });
 chartModeSelect.addEventListener('change', () => updateDisplay());
 
@@ -272,16 +277,15 @@ function renderChart() {
   if (!chartContainer) return;
   chartContainer.innerHTML = '';
 
-  const chartType = chartTypeSelect.value;
   const chartMode = chartModeSelect.value;
 
-  if (chartType === 'pie') {
+  if (activeChart === 'pie') {
     drawPieChart(chartContainer, currentValues, {
       xLabel: currentVarName,
       titleText: currentVarName,
       id: 'cat-chart',
     });
-  } else if (chartType === 'waffle') {
+  } else if (activeChart === 'waffle') {
     drawWaffleChart(chartContainer, currentValues, {
       xLabel: currentVarName,
       titleText: currentVarName,
