@@ -163,6 +163,24 @@ function updateChartControls() {
       renderActiveChart();
     });
 
+  } else if (activeChart === 'dotplot') {
+    const label = document.createElement('label');
+    label.innerHTML = 'Stacks: <input type="number" id="dot-bin-count" min="3" max="50" step="1">';
+    label.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+    chartControls.appendChild(label);
+    const input = /** @type {HTMLInputElement} */ (label.querySelector('input'));
+    input.style.cssText = 'width:3.5rem;padding:0.15rem 0.3rem;font-size:0.85rem;';
+    if (currentValues.length > 0) {
+      input.value = String(currentDotBinCount ?? sturgesBins(currentValues.length));
+    }
+    wrapWithStepper(input);
+    input.addEventListener('input', () => {
+      const n = parseInt(input.value, 10);
+      if (!isFinite(n) || n < 3) return;
+      currentDotBinCount = n;
+      renderActiveChart();
+    });
+
   } else if (activeChart === 'boxplot') {
     const label = document.createElement('label');
     label.innerHTML = '<input type="checkbox" id="show-outliers" checked> Show outliers';
@@ -199,6 +217,9 @@ let dataPrecision = 0;
 
 /** Current bin count for histogram. */
 let currentBinCount = 7;
+
+/** Current bin count for dotplot (null = auto via Sturges). */
+let currentDotBinCount = /** @type {number|null} */ (null);
 
 /** Whether to show outliers in boxplot. */
 let showOutliers = true;
@@ -522,6 +543,7 @@ function setData(values, varLabel, sourceName) {
   currentVarLabel = varLabel;
   dataPrecision = detectPrecision(values);
   currentBinCount = sturgesBins(values.length);
+  currentDotBinCount = null; // reset to auto (Sturges) for new data
 
   // Reset controls to defaults on new data
   activeChart = 'histogram';
@@ -679,6 +701,7 @@ function renderActiveChart() {
       descText: `Dot plot showing individual values of ${xLabel}`,
       id: 'desc-dot',
       animate: false,
+      numBins: currentDotBinCount ?? undefined,
     });
 
     // Mean marker: red triangle below the x-axis at the mean value
