@@ -7,7 +7,7 @@
 import { drawScatterplot, drawResidualPlot } from '../../js/scatterplot.js';
 import { linreg, loess, detectPrecision, formatStat } from '../../js/stats.js';
 import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../../js/page-utils.js';
-import { createExportBar } from '../../js/export.js';
+import { createExportBar, addChartSaveButton } from '../../js/export.js';
 
 initHelp();
 const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
@@ -179,6 +179,8 @@ function updateChart() {
         chartContainer: chartContainer,
         chartFilename: `${yVar}_vs_${xVar}_scatter.png`.replace(/\s+/g, '_'),
     });
+
+    addChartSaveButton(chartContainer, `${yVar}_vs_${xVar}_scatter.png`.replace(/\s+/g, '_'));
 
     // Equation display
     const b0 = formatStat(reg.intercept, d);

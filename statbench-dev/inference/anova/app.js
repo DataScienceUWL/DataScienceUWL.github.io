@@ -9,6 +9,7 @@ import * as jstatModule from 'jstat';
 import { setJStat, pdfF, fInv } from '../../js/distributions.js';
 import { anovaF, anovaFSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
+import { addChartSaveButton } from '../../js/export.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText, buildSimLink, parseGroupSummary, setPageTitle } from '../../js/page-utils.js';
 import { parseParams } from '../../js/url-params.js';
@@ -430,6 +431,8 @@ function renderChart(r) {
     pdfFn,
     tail: 'right',
   });
+
+  addChartSaveButton(chartContainer, 'anova_f_test.png');
 }
 
 

@@ -17,6 +17,7 @@ import { announce, initKeyboardShortcuts, initPlayPause, initTabs, animateDropTo
 import { parseParams } from './url-params.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, dotplotBins, histogramThresholds, renderSimChart, createBinAdjuster } from './chart-defaults.js';
+import { addChartSaveButton } from './export.js';
 
 /**
  * @typedef {object} OneSampleSimConfig
@@ -444,7 +445,7 @@ export function initOneSamplePage(config) {
       autoCollapse: true,
       stickyControls: true,
       showPreview: true,
-      datasetFilter: (/** @type {any} */ ds) => ds.hasNumeric !== false,
+      datasetFilter: (/** @type {any} */ ds) => ds.hasNumeric === true && ds.hasCategorical === false,
       onDataset: (/** @type {any} */ ds) => {
         const numVar = ds.variables.find(/** @param {any} v */ v => v.type === 'numeric') || ds.variables[0];
         if (!numVar) { announce('No numeric variable found.'); return; }
@@ -770,6 +771,9 @@ export function initOneSamplePage(config) {
     if (theoryOverlayOn && (activeChart === 'histogram' || activeChart === 'dotplot')) {
       applyTheoryOverlay();
     }
+
+    // Floating save button
+    addChartSaveButton(chartContainer, 'null_distribution.png');
   }
 
   // ─── P-value & extremes ───

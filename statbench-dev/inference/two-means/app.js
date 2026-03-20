@@ -9,6 +9,7 @@ import * as jstatModule from 'jstat';
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { twoMeanT, twoMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
+import { addChartSaveButton } from '../../js/export.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
@@ -421,6 +422,8 @@ function renderChart(r) {
     tail: /** @type {'left'|'right'|'both'} */ (tail),
     statValueNeg: tail === 'both' ? -Math.abs(r.tStat) : undefined,
   });
+
+  addChartSaveButton(chartContainer, 'two_means_t_test.png');
 }
 
 // ── Results rendering ───────────────────────────────────────────────

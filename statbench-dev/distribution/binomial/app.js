@@ -11,6 +11,7 @@ import * as d3Axis from 'd3-axis';
 import * as d3Shape from 'd3-shape';
 import { formatTick } from '../../js/chart-utils.js';
 import { initHelp, setPageTitle } from '../../js/page-utils.js';
+import { addChartSaveButton } from '../../js/export.js';
 
 initHelp();
 const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
@@ -361,6 +362,9 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma, prob, type) {
 
   // Draggable k boundary line
   addDraggableKLine(g, svg, data, n, k, innerW, innerH, margin);
+
+  // Floating save button
+  addChartSaveButton(chartContainer, 'binomial_distribution.png');
 }
 
 /**

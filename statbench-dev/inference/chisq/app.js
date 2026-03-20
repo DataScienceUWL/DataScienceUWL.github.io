@@ -9,6 +9,7 @@
 import { setJStat, pdfChisq, chisqInv } from '../../js/distributions.js';
 import { chisqTest } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
+import { addChartSaveButton } from '../../js/export.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
 import { announce, initTabs, initDataPanel, initKeyboardShortcuts, buildSimLink, setPageTitle } from '../../js/page-utils.js';
@@ -514,6 +515,8 @@ function drawChart(result) {
     pdfFn,
     tail: 'right',
   });
+
+  addChartSaveButton(chartContainer, 'chisq_test.png');
 }
 
 // ── Interpretation ──────────────────────────────────────────────────

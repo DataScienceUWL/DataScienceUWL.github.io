@@ -12,7 +12,7 @@ import { drawHistogram, computeBins, sturgesBins } from '../../js/histogram.js';
 import { drawDotplot, computeDots } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { drawGroupedDensity } from '../../js/kde.js';
-import { createExportBar } from '../../js/export.js';
+import { createExportBar, addChartSaveButton } from '../../js/export.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper, setPageTitle } from '../../js/page-utils.js';
 import { getColors } from '../../js/chart-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
@@ -625,6 +625,8 @@ function renderActiveChart() {
     chartFilename: `${currentVarLabel.replace(/\s+/g, '_')}_by_${currentGroupLabel.replace(/\s+/g, '_')}_${activeChart}.png`,
     table: statsTable ?? undefined,
   });
+
+  addChartSaveButton(chartArea, `${currentVarLabel.replace(/\s+/g, '_')}_by_${currentGroupLabel.replace(/\s+/g, '_')}_${activeChart}.png`);
 }
 
 /**

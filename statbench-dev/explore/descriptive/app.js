@@ -14,7 +14,7 @@ import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper, setPageTi
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
 import { renderStatLabel } from '../../js/chart-utils.js';
 import { overlayDensityOnHistogram } from '../../js/kde.js';
-import { createExportBar } from '../../js/export.js';
+import { createExportBar, addChartSaveButton } from '../../js/export.js';
 import { initSheet, handleSheetPaste, readSheetValues, populateSheet } from '../../js/spreadsheet.js';
 
 initHelp();
@@ -741,6 +741,8 @@ function renderActiveChart() {
     chartFilename: `${xLabel.replace(/\s+/g, '_')}_${activeChart}.png`,
     table: statsTable ?? undefined,
   });
+
+  addChartSaveButton(chartArea, `${xLabel.replace(/\s+/g, '_')}_${activeChart}.png`);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────

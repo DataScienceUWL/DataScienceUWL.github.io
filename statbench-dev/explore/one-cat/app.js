@@ -11,6 +11,7 @@ import { formatStat } from '../../js/stats.js';
 import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
 import { initSheet, handleSheetPaste, readSheetValues, populateSheet } from '../../js/spreadsheet.js';
+import { addChartSaveButton } from '../../js/export.js';
 
 initHelp();
 const baseTitle = document.title.replace(/\s*\|\s*StatBench$/, '');
@@ -319,4 +320,8 @@ function renderChart() {
       margin: { top: 30, right: 15, bottom: 80, left: 55 },
     });
   }
+
+  // Floating save button
+  const safeName = currentVarName.replace(/\s+/g, '_');
+  addChartSaveButton(chartContainer, `${safeName}_${activeChart}.png`);
 }

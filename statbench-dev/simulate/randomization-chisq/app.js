@@ -10,6 +10,7 @@ import { chisqStat, formatStat } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
 import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
+import { addChartSaveButton } from '../../js/export.js';
 
 // ─── DOM elements ───
 
@@ -396,6 +397,9 @@ function renderChart(stats, observed, highlightIndex = -1, highlightIndices, pre
     pillMode: stats.length > 0 ? 'randomization' : undefined,
     pValue,
   });
+
+  // Floating save button
+  addChartSaveButton(chartContainer, 'randomization_chisq_distribution.png');
 }
 
 /**

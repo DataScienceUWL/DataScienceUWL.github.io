@@ -8,6 +8,7 @@
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { oneMeanT, oneMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
+import { addChartSaveButton } from '../../js/export.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
@@ -201,7 +202,7 @@ function handleText(parsed, sourceName) {
 
 const dataPanel = initDataPanel({
   autoCollapse: true, stickyControls: true, showPreview: true,
-  datasetFilter: ds => ds.hasNumeric !== false,
+  datasetFilter: ds => ds.hasNumeric === true && ds.hasCategorical === false,
   onDataset: handleDataset,
   onText: handleText,
   onClear: () => {
@@ -483,4 +484,6 @@ function drawChart(result) {
     tail: /** @type {'left'|'right'|'both'} */ (tail),
     statValueNeg: tail === 'both' ? -Math.abs(tStat) : undefined,
   });
+
+  addChartSaveButton(chartContainer, 'one_mean_t_test.png');
 }
