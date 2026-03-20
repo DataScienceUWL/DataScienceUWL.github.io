@@ -8,7 +8,7 @@ import * as d3Selection from 'd3-selection';
 import { parseCSV } from '../../js/csv-parser.js';
 import { mean, median, sd, quantile, iqr, range, detectPrecision, formatStat } from '../../js/stats.js';
 import { drawHistogram, sturgesBins } from '../../js/histogram.js';
-import { drawDotplot, computeDots } from '../../js/dotplot.js';
+import { drawDotplot, computeDots, dotplotBins } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper, setPageTitle } from '../../js/page-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
@@ -171,7 +171,7 @@ function updateChartControls() {
     const input = /** @type {HTMLInputElement} */ (label.querySelector('input'));
     input.style.cssText = 'width:3.5rem;padding:0.15rem 0.3rem;font-size:0.85rem;';
     if (currentValues.length > 0) {
-      input.value = String(currentDotBinCount ?? sturgesBins(currentValues.length));
+      input.value = String(currentDotBinCount ?? dotplotBins(currentValues));
     }
     wrapWithStepper(input);
     input.addEventListener('input', () => {

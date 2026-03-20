@@ -25,18 +25,49 @@ const OBSERVED_COLOR = '#7B2D8E';
 /** Minimum dot radius. */
 const MIN_RADIUS = 2;
 
-/** Maximum dot radius. */
-const MAX_RADIUS = 8;
+/** Maximum dot radius (explore dotplots may go up to this). */
+const MAX_RADIUS = 12;
 
 /** Maximum column stroke-width when in filled-column mode. */
 const COLUMN_MAX_WIDTH = 6;
+
+/**
+ * Compute default bin count for dotplots — finer than Sturges so dots form
+ * a cohesive shape (matching R/ggplot2 visual density).
+ * Uses Freedman-Diaconis when IQR is available, otherwise range/30.
+ * @param {number[]} values - Numeric data (unsorted is fine)
+ * @returns {number}
+ */
+export function dotplotBins(values) {
+  const n = values.length;
+  if (n <= 1) return 3;
+  const sorted = [...values].sort((a, b) => a - b);
+  const xMin = sorted[0];
+  const xMax = sorted[n - 1];
+  const range = xMax - xMin;
+  if (range === 0) return 3;
+  // Freedman-Diaconis bin width
+  const q1 = sorted[Math.floor(n * 0.25)];
+  const q3 = sorted[Math.floor(n * 0.75)];
+  const iqrVal = q3 - q1;
+  let bins;
+  if (iqrVal > 0) {
+    const fdWidth = 2 * iqrVal * Math.pow(n, -1 / 3);
+    bins = Math.ceil(range / fdWidth);
+  } else {
+    // Fallback: range/30 (ggplot2 default for dotplots)
+    bins = 30;
+  }
+  // Dotplots need finer resolution than histograms — at least 15 bins
+  return Math.min(40, Math.max(15, bins));
+}
 
 /**
  * Compute stacked dot positions from numeric data.
  *
  * @param {number[]} values - Numeric data
  * @param {object} [options]
- * @param {number} [options.numBins] - Number of bins for stacking (default: min(n, 40))
+ * @param {number} [options.numBins] - Number of bins for stacking (default: dotplotBins heuristic)
  * @param {[number, number]} [options.domain] - [min, max] domain override
  * @param {number} [options.binWidth] - Locked bin width (overrides domain/numBins computation)
  * @param {number} [options.binOrigin] - Locked bin origin for grid alignment (default: domain[0])
@@ -60,7 +91,7 @@ export function computeDots(values, options = {}) {
   }
 
   const domain = options.domain ?? /** @type {[number, number]} */ ([xMin, xMax]);
-  const numBins = options.numBins ?? sturgesBins(n);
+  const numBins = options.numBins ?? dotplotBins(values);
   // Allow locked binWidth (for stable dotplot grids across re-renders)
   const binWidth = options.binWidth ?? (domain[1] - domain[0]) / numBins;
   // Use the bin origin from the locked grid if provided, else from domain
@@ -95,8 +126,8 @@ export function computeDotRadius(innerWidth, innerHeight, maxStack, numBins) {
   return Math.max(
     MIN_RADIUS,
     Math.min(
-      innerHeight / (maxStack * 2.2),
-      innerWidth / (numBins * 2.2),
+      innerHeight / (maxStack * 2.05),
+      innerWidth / (numBins * 2.05),
       MAX_RADIUS,
     ),
   );
@@ -163,7 +194,7 @@ export function drawDotplot(container, values, options = {}) {
   // Compute effective bin count from locked grid + domain when available
   const effectiveBins = numBins
     ?? (lockedBinWidth && finalDomain ? Math.ceil((finalDomain[1] - finalDomain[0]) / lockedBinWidth) : null)
-    ?? sturgesBins(values.length);
+    ?? dotplotBins(values);
 
   const frame = createChart(container, { titleText, descText, id, margin, ...(viewHeight != null && { viewHeight }) });
 
@@ -195,6 +226,21 @@ export function drawDotplot(container, values, options = {}) {
       .attr('transform', `translate(0, ${frame.height})`)
       .call(xAxis);
     autoReduceTicks(xAxisG, xAxis);
+
+    // Faint vertical grid lines at tick positions
+    const tickValues = xScale.ticks();
+    const gridGroup = d3Selection.select(frame.inner).select('.data');
+    for (const tv of tickValues) {
+      gridGroup.append('line')
+        .attr('class', 'grid-line')
+        .attr('x1', xScale(tv))
+        .attr('x2', xScale(tv))
+        .attr('y1', 0)
+        .attr('y2', frame.height)
+        .attr('stroke', '#d0d0d0')
+        .attr('stroke-width', 0.5)
+        .attr('stroke-dasharray', '2,2');
+    }
 
     if (xLabel) {
       axes.append('text')
@@ -237,7 +283,7 @@ export function drawDotplot(container, values, options = {}) {
       const newHighlight = opts.highlightIndex ?? -1;
       const newHighlightSet = opts.highlightIndices;
       const newResult = computeDots(newValues, { numBins: newNumBins });
-      const newEffectiveBins = newNumBins ?? sturgesBins(newValues.length);
+      const newEffectiveBins = newNumBins ?? dotplotBins(newValues);
       const newOverflow = newResult.maxStack > 0 && newResult.maxStack * MIN_RADIUS * 2 > frame.height;
 
       xScale.domain(newResult.domain);
