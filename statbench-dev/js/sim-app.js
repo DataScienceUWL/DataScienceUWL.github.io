@@ -1265,7 +1265,7 @@ export function initSimPage(config) {
       let ci = null;
       const CI_MIN = 20; // Don't show CI until this many resamples
       if (allStats.length >= CI_MIN) {
-        const result = bootstrapCI([...allStats], ciLevel, { smooth: !!config.proportion });
+        const result = bootstrapCI([...allStats], ciLevel);
         ci = result.ci;
         displayBootstrapResults(allStats, result.ci, result.se, ciLevel);
       } else {
@@ -1953,7 +1953,7 @@ export function initSimPage(config) {
     ciSelect.addEventListener('change', () => {
       if (allStats.length >= 10) {
         const ciLevel = parseInt(ciSelect.value, 10);
-        const result = bootstrapCI([...allStats], ciLevel, { smooth: !!config.proportion });
+        const result = bootstrapCI([...allStats], ciLevel);
         displayBootstrapResults(allStats, result.ci, result.se, ciLevel);
         const CI_MIN = 20;
         renderChart(allStats, allStats.length >= CI_MIN ? result.ci : null);
