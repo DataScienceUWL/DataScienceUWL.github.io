@@ -181,14 +181,15 @@
         id: 'grouped',
         title: 'Grouped (Numeric + Categorical)',
         tool: '../explore/grouped/',
-        match: ds => ds.hasNumeric && ds.hasCategorical,
+        match: ds => ds.hasNumeric && ds.hasCategorical && ds.type !== 'regression' && ds.type !== 'paired',
       },
       {
         id: 'regression',
         title: 'Two Numeric Variables (Regression)',
         tool: '../explore/regression/',
-        match: ds => ds.hasNumeric && !ds.hasCategorical && countVarType(ds, 'numeric') >= 2
-                     && !isPaired(ds),
+        match: ds => ds.hasNumeric && countVarType(ds, 'numeric') >= 2
+                     && !isPaired(ds)
+                     && (!ds.hasCategorical || ds.type === 'regression'),
       },
       {
         id: 'paired',
