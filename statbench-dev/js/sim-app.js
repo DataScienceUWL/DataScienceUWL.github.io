@@ -1367,9 +1367,9 @@ export function initSimPage(config) {
         allStats.push(mean(flipped));
       }
 
-      // Show mechanism (reuse one-sample mechanism strip)
+      // Show paired sign-flip mechanism
       lastResample = lastFlipped;
-      showResample(lastFlipped, false, count === 1);
+      showPairedMechanism(diffs, lastFlipped, count === 1);
 
       // Highlights
       if (count === 1) {
@@ -1914,6 +1914,95 @@ export function initSimPage(config) {
       margin: { top: 5, right: 10, bottom: 25, left: 35 },
     });
     resampleContentEl.appendChild(container);
+  }
+
+  /**
+   * Display paired randomization mechanism: original diffs → sign-flipped diffs.
+   * Shows which differences had their sign flipped, with a clear visual indicator.
+   * @param {number[]} originalDiffs - The original paired differences
+   * @param {number[]} flippedDiffs - The sign-flipped differences
+   * @param {boolean} highlightStat - Whether to highlight the resulting statistic
+   */
+  function showPairedMechanism(originalDiffs, flippedDiffs, highlightStat) {
+    if (!resampleContentEl || !bootstrapSampleEl) return;
+    bootstrapSampleEl.hidden = false;
+
+    resampleContentEl.innerHTML = '';
+
+    if (originalDiffs.length <= CHIP_THRESHOLD) {
+      // Small n: show aligned chips with flip indicators
+      const container = document.createElement('div');
+      container.className = 'sample-dots paired-flip-dots';
+      container.setAttribute('role', 'img');
+      container.setAttribute('aria-label', 'Sign-flipped differences');
+
+      for (let i = 0; i < flippedDiffs.length; i++) {
+        const orig = originalDiffs[i];
+        const flipped = flippedDiffs[i];
+        const wasFlipped = Math.sign(orig) !== 0 && Math.sign(orig) !== Math.sign(flipped);
+
+        const dot = document.createElement('span');
+        dot.className = 'sample-dot' + (wasFlipped ? ' sign-flipped' : '');
+        dot.textContent = formatChipValue(flipped);
+        dot.title = wasFlipped
+          ? `${formatChipValue(orig)} → ${formatChipValue(flipped)} (flipped)`
+          : `${formatChipValue(orig)} (kept)`;
+        if (wasFlipped) {
+          const badge = document.createElement('sup');
+          badge.className = 'flip-badge';
+          badge.textContent = '\u00b1';
+          dot.appendChild(badge);
+        }
+        container.appendChild(dot);
+      }
+      resampleContentEl.appendChild(container);
+    } else {
+      // Large n: summary counts
+      let flippedCount = 0;
+      let keptCount = 0;
+      for (let i = 0; i < originalDiffs.length; i++) {
+        const wasFlipped = Math.sign(originalDiffs[i]) !== 0
+          && Math.sign(originalDiffs[i]) !== Math.sign(flippedDiffs[i]);
+        if (wasFlipped) flippedCount++;
+        else keptCount++;
+      }
+      const summary = document.createElement('div');
+      summary.className = 'resample-summary';
+      summary.innerHTML = `
+        <div class="resample-bar">
+          <span class="rs-chip">${keptCount} kept original sign</span>
+          <span class="rs-chip sign-flipped">${flippedCount} sign flipped</span>
+        </div>
+      `;
+      resampleContentEl.appendChild(summary);
+    }
+
+    // Update stat value
+    if (resampleMeanEl) {
+      const resampleVal = mean(flippedDiffs);
+      resampleMeanEl.textContent = formatStat(resampleVal, dataPrecision);
+      resampleMeanEl.classList.remove('highlight-last');
+      if (highlightStat) {
+        void resampleMeanEl.offsetWidth;
+        resampleMeanEl.classList.add('highlight-last');
+      }
+      const statLabelEl = document.getElementById('resample-stat-label');
+      if (statLabelEl) statLabelEl.textContent = 'Shuffled mean';
+    }
+
+    // Mechanism description
+    if (mechanismDescEl) {
+      let flippedCount = 0;
+      for (let i = 0; i < originalDiffs.length; i++) {
+        if (Math.sign(originalDiffs[i]) !== 0
+            && Math.sign(originalDiffs[i]) !== Math.sign(flippedDiffs[i])) {
+          flippedCount++;
+        }
+      }
+      mechanismDescEl.textContent =
+        `Randomly flip signs · ${flippedCount} of ${originalDiffs.length} differences flipped`;
+      mechanismDescEl.hidden = false;
+    }
   }
 
   // Replace single toggle button with segmented control
