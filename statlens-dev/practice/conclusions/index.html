@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Conclusion Practice | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.js"></script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "jstat": "https://cdn.jsdelivr.net/npm/jstat@1/+esm"
+        }
+    }
+    </script>
+
+    <style>
+        .scenario-card {
+            background: var(--ims-lightest);
+            border: 2px solid var(--ims-blue);
+            border-radius: 8px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .scenario-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: var(--ims-blue);
+            font-size: 1.1rem;
+        }
+        .scenario-card .hypotheses {
+            margin: 0.5rem 0;
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+        .scenario-card .test-results {
+            background: white;
+            border-radius: 4px;
+            padding: 0.6rem 1rem;
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .scenario-card .parameter-note {
+            font-size: 0.85rem;
+            color: #666;
+            font-style: italic;
+            margin: 0.3rem 0 0 0;
+        }
+        .scenario-counter {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        .score-bar {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .score-bar span { white-space: nowrap; }
+
+        /* ── Mad Libs template ───────────────────────────── */
+        .madlib-section {
+            margin: 1.2rem 0;
+        }
+        .madlib-section h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--ims-green);
+            font-size: 0.95rem;
+        }
+        .madlib-sentence {
+            font-size: 1rem;
+            line-height: 2.2;
+            margin: 0.3rem 0 0.8rem 0;
+        }
+        .madlib-select {
+            font-family: 'Atkinson Hyperlegible', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 0.2rem 0.4rem;
+            border: none;
+            border-bottom: 2px solid var(--ims-blue);
+            background: #eef5fa;
+            color: var(--ims-green);
+            border-radius: 3px 3px 0 0;
+            cursor: pointer;
+            min-width: 8em;
+            appearance: auto;
+        }
+        .madlib-select:focus-visible {
+            outline: 2px solid var(--ims-green);
+            outline-offset: 1px;
+        }
+        .madlib-select.correct {
+            border-bottom-color: #4caf50;
+            background: #e8f5e9;
+        }
+        .madlib-select.incorrect {
+            border-bottom-color: #e57373;
+            background: #fce4ec;
+        }
+        .claim-fill {
+            font-style: italic;
+            color: #999;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 1px;
+            transition: color 0.2s;
+        }
+        .claim-fill.filled {
+            font-style: normal;
+            color: var(--ims-green);
+            font-weight: 700;
+            border-bottom-color: var(--ims-green);
+        }
+
+        /* ── Claim radio buttons ─────────────────────────── */
+        .claim-section {
+            margin: 1rem 0;
+        }
+        .claim-section h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--ims-green);
+            font-size: 0.95rem;
+        }
+        .claim-options {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .claim-options li {
+            margin: 0.4rem 0;
+        }
+        .claim-options label {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.5rem 0.7rem;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .claim-options label:hover {
+            border-color: var(--ims-blue);
+            background: #f6fafc;
+        }
+        .claim-options input[type="radio"] {
+            margin-top: 0.15rem;
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--ims-blue);
+        }
+        .claim-options label.correct {
+            border-color: #4caf50;
+            background: #e8f5e9;
+        }
+        .claim-options label.incorrect {
+            border-color: #e57373;
+            background: #fce4ec;
+        }
+        .claim-options label.correct-answer {
+            border-color: #4caf50;
+            background: #e8f5e9;
+        }
+
+        /* ── Buttons ─────────────────────────────────────── */
+        .btn-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+        .btn-primary {
+            background: var(--ims-blue);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-primary:hover { background: var(--ims-green); }
+        .btn-primary:focus-visible {
+            outline: 2px solid var(--ims-green);
+            outline-offset: 2px;
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: white;
+            color: var(--ims-blue);
+            border: 2px solid var(--ims-blue);
+            padding: 0.5rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-secondary:hover { background: var(--ims-lightest); }
+
+        /* ── Feedback ─────────────────────────────────────── */
+        .feedback-box {
+            padding: 0.6rem 1rem;
+            margin: 0.3rem 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            display: none;
+        }
+        .feedback-box.visible { display: block; }
+        .feedback-box.hint {
+            background: #fff8e1;
+            border-left: 4px solid #f9a825;
+            color: #5d4037;
+        }
+        .feedback-box.success {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            color: #1b5e20;
+        }
+        .feedback-box.error {
+            background: #fce4ec;
+            border-left: 4px solid #e57373;
+            color: #b71c1c;
+        }
+
+        /* ── Score summary ────────────────────────────────── */
+        .score-summary {
+            margin: 0.5rem 0;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        .score-summary .fraction {
+            font-weight: 700;
+            color: var(--ims-green);
+        }
+    </style>
+</head>
+
+<body>
+
+    <main>
+        <h1>Hypothesis Test Conclusion Practice<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">&#9881;</button></span></h1>
+        <p class="page-subtitle">Fill in the blanks to write correct formal and practical conclusions.</p>
+        <div class="score-bar">
+            <span id="scenario-counter"></span>
+            <span id="score-display"></span>
+        </div>
+
+        <div id="scenario-card" class="scenario-card">
+            <p class="placeholder">Loading scenarios...</p>
+        </div>
+
+        <!-- Claim selection (shared by formal + practical) -->
+        <div id="claim-section" class="claim-section" style="display:none;">
+            <h4>Select the correct contextual claim:</h4>
+            <ul id="claim-options" class="claim-options" role="radiogroup" aria-label="Contextual claim options">
+            </ul>
+            <div id="claim-feedback" class="feedback-box"></div>
+            <button id="check-claim" class="btn-primary" style="margin-top: 0.5rem;">Check Claim</button>
+        </div>
+
+        <!-- Formal conclusion Mad Libs -->
+        <div id="formal-section" class="madlib-section" style="display:none;">
+            <h4>Formal Conclusion</h4>
+            <p id="formal-sentence" class="madlib-sentence"></p>
+            <div id="formal-feedback" class="feedback-box"></div>
+        </div>
+
+        <!-- Practical conclusion Mad Libs -->
+        <div id="practical-section" class="madlib-section" style="display:none;">
+            <h4>Practical Conclusion</h4>
+            <p id="practical-sentence" class="madlib-sentence"></p>
+            <div id="practical-feedback" class="feedback-box"></div>
+        </div>
+
+        <div class="btn-row" id="action-buttons" style="display:none;">
+            <button id="check-answer" class="btn-primary">Check Answer</button>
+            <button id="next-scenario" class="btn-secondary" disabled>Next Scenario</button>
+        </div>
+
+        <div id="score-summary" class="score-summary"></div>
+    </main>
+
+    <div id="sr-announce" class="sr-only" aria-live="polite" role="status"></div>
+
+    <dialog id="page-help" aria-label="Help">
+        <h2>Help</h2>
+        <p class="help-intro">Practice writing hypothesis test conclusions by filling in the blanks.</p>
+        <h3>How it works</h3>
+        <ol style="padding-left: 1.2rem; font-size: 0.9rem; line-height: 1.5;">
+            <li>Read the scenario: hypotheses and test results</li>
+            <li>Select the correct contextual claim from the four options</li>
+            <li>Fill in the formal conclusion blanks (reject/fail to reject, sufficient/insufficient)</li>
+            <li>Fill in the practical conclusion blank (provide/do not provide)</li>
+            <li>Click <strong>Check Answer</strong> to see which blanks are correct</li>
+            <li>Fix any mistakes and check again, or move to the next scenario</li>
+        </ol>
+        <h3>Formal conclusion pattern</h3>
+        <p style="font-size: 0.85rem; line-height: 1.5;">At the &alpha; = [given] significance level, we <em>[reject / fail to reject]</em> H&#8320;. There is <em>[sufficient / insufficient]</em> evidence <em>[claim]</em>.</p>
+        <h3>Practical conclusion pattern</h3>
+        <p style="font-size: 0.85rem; line-height: 1.5;">The data <em>[provide / do not provide]</em> evidence <em>[claim]</em>.</p>
+        <h3>Tips</h3>
+        <ul style="padding-left: 1.2rem; font-size: 0.85rem; line-height: 1.5;">
+            <li>Compare the p-value to &alpha; to decide reject vs. fail to reject</li>
+            <li>"Reject" pairs with "sufficient"; "fail to reject" pairs with "insufficient"</li>
+            <li>Never say we "accept" H&#8320; or "prove" anything</li>
+        </ul>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

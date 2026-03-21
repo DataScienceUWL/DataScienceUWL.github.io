@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sampling Distributions | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body,{delimiters:[{left:'\\(',right:'\\)',display:false}]})"></script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+    <style>
+        .pop-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        @media (max-width: 700px) {
+            .pop-grid { grid-template-columns: 1fr; }
+        }
+        .chart-panel {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem;
+        }
+        .chart-panel h3 {
+            font-size: 0.9rem;
+            margin: 0 0 0.25rem;
+            color: var(--ims-gray-text);
+        }
+        .chart-panel svg {
+            font-family: var(--font-body);
+        }
+        .pop-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            margin: 0.75rem 0;
+        }
+        .pop-controls label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .pop-controls select, .pop-controls input {
+            width: auto;
+        }
+        .sample-size-input {
+            width: 5rem !important;
+        }
+        .stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin: 0.5rem 0;
+            font-size: 0.85rem;
+        }
+        .stats-row .stat-item {
+            display: flex;
+            gap: 0.3rem;
+        }
+        .stats-row .stat-label {
+            color: var(--ims-gray-text);
+        }
+        .stats-row .stat-value {
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+        .chart-option {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#population-section">Skip to Population</a>
+        <a href="#controls">Skip to Controls</a>
+        <a href="#charts">Skip to Charts</a>
+    </nav>
+
+    <main>
+        <h1>Sampling Distributions<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
+        <p>Pick a population, choose a sample size, and draw samples. Watch the sampling distribution of the mean build up — the Central Limit Theorem in action.</p>
+
+        <section id="population-section" aria-label="Population settings">
+            <div class="pop-controls">
+                <label for="pop-shape">Population shape:
+                    <select id="pop-shape">
+                        <option value="normal">Normal</option>
+                        <option value="right-skewed" selected>Right-skewed</option>
+                        <option value="left-skewed">Left-skewed</option>
+                        <option value="uniform">Uniform</option>
+                        <option value="bimodal">Bimodal</option>
+                    </select>
+                </label>
+                <label for="sample-size"><span style="white-space:nowrap">Sample size (<i>n</i>):</span>
+                    <input type="number" id="sample-size" class="sample-size-input"
+                           value="30" min="1" max="500" step="1">
+                </label>
+            </div>
+            <div class="stats-row" id="pop-stats">
+                <span class="stat-item"><span class="stat-label">Population \(\mu\):</span> <span class="stat-value" id="pop-mean">&mdash;</span></span>
+                <span class="stat-item"><span class="stat-label">Population \(\sigma\):</span> <span class="stat-value" id="pop-sd">&mdash;</span></span>
+            </div>
+        </section>
+
+        <section id="controls" aria-label="Sampling controls">
+            <div class="generate-bar" role="group" aria-label="Draw samples">
+                <button type="button" class="gen-btn" data-count="1">+1</button>
+                <button type="button" class="gen-btn" data-count="10">+10</button>
+                <button type="button" class="gen-btn" data-count="100">+100</button>
+                <button type="button" class="gen-btn" data-count="1000">+1000</button>
+                <button type="button" id="reset-btn" class="reset-btn" aria-label="Reset simulation" title="Reset" hidden>&#x21BA;</button>
+                <span class="gen-label">Samples</span>
+            </div>
+        </section>
+
+        <section id="charts" aria-label="Charts">
+            <div class="pop-grid">
+                <div class="chart-panel">
+                    <h3>Population</h3>
+                    <div id="pop-container"></div>
+                </div>
+                <div class="chart-panel">
+                    <h3 id="sampling-title">Sampling Distribution of \(\bar{x}\)</h3>
+                    <div id="sampling-container"></div>
+                    <label class="chart-option" style="margin-top:0.25rem">
+                        <input type="checkbox" id="show-normal">
+                        Show normal curve
+                    </label>
+                </div>
+            </div>
+            <div class="stats-row" id="sampling-stats" hidden>
+                <span class="stat-item"><span class="stat-label">Samples drawn:</span> <span class="stat-value" id="n-samples">0</span></span>
+                <span class="stat-item"><span class="stat-label">Mean of \(\bar{x}\)'s:</span> <span class="stat-value" id="mean-xbar">&mdash;</span></span>
+                <span class="stat-item"><span class="stat-label">SD of \(\bar{x}\)'s:</span> <span class="stat-value" id="sd-xbar">&mdash;</span></span>
+                <span class="stat-item"><span class="stat-label">\(\sigma/\!\sqrt{n}\) (theory):</span> <span class="stat-value" id="se-theory">&mdash;</span></span>
+            </div>
+        </section>
+
+        <section id="results" aria-label="Interpretation">
+            <div id="result-summary">
+                <p class="placeholder">Choose a population shape and click a button to draw samples.</p>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <dialog id="page-help" aria-label="Keyboard shortcuts">
+        <h2>Keyboard Shortcuts</h2>
+        <p class="help-intro">Run repeated samples to visualize how sampling distributions and confidence intervals behave.</p>
+        <dl>
+            <dt><kbd>1</kbd></dt><dd>+1 sample</dd>
+            <dt><kbd>2</kbd></dt><dd>+10 samples</dd>
+            <dt><kbd>3</kbd></dt><dd>+100 samples</dd>
+            <dt><kbd>4</kbd></dt><dd>+1000 samples</dd>
+            <dt><kbd>0</kbd></dt><dd>Reset</dd>
+            <dt><kbd>Space</kbd></dt><dd>Play / Pause</dd>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

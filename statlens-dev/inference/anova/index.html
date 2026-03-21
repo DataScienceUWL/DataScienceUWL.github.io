@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>One-Way ANOVA | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.js"></script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm",
+            "jstat":        "https://cdn.jsdelivr.net/npm/jstat@1/+esm"
+        }
+    }
+    </script>
+
+    <style>
+        .var-selectors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .var-selectors label {
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .var-selectors select {
+            width: auto;
+            min-width: 10rem;
+        }
+
+        /* Dynamic group fieldsets */
+        .group-fieldsets {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+            gap: 0.75rem;
+        }
+        .group-fieldsets fieldset {
+            padding: 0.5rem 0.75rem;
+        }
+        .group-fieldsets label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-size: 0.88rem;
+        }
+        .group-fieldsets input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .group-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .anova-table-container {
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+        .anova-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        .anova-table th, .anova-table td {
+            border: 1px solid var(--border);
+            padding: 0.3rem 0.5rem;
+            text-align: right;
+        }
+        .anova-table th {
+            text-align: left;
+            background: var(--bg-alt, #f5f5f5);
+        }
+        .anova-table .source-col { font-weight: 600; }
+
+        .hypothesis-display {
+            background: var(--bg-alt, #f5f5f5);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            margin: 0.5rem 0;
+            font-size: 0.92rem;
+        }
+        .hypothesis-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: baseline;
+            margin: 0.15rem 0;
+        }
+        .hypothesis-label {
+            font-weight: 700;
+            min-width: 2rem;
+        }
+
+        /* Wider sidebar to fit ANOVA table without scrolling */
+        @media (min-width: 768px) {
+            .app-body {
+                grid-template-columns: 1fr 420px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#data-panel">Skip to Data</a>
+        <a href="#controls">Skip to Controls</a>
+        <a href="#chart">Skip to Chart</a>
+        <a href="#results">Skip to Results</a>
+    </nav>
+
+    <main>
+        <h1>One-Way ANOVA<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
+
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-dataset" aria-selected="true"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Edit Data</button>
+                <button role="tab" id="tab-file" aria-selected="false"
+                    aria-controls="panel-file">Open File</button>
+                <button role="tab" id="tab-summary" aria-selected="false"
+                    aria-controls="panel-summary">Enter Summary</button>
+            </div>
+
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset">
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </label>
+                <p id="dataset-desc" class="hint"></p>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <label for="paste-area">Edit or paste data (CSV with a grouping column and a numeric column):
+                    <textarea id="paste-area" rows="6"
+                              placeholder="group,value&#10;a,67&#10;a,59&#10;b,72&#10;b,68&#10;c,55&#10;c,61"></textarea>
+                </label>
+                <div class="btn-row">
+                    <button type="button" id="load-pasted">Apply</button>
+                    <button type="button" id="save-btn" class="btn-secondary">Save</button>
+                    <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+
+            <div role="tabpanel" id="panel-file" aria-labelledby="tab-file" hidden>
+                <label for="file-input">Open a CSV or TSV file:
+                    <input type="file" id="file-input" accept=".csv,.tsv,.txt">
+                </label>
+            </div>
+
+            <div role="tabpanel" id="panel-summary" aria-labelledby="tab-summary" hidden>
+                <div class="group-controls">
+                    <label for="num-groups">Number of groups:
+                        <input type="number" id="num-groups" min="2" max="10" value="3" style="width:3.5rem">
+                    </label>
+                    <button type="button" id="add-group" class="btn-secondary" title="Add group">+ Group</button>
+                    <button type="button" id="remove-group" class="btn-secondary" title="Remove last group">&minus; Group</button>
+                </div>
+                <div id="group-fieldsets" class="group-fieldsets"></div>
+                <button type="button" id="load-summary" class="btn-primary" style="margin-top:0.5rem">Load</button>
+            </div>
+
+            <div id="data-preview" hidden>
+                <output id="data-summary"></output>
+            </div>
+        </section>
+
+        <div id="var-selectors" class="var-selectors" hidden>
+            <label for="group-var-select">Grouping variable:
+                <select id="group-var-select"></select>
+            </label>
+            <label for="response-var-select">Response variable:
+                <select id="response-var-select"></select>
+            </label>
+        </div>
+
+        <section id="controls" aria-label="Test parameters">
+            <h2 class="sr-only">Parameters</h2>
+            <div class="hypothesis-display">
+                <div class="hypothesis-row">
+                    <span class="hypothesis-label">H<sub>0</sub>:</span>
+                    <span>&mu;<sub>1</sub> = &mu;<sub>2</sub> = &hellip; = &mu;<sub>k</sub> (all group means are equal)</span>
+                </div>
+                <div class="hypothesis-row">
+                    <span class="hypothesis-label">H<sub>a</sub>:</span>
+                    <span>At least one &mu;<sub>i</sub> differs</span>
+                </div>
+            </div>
+            <div class="controls-row">
+                <label for="alpha-level">Significance level (&alpha;)
+                    <select id="alpha-level">
+                        <option value="0.01">0.01</option>
+                        <option value="0.05" selected>0.05</option>
+                        <option value="0.10">0.10</option>
+                    </select>
+                </label>
+            </div>
+        </section>
+
+        <div id="conditions-checkpoint" class="conditions-checkpoint" hidden></div>
+
+        <section id="chart-and-results" aria-label="Chart and results">
+            <div class="app-body">
+                <div class="app-main" id="chart" aria-label="F-distribution chart">
+                    <div id="chart-container"></div>
+                </div>
+                <div class="app-sidebar" id="results">
+                    <div id="result-summary" tabindex="-1">
+                        <p class="placeholder">Select a dataset or enter summary statistics.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <dialog id="page-help" aria-label="Keyboard shortcuts">
+        <h2>Keyboard Shortcuts</h2>
+        <p class="help-intro">Load data or enter group summary statistics. The F-test assesses whether all group means are equal.</p>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Guess the Correlation | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-scale": "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-array": "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-axis": "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape": "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+
+    <style>
+        .btn-row { justify-content: center; margin-top: 0.75rem; }
+        .btn-primary { font-size: 1rem; font-weight: 700; padding: 0.6rem 1.8rem; }
+
+        /* ── Feedback ──────────────────────────────────── */
+        .feedback {
+            text-align: center;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin: 0.75rem 0;
+            font-weight: 700;
+            font-size: 1rem;
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .feedback.hidden { display: none; }
+        .feedback.excellent { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+        .feedback.good { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+        .feedback.ok { background: #fff8e1; color: #e65100; border: 1px solid #ffe082; }
+        .feedback.miss { background: #fce4ec; color: #c62828; border: 1px solid #ef9a9a; }
+        .feedback.correct { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+
+        /* ── Scoreboard ────────────────────────────────── */
+        .scoreboard {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 0.5rem 0;
+            flex-wrap: wrap;
+        }
+        .score-item { text-align: center; }
+        .score-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--ims-gray-text);
+        }
+        .score-num {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--fg);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ── History bar ───────────────────────────────── */
+        .history-bar {
+            display: flex;
+            gap: 3px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 0.5rem 0;
+            min-height: 20px;
+        }
+        .history-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        .history-dot.excellent { background: #2e7d32; }
+        .history-dot.good { background: #1565c0; }
+        .history-dot.ok { background: #e65100; }
+        .history-dot.miss { background: #c62828; }
+        .history-dot.correct { background: #2e7d32; }
+        .history-dot.wrong { background: #c62828; }
+
+        /* ── Difficulty selector ───────────────────────── */
+        .difficulty-row {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin: 0.5rem 0;
+            flex-wrap: wrap;
+        }
+        .difficulty-row label {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            min-height: 36px;
+        }
+        .difficulty-row label:has(input:checked) {
+            border-color: var(--ims-blue);
+            background: var(--ims-lightest);
+            font-weight: 700;
+        }
+        .difficulty-row input[type="radio"] { margin: 0; }
+
+        /* ═══ Match Mode ══════════════════════════════════ */
+        .match-layout {
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        .match-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin: 0.75rem 0;
+        }
+        @media (max-width: 480px) {
+            .match-grid { gap: 0.5rem; }
+            .match-plot .plot-label { font-size: 0.75rem; top: 3px; left: 5px; }
+            .match-plot .reveal-r { font-size: 0.75rem; bottom: 3px; right: 5px; }
+            .r-choice { font-size: 0.95rem; padding: 0.4rem 0.7rem; min-width: 50px; }
+        }
+
+        .match-plot {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            position: relative;
+        }
+        .match-plot:hover, .match-plot:focus-visible {
+            border-color: var(--ims-blue);
+            box-shadow: 0 2px 8px rgba(86, 155, 189, 0.2);
+        }
+        .match-plot.selected {
+            border-color: var(--ims-blue);
+            box-shadow: 0 0 0 3px rgba(86, 155, 189, 0.3);
+        }
+        .match-plot.correct-reveal {
+            border-color: #2e7d32;
+            background: #f1f8f1;
+        }
+        .match-plot.wrong-reveal {
+            border-color: #c62828;
+            background: #fef1f1;
+        }
+        .match-plot svg { width: 100%; display: block; }
+        .match-plot .plot-label {
+            position: absolute;
+            top: 6px;
+            left: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--ims-gray-text);
+        }
+        .match-plot .reveal-r {
+            position: absolute;
+            bottom: 6px;
+            right: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #F05133;
+        }
+
+        .r-choices {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 0.75rem 0;
+        }
+        .r-choice {
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            background: white;
+            color: var(--fg);
+            font-family: inherit;
+            font-variant-numeric: tabular-nums;
+            min-height: 44px;
+            min-width: 60px;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .r-choice:hover, .r-choice:focus-visible {
+            border-color: var(--ims-blue);
+            background: var(--ims-lightest);
+        }
+        .r-choice.selected {
+            border-color: var(--ims-blue);
+            background: var(--ims-blue);
+            color: white;
+        }
+        .r-choice.used {
+            opacity: 0.4;
+            cursor: default;
+            text-decoration: line-through;
+        }
+        .r-choice.correct-reveal { border-color: #2e7d32; background: #e8f5e9; color: #2e7d32; }
+        .r-choice.wrong-reveal { border-color: #c62828; background: #fce4ec; color: #c62828; }
+        .r-choice.dragging { opacity: 0.5; transform: scale(0.95); }
+        .match-plot.drag-over {
+            border-color: var(--ims-blue);
+            box-shadow: 0 0 0 3px rgba(86, 155, 189, 0.3);
+            background: rgba(86, 155, 189, 0.05);
+        }
+        .r-choice[draggable="true"] { cursor: grab; }
+        .r-choice[draggable="true"]:active { cursor: grabbing; }
+
+        .match-instructions {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--ims-gray-text);
+            margin: 0.5rem 0;
+            min-height: 1.5rem;
+        }
+
+        /* ── Responsive ────────────────────────────────── */
+        @media (max-width: 480px) {
+            .scoreboard { gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#main-content">Skip to content</a>
+    </nav>
+
+    <main id="main-content">
+        <h1>Guess the Correlation<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
+        <p>How well can you estimate the correlation coefficient <em>r</em> from a scatterplot?</p>
+
+        <div aria-live="polite" id="sr-announce" class="sr-only"></div>
+
+        <div class="match-layout">
+            <div class="scoreboard" aria-label="Score">
+                <div class="score-item">
+                    <div class="score-label">Round</div>
+                    <div class="score-num" id="match-round">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Correct</div>
+                    <div class="score-num" id="match-correct">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Total</div>
+                    <div class="score-num" id="match-total">0</div>
+                </div>
+            </div>
+
+            <div class="history-bar" id="match-history" aria-label="Round history"></div>
+
+            <p class="match-instructions" id="match-instructions">
+                Drag an <em>r</em> value onto its scatterplot, or click to match.
+            </p>
+
+            <div class="match-grid" id="match-grid" role="group" aria-label="Four scatterplots to match"></div>
+
+            <div class="r-choices" id="r-choices" role="group" aria-label="Correlation values to match"></div>
+
+            <div class="feedback hidden" id="match-feedback" aria-live="assertive"></div>
+
+            <div class="btn-row">
+                <button class="btn-primary" id="btn-match-next" style="display:none">Next Round</button>
+            </div>
+
+            <fieldset class="difficulty-row" aria-label="Difficulty">
+                <legend class="sr-only">Difficulty level</legend>
+                <label><input type="radio" name="difficulty" value="easy"> Easy (n=50)</label>
+                <label><input type="radio" name="difficulty" value="medium" checked> Medium (n=30)</label>
+                <label><input type="radio" name="difficulty" value="hard"> Hard (n=15)</label>
+            </fieldset>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2025–2026 Jeff Baggett. All rights reserved.</p>
+    </footer>
+
+    
+    <dialog id="page-help" aria-label="Help">
+        <h2>Help</h2>
+        <p class="help-intro">Match four scatterplots with their correlation coefficients. Drag <em>r</em> values onto plots or click to match.</p>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

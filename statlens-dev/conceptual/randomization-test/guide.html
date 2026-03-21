@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Instructor Guide: What is a Randomization Test? | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --ims-blue: #569BBD;
+            --ims-dark: #114B5F;
+            --ims-red: #F05133;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Atkinson Hyperlegible', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        h1 {
+            color: var(--ims-dark);
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--ims-blue);
+            padding-bottom: 0.75rem;
+        }
+        h2 {
+            color: var(--ims-dark);
+            font-size: 1.15rem;
+            margin: 1.5rem 0 0.5rem;
+            border-left: 4px solid var(--ims-blue);
+            padding-left: 0.75rem;
+        }
+        h3 {
+            font-size: 1rem;
+            margin: 1rem 0 0.3rem;
+            color: #444;
+        }
+        p, li { font-size: 0.9rem; margin-bottom: 0.4rem; }
+        ul, ol { padding-left: 1.5rem; }
+        ul li { margin-bottom: 0.3rem; }
+
+        .ask-box {
+            background: #e8f4fd;
+            border-left: 4px solid var(--ims-blue);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0 6px 6px 0;
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        .ask-box strong { color: var(--ims-dark); }
+
+        .tip-box {
+            background: #fff8e1;
+            border-left: 4px solid #f9a825;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0 6px 6px 0;
+            margin: 0.5rem 0;
+            font-size: 0.85rem;
+        }
+
+        .misconception {
+            background: #fce4ec;
+            border-left: 4px solid var(--ims-red);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0 6px 6px 0;
+            margin: 0.5rem 0;
+            font-size: 0.85rem;
+        }
+        .misconception strong { color: #c62828; }
+
+        .timing {
+            display: inline-block;
+            background: var(--ims-dark);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        .meta {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 2rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #ddd;
+        }
+
+        a { color: var(--ims-blue); }
+        a:hover { color: var(--ims-dark); }
+
+        .launch-link {
+            display: inline-block;
+            background: var(--ims-blue);
+            color: white;
+            text-decoration: none;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+        .launch-link:hover { background: var(--ims-dark); color: white; }
+
+        @media print {
+            body { padding: 0.5in; max-width: none; }
+            .launch-link { display: none; }
+            .no-print { display: none; }
+            h2 { break-after: avoid; }
+            .ask-box, .tip-box, .misconception { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Instructor Guide: What is a Randomization Test?</h1>
+<p class="subtitle">Companion notes for the StatLens conceptual activity &mdash; IMS Chapters 11 &amp; 17</p>
+
+<p><a class="launch-link" href="index.html?mode=present">Launch activity in Presentation Mode</a></p>
+
+<h2>Overview <span class="timing">~20 min</span></h2>
+<p>This 5-step activity builds intuition for the logic of a randomization test using a card-shuffle metaphor.
+Students see the original data as colored cards, then watch what happens when group labels are randomly reassigned.
+The activity works with three IMS datasets (sex discrimination, opportunity cost, CPR/blood thinner) and
+can be switched live during class.</p>
+<p>The activity is aligned with the IMS "Introduction to Modern Statistics" approach:
+observe a difference &rarr; simulate the null &rarr; compare &rarr; conclude.</p>
+
+<div class="tip-box">
+    <strong>Presentation mode</strong> shows all steps at once with no quiz gates. Use <kbd>&larr;</kbd> / <kbd>&rarr;</kbd>
+    arrow keys to scroll between steps. Students can follow along on their own devices in Discovery mode
+    (<a href="index.html">default link</a>).
+</div>
+
+<h2>Step 1: The Observed Data <span class="timing">~4 min</span></h2>
+
+<div class="ask-box">
+    <strong>Ask the class:</strong> "What do you notice about the difference in promotion rates between the two groups? Is it large enough to matter?"
+</div>
+
+<p>Key points to cover:</p>
+<ul>
+    <li>The cards represent individual observations. <strong>Red = success outcome</strong> (promoted, survived, etc.); <strong>gray = failure outcome</strong>.</li>
+    <li>Draw attention to the two-way table. The success row is highlighted in pink, failure in gray &mdash; matching the card colors.</li>
+    <li>State the observed difference explicitly (e.g., 87.5% &minus; 58.3% = 29.2 pp for sex discrimination).</li>
+    <li>Frame the core question: "Is this difference real, or could it be a coincidence?"</li>
+</ul>
+
+<div class="misconception">
+    <strong>Common misconception:</strong> Students often think any visible difference must be meaningful.
+    Point out that even with no real effect, random assignment alone produces <em>some</em> difference.
+</div>
+
+<h2>Step 2: Could This Be Due to Chance? <span class="timing">~3 min</span></h2>
+
+<div class="ask-box">
+    <strong>Ask:</strong> "If sex truly had no effect, and we re-ran the experiment, would we expect the <em>exact</em> same difference? Why not?"
+</div>
+
+<p>Key points:</p>
+<ul>
+    <li>State H₀ and Hₐ in plain language. The null hypothesis says the group labels don't matter.</li>
+    <li>Emphasize the "Key idea" box on screen: if the explanatory variable has no effect, the <strong>outcomes are fixed</strong>. The only random part is which group each person is in.</li>
+    <li>This is the conceptual leap: shuffling simulates what the world looks like under H₀.</li>
+</ul>
+
+<div class="misconception">
+    <strong>Common misconception:</strong> "The null hypothesis says the groups are exactly equal."
+    Clarify: H₀ says there is <em>no systematic effect</em> &mdash; random variation still produces some difference.
+</div>
+
+<h2>Step 3: Shuffle and Re-deal <span class="timing">~4 min</span></h2>
+
+<div class="ask-box">
+    <strong>Ask before shuffling:</strong> "If I shuffle these cards and re-deal them into two groups, what difference do you predict? Write it down."
+</div>
+
+<p>Key points:</p>
+<ul>
+    <li>Have students <strong>lock in a prediction</strong> before clicking "Shuffle once." This creates investment in the result.</li>
+    <li>After the shuffle: "How does this simulated difference compare to the observed? Is the observed difference unusual?"</li>
+    <li>Click shuffle 2&ndash;3 times. Ask if students see a pattern.</li>
+    <li>One shuffle is suggestive but not conclusive &mdash; this motivates Step 4.</li>
+</ul>
+
+<div class="tip-box">
+    <strong>Tip:</strong> If using the sex discrimination dataset, the observed difference (29.2 pp) is quite large.
+    Most shuffles will produce differences near 0. This makes the visual contrast striking.
+</div>
+
+<h2>Step 4: Build the Null Distribution <span class="timing">~5 min</span></h2>
+
+<div class="ask-box">
+    <strong>Ask:</strong> "What shape do you expect the distribution to be? Where should it be centered? Why?"
+</div>
+
+<p>Sequence of actions:</p>
+<ol>
+    <li>Click <strong>+1</strong> a few times &mdash; watch dots appear one at a time.</li>
+    <li>Click <strong>+10</strong> &mdash; histogram starts to take shape.</li>
+    <li>Click <strong>+100</strong> &mdash; bell shape becomes clear, centered near 0.</li>
+    <li>Click <strong>+1000</strong> &mdash; smooth distribution, red line (observed) clearly in the tail.</li>
+</ol>
+
+<p>Key points:</p>
+<ul>
+    <li>The <strong>red vertical line</strong> marks the observed difference. Ask where it falls relative to the distribution.</li>
+    <li>The p-value is the proportion of simulations as extreme as the observed. It appears in the stats line.</li>
+    <li>"The histogram shows us what the world looks like if H₀ is true. The red line shows what actually happened."</li>
+</ul>
+
+<div class="ask-box">
+    <strong>After ~1000 shuffles:</strong> "What proportion of the simulated differences were as large as the observed?
+    Is the observed difference typical or unusual under the null hypothesis?"
+</div>
+
+<div class="misconception">
+    <strong>Common misconception:</strong> "The p-value is the probability that H₀ is true."
+    Correct framing: "The p-value is the probability of observing a result this extreme <em>if</em> H₀ were true."
+</div>
+
+<h2>Step 5: Draw a Conclusion <span class="timing">~4 min</span></h2>
+
+<div class="ask-box">
+    <strong>Ask:</strong> "Based on the p-value and the histogram, what do you conclude? Would your conclusion
+    change with a different significance level? What if the sample were larger?"
+</div>
+
+<p>Key points:</p>
+<ul>
+    <li>The model conclusion uses strength-of-evidence language (very strong, strong, moderate, little to no evidence).</li>
+    <li>Emphasize the interpretation box &mdash; it translates the statistical result into the context of the research question.</li>
+    <li>Connect back to the original question: "So, do we have evidence of discrimination / an effect / a treatment benefit?"</li>
+</ul>
+
+<div class="tip-box">
+    <strong>Extension:</strong> Switch to a different dataset (e.g., CPR) and re-run. Ask students
+    to predict whether the conclusion will be the same. The CPR dataset gives a non-significant result &mdash;
+    great for showing that not every study produces strong evidence.
+</div>
+
+<h2>Dataset Notes</h2>
+
+<h3>Sex Discrimination (default)</h3>
+<ul>
+    <li><strong>Result:</strong> Strong evidence of discrimination (p &approx; 0.02). Observed difference ~29.2 pp.</li>
+    <li><strong>Why this dataset:</strong> Classic IMS example, dramatic visual, clear result.</li>
+</ul>
+
+<h3>Opportunity Cost</h3>
+<ul>
+    <li><strong>Result:</strong> Moderate-to-strong evidence (p &approx; 0.02&ndash;0.04). The reminder matters.</li>
+    <li><strong>Why this dataset:</strong> Relatable to students (buying decisions), treatment effect is moderate.</li>
+</ul>
+
+<h3>CPR &amp; Blood Thinner</h3>
+<ul>
+    <li><strong>Result:</strong> Weak/no evidence (p &approx; 0.25+). The blood thinner doesn't clearly help.</li>
+    <li><strong>Why this dataset:</strong> Important to show a non-significant result. Prevents students from thinking every study "proves" something.</li>
+</ul>
+
+<h2>Learning Objectives</h2>
+<ol>
+    <li>Students can explain why we shuffle: to simulate the null hypothesis.</li>
+    <li>Students can interpret a null distribution: "what the world looks like if H₀ is true."</li>
+    <li>Students can locate the observed statistic on the null distribution and assess whether it's unusual.</li>
+    <li>Students can interpret a p-value as the proportion of simulations as extreme as the observed.</li>
+    <li>Students can state a conclusion in context using strength-of-evidence language.</li>
+</ol>
+
+<h2>Common Questions from Students</h2>
+
+<p><strong>"Why do we shuffle instead of just calculating a p-value?"</strong></p>
+<p>The simulation makes the abstract concept visible. Later, we'll learn formulas that approximate
+what the simulation does, but the simulation builds the intuition first.</p>
+
+<p><strong>"How many shuffles do we need?"</strong></p>
+<p>More is better, but 1,000 is usually enough for a good estimate. The p-value stabilizes.
+Try running 100 vs. 1,000 and note how the p-value barely changes.</p>
+
+<p><strong>"What if I get a different p-value each time?"</strong></p>
+<p>Each set of simulations is random, so exact p-values will vary slightly. The conclusion
+(reject or fail to reject) should be consistent for clear-cut cases.</p>
+
+<p class="meta">
+    StatLens &mdash; Randomization Test Instructor Guide
+    &bull; IMS Ch. 11, 17
+    &bull; <a href="index.html" class="no-print">Student version</a>
+    &bull; <a href="index.html?mode=present" class="no-print">Presentation mode</a>
+</p>
+
+</body>
+</html>

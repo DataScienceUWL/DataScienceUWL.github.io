@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dotplot Editor | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-scale": "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-array": "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-axis": "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape": "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+
+    <style>
+    /* Color-code mean/median stats to match chart markers */
+    .stat-mean td:last-child { color: var(--accent); }
+    .stat-median td:last-child { color: #D89A9E; }
+
+    /* Flash when stat changes */
+    @keyframes stat-update {
+      0%   { background: #fff3cd; }
+      100% { background: transparent; }
+    }
+    .stat-changed td { animation: stat-update 0.5s ease-out; }
+
+    /* Chart interactions */
+    #chart-area svg { cursor: crosshair; }
+    .data-dot { cursor: pointer; }
+    .data-dot:hover { filter: brightness(0.7); }
+
+    /* Marker labels */
+    .marker-label { font-size: 13px; font-weight: 600; }
+
+    /* Controls */
+    .preset-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .preset-bar label { font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
+    .preset-bar select { font-size: 0.85rem; padding: 0.25rem 0.4rem; }
+
+    .btn-row {
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .boxplot-toggle {
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      cursor: pointer;
+      margin-left: 0.5rem;
+    }
+    .challenge-banner {
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .challenge-banner.active {
+      background: #f0f4f8;
+      border: 2px solid var(--accent);
+      color: #333;
+    }
+    .challenge-banner.matched {
+      background: #d4edda;
+      border: 2px solid #28a745;
+      color: #155724;
+    }
+    .challenge-banner .match-detail {
+      font-weight: 400;
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+    }
+    .challenge-banner .match-detail .yes { color: #28a745; }
+    .challenge-banner .match-detail .no { color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#chart-area">Skip to chart</a>
+        <a href="#stats-table">Skip to statistics</a>
+    </nav>
+
+    <main id="main-content">
+        <h1>Dotplot Editor
+            <span class="header-actions">
+                <a class="home-btn" href="../../" aria-label="StatLens home">
+                    <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg>
+                    <span class="home-text">StatLens</span>
+                </a>
+                <button class="help-btn" aria-label="Help" title="Help">?</button>
+            </span>
+        </h1>
+
+        <p class="page-intro">Click the number line to add a point. Click a dot to remove it. Watch how the statistics change.</p>
+
+        <div aria-live="polite" id="sr-announce" class="sr-only"></div>
+
+        <section class="app-body">
+            <div class="app-main">
+                <div class="preset-bar">
+                    <label for="preset-select">Dataset:</label>
+                    <select id="preset-select">
+                        <option value="symmetric">Symmetric</option>
+                        <option value="skewed">Skewed Right</option>
+                        <option value="bimodal">Bimodal</option>
+                        <option value="uniform">Uniform</option>
+                        <option value="empty">Start Empty</option>
+                    </select>
+                </div>
+
+                <div id="challenge-banner" class="challenge-banner" style="display:none"></div>
+                <div id="chart-area"></div>
+
+                <div class="btn-row">
+                    <button id="undo-btn" class="btn-secondary" disabled>Undo</button>
+                    <button id="clear-btn" class="btn-secondary">Reset</button>
+                    <label class="boxplot-toggle"><input type="checkbox" id="boxplot-check"> Show Boxplot</label>
+                    <button id="challenge-btn" class="btn-secondary">Challenge</button>
+                </div>
+            </div>
+
+            <div class="app-sidebar">
+                <h2>Summary Statistics</h2>
+                <table class="sidebar-stats" id="stats-table">
+                    <tbody>
+                        <tr><th scope="row">n</th><td id="stat-n">&mdash;</td></tr>
+                        <tr class="stat-mean"><th scope="row">Mean</th><td id="stat-mean">&mdash;</td></tr>
+                        <tr class="stat-median"><th scope="row">Median</th><td id="stat-median">&mdash;</td></tr>
+                        <tr class="stat-sep"><th scope="row">Std Dev</th><td id="stat-sd">&mdash;</td></tr>
+                        <tr><th scope="row">IQR</th><td id="stat-iqr">&mdash;</td></tr>
+                        <tr><th scope="row">Range</th><td id="stat-range">&mdash;</td></tr>
+                        <tr class="stat-sep"><th scope="row">Min</th><td id="stat-min">&mdash;</td></tr>
+                        <tr><th scope="row">Q1</th><td id="stat-q1">&mdash;</td></tr>
+                        <tr><th scope="row">Q3</th><td id="stat-q3">&mdash;</td></tr>
+                        <tr><th scope="row">Max</th><td id="stat-max">&mdash;</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2025&ndash;2026 Jeff Baggett. All rights reserved.</p>
+    </footer>
+
+    <dialog id="page-help" aria-label="Help">
+        <h2>Dotplot Editor</h2>
+        <p class="help-intro">Build a dataset by clicking to add and remove points on a number line. Observe how summary statistics respond to changes in the data.</p>
+        <h3>How to use</h3>
+        <dl>
+            <dt>Add a point</dt>
+            <dd>Click anywhere on the number line. The value is rounded to the nearest integer.</dd>
+            <dt>Remove a point</dt>
+            <dd>Click an existing dot to remove it.</dd>
+            <dt>Undo</dt>
+            <dd>Click Undo or press <kbd>Ctrl</kbd>+<kbd>Z</kbd> to reverse the last action.</dd>
+            <dt>Presets</dt>
+            <dd>Use the Dataset dropdown to load a preset distribution.</dd>
+            <dt>Show Boxplot</dt>
+            <dd>Toggle on to see a boxplot aligned above the dots on the same axis.</dd>
+            <dt>Challenge</dt>
+            <dd>Generates a random target boxplot (some with outliers). Build a dataset from scratch that produces the same boxplot. Checkmarks show which parts match.</dd>
+        </dl>
+        <h3>Things to try</h3>
+        <ul>
+            <li>Start with the symmetric dataset. Add a single point far from the others (an outlier). Which changed more &mdash; the mean or the median? Why?</li>
+            <li>Remove points one at a time from a skewed distribution. When does the mean get close to the median?</li>
+            <li>Build a bimodal distribution from scratch. Where do the mean and median fall?</li>
+            <li>Click Challenge. Can you build a dataset that matches the target boxplot? After you match it, can you build a <em>different</em> dataset with the same boxplot?</li>
+        </ul>
+        <h3>Keyboard shortcuts</h3>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Ctrl</kbd>+<kbd>Z</kbd></dt><dd>Undo</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

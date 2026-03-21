@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Binomial Distribution Calculator | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+    <style>
+        .binom-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+            margin: 0.75rem 0;
+        }
+        .binom-controls label {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            font-size: 0.85rem;
+        }
+        .binom-controls input {
+            width: 6rem;
+        }
+        .binom-controls select {
+            width: auto;
+            min-width: 8rem;
+        }
+        .chart-area {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem;
+            margin: 1rem 0;
+        }
+        .chart-area svg {
+            font-family: var(--font-body);
+            font-size: var(--font-size-chart, 14px);
+        }
+        .result-banner {
+            background: var(--bg-alt, #f5f5f5);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin: 0.75rem 0;
+            font-size: 0.9rem;
+        }
+        .result-banner .prob-value {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .prob-table {
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            margin: 0.75rem 0;
+            max-height: 300px;
+            overflow-y: auto;
+            display: block;
+        }
+        .prob-table th, .prob-table td {
+            border: 1px solid var(--border);
+            padding: 0.2rem 0.5rem;
+            text-align: right;
+        }
+        .prob-table th {
+            background: var(--bg-alt, #f5f5f5);
+            position: sticky;
+            top: 0;
+        }
+        .prob-table .highlighted {
+            background: rgba(86, 155, 189, 0.15);
+            font-weight: 700;
+        }
+        .stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin: 0.5rem 0;
+            font-size: 0.85rem;
+        }
+        .stats-row .stat-item {
+            display: flex;
+            gap: 0.3rem;
+        }
+        .stats-row .stat-label {
+            color: var(--ims-gray-text);
+        }
+        .stats-row .stat-value {
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+        .normal-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            margin: 0.5rem 0;
+        }
+        .binom-controls .stepper-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+        }
+        .binom-controls .stepper-group input[type="number"] {
+            width: 5rem;
+            border-radius: 0;
+        }
+        .binom-controls .stepper-btn {
+            min-width: 32px;
+            min-height: 32px;
+            font-size: 1.1rem;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            cursor: pointer;
+            padding: 0 0.4rem;
+        }
+        .binom-controls .stepper-btn:first-child {
+            border-radius: 4px 0 0 4px;
+        }
+        .binom-controls .stepper-btn:last-child {
+            border-radius: 0 4px 4px 0;
+        }
+        @media (max-width: 600px) {
+            .binom-controls .stepper-btn {
+                min-width: 44px;
+                min-height: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#controls">Skip to Controls</a>
+        <a href="#chart">Skip to Chart</a>
+        <a href="#results">Skip to Results</a>
+    </nav>
+
+    <main>
+        <h1>Binomial Distribution Calculator<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
+
+        <section id="controls" aria-label="Parameters">
+            <div class="binom-controls">
+                <label>Trials (n)
+                    <input type="number" id="param-n" value="20" min="1" max="500" step="1">
+                </label>
+                <label>Probability (p)
+                    <input type="number" id="param-p" value="0.5" min="0" max="1" step="0.01">
+                </label>
+                <label>k value
+                    <input type="number" id="param-k" value="10" min="0" step="1">
+                </label>
+                <label>Probability type
+                    <select id="prob-type">
+                        <option value="exact">P(X = k)</option>
+                        <option value="leq" selected>P(X ≤ k)</option>
+                        <option value="geq">P(X ≥ k)</option>
+                        <option value="lt">P(X &lt; k)</option>
+                        <option value="gt">P(X &gt; k)</option>
+                    </select>
+                </label>
+            </div>
+            <div class="stats-row">
+                <span class="stat-item"><span class="stat-label">Mean (μ = np):</span> <span class="stat-value" id="stat-mean">&mdash;</span></span>
+                <span class="stat-item"><span class="stat-label">SD (σ = √npq):</span> <span class="stat-value" id="stat-sd">&mdash;</span></span>
+            </div>
+            <div class="normal-toggle">
+                <input type="checkbox" id="show-mean">
+                <label for="show-mean">Show mean line</label>
+                <input type="checkbox" id="show-normal">
+                <label for="show-normal">Show normal approximation</label>
+            </div>
+        </section>
+
+        <section id="chart" aria-label="PMF chart">
+            <div id="result-banner" class="result-banner"></div>
+            <div class="chart-area">
+                <div id="chart-container"></div>
+            </div>
+        </section>
+
+        <section id="results" aria-label="Probability table">
+            <details>
+                <summary>Probability table</summary>
+                <div id="table-container"></div>
+            </details>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    
+    <dialog id="page-help" aria-label="Help">
+        <h2>Help</h2>
+        <p class="help-intro">Set the number of trials and probability of success to calculate binomial probabilities and visualize the distribution.</p>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>
