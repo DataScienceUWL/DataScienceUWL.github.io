@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi-Square Distribution Calculator | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm",
+            "jstat":        "https://cdn.jsdelivr.net/npm/jstat@1/+esm"
+        }
+    }
+    </script>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#controls">Skip to Controls</a>
+        <a href="#chart">Skip to Chart</a>
+        <a href="#results">Skip to Results</a>
+    </nav>
+
+    <main>
+        <h1>Chi-Square Distribution Calculator<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
+
+        <section id="chart" aria-label="Distribution chart">
+            <div class="chart-header-bar">
+                <div class="tail-toggle" role="radiogroup" aria-label="Tail direction">
+                    <label class="tail-btn">
+                        <input type="radio" name="tail" value="left">
+                        <span>Left</span>
+                    </label>
+                    <label class="tail-btn">
+                        <input type="radio" name="tail" value="right" checked>
+                        <span>Right</span>
+                    </label>
+                </div>
+                <div id="result-summary" class="result-banner" tabindex="-1"></div>
+            </div>
+            <figure>
+                <div id="chart-container"></div>
+            </figure>
+        </section>
+
+        <section id="controls" aria-label="Distribution parameters">
+            <div class="compact-controls">
+                <div class="control-row-inline">
+                    <label for="input-x">&chi;&sup2; value
+                        <input type="number" id="input-x" value="11.07" step="any" min="0">
+                    </label>
+                    <label for="input-p">Probability
+                        <input type="number" id="input-p" value="0.95"
+                               step="any" min="0" max="1">
+                    </label>
+                </div>
+                <div class="df-inline-row">
+                    <label for="param-df" class="df-label">Degrees of freedom</label>
+                    <input type="number" id="param-df" value="5"
+                           step="1" min="1" max="200">
+                    <input type="range" id="slider-df" min="1" max="100"
+                           step="1" value="5" aria-label="Degrees of freedom slider">
+                </div>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <dialog id="page-help" aria-label="Keyboard shortcuts">
+        <h2>Keyboard Shortcuts</h2>
+        <p class="help-intro">Adjust parameters and boundaries to compute probabilities and critical values.</p>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

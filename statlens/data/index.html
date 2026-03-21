@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Datasets | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <style>
+        main { max-width: 900px; }
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1rem 0 1.5rem;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.95rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: var(--font-body);
+        }
+        .search-box input:focus {
+            outline: 2px solid var(--ims-blue);
+            outline-offset: 1px;
+        }
+        .search-count {
+            font-size: 0.85rem;
+            color: var(--text-muted, #666);
+        }
+
+        .dataset-section {
+            margin-bottom: 1.5rem;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            padding: 0.5rem 0;
+            border-bottom: 2px solid var(--ims-blue, #569BBD);
+            user-select: none;
+        }
+        .section-header:hover { opacity: 0.85; }
+        .section-header h2 {
+            font-size: 1.05rem;
+            margin: 0;
+            flex: 1;
+        }
+        .section-count {
+            font-size: 0.8rem;
+            color: var(--text-muted, #666);
+            font-weight: 400;
+        }
+        .section-toggle {
+            font-size: 0.75rem;
+            color: var(--text-muted, #666);
+            transition: transform 0.2s;
+        }
+        .section-toggle.collapsed { transform: rotate(-90deg); }
+
+        .dataset-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+        .dataset-table th {
+            text-align: left;
+            padding: 0.4rem 0.5rem;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-alt, #f5f5f5);
+            position: sticky;
+            top: 0;
+        }
+        .dataset-table td {
+            padding: 0.35rem 0.5rem;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+        .dataset-table tr:hover td {
+            background: #f8fbfd;
+        }
+        .dataset-table .ds-name {
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .dataset-table .ds-name a {
+            color: var(--ims-blue, #569BBD);
+            text-decoration: none;
+        }
+        .dataset-table .ds-name a:hover {
+            text-decoration: underline;
+        }
+        .ds-n {
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+        .ds-vars {
+            font-family: var(--font-mono, 'Source Code Pro', monospace);
+            font-size: 0.8rem;
+            color: #555;
+        }
+        .ds-desc {
+            color: #444;
+            max-width: 350px;
+        }
+        .ds-hidden { display: none; }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.85rem;
+            color: var(--ims-blue, #569BBD);
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+        .intro {
+            font-size: 0.9rem;
+            color: #555;
+            margin: 0 0 0.5rem;
+        }
+
+        @media (max-width: 600px) {
+            .dataset-table .ds-desc { display: none; }
+            .dataset-table .ds-vars { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <a class="back-link" href="../">&larr; StatLens Home</a>
+        <h1>Available Datasets</h1>
+        <p class="intro">Browse all bundled datasets. Click a dataset name to explore it in the appropriate tool.</p>
+
+        <div class="search-box">
+            <input type="search" id="search" placeholder="Filter by name, variable, or description..." aria-label="Search datasets">
+            <span class="search-count" id="search-count"></span>
+        </div>
+
+        <div id="dataset-index"></div>
+
+        <div id="sr-announce" role="status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <script type="module">
+    // Dataset category definitions — order matters for display
+    const CATEGORIES = [
+      {
+        id: 'one-cat',
+        title: 'One Categorical Variable',
+        tool: '../explore/one-cat/',
+        match: ds => !ds.hasNumeric && ds.hasCategorical && countVarType(ds, 'categorical') === 1,
+      },
+      {
+        id: 'two-cat',
+        title: 'Two Categorical Variables',
+        tool: '../explore/categorical/',
+        match: ds => !ds.hasNumeric && ds.hasCategorical && countVarType(ds, 'categorical') >= 2,
+      },
+      {
+        id: 'one-num',
+        title: 'One Numeric Variable',
+        tool: '../explore/descriptive/',
+        match: ds => ds.hasNumeric && !ds.hasCategorical && countVarType(ds, 'numeric') === 1,
+      },
+      {
+        id: 'grouped',
+        title: 'Grouped (Numeric + Categorical)',
+        tool: '../explore/grouped/',
+        match: ds => ds.hasNumeric && ds.hasCategorical && ds.type !== 'regression' && ds.type !== 'paired',
+      },
+      {
+        id: 'regression',
+        title: 'Two Numeric Variables (Regression)',
+        tool: '../explore/regression/',
+        match: ds => ds.hasNumeric && countVarType(ds, 'numeric') >= 2
+                     && !isPaired(ds)
+                     && (!ds.hasCategorical || ds.type === 'regression'),
+      },
+      {
+        id: 'paired',
+        title: 'Paired Numeric Variables',
+        tool: '../explore/descriptive/',
+        match: ds => ds.hasNumeric && !ds.hasCategorical && isPaired(ds),
+      },
+    ];
+
+    function countVarType(ds, type) {
+      if (!ds.variables) return 0;
+      return ds.variables.filter(v =>
+        typeof v === 'object' ? v.type === type : true
+      ).length;
+    }
+
+    function isPaired(ds) {
+      return ds.type === 'paired';
+    }
+
+    function getVarNames(ds) {
+      if (!ds.variables) return [];
+      return ds.variables.map(v => typeof v === 'object' ? v.name : v);
+    }
+
+    // Load and render
+    const resp = await fetch('datasets.json');
+    const datasets = await resp.json();
+
+    const container = document.getElementById('dataset-index');
+    const searchInput = document.getElementById('search');
+    const searchCount = document.getElementById('search-count');
+
+    // Categorize datasets
+    const categorized = CATEGORIES.map(cat => ({
+      ...cat,
+      datasets: datasets.filter(cat.match),
+    }));
+
+    // Catch uncategorized
+    const categorizedIds = new Set(categorized.flatMap(c => c.datasets.map(d => d.id)));
+    const uncategorized = datasets.filter(d => !categorizedIds.has(d.id));
+    if (uncategorized.length > 0) {
+      categorized.push({
+        id: 'other',
+        title: 'Other',
+        tool: '../explore/descriptive/',
+        match: () => false,
+        datasets: uncategorized,
+      });
+    }
+
+    // Render sections
+    for (const cat of categorized) {
+      if (cat.datasets.length === 0) continue;
+
+      const section = document.createElement('div');
+      section.className = 'dataset-section';
+      section.dataset.category = cat.id;
+
+      // Header
+      const header = document.createElement('div');
+      header.className = 'section-header';
+      header.setAttribute('role', 'button');
+      header.setAttribute('aria-expanded', 'true');
+      header.setAttribute('tabindex', '0');
+      header.innerHTML = `
+        <span class="section-toggle" aria-hidden="true">&#9660;</span>
+        <h2>${cat.title} <span class="section-count">(${cat.datasets.length})</span></h2>
+      `;
+
+      const tableWrap = document.createElement('div');
+      tableWrap.className = 'section-body';
+
+      header.addEventListener('click', () => toggleSection(header, tableWrap));
+      header.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleSection(header, tableWrap);
+        }
+      });
+
+      // Table
+      const table = document.createElement('table');
+      table.className = 'dataset-table';
+      table.innerHTML = `
+        <thead><tr>
+          <th>Dataset</th>
+          <th>n</th>
+          <th>Variables</th>
+          <th>Description</th>
+        </tr></thead>
+      `;
+      const tbody = document.createElement('tbody');
+
+      // Sort datasets alphabetically by name
+      const sorted = [...cat.datasets].sort((a, b) => a.name.localeCompare(b.name));
+
+      for (const ds of sorted) {
+        const tr = document.createElement('tr');
+        tr.dataset.id = ds.id;
+        tr.dataset.searchText = [
+          ds.id, ds.name, ds.description || '',
+          ...getVarNames(ds),
+          ds.chapter || '', ds.source || '',
+        ].join(' ').toLowerCase();
+
+        const tool = cat.tool;
+        const vars = getVarNames(ds);
+
+        tr.innerHTML = `
+          <td class="ds-name"><a href="${tool}?dataset=${ds.id}" title="Open in ${cat.title.split('(')[0].trim()} explorer">${ds.name}</a></td>
+          <td class="ds-n">${ds.n ? ds.n.toLocaleString() : '—'}</td>
+          <td class="ds-vars">${vars.join(', ')}</td>
+          <td class="ds-desc">${ds.description || ''}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      table.appendChild(tbody);
+      tableWrap.appendChild(table);
+      section.appendChild(header);
+      section.appendChild(tableWrap);
+      container.appendChild(section);
+    }
+
+    updateCount();
+
+    // Toggle section
+    function toggleSection(header, body) {
+      const expanded = header.getAttribute('aria-expanded') === 'true';
+      header.setAttribute('aria-expanded', String(!expanded));
+      body.hidden = expanded;
+      header.querySelector('.section-toggle').classList.toggle('collapsed', expanded);
+    }
+
+    // Search/filter
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.toLowerCase().trim();
+      const rows = container.querySelectorAll('tbody tr');
+      for (const row of rows) {
+        const match = !q || row.dataset.searchText.includes(q);
+        row.classList.toggle('ds-hidden', !match);
+      }
+      // Hide sections with no visible rows
+      for (const section of container.querySelectorAll('.dataset-section')) {
+        const visibleRows = section.querySelectorAll('tbody tr:not(.ds-hidden)');
+        section.classList.toggle('ds-hidden', visibleRows.length === 0);
+        // Update section count
+        const countEl = section.querySelector('.section-count');
+        if (countEl && q) {
+          countEl.textContent = `(${visibleRows.length})`;
+        }
+      }
+      updateCount();
+    });
+
+    function updateCount() {
+      const visible = container.querySelectorAll('tbody tr:not(.ds-hidden)').length;
+      const total = container.querySelectorAll('tbody tr').length;
+      searchCount.textContent = searchInput.value.trim()
+        ? `${visible} of ${total} datasets`
+        : `${total} datasets`;
+    }
+    </script>
+
+    <script src="../js/page-number.js"></script>
+</body>
+</html>

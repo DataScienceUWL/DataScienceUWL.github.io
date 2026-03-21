@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap CI: Diff in Proportions | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#data-panel">Skip to Data</a>
+        <a href="#controls">Skip to Controls</a>
+        <a href="#chart">Skip to Chart</a>
+        <a href="#results">Skip to Results</a>
+    </nav>
+
+    <main>
+        <h1>Bootstrap CI: Diff in Proportions<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">&#9881;</button></span></h1>
+
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-dataset" aria-selected="true"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Edit Data</button>
+                <button role="tab" id="tab-file" aria-selected="false"
+                    aria-controls="panel-file">Open File</button>
+                <button role="tab" id="tab-summary" aria-selected="false"
+                    aria-controls="panel-summary">Enter Summary</button>
+            </div>
+
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset">
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </label>
+                <p id="dataset-desc" class="hint"></p>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <label for="paste-area">Edit or paste two columns (CSV with headers, group and outcome):
+                    <textarea id="paste-area" rows="6"
+                              placeholder="group,outcome&#10;treatment,success&#10;treatment,failure&#10;control,success&#10;control,failure"></textarea>
+                </label>
+                <div class="btn-row">
+                    <button type="button" id="load-pasted">Apply</button>
+                    <button type="button" id="save-btn" class="btn-secondary">Save</button>
+                    <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+
+            <div role="tabpanel" id="panel-file" aria-labelledby="tab-file" hidden>
+                <label for="file-input">Open a CSV or TSV file:
+                    <input type="file" id="file-input" accept=".csv,.tsv,.txt">
+                </label>
+            </div>
+
+            <div role="tabpanel" id="panel-summary" aria-labelledby="tab-summary" hidden>
+                <div class="inference-inputs two-group-inputs">
+                    <fieldset>
+                        <legend>Group 1</legend>
+                        <label for="input-label1">Group label:
+                            <input type="text" id="input-label1" value="Group 1" placeholder="e.g., Treatment">
+                        </label>
+                        <label for="input-x1">Successes:
+                            <input type="number" id="input-x1" min="0" step="1" placeholder="30">
+                        </label>
+                        <label for="input-n1">Sample size (n&#8321;):
+                            <input type="number" id="input-n1" min="1" step="1" placeholder="100">
+                        </label>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Group 2</legend>
+                        <label for="input-label2">Group label:
+                            <input type="text" id="input-label2" value="Group 2" placeholder="e.g., Control">
+                        </label>
+                        <label for="input-x2">Successes:
+                            <input type="number" id="input-x2" min="0" step="1" placeholder="20">
+                        </label>
+                        <label for="input-n2">Sample size (n&#8322;):
+                            <input type="number" id="input-n2" min="1" step="1" placeholder="100">
+                        </label>
+                    </fieldset>
+                    <button type="button" id="load-summary" class="btn-primary">Load</button>
+                </div>
+            </div>
+
+            <div id="data-preview" hidden>
+                <output id="data-summary"></output>
+            </div>
+
+            <div id="success-selector" hidden>
+                <label for="success-outcome">Count as success:
+                    <select id="success-outcome"></select>
+                </label>
+            </div>
+        </section>
+
+        <section id="controls" aria-label="Simulation controls">
+            <div class="control-row">
+                <label for="ci-level">Confidence level:
+                    <select id="ci-level">
+                        <option value="90">90%</option>
+                        <option value="95" selected>95%</option>
+                        <option value="99">99%</option>
+                    </select>
+                </label>
+                <div id="group-order" class="group-order" hidden>
+                    <span id="group-order-label"></span>
+                    <button type="button" id="swap-groups" class="btn-secondary btn-sm"
+                            aria-label="Swap group order" title="Swap group order">&#8644; Swap</button>
+                </div>
+                <p id="seed-notice" class="seed-notice" hidden></p>
+            </div>
+            <div class="generate-bar" role="group" aria-label="Generate resamples">
+                <button type="button" class="gen-btn" data-count="1" disabled>+1</button>
+                <button type="button" class="gen-btn" data-count="10" disabled>+10</button>
+                <button type="button" class="gen-btn" data-count="100" disabled>+100</button>
+                <button type="button" class="gen-btn" data-count="1000" disabled>+1000</button>
+                <button type="button" id="reset-btn" class="reset-btn" aria-label="Reset simulation" title="Reset" hidden>&#x21BA;</button>
+                <span class="gen-label">Resamples</span>
+            </div>
+        </section>
+
+        <!-- Mechanism strip: two-group bootstrap -->
+        <section id="mechanism-strip" class="mechanism-strip" aria-label="Resampling mechanism" hidden>
+            <div class="mechanism-panels">
+                <div class="mechanism-panel" id="mech-original">
+                    <h2 class="mechanism-title">Original Groups</h2>
+                    <div id="mech-original-content" class="mech-two-group"></div>
+                </div>
+                <div class="mechanism-arrow" aria-hidden="true">&#8594;</div>
+                <div class="mechanism-panel" id="mech-resample">
+                    <h2 class="mechanism-title">Resampled Groups</h2>
+                    <div id="mech-resample-content" class="mech-two-group"></div>
+                </div>
+            </div>
+            <p id="mechanism-description" class="mechanism-desc" hidden></p>
+        </section>
+
+        <section id="chart-and-results" aria-label="Chart and results">
+            <div class="app-body">
+                <div class="app-main" id="chart" aria-label="Bootstrap distribution">
+                    <div id="chart-container"></div>
+                </div>
+                <div class="app-sidebar" id="results">
+                    <div id="result-summary" tabindex="-1">
+                        <p class="placeholder">Select a dataset, then run a simulation to see results.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <dialog id="page-help" aria-label="Keyboard shortcuts">
+        <h2>Keyboard Shortcuts</h2>
+        <p class="help-intro">Load a dataset, then run resamples to build a bootstrap distribution of the difference in proportions. Use the histogram to estimate a confidence interval.</p>
+        <dl>
+            <dt><kbd>1</kbd></dt><dd>+1 resample</dd>
+            <dt><kbd>2</kbd></dt><dd>+10 resamples</dd>
+            <dt><kbd>3</kbd></dt><dd>+100 resamples</dd>
+            <dt><kbd>4</kbd></dt><dd>+1000 resamples</dd>
+            <dt><kbd>0</kbd></dt><dd>Reset</dd>
+            <dt><kbd>Space</kbd></dt><dd>Play / Pause</dd>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

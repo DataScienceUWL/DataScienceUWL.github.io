@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Two Quantitative Variables | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+
+    <style>
+        .var-selectors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-top: 0.75rem;
+        }
+        .var-selectors select { width: 12rem; }
+
+        .toggle-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            margin: 0.5rem 0;
+        }
+        .toggle-row label {
+            flex-direction: row;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 400;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .toggle-row input[type="checkbox"] {
+            accent-color: var(--ims-blue);
+            width: 1.1rem;
+            height: 1.1rem;
+        }
+
+        .equation-display {
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            text-align: center;
+            padding: 0.5rem 0.75rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin: 0 0 0.5rem;
+            color: var(--ims-green);
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.4rem;
+        }
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.4rem 0.5rem;
+            text-align: center;
+        }
+        .stat-card .stat-label {
+            font-size: 0.75rem;
+            color: var(--ims-gray-text);
+            margin-bottom: 0.1rem;
+        }
+        .stat-card .stat-value {
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--ims-green);
+        }
+
+        #residual-container { margin-top: 0.75rem; }
+
+        @media (max-width: 480px) {
+            .var-selectors { flex-direction: column; }
+            .var-selectors select { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#data-panel">Skip to Data</a>
+        <a href="#chart">Skip to Chart</a>
+        <a href="#results">Skip to Results</a>
+    </nav>
+
+    <main>
+        <h1>Two Quantitative Variables<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
+
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-dataset" aria-selected="true"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Edit Data</button>
+                <button role="tab" id="tab-file" aria-selected="false"
+                    aria-controls="panel-file">Open File</button>
+            </div>
+
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset">
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </label>
+                <p id="dataset-desc" class="hint"></p>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <label for="paste-area">Edit or paste two-column data (CSV with headers):
+                    <textarea id="paste-area" rows="8"
+                              placeholder="x,y&#10;1.2,3.4&#10;2.5,5.1&#10;3.8,7.2&#10;4.1,8.0"></textarea>
+                </label>
+                <div class="btn-row">
+                    <button type="button" id="load-pasted">Apply</button>
+                    <button type="button" id="save-btn" class="btn-secondary">Save</button>
+                    <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+
+            <div id="var-panel" hidden>
+                <div class="var-selectors">
+                    <label for="x-var">X variable (predictor):
+                        <select id="x-var"></select>
+                    </label>
+                    <label for="y-var">Y variable (response):
+                        <select id="y-var"></select>
+                    </label>
+                </div>
+            </div>
+
+            
+            <div role="tabpanel" id="panel-file" aria-labelledby="tab-file" hidden>
+                <label for="file-input">Open a CSV or TSV file:
+                    <input type="file" id="file-input" accept=".csv,.tsv,.txt">
+                </label>
+            </div>
+
+            <div id="data-preview" hidden>
+                <output id="data-summary"></output>
+            </div>
+        </section>
+
+        <section id="results" aria-label="Scatterplot and regression results">
+            <div class="app-body">
+                <!-- Left: Charts -->
+                <div class="app-main">
+                    <div class="toggle-row">
+                        <label>
+                            <input type="checkbox" id="show-line" checked>
+                            Show regression line
+                        </label>
+                        <label>
+                            <input type="checkbox" id="show-loess">
+                            Show LOESS curve
+                        </label>
+                        <label>
+                            <input type="checkbox" id="show-residuals">
+                            Show residual plot
+                        </label>
+                    </div>
+                    <div id="chart-container"></div>
+                    <div id="residual-container" hidden>
+                        <h3 style="font-size:0.9rem;color:var(--ims-gray-text);">Residual Plot</h3>
+                        <div id="residual-chart-container"></div>
+                    </div>
+                </div>
+
+                <!-- Right: Equation + stats sidebar -->
+                <div class="app-sidebar">
+                    <div id="equation-display" class="equation-display" hidden></div>
+                    <div id="stats-display" class="stats-grid" hidden></div>
+                </div>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    
+    <dialog id="page-help" aria-label="Help">
+        <h2>Help</h2>
+        <p class="help-intro">Load a dataset to explore the relationship between two quantitative variables with scatterplots and regression lines.</p>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

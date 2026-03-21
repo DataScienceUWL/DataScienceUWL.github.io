@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Compare Groups | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+
+    <style>
+        /* Compare Groups page overrides */
+        .var-selectors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .var-selectors label {
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .var-selectors select {
+            width: auto;
+            min-width: 10rem;
+        }
+        #chart-area svg {
+            font-family: var(--font-body);
+            font-size: var(--font-size-chart);
+        }
+        /* Spreadsheet editor */
+        .spreadsheet {
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            max-height: 14rem;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
+        .spreadsheet table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .spreadsheet thead th {
+            position: sticky;
+            top: 0;
+            background: var(--bg-alt, #f5f5f5);
+            border-bottom: 2px solid var(--border);
+            padding: 0.25rem 0.4rem;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-align: left;
+            z-index: 1;
+        }
+        .spreadsheet .row-num {
+            width: 2.5rem;
+            text-align: right;
+            padding-right: 0.4rem;
+            color: var(--ims-gray-text);
+            font-size: 0.75rem;
+            user-select: none;
+            background: var(--bg-alt, #f5f5f5);
+            border-right: 1px solid var(--border);
+        }
+        .spreadsheet td {
+            padding: 0;
+            border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+        }
+        .spreadsheet input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 0.25rem 0.4rem;
+            font-size: 0.85rem;
+            font-family: var(--font-mono, 'Source Code Pro', monospace);
+            outline: none;
+            box-sizing: border-box;
+        }
+        .spreadsheet input:focus {
+            background: color-mix(in srgb, var(--accent) 8%, transparent);
+        }
+        .spreadsheet tr.empty-row input {
+            color: var(--ims-gray-text);
+        }
+        /* Grouped stats table */
+        #grouped-stats-table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 0.95rem;
+        }
+        #grouped-stats-table th,
+        #grouped-stats-table td {
+            border: 1px solid var(--border);
+            padding: 0.3rem 0.5rem;
+            text-align: right;
+        }
+        #grouped-stats-table th {
+            background: var(--bg-alt, #f5f5f5);
+            font-weight: 700;
+            font-size: 0.88rem;
+        }
+        #grouped-stats-table th:first-child,
+        #grouped-stats-table td:first-child {
+            text-align: left;
+        }
+        #grouped-stats-table .stat-sep td,
+        #grouped-stats-table .stat-sep th {
+            border-top: 2px solid var(--border);
+        }
+        .grouped-stats-wrap {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        @media (max-width: 480px) {
+            #grouped-stats-table {
+                font-size: 0.82rem;
+            }
+            #grouped-stats-table th,
+            #grouped-stats-table td {
+                padding: 0.2rem 0.3rem;
+            }
+            #grouped-stats-table th {
+                font-size: 0.78rem;
+            }
+        }
+        /* Stacked chart panels */
+        .stacked-charts > div {
+            margin-bottom: 0.5rem;
+        }
+        .stacked-charts .group-label {
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin: 0 0 0.15rem;
+            color: var(--ims-gray-text);
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#data-panel">Skip to Data</a>
+        <a href="#stats-section">Skip to Statistics</a>
+        <a href="#charts-section">Skip to Charts</a>
+    </nav>
+
+    <main>
+        <h1>Compare Groups<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
+
+        <section id="data-panel" aria-label="Data input">
+            <div role="tablist" aria-label="Data source">
+                <button role="tab" id="tab-dataset" aria-selected="true"
+                        aria-controls="panel-dataset">Datasets</button>
+                <button role="tab" id="tab-paste" aria-selected="false"
+                        aria-controls="panel-paste">Edit Data</button>
+                <button role="tab" id="tab-file" aria-selected="false"
+                    aria-controls="panel-file">Open File</button>
+            </div>
+
+            <div role="tabpanel" id="panel-dataset" aria-labelledby="tab-dataset">
+                <label for="dataset-select">Choose a dataset:
+                    <select id="dataset-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </label>
+                <p id="dataset-desc" class="hint"></p>
+            </div>
+
+            <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" hidden>
+                <p class="hint" style="margin:0 0 0.3rem;">Enter values and group labels (two columns):</p>
+                <div id="edit-spreadsheet" class="spreadsheet" aria-label="Data editor">
+                    <table>
+                        <thead><tr><th class="row-num">#</th><th>Value</th><th>Group</th></tr></thead>
+                        <tbody id="edit-sheet-body">
+                            <!-- Rows injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <textarea id="paste-area" hidden></textarea>
+                <div class="btn-row">
+                    <button type="button" id="load-pasted">Apply</button>
+                    <button type="button" id="save-btn" class="btn-secondary">Save</button>
+                    <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+
+            <div role="tabpanel" id="panel-file" aria-labelledby="tab-file" hidden>
+                <label for="file-input">Open a CSV or TSV file:
+                    <input type="file" id="file-input" accept=".csv,.tsv,.txt">
+                </label>
+            </div>
+
+            <div id="data-preview" hidden>
+                <output id="data-summary"></output>
+            </div>
+        </section>
+
+        <div id="variable-selector" class="var-selectors" hidden>
+            <label for="quant-var-select">Quantitative variable:
+                <select id="quant-var-select"></select>
+            </label>
+            <label for="group-var-select">Grouping variable:
+                <select id="group-var-select"></select>
+            </label>
+        </div>
+
+        <section id="results-section" aria-label="Charts and statistics" hidden>
+            <div class="app-body">
+                <!-- Left: Chart area -->
+                <div class="app-main">
+                    <div class="chart-selector" role="radiogroup" aria-label="Chart type">
+                        <label><input type="radio" name="chart-type" value="boxplot" checked> Boxplot</label>
+                        <label><input type="radio" name="chart-type" value="dotplot"> Dotplot</label>
+                        <label><input type="radio" name="chart-type" value="histogram"> Histogram</label>
+                        <label><input type="radio" name="chart-type" value="density"> Density</label>
+                    </div>
+                    <div class="chart-controls-bar" id="chart-controls">
+                        <!-- Contextual controls injected by JS -->
+                    </div>
+                    <div id="chart-area"></div>
+                </div>
+
+                <!-- Right: Summary statistics sidebar -->
+                <div class="app-sidebar" id="stats-sidebar">
+                    <h2 style="font-size:1.1rem; margin:0 0 0.3rem;">Summary Statistics</h2>
+                    <div class="grouped-stats-wrap">
+                        <table id="grouped-stats-table" aria-label="Grouped descriptive statistics">
+                            <thead id="stats-thead"><tr><th>Statistic</th></tr></thead>
+                            <tbody id="stats-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    
+    <dialog id="page-help" aria-label="Help">
+        <h2>Help</h2>
+        <p class="help-intro">Load a dataset to compare a quantitative variable across groups using side-by-side charts and summary statistics.</p>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>
