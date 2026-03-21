@@ -68,12 +68,10 @@ export function drawWaffleChart(container, values, options = {}) {
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
 
-  // Draw cells bottom-left to top-right (like a waffle — fill from bottom)
+  // Draw cells left-to-right, top-to-bottom so each category forms a contiguous block
   for (let i = 0; i < cells; i++) {
-    // Fill column-first from bottom-left
-    const col = Math.floor(i / gridRows);
-    const rowFromBottom = i % gridRows;
-    const row = gridRows - 1 - rowFromBottom;
+    const row = Math.floor(i / gridCols);
+    const col = i % gridCols;
 
     const x = offsetX + col * (cellSize + gap);
     const y = offsetY + row * (cellSize + gap);
