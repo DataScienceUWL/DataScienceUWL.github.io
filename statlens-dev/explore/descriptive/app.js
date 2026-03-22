@@ -550,9 +550,16 @@ function setData(values, varLabel, sourceName) {
   showOutliers = true;
   showDensity = false;
   relativeFreq = false;
-  const histRadio = /** @type {HTMLInputElement|null} */ (
-    document.querySelector('input[name="chart-type"][value="histogram"]'));
-  if (histRadio) histRadio.checked = true;
+
+  // Apply ?chart= URL param on first load
+  const chartParam = new URLSearchParams(window.location.search).get('chart');
+  if (chartParam && ['histogram', 'dotplot', 'boxplot'].includes(chartParam)) {
+    activeChart = /** @type {'histogram'|'dotplot'|'boxplot'} */ (chartParam);
+  }
+
+  const defaultRadio = /** @type {HTMLInputElement|null} */ (
+    document.querySelector(`input[name="chart-type"][value="${activeChart}"]`));
+  if (defaultRadio) defaultRadio.checked = true;
   if (groupSelect) groupSelect.value = '';
 
   // Populate spreadsheet editor

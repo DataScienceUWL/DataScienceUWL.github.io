@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Data Explorer | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
+
+    <style>
+        /* ── Workspace layout ─────────────────────────────────────── */
+        .workspace {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        /* ── Sidebar ──────────────────────────────────────────────── */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .sidebar-section h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #666;
+            margin: 0 0 0.4rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid var(--ims-lgray, #D9D9D9);
+        }
+
+        /* Variable list */
+        .var-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .var-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border: 2px solid transparent;
+            transition: background 0.15s, border-color 0.15s;
+            user-select: none;
+        }
+
+        .var-item:hover {
+            background: #f0f4f7;
+        }
+
+        .var-item:focus-visible {
+            outline: 2px solid var(--ims-blue, #569BBD);
+            outline-offset: 1px;
+        }
+
+        .var-item[aria-pressed="true"] {
+            background: #e3eef5;
+            border-color: var(--ims-blue, #569BBD);
+            font-weight: 700;
+        }
+
+        .var-item .type-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            font-family: 'Source Code Pro', monospace;
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+            min-width: 1.3rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .type-badge.numeric {
+            background: #e3eef5;
+            color: #1a5276;
+        }
+
+        .type-badge.categorical {
+            background: #fce8e6;
+            color: #922820;
+        }
+
+        .var-item .var-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .var-item .role-label {
+            margin-left: auto;
+            font-size: 0.7rem;
+            color: var(--ims-blue, #569BBD);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* Chart type radios */
+        .chart-types {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+        }
+
+        .chart-types label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .chart-types label:hover {
+            background: #f0f4f7;
+        }
+
+        .chart-types input[type="radio"] {
+            margin: 0;
+        }
+
+        /* Selection hint */
+        .selection-hint {
+            font-size: 0.8rem;
+            color: #888;
+            font-style: italic;
+            margin: 0;
+        }
+
+        /* ── Main panel ───────────────────────────────────────────── */
+        .main-panel {
+            min-width: 0;
+        }
+
+        #chart-container {
+            min-height: 300px;
+            position: relative;
+        }
+
+        #chart-container svg {
+            font-family: var(--font-body);
+            font-size: var(--font-size-chart);
+        }
+
+        .empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            color: #999;
+            font-size: 1rem;
+            text-align: center;
+            padding: 2rem;
+            border: 2px dashed var(--ims-lgray, #D9D9D9);
+            border-radius: 8px;
+        }
+
+        #stats-container {
+            margin-top: 0.75rem;
+        }
+
+        #stats-container table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        #stats-container th,
+        #stats-container td {
+            padding: 0.3rem 0.6rem;
+            text-align: right;
+            border-bottom: 1px solid var(--ims-lgray, #D9D9D9);
+        }
+
+        #stats-container th:first-child,
+        #stats-container td:first-child {
+            text-align: left;
+        }
+
+        #stats-container thead th {
+            font-weight: 700;
+            border-bottom: 2px solid #999;
+        }
+
+        /* Frequency table for categorical */
+        .freq-table th,
+        .freq-table td {
+            text-align: left;
+        }
+
+        .freq-table td:nth-child(2),
+        .freq-table td:nth-child(3),
+        .freq-table th:nth-child(2),
+        .freq-table th:nth-child(3) {
+            text-align: right;
+        }
+
+        /* ── Mobile banner ────────────────────────────────────────── */
+        .mobile-banner {
+            display: none;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ── Responsive ───────────────────────────────────────────── */
+        @media (max-width: 600px) {
+            .mobile-banner { display: block; }
+
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+
+            .sidebar-section {
+                flex: 1;
+                min-width: 140px;
+            }
+        }
+
+        @media (min-width: 601px) and (max-width: 900px) {
+            .workspace {
+                grid-template-columns: 180px 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#variables">Skip to Variables</a>
+        <a href="#chart-container">Skip to Chart</a>
+    </nav>
+
+    <main>
+        <h1>Data Explorer<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">&#x2699;</button></span></h1>
+
+        <div class="mobile-banner" role="note">
+            This tool works best on a larger screen (tablet landscape or desktop).
+        </div>
+
+        <div id="data-panel"></div>
+
+        <section id="results-section" hidden>
+            <div class="workspace">
+                <!-- Sidebar: variables + chart types -->
+                <aside class="sidebar">
+                    <div class="sidebar-section" id="variables">
+                        <h3>Variables</h3>
+                        <p class="selection-hint">Click to select (up to 2)</p>
+                        <ul class="var-list" id="var-list" role="listbox" aria-label="Dataset variables" aria-multiselectable="true">
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>Chart Type</h3>
+                        <div class="chart-types" id="chart-types" role="radiogroup" aria-label="Chart type">
+                            <label><input type="radio" name="chart-type" value="histogram"> Histogram</label>
+                            <label><input type="radio" name="chart-type" value="dotplot"> Dotplot</label>
+                            <label><input type="radio" name="chart-type" value="boxplot" checked> Boxplot</label>
+                            <label><input type="radio" name="chart-type" value="bar"> Bar Chart</label>
+                            <label><input type="radio" name="chart-type" value="pie"> Pie Chart</label>
+                            <label><input type="radio" name="chart-type" value="waffle"> Waffle Chart</label>
+                            <label><input type="radio" name="chart-type" value="scatterplot"> Scatterplot</label>
+                            <label><input type="radio" name="chart-type" value="density"> Density</label>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Main: chart + stats -->
+                <div class="main-panel">
+                    <div id="chart-container">
+                        <div class="empty-state" id="empty-state">
+                            Select one or two variables to begin exploring.
+                        </div>
+                    </div>
+                    <div id="stats-container"></div>
+                </div>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <dialog id="page-help" aria-label="Help and keyboard shortcuts">
+        <h2>Data Explorer</h2>
+        <p class="help-intro">Load a dataset and freely explore its variables. Select one or two variables from the sidebar, choose a chart type, and see the result. The goal is to practice choosing appropriate visualizations for different variable types.</p>
+        <h3>How to use</h3>
+        <ol>
+            <li><strong>Load a dataset</strong> from the dropdown, or paste your own data.</li>
+            <li><strong>Click a variable</strong> in the sidebar to select it. Click a second variable to compare two variables. Click again to deselect.</li>
+            <li><strong>Choose a chart type</strong> from the radio buttons. All types are always available &mdash; some will work better than others depending on your variable selection.</li>
+            <li><strong>Interpret the chart</strong> and summary statistics. Then try a different combination.</li>
+        </ol>
+        <h3>Variable types</h3>
+        <ul>
+            <li><span class="type-badge numeric" style="font-size:0.75rem;">N</span> <strong>Numeric</strong> &mdash; measurements or counts (e.g., income, age, weight)</li>
+            <li><span class="type-badge categorical" style="font-size:0.75rem;">C</span> <strong>Categorical</strong> &mdash; group labels or categories (e.g., region, treatment, color)</li>
+        </ul>
+        <h3>Keyboard shortcuts</h3>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

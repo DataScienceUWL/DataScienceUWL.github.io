@@ -416,9 +416,16 @@ function setupVariableSelectors(ds, sourceName) {
   activeChart = 'boxplot';
   showOutliers = true;
   relativeFreq = false;
-  const boxRadio = /** @type {HTMLInputElement|null} */ (
-    document.querySelector('input[name="chart-type"][value="boxplot"]'));
-  if (boxRadio) boxRadio.checked = true;
+
+  // Apply ?chart= URL param on first load
+  const chartParam = new URLSearchParams(window.location.search).get('chart');
+  if (chartParam && ['boxplot', 'dotplot', 'histogram', 'density'].includes(chartParam)) {
+    activeChart = /** @type {'boxplot'|'dotplot'|'histogram'|'density'} */ (chartParam);
+  }
+
+  const defaultRadio = /** @type {HTMLInputElement|null} */ (
+    document.querySelector(`input[name="chart-type"][value="${activeChart}"]`));
+  if (defaultRadio) defaultRadio.checked = true;
 
   quantVarSelect.innerHTML = '';
   for (const v of numericVars) {
