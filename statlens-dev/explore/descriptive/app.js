@@ -695,7 +695,7 @@ function renderActiveChart() {
       const meanText = overlays.append('text')
         .attr('x', mx).attr('y', -6)
         .attr('text-anchor', 'middle')
-        .attr('fill', '#F05133').attr('font-size', '11px');
+        .attr('fill', '#F05133').attr('class', 'stat-marker-label');
       renderStatLabel(meanText, `x\u0304 = ${formatStat(meanVal, dataPrecision)}`);
     }
     if (histResult && histResult.bins && histResult.bins.length > 0) {

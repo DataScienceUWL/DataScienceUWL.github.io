@@ -595,7 +595,6 @@ export function showTooltip(innerNode, lines, x, y) {
   const text = g.append('text')
     .attr('text-anchor', 'middle')
     .attr('fill', '#333')
-    .style('font-size', '14px')
     .style('font-weight', '600');
 
   lines.forEach((line, i) => {

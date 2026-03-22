@@ -532,7 +532,7 @@ function drawOneBoxplot(parent, xScale, stats, midY, boxHalf, style) {
     bp.append('text')
       .attr('x', xScale(stats.whiskerHi) + 6)
       .attr('y', midY + 4)
-      .attr('font-size', '10px')
+      .attr('class', 'overlay-label')
       .attr('fill', style.stroke)
       .text(style.label);
   }

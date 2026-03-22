@@ -163,8 +163,7 @@ function drawWaffleLegend(frame, categories, counts, total, colors, title) {
     g.append('text')
       .attr('x', padX)
       .attr('y', yOff + 13)
-      .style('font-size', '13px')
-      .style('font-weight', '700')
+      .attr('class', 'legend-title')
       .attr('fill', '#333')
       .text(title);
     yOff += lineHeight;
@@ -187,7 +186,7 @@ function drawWaffleLegend(frame, categories, counts, total, colors, title) {
     g.append('text')
       .attr('x', padX + swatchSize + 6)
       .attr('y', yOff + swatchSize - 2)
-      .style('font-size', '13px')
+      .attr('class', 'legend-text')
       .attr('fill', '#333')
       .text(`${categories[i]}: ${count} (${pct}%)`);
 

@@ -626,7 +626,7 @@ function drawMeanOnHistogram(histResult, values) {
   const meanText = overlays.append('text')
     .attr('x', mx).attr('y', -6)
     .attr('text-anchor', 'middle')
-    .attr('fill', '#F05133').attr('font-size', '11px');
+    .attr('fill', '#F05133').attr('class', 'stat-marker-label');
   renderStatLabel(meanText, `x\u0304 = ${formatStat(meanVal, dp)}`);
 }
 
