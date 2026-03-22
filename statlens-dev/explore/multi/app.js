@@ -18,7 +18,7 @@ import { drawGroupedDensity, overlayDensityOnHistogram } from '../../js/kde.js';
 import { mean, median, sd, quantile, iqr, range, cor, linreg, loess, detectPrecision, formatStat } from '../../js/stats.js';
 import { renderStatLabel } from '../../js/chart-utils.js';
 import { addChartSaveButton, copyTableRich } from '../../js/export.js';
-import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../../js/page-utils.js';
+import { announce, initTabs, initDataPanel, initHelp, setPageTitle, wrapWithStepper } from '../../js/page-utils.js';
 
 initHelp();
 initTabs();
@@ -407,6 +407,7 @@ function renderChartOptions(combo) {
     });
     binLabel.appendChild(binInput);
     chartOptionsEl.appendChild(binLabel);
+    wrapWithStepper(binInput);
 
     // Y-axis scale
     const yLabel = document.createElement('label');
@@ -453,6 +454,7 @@ function renderChartOptions(combo) {
     });
     sLabel.appendChild(sInput);
     chartOptionsEl.appendChild(sLabel);
+    wrapWithStepper(sInput);
   }
 
   // Boxplot options: outliers
