@@ -146,6 +146,101 @@ export async function copyTableToClipboard(tableEl) {
 }
 
 /**
+ * Copy an HTML table to the clipboard in rich format (HTML + plain text).
+ * Pasting into Word/Google Docs produces a formatted table;
+ * pasting into a plain text editor produces tab-delimited text.
+ *
+ * @param {HTMLTableElement} tableEl - The table to copy
+ * @returns {Promise<boolean>} true if copy succeeded
+ */
+export async function copyTableRich(tableEl) {
+  // Build plain-text (tab-delimited) version
+  const plainRows = [];
+  for (const tr of tableEl.querySelectorAll('tr')) {
+    const cells = [];
+    for (const cell of tr.querySelectorAll('th, td')) {
+      cells.push(/** @type {HTMLElement} */ (cell).textContent?.trim() ?? '');
+    }
+    plainRows.push(cells.join('\t'));
+  }
+  const plainText = plainRows.join('\n');
+
+  // Build minimal HTML version (inline basic styling for Word compatibility)
+  const htmlTable = tableEl.outerHTML;
+  const html = `<meta charset="utf-8"><style>table{border-collapse:collapse}th,td{border:1px solid #ccc;padding:4px 8px;text-align:right}th:first-child,td:first-child{text-align:left}th{font-weight:bold;border-bottom:2px solid #666}</style>${htmlTable}`;
+
+  try {
+    // Modern ClipboardItem API — writes both formats
+    const item = new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([plainText], { type: 'text/plain' }),
+    });
+    await navigator.clipboard.write([item]);
+    return true;
+  } catch {
+    // Fallback to plain text copy
+    return copyTableToClipboard(tableEl);
+  }
+}
+
+/**
+ * Copy a chart (SVG) to the clipboard as a PNG image.
+ * Uses the same rendering pipeline as downloadChartPNG.
+ *
+ * @param {SVGSVGElement} svgEl - The SVG element to copy
+ * @param {object} [opts]
+ * @param {number} [opts.scale=2] - Resolution multiplier
+ * @returns {Promise<boolean>} true if copy succeeded
+ */
+export async function copyChartToClipboard(svgEl, opts = {}) {
+  const scale = opts.scale ?? 2;
+
+  const clone = /** @type {SVGSVGElement} */ (svgEl.cloneNode(true));
+  inlineStyles(svgEl, clone);
+
+  const vb = svgEl.viewBox.baseVal;
+  const width = vb.width || svgEl.clientWidth || 600;
+  const height = vb.height || svgEl.clientHeight || 371;
+  clone.setAttribute('width', String(width));
+  clone.setAttribute('height', String(height));
+  clone.removeAttribute('style');
+
+  const serializer = new XMLSerializer();
+  const svgString = serializer.serializeToString(clone);
+  const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(svgBlob);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width * scale;
+  canvas.height = height * scale;
+  const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.scale(scale, scale);
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = async () => {
+      ctx.drawImage(img, 0, 0, width, height);
+      URL.revokeObjectURL(url);
+      try {
+        const blob = await new Promise((res) =>
+          canvas.toBlob((b) => res(b), 'image/png'));
+        if (!blob) { resolve(false); return; }
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': /** @type {Blob} */ (blob) }),
+        ]);
+        resolve(true);
+      } catch {
+        resolve(false);
+      }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(false); };
+    img.src = url;
+  });
+}
+
+/**
  * Create an export button bar with chart download and/or table copy buttons.
  *
  * @param {object} opts
@@ -209,21 +304,22 @@ export function createExportBar(opts) {
 }
 
 /**
- * Add a floating save-as-PNG button to a chart container.
- * The button appears as a small camera icon in the top-right corner,
- * semi-transparent until hovered. Clicking downloads the chart as PNG.
- *
- * Safe to call repeatedly — removes any existing button first.
- * Hidden in embed/static mode automatically via CSS.
+ * Add floating save-as-PNG and copy-to-clipboard buttons to a chart container.
+ * Buttons appear as small icons in the top-right corner, semi-transparent
+ * until hovered. Safe to call repeatedly — removes existing buttons first.
  *
  * @param {HTMLElement} container - The element containing an SVG chart
  * @param {string} [filename='chart.png'] - Download filename
+ * @param {object} [opts]
+ * @param {boolean} [opts.showCopy=false] - Show a copy-to-clipboard button
  * @returns {HTMLButtonElement} The save button element
  */
-export function addChartSaveButton(container, filename = 'chart.png') {
-  // Remove existing button to prevent duplicates on re-render
+export function addChartSaveButton(container, filename = 'chart.png', opts = {}) {
+  // Remove existing buttons to prevent duplicates on re-render
   const existing = container.querySelector('.chart-save-btn');
   if (existing) existing.remove();
+  const existingCopy = container.querySelector('.chart-copy-btn');
+  if (existingCopy) existingCopy.remove();
 
   // Ensure container is positioned for absolute child
   const pos = typeof getComputedStyle === 'function'
@@ -259,5 +355,39 @@ export function addChartSaveButton(container, filename = 'chart.png') {
   });
 
   container.appendChild(btn);
+
+  // Optional copy-to-clipboard button
+  if (opts.showCopy) {
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'chart-copy-btn';
+    copyBtn.setAttribute('aria-label', 'Copy chart to clipboard');
+    copyBtn.title = 'Copy chart to clipboard';
+
+    // Clipboard icon
+    copyBtn.innerHTML = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+      <rect x="5" y="3" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+      <path d="M8 1h4v3a1 1 0 01-1 1H9a1 1 0 01-1-1V1z" fill="currentColor" opacity="0.4"/>
+      <line x1="8" y1="8" x2="12" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="8" y1="11" x2="12" y2="11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>`;
+
+    copyBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const svg = /** @type {SVGSVGElement|null} */ (container.querySelector('svg'));
+      if (!svg) return;
+      copyBtn.classList.add('saving');
+      const ok = await copyChartToClipboard(svg);
+      copyBtn.classList.remove('saving');
+      if (ok) {
+        copyBtn.title = 'Copied!';
+        setTimeout(() => { copyBtn.title = 'Copy chart to clipboard'; }, 1500);
+      }
+    });
+
+    container.appendChild(copyBtn);
+  }
+
   return btn;
 }

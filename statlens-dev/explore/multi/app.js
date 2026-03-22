@@ -15,7 +15,7 @@ import { drawWaffleChart } from '../../js/waffle.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
 import { drawGroupedDensity } from '../../js/kde.js';
 import { mean, median, sd, quantile, iqr, range, cor, linreg, detectPrecision, formatStat } from '../../js/stats.js';
-import { addChartSaveButton } from '../../js/export.js';
+import { addChartSaveButton, copyTableRich } from '../../js/export.js';
 import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
@@ -31,6 +31,11 @@ const emptyState = document.getElementById('empty-state');
 const statsContainer = document.getElementById('stats-container');
 const chartRadios = /** @type {NodeListOf<HTMLInputElement>} */ (
   document.querySelectorAll('input[name="chart-type"]')
+);
+const swapBtn = document.getElementById('swap-btn');
+const barModeSection = document.getElementById('bar-mode-section');
+const barModeRadios = /** @type {NodeListOf<HTMLInputElement>} */ (
+  document.querySelectorAll('input[name="bar-mode"]')
 );
 
 // ── State ────────────────────────────────────────────────────────────
@@ -50,6 +55,9 @@ let selected = [];
 
 /** @type {string} */
 let activeChart = 'boxplot';
+
+/** @type {'dodged'|'stacked'|'filled'} */
+let barMode = 'dodged';
 
 /** Dataset display name */
 let datasetName = '';
@@ -117,8 +125,8 @@ function buildVariableList() {
     li.dataset.varName = v.name;
 
     const badge = document.createElement('span');
-    badge.className = `type-badge ${v.type}`;
-    badge.textContent = v.type === 'numeric' ? 'N' : 'C';
+    badge.className = `type-badge ${v.type === 'numeric' ? 'quantitative' : 'categorical'}`;
+    badge.textContent = v.type === 'numeric' ? 'Q' : 'C';
     badge.setAttribute('aria-hidden', 'true');
     li.appendChild(badge);
 
@@ -184,6 +192,9 @@ function updateVariableUI() {
       }
     }
   }
+
+  // Show swap button only when 2 variables are selected
+  if (swapBtn) swapBtn.hidden = selected.length !== 2;
 }
 
 // ── Chart type ───────────────────────────────────────────────────────
@@ -194,6 +205,55 @@ chartRadios.forEach(radio => {
     renderChart();
   });
 });
+
+// Swap variable roles
+if (swapBtn) {
+  swapBtn.addEventListener('click', () => {
+    if (selected.length === 2) {
+      selected.reverse();
+      updateVariableUI();
+      renderChart();
+      announce(`Swapped roles: ${selected[0]} is now 1st, ${selected[1]} is now 2nd.`);
+    }
+  });
+}
+
+// Bar mode selector
+barModeRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    barMode = /** @type {'dodged'|'stacked'|'filled'} */ (radio.value);
+    renderChart();
+  });
+});
+
+// Export dataset as CSV
+const exportCsvBtn = document.getElementById('export-csv-btn');
+if (exportCsvBtn) {
+  exportCsvBtn.addEventListener('click', () => {
+    if (rows.length === 0 || variables.length === 0) return;
+    const headers = variables.map(v => v.name);
+    const csvRows = [headers.join(',')];
+    for (const row of rows) {
+      const cells = headers.map(h => {
+        let val = String(row[h] ?? '');
+        if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+          val = `"${val.replace(/"/g, '""')}"`;
+        }
+        return val;
+      });
+      csvRows.push(cells.join(','));
+    }
+    const csv = csvRows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const safeName = (datasetName || 'data').replace(/\s+/g, '_').toLowerCase();
+    a.download = `${safeName}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -269,6 +329,10 @@ function renderChart() {
   const numCount = types.filter(t => t === 'numeric').length;
   const catCount = types.filter(t => t === 'categorical').length;
 
+  // Show bar mode selector only for two-categorical + bar chart
+  const showBarMode = catCount === 2 && selected.length === 2 && activeChart === 'bar';
+  if (barModeSection) barModeSection.hidden = !showBarMode;
+
   try {
     if (selected.length === 1) {
       if (v1.type === 'numeric') {
@@ -292,11 +356,14 @@ function renderChart() {
     }
   }
 
-  // Save button
+  // Save + Copy buttons for chart
   if (chartContainer && chartContainer.querySelector('svg')) {
     const safeName = selected.map(s => s.replace(/\s+/g, '_')).join('_vs_');
-    addChartSaveButton(chartContainer, `${safeName}_${activeChart}.png`);
+    addChartSaveButton(chartContainer, `${safeName}_${activeChart}.png`, { showCopy: true });
   }
+
+  // Table copy/download buttons
+  addTableActions();
 }
 
 // ── One numeric variable ─────────────────────────────────────────────
@@ -319,11 +386,8 @@ function renderOneNumeric(v) {
       xLabel: v.label, titleText: v.label, id: 'explorer-chart', animate: false,
     });
   } else {
-    // Non-ideal chart type for one numeric — render anyway with a note
-    renderMismatchNote('Histograms, dotplots, and boxplots work well for a single numeric variable.');
-    drawHistogram(chartContainer, values, {
-      xLabel: v.label, titleText: v.label, id: 'explorer-chart', animate: false,
-    });
+    renderMismatchNote('Histograms, dotplots, and boxplots work well for a single quantitative variable.');
+    return;
   }
 
   renderNumericStats(v.label, values);
@@ -351,10 +415,7 @@ function renderOneCategorical(v) {
     });
   } else {
     renderMismatchNote('Bar charts, pie charts, and waffle charts work well for a single categorical variable.');
-    drawBarChart(chartContainer, values, {
-      xLabel: v.label, titleText: v.label, id: 'explorer-chart', animate: false,
-      margin: { top: 30, right: 15, bottom: 80, left: 55 },
-    });
+    return;
   }
 
   renderCategoricalStats(v.label, values);
@@ -381,14 +442,8 @@ function renderTwoNumeric(v1, v2) {
       regression: { slope: reg.slope, intercept: reg.intercept },
     });
   } else {
-    renderMismatchNote('Scatterplots work well for two numeric variables.');
-    const reg = linreg(x.slice(0, n), y.slice(0, n));
-    drawScatterplot(chartContainer, x.slice(0, n), y.slice(0, n), {
-      xLabel: v1.label, yLabel: v2.label,
-      titleText: `${v1.label} vs ${v2.label}`,
-      id: 'explorer-chart',
-      regression: { slope: reg.slope, intercept: reg.intercept },
-    });
+    renderMismatchNote('Scatterplots work well for two quantitative variables.');
+    return;
   }
 
   renderRegressionStats(v1.label, v2.label, x.slice(0, n), y.slice(0, n));
@@ -451,11 +506,8 @@ function renderNumericByCategorical(numVar, catVar) {
       id: 'explorer-chart',
     });
   } else {
-    renderMismatchNote('Boxplots, histograms, dotplots, and density curves work well for comparing a numeric variable across groups.');
-    drawBoxplot(chartContainer, grouped, {
-      xLabel: numVar.label, titleText: `${numVar.label} by ${catVar.label}`,
-      id: 'explorer-chart', animate: false,
-    });
+    renderMismatchNote('Boxplots, histograms, dotplots, and density curves work well for comparing a quantitative variable across groups.');
+    return;
   }
 
   renderGroupedStats(numVar.label, catVar.label, grouped);
@@ -489,25 +541,49 @@ function renderTwoCategorical(v1, v2) {
   }
 
   if (activeChart === 'bar') {
-    // Grouped bar chart — use v2 as grouping
+    // Grouped bar chart — use v2 as grouping, barMode controls layout
     drawBarChart(chartContainer, col1, {
       xLabel: v1.label, titleText: `${v1.label} by ${v2.label}`,
-      id: 'explorer-chart', animate: false, mode: 'dodged',
+      id: 'explorer-chart', animate: false, mode: barMode,
       groupValues: col2, groupLabel: v2.label,
       margin: { top: 30, right: 15, bottom: 80, left: 55 },
     });
   } else {
-    renderMismatchNote('Bar charts and contingency tables work well for two categorical variables.');
-    drawBarChart(chartContainer, col1, {
-      xLabel: v1.label, titleText: `${v1.label} by ${v2.label}`,
-      id: 'explorer-chart', animate: false, mode: 'dodged',
-      groupValues: col2, groupLabel: v2.label,
-      margin: { top: 30, right: 15, bottom: 80, left: 55 },
-    });
+    renderMismatchNote('Bar charts work well for two categorical variables.');
   }
 
-  // Always show contingency table for two categorical
+  // Always show contingency table for two categorical (even on mismatch)
   renderContingencyTable(v1.label, v2.label, rowLevels, colLevels, table, n);
+}
+
+// ── Table export helpers ─────────────────────────────────────────────
+
+/**
+ * Add a "Copy" button below the stats table(s).
+ * Copies as rich HTML (formatted table in Word/Docs) with plain-text fallback.
+ */
+function addTableActions() {
+  if (!statsContainer) return;
+  const tables = statsContainer.querySelectorAll('table');
+  if (tables.length === 0) return;
+
+  const bar = document.createElement('div');
+  bar.className = 'table-actions';
+
+  const copyBtn = document.createElement('button');
+  copyBtn.type = 'button';
+  copyBtn.textContent = 'Copy table';
+  copyBtn.title = 'Copy to clipboard — pastes as a formatted table in Word or Google Docs';
+  copyBtn.addEventListener('click', async () => {
+    // Copy the last table (main stats), or first if only one
+    const table = /** @type {HTMLTableElement} */ (tables[tables.length - 1]);
+    const ok = await copyTableRich(table);
+    copyBtn.textContent = ok ? 'Copied!' : 'Copy failed';
+    setTimeout(() => { copyBtn.textContent = 'Copy table'; }, 1500);
+  });
+
+  bar.appendChild(copyBtn);
+  statsContainer.appendChild(bar);
 }
 
 // ── Stats rendering ──────────────────────────────────────────────────
@@ -662,13 +738,22 @@ function renderContingencyTable(rowLabel, colLabel, rowLevels, colLevels, table,
 }
 
 /**
- * Show a note about chart-variable mismatch (pure discovery — no blocking).
+ * Show a guidance message when chart type doesn't match variable selection.
+ * No fallback chart is rendered — only the message.
  * @param {string} suggestion
  */
 function renderMismatchNote(suggestion) {
   if (!chartContainer) return;
   const note = document.createElement('div');
-  note.style.cssText = 'font-size:0.8rem;color:#888;font-style:italic;padding:0.25rem 0;margin-bottom:0.25rem;';
-  note.textContent = suggestion;
+  note.className = 'empty-state';
+  note.style.cssText = 'flex-direction:column;gap:0.5rem;';
+  const icon = document.createElement('span');
+  icon.style.cssText = 'font-size:1.5rem;opacity:0.5;';
+  icon.textContent = '\u2139';
+  icon.setAttribute('aria-hidden', 'true');
+  note.appendChild(icon);
+  const text = document.createElement('span');
+  text.textContent = `This chart type doesn\u2019t match your variable selection. ${suggestion}`;
+  note.appendChild(text);
   chartContainer.appendChild(note);
 }
