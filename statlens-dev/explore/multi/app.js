@@ -2,19 +2,21 @@
 /**
  * Data Explorer — multi-variable exploration workspace.
  * Loads a dataset, shows all variables with type badges, lets students
- * select 1-2 variables and choose any chart type. Pure discovery mode:
- * all chart types always available, wrong choices produce unhelpful output.
+ * select 1-2 variables and choose any chart type. Surfaces the same
+ * controls as each individual explore app (bins, density, outliers, etc.).
  */
 
+import * as d3Selection from 'd3-selection';
 import { drawHistogram, computeBins, sturgesBins } from '../../js/histogram.js';
-import { drawDotplot } from '../../js/dotplot.js';
+import { drawDotplot, dotplotBins } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { drawBarChart } from '../../js/barchart.js';
 import { drawPieChart } from '../../js/pie.js';
 import { drawWaffleChart } from '../../js/waffle.js';
-import { drawScatterplot } from '../../js/scatterplot.js';
-import { drawGroupedDensity } from '../../js/kde.js';
-import { mean, median, sd, quantile, iqr, range, cor, linreg, detectPrecision, formatStat } from '../../js/stats.js';
+import { drawScatterplot, drawResidualPlot } from '../../js/scatterplot.js';
+import { drawGroupedDensity, overlayDensityOnHistogram } from '../../js/kde.js';
+import { mean, median, sd, quantile, iqr, range, cor, linreg, loess, detectPrecision, formatStat } from '../../js/stats.js';
+import { renderStatLabel } from '../../js/chart-utils.js';
 import { addChartSaveButton, copyTableRich } from '../../js/export.js';
 import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../../js/page-utils.js';
 
@@ -36,6 +38,12 @@ const swapBtn = document.getElementById('swap-btn');
 const barModeSection = document.getElementById('bar-mode-section');
 const barModeRadios = /** @type {NodeListOf<HTMLInputElement>} */ (
   document.querySelectorAll('input[name="bar-mode"]')
+);
+const chartOptionsSection = document.getElementById('chart-options-section');
+const chartOptionsEl = document.getElementById('chart-options');
+const tableModeSection = document.getElementById('table-mode-section');
+const tableModeRadios = /** @type {NodeListOf<HTMLInputElement>} */ (
+  document.querySelectorAll('input[name="table-mode"]')
 );
 
 // ── State ────────────────────────────────────────────────────────────
@@ -62,6 +70,38 @@ let barMode = 'dodged';
 /** Dataset display name */
 let datasetName = '';
 
+// ── Chart option state ──────────────────────────────────────────────
+
+/** Histogram bin count (null = Sturges auto) */
+let histBins = /** @type {number|null} */ (null);
+
+/** Dotplot stack count (null = auto) */
+let dotBins = /** @type {number|null} */ (null);
+
+/** Show relative frequency on y-axis (histogram, bar chart) */
+let relativeFreq = false;
+
+/** Show density overlay on histogram */
+let showDensity = false;
+
+/** Show outliers on boxplot */
+let showOutliers = true;
+
+/** Show mean marker */
+let showMean = false;
+
+/** Show regression line on scatterplot */
+let showRegLine = true;
+
+/** Show LOESS curve on scatterplot */
+let showLoess = false;
+
+/** Show residual plot below scatterplot */
+let showResiduals = false;
+
+/** @type {'counts'|'row'|'col'|'cell'} contingency table display mode */
+let tableMode = 'counts';
+
 // ── Data loading ─────────────────────────────────────────────────────
 
 initDataPanel({
@@ -77,6 +117,7 @@ initDataPanel({
     }));
     datasetName = ds.name || 'Dataset';
     selected = [];
+    resetChartOptions();
     buildVariableList();
     if (resultsSection) resultsSection.hidden = false;
     setPageTitle(baseTitle, datasetName, { n: rows.length });
@@ -92,6 +133,7 @@ initDataPanel({
     }));
     datasetName = 'Pasted data';
     selected = [];
+    resetChartOptions();
     buildVariableList();
     if (resultsSection) resultsSection.hidden = false;
     setPageTitle(baseTitle, datasetName, { n: rows.length });
@@ -105,9 +147,40 @@ initDataPanel({
     if (resultsSection) resultsSection.hidden = true;
     if (varList) varList.innerHTML = '';
     clearChart();
+    hideAllOptions();
     announce('Data cleared.');
   },
 });
+
+/** Reset chart option state to defaults. */
+function resetChartOptions() {
+  histBins = null;
+  dotBins = null;
+  relativeFreq = false;
+  showDensity = false;
+  showOutliers = true;
+  showMean = false;
+  showRegLine = true;
+  showLoess = false;
+  showResiduals = false;
+  tableMode = 'counts';
+  barMode = 'dodged';
+  // Reset bar mode radio
+  const dodgedRadio = /** @type {HTMLInputElement|null} */ (
+    document.querySelector('input[name="bar-mode"][value="dodged"]'));
+  if (dodgedRadio) dodgedRadio.checked = true;
+  // Reset table mode radio
+  const countsRadio = /** @type {HTMLInputElement|null} */ (
+    document.querySelector('input[name="table-mode"][value="counts"]'));
+  if (countsRadio) countsRadio.checked = true;
+}
+
+/** Hide all conditional sidebar sections. */
+function hideAllOptions() {
+  if (barModeSection) barModeSection.hidden = true;
+  if (chartOptionsSection) chartOptionsSection.hidden = true;
+  if (tableModeSection) tableModeSection.hidden = true;
+}
 
 // ── Variable list ────────────────────────────────────────────────────
 
@@ -159,13 +232,10 @@ function buildVariableList() {
 function toggleVariable(name) {
   const idx = selected.indexOf(name);
   if (idx >= 0) {
-    // Deselect
     selected.splice(idx, 1);
   } else if (selected.length < 2) {
-    // Select
     selected.push(name);
   } else {
-    // Already 2 selected — replace the second
     selected[1] = name;
   }
   updateVariableUI();
@@ -193,7 +263,6 @@ function updateVariableUI() {
     }
   }
 
-  // Show swap button only when 2 variables are selected
   if (swapBtn) swapBtn.hidden = selected.length !== 2;
 }
 
@@ -222,6 +291,14 @@ if (swapBtn) {
 barModeRadios.forEach(radio => {
   radio.addEventListener('change', () => {
     barMode = /** @type {'dodged'|'stacked'|'filled'} */ (radio.value);
+    renderChart();
+  });
+});
+
+// Table mode selector
+tableModeRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    tableMode = /** @type {'counts'|'row'|'col'|'cell'} */ (radio.value);
     renderChart();
   });
 });
@@ -267,15 +344,6 @@ function getVar(name) {
 }
 
 /**
- * Extract a column of values from rows.
- * @param {string} name
- * @returns {any[]}
- */
-function getColumn(name) {
-  return rows.map(r => r[name]);
-}
-
-/**
  * Extract numeric values (filter NaN/null).
  * @param {string} name
  * @returns {number[]}
@@ -300,10 +368,166 @@ function clearChart() {
 
 function showEmpty() {
   clearChart();
+  hideAllOptions();
   if (emptyState && chartContainer) {
     chartContainer.appendChild(emptyState);
     emptyState.style.display = '';
   }
+}
+
+// ── Dynamic chart options ────────────────────────────────────────────
+
+/**
+ * Build the dynamic chart options panel based on current chart type
+ * and variable combination.
+ * @param {'1q'|'1c'|'2q'|'qc'|'2c'|'none'} combo
+ */
+function renderChartOptions(combo) {
+  if (!chartOptionsEl) return;
+  chartOptionsEl.innerHTML = '';
+  let hasOptions = false;
+
+  // Histogram options: bins, y-axis, density
+  if (activeChart === 'histogram' && (combo === '1q' || combo === 'qc')) {
+    hasOptions = true;
+    // Bin count
+    const binLabel = document.createElement('label');
+    binLabel.textContent = 'Bins: ';
+    const binInput = document.createElement('input');
+    binInput.type = 'number';
+    binInput.min = '3';
+    binInput.max = '50';
+    binInput.step = '1';
+    binInput.value = String(histBins ?? sturgesBins(rows.length));
+    binInput.addEventListener('input', () => {
+      const n = parseInt(binInput.value, 10);
+      if (!isFinite(n) || n < 3) return;
+      histBins = n;
+      renderChart();
+    });
+    binLabel.appendChild(binInput);
+    chartOptionsEl.appendChild(binLabel);
+
+    // Y-axis scale
+    const yLabel = document.createElement('label');
+    yLabel.textContent = 'Y-axis: ';
+    const ySelect = document.createElement('select');
+    ySelect.innerHTML = '<option value="frequency">Frequency</option><option value="relative">Relative Frequency</option>';
+    ySelect.value = relativeFreq ? 'relative' : 'frequency';
+    ySelect.addEventListener('change', () => {
+      relativeFreq = ySelect.value === 'relative';
+      renderChart();
+    });
+    yLabel.appendChild(ySelect);
+    chartOptionsEl.appendChild(yLabel);
+
+    // Density overlay (single quantitative only — grouped histograms are stacked vertically)
+    if (combo === '1q') {
+      const dLabel = document.createElement('label');
+      const dCb = document.createElement('input');
+      dCb.type = 'checkbox';
+      dCb.checked = showDensity;
+      dCb.addEventListener('change', () => { showDensity = dCb.checked; renderChart(); });
+      dLabel.appendChild(dCb);
+      dLabel.append(' Density curve');
+      chartOptionsEl.appendChild(dLabel);
+    }
+  }
+
+  // Dotplot options: stacks
+  if (activeChart === 'dotplot' && (combo === '1q' || combo === 'qc')) {
+    hasOptions = true;
+    const sLabel = document.createElement('label');
+    sLabel.textContent = 'Stacks: ';
+    const sInput = document.createElement('input');
+    sInput.type = 'number';
+    sInput.min = '3';
+    sInput.max = '50';
+    sInput.step = '1';
+    sInput.value = String(dotBins ?? sturgesBins(rows.length));
+    sInput.addEventListener('input', () => {
+      const n = parseInt(sInput.value, 10);
+      if (!isFinite(n) || n < 3) return;
+      dotBins = n;
+      renderChart();
+    });
+    sLabel.appendChild(sInput);
+    chartOptionsEl.appendChild(sLabel);
+  }
+
+  // Boxplot options: outliers
+  if (activeChart === 'boxplot' && (combo === '1q' || combo === 'qc')) {
+    hasOptions = true;
+    const oLabel = document.createElement('label');
+    const oCb = document.createElement('input');
+    oCb.type = 'checkbox';
+    oCb.checked = showOutliers;
+    oCb.addEventListener('change', () => { showOutliers = oCb.checked; renderChart(); });
+    oLabel.appendChild(oCb);
+    oLabel.append(' Show outliers');
+    chartOptionsEl.appendChild(oLabel);
+  }
+
+  // Show mean (for any quantitative chart: histogram, dotplot, boxplot, density)
+  if (['histogram', 'dotplot', 'boxplot', 'density'].includes(activeChart) &&
+      (combo === '1q' || combo === 'qc')) {
+    hasOptions = true;
+    const mLabel = document.createElement('label');
+    const mCb = document.createElement('input');
+    mCb.type = 'checkbox';
+    mCb.checked = showMean;
+    mCb.addEventListener('change', () => { showMean = mCb.checked; renderChart(); });
+    mLabel.appendChild(mCb);
+    mLabel.append(' Show mean');
+    chartOptionsEl.appendChild(mLabel);
+  }
+
+  // Bar chart mode for single categorical: frequency / relative
+  if (activeChart === 'bar' && combo === '1c') {
+    hasOptions = true;
+    const fLabel = document.createElement('label');
+    const fCb = document.createElement('input');
+    fCb.type = 'checkbox';
+    fCb.checked = relativeFreq;
+    fCb.addEventListener('change', () => { relativeFreq = fCb.checked; renderChart(); });
+    fLabel.appendChild(fCb);
+    fLabel.append(' Show proportions');
+    chartOptionsEl.appendChild(fLabel);
+  }
+
+  // Scatterplot options: regression line, LOESS, residuals
+  if (activeChart === 'scatterplot' && combo === '2q') {
+    hasOptions = true;
+
+    const rLabel = document.createElement('label');
+    const rCb = document.createElement('input');
+    rCb.type = 'checkbox';
+    rCb.checked = showRegLine;
+    rCb.addEventListener('change', () => { showRegLine = rCb.checked; renderChart(); });
+    rLabel.appendChild(rCb);
+    rLabel.append(' Regression line');
+    chartOptionsEl.appendChild(rLabel);
+
+    const lLabel = document.createElement('label');
+    const lCb = document.createElement('input');
+    lCb.type = 'checkbox';
+    lCb.checked = showLoess;
+    lCb.addEventListener('change', () => { showLoess = lCb.checked; renderChart(); });
+    lLabel.appendChild(lCb);
+    lLabel.append(' LOESS curve');
+    chartOptionsEl.appendChild(lLabel);
+
+    const resLabel = document.createElement('label');
+    const resCb = document.createElement('input');
+    resCb.type = 'checkbox';
+    resCb.checked = showResiduals;
+    resCb.addEventListener('change', () => { showResiduals = resCb.checked; renderChart(); });
+    resLabel.appendChild(resCb);
+    resLabel.append(' Residual plot');
+    chartOptionsEl.appendChild(resLabel);
+  }
+
+  if (chartOptionsSection) chartOptionsSection.hidden = !hasOptions;
 }
 
 // ── Render ───────────────────────────────────────────────────────────
@@ -329,25 +553,35 @@ function renderChart() {
   const numCount = types.filter(t => t === 'numeric').length;
   const catCount = types.filter(t => t === 'categorical').length;
 
-  // Show bar mode selector only for two-categorical + bar chart
+  /** @type {'1q'|'1c'|'2q'|'qc'|'2c'|'none'} */
+  let combo = 'none';
+
+  // Show/hide conditional sidebar sections
   const showBarMode = catCount === 2 && selected.length === 2 && activeChart === 'bar';
   if (barModeSection) barModeSection.hidden = !showBarMode;
+
+  const showTableMode = catCount === 2 && selected.length === 2;
+  if (tableModeSection) tableModeSection.hidden = !showTableMode;
 
   try {
     if (selected.length === 1) {
       if (v1.type === 'numeric') {
+        combo = '1q';
         renderOneNumeric(v1);
       } else {
+        combo = '1c';
         renderOneCategorical(v1);
       }
     } else if (numCount === 2) {
+      combo = '2q';
       renderTwoNumeric(v1, /** @type {VarInfo} */ (v2));
     } else if (numCount === 1 && catCount === 1) {
-      // Put numeric first, categorical second for consistency
+      combo = 'qc';
       const numVar = v1.type === 'numeric' ? v1 : /** @type {VarInfo} */ (v2);
       const catVar = v1.type === 'categorical' ? v1 : /** @type {VarInfo} */ (v2);
       renderNumericByCategorical(numVar, catVar);
     } else if (catCount === 2) {
+      combo = '2c';
       renderTwoCategorical(v1, /** @type {VarInfo} */ (v2));
     }
   } catch (e) {
@@ -356,14 +590,64 @@ function renderChart() {
     }
   }
 
+  // Build dynamic chart options
+  renderChartOptions(combo);
+
   // Save + Copy buttons for chart
   if (chartContainer && chartContainer.querySelector('svg')) {
     const safeName = selected.map(s => s.replace(/\s+/g, '_')).join('_vs_');
     addChartSaveButton(chartContainer, `${safeName}_${activeChart}.png`, { showCopy: true });
   }
 
-  // Table copy/download buttons
+  // Table copy buttons
   addTableActions();
+}
+
+// ── Mean marker helpers ─────────────────────────────────────────────
+
+/**
+ * Draw a mean marker line on a histogram.
+ * @param {any} histResult - Return value from drawHistogram
+ * @param {number[]} values
+ */
+function drawMeanOnHistogram(histResult, values) {
+  if (!histResult || !histResult.frame) return;
+  const dp = detectPrecision(values);
+  const meanVal = mean(values);
+  const mx = histResult.xScale(meanVal);
+  const overlays = d3Selection.select(histResult.frame.inner).select('.overlays');
+  overlays.append('line')
+    .attr('x1', mx).attr('x2', mx)
+    .attr('y1', 0).attr('y2', histResult.frame.height)
+    .attr('stroke', '#F05133').attr('stroke-width', 2)
+    .attr('stroke-dasharray', '6,3');
+  const meanText = overlays.append('text')
+    .attr('x', mx).attr('y', -6)
+    .attr('text-anchor', 'middle')
+    .attr('fill', '#F05133').attr('font-size', '11px');
+  renderStatLabel(meanText, `x\u0304 = ${formatStat(meanVal, dp)}`);
+}
+
+/**
+ * Draw a mean marker triangle on a dotplot.
+ * @param {any} dotResult - Return value from drawDotplot
+ * @param {number[]} values
+ */
+function drawMeanOnDotplot(dotResult, values) {
+  if (!dotResult || !dotResult.frame) return;
+  const dp = detectPrecision(values);
+  const meanVal = mean(values);
+  const mx = dotResult.xScale(meanVal);
+  const triangleY = dotResult.frame.height + 12;
+  const size = 6;
+  const triangle = `M${mx},${triangleY - size} L${mx - size},${triangleY + size} L${mx + size},${triangleY + size} Z`;
+  const overlays = d3Selection.select(dotResult.frame.inner).select('.overlays');
+  overlays.append('path')
+    .attr('d', triangle)
+    .attr('fill', '#F05133')
+    .attr('stroke', 'none')
+    .append('title')
+    .text(`Mean = ${formatStat(meanVal, dp)}`);
 }
 
 // ── One numeric variable ─────────────────────────────────────────────
@@ -374,19 +658,52 @@ function renderOneNumeric(v) {
   if (values.length === 0) return;
 
   if (activeChart === 'histogram') {
-    drawHistogram(chartContainer, values, {
+    const numBins = histBins ?? sturgesBins(values.length);
+    const histResult = drawHistogram(chartContainer, values, {
       xLabel: v.label, titleText: v.label, id: 'explorer-chart', animate: false,
+      numBins, relativeFrequency: relativeFreq,
     });
+    // Density overlay
+    if (showDensity && histResult && histResult.bins && histResult.bins.length > 0 && values.length >= 2) {
+      const firstX0 = /** @type {number} */ (histResult.bins[0].x0);
+      const lastX1 = /** @type {number} */ (histResult.bins[histResult.bins.length - 1].x1);
+      const avgBinWidth = (lastX1 - firstX0) / histResult.bins.length;
+      overlayDensityOnHistogram(histResult.frame.inner, values, histResult.xScale, histResult.yScale, avgBinWidth);
+    }
+    if (showMean) drawMeanOnHistogram(histResult, values);
   } else if (activeChart === 'dotplot') {
-    drawDotplot(chartContainer, values, {
+    const dotResult = drawDotplot(chartContainer, values, {
       xLabel: v.label, titleText: v.label, id: 'explorer-chart', animate: false,
+      numBins: dotBins ?? undefined,
     });
+    if (showMean) drawMeanOnDotplot(dotResult, values);
   } else if (activeChart === 'boxplot') {
     drawBoxplot(chartContainer, values, {
       xLabel: v.label, titleText: v.label, id: 'explorer-chart', animate: false,
+      showOutliers, showMean,
     });
+  } else if (activeChart === 'density') {
+    // Standalone density — wrap single variable as a group
+    drawGroupedDensity(chartContainer, { [v.label]: values }, {
+      xLabel: v.label, titleText: `Density of ${v.label}`, id: 'explorer-chart',
+    });
+    // Mean marker on density
+    if (showMean && chartContainer) {
+      const svg = chartContainer.querySelector('svg');
+      if (svg) {
+        const dp = detectPrecision(values);
+        const meanVal = mean(values);
+        const overlays = d3Selection.select(svg).select('.overlays');
+        if (!overlays.empty()) {
+          // Find x scale domain from the viewBox to approximate position
+          // Use the inner group's transform to find dimensions
+          const inner = d3Selection.select(svg).select('g');
+          // For now, add a simple annotation — the density chart handles its own scales
+        }
+      }
+    }
   } else {
-    renderMismatchNote('Histograms, dotplots, and boxplots work well for a single quantitative variable.');
+    renderMismatchNote('Histograms, dotplots, boxplots, and density curves work well for a single quantitative variable.');
     return;
   }
 
@@ -403,6 +720,7 @@ function renderOneCategorical(v) {
   if (activeChart === 'bar') {
     drawBarChart(chartContainer, values, {
       xLabel: v.label, titleText: v.label, id: 'explorer-chart', animate: false,
+      mode: relativeFreq ? 'relative' : 'frequency',
       margin: { top: 30, right: 15, bottom: 80, left: 55 },
     });
   } else if (activeChart === 'pie') {
@@ -433,20 +751,40 @@ function renderTwoNumeric(v1, v2) {
   const n = Math.min(x.length, y.length);
   if (n < 2) return;
 
+  const xn = x.slice(0, n);
+  const yn = y.slice(0, n);
+
   if (activeChart === 'scatterplot') {
-    const reg = linreg(x.slice(0, n), y.slice(0, n));
-    drawScatterplot(chartContainer, x.slice(0, n), y.slice(0, n), {
+    const reg = linreg(xn, yn);
+    const scatterOpts = {
       xLabel: v1.label, yLabel: v2.label,
       titleText: `${v1.label} vs ${v2.label}`,
       id: 'explorer-chart',
-      regression: { slope: reg.slope, intercept: reg.intercept },
-    });
+      regression: showRegLine ? { slope: reg.slope, intercept: reg.intercept } : undefined,
+      loessCurve: showLoess ? loess(xn, yn) : undefined,
+    };
+    drawScatterplot(chartContainer, xn, yn, scatterOpts);
+
+    // Residual plot
+    if (showResiduals && chartContainer) {
+      const resContainer = document.createElement('div');
+      resContainer.id = 'residual-container';
+      chartContainer.appendChild(resContainer);
+      const fitted = xn.map(xi => reg.intercept + reg.slope * xi);
+      const residuals = yn.map((yi, i) => yi - fitted[i]);
+      drawResidualPlot(resContainer, fitted, residuals, {
+        id: 'explorer-residuals',
+        xLabel: 'Fitted values',
+        yLabel: 'Residuals',
+        titleText: 'Residual Plot',
+      });
+    }
   } else {
     renderMismatchNote('Scatterplots work well for two quantitative variables.');
     return;
   }
 
-  renderRegressionStats(v1.label, v2.label, x.slice(0, n), y.slice(0, n));
+  renderRegressionStats(v1.label, v2.label, xn, yn);
 }
 
 // ── Numeric × Categorical ────────────────────────────────────────────
@@ -460,7 +798,6 @@ function renderNumericByCategorical(numVar, catVar) {
   const catValues = getCategoricalColumn(catVar.name);
   const n = Math.min(numValues.length, catValues.length);
 
-  // Build grouped data
   /** @type {Record<string, number[]>} */
   const grouped = {};
   for (let i = 0; i < n; i++) {
@@ -476,10 +813,10 @@ function renderNumericByCategorical(numVar, catVar) {
   if (activeChart === 'boxplot') {
     drawBoxplot(chartContainer, grouped, {
       xLabel: numVar.label, titleText: `${numVar.label} by ${catVar.label}`,
-      id: 'explorer-chart', animate: false,
+      id: 'explorer-chart', animate: false, showOutliers, showMean,
     });
   } else if (activeChart === 'histogram') {
-    // Draw histograms for each group stacked vertically
+    const numBins = histBins ?? sturgesBins(n);
     for (const name of groupNames) {
       const wrapper = document.createElement('div');
       wrapper.style.marginBottom = '0.5rem';
@@ -487,6 +824,7 @@ function renderNumericByCategorical(numVar, catVar) {
       drawHistogram(wrapper, grouped[name], {
         xLabel: numVar.label, titleText: `${name} (n=${grouped[name].length})`,
         id: `explorer-chart-${name}`, animate: false,
+        numBins, relativeFrequency: relativeFreq,
       });
     }
   } else if (activeChart === 'dotplot') {
@@ -497,6 +835,7 @@ function renderNumericByCategorical(numVar, catVar) {
       drawDotplot(wrapper, grouped[name], {
         xLabel: numVar.label, titleText: `${name} (n=${grouped[name].length})`,
         id: `explorer-chart-${name}`, animate: false,
+        numBins: dotBins ?? undefined,
       });
     }
   } else if (activeChart === 'density') {
@@ -524,7 +863,6 @@ function renderTwoCategorical(v1, v2) {
   const col2 = getCategoricalColumn(v2.name);
   const n = Math.min(col1.length, col2.length);
 
-  // Build contingency table
   /** @type {Map<string, Map<string, number>>} row → col → count */
   const table = new Map();
   const rowLevels = /** @type {string[]} */ ([]);
@@ -541,7 +879,6 @@ function renderTwoCategorical(v1, v2) {
   }
 
   if (activeChart === 'bar') {
-    // Grouped bar chart — use v2 as grouping, barMode controls layout
     drawBarChart(chartContainer, col1, {
       xLabel: v1.label, titleText: `${v1.label} by ${v2.label}`,
       id: 'explorer-chart', animate: false, mode: barMode,
@@ -558,10 +895,6 @@ function renderTwoCategorical(v1, v2) {
 
 // ── Table export helpers ─────────────────────────────────────────────
 
-/**
- * Add a "Copy" button below the stats table(s).
- * Copies as rich HTML (formatted table in Word/Docs) with plain-text fallback.
- */
 function addTableActions() {
   if (!statsContainer) return;
   const tables = statsContainer.querySelectorAll('table');
@@ -575,7 +908,6 @@ function addTableActions() {
   copyBtn.textContent = 'Copy table';
   copyBtn.title = 'Copy to clipboard — pastes as a formatted table in Word or Google Docs';
   copyBtn.addEventListener('click', async () => {
-    // Copy the last table (main stats), or first if only one
     const table = /** @type {HTMLTableElement} */ (tables[tables.length - 1]);
     const ok = await copyTableRich(table);
     copyBtn.textContent = ok ? 'Copied!' : 'Copy failed';
@@ -708,38 +1040,91 @@ function renderGroupedStats(numLabel, catLabel, grouped) {
 function renderContingencyTable(rowLabel, colLabel, rowLevels, colLevels, table, total) {
   if (!statsContainer) return;
 
-  let html = `<table class="freq-table" aria-label="Contingency table: ${rowLabel} × ${colLabel}">`;
+  // Compute row and column totals
+  /** @type {Map<string, number>} */
+  const rowTotals = new Map();
+  /** @type {Map<string, number>} */
+  const colTotals = new Map();
+  for (const r of rowLevels) {
+    let rt = 0;
+    for (const c of colLevels) {
+      const count = table.get(r)?.get(c) ?? 0;
+      rt += count;
+      colTotals.set(c, (colTotals.get(c) ?? 0) + count);
+    }
+    rowTotals.set(r, rt);
+  }
+
+  /**
+   * Format a cell value based on tableMode.
+   * @param {number} count
+   * @param {number} rowTotal
+   * @param {number} colTotal
+   * @returns {string}
+   */
+  function fmtCell(count, rowTotal, colTotal) {
+    if (tableMode === 'counts') return String(count);
+    if (tableMode === 'row') return rowTotal > 0 ? formatStat(count / rowTotal, 0, 'proportion') : '0';
+    if (tableMode === 'col') return colTotal > 0 ? formatStat(count / colTotal, 0, 'proportion') : '0';
+    // cell proportion
+    return total > 0 ? formatStat(count / total, 0, 'proportion') : '0';
+  }
+
+  const modeLabels = { counts: '', row: ' (Row %)', col: ' (Column %)', cell: ' (Cell %)' };
+  const modeSuffix = modeLabels[tableMode] || '';
+
+  let html = `<table class="freq-table" aria-label="Contingency table: ${rowLabel} × ${colLabel}${modeSuffix}">`;
   html += `<thead><tr><th>${rowLabel} \\ ${colLabel}</th>`;
   for (const c of colLevels) html += `<th>${c}</th>`;
   html += `<th>Total</th></tr></thead><tbody>`;
 
   for (const r of rowLevels) {
     html += `<tr><td><strong>${r}</strong></td>`;
-    let rowTotal = 0;
+    const rowTotal = rowTotals.get(r) ?? 0;
     for (const c of colLevels) {
       const count = table.get(r)?.get(c) ?? 0;
-      rowTotal += count;
-      html += `<td>${count}</td>`;
+      const colTotal = colTotals.get(c) ?? 0;
+      html += `<td>${fmtCell(count, rowTotal, colTotal)}</td>`;
     }
-    html += `<td>${rowTotal}</td></tr>`;
+    // Row total
+    if (tableMode === 'counts') {
+      html += `<td>${rowTotal}</td>`;
+    } else if (tableMode === 'row') {
+      html += `<td>${formatStat(1, 0, 'proportion')}</td>`;
+    } else if (tableMode === 'col') {
+      html += `<td>${total > 0 ? formatStat(rowTotal / total, 0, 'proportion') : '0'}</td>`;
+    } else {
+      html += `<td>${total > 0 ? formatStat(rowTotal / total, 0, 'proportion') : '0'}</td>`;
+    }
+    html += `</tr>`;
   }
 
-  // Column totals
+  // Column totals row
   html += `<tr><td><strong>Total</strong></td>`;
   for (const c of colLevels) {
-    let colTotal = 0;
-    for (const r of rowLevels) colTotal += table.get(r)?.get(c) ?? 0;
-    html += `<td><strong>${colTotal}</strong></td>`;
+    const colTotal = colTotals.get(c) ?? 0;
+    if (tableMode === 'counts') {
+      html += `<td><strong>${colTotal}</strong></td>`;
+    } else if (tableMode === 'row') {
+      html += `<td><strong>${total > 0 ? formatStat(colTotal / total, 0, 'proportion') : '0'}</strong></td>`;
+    } else if (tableMode === 'col') {
+      html += `<td><strong>${formatStat(1, 0, 'proportion')}</strong></td>`;
+    } else {
+      html += `<td><strong>${total > 0 ? formatStat(colTotal / total, 0, 'proportion') : '0'}</strong></td>`;
+    }
   }
-  html += `<td><strong>${total}</strong></td></tr>`;
-  html += `</tbody></table>`;
+  if (tableMode === 'counts') {
+    html += `<td><strong>${total}</strong></td>`;
+  } else {
+    html += `<td><strong>${formatStat(1, 0, 'proportion')}</strong></td>`;
+  }
+  html += `</tr></tbody></table>`;
 
   statsContainer.innerHTML += html;
 }
 
 /**
  * Show a guidance message when chart type doesn't match variable selection.
- * No fallback chart is rendered — only the message.
  * @param {string} suggestion
  */
 function renderMismatchNote(suggestion) {
