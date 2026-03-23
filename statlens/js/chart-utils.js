@@ -286,9 +286,9 @@ export function estimateLeftMargin(yTickValues, options) {
   const fmt = options?.format ?? formatTick;
 
   // Estimate widest tick label width from character count.
-  // Atkinson Hyperlegible at 15px: digits are ~9.5px wide, commas ~5px.
-  // Use 11 as a conservative per-character estimate to avoid clipping.
-  const CHAR_WIDTH = 11;
+  // Atkinson Hyperlegible at 15px: digits measure ~10–11px via getBBox().
+  // Use 13 as a generous per-character estimate to prevent clipping.
+  const CHAR_WIDTH = 13;
   let maxChars = 1;
   for (const v of yTickValues) {
     const len = fmt(v).length;
@@ -327,13 +327,15 @@ export function fitYLabel(frame, yLabel) {
     } catch { /* getBBox fails in JSDOM */ }
   });
 
-  // Position: just outside the tick labels with a small gap
-  const GAP = 10;
+  // Position: just outside the tick labels with a comfortable gap
+  const GAP = 14;
   const labelY = -(maxTickWidth + GAP);
 
-  // Safety check: if label would be clipped, expand viewBox
-  const LABEL_ASCENT = 18;
-  const needed = maxTickWidth + GAP + LABEL_ASCENT + 4;
+  // Safety check: if label would be clipped, expand viewBox.
+  // LABEL_EXTENT accounts for the rotated label's full extent leftward
+  // (ascent + half line-height at 16px font ≈ 22px).
+  const LABEL_EXTENT = 22;
+  const needed = maxTickWidth + GAP + LABEL_EXTENT;
   if (needed > frame.margin.left) {
     const extra = Math.ceil(needed - frame.margin.left);
     const svg = d3Selection.select(frame.svg);
