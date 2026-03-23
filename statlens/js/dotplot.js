@@ -703,7 +703,7 @@ function renderObservedLine(overlays, value, xScale, innerHeight, precision = 2,
     .attr('x', x).attr('y', -16)
     .attr('text-anchor', 'middle')
     .attr('fill', OBSERVED_COLOR)
-    .attr('font-size', '9px')
+    .classed('overlay-label', true)
     .text(label);
   overlays.append('text')
     .attr('class', 'overlay-value')

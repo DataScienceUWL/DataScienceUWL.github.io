@@ -486,7 +486,7 @@ function renderOverlayLine(overlays, value, xScale, innerHeight, color, label, p
       .attr('x', x).attr('y', -16)
       .attr('text-anchor', 'middle')
       .attr('fill', color)
-      .attr('font-size', '9px')
+      .classed('overlay-label', true)
       .text(microLabel);
   }
   overlays.append('text')

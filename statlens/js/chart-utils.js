@@ -18,8 +18,8 @@ const VIEW_HEIGHT = 371;
 /** Default margins (desktop). */
 const DEFAULT_MARGIN = { top: 28, right: 20, bottom: 50, left: 60 };
 
-/** Phone margins (viewport < 480px). */
-const PHONE_MARGIN = { top: 30, right: 15, bottom: 50, left: 55 };
+/** Phone margins (viewport < 480px) — left enlarged for scaled-up tick labels. */
+const PHONE_MARGIN = { top: 30, right: 15, bottom: 60, left: 80 };
 
 /**
  * Standard transition duration (ms). Use for D3 transitions on explore tools.
@@ -595,7 +595,6 @@ export function showTooltip(innerNode, lines, x, y) {
   const text = g.append('text')
     .attr('text-anchor', 'middle')
     .attr('fill', '#333')
-    .style('font-size', '14px')
     .style('font-weight', '600');
 
   lines.forEach((line, i) => {

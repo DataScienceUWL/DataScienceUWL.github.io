@@ -4,7 +4,6 @@
  * Histogram, dotplot, boxplot with summary statistics.
  */
 
-import * as d3Selection from 'd3-selection';
 import { parseCSV } from '../../js/csv-parser.js';
 import { mean, median, sd, quantile, iqr, range, detectPrecision, formatStat } from '../../js/stats.js';
 import { drawHistogram, sturgesBins } from '../../js/histogram.js';
@@ -12,10 +11,11 @@ import { drawDotplot, computeDots, dotplotBins } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper, setPageTitle } from '../../js/page-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
-import { renderStatLabel } from '../../js/chart-utils.js';
 import { overlayDensityOnHistogram } from '../../js/kde.js';
 import { createExportBar, addChartSaveButton } from '../../js/export.js';
 import { initSheet, handleSheetPaste, readSheetValues, populateSheet } from '../../js/spreadsheet.js';
+import { drawMeanOnHistogram, drawMeanOnDotplot } from '../../js/mean-marker.js';
+import { renderBinTable } from '../../js/stats-tables.js';
 
 initHelp();
 const baseTitle = document.title.replace(/\s*\|\s*StatLens$/, '');
@@ -550,9 +550,16 @@ function setData(values, varLabel, sourceName) {
   showOutliers = true;
   showDensity = false;
   relativeFreq = false;
-  const histRadio = /** @type {HTMLInputElement|null} */ (
-    document.querySelector('input[name="chart-type"][value="histogram"]'));
-  if (histRadio) histRadio.checked = true;
+
+  // Apply ?chart= URL param on first load
+  const chartParam = new URLSearchParams(window.location.search).get('chart');
+  if (chartParam && ['histogram', 'dotplot', 'boxplot'].includes(chartParam)) {
+    activeChart = /** @type {'histogram'|'dotplot'|'boxplot'} */ (chartParam);
+  }
+
+  const defaultRadio = /** @type {HTMLInputElement|null} */ (
+    document.querySelector(`input[name="chart-type"][value="${activeChart}"]`));
+  if (defaultRadio) defaultRadio.checked = true;
   if (groupSelect) groupSelect.value = '';
 
   // Populate spreadsheet editor
@@ -591,64 +598,7 @@ function computeAndDisplay(values) {
   if (statRange) statRange.textContent = formatStat(hi - lo, d);
 }
 
-/**
- * Render a collapsible bin frequency table below the histogram.
- * @param {Array<{x0: any, x1: any, length: number}>} bins
- * @param {number} totalN
- */
-function renderBinTable(bins, totalN) {
-  if (!chartArea) return;
-  const details = document.createElement('details');
-  details.className = 'bin-table-details';
-  details.style.cssText = 'margin:0.5rem 0;font-size:0.85rem;';
-  const summary = document.createElement('summary');
-  summary.textContent = relativeFreq ? 'Bin relative frequencies' : 'Bin frequencies';
-  summary.style.cssText = 'cursor:pointer;color:var(--ims-green);font-weight:500;';
-  details.appendChild(summary);
-
-  const table = document.createElement('table');
-  table.className = 'bin-freq-table';
-  table.style.cssText = 'width:100%;border-collapse:collapse;margin:0.4rem 0;font-size:0.82rem;';
-
-  const thead = document.createElement('thead');
-  const headerRow = document.createElement('tr');
-  for (const text of ['Bin', relativeFreq ? 'Rel. Frequency' : 'Frequency']) {
-    const th = document.createElement('th');
-    th.textContent = text;
-    th.style.cssText = `text-align:${text === 'Bin' ? 'left' : 'right'};padding:0.2rem 0.4rem;border-bottom:2px solid #ccc;`;
-    headerRow.appendChild(th);
-  }
-  thead.appendChild(headerRow);
-  table.appendChild(thead);
-
-  const tbody = document.createElement('tbody');
-  const d = dataPrecision;
-  for (let i = 0; i < bins.length; i++) {
-    const bin = bins[i];
-    const tr = document.createElement('tr');
-    if (i % 2 === 1) tr.style.background = '#f8f8f8';
-
-    const tdBin = document.createElement('td');
-    tdBin.textContent = `[${formatStat(bin.x0, d)}, ${formatStat(bin.x1, d)})`;
-    tdBin.style.cssText = 'padding:0.2rem 0.4rem;border-bottom:1px solid #eee;white-space:nowrap;';
-    tr.appendChild(tdBin);
-
-    const tdVal = document.createElement('td');
-    if (relativeFreq) {
-      const rf = bin.length / (totalN || 1);
-      tdVal.textContent = rf === 0 ? '0' : rf.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
-    } else {
-      tdVal.textContent = String(bin.length);
-    }
-    tdVal.style.cssText = 'text-align:right;padding:0.2rem 0.4rem;border-bottom:1px solid #eee;';
-    tr.appendChild(tdVal);
-
-    tbody.appendChild(tr);
-  }
-  table.appendChild(tbody);
-  details.appendChild(table);
-  chartArea.appendChild(details);
-}
+// renderBinTable is now imported from ../../js/stats-tables.js
 
 /**
  * Render the currently selected quantitative chart type.
@@ -674,25 +624,13 @@ function renderActiveChart() {
       const avgBinWidth = (lastX1 - firstX0) / histResult.bins.length;
       overlayDensityOnHistogram(histResult.frame.inner, currentValues, histResult.xScale, histResult.yScale, avgBinWidth);
     }
-    // Mean marker: red dashed vertical line
-    if (showMeanMarker && histResult && currentValues.length > 0) {
-      const meanVal = mean(currentValues);
-      const mx = histResult.xScale(meanVal);
-      const overlays = d3Selection.select(histResult.frame.inner).select('.overlays');
-      overlays.append('line')
-        .attr('x1', mx).attr('x2', mx)
-        .attr('y1', 0).attr('y2', histResult.frame.height)
-        .attr('stroke', '#F05133').attr('stroke-width', 2)
-        .attr('stroke-dasharray', '6,3')
-        .attr('aria-label', `Mean = ${formatStat(meanVal, dataPrecision)}`);
-      const meanText = overlays.append('text')
-        .attr('x', mx).attr('y', -6)
-        .attr('text-anchor', 'middle')
-        .attr('fill', '#F05133').attr('font-size', '11px');
-      renderStatLabel(meanText, `x\u0304 = ${formatStat(meanVal, dataPrecision)}`);
-    }
+    if (showMeanMarker) drawMeanOnHistogram(histResult, currentValues);
     if (histResult && histResult.bins && histResult.bins.length > 0) {
-      renderBinTable(histResult.bins, currentValues.length);
+      renderBinTable(chartArea, histResult.bins, {
+        totalN: currentValues.length,
+        relativeFrequency: relativeFreq,
+        precision: dataPrecision,
+      });
     }
   } else if (activeChart === 'dotplot') {
     const dotResult = drawDotplot(chartArea, currentValues, {
@@ -704,23 +642,7 @@ function renderActiveChart() {
       numBins: currentDotBinCount ?? undefined,
     });
 
-    // Mean marker: red triangle below the x-axis at the mean value
-    if (showMeanMarker && currentValues.length > 0 && dotResult) {
-      const meanVal = mean(currentValues);
-      const mx = dotResult.xScale(meanVal);
-      const triangleY = dotResult.frame.height + 12;
-      const size = 6;
-      const triangle = `M${mx},${triangleY - size} L${mx - size},${triangleY + size} L${mx + size},${triangleY + size} Z`;
-
-      const overlays = d3Selection.select(dotResult.frame.inner).select('.overlays');
-      overlays.append('path')
-        .attr('d', triangle)
-        .attr('fill', '#F05133')
-        .attr('stroke', 'none')
-        .attr('aria-label', `Mean = ${formatStat(meanVal, dataPrecision)}`)
-        .append('title')
-        .text(`Mean = ${formatStat(meanVal, dataPrecision)}`);
-    }
+    if (showMeanMarker) drawMeanOnDotplot(dotResult, currentValues);
   } else if (activeChart === 'boxplot') {
     drawBoxplot(chartArea, currentValues, {
       xLabel,

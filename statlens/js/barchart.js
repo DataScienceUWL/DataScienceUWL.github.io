@@ -277,8 +277,7 @@ function drawLegend(frame, categories, colors, title) {
     g.append('text')
       .attr('x', padX)
       .attr('y', yOff + 11)
-      .style('font-size', '13px')
-      .style('font-weight', '700')
+      .attr('class', 'legend-title')
       .attr('fill', '#333')
       .text(title);
     yOff += lineHeight;
@@ -298,7 +297,7 @@ function drawLegend(frame, categories, colors, title) {
     g.append('text')
       .attr('x', padX + swatchSize + 5)
       .attr('y', yOff + swatchSize - 1)
-      .style('font-size', '13px')
+      .attr('class', 'legend-text')
       .attr('fill', '#333')
       .text(categories[i]);
 

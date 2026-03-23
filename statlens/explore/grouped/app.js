@@ -5,17 +5,19 @@
  * a quantitative variable across levels of a categorical grouping variable.
  */
 
-import * as d3Selection from 'd3-selection';
 import { parseCSV } from '../../js/csv-parser.js';
-import { mean, median, sd, quantile, iqr, range, detectPrecision, formatStat } from '../../js/stats.js';
-import { drawHistogram, computeBins, sturgesBins } from '../../js/histogram.js';
-import { drawDotplot, computeDots } from '../../js/dotplot.js';
+import { detectPrecision } from '../../js/stats.js';
+import { sturgesBins } from '../../js/histogram.js';
+import { computeDots } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { drawGroupedDensity } from '../../js/kde.js';
 import { createExportBar, addChartSaveButton } from '../../js/export.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper, setPageTitle } from '../../js/page-utils.js';
 import { getColors } from '../../js/chart-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
+import { renderStackedHistograms, renderStackedDotplots } from '../../js/grouped-charts.js';
+import { drawMeanOnGroupedDensity } from '../../js/mean-marker.js';
+import { buildGroupedStatsTable, renderBinTable } from '../../js/stats-tables.js';
 
 initHelp();
 const baseTitle = document.title.replace(/\s*\|\s*StatLens$/, '');
@@ -31,8 +33,7 @@ const resultsSection = document.getElementById('results-section');
 const chartArea = document.getElementById('chart-area');
 const chartControls = document.getElementById('chart-controls');
 
-const statsThead = document.getElementById('stats-thead');
-const statsTbody = document.getElementById('stats-tbody');
+// Stats table is built dynamically by buildGroupedStatsTable into .grouped-stats-wrap
 
 initTabs();
 
@@ -416,9 +417,16 @@ function setupVariableSelectors(ds, sourceName) {
   activeChart = 'boxplot';
   showOutliers = true;
   relativeFreq = false;
-  const boxRadio = /** @type {HTMLInputElement|null} */ (
-    document.querySelector('input[name="chart-type"][value="boxplot"]'));
-  if (boxRadio) boxRadio.checked = true;
+
+  // Apply ?chart= URL param on first load
+  const chartParam = new URLSearchParams(window.location.search).get('chart');
+  if (chartParam && ['boxplot', 'dotplot', 'histogram', 'density'].includes(chartParam)) {
+    activeChart = /** @type {'boxplot'|'dotplot'|'histogram'|'density'} */ (chartParam);
+  }
+
+  const defaultRadio = /** @type {HTMLInputElement|null} */ (
+    document.querySelector(`input[name="chart-type"][value="${activeChart}"]`));
+  if (defaultRadio) defaultRadio.checked = true;
 
   quantVarSelect.innerHTML = '';
   for (const v of numericVars) {
@@ -586,9 +594,9 @@ function renderActiveChart() {
       showMean: showMeanMarker,
     });
   } else if (activeChart === 'dotplot') {
-    renderStackedDotplots(groupNames);
+    renderStackedDotplotsLocal();
   } else if (activeChart === 'histogram') {
-    renderStackedHistograms(groupNames);
+    renderStackedHistogramsLocal();
   } else if (activeChart === 'density') {
     const densityResult = drawGroupedDensity(chartArea, groupedData, {
       xLabel: currentVarLabel,
@@ -597,23 +605,10 @@ function renderActiveChart() {
       id: 'grouped-density',
     });
 
-    // Mean markers: vertical red dashed lines at each group mean
+    // Mean markers: vertical dashed lines at each group mean
     if (showMeanMarker && densityResult) {
       const colors = getColors(groupNames.length);
-      const overlays = d3Selection.select(densityResult.frame.inner).select('.overlays');
-      for (let i = 0; i < groupNames.length; i++) {
-        const vals = groupedData[groupNames[i]];
-        if (vals.length === 0) continue;
-        const meanVal = mean(vals);
-        const mx = densityResult.xScale(meanVal);
-        overlays.append('line')
-          .attr('x1', mx).attr('x2', mx)
-          .attr('y1', 0).attr('y2', densityResult.frame.height)
-          .attr('stroke', colors[i])
-          .attr('stroke-width', 2)
-          .attr('stroke-dasharray', '6,3')
-          .attr('aria-label', `${groupNames[i]} mean = ${formatStat(meanVal, dataPrecision)}`);
-      }
+      drawMeanOnGroupedDensity(densityResult, groupedData, groupNames, colors);
     }
   }
 
@@ -631,274 +626,54 @@ function renderActiveChart() {
 
 /**
  * Render separate dotplots stacked vertically, one per group, with shared x-axis domain.
- * @param {string[]} groupNames
  */
-function renderStackedDotplots(groupNames) {
+function renderStackedDotplotsLocal() {
   if (!chartArea) return;
-  const xMin = Math.min(...allValues);
-  const xMax = Math.max(...allValues);
-  const pad = (xMax - xMin) * 0.05 || 0.5;
-  /** @type {[number, number]} */
-  const domain = [xMin - pad, xMax + pad];
-
-  // Compact height: scale with max group size, clamp between 160–371
-  const maxGroupN = Math.max(...groupNames.map(g => groupedData[g].length));
-  const compactHeight = Math.min(371, Math.max(160, 100 + maxGroupN * 4));
-
-  const colors = getColors(groupNames.length);
-  for (let i = 0; i < groupNames.length; i++) {
-    const name = groupNames[i];
-    const values = groupedData[name];
-    const wrapper = document.createElement('div');
-
-    const label = document.createElement('p');
-    label.className = 'group-label';
-    label.textContent = `${name} (n = ${values.length})`;
-    label.style.color = colors[i];
-    wrapper.appendChild(label);
-
-    const chartDiv = document.createElement('div');
-    wrapper.appendChild(chartDiv);
-    chartArea.appendChild(wrapper);
-
-    const dotResult = drawDotplot(chartDiv, values, {
-      xLabel: i === groupNames.length - 1 ? currentVarLabel : '',
-      titleText: `Dotplot of ${currentVarLabel} for ${name}`,
-      descText: `Dot plot of ${currentVarLabel} for group ${name}`,
-      id: `grouped-dot-${i}`,
-      animate: false,
-      domain,
-      fillColor: colors[i],
-      viewHeight: compactHeight,
-    });
-
-    // Mean marker: red triangle below x-axis
-    if (showMeanMarker && values.length > 0) {
-      const meanVal = mean(values);
-      const mx = dotResult.xScale(meanVal);
-      const triangleY = dotResult.frame.height + 12;
-      const size = 6;
-      const triangle = `M${mx},${triangleY - size} L${mx - size},${triangleY + size} L${mx + size},${triangleY + size} Z`;
-      const overlays = d3Selection.select(dotResult.frame.inner).select('.overlays');
-      overlays.append('path')
-        .attr('d', triangle)
-        .attr('fill', '#F05133')
-        .attr('stroke', 'none')
-        .attr('aria-label', `Mean = ${formatStat(meanVal, dataPrecision)}`)
-        .append('title')
-        .text(`Mean = ${formatStat(meanVal, dataPrecision)}`);
-    }
-  }
+  renderStackedDotplots(chartArea, groupedData, {
+    xLabel: currentVarLabel,
+    showMean: showMeanMarker,
+    idPrefix: 'grouped-dot',
+  });
 }
 
 /**
  * Render separate histograms stacked vertically with shared x-axis and bin boundaries.
- * @param {string[]} groupNames
  */
-function renderStackedHistograms(groupNames) {
+function renderStackedHistogramsLocal() {
   if (!chartArea) return;
-
-  // Compute shared bin boundaries from all values
-  const { bins: sharedBins } = computeBins(allValues, {
+  const { sharedBins, domain, thresholds } = renderStackedHistograms(chartArea, groupedData, {
+    xLabel: currentVarLabel,
     numBins: currentBinCount,
+    relativeFrequency: relativeFreq,
+    showMean: showMeanMarker,
+    idPrefix: 'grouped-hist',
   });
-  const thresholds = /** @type {number[]} */ (sharedBins.slice(1).map(b => b.x0));
-  /** @type {[number, number]} */
-  const domain = [/** @type {number} */ (sharedBins[0].x0), /** @type {number} */ (sharedBins[sharedBins.length - 1].x1)];
-
-  // Compact height: scale with max group size, clamp between 160–371
-  const maxGroupN = Math.max(...groupNames.map(g => groupedData[g].length));
-  const compactHeight = Math.min(371, Math.max(160, 100 + maxGroupN * 4));
-
-  const colors = getColors(groupNames.length);
-  for (let i = 0; i < groupNames.length; i++) {
-    const name = groupNames[i];
-    const values = groupedData[name];
-    const wrapper = document.createElement('div');
-
-    const label = document.createElement('p');
-    label.className = 'group-label';
-    label.textContent = `${name} (n = ${values.length})`;
-    label.style.color = colors[i];
-    wrapper.appendChild(label);
-
-    const chartDiv = document.createElement('div');
-    wrapper.appendChild(chartDiv);
-    chartArea.appendChild(wrapper);
-
-    const histResult = drawHistogram(chartDiv, values, {
-      xLabel: i === groupNames.length - 1 ? currentVarLabel : '',
-      titleText: `Histogram of ${currentVarLabel} for ${name}`,
-      descText: `Histogram of ${currentVarLabel} for group ${name}`,
-      id: `grouped-hist-${i}`,
-      animate: false,
-      domain,
-      thresholds,
-      relativeFrequency: relativeFreq,
-      fillColor: colors[i],
-      viewHeight: compactHeight,
-    });
-
-    // Mean marker: vertical red dashed line
-    if (showMeanMarker && values.length > 0) {
-      const meanVal = mean(values);
-      const mx = histResult.xScale(meanVal);
-      const overlays = d3Selection.select(histResult.frame.inner).select('.overlays');
-      overlays.append('line')
-        .attr('x1', mx).attr('x2', mx)
-        .attr('y1', 0).attr('y2', histResult.frame.height)
-        .attr('stroke', '#F05133')
-        .attr('stroke-width', 2)
-        .attr('stroke-dasharray', '6,3')
-        .attr('aria-label', `Mean = ${formatStat(meanVal, dataPrecision)}`);
-    }
-  }
 
   // Bin frequency table (collapsed by default)
-  renderBinTable(/** @type {any} */ (sharedBins), groupNames, domain, thresholds);
+  renderBinTable(chartArea, /** @type {any} */ (sharedBins), {
+    relativeFrequency: relativeFreq,
+    precision: dataPrecision,
+    grouped: groupedData,
+    domain,
+    thresholds,
+  });
 }
 
-/**
- * Render a collapsible bin frequency table below the histograms.
- * @param {Array<{x0: number, x1: number, length: number}>} sharedBins - Bins computed from all values
- * @param {string[]} groupNames
- * @param {[number, number]} domain
- * @param {number[]} thresholds
- */
-function renderBinTable(sharedBins, groupNames, domain, thresholds) {
-  if (!chartArea) return;
-
-  // Compute per-group bins using the same boundaries
-  /** @type {Record<string, number[]>} */
-  const groupBinCounts = {};
-  for (const name of groupNames) {
-    const { bins } = computeBins(groupedData[name], { domain, thresholds });
-    groupBinCounts[name] = bins.map(b => b.length);
-  }
-
-  const details = document.createElement('details');
-  details.className = 'bin-table-details';
-  details.style.cssText = 'margin:0.5rem 0;font-size:0.85rem;';
-  const summary = document.createElement('summary');
-  summary.textContent = relativeFreq ? 'Bin relative frequencies' : 'Bin frequencies';
-  summary.style.cssText = 'cursor:pointer;color:var(--ims-green);font-weight:500;';
-  details.appendChild(summary);
-
-  const table = document.createElement('table');
-  table.className = 'bin-freq-table';
-  table.style.cssText = 'width:100%;border-collapse:collapse;margin:0.4rem 0;font-size:0.82rem;';
-
-  // Header
-  const thead = document.createElement('thead');
-  const headerRow = document.createElement('tr');
-  const thBin = document.createElement('th');
-  thBin.textContent = 'Bin';
-  thBin.style.cssText = 'text-align:left;padding:0.2rem 0.4rem;border-bottom:2px solid #ccc;';
-  headerRow.appendChild(thBin);
-  for (const name of groupNames) {
-    const th = document.createElement('th');
-    th.textContent = name;
-    th.style.cssText = 'text-align:right;padding:0.2rem 0.4rem;border-bottom:2px solid #ccc;';
-    headerRow.appendChild(th);
-  }
-  thead.appendChild(headerRow);
-  table.appendChild(thead);
-
-  // Rows
-  const tbody = document.createElement('tbody');
-  const d = dataPrecision;
-  for (let i = 0; i < sharedBins.length; i++) {
-    const bin = sharedBins[i];
-    const tr = document.createElement('tr');
-    if (i % 2 === 1) tr.style.background = '#f8f8f8';
-
-    const tdBin = document.createElement('td');
-    tdBin.textContent = `[${formatStat(/** @type {number} */ (bin.x0), d)}, ${formatStat(/** @type {number} */ (bin.x1), d)})`;
-    tdBin.style.cssText = 'padding:0.2rem 0.4rem;border-bottom:1px solid #eee;white-space:nowrap;';
-    tr.appendChild(tdBin);
-
-    for (const name of groupNames) {
-      const td = document.createElement('td');
-      const count = groupBinCounts[name][i] ?? 0;
-      if (relativeFreq) {
-        const n = groupedData[name].length || 1;
-        const rf = count / n;
-        td.textContent = rf === 0 ? '0' : rf.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
-      } else {
-        td.textContent = String(count);
-      }
-      td.style.cssText = 'text-align:right;padding:0.2rem 0.4rem;border-bottom:1px solid #eee;';
-      tr.appendChild(td);
-    }
-    tbody.appendChild(tr);
-  }
-  table.appendChild(tbody);
-  details.appendChild(table);
-  chartArea.appendChild(details);
-}
+// renderBinTable is now imported from ../../js/stats-tables.js
 
 // ── Summary statistics table ──────────────────────────────────────────
 
 /** Render the grouped summary statistics table. */
 function renderStats() {
-  if (!statsThead || !statsTbody) return;
-
-  const groupNames = Object.keys(groupedData);
-  const d = dataPrecision;
-
-  // Group colors matching chart palette
-  const colors = getColors(groupNames.length);
-
-  // Build header row
-  statsThead.innerHTML = '';
-  const headerRow = document.createElement('tr');
-  const thStat = document.createElement('th');
-  thStat.scope = 'col';
-  thStat.textContent = 'Statistic';
-  headerRow.appendChild(thStat);
-
-  for (let i = 0; i < groupNames.length; i++) {
-    const th = document.createElement('th');
-    th.scope = 'col';
-    th.textContent = groupNames[i];
-    th.style.borderBottom = `3px solid ${colors[i % colors.length]}`;
-    headerRow.appendChild(th);
-  }
-  statsThead.appendChild(headerRow);
-
-  // Build data rows
-  const statRows = [
-    { label: 'n', fn: (/** @type {number[]} */ v) => String(v.length) },
-    { label: 'Mean', fn: (/** @type {number[]} */ v) => formatStat(mean(v), d), sep: true },
-    { label: 'Std Dev', fn: (/** @type {number[]} */ v) => formatStat(sd(v), d) },
-    { label: 'Min', fn: (/** @type {number[]} */ v) => { const [lo] = range(v); return formatStat(lo, d); }, sep: true },
-    { label: 'Q1', fn: (/** @type {number[]} */ v) => formatStat(quantile(v, 0.25), d) },
-    { label: 'Median', fn: (/** @type {number[]} */ v) => formatStat(median(v), d) },
-    { label: 'Q3', fn: (/** @type {number[]} */ v) => formatStat(quantile(v, 0.75), d) },
-    { label: 'Max', fn: (/** @type {number[]} */ v) => { const [, hi] = range(v); return formatStat(hi, d); } },
-    { label: 'IQR', fn: (/** @type {number[]} */ v) => formatStat(iqr(v), d), sep: true },
-    { label: 'Range', fn: (/** @type {number[]} */ v) => { const [lo, hi] = range(v); return formatStat(hi - lo, d); } },
-  ];
-
-  statsTbody.innerHTML = '';
-  for (const stat of statRows) {
-    const tr = document.createElement('tr');
-    if (stat.sep) tr.className = 'stat-sep';
-
-    const th = document.createElement('th');
-    th.scope = 'row';
-    th.textContent = stat.label;
-    tr.appendChild(th);
-
-    for (let i = 0; i < groupNames.length; i++) {
-      const td = document.createElement('td');
-      td.textContent = stat.fn(groupedData[groupNames[i]]);
-      td.style.backgroundColor = colors[i % colors.length] + '12';
-      tr.appendChild(td);
-    }
-
-    statsTbody.appendChild(tr);
-  }
+  // Replace the existing table with a fresh one from buildGroupedStatsTable
+  const wrap = document.querySelector('.grouped-stats-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const table = buildGroupedStatsTable(wrap, groupedData, {
+    numLabel: currentVarLabel,
+    catLabel: currentGroupLabel,
+  });
+  table.id = 'grouped-stats-table';
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────

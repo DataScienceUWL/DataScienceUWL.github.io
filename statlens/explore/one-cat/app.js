@@ -33,6 +33,14 @@ const modeSep = document.getElementById('mode-sep');
 const modeFreqLabel = document.getElementById('mode-freq');
 const modeRelLabel = document.getElementById('mode-rel');
 let activeChart = 'bar';
+// Apply ?chart= URL param
+const _chartParam = new URLSearchParams(window.location.search).get('chart');
+if (_chartParam && ['bar', 'pie', 'waffle'].includes(_chartParam)) {
+  activeChart = /** @type {'bar'|'pie'|'waffle'} */ (_chartParam);
+  const _radio = /** @type {HTMLInputElement|null} */ (
+    document.querySelector(`input[name="chart-type"][value="${_chartParam}"]`));
+  if (_radio) _radio.checked = true;
+}
 let activeMode = 'frequency';
 const catSheetBody = /** @type {HTMLElement} */ (document.getElementById('cat-sheet-body'));
 const numCategoriesInput = /** @type {HTMLInputElement} */ (document.getElementById('num-categories'));

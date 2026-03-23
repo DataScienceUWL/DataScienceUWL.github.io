@@ -365,17 +365,16 @@ export function addInferenceAnnotations(chart, opts) {
       .attr('x', sx).attr('y', -16)
       .attr('text-anchor', 'middle')
       .attr('fill', STAT_COLOR)
-      .attr('font-size', '9px')
+      .classed('overlay-label', true)
       .text('observed');
 
     // Stat value below "observed" (e.g., "F = 3.48")
     const valueText = `${statLabel} = ${sv.toFixed(decimals)}`;
     annotations.append('text')
-      .attr('class', 'inf-annotation inf-stat-label')
+      .attr('class', 'inf-annotation inf-stat-label overlay-label')
       .attr('x', sx).attr('y', -4)
       .attr('text-anchor', 'middle')
       .attr('fill', STAT_COLOR)
-      .attr('font-size', '9px')
       .text(valueText);
   }
 

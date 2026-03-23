@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Power &amp; Error Visualizer | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm",
+            "jstat":        "https://cdn.jsdelivr.net/npm/jstat@1/+esm"
+        }
+    }
+    </script>
+    <style>
+        /* Power-specific layout */
+        .power-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem 1.5rem;
+            margin: 1rem 0;
+        }
+        @media (max-width: 600px) {
+            .power-controls { grid-template-columns: 1fr; }
+        }
+        .power-controls .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .power-controls label {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .power-controls .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .power-controls input[type="range"] {
+            flex: 1;
+            min-width: 0;
+        }
+        .power-controls input[type="number"] {
+            width: 5.5rem;
+            text-align: center;
+        }
+        .power-controls .slider-row .unit {
+            font-size: 0.85rem;
+            color: #666;
+            min-width: 1.5rem;
+        }
+
+        /* Results panel */
+        .power-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+        .result-card {
+            text-align: center;
+            padding: 0.75rem 0.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--ims-lgray, #D9D9D9);
+        }
+        .result-card .result-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+        .result-card .result-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            font-family: 'Source Code Pro', monospace;
+        }
+        .result-card.power-card {
+            background: #e8f4e8;
+            border-color: #4CAF50;
+        }
+        .result-card.power-card .result-value { color: #2e7d32; }
+        .result-card.alpha-card {
+            background: #fce8e6;
+            border-color: #F05133;
+        }
+        .result-card.alpha-card .result-value { color: #c62828; }
+        .result-card.beta-card {
+            background: #e8eaf6;
+            border-color: #5C6BC0;
+        }
+        .result-card.beta-card .result-value { color: #283593; }
+        .result-card.crit-card {
+            background: #f5f5f5;
+            border-color: #999;
+        }
+        .result-card.crit-card .result-value { color: #333; }
+
+        /* Legend */
+        .power-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 0.5rem 0;
+            font-size: 0.85rem;
+        }
+        .power-legend .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .power-legend .swatch {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.15);
+        }
+
+        /* Tail toggle */
+        .tail-toggle { margin-bottom: 0.5rem; }
+
+        /* Preset alpha buttons */
+        .alpha-presets {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+            margin-top: 0.25rem;
+        }
+        .alpha-presets button {
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--ims-lgray, #D9D9D9);
+            background: #fff;
+            cursor: pointer;
+            font-family: 'Source Code Pro', monospace;
+        }
+        .alpha-presets button:hover,
+        .alpha-presets button:focus-visible {
+            background: #e8f4f8;
+            border-color: var(--ims-blue, #569BBD);
+        }
+        .alpha-presets button.active {
+            background: var(--ims-blue, #569BBD);
+            color: #fff;
+            border-color: var(--ims-blue, #569BBD);
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#controls">Skip to Controls</a>
+        <a href="#chart">Skip to Chart</a>
+        <a href="#results">Skip to Results</a>
+    </nav>
+
+    <main>
+        <h1>Power &amp; Error Visualizer<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">&#x2699;</button></span></h1>
+
+        <section id="chart" aria-label="Power visualization">
+            <div class="chart-header-bar">
+                <div class="tail-toggle" role="radiogroup" aria-label="Test direction">
+                    <label class="tail-btn">
+                        <input type="radio" name="tail" value="right" checked>
+                        <span>Right-tailed</span>
+                    </label>
+                    <label class="tail-btn">
+                        <input type="radio" name="tail" value="left">
+                        <span>Left-tailed</span>
+                    </label>
+                    <label class="tail-btn">
+                        <input type="radio" name="tail" value="both">
+                        <span>Two-tailed</span>
+                    </label>
+                </div>
+            </div>
+            <figure>
+                <div id="chart-container"></div>
+            </figure>
+            <div class="power-legend" aria-label="Chart legend">
+                <span class="legend-item"><span class="swatch" style="background: #569BBD;"></span> H&#x2080; (Null)</span>
+                <span class="legend-item"><span class="swatch" style="background: #E07020;"></span> H&#x2081; (Alternative)</span>
+                <span class="legend-item"><span class="swatch" style="background: rgba(244,67,54,0.3);"></span> &#x3B1; (Type I Error)</span>
+                <span class="legend-item"><span class="swatch" style="background: rgba(92,107,192,0.3);"></span> &#x3B2; (Type II Error)</span>
+                <span class="legend-item"><span class="swatch" style="background: rgba(76,175,80,0.3);"></span> Power (1 &minus; &#x3B2;)</span>
+            </div>
+        </section>
+
+        <section id="results" aria-label="Computed results">
+            <div class="power-results">
+                <div class="result-card power-card">
+                    <div class="result-label">Power (1 &minus; &beta;)</div>
+                    <div class="result-value" id="result-power">0.8413</div>
+                </div>
+                <div class="result-card beta-card">
+                    <div class="result-label">Type II Error (&beta;)</div>
+                    <div class="result-value" id="result-beta">0.1587</div>
+                </div>
+                <div class="result-card alpha-card">
+                    <div class="result-label">Type I Error (&alpha;)</div>
+                    <div class="result-value" id="result-alpha">0.0500</div>
+                </div>
+                <div class="result-card crit-card">
+                    <div class="result-label">Critical value</div>
+                    <div class="result-value" id="result-crit">1.6449</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="controls" aria-label="Test parameters">
+            <div class="power-controls">
+                <div class="control-group">
+                    <label for="input-alpha">Significance level (&alpha;)</label>
+                    <div class="slider-row">
+                        <input type="range" id="slider-alpha" min="0.001" max="0.20" step="0.001" value="0.05">
+                        <input type="number" id="input-alpha" min="0.001" max="0.50" step="0.001" value="0.05">
+                    </div>
+                    <div class="alpha-presets" role="group" aria-label="Common alpha values">
+                        <button type="button" data-alpha="0.01">0.01</button>
+                        <button type="button" data-alpha="0.025">0.025</button>
+                        <button type="button" data-alpha="0.05" class="active">0.05</button>
+                        <button type="button" data-alpha="0.10">0.10</button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="input-n">Sample size (n)</label>
+                    <div class="slider-row">
+                        <input type="range" id="slider-n" min="2" max="500" step="1" value="30">
+                        <input type="number" id="input-n" min="2" max="10000" step="1" value="30">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="input-delta">Effect size (&delta; = &mu;&#x2081; &minus; &mu;&#x2080;)</label>
+                    <div class="slider-row">
+                        <input type="range" id="slider-delta" min="-5" max="5" step="0.01" value="1.0">
+                        <input type="number" id="input-delta" min="-10" max="10" step="0.01" value="1.0">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="input-sigma">Population SD (&sigma;)</label>
+                    <div class="slider-row">
+                        <input type="range" id="slider-sigma" min="0.1" max="10" step="0.1" value="1.0">
+                        <input type="number" id="input-sigma" min="0.01" max="100" step="0.01" value="1.0">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite"
+             aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <dialog id="page-help" aria-label="Help and keyboard shortcuts">
+        <h2>Power &amp; Error Visualizer</h2>
+        <p class="help-intro">Explore how significance level (&alpha;), sample size (n), effect size (&delta;), and population variability (&sigma;) interact to determine statistical power.</p>
+        <h3>What am I looking at?</h3>
+        <p>Two overlapping normal distributions represent the sampling distribution of the sample mean under:</p>
+        <ul>
+            <li><strong>H&#x2080; (null)</strong>: centered at &mu;&#x2080; = 0 (the hypothesized value)</li>
+            <li><strong>H&#x2081; (alternative)</strong>: centered at &mu;&#x2081; = &mu;&#x2080; + &delta; (the true value)</li>
+        </ul>
+        <p>The <strong>standard error</strong> of each distribution is &sigma; / &radic;n. Increasing n makes both curves narrower.</p>
+        <h3>Shaded regions</h3>
+        <ul>
+            <li><strong style="color:#c62828;">&alpha; (Type I error)</strong>: probability of rejecting H&#x2080; when it is true (red shading under H&#x2080; in the rejection region)</li>
+            <li><strong style="color:#283593;">&beta; (Type II error)</strong>: probability of failing to reject H&#x2080; when H&#x2081; is true (blue shading under H&#x2081; in the non-rejection region)</li>
+            <li><strong style="color:#2e7d32;">Power = 1 &minus; &beta;</strong>: probability of correctly rejecting H&#x2080; when H&#x2081; is true (green shading under H&#x2081; in the rejection region)</li>
+        </ul>
+        <h3>Key relationships</h3>
+        <ul>
+            <li>Increasing &alpha; &rarr; more power, but more Type I error</li>
+            <li>Increasing n &rarr; more power (narrower distributions)</li>
+            <li>Increasing |&delta;| &rarr; more power (distributions further apart)</li>
+            <li>Decreasing &sigma; &rarr; more power (less noise)</li>
+        </ul>
+        <h3>Keyboard shortcuts</h3>
+        <dl>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close this dialog</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

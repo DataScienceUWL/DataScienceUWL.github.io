@@ -1793,10 +1793,46 @@ body[data-hide-interpretations="true"] .interpretation { display: none !importan
   opacity: 0.5;
   pointer-events: none;
 }
+/* Copy-to-clipboard button — sits left of save button */
+.chart-copy-btn {
+  position: absolute;
+  top: 4px;
+  right: 40px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ims-gray-text, #555);
+  cursor: pointer;
+  opacity: 0.35;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+}
+.chart-copy-btn:hover,
+.chart-copy-btn:focus-visible {
+  opacity: 1;
+  background: #fff;
+  border-color: var(--border, #ccc);
+  color: var(--ims-blue, #569BBD);
+}
+.chart-copy-btn:active {
+  background: var(--surface, #f0f0f0);
+}
+.chart-copy-btn.saving {
+  opacity: 0.5;
+  pointer-events: none;
+}
 /* Hide in embed/static/print modes */
 body[data-embed="true"] .chart-save-btn,
-body[data-static="true"] .chart-save-btn { display: none; }
-@media print { .chart-save-btn { display: none; } }
+body[data-embed="true"] .chart-copy-btn,
+body[data-static="true"] .chart-save-btn,
+body[data-static="true"] .chart-copy-btn { display: none; }
+@media print { .chart-save-btn, .chart-copy-btn { display: none; } }
 
 .chart-controls-bar label {
   display: inline-flex;
@@ -2029,15 +2065,47 @@ svg[role="img"] .crit-label {
   font-family: var(--font-mono);
 }
 
+svg[role="img"] .overlay-label {
+  font-size: 11px;                         /* small annotation text ("observed", line labels) */
+}
+
+svg[role="img"] .legend-title {
+  font-size: 14px;                         /* legend heading in bar/pie/waffle charts */
+  font-weight: 700;
+}
+
+svg[role="img"] .legend-text {
+  font-size: 13px;                         /* legend item text (category names) */
+}
+
+svg[role="img"] .slice-label {
+  font-size: 13px;                         /* pie slice percentage labels */
+  font-weight: 700;
+}
+
+svg[role="img"] .stat-marker-label {
+  font-size: 12px;                         /* mean/median marker annotations */
+}
+
+svg[role="img"] .chart-tooltip text {
+  font-size: 14px;                         /* hover tooltip text */
+}
+
 /* Tablet/small screen: intermediate chart font scaling */
 @media (max-width: 600px) {
   :root { --font-size-chart: 18px; }
   svg[role="img"] .x-label,
   svg[role="img"] .y-label        { font-size: 19px; }
   svg[role="img"] .overlay-value  { font-size: 18px; }
+  svg[role="img"] .overlay-label  { font-size: 14px; }
   svg[role="img"] .prob-label     { font-size: 18px; }
   svg[role="img"] .prob-complement { font-size: 16px; }
   svg[role="img"] .crit-label     { font-size: 18px; }
+  svg[role="img"] .legend-title   { font-size: 16px; }
+  svg[role="img"] .legend-text    { font-size: 15px; }
+  svg[role="img"] .slice-label    { font-size: 16px; }
+  svg[role="img"] .stat-marker-label { font-size: 15px; }
+  svg[role="img"] .chart-tooltip text { font-size: 16px; }
 }
 
 /* Phone: charts are full-width (~350px container, 0.58× scale).
@@ -2047,11 +2115,17 @@ svg[role="img"] .crit-label {
   svg[role="img"] .x-label,
   svg[role="img"] .y-label        { font-size: 23px; }
   svg[role="img"] .overlay-value  { font-size: 20px; }
+  svg[role="img"] .overlay-label  { font-size: 16px; }
   svg[role="img"] .bar-count-label { font-size: 22px; }
   svg[role="img"] .p-value-label  { font-size: 24px; }
   svg[role="img"] .prob-label     { font-size: 22px; }
   svg[role="img"] .prob-complement { font-size: 20px; }
   svg[role="img"] .crit-label     { font-size: 22px; }
+  svg[role="img"] .legend-title   { font-size: 18px; }
+  svg[role="img"] .legend-text    { font-size: 18px; }
+  svg[role="img"] .slice-label    { font-size: 18px; }
+  svg[role="img"] .stat-marker-label { font-size: 17px; }
+  svg[role="img"] .chart-tooltip text { font-size: 18px; }
 }
 
 /* Probability label pills on distribution charts */

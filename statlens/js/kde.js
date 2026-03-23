@@ -244,7 +244,7 @@ export function drawGroupedDensity(container, groupedData, opts) {
     text.setAttribute('y', '4');
     text.setAttribute('text-anchor', 'end');
     text.setAttribute('fill', curves[i].color);
-    text.setAttribute('font-size', '11px');
+    text.setAttribute('class', 'legend-text');
     text.textContent = `${curves[i].name} (n=${curves[i].n})`;
     g.appendChild(text);
 

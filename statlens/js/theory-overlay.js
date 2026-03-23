@@ -114,7 +114,7 @@ export function overlayTheoryCurve(options) {
       .attr('x', lx + 10)
       .attr('y', Math.max(ly - 6, 14))
       .attr('fill', color)
-      .attr('font-size', '13px')
+      .attr('class', 'stat-marker-label')
       .attr('font-weight', '700')
       .attr('font-family', 'var(--font-body, sans-serif)');
     renderStatLabel(textEl, label);
