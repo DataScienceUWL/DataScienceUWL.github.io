@@ -6,19 +6,21 @@
  * controls as each individual explore app (bins, density, outliers, etc.).
  */
 
-import * as d3Selection from 'd3-selection';
-import { drawHistogram, computeBins, sturgesBins } from '../../js/histogram.js';
-import { drawDotplot, dotplotBins } from '../../js/dotplot.js';
+import { drawHistogram, sturgesBins } from '../../js/histogram.js';
+import { drawDotplot } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { drawBarChart } from '../../js/barchart.js';
 import { drawPieChart } from '../../js/pie.js';
 import { drawWaffleChart } from '../../js/waffle.js';
 import { drawScatterplot, drawResidualPlot } from '../../js/scatterplot.js';
 import { drawGroupedDensity, overlayDensityOnHistogram } from '../../js/kde.js';
-import { mean, median, sd, quantile, iqr, range, cor, linreg, loess, detectPrecision, formatStat } from '../../js/stats.js';
-import { renderStatLabel, getColors } from '../../js/chart-utils.js';
+import { cor, linreg, loess, detectPrecision, formatStat } from '../../js/stats.js';
+import { getColors } from '../../js/chart-utils.js';
 import { addChartSaveButton, copyTableRich } from '../../js/export.js';
 import { announce, initTabs, initDataPanel, initHelp, setPageTitle, wrapWithStepper } from '../../js/page-utils.js';
+import { drawMeanOnHistogram, drawMeanOnDotplot } from '../../js/mean-marker.js';
+import { renderStackedHistograms, renderStackedDotplots } from '../../js/grouped-charts.js';
+import { buildGroupedStatsTable, buildNumericStatsTable } from '../../js/stats-tables.js';
 
 initHelp();
 initTabs();
@@ -605,52 +607,7 @@ function renderChart() {
   addTableActions();
 }
 
-// ── Mean marker helpers ─────────────────────────────────────────────
-
-/**
- * Draw a mean marker line on a histogram.
- * @param {any} histResult - Return value from drawHistogram
- * @param {number[]} values
- */
-function drawMeanOnHistogram(histResult, values) {
-  if (!histResult || !histResult.frame) return;
-  const dp = detectPrecision(values);
-  const meanVal = mean(values);
-  const mx = histResult.xScale(meanVal);
-  const overlays = d3Selection.select(histResult.frame.inner).select('.overlays');
-  overlays.append('line')
-    .attr('x1', mx).attr('x2', mx)
-    .attr('y1', 0).attr('y2', histResult.frame.height)
-    .attr('stroke', '#F05133').attr('stroke-width', 2)
-    .attr('stroke-dasharray', '6,3');
-  const meanText = overlays.append('text')
-    .attr('x', mx).attr('y', -6)
-    .attr('text-anchor', 'middle')
-    .attr('fill', '#F05133').attr('class', 'stat-marker-label');
-  renderStatLabel(meanText, `x\u0304 = ${formatStat(meanVal, dp)}`);
-}
-
-/**
- * Draw a mean marker triangle on a dotplot.
- * @param {any} dotResult - Return value from drawDotplot
- * @param {number[]} values
- */
-function drawMeanOnDotplot(dotResult, values) {
-  if (!dotResult || !dotResult.frame) return;
-  const dp = detectPrecision(values);
-  const meanVal = mean(values);
-  const mx = dotResult.xScale(meanVal);
-  const triangleY = dotResult.frame.height + 12;
-  const size = 6;
-  const triangle = `M${mx},${triangleY - size} L${mx - size},${triangleY + size} L${mx + size},${triangleY + size} Z`;
-  const overlays = d3Selection.select(dotResult.frame.inner).select('.overlays');
-  overlays.append('path')
-    .attr('d', triangle)
-    .attr('fill', '#F05133')
-    .attr('stroke', 'none')
-    .append('title')
-    .text(`Mean = ${formatStat(meanVal, dp)}`);
-}
+// Mean marker helpers are imported from ../../js/mean-marker.js
 
 // ── One numeric variable ─────────────────────────────────────────────
 
@@ -689,21 +646,6 @@ function renderOneNumeric(v) {
     drawGroupedDensity(chartContainer, { [v.label]: values }, {
       xLabel: v.label, titleText: `Density of ${v.label}`, id: 'explorer-chart',
     });
-    // Mean marker on density
-    if (showMean && chartContainer) {
-      const svg = chartContainer.querySelector('svg');
-      if (svg) {
-        const dp = detectPrecision(values);
-        const meanVal = mean(values);
-        const overlays = d3Selection.select(svg).select('.overlays');
-        if (!overlays.empty()) {
-          // Find x scale domain from the viewBox to approximate position
-          // Use the inner group's transform to find dimensions
-          const inner = d3Selection.select(svg).select('g');
-          // For now, add a simple annotation — the density chart handles its own scales
-        }
-      }
-    }
   } else {
     renderMismatchNote('Histograms, dotplots, boxplots, and density curves work well for a single quantitative variable.');
     return;
@@ -820,44 +762,24 @@ function renderNumericByCategorical(numVar, catVar) {
       id: 'explorer-chart', animate: false, showOutliers, showMean,
     });
   } else if (activeChart === 'histogram') {
-    const numBins = histBins ?? sturgesBins(n);
-    for (let i = 0; i < groupNames.length; i++) {
-      const name = groupNames[i];
-      const wrapper = document.createElement('div');
-      wrapper.style.marginBottom = '0.25rem';
-      const label = document.createElement('p');
-      label.style.cssText = `margin:0.25rem 0 0;font-size:0.85rem;font-weight:600;color:${colors[i]}`;
-      label.textContent = `${name} (n = ${grouped[name].length})`;
-      wrapper.appendChild(label);
-      const chartDiv = document.createElement('div');
-      wrapper.appendChild(chartDiv);
-      if (chartContainer) chartContainer.appendChild(wrapper);
-      drawHistogram(chartDiv, grouped[name], {
-        xLabel: i === groupNames.length - 1 ? numVar.label : '',
-        titleText: `${name} (n=${grouped[name].length})`,
-        id: `explorer-chart-${name}`, animate: false,
-        numBins, relativeFrequency: relativeFreq,
-        fillColor: colors[i],
+    if (chartContainer) {
+      renderStackedHistograms(chartContainer, grouped, {
+        xLabel: numVar.label,
+        numBins: histBins ?? sturgesBins(n),
+        relativeFrequency: relativeFreq,
+        showMean: showMean,
+        colors,
+        idPrefix: 'explorer-chart',
       });
     }
   } else if (activeChart === 'dotplot') {
-    for (let i = 0; i < groupNames.length; i++) {
-      const name = groupNames[i];
-      const wrapper = document.createElement('div');
-      wrapper.style.marginBottom = '0.25rem';
-      const label = document.createElement('p');
-      label.style.cssText = `margin:0.25rem 0 0;font-size:0.85rem;font-weight:600;color:${colors[i]}`;
-      label.textContent = `${name} (n = ${grouped[name].length})`;
-      wrapper.appendChild(label);
-      const chartDiv = document.createElement('div');
-      wrapper.appendChild(chartDiv);
-      if (chartContainer) chartContainer.appendChild(wrapper);
-      drawDotplot(chartDiv, grouped[name], {
-        xLabel: i === groupNames.length - 1 ? numVar.label : '',
-        titleText: `${name} (n=${grouped[name].length})`,
-        id: `explorer-chart-${name}`, animate: false,
+    if (chartContainer) {
+      renderStackedDotplots(chartContainer, grouped, {
+        xLabel: numVar.label,
         numBins: dotBins ?? undefined,
-        fillColor: colors[i],
+        showMean: showMean,
+        colors,
+        idPrefix: 'explorer-chart',
       });
     }
   } else if (activeChart === 'density') {
@@ -949,26 +871,7 @@ function addTableActions() {
  */
 function renderNumericStats(label, values) {
   if (!statsContainer) return;
-  const n = values.length;
-  const dp = detectPrecision(values);
-
-  statsContainer.innerHTML = `
-    <table aria-label="Summary statistics for ${label}">
-      <thead><tr>
-        <th>Statistic</th><th>Value</th>
-      </tr></thead>
-      <tbody>
-        <tr><td>n</td><td>${n}</td></tr>
-        <tr><td>Mean</td><td>${formatStat(mean(values), dp)}</td></tr>
-        <tr><td>Median</td><td>${formatStat(median(values), dp)}</td></tr>
-        <tr><td>SD</td><td>${formatStat(sd(values), dp)}</td></tr>
-        <tr><td>IQR</td><td>${formatStat(iqr(values), dp)}</td></tr>
-        <tr><td>Min</td><td>${formatStat(Math.min(...values), dp)}</td></tr>
-        <tr><td>Q1</td><td>${formatStat(quantile(values, 0.25), dp)}</td></tr>
-        <tr><td>Q3</td><td>${formatStat(quantile(values, 0.75), dp)}</td></tr>
-        <tr><td>Max</td><td>${formatStat(Math.max(...values), dp)}</td></tr>
-      </tbody>
-    </table>`;
+  buildNumericStatsTable(statsContainer, label, values);
 }
 
 /**
@@ -1031,59 +934,11 @@ function renderRegressionStats(xLabel, yLabel, x, y) {
  */
 function renderGroupedStats(numLabel, catLabel, grouped) {
   if (!statsContainer) return;
-  const groups = Object.keys(grouped);
-  const colors = getColors(groups.length);
-
-  const table = document.createElement('table');
-  table.setAttribute('aria-label', `Group statistics for ${numLabel} by ${catLabel}`);
-
-  // Header row with color-coded group names
-  const thead = document.createElement('thead');
-  const headerRow = document.createElement('tr');
-  const statHeaders = ['Statistic', ...groups];
-  statHeaders.forEach((text, i) => {
-    const th = document.createElement('th');
-    th.textContent = text;
-    if (i > 0) {
-      th.style.borderBottom = `3px solid ${colors[i - 1]}`;
-    }
-    headerRow.appendChild(th);
-  });
-  thead.appendChild(headerRow);
-  table.appendChild(thead);
-
-  // Stat rows
-  const tbody = document.createElement('tbody');
-  const statDefs = [
-    { label: 'n', fn: (/** @type {number[]} */ v) => String(v.length) },
-    { label: 'Mean', fn: (/** @type {number[]} */ v) => formatStat(mean(v), detectPrecision(v)) },
-    { label: 'Median', fn: (/** @type {number[]} */ v) => formatStat(median(v), detectPrecision(v)) },
-    { label: 'SD', fn: (/** @type {number[]} */ v) => formatStat(sd(v), detectPrecision(v)) },
-    { label: 'IQR', fn: (/** @type {number[]} */ v) => formatStat(iqr(v), detectPrecision(v)) },
-    { label: 'Min', fn: (/** @type {number[]} */ v) => formatStat(Math.min(...v), detectPrecision(v)) },
-    { label: 'Q1', fn: (/** @type {number[]} */ v) => formatStat(quantile(v, 0.25), detectPrecision(v)) },
-    { label: 'Q3', fn: (/** @type {number[]} */ v) => formatStat(quantile(v, 0.75), detectPrecision(v)) },
-    { label: 'Max', fn: (/** @type {number[]} */ v) => formatStat(Math.max(...v), detectPrecision(v)) },
-  ];
-
-  for (const stat of statDefs) {
-    const tr = document.createElement('tr');
-    const th = document.createElement('td');
-    th.textContent = stat.label;
-    th.style.fontWeight = '600';
-    tr.appendChild(th);
-    for (let i = 0; i < groups.length; i++) {
-      const td = document.createElement('td');
-      td.textContent = stat.fn(grouped[groups[i]]);
-      td.style.backgroundColor = colors[i] + '12';
-      tr.appendChild(td);
-    }
-    tbody.appendChild(tr);
-  }
-  table.appendChild(tbody);
-
   statsContainer.innerHTML = '';
-  statsContainer.appendChild(table);
+  buildGroupedStatsTable(statsContainer, grouped, {
+    numLabel,
+    catLabel,
+  });
 }
 
 /**
