@@ -166,7 +166,9 @@ export function overlayDensityOnHistogram(innerNode, values, xScale, yScale, bin
  * @param {string} [opts.descText]
  * @param {string} [opts.id]
  * @param {string[]} [opts.colors] - Colors per group (default: Okabe-Ito)
- * @returns {{ frame: import('./types.js').ChartFrame }}
+ * @param {number} [opts.bandwidth] - Override bandwidth (applies to all groups)
+ * @param {boolean} [opts.fill] - Fill area under single-group curves (default: true when 1 group)
+ * @returns {{ frame: import('./types.js').ChartFrame, xScale: any }}
  */
 export function drawGroupedDensity(container, groupedData, opts) {
   const groups = Object.keys(groupedData);
@@ -189,7 +191,9 @@ export function drawGroupedDensity(container, groupedData, opts) {
     const name = groups[i];
     const values = groupedData[name];
     if (values.length < 2) continue;
-    const result = kde(values, { domain });
+    const kdeOpts = { domain };
+    if (opts.bandwidth != null) kdeOpts.bandwidth = opts.bandwidth;
+    const result = kde(values, kdeOpts);
     const yMax = Math.max(...result.y);
     if (yMax > maxDensity) maxDensity = yMax;
     curves.push({ name, x: result.x, y: result.y, color: colors[i % colors.length], n: values.length });
@@ -212,15 +216,34 @@ export function drawGroupedDensity(container, groupedData, opts) {
   const yAxis = d3Axis.axisLeft(yScale).ticks(5);
   addAxes(frame, xAxis, yAxis, opts.xLabel, 'Density');
 
-  // Draw curves
+  // Draw curves (with optional fill for single-group density plots)
+  const shouldFill = opts.fill ?? (curves.length === 1);
   for (const curve of curves) {
+    if (shouldFill) {
+      // Filled area under curve
+      let areaD = `M${xScale(curve.x[0])},${yScale(0)}`;
+      for (let i = 0; i < curve.x.length; i++) {
+        areaD += `L${xScale(curve.x[i])},${yScale(curve.y[i])}`;
+      }
+      areaD += `L${xScale(curve.x[curve.x.length - 1])},${yScale(0)}Z`;
+      const areaPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      areaPath.setAttribute('d', areaD);
+      areaPath.setAttribute('fill', curve.color);
+      areaPath.setAttribute('fill-opacity', '0.25');
+      areaPath.setAttribute('stroke', 'none');
+      areaPath.setAttribute('class', 'density-fill');
+      areaPath.setAttribute('aria-hidden', 'true');
+      frame.inner.appendChild(areaPath);
+    }
     drawDensityCurve(frame.inner, curve.x, curve.y, xScale, yScale, {
       stroke: curve.color,
       strokeWidth: 2.5,
     });
   }
 
-  // Legend (top-right, inside the chart)
+  // Legend (top-right, inside the chart) — skip for single-group
+  if (curves.length <= 1) return { frame, xScale };
+
   const legendG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   legendG.setAttribute('class', 'density-legend');
   const legendX = frame.width - 10;

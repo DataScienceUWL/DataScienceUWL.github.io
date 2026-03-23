@@ -286,9 +286,9 @@ export function estimateLeftMargin(yTickValues, options) {
   const fmt = options?.format ?? formatTick;
 
   // Estimate widest tick label width from character count.
-  // At the chart's default font size (~15px in viewBox), each character
-  // is roughly 8–9 viewBox units wide. Use 9 as a conservative estimate.
-  const CHAR_WIDTH = 9;
+  // Atkinson Hyperlegible at 15px: digits measure ~10–11px via getBBox().
+  // Use 13 as a generous per-character estimate to prevent clipping.
+  const CHAR_WIDTH = 13;
   let maxChars = 1;
   for (const v of yTickValues) {
     const len = fmt(v).length;
@@ -318,22 +318,38 @@ export function fitYLabel(frame, yLabel) {
   const inner = d3Selection.select(frame.inner);
   const axes = inner.select('.axes');
 
-  // Measure widest y-axis tick label
+  // Measure widest y-axis tick label.
+  // Try getComputedTextLength() first (works before layout in most browsers),
+  // fall back to getBBox(), then estimate from character count.
   let maxTickWidth = 0;
+  let tickCount = 0;
+  let maxChars = 0;
   axes.select('.y-axis').selectAll('.tick text').each(function () {
+    tickCount++;
+    const el = /** @type {SVGTextElement} */ (this);
+    const chars = (el.textContent || '').length;
+    if (chars > maxChars) maxChars = chars;
     try {
-      const w = /** @type {SVGTextElement} */ (this).getBBox().width;
+      const w = el.getComputedTextLength?.() || el.getBBox().width;
       if (w > maxTickWidth) maxTickWidth = w;
-    } catch { /* getBBox fails in JSDOM */ }
+    } catch { /* JSDOM */ }
   });
 
-  // Position: just outside the tick labels with a small gap
-  const GAP = 10;
+  // If measurement returned 0 (common during synchronous DOM construction),
+  // estimate from character count. ~8.5px per char at 15px Atkinson Hyperlegible.
+  if (maxTickWidth === 0 && maxChars > 0) {
+    maxTickWidth = maxChars * 8.5;
+  }
+
+  // Position: just outside the tick labels with a comfortable gap
+  const GAP = 14;
   const labelY = -(maxTickWidth + GAP);
 
-  // Safety check: if label would be clipped, expand viewBox
-  const LABEL_ASCENT = 18;
-  const needed = maxTickWidth + GAP + LABEL_ASCENT + 4;
+  // Safety check: if label would be clipped, expand viewBox.
+  // LABEL_EXTENT accounts for the rotated label's full visual extent leftward
+  // from its baseline: font ascent + padding at 16px font-weight 500.
+  const LABEL_EXTENT = 26;
+  const needed = maxTickWidth + GAP + LABEL_EXTENT;
   if (needed > frame.margin.left) {
     const extra = Math.ceil(needed - frame.margin.left);
     const svg = d3Selection.select(frame.svg);
