@@ -1,6 +1,6 @@
 // StatLens Service Worker — stale-while-revalidate with update notification.
 // DEPLOY_VERSION is replaced by deploy.sh on each deploy.
-const CACHE_NAME = 'statlens-a6fafd1f';
+const CACHE_NAME = 'statlens-2de5b772';
 
 // App shell — the core files needed for the app to work
 const APP_SHELL = [
