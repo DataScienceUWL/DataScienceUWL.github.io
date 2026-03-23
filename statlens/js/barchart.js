@@ -128,15 +128,25 @@ export function drawBarChart(container, values, options = {}) {
     drawSimpleBars(frame, values, mode, { xLabel, categoryOrder, shouldAnimate });
   }
 
-  // Y-axis label
+  // Y-axis label — measure tick width to avoid overlap (same logic as addAxes)
   const yLabel = options.yLabel ?? defaultYLabel(mode);
   if (yLabel) {
-    d3Selection.select(frame.inner).select('.axes').append('text')
+    const axes = d3Selection.select(frame.inner).select('.axes');
+    let maxTickWidth = 0;
+    axes.select('.y-axis').selectAll('.tick text').each(function () {
+      try {
+        const w = /** @type {SVGTextElement} */ (this).getBBox().width;
+        if (w > maxTickWidth) maxTickWidth = w;
+      } catch { /* getBBox fails in JSDOM */ }
+    });
+    const labelY = Math.max(-(frame.margin.left - 6), -(maxTickWidth + 14));
+
+    axes.append('text')
       .attr('class', 'y-label')
       .attr('text-anchor', 'middle')
       .attr('transform', 'rotate(-90)')
       .attr('x', -frame.height / 2)
-      .attr('y', -frame.margin.left + 16)
+      .attr('y', labelY)
       .text(yLabel);
   }
 
