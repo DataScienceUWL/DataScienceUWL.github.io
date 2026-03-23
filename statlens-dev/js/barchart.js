@@ -114,7 +114,7 @@ export function drawBarChart(container, values, options = {}) {
     && globalThis.matchMedia('(max-width: 480px)').matches;
   const effectiveMargin = margin || (isPhone
     ? { top: 30, right: 15, bottom: 70, left: 55 }
-    : undefined);
+    : { top: 28, right: 20, bottom: 50, left: 75 });
   const frame = createChart(container, { titleText, descText, id, margin: effectiveMargin });
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
