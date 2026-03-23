@@ -11,7 +11,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels, autoRotateLabels } from './chart-utils.js';
+import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels, autoRotateLabels, fitYLabel } from './chart-utils.js';
 
 /** Bar stroke (white separator). */
 const BAR_STROKE = '#FFFFFF';
@@ -114,7 +114,7 @@ export function drawBarChart(container, values, options = {}) {
     && globalThis.matchMedia('(max-width: 480px)').matches;
   const effectiveMargin = margin || (isPhone
     ? { top: 30, right: 15, bottom: 70, left: 55 }
-    : { top: 28, right: 20, bottom: 50, left: 75 });
+    : undefined);
   const frame = createChart(container, { titleText, descText, id, margin: effectiveMargin });
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
@@ -128,26 +128,10 @@ export function drawBarChart(container, values, options = {}) {
     drawSimpleBars(frame, values, mode, { xLabel, categoryOrder, shouldAnimate });
   }
 
-  // Y-axis label — measure tick width to avoid overlap (same logic as addAxes)
+  // Y-axis label — adaptive placement with viewBox expansion if needed
   const yLabel = options.yLabel ?? defaultYLabel(mode);
   if (yLabel) {
-    const axes = d3Selection.select(frame.inner).select('.axes');
-    let maxTickWidth = 0;
-    axes.select('.y-axis').selectAll('.tick text').each(function () {
-      try {
-        const w = /** @type {SVGTextElement} */ (this).getBBox().width;
-        if (w > maxTickWidth) maxTickWidth = w;
-      } catch { /* getBBox fails in JSDOM */ }
-    });
-    const labelY = Math.max(-(frame.margin.left - 6), -(maxTickWidth + 14));
-
-    axes.append('text')
-      .attr('class', 'y-label')
-      .attr('text-anchor', 'middle')
-      .attr('transform', 'rotate(-90)')
-      .attr('x', -frame.height / 2)
-      .attr('y', labelY)
-      .text(yLabel);
+    fitYLabel(frame, yLabel);
   }
 
   return { frame, colorMap };
