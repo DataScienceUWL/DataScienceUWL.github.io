@@ -286,9 +286,9 @@ export function estimateLeftMargin(yTickValues, options) {
   const fmt = options?.format ?? formatTick;
 
   // Estimate widest tick label width from character count.
-  // At the chart's default font size (~15px in viewBox), each character
-  // is roughly 8–9 viewBox units wide. Use 9 as a conservative estimate.
-  const CHAR_WIDTH = 9;
+  // Atkinson Hyperlegible at 15px: digits are ~9.5px wide, commas ~5px.
+  // Use 11 as a conservative per-character estimate to avoid clipping.
+  const CHAR_WIDTH = 11;
   let maxChars = 1;
   for (const v of yTickValues) {
     const len = fmt(v).length;
