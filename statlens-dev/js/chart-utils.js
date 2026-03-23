@@ -255,11 +255,12 @@ export function addAxes(frame, xAxis, yAxis, xLabel, yLabel) {
   const inner = d3Selection.select(frame.inner);
   const axes = inner.select('.axes');
 
-  // Reduce y-axis ticks for phone viewports or compact charts
+  // Limit y-axis ticks: compact charts get fewer, desktop caps at 7
   const isPhone = detectPhoneMargin();
   if (typeof yAxis.ticks === 'function') {
     if (frame.height < 200) yAxis.ticks(3);
     else if (isPhone || frame.height < 280) yAxis.ticks(5);
+    else yAxis.ticks(7);
   }
 
   // X axis — render, then auto-reduce ticks if labels overlap
@@ -288,6 +289,33 @@ export function addAxes(frame, xAxis, yAxis, xLabel, yLabel) {
   if (yLabel) {
     fitYLabel(frame, yLabel);
   }
+}
+
+/**
+ * Draw faint horizontal gridlines from y-axis ticks (ggplot2-style).
+ * Inserted behind the data layer so bars/dots paint on top.
+ * @param {ChartFrame} frame
+ */
+export function drawHorizontalGridlines(frame) {
+  const dataGroup = d3Selection.select(frame.inner).select('.data');
+  d3Selection.select(frame.inner).select('.axes .y-axis')
+    .selectAll('.tick').each(function () {
+      const transform = d3Selection.select(this).attr('transform');
+      const m = transform && transform.match(/translate\(\s*[\d.e+-]+\s*,\s*([\d.e+-]+)/);
+      if (m) {
+        const ty = parseFloat(m[1]);
+        // Skip the baseline (y = frame.height)
+        if (Math.abs(ty - frame.height) < 1) return;
+        dataGroup.insert('line', ':first-child')
+          .attr('class', 'grid-line')
+          .attr('x1', 0)
+          .attr('x2', frame.width)
+          .attr('y1', ty)
+          .attr('y2', ty)
+          .attr('stroke', '#d8d8d8')
+          .attr('stroke-width', 0.5);
+      }
+    });
 }
 
 /**

@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
+import { createChart, addAxes, drawHorizontalGridlines, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
 import { sturgesBins } from './histogram.js';
 
 /** Default dot fill — IMS blue. */
@@ -227,6 +227,7 @@ export function drawDotplot(container, values, options = {}) {
       .range([frame.height, 0]);
     const yAxis = d3Axis.axisLeft(yScale).tickFormat(formatTick);
     addAxes(frame, xAxis, yAxis, xLabel, 'Frequency');
+    drawHorizontalGridlines(frame);
   } else {
     const xAxisG = axes.append('g')
       .attr('class', 'x-axis')

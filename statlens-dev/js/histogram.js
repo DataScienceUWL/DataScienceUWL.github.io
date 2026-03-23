@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
+import { createChart, addAxes, drawHorizontalGridlines, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
 
 /** Default bar fill (IMS blue at 50% opacity) — used when no isTail predicate. */
 const BAR_FILL = '#569BBD80';
@@ -214,6 +214,7 @@ export function drawHistogram(container, values, options = {}) {
       })
     : d3Axis.axisLeft(yScale).tickFormat(formatTick);
   addAxes(frame, xAxis, yAxis, xLabel, effectiveYLabel);
+  drawHorizontalGridlines(frame);
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
   renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate, frame.inner, observedStat, ciLines, relativeFrequency, totalN, fillColor);
@@ -259,6 +260,10 @@ export function drawHistogram(container, values, options = {}) {
       const xAxisSel = d3Selection.select(frame.inner).select('.x-axis').call(xAxis);
       autoReduceTicks(xAxisSel, xAxis);
       d3Selection.select(frame.inner).select('.y-axis').call(yAxis);
+
+      // Refresh gridlines (remove old, redraw from updated ticks)
+      dataGroup.selectAll('.grid-line').remove();
+      drawHorizontalGridlines(frame);
 
       // Re-render bars
       dataGroup.selectAll('rect').remove();
