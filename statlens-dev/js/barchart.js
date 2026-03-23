@@ -169,6 +169,32 @@ function defaultYLabel(mode) {
 }
 
 /**
+ * Draw faint horizontal gridlines from y-axis ticks (ggplot2-style).
+ * @param {import('./types.js').ChartFrame} frame
+ */
+function drawHorizontalGridlines(frame) {
+  const axes = d3Selection.select(frame.inner).select('.axes');
+  const dataGroup = d3Selection.select(frame.inner).select('.data');
+  axes.select('.y-axis').selectAll('.tick').each(function () {
+    const transform = d3Selection.select(this).attr('transform');
+    const m = transform && transform.match(/translate\(\s*[\d.e+-]+\s*,\s*([\d.e+-]+)/);
+    if (m) {
+      const ty = parseFloat(m[1]);
+      // Skip the baseline (y = frame.height)
+      if (Math.abs(ty - frame.height) < 1) return;
+      dataGroup.insert('line', ':first-child')
+        .attr('class', 'grid-line')
+        .attr('x1', 0)
+        .attr('x2', frame.width)
+        .attr('y1', ty)
+        .attr('y2', ty)
+        .attr('stroke', '#d8d8d8')
+        .attr('stroke-width', 0.5);
+    }
+  });
+}
+
+/**
  * Draw simple (non-grouped) bars.
  */
 function drawSimpleBars(frame, values, mode, opts) {
@@ -203,6 +229,7 @@ function drawSimpleBars(frame, values, mode, opts) {
   const xAxisG = axes.append('g').attr('class', 'x-axis')
     .attr('transform', `translate(0, ${frame.height})`).call(xAxis);
   axes.append('g').attr('class', 'y-axis').call(yAxis);
+  drawHorizontalGridlines(frame);
 
   // Rotate category labels if they overlap (common on phone with many categories)
   const rotated = autoRotateLabels(xAxisG, frame.margin.bottom);
@@ -390,6 +417,7 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
     const xAxisG2 = axes.append('g').attr('class', 'x-axis')
       .attr('transform', `translate(0, ${frame.height})`).call(d3Axis.axisBottom(xScale));
     axes.append('g').attr('class', 'y-axis').call(yAxisDodged);
+    drawHorizontalGridlines(frame);
     const rotated2 = autoRotateLabels(xAxisG2, frame.margin.bottom);
 
     if (opts.xLabel && !rotated2) {
@@ -435,6 +463,7 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
     const xAxisG3 = axes.append('g').attr('class', 'x-axis')
       .attr('transform', `translate(0, ${frame.height})`).call(d3Axis.axisBottom(xScale));
     axes.append('g').attr('class', 'y-axis').call(yAxisStacked);
+    drawHorizontalGridlines(frame);
     const rotated3 = autoRotateLabels(xAxisG3, frame.margin.bottom);
 
     if (opts.xLabel && !rotated3) {
