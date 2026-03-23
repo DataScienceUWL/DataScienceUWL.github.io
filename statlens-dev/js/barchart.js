@@ -11,7 +11,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels, autoRotateLabels, fitYLabel } from './chart-utils.js';
+import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels, autoRotateLabels, fitYLabel, estimateLeftMargin } from './chart-utils.js';
 
 /** Bar stroke (white separator). */
 const BAR_STROKE = '#FFFFFF';
@@ -109,12 +109,37 @@ export function drawBarChart(container, values, options = {}) {
   } = options;
 
   const isGrouped = groupValues != null && (mode === 'stacked' || mode === 'dodged' || mode === 'filled');
-  // Categorical x-axis needs more bottom margin on phone for rotated labels
   const isPhone = typeof globalThis.matchMedia === 'function'
     && globalThis.matchMedia('(max-width: 480px)').matches;
+
+  // Pre-compute left margin from the data so the y-label never clips.
+  // Estimate the y-axis max to know how wide tick labels will be.
+  const yLabel = options.yLabel ?? defaultYLabel(mode);
+  let estimatedLeft;
+  if (!margin && !isPhone) {
+    const { categories, counts, total } = computeFrequencies(values, categoryOrder);
+    let yMax;
+    if (mode === 'relative' || mode === 'filled') {
+      yMax = 1;
+    } else if (isGrouped) {
+      // Grouped modes: max is total of largest primary category
+      const { primaryTotals } = computeGroupedFrequencies(values, groupValues);
+      yMax = Math.max(...primaryTotals.values()) || 1;
+    } else {
+      yMax = Math.max(...categories.map(c => counts.get(c) ?? 0)) || 1;
+    }
+    // d3 .nice() typically adds ~10-20% — use 1.1× as a rough upper bound
+    const niceMax = yMax * 1.1;
+    // Generate representative tick values
+    const tickCount = 6;
+    const step = niceMax / tickCount;
+    const ticks = Array.from({ length: tickCount + 1 }, (_, i) => i * step);
+    estimatedLeft = estimateLeftMargin(ticks, { hasLabel: !!yLabel });
+  }
+
   const effectiveMargin = margin || (isPhone
     ? { top: 30, right: 15, bottom: 70, left: 55 }
-    : undefined);
+    : { top: 28, right: 20, bottom: 50, left: estimatedLeft ?? 60 });
   const frame = createChart(container, { titleText, descText, id, margin: effectiveMargin });
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
@@ -128,8 +153,7 @@ export function drawBarChart(container, values, options = {}) {
     drawSimpleBars(frame, values, mode, { xLabel, categoryOrder, shouldAnimate });
   }
 
-  // Y-axis label — adaptive placement with viewBox expansion if needed
-  const yLabel = options.yLabel ?? defaultYLabel(mode);
+  // Y-axis label — positioned adaptively based on measured tick widths
   if (yLabel) {
     fitYLabel(frame, yLabel);
   }

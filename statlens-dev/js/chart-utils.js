@@ -270,26 +270,51 @@ export function addAxes(frame, xAxis, yAxis, xLabel, yLabel) {
 }
 
 /**
- * Ensure the y-axis label fits without clipping.
+ * Estimate the left margin needed for y-axis tick labels + a rotated y-label.
  *
- * Measures the widest rendered y-axis tick label, positions the y-label
- * just outside it, and — if the total required width exceeds the current
- * left margin — expands the SVG viewBox leftward so nothing is clipped.
- * Since the SVG uses viewBox scaling, this costs nothing visually.
+ * Call BEFORE createChart() to get the correct margin from the start,
+ * avoiding mid-render viewBox adjustments and visual flicker.
  *
- * Call this AFTER drawing the y-axis and BEFORE (or instead of) manually
- * positioning a y-label.
+ * @param {number[]} yTickValues - Representative tick values (e.g. from yScale.ticks())
+ * @param {object} [options]
+ * @param {boolean} [options.hasLabel] - Whether a y-axis label will be shown (default: true)
+ * @param {(v: number) => string} [options.format] - Tick formatter (default: formatTick)
+ * @returns {number} Recommended left margin in viewBox units
+ */
+export function estimateLeftMargin(yTickValues, options) {
+  const hasLabel = options?.hasLabel ?? true;
+  const fmt = options?.format ?? formatTick;
+
+  // Estimate widest tick label width from character count.
+  // At the chart's default font size (~15px in viewBox), each character
+  // is roughly 8–9 viewBox units wide. Use 9 as a conservative estimate.
+  const CHAR_WIDTH = 9;
+  let maxChars = 1;
+  for (const v of yTickValues) {
+    const len = fmt(v).length;
+    if (len > maxChars) maxChars = len;
+  }
+  const tickWidth = maxChars * CHAR_WIDTH;
+
+  // Gap between ticks and label, plus the label's ascent after rotation.
+  // Rotated 90°, the text ascent (~14px for 16px font) extends leftward.
+  const GAP = 10;
+  const LABEL_ASCENT = hasLabel ? 18 : 0;
+  const EDGE_PAD = 4;
+
+  return Math.ceil(tickWidth + GAP + LABEL_ASCENT + EDGE_PAD);
+}
+
+/**
+ * Place a y-axis label with correct positioning based on measured tick widths.
+ *
+ * Call AFTER drawing the y-axis. If estimateLeftMargin() was used to set the
+ * margin, the label will always fit without viewBox adjustment.
  *
  * @param {ChartFrame} frame - Chart frame from createChart
  * @param {string} yLabel - Y-axis label text
- * @param {object} [options]
- * @param {number} [options.gap] - Gap between tick labels and y-label (default: 14)
- * @param {number} [options.minEdgePad] - Minimum padding from SVG left edge (default: 4)
  */
-export function fitYLabel(frame, yLabel, options) {
-  const gap = options?.gap ?? 14;
-  const minEdgePad = options?.minEdgePad ?? 4;
-
+export function fitYLabel(frame, yLabel) {
   const inner = d3Selection.select(frame.inner);
   const axes = inner.select('.axes');
 
@@ -302,26 +327,22 @@ export function fitYLabel(frame, yLabel, options) {
     } catch { /* getBBox fails in JSDOM */ }
   });
 
-  // Space needed: tick labels + gap + half the y-label text height
-  // (rotated 90°, so text "height" is its rendered width along the y direction)
-  const yLabelHalfHeight = 8; // ~half of 16px font size in viewBox units
-  const needed = maxTickWidth + gap + yLabelHalfHeight + minEdgePad;
+  // Position: just outside the tick labels with a small gap
+  const GAP = 10;
+  const labelY = -(maxTickWidth + GAP);
 
-  // If current margin is too small, expand the viewBox leftward
+  // Safety check: if label would be clipped, expand viewBox
+  const LABEL_ASCENT = 18;
+  const needed = maxTickWidth + GAP + LABEL_ASCENT + 4;
   if (needed > frame.margin.left) {
     const extra = Math.ceil(needed - frame.margin.left);
     const svg = d3Selection.select(frame.svg);
     const oldVB = svg.attr('viewBox').split(' ').map(Number);
-    // Shift viewBox origin left and widen it
     svg.attr('viewBox', `${oldVB[0] - extra} ${oldVB[1]} ${oldVB[2] + extra} ${oldVB[3]}`);
-    // Shift inner group right to compensate (so chart content stays in place)
     inner.attr('transform', `translate(${frame.margin.left + extra}, ${frame.margin.top})`);
-    // Update the frame's margin so subsequent code sees the real value
     frame.margin = { ...frame.margin, left: frame.margin.left + extra };
   }
 
-  // Now position the y-label with guaranteed room
-  const labelY = -(maxTickWidth + gap);
   axes.append('text')
     .attr('class', 'y-label')
     .attr('text-anchor', 'middle')
