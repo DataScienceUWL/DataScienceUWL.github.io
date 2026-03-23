@@ -123,12 +123,6 @@ export function drawBarChart(container, values, options = {}) {
     ? { ...defaultMargin, ...margin }
     : defaultMargin;
   const frame = createChart(container, { titleText, descText, id, margin: effectiveMargin });
-
-  // Hide SVG until layout is finalized — fitYLabel may expand the viewBox
-  // to accommodate the y-label, and we don't want the user to see the shift.
-  const svgSel = d3Selection.select(frame.svg);
-  svgSel.style('visibility', 'hidden');
-
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
   /** @type {{ categories: string[], colors: string[] } | undefined} */
@@ -141,13 +135,12 @@ export function drawBarChart(container, values, options = {}) {
     drawSimpleBars(frame, values, mode, { xLabel, categoryOrder, shouldAnimate });
   }
 
-  // Y-axis label — measure actual rendered tick widths and adjust margin
+  // Y-axis label — measure actual rendered tick widths and adjust margin.
+  // All DOM mutations happen synchronously before the browser paints,
+  // so the viewBox expansion (if needed) is invisible to the user.
   if (yLabel) {
     fitYLabel(frame, yLabel);
   }
-
-  // Reveal the chart after layout adjustments are complete
-  svgSel.style('visibility', 'visible');
 
   return { frame, colorMap };
 }
