@@ -13,7 +13,6 @@ import { computeBins } from '../../js/histogram.js';
 import { parseCSV } from '../../js/csv-parser.js';
 import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initDataPanel, computeHighlights, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType, createChartToggle, computeDomain } from '../../js/chart-defaults.js';
-import { addChartSaveButton } from '../../js/export.js';
 
 // ─── DOM ───
 
@@ -293,8 +292,6 @@ function renderHist(slopes, highlightIndex = -1, highlightIndices, prevBinCounts
     extremeFill: ci ? '#569BBD' : undefined,
   });
 
-  // Floating save button
-  addChartSaveButton(histContainer, 'bootstrap_slope_distribution.png');
 }
 
 /**

@@ -8,7 +8,6 @@
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { slopeT, slopeTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
-import { addChartSaveButton } from '../../js/export.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
@@ -458,5 +457,4 @@ function drawChart(result) {
     statValueNeg: tail === 'both' ? -Math.abs(tStat) : undefined,
   });
 
-  addChartSaveButton(chartContainer, 'slope_t_test.png');
 }

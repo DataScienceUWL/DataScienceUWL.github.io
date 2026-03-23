@@ -8,7 +8,6 @@ import * as jstat from 'jstat';
 import { setJStat, pdfNormal } from '../../js/distributions.js';
 import { onePropZ } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
-import { addChartSaveButton } from '../../js/export.js';
 import { formatStat } from '../../js/stats.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
 import { announce, initTabs, initDataPanel, initKeyboardShortcuts, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
@@ -425,7 +424,6 @@ function drawChart(r) {
     });
   }
 
-  addChartSaveButton(chartContainer, 'one_prop_z_test.png');
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────

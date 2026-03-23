@@ -304,6 +304,44 @@ export function createExportBar(opts) {
 }
 
 /**
+ * Wrap an HTML table in a `.statlens-table` div with a "Copy table" button.
+ * Replaces ad-hoc copy button code across explore pages.
+ *
+ * @param {HTMLTableElement} tableEl - The table to wrap
+ * @param {object} [opts]
+ * @param {string} [opts.copyTitle='Copy table to clipboard'] - Button tooltip
+ * @param {boolean} [opts.showCopy] - Show copy button (default: true)
+ * @returns {HTMLDivElement} The wrapper div
+ */
+export function wrapTable(tableEl, opts = {}) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'statlens-table';
+
+  // Insert wrapper where the table currently is, then move table inside
+  if (tableEl.parentNode) {
+    tableEl.parentNode.insertBefore(wrapper, tableEl);
+  }
+  wrapper.appendChild(tableEl);
+
+  if (opts.showCopy !== false) {
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'btn-secondary export-btn';
+    copyBtn.textContent = 'Copy table';
+    copyBtn.title = opts.copyTitle ?? 'Copy table to clipboard';
+    copyBtn.style.cssText = 'margin-top:0.3rem;font-size:0.8rem;';
+    copyBtn.addEventListener('click', async () => {
+      const ok = await copyTableRich(tableEl);
+      copyBtn.textContent = ok ? 'Copied!' : 'Failed';
+      setTimeout(() => { copyBtn.textContent = 'Copy table'; }, 1500);
+    });
+    wrapper.appendChild(copyBtn);
+  }
+
+  return wrapper;
+}
+
+/**
  * Add floating save-as-PNG and copy-to-clipboard buttons to a chart container.
  * Buttons appear as small icons in the top-right corner, semi-transparent
  * until hovered. Safe to call repeatedly — removes existing buttons first.

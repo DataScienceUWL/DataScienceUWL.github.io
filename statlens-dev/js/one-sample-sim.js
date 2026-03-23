@@ -17,7 +17,7 @@ import { announce, initKeyboardShortcuts, initPlayPause, initTabs, animateDropTo
 import { parseParams } from './url-params.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, dotplotBins, histogramThresholds, renderSimChart, createBinAdjuster } from './chart-defaults.js';
-import { addChartSaveButton } from './export.js';
+
 
 /**
  * @typedef {object} OneSampleSimConfig
@@ -772,8 +772,6 @@ export function initOneSamplePage(config) {
       applyTheoryOverlay();
     }
 
-    // Floating save button
-    addChartSaveButton(chartContainer, 'null_distribution.png');
   }
 
   // ─── P-value & extremes ───

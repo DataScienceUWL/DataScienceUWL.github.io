@@ -7,7 +7,7 @@
 import { drawBarChart, computeGroupedFrequencies } from '../../js/barchart.js';
 import { formatStat } from '../../js/stats.js';
 import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../../js/page-utils.js';
-import { addChartSaveButton, copyTableRich } from '../../js/export.js';
+import { wrapTable } from '../../js/export.js';
 import { parseCSV } from '../../js/csv-parser.js';
 import { initSheet, handleSheetPaste, readSheetValues, populateSheet } from '../../js/spreadsheet.js';
 
@@ -335,9 +335,6 @@ function updateDisplay() {
     // Color the table dimension that matches the chart's fill variable
     applyTableColors(chartFlipped ? 'row' : 'col');
 
-    if (chartContainer) {
-      addChartSaveButton(chartContainer, `${rowVar}_by_${colVar}_bar.png`.replace(/\s+/g, '_'));
-    }
   }
 
   if (resultsSection) resultsSection.hidden = false;
@@ -395,22 +392,8 @@ function renderTwoVarTable(rowValues, colValues) {
 
   tableContainer.innerHTML = html;
 
-  // Copy table button
   const tableEl = /** @type {HTMLTableElement|null} */ (tableContainer.querySelector('table'));
-  if (tableEl) {
-    const copyBtn = document.createElement('button');
-    copyBtn.type = 'button';
-    copyBtn.className = 'btn-secondary export-btn';
-    copyBtn.textContent = 'Copy table';
-    copyBtn.title = 'Copy contingency table to clipboard';
-    copyBtn.style.cssText = 'margin-top:0.3rem;font-size:0.8rem;';
-    copyBtn.addEventListener('click', async () => {
-      const ok = await copyTableRich(tableEl);
-      copyBtn.textContent = ok ? 'Copied!' : 'Failed';
-      setTimeout(() => { copyBtn.textContent = 'Copy table'; }, 1500);
-    });
-    tableContainer.appendChild(copyBtn);
-  }
+  if (tableEl) wrapTable(tableEl, { copyTitle: 'Copy contingency table to clipboard' });
 
   // Proportion note
   if (proportionNote) {

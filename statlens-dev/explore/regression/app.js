@@ -7,7 +7,7 @@
 import { drawScatterplot, drawResidualPlot } from '../../js/scatterplot.js';
 import { linreg, loess, detectPrecision, formatStat } from '../../js/stats.js';
 import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../../js/page-utils.js';
-import { createExportBar, addChartSaveButton } from '../../js/export.js';
+
 
 initHelp();
 const baseTitle = document.title.replace(/\s*\|\s*StatLens$/, '');
@@ -173,14 +173,6 @@ function updateChart() {
         regression: showLine ? { slope: reg.slope, intercept: reg.intercept } : undefined,
         loessCurve: loessCurveData,
     });
-
-    // Export bar for scatterplot
-    createExportBar({
-        chartContainer: chartContainer,
-        chartFilename: `${yVar}_vs_${xVar}_scatter.png`.replace(/\s+/g, '_'),
-    });
-
-    addChartSaveButton(chartContainer, `${yVar}_vs_${xVar}_scatter.png`.replace(/\s+/g, '_'));
 
     // Equation display
     const b0 = formatStat(reg.intercept, d);

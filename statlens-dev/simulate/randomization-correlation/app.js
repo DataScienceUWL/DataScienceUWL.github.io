@@ -11,7 +11,6 @@ import { computeBins } from '../../js/histogram.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
 import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, getTabHintText, getActiveTabId, setPageTitle } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
-import { addChartSaveButton } from '../../js/export.js';
 
 // ─── DOM elements ───
 
@@ -340,8 +339,6 @@ function renderChart(stats, observed, direction, highlightIndex = -1, highlightI
     precision: 4,
   });
 
-  // Floating save button
-  addChartSaveButton(chartContainer, 'randomization_correlation_distribution.png');
 }
 
 /**

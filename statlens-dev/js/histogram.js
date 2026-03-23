@@ -155,6 +155,8 @@ export function computeBins(values, options = {}) {
  * @param {boolean} [options.relativeFrequency] - Show relative frequency (proportion) on y-axis instead of count
  * @param {string} [options.fillColor] - Override default bar fill color (hex, will be used at 50% opacity)
  * @param {number} [options.viewHeight] - Override default viewBox height (for compact stacked charts)
+ * @param {boolean} [options.showExport] - Show export buttons (default: true)
+ * @param {string} [options.filename] - PNG download filename
  * @returns {{ frame: ChartFrame, bins: d3Array.Bin<number, number>[], xScale: d3Scale.ScaleLinear<number,number>, yScale: d3Scale.ScaleLinear<number,number>, update: (values: number[], opts?: object) => void }}
  */
 export function drawHistogram(container, values, options = {}) {
@@ -178,10 +180,12 @@ export function drawHistogram(container, values, options = {}) {
     relativeFrequency = false,
     fillColor,
     viewHeight,
+    showExport,
+    filename,
   } = options;
   const effectiveYLabel = yLabel ?? (relativeFrequency ? 'Rel. Frequency' : 'Frequency');
 
-  const frame = createChart(container, { titleText, descText, id, margin, ...(viewHeight != null && { viewHeight }) });
+  const frame = createChart(container, { titleText, descText, id, margin, showExport, filename, ...(viewHeight != null && { viewHeight }) });
   const { bins, domain: finalDomain } = computeBins(values, { numBins, domain, thresholds });
 
   // Extend x-domain to encompass full first and last bins (no partial bars)

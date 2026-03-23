@@ -16,7 +16,7 @@ import { drawScatterplot, drawResidualPlot } from '../../js/scatterplot.js';
 import { drawGroupedDensity, overlayDensityOnHistogram } from '../../js/kde.js';
 import { cor, linreg, loess, detectPrecision, formatStat } from '../../js/stats.js';
 import { getColors } from '../../js/chart-utils.js';
-import { addChartSaveButton, copyTableRich } from '../../js/export.js';
+import { wrapTable } from '../../js/export.js';
 import { announce, initTabs, initDataPanel, initHelp, setPageTitle, wrapWithStepper } from '../../js/page-utils.js';
 import { drawMeanOnHistogram, drawMeanOnDotplot } from '../../js/mean-marker.js';
 import { renderStackedHistograms, renderStackedDotplots } from '../../js/grouped-charts.js';
@@ -597,12 +597,6 @@ function renderChart() {
   // Build dynamic chart options
   renderChartOptions(combo);
 
-  // Save + Copy buttons for chart
-  if (chartContainer && chartContainer.querySelector('svg')) {
-    const safeName = selected.map(s => s.replace(/\s+/g, '_')).join('_vs_');
-    addChartSaveButton(chartContainer, `${safeName}_${activeChart}.png`, { showCopy: true });
-  }
-
   // Table copy buttons
   addTableActions();
 }
@@ -845,22 +839,8 @@ function addTableActions() {
   const tables = statsContainer.querySelectorAll('table');
   if (tables.length === 0) return;
 
-  const bar = document.createElement('div');
-  bar.className = 'table-actions';
-
-  const copyBtn = document.createElement('button');
-  copyBtn.type = 'button';
-  copyBtn.textContent = 'Copy table';
-  copyBtn.title = 'Copy to clipboard — pastes as a formatted table in Word or Google Docs';
-  copyBtn.addEventListener('click', async () => {
-    const table = /** @type {HTMLTableElement} */ (tables[tables.length - 1]);
-    const ok = await copyTableRich(table);
-    copyBtn.textContent = ok ? 'Copied!' : 'Copy failed';
-    setTimeout(() => { copyBtn.textContent = 'Copy table'; }, 1500);
-  });
-
-  bar.appendChild(copyBtn);
-  statsContainer.appendChild(bar);
+  const table = /** @type {HTMLTableElement} */ (tables[tables.length - 1]);
+  wrapTable(table);
 }
 
 // ── Stats rendering ──────────────────────────────────────────────────

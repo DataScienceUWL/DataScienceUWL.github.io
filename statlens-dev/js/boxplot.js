@@ -82,6 +82,8 @@ export function computeBoxplotStats(values) {
  * @param {boolean} [options.showOutliers] - Whether to use 1.5×IQR fences and show outliers (default: true). When false, whiskers extend to min/max.
  * @param {boolean} [options.showMean] - Whether to show a diamond marker at the mean (default: false).
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
+ * @param {boolean} [options.showExport] - Show export buttons (default: true)
+ * @param {string} [options.filename] - PNG download filename
  * @returns {{ frame: ChartFrame, stats: Record<string, BoxplotStats> }}
  */
 export function drawBoxplot(container, data, options = {}) {
@@ -94,6 +96,8 @@ export function drawBoxplot(container, data, options = {}) {
     showOutliers = true,
     showMean = false,
     margin,
+    showExport,
+    filename,
   } = options;
 
   // Normalize to grouped format
@@ -128,7 +132,7 @@ export function drawBoxplot(container, data, options = {}) {
       })()
     : undefined);
 
-  const frame = createChart(container, { titleText, descText, id, margin: effectiveMargin });
+  const frame = createChart(container, { titleText, descText, id, margin: effectiveMargin, showExport, filename });
 
   const xScale = d3Scale.scaleLinear()
     .domain([xMin - xPad, xMax + xPad])

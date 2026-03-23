@@ -18,7 +18,6 @@ import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animate
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
-import { addChartSaveButton } from './export.js';
 /**
  * @typedef {object} SimConfig
  * @property {'bootstrap'|'randomization'} mode
@@ -1528,6 +1527,7 @@ export function initSimPage(config) {
           numBins: Math.min(Math.ceil(Math.sqrt(diffs.length)), 40),
           animate: false,
           margin: { top: 5, right: 10, bottom: 25, left: 35 },
+          showExport: false,
         });
       }
       originalContentEl.appendChild(container);
@@ -1583,6 +1583,7 @@ export function initSimPage(config) {
         numBins: Math.min(Math.ceil(Math.sqrt(data1.length)), 40),
         animate: false,
         margin: { top: 5, right: 10, bottom: 25, left: 35 },
+        showExport: false,
       });
       originalContentEl.appendChild(container);
     }
@@ -1912,6 +1913,7 @@ export function initSimPage(config) {
       numBins: Math.min(Math.ceil(Math.sqrt(resampleValues.length)), 40),
       animate: false,
       margin: { top: 5, right: 10, bottom: 25, left: 35 },
+      showExport: false,
     });
     resampleContentEl.appendChild(container);
   }
@@ -2284,10 +2286,6 @@ export function initSimPage(config) {
     if (theoryOverlayOn && (activeChart === 'histogram' || activeChart === 'dotplot') && config.mode === 'bootstrap') {
       applyTheoryOverlay(stats);
     }
-
-    // Floating save button
-    const simLabel = config.mode === 'bootstrap' ? 'bootstrap' : 'randomization';
-    addChartSaveButton(chartContainer, `${simLabel}_distribution.png`);
 
     lastStatIndex = -1; // Reset after rendering
     batchHighlightIndices = null;

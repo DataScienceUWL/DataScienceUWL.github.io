@@ -165,6 +165,7 @@ export function getColors(n = 5) {
 /**
  * Create a responsive SVG chart inside a container element.
  * Applies the D3 margin convention with StatLens's standard dimensions.
+ * Wraps the SVG in a `.statlens-chart` div with auto-attached export buttons.
  *
  * @param {string|Element} container - CSS selector or DOM element
  * @param {object} [options]
@@ -174,6 +175,8 @@ export function getColors(n = 5) {
  * @param {string} [options.titleText] - Text for <title> element
  * @param {string} [options.descText] - Text for <desc> element
  * @param {string} [options.id] - Unique ID prefix for ARIA references
+ * @param {string} [options.filename] - PNG download filename (default: derived from titleText)
+ * @param {boolean} [options.showExport] - Auto-attach export buttons (default: true)
  * @returns {ChartFrame}
  */
 export function createChart(container, options = {}) {
@@ -184,16 +187,24 @@ export function createChart(container, options = {}) {
     titleText = 'Chart',
     descText = '',
     id = 'chart-' + Math.random().toString(36).slice(2, 8),
+    filename,
+    showExport,
   } = options;
 
   const innerWidth = viewWidth - margin.left - margin.right;
   const innerHeight = viewHeight - margin.top - margin.bottom;
 
-  const el = typeof container === 'string'
-    ? d3Selection.select(container)
-    : d3Selection.select(container);
+  // Resolve container element
+  const containerEl = /** @type {Element} */ (typeof container === 'string'
+    ? document.querySelector(container) : container);
 
-  const svg = el.append('svg')
+  // Create wrapper div for the chart + export buttons
+  const wrapper = document.createElement('div');
+  wrapper.className = 'statlens-chart';
+  wrapper.style.position = 'relative';
+  containerEl.appendChild(wrapper);
+
+  const svg = d3Selection.select(wrapper).append('svg')
     .attr('role', 'img')
     .attr('aria-label', [titleText, descText].filter(Boolean).join(' — '))
     .attr('viewBox', `0 0 ${viewWidth} ${viewHeight}`)
@@ -213,12 +224,22 @@ export function createChart(container, options = {}) {
     .style('pointer-events', 'none')
     .attr('visibility', 'hidden');
 
+  // Auto-attach export buttons (download + copy) via dynamic import
+  if (showExport !== false) {
+    const exportFilename = filename
+      ?? titleText.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') + '.png';
+    import('./export.js').then(({ addChartSaveButton }) => {
+      addChartSaveButton(wrapper, exportFilename);
+    }).catch(() => { /* test environments without export.js */ });
+  }
+
   return {
     svg: svg.node(),
     inner: inner.node(),
     width: innerWidth,
     height: innerHeight,
     margin,
+    wrapper,
   };
 }
 

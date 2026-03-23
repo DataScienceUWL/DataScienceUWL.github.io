@@ -11,7 +11,7 @@ import { formatStat } from '../../js/stats.js';
 import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../../js/page-utils.js';
 import { parseCSV } from '../../js/csv-parser.js';
 import { initSheet, handleSheetPaste, readSheetValues, populateSheet } from '../../js/spreadsheet.js';
-import { addChartSaveButton, copyTableRich } from '../../js/export.js';
+import { wrapTable } from '../../js/export.js';
 
 initHelp();
 const baseTitle = document.title.replace(/\s*\|\s*StatLens$/, '');
@@ -299,22 +299,8 @@ function renderTable() {
 
   tableContainer.innerHTML = html;
 
-  // Copy table button
   const table = /** @type {HTMLTableElement|null} */ (tableContainer.querySelector('table'));
-  if (table) {
-    const copyBtn = document.createElement('button');
-    copyBtn.type = 'button';
-    copyBtn.className = 'btn-secondary export-btn';
-    copyBtn.textContent = 'Copy table';
-    copyBtn.title = 'Copy frequency table to clipboard';
-    copyBtn.style.cssText = 'margin-top:0.3rem;font-size:0.8rem;';
-    copyBtn.addEventListener('click', async () => {
-      const ok = await copyTableRich(table);
-      copyBtn.textContent = ok ? 'Copied!' : 'Failed';
-      setTimeout(() => { copyBtn.textContent = 'Copy table'; }, 1500);
-    });
-    tableContainer.appendChild(copyBtn);
-  }
+  if (table) wrapTable(table, { copyTitle: 'Copy frequency table to clipboard' });
 }
 
 function renderChart() {
@@ -346,7 +332,4 @@ function renderChart() {
     });
   }
 
-  // Floating save button
-  const safeName = currentVarName.replace(/\s+/g, '_');
-  addChartSaveButton(chartContainer, `${safeName}_${activeChart}.png`);
 }
