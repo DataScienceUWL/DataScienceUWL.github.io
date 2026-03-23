@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>15.2 - Iterated Integrals and Double Integrals over General Regions | MTH 310</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/white.min.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root {
+    --accent-blue: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-amber: #e09f3e;
+    --accent-purple: #6c3483; --fg: #222222; --bg: #ffffff;
+}
+.reveal { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; font-size: 30px; color: var(--fg); }
+.reveal .slides section { text-align: left; }
+.reveal .slides > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides > section > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides section::-webkit-scrollbar { width: 6px; }
+.reveal .slides section::-webkit-scrollbar-track { background: transparent; }
+.reveal .slides section::-webkit-scrollbar-thumb { background: rgba(0,119,182,0.2); border-radius: 3px; }
+.reveal .slides section::-webkit-scrollbar-thumb:hover { background: rgba(0,119,182,0.4); }
+.reveal .slides > section::after, .reveal .slides > section > section::after {
+    content: ''; display: block; height: 0; clear: both; }
+.reveal h1,.reveal h2,.reveal h3 { text-transform: none; font-weight: 600; }
+.reveal h1 { font-size: 2.2em; color: var(--accent-blue); }
+.reveal h2 { font-size: 1.35em; color: var(--accent-blue); border-bottom: 2px solid rgba(0,119,182,0.25);
+    padding-bottom: 0.2em; margin-bottom: 0.4em; margin-top: 0; }
+.reveal h3 { font-size: 1.1em; color: var(--accent-green); margin: 0.2em 0; }
+.reveal p { margin: 0.3em 0; line-height: 1.4; }
+.reveal li { margin-bottom: 0.15em; line-height: 1.35; }
+.reveal ul,.reveal ol { margin-left: 0.5em; }
+.title-slide { text-align: center !important; }
+.title-slide h1 { font-size: 2.8em; margin-bottom: 0.1em; }
+.title-slide .subtitle { font-size: 1.4em; color: #b07d00; }
+.title-slide .course-info { font-size: 0.85em; color: #595959; margin-top: 2em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-blue);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.theorem-box { background: #fdf6ec; border-left-color: var(--accent-amber); }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.solution { background: #fffdf5; border-left: 4px solid var(--accent-amber);
+    border-radius: 8px; padding: 0.4em 0.8em; margin-top: 0.3em; color: #7a5c00; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7;
+    border-radius: 8px; padding: 0.5em 0.8em; margin: 0.4em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #666; margin: 0.3em 0; font-size: 0.85em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red);
+    border-radius: 10px; padding: 1em 1.5em; text-align: center; margin: 1em 0; }
+.hw-box h3 { color: var(--accent-red); margin: 0 0 0.3em 0; }
+.two-col { display: flex; gap: 1.2em; align-items: flex-start; }
+.two-col > * { flex: 1; }
+.fig-container { text-align: center; margin: 0.3em 0; }
+.fig-container img { max-height: 60vh; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    cursor: zoom-in; transition: opacity 0.15s; }
+.fig-container img:hover { opacity: 0.8; }
+.fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
+.fig-link { display: inline-block; }
+.textbook-fig img { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; }
+.plotly-lazy-thumb { cursor: pointer; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+.plotly-lazy-thumb:hover { opacity: 0.92; outline: 2px solid #0077b6; outline-offset: 2px; }
+#plotly-lightbox { display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+    justify-content:center; align-items:center; cursor:default; }
+#plotly-lightbox.active { display:flex; }
+#plotly-lightbox .plb-close { position:fixed; top:14px; left:20px;
+    font-size:2.2em; color:#fff; background:rgba(0,0,0,0.55);
+    border:1px solid rgba(255,255,255,0.4); border-radius:6px;
+    padding:2px 14px; cursor:pointer; z-index:10001; line-height:1; }
+#plotly-lightbox .plb-close:hover { color:#e09f3e; background:rgba(0,0,0,0.75); }
+#plotly-lightbox .plb-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+#plotly-lightbox .plb-content { width:92vw; height:85vh; }
+#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; }
+/* Lightbox overlay */
+#lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
+    cursor: zoom-out; backdrop-filter: blur(4px); }
+#lightbox.active { display: flex; }
+#lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5); object-fit: contain; background: white; }
+#lightbox .lb-caption { position: absolute; bottom: 1.5em; left: 50%;
+    transform: translateX(-50%); color: #fff; font-size: 0.55em;
+    background: rgba(0,0,0,0.7); padding: 0.3em 1em; border-radius: 4px; }
+#lightbox .lb-close { position: absolute; top: 0.8em; right: 1.2em;
+    color: #fff; font-size: 1.5em; cursor: pointer; transition: color 0.15s;
+    background: none; border: none; padding: 0.2em 0.5em; }
+#lightbox .lb-close:hover { color: #e09f3e; }
+#lightbox .lb-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.interactive-link { color: var(--accent-blue); text-decoration: none; font-size: 0.9em; }
+.interactive-link:hover { text-decoration: underline; }
+.desmos-container { text-align: center; margin: 0.3em auto; }
+.desmos-container iframe { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    border: 1px solid #ddd; }
+.desmos-label { font-size: 0.65em; color: var(--accent-blue); margin-top: 0.2em; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.4em;
+    color: var(--accent-blue); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+aside.notes { display: none; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 0.5em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.3em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.75em; color: var(--accent-blue);
+    text-align: center; margin-bottom: 0.1em; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 18vh; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+.small { font-size: 0.8em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-blue);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600;
+    font-size: 16px; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+table { border-collapse: collapse; font-size: 0.8em; margin: 0.5em 0; }
+th, td { padding: 0.2em 0.6em; border-bottom: 1px solid #ddd; }
+th { color: var(--accent-blue); }
+.reveal .progress { color: var(--accent-blue); }
+.reveal .slide-number { color: #767676; font-size: 0.5em; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+</style>
+</head>
+<body data-section="Section_15p2">
+<a href="#" class="skip-link" onclick="Reveal.next();return false;">Skip to first slide</a>
+<div class="reveal">
+<div class="slides">
+<section class="title-slide" data-background-gradient="radial-gradient(circle at 30% 50%, #e8f4f8 0%, #f8f9fa 70%)">
+  <h1>15.2</h1>
+  <p class="subtitle">Iterated Integrals and Double Integrals over General Regions</p>
+  <hr style="border-color:rgba(0,212,255,0.3);width:60%;margin:1em auto;" aria-hidden="true">
+  <p class="course-info">MTH 310 &mdash; Calculus III<br>  Multiple Integrals</p>
+</section>
+
+<section id="from-cross-sections-to-iterated-integrals">
+<h2>From Cross-Sections to Iterated Integrals</h2>
+<div class="fragment" data-editor-line="17"><p>In Calc I you computed volumes by integrating cross-sectional areas:</p>
+<p>\[V = \int_a^b A(x)\,dx\]</p>
+<p>The key was knowing the shape of each cross-section. Let's revisit this idea with a concrete example.</p></div>
+<div class="example-box fragment" data-editor-line="22">
+  <div class="example-title">Example 1</div>
+  <p>A solid \(S\) has its base in the \(xy\)-plane, bounded by \(f(x) = x(x-2)\) and \(g(x) = x\). Cross-sections perpendicular to the \(x\)-axis are <strong>squares</strong>. Find the volume.</p>
+</div>
+<div class="fig-container fragment" data-editor-line="26">
+  <img src="figures/square_cross_sections.png" alt="A 3D solid with its base bounded by the curves y = x and y = x(x-2) in the xy-plane from x = 0 to x = 3. Three square cross-sections perpendicular to the x-axis are highlighted at x = 0.8, 1.5, and 2.2 in different colors. Each cross-section is a square of side length s(x) = x(3-x)." class="plotly-lazy-thumb" data-plotly-src="figures/square_cross_sections.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="28"><p class="work-prompt">Find where the curves intersect, then compute the side length of each square cross-section as \(g(x) - f(x)\).</p></div>
+<div class="fragment" data-editor-line="31"><p><strong>Find intersections:</strong> \(x(x-2) = x\) \(\Rightarrow\) \(x^2 - 3x = 0\) \(\Rightarrow\) \(x = 0\) or \(x = 3\).</p></div>
+<div class="fragment" data-editor-line="35"><p><strong>Side length:</strong> \(s(x) = g(x) - f(x) = x - x(x-2) = x - x^2 + 2x = 3x - x^2\)</p>
+<p><strong>Cross-sectional area:</strong> \(A(x) = s(x)^2 = (3x - x^2)^2\)</p></div>
+<div class="fragment" data-editor-line="41"><p><strong>Volume:</strong></p>
+<p>\[V = \int_0^3 (3x - x^2)^2\,dx = \int_0^3 (9x^2 - 6x^3 + x^4)\,dx\]</p>
+<p>\[= \left[3x^3 - \frac{3x^4}{2} + \frac{x^5}{5}\right]_0^3 = 81 - \frac{243}{2} + \frac{243}{5} = \frac{81}{10}\]</p></div>
+<div class="key-point fragment" data-editor-line="48"><p>Volume = \(\int\) (cross-sectional area). This is the same idea we'll use for double integrals &mdash; but instead of knowing the cross-section's shape, we'll <strong>compute</strong> it by integrating in the other variable.</p></div>
+<aside class="notes">This is a Calc I callback. Students should recognize the cross-section idea. Emphasize that the next example replaces the “known area formula” with an integral.</aside>
+</section>
+
+<section id="the-cross-section-idea-for-surfaces">
+<h2>The Cross-Section Idea for Surfaces</h2>
+<div class="fragment" data-editor-line="59"><p>Now instead of a solid with known cross-sections, suppose we want the volume under a <strong>surface</strong> \(z = f(x,y)\) over a rectangle \(R = [a,b] \times [c,d]\).</p>
+<p><strong>Fix a value of \(x\).</strong> Slicing the surface at that \(x\) gives a curve \(z = f(x,y)\) in the \(yz\)-plane. The area under that curve is:</p>
+<p>\[A(x) = \int_c^d f(x,y)\,dy\]</p></div>
+<div class="fig-container fragment" data-editor-line="65">
+  <img src="figures/iterated_integral_slicing.png" alt="A 3D plot of the surface f(x,y) = 1 plus x squared plus y squared over the unit square [0,1] by [0,1]. A vertical red cross-section at x = 0.4 is highlighted, filling from z = 0 up to the surface to represent the cross-sectional area A(x). The slice is labeled A(x), illustrating the idea of integrating in y first to obtain A(x), then integrating A(x) in x for the total volume." class="plotly-lazy-thumb" data-plotly-src="figures/iterated_integral_slicing.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="67"><p>Then the total volume is:</p>
+<p>\[V = \int_a^b A(x)\,dx = \int_a^b \left[\int_c^d f(x,y)\,dy\right]dx\]</p>
+<p>This is an <strong>iterated integral</strong>: we integrate in \(y\) first (treating \(x\) as a constant), then integrate the result in \(x\).</p></div>
+<div class="fragment" data-editor-line="74"><p>We write this more compactly as:</p>
+<p>\[\int_a^b \int_c^d f(x,y)\,dy\,dx\]</p>
+<p>The <strong>inner integral</strong> is computed first, then the <strong>outer integral</strong>.</p></div>
+<div class="key-point fragment" data-editor-line="81"><p>An iterated integral is just two single-variable integrals done one at a time. The inner integral produces a function of the outer variable, and then we integrate that.</p></div>
+<aside class="notes">Draw the picture on the board: fix \(x\), slice the surface, get a 2D area. Then “stack” those slices. This geometric picture is essential.</aside>
+</section>
+
+<section id="example-volume-under">
+<h2>Example: Volume Under \(f(x,y) = 1 + x^2 + y^2\)</h2>
+<div class="example-box fragment" data-editor-line="90">
+  <div class="example-title">Example 2</div>
+  <p>Find the volume under \(f(x,y) = 1 + x^2 + y^2\) above the unit square \(R = [0,1] \times [0,1]\).</p>
+</div>
+<div class="fig-container fragment" data-editor-line="94">
+  <img src="figures/iterated_integral_slicing.png" alt="A 3D plot of the surface f(x,y) = 1 plus x squared plus y squared over the unit square, with a vertical red cross-section at x = 0.4 shaded to show the cross-sectional area A(x). The volume equals the integral of A(x) over x from 0 to 1." class="plotly-lazy-thumb" data-plotly-src="figures/iterated_integral_slicing.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="96"><p class="work-prompt">Fix \(x\) and integrate in \(y\) first to get \(A(x)\). Then integrate \(A(x)\) from \(0\) to \(1\).</p></div>
+<div class="fragment" data-editor-line="98"><p><strong>Step 1: Inner integral</strong> (integrate in \(y\), treat \(x\) as constant):</p>
+<p>\[A(x) = \int_0^1 (1 + x^2 + y^2)\,dy = \left[y + x^2 y + \frac{y^3}{3}\right]_0^1 = 1 + x^2 + \frac{1}{3} = \frac{4}{3} + x^2\]</p></div>
+<div class="fragment" data-editor-line="103"><p><strong>Step 2: Outer integral</strong> (integrate \(A(x)\) in \(x\)):</p>
+<p>\[V = \int_0^1 \left(\frac{4}{3} + x^2\right)\,dx = \left[\frac{4}{3}x + \frac{x^3}{3}\right]_0^1 = \frac{4}{3} + \frac{1}{3} = \frac{5}{3}\]</p></div>
+<div class="key-point fragment" data-editor-line="108"><p>The volume under \(f(x,y) = 1 + x^2 + y^2\) over the unit square is \(\dfrac{5}{3}\).</p></div>
+<aside class="notes">Walk through the inner integral carefully. Emphasize that \(x\) is treated as a constant during the \(y\)-integration &mdash; this is the same idea as partial differentiation, but in reverse.</aside>
+</section>
+
+<section id="fubini-s-theorem">
+<h2>Fubini's Theorem</h2>
+<div class="fragment" data-editor-line="117"><p>Does the order of integration matter? Can we integrate in \(x\) first, then \(y\)?</p></div>
+<div class="defn-box theorem-box fragment" data-editor-line="119">
+  <div class="defn-title">Theorem: Fubini's Theorem</div>
+  <p>If \(f\) is continuous on the rectangle \(R = [a,b] \times [c,d]\), then</p>
+<p>\[\iint_R f(x,y)\,dA = \int_a^b \int_c^d f(x,y)\,dy\,dx = \int_c^d \int_a^b f(x,y)\,dx\,dy\]</p>
+<p>Both orders of integration give the <strong>same answer</strong>.</p>
+</div>
+<div class="fragment" data-editor-line="126"><p>Let's verify with our previous example. Integrate in \(x\) first:</p>
+<p>\[\int_0^1 \int_0^1 (1 + x^2 + y^2)\,dx\,dy = \int_0^1 \left[x + \frac{x^3}{3} + y^2 x\right]_0^1 dy = \int_0^1 \left(\frac{4}{3} + y^2\right)dy = \frac{4}{3} + \frac{1}{3} = \frac{5}{3} \;\checkmark\]</p></div>
+<div class="key-point fragment" data-editor-line="131"><p>Fubini's Theorem says we can choose whichever order is more convenient. Sometimes one order is much easier than the other!</p></div>
+<aside class="notes">Emphasize that Fubini requires continuity on the rectangle. For the rest of this course, all functions will satisfy this condition. The freedom to choose order is a powerful tool &mdash; we'll exploit it heavily.</aside>
+</section>
+
+<section id="quick-check-set-up-an-iterated-integral">
+<h2>Quick Check: Set Up an Iterated Integral</h2>
+<div class="fragment" data-editor-line="140"><p>Suppose \(R = [0,2] \times [1,3]\).</p>
+<p><em>Write \(\displaystyle\iint_R xy\,dA\) as an iterated integral in both orders. Then evaluate one of them.</em></p></div>
+<div class="fragment" data-editor-line="144"><p class="work-prompt">Identify \(a\), \(b\), \(c\), \(d\) from \(R\). Then write the integral both ways: \(dy\,dx\) and \(dx\,dy\).</p></div>
+<div class="fragment" data-editor-line="146"><p><strong>Order 1</strong> (\(dy\,dx\)): \(\displaystyle\int_0^2 \int_1^3 xy\,dy\,dx\)</p>
+<p><strong>Order 2</strong> (\(dx\,dy\)): \(\displaystyle\int_1^3 \int_0^2 xy\,dx\,dy\)</p></div>
+<div class="fragment" data-editor-line="152"><p><strong>Evaluate Order 1:</strong></p>
+<p>\[\int_0^2 \int_1^3 xy\,dy\,dx = \int_0^2 \left[\frac{xy^2}{2}\right]_1^3 dx = \int_0^2 \frac{x(9 - 1)}{2}\,dx = \int_0^2 4x\,dx = \left[2x^2\right]_0^2 = 8\]</p></div>
+<div class="key-point fragment" data-editor-line="157"><p>On rectangles, setting up iterated integrals is mechanical: the limits are just the edges of the rectangle. The real skill is choosing the order that makes the inner integral simplest.</p></div>
+</section>
+
+<section id="example-a-trig-integral">
+<h2>Example: A Trig Integral</h2>
+<div class="example-box fragment" data-editor-line="164">
+  <div class="example-title">Example 3</div>
+  <p>Evaluate \(\displaystyle\iint_R \cos(x + 2y)\,dA\), where \(R = [0, \pi] \times [0, \pi/2]\).</p>
+</div>
+<div class="fragment" data-editor-line="168"><p class="work-prompt">Integrate in \(y\) first using substitution \(u = x + 2y\).</p></div>
+<div class="fragment" data-editor-line="170"><p><strong>Inner integral</strong> (in \(y\), with \(x\) fixed):</p>
+<p>\[\int_0^{\pi/2} \cos(x + 2y)\,dy\]</p>
+<p>Let \(u = x + 2y\), so \(du = 2\,dy\). When \(y = 0\): \(u = x\). When \(y = \pi/2\): \(u = x + \pi\).</p></div>
+<div class="fragment" data-editor-line="177"><p>\[= \frac{1}{2}\int_x^{x+\pi} \cos u\,du = \frac{1}{2}[\sin u]_x^{x+\pi} = \frac{1}{2}\big[\sin(x + \pi) - \sin x\big]\]</p></div>
+<div class="fragment" data-editor-line="181"><p>Since \(\sin(x + \pi) = -\sin x\):</p>
+<p>\[= \frac{1}{2}(-\sin x - \sin x) = -\sin x\]</p></div>
+<div class="fragment" data-editor-line="186"><p><strong>Outer integral:</strong></p>
+<p>\[\int_0^{\pi} (-\sin x)\,dx = [\cos x]_0^{\pi} = \cos\pi - \cos 0 = -1 - 1 = -2\]</p></div>
+<div class="key-point fragment" data-editor-line="191"><p>\(\displaystyle\iint_R \cos(x + 2y)\,dA = -2\).</p></div>
+<aside class="notes">Good place to remind students about \(u\)-substitution in the inner integral. Also emphasize \(\sin(x + \pi) = -\sin x\) &mdash; trig identities come up often in double integrals.</aside>
+</section>
+
+<section id="beyond-rectangles-general-regions">
+<h2>Beyond Rectangles: General Regions</h2>
+<div class="fragment" data-editor-line="200"><p>So far we've integrated over <strong>rectangles</strong> \([a,b] \times [c,d]\), where the limits of integration are all constants.</p>
+<p>But most real-world regions aren't rectangles!</p></div>
+<div class="fig-container fragment" data-editor-line="204">
+  <a href="figures/general_region_strip.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/general_region_strip.png"><img src="figures/general_region_strip.png" alt="A non-rectangular region bounded above by the curve y equals g2(x) and below by y equals g1(x), from x equals a to x equals b. A highlighted vertical amber strip at a fixed x value shows that for each x, y ranges from g1(x) to g2(x). An arrow inside the strip points upward in the dy direction. The integral formula from a to b of the integral from g1(x) to g2(x) of f dy dx is shown." style="max-height:60vh;"></a>
+</div>
+<div class="fragment" data-editor-line="206"><p><strong>What changes?</strong> When the region is not a rectangle, the limits of the <strong>inner integral</strong> depend on the <strong>outer variable</strong>.</p>
+<ul>
+<li>On a rectangle: \(\displaystyle\int_a^b \int_c^d f(x,y)\,dy\,dx\) &mdash; all limits are constants</li>
+<li>On a general region: \(\displaystyle\int_a^b \int_{g_1(x)}^{g_2(x)} f(x,y)\,dy\,dx\) &mdash; inner limits are <strong>functions</strong></li>
+</ul></div>
+<div class="fragment" data-editor-line="215"><p>To set up these integrals correctly, we need to describe the region in a systematic way. That's where <strong>Type 1</strong> and <strong>Type 2</strong> regions come in.</p></div>
+<div class="key-point fragment" data-editor-line="219"><p>The outer limits are always constants (numbers). The inner limits can be functions of the outer variable. Getting these limits right is the central skill of this section.</p></div>
+<aside class="notes">This is the conceptual transition slide. Make sure students understand the key difference: on rectangles, limits are constants; on general regions, inner limits are functions. Draw a non-rectangular region and show how the inner limits vary.</aside>
+</section>
+
+<section id="type-1-and-type-2-regions">
+<h2>Type 1 and Type 2 Regions</h2>
+<div class="defn-box fragment" data-editor-line="228">
+  <div class="defn-title">Type 1 Region (Integrate $dy\,dx$)</div>
+  <p>A region \(D\) is <strong>Type 1</strong> if it lies between two curves \(y = g_1(x)\) and \(y = g_2(x)\):</p>
+<p>\[D = \{(x,y) \mid a \leq x \leq b, \;\; g_1(x) \leq y \leq g_2(x)\}\]</p>
+<p>\[\iint_D f(x,y)\,dA = \int_a^b \int_{g_1(x)}^{g_2(x)} f(x,y)\,dy\,dx\]</p>
+</div>
+<div class="defn-box fragment" data-editor-line="234">
+  <div class="defn-title">Type 2 Region (Integrate $dx\,dy$)</div>
+  <p>A region \(D\) is <strong>Type 2</strong> if it lies between two curves \(x = h_1(y)\) and \(x = h_2(y)\):</p>
+<p>\[D = \{(x,y) \mid c \leq y \leq d, \;\; h_1(y) \leq x \leq h_2(y)\}\]</p>
+<p>\[\iint_D f(x,y)\,dA = \int_c^d \int_{h_1(y)}^{h_2(y)} f(x,y)\,dx\,dy\]</p>
+</div>
+<div class="fig-container fragment" data-editor-line="240">
+  <a href="figures/type1_type2.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/type1_type2.png"><img src="figures/type1_type2.png" alt="Two side-by-side region diagrams. Left panel shows a Type I region bounded above by y = f(x) and below by y = g(x) from x = a to x = b, with a vertical amber strip and an upward arrow showing the dy direction. Right panel shows a Type II region bounded right by x = h2(y) and left by x = h1(y) from y = c to y = d, with a horizontal amber strip and a rightward arrow showing the dx direction." style="max-height:60vh;"></a>
+</div>
+<div class="key-point fragment" data-editor-line="242"><p><strong>Type 1:</strong> Outer variable is \(x\), inner limits are functions of \(x\). Integrate \(dy\) first.</p>
+<p><strong>Type 2:</strong> Outer variable is \(y\), inner limits are functions of \(y\). Integrate \(dx\) first.</p>
+<p>Many regions are <strong>both</strong> types &mdash; you get to choose!</p></div>
+<aside class="notes">The naming convention (Type 1 vs Type 2) is less important than the skill: given a region, can you describe it with the right limits? Emphasize thinking about “for a fixed \(x\), what are the \(y\)-bounds?” (Type 1) or “for a fixed \(y\), what are the \(x\)-bounds?” (Type 2).</aside>
+</section>
+
+<section id="quick-check-identify-the-limits">
+<h2>Quick Check: Identify the Limits</h2>
+<div class="fragment" data-editor-line="257"><p>Consider the triangular region with vertices \((0,0)\), \((1,0)\), and \((0,1)\).</p>
+<p><em>Describe this region as both Type 1 and Type 2, and write the limits of integration for each.</em></p></div>
+<div class="fig-container fragment" data-editor-line="261">
+  <a href="figures/triangle_qc.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/triangle_qc.png"><img src="figures/triangle_qc.png" alt="Two side-by-side diagrams of the triangle with vertices (0,0), (1,0), and (0,1). Left diagram is labeled Type 1 (dy dx) and shows a vertical amber strip at a fixed x value, with y ranging from 0 to 1 minus x. Right diagram is labeled Type 2 (dx dy) and shows a horizontal amber strip at a fixed y value, with x ranging from 0 to 1 minus y. Each panel shows the corresponding iterated integral formula." style="max-height:60vh;"></a>
+</div>
+<div class="fragment" data-editor-line="263"><p class="work-prompt">Find the equation of the hypotenuse. Then for Type 1 ask: for fixed \(x\), where does \(y\) start and stop? For Type 2 ask: for fixed \(y\), where does \(x\) start and stop?</p></div>
+<div class="fragment" data-editor-line="265"><p>The hypotenuse connects \((1,0)\) to \((0,1)\): the equation is \(y = 1 - x\) (equivalently, \(x = 1 - y\)).</p></div>
+<div class="fragment" data-editor-line="269"><p><strong>Type 1</strong> (\(dy\,dx\)): For a fixed \(x \in [0,1]\), \(y\) goes from \(0\) up to \(1 - x\):</p>
+<p>\[\int_0^1 \int_0^{1-x} f(x,y)\,dy\,dx\]</p></div>
+<div class="fragment" data-editor-line="274"><p><strong>Type 2</strong> (\(dx\,dy\)): For a fixed \(y \in [0,1]\), \(x\) goes from \(0\) to \(1 - y\):</p>
+<p>\[\int_0^1 \int_0^{1-y} f(x,y)\,dx\,dy\]</p></div>
+<div class="key-point fragment" data-editor-line="279"><p>Always think: “For a fixed value of the outer variable, where does the inner variable start and stop?” Sketch the region and draw a vertical line (Type 1) or horizontal line (Type 2) to read off the limits.</p></div>
+</section>
+
+<section id="example-integral-over-a-triangular-region">
+<h2>Example: Integral over a Triangular Region</h2>
+<div class="example-box fragment" data-editor-line="286">
+  <div class="example-title">Example 4</div>
+  <p>Evaluate \(\displaystyle\iint_D x\sqrt{y^2 - x^2}\,dA\), where \(D = \{(x,y) \mid 0 \leq y \leq 1,\; 0 \leq x \leq y\}\).</p>
+</div>
+<div class="fig-container fragment" data-editor-line="290">
+  <a href="figures/triangle_example4.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/triangle_example4.png"><img src="figures/triangle_example4.png" alt="The triangular region D with vertices (0,0), (0,1), and (1,1), bounded on the left by x equals 0, on the right by the line x equals y, and on top by y equals 1. A horizontal amber strip at a fixed y value shows x ranging from 0 to y, indicating a Type 2 region. The integral from 0 to 1 of the integral from 0 to y of f dx dy is shown below." style="max-height:60vh;"></a>
+</div>
+<div class="fragment" data-editor-line="292"><p class="work-prompt">This is a Type 2 region: for fixed \(y\), \(x\) goes from \(0\) to \(y\). Set up the integral as \(dx\,dy\).</p></div>
+<div class="fragment" data-editor-line="294"><p><strong>Set up the iterated integral</strong> (Type 2, integrate in \(x\) first):</p>
+<p>\[\int_0^1 \int_0^y x\sqrt{y^2 - x^2}\,dx\,dy\]</p></div>
+<div class="fragment" data-editor-line="299"><p><strong>Inner integral</strong> (in \(x\), with \(y\) fixed): Let \(u = y^2 - x^2\), so \(du = -2x\,dx\).</p>
+<p>When \(x = 0\): \(u = y^2\). When \(x = y\): \(u = 0\).</p>
+<p>\[\int_0^y x\sqrt{y^2 - x^2}\,dx = -\frac{1}{2}\int_{y^2}^0 u^{1/2}\,du = \frac{1}{2}\int_0^{y^2} u^{1/2}\,du = \frac{1}{2} \cdot \frac{2}{3} u^{3/2}\Big|_0^{y^2} = \frac{1}{3}(y^2)^{3/2} = \frac{y^3}{3}\]</p></div>
+<div class="fragment" data-editor-line="306"><p><strong>Outer integral:</strong></p>
+<p>\[\int_0^1 \frac{y^3}{3}\,dy = \frac{1}{3} \cdot \frac{y^4}{4}\Big|_0^1 = \frac{1}{12}\]</p></div>
+<div class="key-point fragment" data-editor-line="311"><p>\(\displaystyle\iint_D x\sqrt{y^2 - x^2}\,dA = \dfrac{1}{12}\).</p></div>
+<div class="fragment" data-editor-line="313"><p><strong>Think about it:</strong> What would happen if we tried this as a Type 1 integral (\(dy\,dx\))?</p>
+<p>The inner integral would be \(\int_x^1 x\sqrt{y^2 - x^2}\,dy\) &mdash; integrating \(\sqrt{y^2 - x^2}\) with respect to \(y\), which requires trig substitution and is much harder. <strong>Choosing the right order matters!</strong></p></div>
+<aside class="notes">This sets up the “changing the order” discussion in a few slides. Sometimes you <em>must</em> reverse the order because one direction is impossible.</aside>
+</section>
+
+<section id="describing-a-region-both-ways">
+<h2>Describing a Region Both Ways</h2>
+<div class="example-box fragment" data-editor-line="326">
+  <div class="example-title">Example 5</div>
+  <p>Consider the region \(D\) between \(y = x^2\) and \(y = \sqrt{x}\).</p>
+<p>(a) Describe \(D\) as both a Type 1 and a Type 2 region.</p>
+<p>(b) Evaluate \(\displaystyle\iint_D (2x - 3y^2)\,dA\).</p>
+</div>
+<div class="fragment" data-editor-line="334"><p><strong>First, find the intersections:</strong> \(x^2 = \sqrt{x}\) \(\Rightarrow\) \(x^4 = x\) \(\Rightarrow\) \(x(x^3 - 1) = 0\) \(\Rightarrow\) \(x = 0\) or \(x = 1\).</p></div>
+<div class="fig-container fragment" data-editor-line="336">
+  <a href="figures/parabola_sqrt_region.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/parabola_sqrt_region.png"><img src="figures/parabola_sqrt_region.png" alt="Two side-by-side diagrams of the region D bounded by y = sqrt(x) above and y = x squared below, intersecting at (0,0) and (1,1). Left diagram labels Type I with vertical strips and shows the integral from 0 to 1 of the integral from x squared to sqrt(x) of f dy dx. Right diagram labels Type II with horizontal strips and shows the integral from 0 to 1 of the integral from y squared to sqrt(y) of f dx dy." style="max-height:60vh;"></a>
+</div>
+<div class="fragment" data-editor-line="338"><p class="work-prompt">Sketch the region. For Type 1: fix \(x\), find \(y\)-bounds. For Type 2: fix \(y\), find \(x\)-bounds. Then choose the easier order to integrate.</p></div>
+<div class="fragment" data-editor-line="340"><p><strong>Type 1</strong> (\(dy\,dx\)): For \(x \in [0,1]\), \(y\) goes from \(x^2\) (lower) up to \(\sqrt{x}\) (upper):</p>
+<p>\[D = \{(x,y) \mid 0 \leq x \leq 1,\; x^2 \leq y \leq \sqrt{x}\}\]</p>
+<p>\[\iint_D (2x - 3y^2)\,dA = \int_0^1 \int_{x^2}^{\sqrt{x}} (2x - 3y^2)\,dy\,dx\]</p></div>
+<div class="fragment" data-editor-line="346"><p><strong>Type 2</strong> (\(dx\,dy\)): For \(y \in [0,1]\), \(x\) goes from \(y^2\) (left curve: \(x = y^2\)) to \(\sqrt{y}\) (right curve: \(x = \sqrt{y}\)):</p>
+<p>\[D = \{(x,y) \mid 0 \leq y \leq 1,\; y^2 \leq x \leq \sqrt{y}\}\]</p></div>
+</section>
+
+<section>
+<h2>Describing a Region Both Ways</h2>
+<div class="fragment" data-editor-line="353"><p><strong>Part (b):</strong> Let's use the Type 1 description.</p></div>
+<div class="fragment" data-editor-line="355"><p><strong>Inner integral</strong> (in \(y\)):</p>
+<p>\[\int_{x^2}^{\sqrt{x}} (2x - 3y^2)\,dy = \left[2xy - y^3\right]_{x^2}^{\sqrt{x}}\]</p></div>
+<div class="fragment" data-editor-line="360"><p><strong>Evaluate at the bounds:</strong></p>
+<p>At \(y = \sqrt{x}\): \(\;2x \cdot \sqrt{x} - (\sqrt{x})^3 = 2x^{3/2} - x^{3/2} = x^{3/2}\)</p>
+<p>At \(y = x^2\): \(\;2x \cdot x^2 - (x^2)^3 = 2x^3 - x^6\)</p></div>
+<div class="fragment" data-editor-line="368"><p><strong>Subtract:</strong></p>
+<p>\[\int_{x^2}^{\sqrt{x}} (2x - 3y^2)\,dy = x^{3/2} - 2x^3 + x^6\]</p></div>
+<div class="fragment" data-editor-line="373"><p><strong>Outer integral:</strong></p>
+<p>\[\int_0^1 \left(x^{3/2} - 2x^3 + x^6\right)dx = \left[\frac{2}{5}x^{5/2} - \frac{x^4}{2} + \frac{x^7}{7}\right]_0^1 = \frac{2}{5} - \frac{1}{2} + \frac{1}{7}\]</p></div>
+<div class="fragment" data-editor-line="378"><p>\[= \frac{28 - 35 + 10}{70} = \frac{3}{70}\]</p></div>
+<div class="key-point fragment" data-editor-line="382"><p>\(\displaystyle\iint_D (2x - 3y^2)\,dA = \dfrac{3}{70}\).</p></div>
+<aside class="notes">Walk through the inner integral evaluation carefully &mdash; students often make errors at the substitution step. Point out how the region description determines the limits, and the limits determine everything else.</aside>
+</section>
+
+<section id="changing-the-order-of-integration">
+<h2>Changing the Order of Integration</h2>
+<div class="fragment" data-editor-line="391"><p>Sometimes you <strong>must</strong> change the order of integration because the inner integral is impossible to evaluate directly.</p>
+<p><strong>Strategy:</strong></p>
+<ol>
+<li><strong>Sketch the region</strong> described by the original limits</li>
+<li>Re-describe it using the <strong>other type</strong></li>
+<li>Write the integral with the new limits</li>
+</ol></div>
+<div class="example-box fragment" data-editor-line="400">
+  <div class="example-title">Example 6</div>
+  <p>Evaluate \(\displaystyle\int_0^1 \int_x^1 e^{y^2}\,dy\,dx\).</p>
+</div>
+<div class="fragment" data-editor-line="404"><p class="work-prompt">We can't integrate \(e^{y^2}\) in \(y\) &mdash; there's no elementary antiderivative! Sketch the region, then swap the order.</p></div>
+<div class="fragment" data-editor-line="406"><p><strong>Original region:</strong> \(0 \leq x \leq 1\), \(x \leq y \leq 1\).</p>
+<p>This is the triangle above \(y = x\) and below \(y = 1\), for \(0 \leq x \leq 1\).</p></div>
+<div class="fig-container fragment" data-editor-line="412">
+  <a href="figures/order_reversal_region.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/order_reversal_region.png"><img src="figures/order_reversal_region.png" alt="Two side-by-side diagrams of the triangle with vertices (0,0), (1,1), and (0,1). Left diagram shows the original order (dy dx) with a vertical amber strip at fixed x, where y ranges from x to 1. Right diagram shows the reversed order (dx dy) with a horizontal amber strip at fixed y, where x ranges from 0 to y. Reversing the order makes the inner integral trivial since e to the y squared is constant in x." style="max-height:60vh;"></a>
+</div>
+<div class="fragment" data-editor-line="414"><p><strong>Reverse the description</strong> (Type 2): For fixed \(y \in [0,1]\), \(x\) goes from \(0\) to \(y\):</p>
+<p>\[\int_0^1 \int_0^y e^{y^2}\,dx\,dy\]</p></div>
+<div class="fragment" data-editor-line="419"><p><strong>Inner integral:</strong> \(\displaystyle\int_0^y e^{y^2}\,dx = y\,e^{y^2}\) (since \(e^{y^2}\) is constant in \(x\)!)</p></div>
+<div class="fragment" data-editor-line="423"><p><strong>Outer integral:</strong> Let \(u = y^2\), \(du = 2y\,dy\):</p>
+<p>\[\int_0^1 y\,e^{y^2}\,dy = \frac{1}{2}e^{y^2}\Big|_0^1 = \frac{1}{2}(e - 1)\]</p></div>
+<div class="key-point fragment" data-editor-line="428"><p>When you can't evaluate the inner integral, try <strong>reversing the order</strong>. The integral \(\int e^{y^2}\,dy\) has no closed form, but \(\int y\,e^{y^2}\,dy\) does!</p></div>
+<aside class="notes">This is a favorite exam problem. Emphasize: (1) recognize that \(e^{y^2}\) has no antiderivative in \(y\), (2) sketch the region, (3) swap order, (4) the inner integral becomes trivial. Students should memorize this type of problem.</aside>
+</section>
+
+<section id="section-15-2-summary">
+<h2>Section 15.2 Summary</h2>
+<div class="summary-grid">
+<div class="defn-box"><div class="defn-title">Iterated Integrals</div><p class="small">Evaluate double integrals by doing two single-variable integrals, one at a time. Inner integral first, then outer.</p></div>
+<div class="defn-box"><div class="defn-title">Fubini's Theorem</div><p class="small">For continuous \(f\) on a rectangle: \(\int\int f\,dy\,dx = \int\int f\,dx\,dy\). Both orders give the same answer.</p></div>
+<div class="defn-box"><div class="defn-title">Type 1 Regions</div><p class="small">\(a \leq x \leq b\), \(g_1(x) \leq y \leq g_2(x)\). Integrate \(dy\,dx\). Inner limits are functions of \(x\).</p></div>
+<div class="defn-box"><div class="defn-title">Type 2 Regions</div><p class="small">\(c \leq y \leq d\), \(h_1(y) \leq x \leq h_2(y)\). Integrate \(dx\,dy\). Inner limits are functions of \(y\).</p></div>
+<div class="defn-box"><div class="defn-title">Changing Order</div><p class="small">Sketch the region, re-describe with the other variable as outer. Essential when one order leads to an impossible integral.</p></div>
+</div>
+<div class="key-point fragment" data-editor-line="445"><p><strong>The big skill:</strong> Given a region, describe it with the right limits. Sketch first, then ask “for a fixed value of the outer variable, where does the inner variable go?”</p></div>
+</section>
+
+<section>
+<h2>Homework</h2>
+<div class="hw-box"><h3>Section 15.2</h3>
+<p style="font-size:1.3em;color:var(--accent-amber);">3, 5, 7, 9, 11, 15, 16, 17, 19, 23, 25, 27, 31, 33, 35, 37, 43, 55, 57, 59, 61, 63, 65, 75, 77</p>
+</div>
+<div class="key-point fragment" style="margin-top:1.5em;"><strong>Next time:</strong> Section 15.3 &mdash; Double Integrals in Polar Coordinates</div>
+</section>
+</div>
+</div>
+<!-- Lightbox overlay -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged figure" tabindex="-1">
+  <button class="lb-close" aria-label="Close lightbox">&times;</button>
+  <img src="" alt="">
+  <div class="lb-caption"></div>
+</div>
+<!-- Plotly fullscreen overlay -->
+<div id="plotly-lightbox" role="dialog" aria-modal="true" aria-label="Expanded interactive figure">
+  <button class="plb-close" aria-label="Close">&times;</button>
+  <div class="plb-content"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<script>
+Reveal.initialize({
+    hash: true, slideNumber: 'c/t', progress: true, center: false,
+    transition: 'slide', width: 1280, height: 800, margin: 0.04,
+    // Allow mouse wheel to scroll overflowing slide content instead of advancing
+    mouseWheel: false,
+    plugins: [RevealNotes]
+});
+// ── Scoped MathJax: only typeset the current slide, not the whole document ──
+function typesetCurrentSlide() {
+    var slide = Reveal.getCurrentSlide();
+    if (slide && MathJax?.typesetPromise) {
+        MathJax.typesetPromise([slide]).catch(function(){});
+    }
+}
+// ── Iframe cleanup: pause Desmos/embedded iframes on non-visible slides ──
+function manageIframes(event) {
+    // Pause iframes on the previous slide
+    if (event.previousSlide) {
+        event.previousSlide.querySelectorAll('iframe[data-src-active]').forEach(function(iframe) {
+            iframe.setAttribute('data-src-paused', iframe.src);
+            iframe.src = 'about:blank';
+        });
+    }
+    // Restore iframes on the current slide
+    if (event.currentSlide) {
+        event.currentSlide.querySelectorAll('iframe[data-src-paused]').forEach(function(iframe) {
+            iframe.src = iframe.getAttribute('data-src-paused');
+            iframe.removeAttribute('data-src-paused');
+        });
+    }
+}
+// Mark all Desmos/embedded iframes for management
+document.querySelectorAll('.desmos-container iframe').forEach(function(iframe) {
+    iframe.setAttribute('data-src-active', '1');
+});
+Reveal.on('slidechanged', (event) => {
+    typesetCurrentSlide();
+    manageIframes(event);
+    // Reset scroll position on the new slide so it starts at the top
+    if (event.currentSlide) event.currentSlide.scrollTop = 0;
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealSlideChanged', indexh: event.indexh, indexv: event.indexv }, '*');
+        }
+    } catch (e) {}
+});
+// Fragment auto-scroll: configurable via meta.fragment_scroll in content.yaml
+// Value is the max fraction down the slide viewport (0.0=top, 1.0=bottom)
+var FRAG_SCROLL_TARGET = 0.67;
+function findScrollContainer(el) {
+    var section = el.closest('section');
+    while (section) {
+        if (section.scrollHeight > section.clientHeight + 1) return section;
+        var parent = section.parentElement?.closest('section, .slides, .reveal');
+        if (!parent || parent === section) break;
+        section = parent;
+    }
+    return null;
+}
+function scrollToFragment(frag, direction) {
+    var container = findScrollContainer(frag);
+    if (!container) return;
+    var fragRect = frag.getBoundingClientRect();
+    var containerRect = container.getBoundingClientRect();
+    // Reveal.js scales slides via CSS transform — account for the scale factor
+    var scale = containerRect.height / container.clientHeight || 1;
+    // Convert screen-space positions to unscaled slide-space
+    var fragBottom = (fragRect.bottom - containerRect.top) / scale + container.scrollTop;
+    var fragTop = (fragRect.top - containerRect.top) / scale + container.scrollTop;
+    var targetLine = container.clientHeight * FRAG_SCROLL_TARGET;
+    if (direction === 'forward') {
+        // Scroll so the fragment's bottom is at the target line
+        var desiredScrollTop = fragBottom - targetLine;
+        if (desiredScrollTop > container.scrollTop) {
+            container.scrollTo({ top: desiredScrollTop, behavior: 'smooth' });
+        }
+    } else {
+        // Scrolling backward: find the previous visible fragment and scroll to it
+        // If the fragment's top is above the viewport, scroll up to show it
+        var desiredScrollTop = fragTop - targetLine * 0.5;
+        if (desiredScrollTop < container.scrollTop) {
+            container.scrollTo({ top: Math.max(0, desiredScrollTop), behavior: 'smooth' });
+        }
+    }
+}
+// Add spacer to scrollable slides so the last fragment can scroll up to the target line
+Reveal.on('ready', () => {
+    var slideH = Reveal.getConfig().height || 800;
+    var spacerH = Math.round((1 - FRAG_SCROLL_TARGET) * slideH);
+    document.querySelectorAll('.reveal .slides > section, .reveal .slides > section > section').forEach(function(s) {
+        if (s.querySelector('.fragment')) {
+            var spacer = document.createElement('div');
+            spacer.style.height = spacerH + 'px';
+            spacer.style.pointerEvents = 'none';
+            spacer.setAttribute('aria-hidden', 'true');
+            s.appendChild(spacer);
+        }
+    });
+});
+function _notifyParentFragment() {
+    // Read data-editor-line from the last visible fragment in the current slide.
+    // Works for both fragmentshown and fragmenthidden events.
+    try {
+        if (!window.parent || window.parent === window) return;
+        var s = Reveal.getState();
+        var slideEl = Reveal.getCurrentSlide();
+        var editorLine = null;
+        if (slideEl) {
+            var visibleFrags = slideEl.querySelectorAll('.fragment.visible[data-editor-line]');
+            if (visibleFrags.length > 0) {
+                var ln = parseInt(visibleFrags[visibleFrags.length - 1].dataset.editorLine, 10);
+                if (!isNaN(ln)) editorLine = ln;
+            }
+        }
+        window.parent.postMessage({
+            type: 'revealFragmentChanged',
+            indexh: s.indexh, indexv: s.indexv, indexf: s.indexf,
+            editorLine: editorLine
+        }, '*');
+    } catch(e) {}
+}
+Reveal.on('fragmentshown', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('fragmenthidden', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    // Scroll back to the previous fragment or top of slide
+    var prev = event.fragment.previousElementSibling;
+    while (prev && !prev.classList.contains('fragment')) {
+        prev = prev.previousElementSibling;
+    }
+    var target = prev || event.fragment.closest('section')?.querySelector('h2') || event.fragment;
+    setTimeout(function() { scrollToFragment(target, 'backward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('ready', () => {
+    typesetCurrentSlide();
+    // Tell the CourseKit editor that Reveal is initialized so it can sync the fragment
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealReady' }, '*');
+        }
+    } catch(e) {}
+});
+
+// ── Plotly lightbox (iframe approach — zero WebGL until opened) ──
+(function() {
+    var plb = document.getElementById('plotly-lightbox');
+    if (!plb) return;
+    var plbClose = plb.querySelector('.plb-close');
+    var plbContent = plb.querySelector('.plb-content');
+    var triggerImg = null;
+    var currentBlobUrl = null;
+
+    function openPlotlyLightbox(blobUrl) {
+        // Revoke any previous blob URL
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); }
+        currentBlobUrl = blobUrl;
+        var iframe = plbContent.querySelector('iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:80vh;border:none;background:#fff;';
+            plbContent.appendChild(iframe);
+        }
+        iframe.src = blobUrl;
+        plb.classList.add('active');
+        plbClose.focus();
+    }
+
+    function closePlotlyLightbox() {
+        var iframe = plbContent.querySelector('iframe');
+        if (iframe) iframe.src = '';   // Unloads WebGL context immediately
+        plb.classList.remove('active');
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+        if (triggerImg) { triggerImg.focus(); triggerImg = null; }
+    }
+
+    document.addEventListener('click', function(e) {
+        var img = e.target.closest('img[data-plotly-src]');
+        if (!img) return;
+        e.stopPropagation();
+        triggerImg = img;
+        // The companion .html is a bare Plotly div fragment (no CDN script).
+        // Fetch it and wrap in a complete page so it renders in the iframe.
+        fetch(img.dataset.plotlySrc)
+            .then(function(r) { return r.text(); })
+            .then(function(fragment) {
+                var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+                    '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"><\/script>' +
+                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;' +
+                    'display:flex;justify-content:center;align-items:center;width:100vw;height:100vh;}' +
+                    '.js-plotly-plot,.plotly-graph-div{width:100%!important;height:100%!important;}</style>' +
+                    '</head><body>' + fragment + '</body></html>';
+                var blob = new Blob([html], {type: 'text/html'});
+                openPlotlyLightbox(URL.createObjectURL(blob));
+            })
+            .catch(function() {
+                // Fallback: open in new tab
+                window.open(img.dataset.plotlySrc, '_blank');
+            });
+    });
+
+    plbClose.addEventListener('click', closePlotlyLightbox);
+    plb.addEventListener('click', function(e) { if (e.target === plb) closePlotlyLightbox(); });
+
+    // Capture-phase Escape so Reveal.js doesn't grab it first
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape' || !plb.classList.contains('active')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closePlotlyLightbox();
+    }, true);
+})();
+
+// ── Lightbox for figures (accessible: focus trap, focus return) ──
+(function() {
+    const lb = document.getElementById('lightbox');
+    const lbImg = lb.querySelector('img');
+    const lbCap = lb.querySelector('.lb-caption');
+    const lbClose = lb.querySelector('.lb-close');
+    var triggerEl = null;
+
+    function openLightbox(src, alt, caption) {
+        lbImg.src = src;
+        lbImg.alt = alt;
+        lbCap.textContent = caption || alt;
+        lb.classList.add('active');
+        lbClose.focus();
+    }
+
+    function closeLightbox() {
+        lb.classList.remove('active');
+        lbImg.src = '';
+        if (triggerEl) { triggerEl.focus(); triggerEl = null; }
+    }
+
+    // Open lightbox on figure click (prevent default link navigation)
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.fig-link');
+        if (!link) return;
+        e.preventDefault();
+        e.stopPropagation();
+        triggerEl = link;
+        var src = link.getAttribute('data-src');
+        var alt = link.querySelector('img')?.alt || '';
+        var caption = link.closest('.fig-container')?.querySelector('.fig-caption')?.textContent || '';
+        openLightbox(src, alt, caption);
+    });
+
+    // Close on click anywhere on overlay
+    lb.addEventListener('click', function() { closeLightbox(); });
+
+    // Prevent closing when clicking the image itself (let user right-click → open in tab)
+    lbImg.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    // Close on Escape; trap Tab within lightbox
+    document.addEventListener('keydown', function(e) {
+        if (!lb.classList.contains('active')) return;
+        if (e.key === 'Escape') { closeLightbox(); }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            lbClose.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>

@@ -35,7 +35,7 @@ p { margin: 0.15em 0; }
 .key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
     padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
 .blank-space { margin: 0.2em 0; position: relative;
-    border: 1px dashed #ccc; border-radius: 3px; box-sizing: border-box; }
+    border: none; border-top: 1px dashed #ccc; box-sizing: border-box; }
 .blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
     color: #767676; font-style: italic; }
 .hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
@@ -67,8 +67,9 @@ ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
 li { margin-bottom: 0.05em; }
 .pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
 .homework-section { page-break-before: auto; }
-.defn-box, .example-box, .key-point { page-break-inside: avoid; break-inside: avoid; }
-.example-group { page-break-inside: avoid; break-inside: avoid; }
+.defn-box, .example-box, .key-point, .blank-space, .theorem-box { page-break-inside: avoid; break-inside: avoid; }
+main > section { page-break-inside: auto; }
+main > section.example-group { page-break-inside: avoid; break-inside: avoid; }
 a:focus-visible, summary:focus-visible, button:focus-visible {
     outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
 @media print {
@@ -95,86 +96,12 @@ window.MathJax = {
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
 <script>
-// After MathJax renders, adjust workspace boxes for better print pagination.
-// Two mechanisms:
-// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
-//    then remove the pagebreak div (the expanded workspace pushes content naturally).
-// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
-//    page, expand the preceding workspace to push the section to the next page.
-function adjustWorkspaces() {
-    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
-
-    function findPrecedingWorkspace(el) {
-        // Walk backwards through preceding siblings (and into them) to find .blank-space
-        var prev = el.previousElementSibling;
-        while (prev) {
-            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
-            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
-            if (ws) return ws;
-            prev = prev.previousElementSibling;
-        }
-        // Also check inside parent section (pagebreak might be inside a section)
-        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
-            var children = el.parentElement.children;
-            for (var j = children.length - 1; j >= 0; j--) {
-                if (children[j] === el) continue;
-                if (children[j].classList.contains('blank-space')) return children[j];
-                var inner = children[j].querySelector('.blank-space:last-of-type');
-                if (inner) return inner;
-            }
-        }
-        return null;
-    }
-
-    function expandWorkspace(ws, extraPx) {
-        var curH = ws.getBoundingClientRect().height;
-        ws.style.minHeight = (curH + extraPx + 4) + 'px';
-    }
-
-    // --- Pass A: Handle explicit \pagebreak markers ---
-    var pagebreaks = document.querySelectorAll('.pagebreak');
-    pagebreaks.forEach(function(pb) {
-        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
-        var remaining = PAGE_H - (pbTop % PAGE_H);
-        if (remaining > 0 && remaining < PAGE_H) {
-            var ws = findPrecedingWorkspace(pb);
-            if (ws) expandWorkspace(ws, remaining);
-        }
-        pb.remove();  // no longer needed — workspace expansion handles the break
-    });
-
-    // --- Pass B: Auto-detect orphaned section starts ---
-    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
-    var sections = document.querySelectorAll('main > section');
-    for (var pass = 0; pass < 3; pass++) {
-        var changed = false;
-        for (var i = 1; i < sections.length; i++) {
-            var sec = sections[i];
-            var secRect = sec.getBoundingClientRect();
-            var secTop = secRect.top + window.scrollY;
-            var secBot = secTop + secRect.height;
-            var pageOfTop = Math.floor(secTop / PAGE_H);
-            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
-            if (pageOfBot > pageOfTop) {
-                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
-                if (contentOnFirstPage < MIN_CONTENT) {
-                    var ws = findPrecedingWorkspace(sec);
-                    if (ws) {
-                        expandWorkspace(ws, contentOnFirstPage);
-                        changed = true;
-                    }
-                }
-            }
-        }
-        if (!changed) break;
-    }
-}
-// Run after MathJax finishes so layout is finalized
-if (window.MathJax && window.MathJax.startup) {
-    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
-} else {
-    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
-}
+// Pagination is handled entirely by CSS:
+//   .pagebreak            → page-break-before: always
+//   .example-group        → page-break-inside: avoid
+//   .defn-box, .key-point → page-break-inside: avoid
+// Workspaces use their declared min-height only — no JS expansion.
+// This produces dense, predictable handouts.
 </script>
 </head>
 <body>
@@ -195,15 +122,28 @@ if (window.MathJax && window.MathJax.startup) {
 
 <section id="why-polar" aria-label="Why Polar?">
   <h2>Why Polar?</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>Regions described by circles, sectors, and cardioids are natural in polar. When the region has circular symmetry, polar coordinates will simplify the integral dramatically.</p></aside>
+  <div><p>Not every region fits nicely into Cartesian coordinates. Consider integrating over a disk like \(x^2 + y^2 \leq 4\).</p></div>
+<figure>
+  <img src="figures/cartesian_vs_polar_disk.png" alt="Two side-by-side diagrams of the disk x squared plus y squared less than or equal to 4. Left panel shows the Cartesian approach: vertical strips of variable height from negative square root of 4 minus x squared to positive square root of 4 minus x squared, with the label showing the messy square root bounds. Right panel shows the polar approach: the same disk decomposed into clean polar rectangles (alternating blue and green wedge-shaped cells), with the label showing constant bounds r from 0 to 2 and theta from 0 to 2 pi.">
+</figure>
+<div><p>In Cartesian, the bounds are:</p>
+<p>\[\int_{-2}^{2} \int_{-\sqrt{4-x^2}}^{\sqrt{4-x^2}} f(x,y) \, dy \, dx\]</p>
+<p>That square root makes everything painful &mdash; and the region isn't \(x\)-simple or \(y\)-simple in a clean way.</p></div>
+<div><p>But in <strong>polar coordinates</strong>, a disk of radius 2 is just \(0 \leq r \leq 2\), \(0 \leq \theta \leq 2\pi\). The bounds are <strong>constants</strong>!</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Regions described by circles, sectors, and cardioids are natural in polar. When the region has circular symmetry, polar coordinates will simplify the integral dramatically.</p></aside>
 </section>
 
 <section id="polar-rectangles-and-the-area-element" aria-label="Polar Rectangles and the Area Element">
   <h2>Polar Rectangles and the Area Element</h2>
-  <figure>
+  <div><p>In Cartesian coordinates, we chop the plane into small rectangles of area \(\Delta A = \Delta x   \Delta y\).</p>
+<p>In polar coordinates, we chop the plane into <strong>polar rectangles</strong>: regions bounded by two radii and two arcs.</p></div>
+<figure>
   <img src="figures/polar_rectangle.png" alt="A polar coordinate grid showing concentric circles at different radii and radial lines at different angles, forming polar rectangles. One polar rectangle is highlighted and labeled, showing it is bounded by r = r1 and r = r2 on the sides and theta = theta1 and theta = theta2 on the arcs. The highlighted rectangle is wider at larger r than at smaller r.">
 </figure>
-<aside class="key-point" role="note" aria-label="Key point"><p>In polar coordinates, \(dA = r \, dr \, d\theta\) &mdash; <strong>not</strong> just \(dr \, d\theta\). The extra \(r\) is essential.</p></aside>
+<div><p>A polar rectangle with \(r\) from \(r_i\) to \(r_i + \Delta r\) and \(\theta\) from \(\theta_j\) to \(\theta_j + \Delta\theta\) has area:</p>
+<p>\[\Delta A_i \approx r_i \, \Delta r \, \Delta\theta\]</p></div>
+<div><p>The key insight: polar rectangles are <strong>wider</strong> at larger \(r\). The factor of \(r\) accounts for this stretching. A small \(\Delta r   \Delta\theta\) box near \(r = 10\) covers more area than the same box near \(r = 1\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>In polar coordinates, \(dA = r   dr   d\theta\) &mdash; <strong>not</strong> just \(dr   d\theta\). The extra \(r\) is essential.</p></aside>
 </section>
 
 <section id="the-polar-double-integral" aria-label="The Polar Double Integral">
@@ -213,12 +153,22 @@ if (window.MathJax && window.MathJax.startup) {
   <p>If \(f\) is continuous on a polar region \(R\) described by \(\alpha \leq \theta \leq \beta\) and \(h_1(\theta) \leq r \leq h_2(\theta)\), then:</p>
 <p>\[\iint_R f(x,y) \, dA = \int_\alpha^\beta \int_{h_1(\theta)}^{h_2(\theta)} f(r\cos\theta, \, r\sin\theta) \; r \, dr \, d\theta\]</p>
 </section>
-<aside class="key-point" role="note" aria-label="Key point"><p>The most common mistake is forgetting the extra \(r\) in \(dA = r \, dr \, d\theta\). Write it down every time.</p></aside>
+<div><p><strong>Three things change</strong> when converting to polar:</p>
+<ol>
+<li>Replace \(x\) with \(r\cos\theta\) and \(y\) with \(r\sin\theta\)</li>
+<li>Replace \(dA\) with \(r   dr   d\theta\) (don't forget the \(r\)!)</li>
+<li>Replace the Cartesian bounds with polar bounds</li>
+</ol></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The most common mistake is forgetting the extra \(r\) in \(dA = r   dr   d\theta\). Write it down every time.</p></aside>
 </section>
 
 <section id="quick-check-convert-to-polar" aria-label="Quick Check: Convert to Polar">
   <h2>Quick Check: Convert to Polar</h2>
-  <div class="blank-space" role="region" aria-label="Student workspace: Use $x^2 + y^2 = r^2$ and $dA = r\,dr\,d\theta$. The unit disk is $0 \leq r \leq 1$, $0 \leq \theta \leq 2\pi$." style="min-height:2in;">
+  <div><p>Set up (but <strong>do not evaluate</strong>) the polar integral for:</p>
+<p>\[\iint_R (x^2 + y^2) \, dA\]</p>
+<p>where \(R\) is the unit disk \(x^2 + y^2 \leq 1\).</p>
+<p><em>What replaces \(x^2 + y^2\)? What replaces \(dA\)? What are the bounds?</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Use $x^2 + y^2 = r^2$ and $dA = r\,dr\,d\theta$. The unit disk is $0 \leq r \leq 1$, $0 \leq \theta \leq 2\pi$." style="min-height:2in;">
   <div class="blank-prompt">Use \(x^2 + y^2 = r^2\) and \(dA = r\,dr\,d\theta\). The unit disk is \(0 \leq r \leq 1\), \(0 \leq \theta \leq 2\pi\).</div>
 </div>
 </section>
@@ -229,8 +179,8 @@ if (window.MathJax && window.MathJax.startup) {
   <h3 class="example-title">Example 1</h3>
   <p>Find the area in Quadrant I enclosed by the graph of \(r = 4\cos\theta\).</p>
 </section>
-<div class="blank-space" role="region" aria-label="Student workspace: Area = $\iint_R 1 \, dA$ in polar. The curve starts at $\theta = 0$ (where $r = 4$) and returns to the origin at $\theta = \pi/2$ (where $r = 0$). Inner bounds: $0 \leq r \leq 4\cos\theta$." style="min-height:3in;">
-  <div class="blank-prompt">Area = \(\iint_R 1 \, dA\) in polar. The curve starts at \(\theta = 0\) (where \(r = 4\)) and returns to the origin at \(\theta = \pi/2\) (where \(r = 0\)). Inner bounds: \(0 \leq r \leq 4\cos\theta\).</div>
+<div class="blank-space" role="region" aria-label="Student workspace: Area = $\iint_R 1   dA$ in polar. What does $r = 4\cos\theta$ look like? Where does it start and end? What are the bounds on $r$ and $\theta$?" style="min-height:4in;">
+  <div class="blank-prompt">Area = \(\iint_R 1   dA\) in polar. What does \(r = 4\cos\theta\) look like? Where does it start and end? What are the bounds on \(r\) and \(\theta\)?</div>
 </div>
 </section>
 
@@ -238,16 +188,17 @@ if (window.MathJax && window.MathJax.startup) {
   <h2>Example 2: Volume of a Hemisphere</h2>
   <section class="example-box" role="region" aria-label="Example 2">
   <h3 class="example-title">Example 2</h3>
-  <p>Evaluate \(\displaystyle\iint_R \sqrt{4 - x^2 - y^2} \, dA\) where \(R = \{(x,y) \mid x^2 + y^2 \leq 4, \; x \geq 0\}\).</p>
+  <p>Evaluate \(\displaystyle\iint_R \sqrt{4 - x^2 - y^2}   dA\) where \(R = \{(x,y) \mid x^2 + y^2 \leq 4, \; x \geq 0\}\).</p>
 </section>
-<div class="blank-space" role="region" aria-label="Student workspace: Convert to polar: $\sqrt{4 - x^2 - y^2} = \sqrt{4 - r^2}$. The semicircle where $x \geq 0$ has $-\pi/2 \leq \theta \leq \pi/2$ and $0 \leq r \leq 2$." style="min-height:3in;">
-  <div class="blank-prompt">Convert to polar: \(\sqrt{4 - x^2 - y^2} = \sqrt{4 - r^2}\). The semicircle where \(x \geq 0\) has \(-\pi/2 \leq \theta \leq \pi/2\) and \(0 \leq r \leq 2\).</div>
+<div class="blank-space" role="region" aria-label="Student workspace: Convert to polar: $\sqrt{4 - x^2 - y^2} = \sqrt{4 - r^2}$. What geometric shape is $R$? What are the polar bounds on $r$ and $\theta$?" style="min-height:4in;">
+  <div class="blank-prompt">Convert to polar: \(\sqrt{4 - x^2 - y^2} = \sqrt{4 - r^2}\). What geometric shape is \(R\)? What are the polar bounds on \(r\) and \(\theta\)?</div>
 </div>
 </section>
 
 <section id="quick-check-sketch-a-polar-region" aria-label="Quick Check: Sketch a Polar Region">
   <h2>Quick Check: Sketch a Polar Region</h2>
-  <div class="blank-space" role="region" aria-label="Student workspace: Mark the radii $r = 1$ and $r = 2$ and the angles $\theta = 0$ and $\theta = \pi/4$. Shade the region between them." style="min-height:2in;">
+  <div><p><em>Sketch the region described by \(1 \leq r \leq 2\) and \(0 \leq \theta \leq \pi/4\). What shape is it?</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Mark the radii $r = 1$ and $r = 2$ and the angles $\theta = 0$ and $\theta = \pi/4$. Shade the region between them." style="min-height:1in;">
   <div class="blank-prompt">Mark the radii \(r = 1\) and \(r = 2\) and the angles \(\theta = 0\) and \(\theta = \pi/4\). Shade the region between them.</div>
 </div>
 </section>
@@ -258,8 +209,12 @@ if (window.MathJax && window.MathJax.startup) {
   <h3 class="example-title">Example 3</h3>
   <p>Find the area enclosed by \(r = 4 + 3\cos\theta\).</p>
 </section>
-<div class="blank-space" role="region" aria-label="Student workspace: Area = $\int_0^{2\pi} \int_0^{4 + 3\cos\theta} r \, dr \, d\theta$. Evaluate the inner integral first, then use the identity $\cos^2\theta = \frac{1 + \cos 2\theta}{2}$." style="min-height:3.5in;">
-  <div class="blank-prompt">Area = \(\int_0^{2\pi} \int_0^{4 + 3\cos\theta} r \, dr \, d\theta\). Evaluate the inner integral first, then use the identity \(\cos^2\theta = \frac{1 + \cos 2\theta}{2}\).</div>
+<div><p>Since \(4 > 3\), this is a lima\c{c}on <strong>without an inner loop</strong> &mdash; it's a slightly flattened, egg-shaped curve. The curve is traced once as \(\theta\) goes from \(0\) to \(2\pi\).</p></div>
+<figure>
+  <img src="figures/cardioid.png" alt="The limaçon r equals 4 plus 3 cosine theta plotted in polar coordinates, with the enclosed area shaded. The curve reaches its maximum radius r equals 7 at theta equals 0 on the right, minimum r equals 1 at theta equals pi on the left (the dimple), and r equals 4 at theta equals pi over 2 at the top. The area formula as an iterated polar integral is shown at the bottom.">
+</figure>
+<div class="blank-space" role="region" aria-label="Student workspace: Area = $\int_0^{2\pi} \int_0^{4 + 3\cos\theta} r   dr   d\theta$. Evaluate the inner integral first, then use the identity $\cos^2\theta = \frac{1 + \cos 2\theta}{2}$." style="min-height:2in;">
+  <div class="blank-prompt">Area = \(\int_0^{2\pi} \int_0^{4 + 3\cos\theta} r   dr   d\theta\). Evaluate the inner integral first, then use the identity \(\cos^2\theta = \frac{1 + \cos 2\theta}{2}\).</div>
 </div>
 </section>
 
@@ -269,14 +224,30 @@ if (window.MathJax && window.MathJax.startup) {
   <h3 class="example-title">Example 4</h3>
   <p>Find the volume of the solid inside the sphere \(x^2 + y^2 + z^2 = 16\) and outside the cylinder \(x^2 + y^2 = 4\).</p>
 </section>
-<div class="blank-space" role="region" aria-label="Student workspace: Use $V = 2\int_0^{2\pi}\int_2^4 \sqrt{16 - r^2} \; r \, dr \, d\theta$. The inner integral uses $u = 16 - r^2$." style="min-height:3.5in;">
-  <div class="blank-prompt">Use \(V = 2\int_0^{2\pi}\int_2^4 \sqrt{16 - r^2} \; r \, dr \, d\theta\). The inner integral uses \(u = 16 - r^2\).</div>
+<div class="blank-space" role="region" aria-label="Student workspace: Use symmetry (double the top half). Convert to polar. What are the bounds on $r$? On $\theta$? Don't forget $dA = r\,dr\,d\theta$." style="min-height:4in;">
+  <div class="blank-prompt">Use symmetry (double the top half). Convert to polar. What are the bounds on \(r\)? On \(\theta\)? Don't forget \(dA = r\,dr\,d\theta\).</div>
 </div>
 </section>
 
 <section id="when-to-use-polar-coordinates" aria-label="When to Use Polar Coordinates">
   <h2>When to Use Polar Coordinates</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>Not every integral is easier in polar. If the region is a rectangle or the integrand involves \(x\) and \(y\) separately (not in \(x^2+y^2\) combinations), Cartesian may be simpler.</p></aside>
+  <div><p>How do you know when to switch to polar? Here are the telltale signs:</p>
+<table>
+<tr><th><strong>Clue</strong></th><th><strong>Example</strong></th></tr>
+<tr><td>Region is a disk, annulus, or sector</td><td>\(x^2 + y^2 \leq 9\)</td></tr>
+<tr><td>Boundary involves \(x^2 + y^2\)</td><td>\(1 \leq x^2 + y^2 \leq 4\)</td></tr>
+<tr><td>Integrand contains \(x^2 + y^2\)</td><td>\(e^{-(x^2+y^2)}\)</td></tr>
+<tr><td>Boundary is a polar curve</td><td>\(r = 1 + \cos\theta\)</td></tr>
+<tr><td>Square-root bounds like \(\sqrt{a^2 - x^2}\)</td><td>Semicircle or quarter-circle region</td></tr>
+</table></div>
+<div><p><strong>Conversion checklist:</strong></p>
+<ol>
+<li>Replace \(x = r\cos\theta\), \(y = r\sin\theta\), \(x^2 + y^2 = r^2\)</li>
+<li>Replace \(dA = dy\,dx\) with \(r\,dr\,d\theta\) (<strong>don't forget the \(r\)!</strong>)</li>
+<li>Determine polar bounds for \(r\) and \(\theta\)</li>
+<li>Evaluate (inner \(r\) first, then outer \(\theta\))</li>
+</ol></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Not every integral is easier in polar. If the region is a rectangle or the integrand involves \(x\) and \(y\) separately (not in \(x^2+y^2\) combinations), Cartesian may be simpler.</p></aside>
 </section>
 
 <section class="homework-section" aria-label="Homework">
