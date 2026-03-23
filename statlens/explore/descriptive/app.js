@@ -11,7 +11,7 @@ import { drawDotplot, computeDots, dotplotBins } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper, setPageTitle } from '../../js/page-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
-import { overlayDensityOnHistogram } from '../../js/kde.js';
+import { overlayDensityOnHistogram, silvermanBandwidth, drawGroupedDensity } from '../../js/kde.js';
 import { createExportBar, addChartSaveButton } from '../../js/export.js';
 import { initSheet, handleSheetPaste, readSheetValues, populateSheet } from '../../js/spreadsheet.js';
 import { drawMeanOnHistogram, drawMeanOnDotplot } from '../../js/mean-marker.js';
@@ -53,7 +53,7 @@ initTabs();
 
 // ── Chart type toggle ────────────────────────────────────────────────
 
-/** @type {'histogram'|'dotplot'|'boxplot'} */
+/** @type {'histogram'|'dotplot'|'boxplot'|'density'} */
 let activeChart = 'histogram';
 
 /** Current variable label (for chart titles). */
@@ -68,13 +68,16 @@ let relativeFreq = false;
 /** Whether to show mean marker on dotplots and boxplots. */
 let showMeanMarker = false;
 
+/** Bandwidth multiplier for density plot (1.0 = Silverman default). */
+let bandwidthMult = 1.0;
+
 const chartRadios = /** @type {NodeListOf<HTMLInputElement>} */ (
   document.querySelectorAll('input[name="chart-type"]')
 );
 
 chartRadios.forEach(radio => {
   radio.addEventListener('change', () => {
-    activeChart = /** @type {'histogram'|'dotplot'|'boxplot'} */ (radio.value);
+    activeChart = /** @type {'histogram'|'dotplot'|'boxplot'|'density'} */ (radio.value);
     renderActiveChart();
     updateChartControls();
   });
@@ -190,6 +193,22 @@ function updateChartControls() {
     cb.checked = showOutliers;
     cb.addEventListener('change', () => {
       showOutliers = cb.checked;
+      renderActiveChart();
+    });
+
+  } else if (activeChart === 'density') {
+    // Bandwidth multiplier slider
+    const label = document.createElement('label');
+    label.innerHTML = 'Bandwidth: <input type="range" id="bw-slider" min="0.2" max="3" step="0.1" style="width:100px;vertical-align:middle;"> <span id="bw-display"></span>';
+    label.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+    chartControls.appendChild(label);
+    const slider = /** @type {HTMLInputElement} */ (label.querySelector('input'));
+    const display = /** @type {HTMLSpanElement} */ (label.querySelector('#bw-display'));
+    slider.value = String(bandwidthMult);
+    display.textContent = bandwidthMult === 1 ? 'default' : `×${bandwidthMult.toFixed(1)}`;
+    slider.addEventListener('input', () => {
+      bandwidthMult = parseFloat(slider.value);
+      display.textContent = bandwidthMult === 1 ? 'default' : `×${bandwidthMult.toFixed(1)}`;
       renderActiveChart();
     });
   }
@@ -550,11 +569,12 @@ function setData(values, varLabel, sourceName) {
   showOutliers = true;
   showDensity = false;
   relativeFreq = false;
+  bandwidthMult = 1.0;
 
   // Apply ?chart= URL param on first load
   const chartParam = new URLSearchParams(window.location.search).get('chart');
-  if (chartParam && ['histogram', 'dotplot', 'boxplot'].includes(chartParam)) {
-    activeChart = /** @type {'histogram'|'dotplot'|'boxplot'} */ (chartParam);
+  if (chartParam && ['histogram', 'dotplot', 'boxplot', 'density'].includes(chartParam)) {
+    activeChart = /** @type {'histogram'|'dotplot'|'boxplot'|'density'} */ (chartParam);
   }
 
   const defaultRadio = /** @type {HTMLInputElement|null} */ (
@@ -652,6 +672,16 @@ function renderActiveChart() {
       animate: false,
       showOutliers,
       showMean: showMeanMarker,
+    });
+
+  } else if (activeChart === 'density') {
+    const bw = silvermanBandwidth(currentValues) * bandwidthMult;
+    drawGroupedDensity(chartArea, { [xLabel]: currentValues }, {
+      xLabel,
+      titleText: `Density Plot of ${xLabel}`,
+      descText: `Kernel density estimate showing the distribution shape of ${xLabel}`,
+      id: 'desc-density',
+      bandwidth: bw,
     });
   }
 

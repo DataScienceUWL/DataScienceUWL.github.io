@@ -318,23 +318,37 @@ export function fitYLabel(frame, yLabel) {
   const inner = d3Selection.select(frame.inner);
   const axes = inner.select('.axes');
 
-  // Measure widest y-axis tick label
+  // Measure widest y-axis tick label.
+  // Try getComputedTextLength() first (works before layout in most browsers),
+  // fall back to getBBox(), then estimate from character count.
   let maxTickWidth = 0;
+  let tickCount = 0;
+  let maxChars = 0;
   axes.select('.y-axis').selectAll('.tick text').each(function () {
+    tickCount++;
+    const el = /** @type {SVGTextElement} */ (this);
+    const chars = (el.textContent || '').length;
+    if (chars > maxChars) maxChars = chars;
     try {
-      const w = /** @type {SVGTextElement} */ (this).getBBox().width;
+      const w = el.getComputedTextLength?.() || el.getBBox().width;
       if (w > maxTickWidth) maxTickWidth = w;
-    } catch { /* getBBox fails in JSDOM */ }
+    } catch { /* JSDOM */ }
   });
+
+  // If measurement returned 0 (common during synchronous DOM construction),
+  // estimate from character count. ~8.5px per char at 15px Atkinson Hyperlegible.
+  if (maxTickWidth === 0 && maxChars > 0) {
+    maxTickWidth = maxChars * 8.5;
+  }
 
   // Position: just outside the tick labels with a comfortable gap
   const GAP = 14;
   const labelY = -(maxTickWidth + GAP);
 
   // Safety check: if label would be clipped, expand viewBox.
-  // LABEL_EXTENT accounts for the rotated label's full extent leftward
-  // (ascent + half line-height at 16px font ≈ 22px).
-  const LABEL_EXTENT = 22;
+  // LABEL_EXTENT accounts for the rotated label's full visual extent leftward
+  // from its baseline: font ascent + padding at 16px font-weight 500.
+  const LABEL_EXTENT = 26;
   const needed = maxTickWidth + GAP + LABEL_EXTENT;
   if (needed > frame.margin.left) {
     const extra = Math.ceil(needed - frame.margin.left);

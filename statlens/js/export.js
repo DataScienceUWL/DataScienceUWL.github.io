@@ -356,8 +356,8 @@ export function addChartSaveButton(container, filename = 'chart.png', opts = {})
 
   container.appendChild(btn);
 
-  // Optional copy-to-clipboard button
-  if (opts.showCopy) {
+  // Copy-to-clipboard button (default: on)
+  if (opts.showCopy !== false) {
     const copyBtn = document.createElement('button');
     copyBtn.type = 'button';
     copyBtn.className = 'chart-copy-btn';
