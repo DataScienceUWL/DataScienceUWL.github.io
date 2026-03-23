@@ -16,7 +16,7 @@ import { drawWaffleChart } from '../../js/waffle.js';
 import { drawScatterplot, drawResidualPlot } from '../../js/scatterplot.js';
 import { drawGroupedDensity, overlayDensityOnHistogram } from '../../js/kde.js';
 import { mean, median, sd, quantile, iqr, range, cor, linreg, loess, detectPrecision, formatStat } from '../../js/stats.js';
-import { renderStatLabel } from '../../js/chart-utils.js';
+import { renderStatLabel, getColors } from '../../js/chart-utils.js';
 import { addChartSaveButton, copyTableRich } from '../../js/export.js';
 import { announce, initTabs, initDataPanel, initHelp, setPageTitle, wrapWithStepper } from '../../js/page-utils.js';
 
@@ -812,6 +812,8 @@ function renderNumericByCategorical(numVar, catVar) {
   const groupNames = Object.keys(grouped);
   if (groupNames.length === 0) return;
 
+  const colors = getColors(groupNames.length);
+
   if (activeChart === 'boxplot') {
     drawBoxplot(chartContainer, grouped, {
       xLabel: numVar.label, titleText: `${numVar.label} by ${catVar.label}`,
@@ -819,25 +821,43 @@ function renderNumericByCategorical(numVar, catVar) {
     });
   } else if (activeChart === 'histogram') {
     const numBins = histBins ?? sturgesBins(n);
-    for (const name of groupNames) {
+    for (let i = 0; i < groupNames.length; i++) {
+      const name = groupNames[i];
       const wrapper = document.createElement('div');
-      wrapper.style.marginBottom = '0.5rem';
+      wrapper.style.marginBottom = '0.25rem';
+      const label = document.createElement('p');
+      label.style.cssText = `margin:0.25rem 0 0;font-size:0.85rem;font-weight:600;color:${colors[i]}`;
+      label.textContent = `${name} (n = ${grouped[name].length})`;
+      wrapper.appendChild(label);
+      const chartDiv = document.createElement('div');
+      wrapper.appendChild(chartDiv);
       if (chartContainer) chartContainer.appendChild(wrapper);
-      drawHistogram(wrapper, grouped[name], {
-        xLabel: numVar.label, titleText: `${name} (n=${grouped[name].length})`,
+      drawHistogram(chartDiv, grouped[name], {
+        xLabel: i === groupNames.length - 1 ? numVar.label : '',
+        titleText: `${name} (n=${grouped[name].length})`,
         id: `explorer-chart-${name}`, animate: false,
         numBins, relativeFrequency: relativeFreq,
+        fillColor: colors[i],
       });
     }
   } else if (activeChart === 'dotplot') {
-    for (const name of groupNames) {
+    for (let i = 0; i < groupNames.length; i++) {
+      const name = groupNames[i];
       const wrapper = document.createElement('div');
-      wrapper.style.marginBottom = '0.5rem';
+      wrapper.style.marginBottom = '0.25rem';
+      const label = document.createElement('p');
+      label.style.cssText = `margin:0.25rem 0 0;font-size:0.85rem;font-weight:600;color:${colors[i]}`;
+      label.textContent = `${name} (n = ${grouped[name].length})`;
+      wrapper.appendChild(label);
+      const chartDiv = document.createElement('div');
+      wrapper.appendChild(chartDiv);
       if (chartContainer) chartContainer.appendChild(wrapper);
-      drawDotplot(wrapper, grouped[name], {
-        xLabel: numVar.label, titleText: `${name} (n=${grouped[name].length})`,
+      drawDotplot(chartDiv, grouped[name], {
+        xLabel: i === groupNames.length - 1 ? numVar.label : '',
+        titleText: `${name} (n=${grouped[name].length})`,
         id: `explorer-chart-${name}`, animate: false,
         numBins: dotBins ?? undefined,
+        fillColor: colors[i],
       });
     }
   } else if (activeChart === 'density') {
@@ -845,6 +865,7 @@ function renderNumericByCategorical(numVar, catVar) {
       xLabel: numVar.label,
       titleText: `${numVar.label} by ${catVar.label}`,
       id: 'explorer-chart',
+      colors,
     });
   } else {
     renderMismatchNote('Boxplots, histograms, dotplots, and density curves work well for comparing a quantitative variable across groups.');
@@ -1011,24 +1032,58 @@ function renderRegressionStats(xLabel, yLabel, x, y) {
 function renderGroupedStats(numLabel, catLabel, grouped) {
   if (!statsContainer) return;
   const groups = Object.keys(grouped);
+  const colors = getColors(groups.length);
 
-  let html = `<table aria-label="Group statistics for ${numLabel} by ${catLabel}">`;
-  html += `<thead><tr><th>${catLabel}</th><th>n</th><th>Mean</th><th>Median</th><th>SD</th><th>IQR</th></tr></thead><tbody>`;
-  for (const g of groups) {
-    const vals = grouped[g];
-    const dp = detectPrecision(vals);
-    html += `<tr>`;
-    html += `<td>${g}</td>`;
-    html += `<td>${vals.length}</td>`;
-    html += `<td>${formatStat(mean(vals), dp)}</td>`;
-    html += `<td>${formatStat(median(vals), dp)}</td>`;
-    html += `<td>${formatStat(sd(vals), dp)}</td>`;
-    html += `<td>${formatStat(iqr(vals), dp)}</td>`;
-    html += `</tr>`;
+  const table = document.createElement('table');
+  table.setAttribute('aria-label', `Group statistics for ${numLabel} by ${catLabel}`);
+
+  // Header row with color-coded group names
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  const statHeaders = ['Statistic', ...groups];
+  statHeaders.forEach((text, i) => {
+    const th = document.createElement('th');
+    th.textContent = text;
+    if (i > 0) {
+      th.style.borderBottom = `3px solid ${colors[i - 1]}`;
+    }
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  // Stat rows
+  const tbody = document.createElement('tbody');
+  const statDefs = [
+    { label: 'n', fn: (/** @type {number[]} */ v) => String(v.length) },
+    { label: 'Mean', fn: (/** @type {number[]} */ v) => formatStat(mean(v), detectPrecision(v)) },
+    { label: 'Median', fn: (/** @type {number[]} */ v) => formatStat(median(v), detectPrecision(v)) },
+    { label: 'SD', fn: (/** @type {number[]} */ v) => formatStat(sd(v), detectPrecision(v)) },
+    { label: 'IQR', fn: (/** @type {number[]} */ v) => formatStat(iqr(v), detectPrecision(v)) },
+    { label: 'Min', fn: (/** @type {number[]} */ v) => formatStat(Math.min(...v), detectPrecision(v)) },
+    { label: 'Q1', fn: (/** @type {number[]} */ v) => formatStat(quantile(v, 0.25), detectPrecision(v)) },
+    { label: 'Q3', fn: (/** @type {number[]} */ v) => formatStat(quantile(v, 0.75), detectPrecision(v)) },
+    { label: 'Max', fn: (/** @type {number[]} */ v) => formatStat(Math.max(...v), detectPrecision(v)) },
+  ];
+
+  for (const stat of statDefs) {
+    const tr = document.createElement('tr');
+    const th = document.createElement('td');
+    th.textContent = stat.label;
+    th.style.fontWeight = '600';
+    tr.appendChild(th);
+    for (let i = 0; i < groups.length; i++) {
+      const td = document.createElement('td');
+      td.textContent = stat.fn(grouped[groups[i]]);
+      td.style.backgroundColor = colors[i] + '12';
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
   }
-  html += `</tbody></table>`;
+  table.appendChild(tbody);
 
-  statsContainer.innerHTML = html;
+  statsContainer.innerHTML = '';
+  statsContainer.appendChild(table);
 }
 
 /**
