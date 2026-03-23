@@ -116,7 +116,7 @@ export function drawBarChart(container, values, options = {}) {
   // Estimate the y-axis max to know how wide tick labels will be.
   const yLabel = options.yLabel ?? defaultYLabel(mode);
   let estimatedLeft;
-  if (!margin && !isPhone) {
+  if ((!margin || margin.left == null) && !isPhone) {
     const { categories, counts, total } = computeFrequencies(values, categoryOrder);
     let yMax;
     if (mode === 'relative' || mode === 'filled') {
@@ -137,9 +137,12 @@ export function drawBarChart(container, values, options = {}) {
     estimatedLeft = estimateLeftMargin(ticks, { hasLabel: !!yLabel });
   }
 
-  const effectiveMargin = margin || (isPhone
+  const defaultMargin = isPhone
     ? { top: 30, right: 15, bottom: 70, left: 55 }
-    : { top: 28, right: 20, bottom: 50, left: estimatedLeft ?? 60 });
+    : { top: 28, right: 20, bottom: 50, left: estimatedLeft ?? 60 };
+  const effectiveMargin = margin
+    ? { ...defaultMargin, ...margin, left: margin.left ?? defaultMargin.left }
+    : defaultMargin;
   const frame = createChart(container, { titleText, descText, id, margin: effectiveMargin });
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 

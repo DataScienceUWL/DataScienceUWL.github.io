@@ -325,7 +325,7 @@ function renderChart() {
       titleText: currentVarName,
       id: 'cat-chart',
       animate: false,
-      margin: { top: 30, right: 15, bottom: 80, left: 55 },
+      margin: { top: 30, right: 15, bottom: 80 },
     });
   }
 
