@@ -2080,21 +2080,51 @@ export function initSimPage(config) {
         .attr('stroke-dasharray', '6,3');
       // Symbol label below x-axis, centered on the dashed line
       const statKey = bootStatSelect?.value ?? 'mean';
-      const sym = config.proportion ? 'p\u0302'
-        : statKey === 'mean' ? 'x\u0304'
-        : statKey === 'median' ? 'M\u0303'
-        : statKey === 'sd' ? 's' : stat.label.split(' ').pop() || '';
-      g.append('text')
-        .attr('x', xPos).attr('y', fh + 22)
-        .attr('text-anchor', 'middle')
-        .attr('dominant-baseline', 'central')
-        .attr('fill', '#D35400')
-        .attr('stroke', 'white')
-        .attr('stroke-width', 3)
-        .attr('paint-order', 'stroke')
-        .attr('font-size', '1.15em')
-        .attr('font-weight', '700')
-        .text(sym);
+      const labelY = fh + 22;
+      const fontSize = 1.15; // em
+      if (statKey === 'mean' && !config.proportion) {
+        // Draw x with a manually positioned overline (combining char is unreliable in SVG)
+        const xText = g.append('text')
+          .attr('x', xPos).attr('y', labelY)
+          .attr('text-anchor', 'middle')
+          .attr('dominant-baseline', 'central')
+          .attr('fill', '#D35400')
+          .attr('stroke', 'white')
+          .attr('stroke-width', 3)
+          .attr('paint-order', 'stroke')
+          .attr('font-size', `${fontSize}em`)
+          .attr('font-weight', '700')
+          .text('x');
+        // Overline: white shadow for contrast, then colored bar
+        const barY = labelY - 9;
+        g.append('line')
+          .attr('x1', xPos - 7).attr('x2', xPos + 7)
+          .attr('y1', barY).attr('y2', barY)
+          .attr('stroke', 'white')
+          .attr('stroke-width', 5)
+          .attr('stroke-linecap', 'round');
+        g.append('line')
+          .attr('x1', xPos - 6).attr('x2', xPos + 6)
+          .attr('y1', barY).attr('y2', barY)
+          .attr('stroke', '#D35400')
+          .attr('stroke-width', 2)
+          .attr('stroke-linecap', 'round');
+      } else {
+        const sym = config.proportion ? 'p\u0302'
+          : statKey === 'median' ? 'M\u0303'
+          : statKey === 'sd' ? 's' : stat.label.split(' ').pop() || '';
+        g.append('text')
+          .attr('x', xPos).attr('y', labelY)
+          .attr('text-anchor', 'middle')
+          .attr('dominant-baseline', 'central')
+          .attr('fill', '#D35400')
+          .attr('stroke', 'white')
+          .attr('stroke-width', 3)
+          .attr('paint-order', 'stroke')
+          .attr('font-size', `${fontSize}em`)
+          .attr('font-weight', '700')
+          .text(sym);
+      }
     }
 
     if (!shouldMorph || !result || !origHistCache) return 0;
