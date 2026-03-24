@@ -2013,6 +2013,7 @@ export function initSimPage(config) {
    * When origHistCache is available and morph=true, uses shared bin edges
    * and transitions bars from original heights to resample heights, with
    * brief color highlights on bars that grew or shrank.
+   * Also draws a dashed mean line on the resample histogram.
    * @param {number[]} resampleValues
    * @param {boolean} [morph=false] - Animate bar morph from original heights (+1 only)
    * @returns {number} Animation duration in ms (0 if no morph)
@@ -2022,7 +2023,7 @@ export function initSimPage(config) {
     const container = document.createElement('div');
     container.className = 'mini-chart';
 
-    const shouldMorph = morph && origHistCache && !prefersReducedMotion() && hasD3Transition();
+    const shouldMorph = morph && origHistCache && !prefersReducedMotion();
     const nBins = origHistCache ? origHistCache.numBins : Math.min(Math.ceil(Math.sqrt(resampleValues.length)), 40);
     // Use same thresholds as original so bars align for visual comparison
     const thresholds = origHistCache ? origHistCache.thresholds : undefined;
@@ -2039,6 +2040,34 @@ export function initSimPage(config) {
     });
     resampleContentEl.appendChild(container);
 
+    // Draw resample statistic line on the histogram (dashed orange)
+    if (result && result.xScale && result.frame) {
+      const stat = getBootstrapStat();
+      const resampleVal = stat.fn(resampleValues);
+      const xPos = result.xScale(resampleVal);
+      const fh = result.frame.height;
+      const overlays = d3Selection.select(result.frame.inner).select('.overlays');
+      overlays.append('line')
+        .attr('x1', xPos).attr('x2', xPos)
+        .attr('y1', 0).attr('y2', fh)
+        .attr('stroke', '#E07020')
+        .attr('stroke-width', 2)
+        .attr('stroke-dasharray', '5,3')
+        .attr('class', 'resample-mean-line');
+      // Label: use stat-appropriate symbol
+      const statKey = bootStatSelect?.value ?? 'mean';
+      const labelText = config.proportion ? 'p\u0302'
+        : statKey === 'mean' ? 'x\u0304'
+        : statKey === 'median' ? 'med'
+        : statKey === 'sd' ? 's' : stat.label.split(' ').pop() || '';
+      overlays.append('text')
+        .attr('x', xPos + 3).attr('y', 10)
+        .attr('fill', '#E07020')
+        .attr('font-size', '10px')
+        .attr('font-weight', '600')
+        .text(labelText);
+    }
+
     if (!shouldMorph || !result || !origHistCache) return 0;
 
     // Build a map of original bin counts keyed by bin x0
@@ -2048,10 +2077,10 @@ export function initSimPage(config) {
       origCounts.set(b.x0, b.length);
     }
 
-    // Morph: set bars to original heights, then transition to resample heights
+    // Morph animation using CSS transitions on SVG rect attributes
     const svg = container.querySelector('svg');
     if (!svg) return 0;
-    const bars = d3Selection.select(svg).selectAll('.data rect');
+    const rects = /** @type {SVGRectElement[]} */ ([...svg.querySelectorAll('.data rect')]);
     const { yScale, frame } = result;
     if (!yScale || !frame) return 0;
     const innerHeight = frame.height;
@@ -2060,37 +2089,92 @@ export function initSimPage(config) {
     const FADE_MS = 600;
     const GROW_FILL = '#E07020CC'; // warm orange — bar grew
     const SHRINK_FILL = '#569BBDCC'; // cool blue — bar shrank
+    const DEFAULT_FILL = '#569BBD80';
 
-    bars.each(/** @this {SVGRectElement} */ function(/** @type {any} */ d) {
-      const origCount = origCounts.get(d.x0) ?? 0;
-      const newCount = d.length;
+    // Record final (resample) positions, then snap to original positions
+    /** @type {Array<{rect: SVGRectElement, finalY: string, finalH: string, grew: boolean, shrank: boolean}>} */
+    const morphData = [];
+
+    for (const rect of rects) {
+      const finalY = rect.getAttribute('y') || '0';
+      const finalH = rect.getAttribute('height') || '0';
+
+      // Parse bin x0 from the aria-label ("x0 to x1: count")
+      const label = rect.getAttribute('aria-label') || '';
+      const x0Match = label.match(/^([\d.e+-]+)\s+to/);
+      const x0 = x0Match ? parseFloat(x0Match[1]) : NaN;
+
+      const origCount = isNaN(x0) ? 0 : (origCounts.get(x0) ?? 0);
+      // Use computeBins result for accurate resample count at this bin
+      const resampleBin = result.bins.find(b => Math.abs(b.x0 - x0) < 1e-10);
+      const newCount = resampleBin ? resampleBin.length : 0;
+      const grew = newCount > origCount;
+      const shrank = newCount < origCount;
+
+      // Snap bar to original height
       const origY = origCount > 0 ? yScale(origCount) : innerHeight;
       const origH = innerHeight - origY;
+      rect.setAttribute('y', String(origY));
+      rect.setAttribute('height', String(Math.max(0, origH)));
 
-      // Start at original height
-      d3Selection.select(this)
-        .attr('y', origY)
-        .attr('height', origH);
-    });
+      morphData.push({ rect, finalY, finalH, grew, shrank });
+    }
 
-    // Transition to resample heights with color highlight
-    bars.transition()
-      .duration(MORPH_MS)
-      .attr('y', /** @param {any} d */ d => yScale(d.length))
-      .attr('height', /** @param {any} d */ d => innerHeight - yScale(d.length))
-      .attr('fill', /** @param {any} d */ d => {
-        const origCount = origCounts.get(d.x0) ?? 0;
-        if (d.length > origCount) return GROW_FILL;
-        if (d.length < origCount) return SHRINK_FILL;
-        return d.fill; // unchanged
-      })
-      .on('end', /** @this {SVGRectElement} */ function(/** @type {any} */ d) {
-        // Fade back to default fill
-        d3Selection.select(this)
-          .transition()
-          .duration(FADE_MS)
-          .attr('fill', d.fill);
-      });
+    // Animate bar morph via requestAnimationFrame interpolation
+    // (CSS/WAAPI transitions don't work on SVG geometry attributes)
+    const startTime = performance.now();
+
+    /** Ease-out cubic: decelerating curve */
+    function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+    /** @type {Array<{rect: SVGRectElement, startY: number, startH: number, endY: number, endH: number, grew: boolean, shrank: boolean}>} */
+    const animItems = morphData.map(({ rect, finalY, finalH, grew, shrank }) => ({
+      rect,
+      startY: parseFloat(rect.getAttribute('y') || '0'),
+      startH: parseFloat(rect.getAttribute('height') || '0'),
+      endY: parseFloat(finalY),
+      endH: parseFloat(finalH),
+      grew, shrank,
+    }));
+
+    // Apply highlight colors immediately
+    for (const { rect, grew, shrank } of animItems) {
+      if (grew) rect.setAttribute('fill', GROW_FILL);
+      else if (shrank) rect.setAttribute('fill', SHRINK_FILL);
+    }
+
+    function morphFrame(now) {
+      const elapsed = now - startTime;
+      const t = Math.min(1, elapsed / MORPH_MS);
+      const e = easeOut(t);
+      for (const { rect, startY, startH, endY, endH } of animItems) {
+        const y = startY + (endY - startY) * e;
+        const h = startH + (endH - startH) * e;
+        rect.setAttribute('y', String(y));
+        rect.setAttribute('height', String(Math.max(0, h)));
+      }
+      if (t < 1) {
+        requestAnimationFrame(morphFrame);
+      } else {
+        // Morph complete — start color fade back to default
+        fadeColors();
+      }
+    }
+    requestAnimationFrame(morphFrame);
+
+    function fadeColors() {
+      // SVG fill IS a CSS presentation property, so CSS transition works here
+      for (const { rect, grew, shrank } of animItems) {
+        if (!grew && !shrank) continue;
+        rect.style.transition = `fill ${FADE_MS}ms ease`;
+        rect.setAttribute('fill', DEFAULT_FILL);
+      }
+      setTimeout(() => {
+        for (const { rect } of animItems) {
+          rect.style.transition = '';
+        }
+      }, FADE_MS);
+    }
 
     return MORPH_MS + FADE_MS;
   }
