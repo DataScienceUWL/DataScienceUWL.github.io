@@ -2060,22 +2060,26 @@ export function initSimPage(config) {
         .attr('stroke', '#D35400')
         .attr('stroke-width', 3)
         .attr('stroke-dasharray', '6,3');
-      // Label: use stat-appropriate symbol
+      // Label with value, positioned at top of line with white halo for readability
       const statKey = bootStatSelect?.value ?? 'mean';
-      const labelText = config.proportion ? 'p\u0302'
+      const sym = config.proportion ? 'p\u0302'
         : statKey === 'mean' ? 'x\u0304'
         : statKey === 'median' ? 'med'
         : statKey === 'sd' ? 's' : stat.label.split(' ').pop() || '';
-      // White outline for contrast against bars, then colored text on top
+      const valStr = config.proportion
+        ? formatStat(resampleVal, dataPrecision, 'proportion')
+        : formatStat(resampleVal, dataPrecision);
+      // Place label just above the top of the chart area
       g.append('text')
-        .attr('x', xPos + 5).attr('y', 12)
+        .attr('x', xPos).attr('y', -4)
+        .attr('text-anchor', 'middle')
         .attr('fill', '#D35400')
         .attr('stroke', 'white')
-        .attr('stroke-width', 3)
+        .attr('stroke-width', 3.5)
         .attr('paint-order', 'stroke')
-        .attr('font-size', '12px')
+        .attr('font-size', '11px')
         .attr('font-weight', '700')
-        .text(labelText);
+        .text(`${sym} = ${valStr}`);
     }
 
     if (!shouldMorph || !result || !origHistCache) return 0;
