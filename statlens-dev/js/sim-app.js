@@ -2123,8 +2123,8 @@ export function initSimPage(config) {
 
     const MORPH_MS = 450;
     const FADE_MS = 600;
-    const GROW_FILL = '#E07020CC'; // warm orange — bar grew
-    const SHRINK_FILL = '#569BBDCC'; // cool blue — bar shrank
+    const GROW_FILL = '#2A6496'; // dark blue — bar grew (more values landed here)
+    const SHRINK_FILL = '#B8D4E8'; // light blue — bar shrank (fewer values here)
     const DEFAULT_FILL = '#569BBD80';
 
     // Record final (resample) positions, then snap to original positions
