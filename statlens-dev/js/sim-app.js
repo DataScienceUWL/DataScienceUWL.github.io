@@ -2066,10 +2066,14 @@ export function initSimPage(config) {
         : statKey === 'mean' ? 'x\u0304'
         : statKey === 'median' ? 'med'
         : statKey === 'sd' ? 's' : stat.label.split(' ').pop() || '';
+      // White outline for contrast against bars, then colored text on top
       g.append('text')
-        .attr('x', xPos + 4).attr('y', 11)
+        .attr('x', xPos + 5).attr('y', 12)
         .attr('fill', '#D35400')
-        .attr('font-size', '11px')
+        .attr('stroke', 'white')
+        .attr('stroke-width', 3)
+        .attr('paint-order', 'stroke')
+        .attr('font-size', '12px')
         .attr('font-weight', '700')
         .text(labelText);
     }
