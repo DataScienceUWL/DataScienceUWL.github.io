@@ -2057,8 +2057,8 @@ export function initSimPage(config) {
       g.append('line')
         .attr('x1', xPos).attr('x2', xPos)
         .attr('y1', 0).attr('y2', fh)
-        .attr('stroke', '#E07020')
-        .attr('stroke-width', 2.5)
+        .attr('stroke', '#D35400')
+        .attr('stroke-width', 3)
         .attr('stroke-dasharray', '6,3');
       // Label: use stat-appropriate symbol
       const statKey = bootStatSelect?.value ?? 'mean';
@@ -2067,10 +2067,10 @@ export function initSimPage(config) {
         : statKey === 'median' ? 'med'
         : statKey === 'sd' ? 's' : stat.label.split(' ').pop() || '';
       g.append('text')
-        .attr('x', xPos + 3).attr('y', 10)
-        .attr('fill', '#E07020')
-        .attr('font-size', '10px')
-        .attr('font-weight', '600')
+        .attr('x', xPos + 4).attr('y', 11)
+        .attr('fill', '#D35400')
+        .attr('font-size', '11px')
+        .attr('font-weight', '700')
         .text(labelText);
     }
 
