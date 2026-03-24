@@ -12,8 +12,8 @@ import { createRng, sampleWithReplacement } from './prng.js';
 import { mean, sd, detectPrecision, formatStat } from './stats.js';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
-import { renderSimPills, formatMechStat, drawMiniBoxplot } from './chart-utils.js';
-import { announce, initKeyboardShortcuts, initPlayPause, initTabs, animateDropToChart, initDataPanel, computeHighlights, initHelp, initSettings, initMechanismCollapse, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from './page-utils.js';
+import { renderSimPills, formatMechStat, drawMiniBoxplot, morphMiniBoxplot, prefersReducedMotion } from './chart-utils.js';
+import { announce, initKeyboardShortcuts, initPlayPause, initTabs, animateDropToChart, flyDataStream, initDataPanel, computeHighlights, initHelp, initSettings, initMechanismCollapse, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from './page-utils.js';
 import { parseParams } from './url-params.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, dotplotBins, histogramThresholds, renderSimChart, createBinAdjuster } from './chart-defaults.js';
@@ -148,6 +148,10 @@ export function initOneSamplePage(config) {
   let theoryOverlayOn = false;
   /** Whether the mechanism strip has been initialized (deferred to first generate). */
   let mechanismInitialized = false;
+  /** Whether the left panel has been morphed from "Observed" to "Null Distribution". */
+  let nullShown = false;
+  /** The title element of the observed/null panel. */
+  const mechObservedTitle = document.querySelector('#mech-observed .mechanism-title');
   /** @type {{ population?: string, parameter?: string, nullClaim?: string, successLabel?: string }} */
   let datasetContext = {};
   /** Base page title (before dataset context). */
@@ -426,6 +430,7 @@ export function initOneSamplePage(config) {
         if (obsBoxEl && sampleData.length >= 2) {
           drawMiniBoxplot(obsBoxEl, sampleData, {
             meanValue: observedStat,
+            domain: sharedBoxplotDomain(),
             label: 'Observed data distribution',
           });
         }
@@ -439,6 +444,19 @@ export function initOneSamplePage(config) {
       const mu0 = getNullValue();
       const shift = mu0 - observedStat;
       shiftedData = sampleData.map(v => v + shift);
+    }
+
+    /**
+     * Compute a shared domain that covers both original and shifted data,
+     * so the boxplot morph slides smoothly without rescaling.
+     * @returns {[number, number]}
+     */
+    function sharedBoxplotDomain() {
+      const all = sampleData.concat(shiftedData);
+      const lo = Math.min(...all);
+      const hi = Math.max(...all);
+      const pad = (hi - lo) * 0.08 || 0.5;
+      return [lo - pad, hi + pad];
     }
 
     initDataPanel({
@@ -498,12 +516,16 @@ export function initOneSamplePage(config) {
         const shift = mu0 - observedStat;
         shiftedData = sampleData.map(v => v + shift);
       }
+      // Revert left panel so the next +1 will re-morph to the new null value
+      if (nullShown) revertToObserved();
       if (allStats.length > 0) {
         resetSimulation();
         const paramLabel = isProp ? 'Null proportion' : 'Null mean';
         resultDiv.innerHTML = `<p class="hint">${paramLabel} changed. Run simulation again.</p>`;
         announce(`${paramLabel} changed. Simulation reset.`);
       }
+      // Recompute pre-sim domain for new null value
+      if (sampleN > 0) computePreSimDomain();
     });
     nullInput.addEventListener('input', syncAltNullValue);
   }
@@ -549,6 +571,125 @@ export function initOneSamplePage(config) {
     }
   }
 
+  // ─── Null distribution morph ───
+
+  /**
+   * Morph the left "Observed Data" panel into "Null Distribution".
+   * For one-mean: boxplot slides to center on μ₀.
+   * For one-prop: proportion bar morphs to p₀ width.
+   * @returns {number} Animation duration in ms (0 if already shown or instant)
+   */
+  function morphToNull() {
+    if (nullShown || !mechObservedStat) return 0;
+    nullShown = true;
+
+    const p0 = getNullValue();
+
+    if (isProp) {
+      // Morph proportion bar from observed p̂ to null p₀
+      const nullPct = (p0 * 100).toFixed(1);
+      const nullSuccesses = Math.round(p0 * sampleN);
+      const nullFailures = sampleN - nullSuccesses;
+
+      // Change title
+      if (mechObservedTitle) mechObservedTitle.textContent = 'Null Distribution';
+
+      // Find existing prop bar fill and morph it
+      const fill = mechObservedStat.querySelector('.mech-prop-fill');
+      const label = mechObservedStat.querySelector('.mech-prop-label');
+      if (fill && !prefersReducedMotion()) {
+        /** @type {HTMLElement} */ (fill).style.transition = 'width 500ms ease-out';
+        /** @type {HTMLElement} */ (fill).style.width = `${nullPct}%`;
+        if (label) label.textContent = `p₀ = ${p0}`;
+        // Update stat text
+        mechObservedStat.querySelector('.observed-highlight')?.replaceWith(
+          Object.assign(document.createElement('span'), {
+            className: 'observed-highlight',
+            innerHTML: `p\u2080 = ${p0}`,
+          })
+        );
+        return 500;
+      }
+      // Fallback: instant update
+      const obsFailures = sampleN - nullSuccesses;
+      mechObservedStat.innerHTML = `Null model: p₀ = ${p0}
+        <div class="mech-prop-bar" aria-label="Null distribution: p₀ = ${p0}" style="margin-top:4px">
+          <div class="mech-prop-fill" style="width:${nullPct}%"></div>
+          <span class="mech-prop-label">p₀ = ${p0}</span>
+        </div>`;
+      return 0;
+    } else {
+      // One-mean: morph boxplot from observed x̄ to shifted (centered at μ₀)
+      if (mechObservedTitle) mechObservedTitle.textContent = 'Null Distribution';
+
+      // Update stat text
+      mechObservedStat.querySelector('.observed-highlight')?.replaceWith(
+        Object.assign(document.createElement('span'), {
+          className: 'observed-highlight',
+          innerHTML: `\u03BC\u2080 = ${getNullValue()}`,
+        })
+      );
+
+      const boxEl = document.getElementById('mech-obs-box');
+      if (boxEl && shiftedData.length >= 2 && !prefersReducedMotion()) {
+        // Morph from original data to shifted data (boxplot slides to μ₀)
+        const dom = sharedBoxplotDomain();
+        const ms = morphMiniBoxplot(boxEl, shiftedData, {
+          meanValue: mean(shiftedData),
+          highlightMean: true,
+          domain: dom,
+          label: 'Null distribution (shifted to μ₀)',
+        });
+        return Math.max(ms, 400);
+      }
+      // Fallback: instant redraw
+      if (boxEl && shiftedData.length >= 2) {
+        drawMiniBoxplot(boxEl, shiftedData, {
+          meanValue: mean(shiftedData),
+          domain: sharedBoxplotDomain(),
+          label: 'Null distribution (shifted to μ₀)',
+        });
+      }
+      return 0;
+    }
+  }
+
+  /**
+   * Revert the left panel from "Null Distribution" back to "Observed Data".
+   * Called on reset or when null value changes.
+   */
+  function revertToObserved() {
+    nullShown = false;
+    if (mechObservedTitle) mechObservedTitle.textContent = 'Observed Data';
+
+    if (isProp) {
+      // Re-render with observed proportion
+      if (mechObservedStat) {
+        const obsPct = sampleN > 0 ? (sampleSuccesses / sampleN * 100) : 0;
+        const obsFailures = sampleN - sampleSuccesses;
+        mechObservedStat.innerHTML = `${sampleSuccesses} of ${sampleN} (<span class="observed-highlight">p\u0302 = ${fmtObs(observedStat)}</span>)
+          <div class="mech-prop-bar" aria-label="${sampleSuccesses} successes, ${obsFailures} failures" style="margin-top:4px">
+            <div class="mech-prop-fill" style="width:${obsPct}%"></div>
+            <span class="mech-prop-label">${sampleSuccesses} S / ${obsFailures} F</span>
+          </div>`;
+      }
+    } else {
+      // Re-render with original sample boxplot
+      if (mechObservedStat && sampleData.length >= 2) {
+        mechObservedStat.innerHTML = `n = ${sampleN}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedStat, dataPrecision)}</span>
+          <div id="mech-obs-box" class="mech-box-container"></div>`;
+        const obsBoxEl = document.getElementById('mech-obs-box');
+        if (obsBoxEl) {
+          drawMiniBoxplot(obsBoxEl, sampleData, {
+            meanValue: observedStat,
+            domain: sharedBoxplotDomain(),
+            label: 'Observed data distribution',
+          });
+        }
+      }
+    }
+  }
+
   // ─── Generate ───
 
   for (const btn of genBtns) {
@@ -573,6 +714,19 @@ export function initOneSamplePage(config) {
       initMechanismCollapse(mechanismStrip);
     }
 
+    // On first generate, morph left panel from "Observed" to "Null Distribution"
+    const nullMorphMs = morphToNull();
+    if (nullMorphMs > 0 && count === 1) {
+      // Delay the rest of the generation so students see the shift first
+      setTimeout(() => doGenerate(count), nullMorphMs + 100);
+      return;
+    }
+
+    doGenerate(count);
+  }
+
+  /** @param {number} count */
+  function doGenerate(count) {
     const prevLength = allStats.length;
 
     if (simTitleEl) {
@@ -613,7 +767,7 @@ export function initOneSamplePage(config) {
         </div>`;
 
       if (mechanismDescEl) {
-        mechanismDescEl.textContent = `Simulate ${n} trials, each with P(success) = ${p0}`;
+        mechanismDescEl.textContent = `Simulate ${n} trials from null distribution (p\u2080 = ${p0})`;
         mechanismDescEl.hidden = false;
       }
     } else {
@@ -631,33 +785,31 @@ export function initOneSamplePage(config) {
       lastSimDetail += '<div id="mech-sim-box" class="mech-box-container"></div>';
 
       if (mechanismDescEl) {
-        mechanismDescEl.textContent = `Resample ${n} values (with replacement) from data shifted to \u03BC\u2080 = ${getNullValue()}, compute mean`;
+        mechanismDescEl.textContent = `Resample ${n} values (with replacement) from null distribution (\u03BC\u2080 = ${getNullValue()}), compute mean`;
         mechanismDescEl.hidden = false;
       }
     }
 
     if (mechSimStat) {
+      // Fire flying dots from null panel → sim panel on +1
+      if (isSingle && mechObservedStat) {
+        flyDataStream(mechObservedStat, mechSimStat);
+      }
+
       mechSimStat.innerHTML = lastSimDetail;
 
       // Render mini boxplot for one-mean after DOM update
       if (!isProp && lastResampleArr && lastResampleArr.length >= 2) {
         const boxEl = document.getElementById('mech-sim-box');
         if (boxEl) {
-          // Use original data domain for stable comparison
-          const origVals = sampleData;
-          const lo = Math.min(...origVals);
-          const hi = Math.max(...origVals);
-          const pad = (hi - lo) * 0.08 || 0.5;
           drawMiniBoxplot(boxEl, lastResampleArr, {
-            domain: [lo - pad, hi + pad],
+            domain: sharedBoxplotDomain(),
             meanValue: lastSimStat,
             highlightMean: isSingle,
-            label: 'Shifted bootstrap resample distribution',
+            label: 'Simulated resample from null distribution',
           });
         }
       }
-
-      // highlight-last persists until next +1 (re-toggled) or reset
     }
 
     const direction = getDirection();
@@ -853,6 +1005,8 @@ export function initOneSamplePage(config) {
     chartContainer.innerHTML = '';
     resultDiv.innerHTML = `<p class="placeholder">${getTabHintText(getActiveTabId(), 'run a simulation to see results')}</p>`;
     if (resetBtn) resetBtn.hidden = true;
+    // Revert left panel from "Null Distribution" back to "Observed Data"
+    revertToObserved();
     // Hide mechanism strip (will re-show on next first generate)
     if (mechanismStrip) mechanismStrip.hidden = true;
   }
