@@ -2041,26 +2041,32 @@ export function initSimPage(config) {
     resampleContentEl.appendChild(container);
 
     // Draw resample statistic line on the histogram (dashed orange)
+    // When morphing, start hidden and reveal after bars finish transitioning
+    /** @type {SVGElement|null} */
+    let meanLineGroup = null;
     if (result && result.xScale && result.frame) {
       const stat = getBootstrapStat();
       const resampleVal = stat.fn(resampleValues);
       const xPos = result.xScale(resampleVal);
       const fh = result.frame.height;
       const overlays = d3Selection.select(result.frame.inner).select('.overlays');
-      overlays.append('line')
+      const g = overlays.append('g')
+        .attr('class', 'resample-mean-group')
+        .style('opacity', shouldMorph ? '0' : '1');
+      meanLineGroup = /** @type {SVGElement} */ (g.node());
+      g.append('line')
         .attr('x1', xPos).attr('x2', xPos)
         .attr('y1', 0).attr('y2', fh)
         .attr('stroke', '#E07020')
         .attr('stroke-width', 2.5)
-        .attr('stroke-dasharray', '6,3')
-        .attr('class', 'resample-mean-line');
+        .attr('stroke-dasharray', '6,3');
       // Label: use stat-appropriate symbol
       const statKey = bootStatSelect?.value ?? 'mean';
       const labelText = config.proportion ? 'p\u0302'
         : statKey === 'mean' ? 'x\u0304'
         : statKey === 'median' ? 'med'
         : statKey === 'sd' ? 's' : stat.label.split(' ').pop() || '';
-      overlays.append('text')
+      g.append('text')
         .attr('x', xPos + 3).attr('y', 10)
         .attr('fill', '#E07020')
         .attr('font-size', '10px')
@@ -2069,6 +2075,13 @@ export function initSimPage(config) {
     }
 
     if (!shouldMorph || !result || !origHistCache) return 0;
+
+    // Hide the resample stat text during morph — it will be revealed after bars finish
+    const mechStatEl = resampleMeanEl?.closest('.mechanism-stat');
+    if (mechStatEl) {
+      /** @type {HTMLElement} */ (mechStatEl).style.opacity = '0';
+      /** @type {HTMLElement} */ (mechStatEl).style.transition = 'opacity 250ms ease';
+    }
 
     // Build a map of original bin counts keyed by bin x0
     /** @type {Map<number, number>} */
@@ -2156,7 +2169,14 @@ export function initSimPage(config) {
       if (t < 1) {
         requestAnimationFrame(morphFrame);
       } else {
-        // Morph complete — start color fade back to default
+        // Morph complete — reveal the mean line and stat text, then fade bar colors
+        if (meanLineGroup) {
+          meanLineGroup.style.transition = 'opacity 250ms ease';
+          meanLineGroup.style.opacity = '1';
+        }
+        if (mechStatEl) {
+          /** @type {HTMLElement} */ (mechStatEl).style.opacity = '1';
+        }
         fadeColors();
       }
     }
@@ -2176,7 +2196,9 @@ export function initSimPage(config) {
       }, FADE_MS);
     }
 
-    return MORPH_MS + FADE_MS;
+    // Return time until dot should drop: morph + brief pause after mean line appears
+    // (color fade continues in background but shouldn't delay the dot drop)
+    return MORPH_MS + 300;
   }
 
   /**
