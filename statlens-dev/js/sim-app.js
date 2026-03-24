@@ -2035,7 +2035,7 @@ export function initSimPage(config) {
       numBins: nBins,
       thresholds,
       animate: false,
-      margin: { top: 5, right: 10, bottom: 25, left: 35 },
+      margin: { top: 5, right: 10, bottom: 40, left: 35 },
       showExport: false,
     });
     resampleContentEl.appendChild(container);
@@ -2060,7 +2060,7 @@ export function initSimPage(config) {
         .attr('stroke', '#D35400')
         .attr('stroke-width', 3)
         .attr('stroke-dasharray', '6,3');
-      // Label with value, positioned at top of line with white halo for readability
+      // Pill label below x-axis showing resample stat value
       const statKey = bootStatSelect?.value ?? 'mean';
       const sym = config.proportion ? 'p\u0302'
         : statKey === 'mean' ? 'x\u0304'
@@ -2069,17 +2069,28 @@ export function initSimPage(config) {
       const valStr = config.proportion
         ? formatStat(resampleVal, dataPrecision, 'proportion')
         : formatStat(resampleVal, dataPrecision);
-      // Place label inside chart, near top, offset right of line
+      const pillText = `${sym} = ${valStr}`;
+      const pillY = fh + 18; // below x-axis ticks
+      const pillW = pillText.length * 7.5 + 14;
+      const pillH = 18;
+      g.append('rect')
+        .attr('x', xPos - pillW / 2)
+        .attr('y', pillY - pillH / 2)
+        .attr('width', pillW)
+        .attr('height', pillH)
+        .attr('rx', 3)
+        .attr('fill', '#FFF3E6')
+        .attr('stroke', '#D35400')
+        .attr('stroke-width', 1.5);
       g.append('text')
-        .attr('x', xPos + 5).attr('y', 13)
-        .attr('text-anchor', 'start')
+        .attr('x', xPos).attr('y', pillY)
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'central')
         .attr('fill', '#D35400')
-        .attr('stroke', 'white')
-        .attr('stroke-width', 3.5)
-        .attr('paint-order', 'stroke')
         .attr('font-size', '11px')
         .attr('font-weight', '700')
-        .text(`${sym} = ${valStr}`);
+        .style('pointer-events', 'none')
+        .text(pillText);
     }
 
     if (!shouldMorph || !result || !origHistCache) return 0;
