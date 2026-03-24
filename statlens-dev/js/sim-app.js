@@ -2051,8 +2051,8 @@ export function initSimPage(config) {
         .attr('x1', xPos).attr('x2', xPos)
         .attr('y1', 0).attr('y2', fh)
         .attr('stroke', '#E07020')
-        .attr('stroke-width', 2)
-        .attr('stroke-dasharray', '5,3')
+        .attr('stroke-width', 2.5)
+        .attr('stroke-dasharray', '6,3')
         .attr('class', 'resample-mean-line');
       // Label: use stat-appropriate symbol
       const statKey = bootStatSelect?.value ?? 'mean';
