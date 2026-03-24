@@ -2069,10 +2069,10 @@ export function initSimPage(config) {
       const valStr = config.proportion
         ? formatStat(resampleVal, dataPrecision, 'proportion')
         : formatStat(resampleVal, dataPrecision);
-      // Place label just above the top of the chart area
+      // Place label inside chart, near top, offset right of line
       g.append('text')
-        .attr('x', xPos).attr('y', -4)
-        .attr('text-anchor', 'middle')
+        .attr('x', xPos + 5).attr('y', 13)
+        .attr('text-anchor', 'start')
         .attr('fill', '#D35400')
         .attr('stroke', 'white')
         .attr('stroke-width', 3.5)
