@@ -415,7 +415,7 @@ function renderChartOptions(combo) {
     const yLabel = document.createElement('label');
     yLabel.textContent = 'Y-axis: ';
     const ySelect = document.createElement('select');
-    ySelect.innerHTML = '<option value="frequency">Frequency</option><option value="relative">Relative Frequency</option>';
+    ySelect.innerHTML = '<option value="frequency">Frequency</option><option value="relative">Proportion</option>';
     ySelect.value = relativeFreq ? 'relative' : 'frequency';
     ySelect.addEventListener('change', () => {
       relativeFreq = ySelect.value === 'relative';

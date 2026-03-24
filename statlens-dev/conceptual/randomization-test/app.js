@@ -15,6 +15,7 @@ import { renderSimPills } from '../../js/chart-utils.js';
 import { resolveChartType, createChartToggle } from '../../js/chart-defaults.js';
 import { initHelp, animateDropToChart } from '../../js/page-utils.js';
 import { createRng, shuffle as prngShuffle } from '../../js/prng.js';
+import { animateCardShuffle } from '../../js/card-shuffle-anim.js';
 import { getActivityMode } from '../../js/settings.js';
 import { formatStat } from '../../js/stats.js';
 
@@ -514,7 +515,6 @@ function renderStep3() {
   el('shuffle-one').onclick = () => {
     const outcomes = rawData.map(r => r[config.response]);
     shuffle(outcomes);
-    const { group1, group2 } = splitGroups(rawData);
 
     const shuffledRows = rawData.map((r, i) => ({
       ...r,
@@ -524,18 +524,29 @@ function renderStep3() {
     const shuffledGroup1 = shuffledRows.filter(r => r[config.explanatory] === config.group1Value);
     const shuffledGroup2 = shuffledRows.filter(r => r[config.explanatory] === config.group2Value);
 
-    renderCards(shuffledCards, shuffledRows);
-    fillTable('shuf', shuffledGroup1, shuffledGroup2);
-    shuffledTable.hidden = false;
-
     const sp1 = countSuccess(shuffledGroup1) / shuffledGroup1.length;
     const sp2 = countSuccess(shuffledGroup2) / shuffledGroup2.length;
     const diff = sp1 - sp2;
 
-    shuffleResult.hidden = false;
-    shuffleResult.innerHTML =
-      `<strong>Simulated difference:</strong> ${(sp1 * 100).toFixed(1)}% − ${(sp2 * 100).toFixed(1)}% = ` +
-      `<strong>${(diff * 100).toFixed(1)} percentage points</strong> (from chance alone)`;
+    /** Update DOM with shuffled results (called by animation or directly). */
+    const applyShuffledDOM = () => {
+      renderCards(shuffledCards, shuffledRows);
+      fillTable('shuf', shuffledGroup1, shuffledGroup2);
+      shuffledTable.hidden = false;
+
+      shuffleResult.hidden = false;
+      shuffleResult.innerHTML =
+        `<strong>Simulated difference:</strong> ${(sp1 * 100).toFixed(1)}% − ${(sp2 * 100).toFixed(1)}% = ` +
+        `<strong>${(diff * 100).toFixed(1)} percentage points</strong> (from chance alone)`;
+    };
+
+    // Animate if cards are already visible; otherwise just render
+    const hasCards = shuffledCards.querySelector('.card') != null;
+    if (hasCards) {
+      animateCardShuffle(shuffledCards, applyShuffledDOM);
+    } else {
+      applyShuffledDOM();
+    }
 
     // Compare with prediction
     if (predictionLocked) {

@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, drawHorizontalGridlines, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
+import { createChart, addAxes, /* drawHorizontalGridlines, */ formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
 
 /** Default bar fill (IMS blue at 50% opacity) — used when no isTail predicate. */
 const BAR_FILL = '#569BBD80';
@@ -183,7 +183,7 @@ export function drawHistogram(container, values, options = {}) {
     showExport,
     filename,
   } = options;
-  const effectiveYLabel = yLabel ?? (relativeFrequency ? 'Rel. Frequency' : 'Frequency');
+  const effectiveYLabel = yLabel ?? (relativeFrequency ? 'Proportion' : 'Frequency');
 
   const frame = createChart(container, { titleText, descText, id, margin, showExport, filename, ...(viewHeight != null && { viewHeight }) });
   const { bins, domain: finalDomain } = computeBins(values, { numBins, domain, thresholds });
@@ -214,7 +214,7 @@ export function drawHistogram(container, values, options = {}) {
       })
     : d3Axis.axisLeft(yScale).tickFormat(formatTick);
   addAxes(frame, xAxis, yAxis, xLabel, effectiveYLabel);
-  drawHorizontalGridlines(frame);
+  // drawHorizontalGridlines(frame); // disabled — bars are readable without gridlines (theme_classic style)
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
   renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate, frame.inner, observedStat, ciLines, relativeFrequency, totalN, fillColor);
@@ -260,10 +260,6 @@ export function drawHistogram(container, values, options = {}) {
       const xAxisSel = d3Selection.select(frame.inner).select('.x-axis').call(xAxis);
       autoReduceTicks(xAxisSel, xAxis);
       d3Selection.select(frame.inner).select('.y-axis').call(yAxis);
-
-      // Refresh gridlines (remove old, redraw from updated ticks)
-      dataGroup.selectAll('.grid-line').remove();
-      drawHorizontalGridlines(frame);
 
       // Re-render bars
       dataGroup.selectAll('rect').remove();
@@ -437,7 +433,7 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, i
   if (innerNode) {
     attachTooltip(bars, innerNode, (d) => {
       const valLabel = relativeFrequency
-        ? `Rel. Frequency: ${(d.length / totalN).toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}`
+        ? `Proportion: ${(d.length / totalN).toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}`
         : `Frequency: ${d.length}`;
       return {
         lines: [`${formatTick(d.x0)} to ${formatTick(d.x1)}`, valLabel],

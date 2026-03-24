@@ -1330,6 +1330,38 @@ input[aria-invalid="true"] {
   font-size: 0.85rem;
 }
 
+/* ── Mechanism strip animations ───────────────────────────────── */
+
+/* Bootstrap resample: chip staggered appearance */
+.sample-dot.chip-hidden {
+  opacity: 0;
+  transform: scale(0.7);
+}
+.sample-dot.chip-appear {
+  animation: chipAppear 200ms ease forwards;
+}
+@keyframes chipAppear {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Paired randomization: sign-flip scaleX animation */
+.sample-dot.chip-flip {
+  animation: chipFlip 350ms ease forwards;
+}
+@keyframes chipFlip {
+  0%   { transform: scaleX(1); }
+  40%  { transform: scaleX(0); }
+  60%  { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sample-dot.chip-hidden { opacity: 1; transform: none; }
+  .sample-dot.chip-appear { animation: none; }
+  .sample-dot.chip-flip { animation: none; }
+}
+
 /* Contingency tables (chi-square page) */
 .contingency-table {
   border-collapse: collapse;

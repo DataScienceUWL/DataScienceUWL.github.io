@@ -143,7 +143,7 @@ function updateChartControls() {
 
     // Y-axis scale toggle
     const yLabel = document.createElement('label');
-    yLabel.innerHTML = 'Y-axis: <select id="y-scale"><option value="frequency">Frequency</option><option value="relative">Relative Frequency</option></select>';
+    yLabel.innerHTML = 'Y-axis: <select id="y-scale"><option value="frequency">Frequency</option><option value="relative">Proportion</option></select>';
     yLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
     chartControls.appendChild(yLabel);
     const ySelect = /** @type {HTMLSelectElement} */ (yLabel.querySelector('select'));
