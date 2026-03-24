@@ -1326,6 +1326,23 @@ export function initDataPanel(config) {
 
   // ── Text handler (shared by paste + file) ──
   const handleText = onRawText || ((/** @type {string} */ text, /** @type {string} */ sourceName) => {
+    // Try JSON dataset format first (silently — if it fails, fall through to CSV)
+    if (text.startsWith('{')) {
+      try {
+        const ds = JSON.parse(text);
+        if (ds.variables && Array.isArray(ds.variables) && ds.rows && Array.isArray(ds.rows)) {
+          for (const v of ds.variables) {
+            if (typeof v.name !== 'string') throw new Error('bad variable');
+            v.name = v.name.replace(/<[^>]*>/g, '').trim();
+          }
+          const meta = { id: ds.id || 'pasted', name: ds.name || sourceName, description: ds.description || '', type: 'external', n: ds.rows.length };
+          onDataset(ds, meta);
+          const cols = ds.variables.map(/** @param {any} v */ v => v.name);
+          populateEditor(rowsToCSV(ds.rows, cols), meta.name);
+          return;
+        }
+      } catch { /* not valid JSON dataset — fall through to CSV */ }
+    }
     if (!onText) return;
     try {
       const parsed = parseCSV(text);

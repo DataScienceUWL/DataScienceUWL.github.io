@@ -218,13 +218,27 @@ function renderColConfig() {
         `;
         sel.addEventListener('change', () => {
             parsedTypes[i] = /** @type {'numeric'|'categorical'} */ (sel.value);
+            levelsInput.disabled = sel.value !== 'categorical';
+            if (sel.value !== 'categorical') levelsInput.value = '';
             updateJSON();
         });
         tdOverride.appendChild(sel);
 
+        const tdLevels = document.createElement('td');
+        const levelsInput = document.createElement('input');
+        levelsInput.type = 'text';
+        levelsInput.className = 'levels-input';
+        levelsInput.placeholder = 'e.g., Low, Medium, High';
+        levelsInput.setAttribute('aria-label', `Levels for ${h}`);
+        levelsInput.dataset.col = h;
+        levelsInput.disabled = parsedTypes[i] !== 'categorical';
+        levelsInput.addEventListener('input', () => updateJSON());
+        tdLevels.appendChild(levelsInput);
+
         tr.appendChild(tdName);
         tr.appendChild(tdDetected);
         tr.appendChild(tdOverride);
+        tr.appendChild(tdLevels);
         colConfigBody.appendChild(tr);
     });
     colConfigWrap.hidden = false;
@@ -365,11 +379,23 @@ function updateJSON() {
         const labelInput = /** @type {HTMLInputElement|null} */ (
             varLabelContainer.querySelector(`.var-label-input[data-col="${CSS.escape(h)}"]`)
         );
-        return {
+        /** @type {Record<string, any>} */
+        const v = {
             name: h,
             label: labelInput?.value.trim() || h,
             type: parsedTypes[i]
         };
+        // Include levels for categorical variables if specified
+        if (parsedTypes[i] === 'categorical') {
+            const levelsInput = /** @type {HTMLInputElement|null} */ (
+                colConfigBody.querySelector(`.levels-input[data-col="${CSS.escape(h)}"]`)
+            );
+            const levelsStr = levelsInput?.value.trim();
+            if (levelsStr) {
+                v.levels = levelsStr.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            }
+        }
+        return v;
     });
 
     // Build variableDescriptions

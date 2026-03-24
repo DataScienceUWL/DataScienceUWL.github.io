@@ -92,6 +92,7 @@ export function computeGroupedFrequencies(primary, secondary) {
  * @param {boolean} [options.animate] - Whether to animate (default: true)
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
  * @param {string} [options.groupLabel] - Label for the legend title (secondary variable name)
+ * @param {'full'|'names'|'none'} [options.labels] - Label visibility: 'full' (default), 'names' (no numbers), 'none' (no labels/tooltips)
  * @returns {{ frame: ChartFrame, colorMap?: { categories: string[], colors: string[] } }}
  */
 export function drawBarChart(container, values, options = {}) {
@@ -106,6 +107,7 @@ export function drawBarChart(container, values, options = {}) {
     animate = true,
     margin,
     groupLabel,
+    labels = 'full',
   } = options;
 
   const isGrouped = groupValues != null && (mode === 'stacked' || mode === 'dodged' || mode === 'filled');
@@ -129,10 +131,10 @@ export function drawBarChart(container, values, options = {}) {
   let colorMap;
 
   if (isGrouped) {
-    colorMap = drawGroupedBars(frame, values, groupValues, mode, { xLabel, categoryOrder, shouldAnimate });
+    colorMap = drawGroupedBars(frame, values, groupValues, mode, { xLabel, categoryOrder, shouldAnimate, labels });
     drawLegend(frame, colorMap.categories, colorMap.colors, groupLabel);
   } else {
-    drawSimpleBars(frame, values, mode, { xLabel, categoryOrder, shouldAnimate });
+    drawSimpleBars(frame, values, mode, { xLabel, categoryOrder, shouldAnimate, labels });
   }
 
   // Y-axis label — measure actual rendered tick widths and adjust margin.
@@ -222,22 +224,27 @@ function drawSimpleBars(frame, values, mode, opts) {
     .attr('role', 'listitem')
     .attr('aria-label', c => {
       const count = counts.get(c) ?? 0;
+      if (opts.labels === 'names' || opts.labels === 'none') return c;
       return mode === 'relative'
         ? `${c}: ${(count / total).toFixed(3)}`
         : `${c}: ${count}`;
-    })
-  attachTooltip(bars, frame.inner, (c) => {
-    const count = counts.get(c) ?? 0;
-    const val = mode === 'relative' ? count / total : count;
-    const label = mode === 'relative'
-      ? `${c}: ${(count / total).toFixed(3)}`
-      : `${c}: ${count}`;
-    return {
-      lines: [label],
-      x: /** @type {number} */ (xScale(c)) + xScale.bandwidth() / 2,
-      y: yScale(val),
-    };
-  });
+    });
+  if (opts.labels !== 'none') {
+    attachTooltip(bars, frame.inner, (c) => {
+      const count = counts.get(c) ?? 0;
+      const val = mode === 'relative' ? count / total : count;
+      const tipText = opts.labels === 'names'
+        ? c
+        : mode === 'relative'
+          ? `${c}: ${(count / total).toFixed(3)}`
+          : `${c}: ${count}`;
+      return {
+        lines: [tipText],
+        x: /** @type {number} */ (xScale(c)) + xScale.bandwidth() / 2,
+        y: yScale(val),
+      };
+    });
+  }
 
   if (opts.shouldAnimate) {
     bars
@@ -400,8 +407,9 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
         const barX = /** @type {number} */ (xSubScale(s));
         const barY = yScale(count);
         const tipX = gx + barX + xSubScale.bandwidth() / 2;
-        const tipLines = [`${s}: ${count}`];
-        g.append('rect')
+        const tipLines = opts.labels === 'names' ? [s] : [`${s}: ${count}`];
+        const ariaText = opts.labels === 'names' || opts.labels === 'none' ? `${p}, ${s}` : `${p}, ${s}: ${count}`;
+        const rect = g.append('rect')
           .attr('x', barX)
           .attr('y', barY)
           .attr('width', xSubScale.bandwidth())
@@ -410,13 +418,16 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
           .attr('stroke', BAR_STROKE)
           .attr('stroke-width', 1)
           .attr('role', 'listitem')
-          .attr('aria-label', `${p}, ${s}: ${count}`)
+          .attr('aria-label', ariaText)
           .attr('tabindex', '0')
-          .style('outline', 'none')
-          .on('mouseenter', () => showTooltip(frame.inner, tipLines, tipX, barY))
-          .on('mouseleave', () => hideTooltip(frame.inner))
-          .on('focusin', () => showTooltip(frame.inner, tipLines, tipX, barY))
-          .on('focusout', () => hideTooltip(frame.inner));
+          .style('outline', 'none');
+        if (opts.labels !== 'none') {
+          rect
+            .on('mouseenter', () => showTooltip(frame.inner, tipLines, tipX, barY))
+            .on('mouseleave', () => hideTooltip(frame.inner))
+            .on('focusin', () => showTooltip(frame.inner, tipLines, tipX, barY))
+            .on('focusout', () => hideTooltip(frame.inner));
+        }
       }
     }
   } else {
@@ -447,11 +458,14 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
         const y0 = mode === 'filled' ? cumulative / pTotal : cumulative;
         const barY = yScale(y0 + value);
         const barMidX = /** @type {number} */ (xScale(p)) + xScale.bandwidth() / 2;
-        const label = mode === 'filled'
-          ? `${s}: ${(value * 100).toFixed(1)}%`
-          : `${s}: ${count}`;
+        const tipLabel = opts.labels === 'names'
+          ? s
+          : mode === 'filled'
+            ? `${s}: ${(value * 100).toFixed(1)}%`
+            : `${s}: ${count}`;
+        const ariaText2 = opts.labels === 'names' || opts.labels === 'none' ? `${p}, ${s}` : `${p}, ${s}: ${count}`;
 
-        dataGroup.append('rect')
+        const stackRect = dataGroup.append('rect')
           .attr('x', xScale(p))
           .attr('y', barY)
           .attr('width', xScale.bandwidth())
@@ -460,13 +474,16 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
           .attr('stroke', BAR_STROKE)
           .attr('stroke-width', 1)
           .attr('role', 'listitem')
-          .attr('aria-label', `${p}, ${s}: ${count}`)
+          .attr('aria-label', ariaText2)
           .attr('tabindex', '0')
-          .style('outline', 'none')
-          .on('mouseenter', () => showTooltip(frame.inner, [label], barMidX, barY))
-          .on('mouseleave', () => hideTooltip(frame.inner))
-          .on('focusin', () => showTooltip(frame.inner, [label], barMidX, barY))
-          .on('focusout', () => hideTooltip(frame.inner));
+          .style('outline', 'none');
+        if (opts.labels !== 'none') {
+          stackRect
+            .on('mouseenter', () => showTooltip(frame.inner, [tipLabel], barMidX, barY))
+            .on('mouseleave', () => hideTooltip(frame.inner))
+            .on('focusin', () => showTooltip(frame.inner, [tipLabel], barMidX, barY))
+            .on('focusout', () => hideTooltip(frame.inner));
+        }
 
         cumulative += count;
       }

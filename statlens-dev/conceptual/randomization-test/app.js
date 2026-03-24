@@ -482,8 +482,20 @@ function renderStep3() {
   const shuffledCards = el('shuffled-cards');
   const shuffledTable = el('shuffled-table');
   const shuffleResult = el('shuffle-result');
-  shuffledCards.innerHTML = '<p style="color: var(--muted); font-size: 0.9rem;">Click "Shuffle once" to see a simulated result.</p>';
-  shuffledTable.hidden = true;
+  // Show the original card layout so the first "Shuffle once" animates FROM original TO shuffled
+  renderCards(shuffledCards, rawData);
+  // Add a subtle label indicating this is the original (unshuffled) arrangement
+  const origLabel = document.createElement('p');
+  origLabel.className = 'original-label';
+  origLabel.style.cssText = 'color: var(--muted); font-size: 0.85rem; text-align: center; margin-top: 0.25rem;';
+  origLabel.textContent = '(Original data — click "Shuffle once" to randomize)';
+  shuffledCards.appendChild(origLabel);
+
+  // Show the original table values (will be overwritten on first shuffle)
+  const group1 = rawData.filter(r => r[config.explanatory] === config.group1Value);
+  const group2 = rawData.filter(r => r[config.explanatory] === config.group2Value);
+  fillTable('shuf', group1, group2);
+  shuffledTable.hidden = false;
   shuffleResult.hidden = true;
   predictionLocked = false;
   hasShuffledOnce = false;
@@ -528,16 +540,17 @@ function renderStep3() {
     const sp2 = countSuccess(shuffledGroup2) / shuffledGroup2.length;
     const diff = sp1 - sp2;
 
-    /** Update DOM with shuffled results (called by animation or directly). */
+    // Update result text immediately (don't wait for animation)
+    shuffleResult.hidden = false;
+    shuffleResult.innerHTML =
+      `<strong>Simulated difference:</strong> ${(sp1 * 100).toFixed(1)}% − ${(sp2 * 100).toFixed(1)}% = ` +
+      `<strong>${(diff * 100).toFixed(1)} percentage points</strong> (from chance alone)`;
+
+    /** Update DOM with shuffled cards and table (called by animation or directly). */
     const applyShuffledDOM = () => {
       renderCards(shuffledCards, shuffledRows);
       fillTable('shuf', shuffledGroup1, shuffledGroup2);
       shuffledTable.hidden = false;
-
-      shuffleResult.hidden = false;
-      shuffleResult.innerHTML =
-        `<strong>Simulated difference:</strong> ${(sp1 * 100).toFixed(1)}% − ${(sp2 * 100).toFixed(1)}% = ` +
-        `<strong>${(diff * 100).toFixed(1)} percentage points</strong> (from chance alone)`;
     };
 
     // Animate if cards are already visible; otherwise just render
@@ -564,11 +577,11 @@ function renderStep3() {
       }
     }
 
-    // Discovery: show gate 3 after first shuffle
+    // Discovery: show gate 3 after first shuffle, update question text on every shuffle
+    const obsDiffPct = (observedDiff * 100).toFixed(1);
+    const simDiffPct = (diff * 100).toFixed(1);
     if (mode === 'discover' && !hasShuffledOnce) {
       hasShuffledOnce = true;
-      const obsDiffPct = (observedDiff * 100).toFixed(1);
-      const simDiffPct = (diff * 100).toFixed(1);
       buildGate(3,
         `This shuffle produced a difference of ${simDiffPct} pp. The observed difference was ${obsDiffPct} pp. What does this one shuffle suggest?`,
         [
@@ -579,6 +592,12 @@ function renderStep3() {
         'Exactly right. One shuffle gives us one data point. We need many shuffles to see the full picture of what\'s typical under the null hypothesis.',
         () => { autoAdvance(3); }
       );
+    } else if (mode === 'discover') {
+      // Update the question text with the latest shuffle result
+      const qEl = document.getElementById('gate3-question');
+      if (qEl) {
+        qEl.textContent = `This shuffle produced a difference of ${simDiffPct} pp. The observed difference was ${obsDiffPct} pp. What does this one shuffle suggest?`;
+      }
     }
 
     announce(`Shuffled: difference = ${(diff * 100).toFixed(1)} percentage points`);

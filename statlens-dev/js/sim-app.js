@@ -13,7 +13,7 @@ import * as d3Selection from 'd3-selection';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { drawSpike } from './spike.js';
-import { renderSimPills, formatMechStat, drawMiniBoxplot } from './chart-utils.js';
+import { renderSimPills, formatMechStat, drawMiniBoxplot, prefersReducedMotion, hasD3Transition } from './chart-utils.js';
 import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
@@ -107,8 +107,13 @@ export function initSimPage(config) {
   const CHIP_THRESHOLD = 30;
   /** @type {'summary'|'histogram'} */
   let resampleViewMode = 'summary';
+  /** Whether the view mode was explicitly chosen by the user (overrides auto-default). */
+  let resampleViewExplicit = false;
   /** @type {number[]} */
   let lastResample = [];
+  /** Cached original-sample histogram result for morph animation (large-n). */
+  /** @type {{ bins: ReturnType<typeof computeBins>['bins'], thresholds: number[], numBins: number } | null} */
+  let origHistCache = null;
   /** Whether the last generate action was +1 (for persistent highlight). */
   let lastWasSingle = false;
   /** Whether the mechanism strip has been initialized (deferred to first generate). */
@@ -642,6 +647,7 @@ export function initSimPage(config) {
     clearBtn.addEventListener('click', () => {
       data1 = [];
       data2 = [];
+      resampleViewExplicit = false;
       resetSimulation();
       hideVarSelector();
       if (pasteArea) pasteArea.value = '';
@@ -1190,9 +1196,10 @@ export function initSimPage(config) {
    */
   /** @type {ReturnType<typeof setTimeout>|null} */
   let pendingChartTimer = null;
-
   function generateSamples(count) {
-    // Cancel any pending deferred chart render from a previous +1
+    // Detect auto-play: skip flying chip animation when play button is active
+    const playBtn = document.querySelector('.play-btn');
+    const isAutoPlay = playBtn?.getAttribute('aria-pressed') === 'true';
     if (pendingChartTimer !== null) {
       clearTimeout(pendingChartTimer);
       pendingChartTimer = null;
@@ -1210,6 +1217,10 @@ export function initSimPage(config) {
         mechanismStrip.hidden = false;
         initMechanismCollapse(mechanismStrip);
         renderOriginalSample();
+        // Auto-default to histogram view for large samples (unless user explicitly chose)
+        if (!resampleViewExplicit && data1.length > CHIP_THRESHOLD) {
+          setResampleViewMode('histogram');
+        }
       } else if (config.twoGroup) {
         mechanismStrip.hidden = false;
         initMechanismCollapse(mechanismStrip);
@@ -1325,16 +1336,18 @@ export function initSimPage(config) {
 
       if (count === 1) {
         lastWasSingle = true;
+        let mechAnimMs = 0;
         if (showOneSampleMech) {
           lastResample = lastResampleValues;
-          showResample(lastResampleValues, false, true);
+          mechAnimMs = showResample(lastResampleValues, false, true, !isAutoPlay);
         }
         // For two-group, get the diff value element for drop animation
         const bootDiffEl = !showOneSampleMech
           ? document.querySelector('#mech-resample-content .mech-diff')
           : null;
         const bootDiffValueEl = bootDiffEl?.querySelector('.mech-stat-value') ?? null;
-        // Brief pause for mechanism to update visually, then render chart + drop
+        // Wait for mechanism animation to finish, then render chart + drop
+        const chartDelay = Math.max(150, mechAnimMs);
         pendingChartTimer = setTimeout(() => {
           pendingChartTimer = null;
           renderChart(allStats, ciForChart);
@@ -1342,7 +1355,7 @@ export function initSimPage(config) {
           if (dropSource && chartContainer) {
             animateDropToChart(/** @type {HTMLElement} */ (dropSource), chartContainer);
           }
-        }, 150);
+        }, chartDelay);
       } else {
         lastWasSingle = false;
         renderChart(allStats, ciForChart);
@@ -1573,14 +1586,20 @@ export function initSimPage(config) {
       }
       originalContentEl.appendChild(container);
     } else {
-      // Large dataset: show mini histogram
+      // Large dataset: show mini histogram + cache bins for morph animation
+      const nBins = Math.min(Math.ceil(Math.sqrt(data1.length)), 40);
+      const binResult = computeBins(data1, { numBins: nBins });
+      // Extract explicit thresholds from computed bin edges
+      const thresholds = binResult.bins.slice(1).map(b => b.x0);
+      origHistCache = { bins: binResult.bins, thresholds, numBins: nBins };
+
       const container = document.createElement('div');
       container.className = 'mini-chart';
       drawHistogram(container, data1, {
         id: 'orig-hist',
         xLabel: '',
         titleText: 'Original sample distribution',
-        numBins: Math.min(Math.ceil(Math.sqrt(data1.length)), 40),
+        numBins: nBins,
         animate: false,
         margin: { top: 5, right: 10, bottom: 25, left: 35 },
         showExport: false,
@@ -1745,15 +1764,17 @@ export function initSimPage(config) {
    * @param {number[]} resampleValues
    * @param {boolean} [flash] - Trigger mechanism flash animation
    * @param {boolean} [highlightStat] - Highlight resample stat orange (+1 only)
+   * @returns {number} Animation duration in ms (0 if no animation)
    */
-  function showResample(resampleValues, _flash = false, highlightStat = false) {
-    if (!resampleContentEl || !bootstrapSampleEl) return;
+  function showResample(resampleValues, _flash = false, highlightStat = false, flyingAnim = true) {
+    if (!resampleContentEl || !bootstrapSampleEl) return 0;
     bootstrapSampleEl.hidden = false;
 
+    let animMs = 0;
     if (resampleViewMode === 'histogram') {
-      showResampleHistogram(resampleValues);
+      animMs = showResampleHistogram(resampleValues, highlightStat && flyingAnim);
     } else {
-      showResampleSummary(resampleValues, highlightStat);
+      animMs = showResampleSummary(resampleValues, highlightStat && flyingAnim);
     }
 
     if (resampleMeanEl) {
@@ -1808,12 +1829,14 @@ export function initSimPage(config) {
       mechanismDescEl.hidden = false;
     }
 
+    return animMs;
   }
 
   /**
    * Summary view: chips (small n) or text counts (large n).
    * @param {number[]} resampleValues
    * @param {boolean} [stagger=false] - Animate chips appearing sequentially (+1 only)
+   * @returns {number} Total animation duration in ms (0 if no animation)
    */
   function showResampleSummary(resampleValues, stagger = false) {
     resampleContentEl.innerHTML = '';
@@ -1831,7 +1854,7 @@ export function initSimPage(config) {
         <span class="prop-count">p̂ = ${formatStat(pHat, dataPrecision, 'proportion')}</span>
       `;
       resampleContentEl.appendChild(container);
-      return;
+      return 0;
     }
 
     /** @type {Map<number, number>} */
@@ -1843,6 +1866,11 @@ export function initSimPage(config) {
     // Should we animate the stagger? Only for small n on +1, with motion allowed
     const shouldStagger = stagger && data1.length <= CHIP_THRESHOLD && !prefersReducedMotion();
 
+    // Get original chips for draw-link flash animation
+    const origChips = shouldStagger && originalContentEl
+      ? /** @type {HTMLElement[]} */ ([...originalContentEl.querySelectorAll('.sample-dot')])
+      : [];
+
     if (data1.length <= CHIP_THRESHOLD) {
       const container = document.createElement('div');
       container.className = 'sample-dots';
@@ -1850,51 +1878,111 @@ export function initSimPage(config) {
       container.setAttribute('aria-label', 'Bootstrap resample values');
       const sorted = [...data1].sort((a, b) => a - b);
       const remaining = new Map(counts);
+      // Pre-count how many positions remain for each value (for fair allocation)
+      /** @type {Map<number, number>} */
+      const positionsLeft = new Map();
+      for (const v of sorted) positionsLeft.set(v, (positionsLeft.get(v) ?? 0) + 1);
+
+      /** @type {{dot: HTMLElement, chipIdx: number}[]} */
+      const drawnChips = [];
+      /** @type {HTMLElement[]} */
+      const notDrawnChips = [];
       for (let chipIdx = 0; chipIdx < sorted.length; chipIdx++) {
         const v = sorted[chipIdx];
-        const timesDrawn = remaining.get(v) ?? 0;
+        const rem = remaining.get(v) ?? 0;
+        const pLeft = positionsLeft.get(v) ?? 1;
+        // Allocate draws fairly across chip positions for this value
+        const allocated = Math.ceil(rem / pLeft);
         const dot = document.createElement('span');
         dot.className = 'sample-dot';
         if (config.proportion) {
           dot.classList.add(v === 1 ? 'sample-dot--success' : 'sample-dot--failure');
         }
-        if (timesDrawn === 0) {
+        if (allocated === 0) {
           dot.classList.add('not-drawn');
-        } else if (timesDrawn > 1) {
+        } else if (allocated > 1) {
           dot.classList.add('multi-drawn');
         }
         dot.textContent = config.proportion ? (v === 1 ? 'S' : 'F') : formatChipValue(v);
-        dot.title = timesDrawn === 0 ? 'Not selected'
-          : timesDrawn === 1 ? 'Selected once'
-          : `Selected ${timesDrawn} times`;
-        if (timesDrawn > 1) {
+        dot.title = allocated === 0 ? 'Not selected'
+          : allocated === 1 ? 'Selected once'
+          : `Selected ${allocated} times`;
+        if (allocated > 1) {
           const badge = document.createElement('sup');
           badge.className = 'draw-count';
-          badge.textContent = `\u00d7${timesDrawn}`;
+          badge.textContent = `\u00d7${allocated}`;
           dot.appendChild(badge);
         }
-        // Stagger: hide chip initially, reveal with delay
-        if (shouldStagger && timesDrawn > 0) {
+        // Stagger: hide chip initially, animate a flying dot from original → resample
+        if (shouldStagger && allocated > 0) {
           dot.classList.add('chip-hidden');
-          const delay = chipIdx * 25;
-          setTimeout(() => {
-            dot.classList.remove('chip-hidden');
-            dot.classList.add('chip-appear');
-          }, delay);
-        } else if (shouldStagger && timesDrawn === 0) {
-          // Not-drawn chips appear after all drawn chips
+          drawnChips.push({ dot, chipIdx });
+        } else if (shouldStagger && allocated === 0) {
           dot.classList.add('chip-hidden');
-          const delay = sorted.length * 25 + 50;
-          setTimeout(() => {
-            dot.classList.remove('chip-hidden');
-          }, delay);
+          notDrawnChips.push(dot);
         }
         container.appendChild(dot);
-        if (timesDrawn > 0) {
-          remaining.set(v, timesDrawn - 1);
-        }
+        remaining.set(v, rem - allocated);
+        positionsLeft.set(v, pLeft - 1);
       }
       resampleContentEl.appendChild(container);
+
+      // Animate flying dots from original → resample chips
+      if (shouldStagger && drawnChips.length > 0) {
+        const STAGGER_MS = 60;  // time between each draw
+        const FLIGHT_MS = 250;  // flight duration
+        for (let i = 0; i < drawnChips.length; i++) {
+          const { dot, chipIdx } = drawnChips[i];
+          const origChip = origChips[chipIdx];
+          const delay = i * STAGGER_MS;
+
+          setTimeout(() => {
+            // Flash the source chip
+            if (origChip) {
+              origChip.classList.add('chip-source-flash');
+              setTimeout(() => origChip.classList.remove('chip-source-flash'), 400);
+
+              // Create flying dot
+              const origRect = origChip.getBoundingClientRect();
+              const destRect = dot.getBoundingClientRect();
+              const flyer = document.createElement('span');
+              flyer.className = 'chip-flyer';
+              flyer.textContent = dot.textContent.replace(/×\d+$/, ''); // strip badge text
+              flyer.style.left = origRect.left + 'px';
+              flyer.style.top = origRect.top + 'px';
+              flyer.style.width = origRect.width + 'px';
+              flyer.style.height = origRect.height + 'px';
+              document.body.appendChild(flyer);
+
+              // Force reflow then animate to destination
+              void flyer.offsetHeight;
+              flyer.style.transition = `left ${FLIGHT_MS}ms cubic-bezier(0.4, 0, 0.2, 1), top ${FLIGHT_MS}ms cubic-bezier(0.4, 0, 0.2, 1), opacity ${FLIGHT_MS * 0.3}ms ease ${FLIGHT_MS * 0.7}ms`;
+              flyer.style.left = destRect.left + 'px';
+              flyer.style.top = destRect.top + 'px';
+              flyer.style.opacity = '0';
+
+              // On arrival: reveal the actual chip, remove the flyer
+              setTimeout(() => {
+                dot.classList.remove('chip-hidden');
+                dot.classList.add('chip-appear');
+                flyer.remove();
+              }, FLIGHT_MS);
+            } else {
+              // No original chip (shouldn't happen) — just reveal
+              dot.classList.remove('chip-hidden');
+              dot.classList.add('chip-appear');
+            }
+          }, delay);
+        }
+
+        // Not-drawn chips fade in after all flights complete
+        const notDrawnDelay = drawnChips.length * STAGGER_MS + FLIGHT_MS + 50;
+        for (const ndot of notDrawnChips) {
+          setTimeout(() => ndot.classList.remove('chip-hidden'), notDrawnDelay);
+        }
+        return notDrawnDelay + 150; // total animation duration
+      }
+      return 0;
     } else {
       let notSelected = 0, once = 0, twice = 0, threeOrMore = 0;
       const uniqueOriginal = new Set(data1);
@@ -1917,26 +2005,94 @@ export function initSimPage(config) {
       `;
       resampleContentEl.appendChild(summary);
     }
+    return 0;
   }
 
   /**
    * Histogram view: mini histogram of the resample values.
+   * When origHistCache is available and morph=true, uses shared bin edges
+   * and transitions bars from original heights to resample heights, with
+   * brief color highlights on bars that grew or shrank.
    * @param {number[]} resampleValues
+   * @param {boolean} [morph=false] - Animate bar morph from original heights (+1 only)
+   * @returns {number} Animation duration in ms (0 if no morph)
    */
-  function showResampleHistogram(resampleValues) {
+  function showResampleHistogram(resampleValues, morph = false) {
     resampleContentEl.innerHTML = '';
     const container = document.createElement('div');
     container.className = 'mini-chart';
-    drawHistogram(container, resampleValues, {
+
+    const shouldMorph = morph && origHistCache && !prefersReducedMotion() && hasD3Transition();
+    const nBins = origHistCache ? origHistCache.numBins : Math.min(Math.ceil(Math.sqrt(resampleValues.length)), 40);
+    // Use same thresholds as original so bars align for visual comparison
+    const thresholds = origHistCache ? origHistCache.thresholds : undefined;
+
+    const result = drawHistogram(container, resampleValues, {
       id: 'resample-hist',
       xLabel: '',
       titleText: 'Bootstrap resample distribution',
-      numBins: Math.min(Math.ceil(Math.sqrt(resampleValues.length)), 40),
+      numBins: nBins,
+      thresholds,
       animate: false,
       margin: { top: 5, right: 10, bottom: 25, left: 35 },
       showExport: false,
     });
     resampleContentEl.appendChild(container);
+
+    if (!shouldMorph || !result || !origHistCache) return 0;
+
+    // Build a map of original bin counts keyed by bin x0
+    /** @type {Map<number, number>} */
+    const origCounts = new Map();
+    for (const b of origHistCache.bins) {
+      origCounts.set(b.x0, b.length);
+    }
+
+    // Morph: set bars to original heights, then transition to resample heights
+    const svg = container.querySelector('svg');
+    if (!svg) return 0;
+    const bars = d3Selection.select(svg).selectAll('.data rect');
+    const { yScale, frame } = result;
+    if (!yScale || !frame) return 0;
+    const innerHeight = frame.height;
+
+    const MORPH_MS = 450;
+    const FADE_MS = 600;
+    const GROW_FILL = '#E07020CC'; // warm orange — bar grew
+    const SHRINK_FILL = '#569BBDCC'; // cool blue — bar shrank
+
+    bars.each(/** @this {SVGRectElement} */ function(/** @type {any} */ d) {
+      const origCount = origCounts.get(d.x0) ?? 0;
+      const newCount = d.length;
+      const origY = origCount > 0 ? yScale(origCount) : innerHeight;
+      const origH = innerHeight - origY;
+
+      // Start at original height
+      d3Selection.select(this)
+        .attr('y', origY)
+        .attr('height', origH);
+    });
+
+    // Transition to resample heights with color highlight
+    bars.transition()
+      .duration(MORPH_MS)
+      .attr('y', /** @param {any} d */ d => yScale(d.length))
+      .attr('height', /** @param {any} d */ d => innerHeight - yScale(d.length))
+      .attr('fill', /** @param {any} d */ d => {
+        const origCount = origCounts.get(d.x0) ?? 0;
+        if (d.length > origCount) return GROW_FILL;
+        if (d.length < origCount) return SHRINK_FILL;
+        return d.fill; // unchanged
+      })
+      .on('end', /** @this {SVGRectElement} */ function(/** @type {any} */ d) {
+        // Fade back to default fill
+        d3Selection.select(this)
+          .transition()
+          .duration(FADE_MS)
+          .attr('fill', d.fill);
+      });
+
+    return MORPH_MS + FADE_MS;
   }
 
   /**
@@ -2035,18 +2191,34 @@ export function initSimPage(config) {
   }
 
   // Replace single toggle button with segmented control
+  /** @type {HTMLButtonElement|null} */
+  let btnSummary = null;
+  /** @type {HTMLButtonElement|null} */
+  let btnHistogram = null;
+
+  /**
+   * Switch resample view mode and update toggle UI.
+   * @param {'summary'|'histogram'} mode
+   */
+  function setResampleViewMode(mode) {
+    resampleViewMode = mode;
+    if (btnSummary) btnSummary.setAttribute('aria-pressed', String(mode === 'summary'));
+    if (btnHistogram) btnHistogram.setAttribute('aria-pressed', String(mode === 'histogram'));
+    if (lastResample.length > 0) showResample(lastResample, false, lastWasSingle);
+  }
+
   if (resampleToggle) {
     const seg = document.createElement('div');
     seg.className = 'seg-control';
     seg.setAttribute('role', 'group');
     seg.setAttribute('aria-label', 'Resample view');
 
-    const btnSummary = document.createElement('button');
+    btnSummary = /** @type {HTMLButtonElement} */ (document.createElement('button'));
     btnSummary.type = 'button';
     btnSummary.textContent = 'Summary';
     btnSummary.setAttribute('aria-pressed', 'true');
 
-    const btnHistogram = document.createElement('button');
+    btnHistogram = /** @type {HTMLButtonElement} */ (document.createElement('button'));
     btnHistogram.type = 'button';
     btnHistogram.textContent = 'Histogram';
     btnHistogram.setAttribute('aria-pressed', 'false');
@@ -2055,16 +2227,8 @@ export function initSimPage(config) {
     seg.appendChild(btnHistogram);
     resampleToggle.replaceWith(seg);
 
-    /** @param {'summary'|'histogram'} mode */
-    function setResampleView(mode) {
-      resampleViewMode = mode;
-      btnSummary.setAttribute('aria-pressed', String(mode === 'summary'));
-      btnHistogram.setAttribute('aria-pressed', String(mode === 'histogram'));
-      if (lastResample.length > 0) showResample(lastResample, false, lastWasSingle);
-    }
-
-    btnSummary.addEventListener('click', () => setResampleView('summary'));
-    btnHistogram.addEventListener('click', () => setResampleView('histogram'));
+    btnSummary.addEventListener('click', () => { resampleViewExplicit = true; setResampleViewMode('summary'); });
+    btnHistogram.addEventListener('click', () => { resampleViewExplicit = true; setResampleViewMode('histogram'); });
   }
 
   // Re-render when CI level changes
@@ -2119,6 +2283,7 @@ export function initSimPage(config) {
     rng = null;
     lockedDotGrid = null;
     mechanismInitialized = false;
+    origHistCache = null;
     // New random seed each reset (unless URL-locked for graded work)
     if (!urlSeed) {
       seed = Math.random().toString(36).slice(2, 10);

@@ -71,6 +71,14 @@ let showMeanMarker = false;
 /** Bandwidth multiplier for density plot (1.0 = Silverman default). */
 let bandwidthMult = 1.0;
 
+/** @type {'full'|'names'|'none'} */
+let labelsMode = 'full';
+const _descUrlParams = new URLSearchParams(window.location.search);
+const _descLabelsParam = _descUrlParams.get('labels');
+if (_descLabelsParam && ['full', 'names', 'none'].includes(_descLabelsParam)) {
+  labelsMode = /** @type {'full'|'names'|'none'} */ (_descLabelsParam);
+}
+
 const chartRadios = /** @type {NodeListOf<HTMLInputElement>} */ (
   document.querySelectorAll('input[name="chart-type"]')
 );
@@ -224,6 +232,22 @@ function updateChartControls() {
     showMeanMarker = meanCb.checked;
     renderActiveChart();
   });
+
+  // "Show values" toggle — visible when labels URL param suppresses numbers
+  if (_descLabelsParam && _descLabelsParam !== 'full') {
+    const valLabel = document.createElement('label');
+    valLabel.innerHTML = '<input type="checkbox" id="show-values"> Show values';
+    valLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
+    chartControls.appendChild(valLabel);
+    const valCb = /** @type {HTMLInputElement} */ (valLabel.querySelector('input'));
+    valCb.checked = labelsMode === 'full';
+    valCb.addEventListener('change', () => {
+      labelsMode = valCb.checked ? 'full' : /** @type {'full'|'names'|'none'} */ (_descLabelsParam);
+      renderActiveChart();
+      // Hide/show stats panel
+      if (numericStats) numericStats.hidden = labelsMode !== 'full';
+    });
+  }
 }
 
 // ── State ─────────────────────────────────────────────────────────────
@@ -637,6 +661,7 @@ function renderActiveChart() {
       animate: false,
       numBins: currentBinCount,
       relativeFrequency: relativeFreq,
+      labels: labelsMode,
     });
     if (showDensity && histResult && histResult.bins && histResult.bins.length > 0 && currentValues.length >= 2) {
       const firstX0 = /** @type {number} */ (histResult.bins[0].x0);
@@ -645,7 +670,7 @@ function renderActiveChart() {
       overlayDensityOnHistogram(histResult.frame.inner, currentValues, histResult.xScale, histResult.yScale, avgBinWidth);
     }
     if (showMeanMarker) drawMeanOnHistogram(histResult, currentValues);
-    if (histResult && histResult.bins && histResult.bins.length > 0) {
+    if (labelsMode === 'full' && histResult && histResult.bins && histResult.bins.length > 0) {
       renderBinTable(chartArea, histResult.bins, {
         totalN: currentValues.length,
         relativeFrequency: relativeFreq,
@@ -660,6 +685,7 @@ function renderActiveChart() {
       id: 'desc-dot',
       animate: false,
       numBins: currentDotBinCount ?? undefined,
+      labels: labelsMode,
     });
 
     if (showMeanMarker) drawMeanOnDotplot(dotResult, currentValues);
@@ -672,6 +698,7 @@ function renderActiveChart() {
       animate: false,
       showOutliers,
       showMean: showMeanMarker,
+      labels: labelsMode,
     });
 
   } else if (activeChart === 'density') {
@@ -696,6 +723,8 @@ function renderActiveChart() {
     wrapTable(statsTable, { copyTitle: 'Copy statistics to clipboard' });
   }
 
+  // Hide stats panel and bin table when labels are suppressed
+  if (numericStats) numericStats.hidden = labelsMode !== 'full';
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────
