@@ -13,7 +13,7 @@ import * as d3Selection from 'd3-selection';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { drawSpike } from './spike.js';
-import { renderSimPills, formatMechStat, drawMiniBoxplot } from './chart-utils.js';
+import { renderSimPills, formatMechStat, drawMiniBoxplot, prefersReducedMotion } from './chart-utils.js';
 import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
@@ -1190,9 +1190,10 @@ export function initSimPage(config) {
    */
   /** @type {ReturnType<typeof setTimeout>|null} */
   let pendingChartTimer = null;
-
   function generateSamples(count) {
-    // Cancel any pending deferred chart render from a previous +1
+    // Detect auto-play: skip flying chip animation when play button is active
+    const playBtn = document.querySelector('.play-btn');
+    const isAutoPlay = playBtn?.getAttribute('aria-pressed') === 'true';
     if (pendingChartTimer !== null) {
       clearTimeout(pendingChartTimer);
       pendingChartTimer = null;
@@ -1325,16 +1326,18 @@ export function initSimPage(config) {
 
       if (count === 1) {
         lastWasSingle = true;
+        let mechAnimMs = 0;
         if (showOneSampleMech) {
           lastResample = lastResampleValues;
-          showResample(lastResampleValues, false, true);
+          mechAnimMs = showResample(lastResampleValues, false, true, !isAutoPlay);
         }
         // For two-group, get the diff value element for drop animation
         const bootDiffEl = !showOneSampleMech
           ? document.querySelector('#mech-resample-content .mech-diff')
           : null;
         const bootDiffValueEl = bootDiffEl?.querySelector('.mech-stat-value') ?? null;
-        // Brief pause for mechanism to update visually, then render chart + drop
+        // Wait for mechanism animation to finish, then render chart + drop
+        const chartDelay = Math.max(150, mechAnimMs);
         pendingChartTimer = setTimeout(() => {
           pendingChartTimer = null;
           renderChart(allStats, ciForChart);
@@ -1342,7 +1345,7 @@ export function initSimPage(config) {
           if (dropSource && chartContainer) {
             animateDropToChart(/** @type {HTMLElement} */ (dropSource), chartContainer);
           }
-        }, 150);
+        }, chartDelay);
       } else {
         lastWasSingle = false;
         renderChart(allStats, ciForChart);
@@ -1745,15 +1748,17 @@ export function initSimPage(config) {
    * @param {number[]} resampleValues
    * @param {boolean} [flash] - Trigger mechanism flash animation
    * @param {boolean} [highlightStat] - Highlight resample stat orange (+1 only)
+   * @returns {number} Animation duration in ms (0 if no animation)
    */
-  function showResample(resampleValues, _flash = false, highlightStat = false) {
-    if (!resampleContentEl || !bootstrapSampleEl) return;
+  function showResample(resampleValues, _flash = false, highlightStat = false, flyingAnim = true) {
+    if (!resampleContentEl || !bootstrapSampleEl) return 0;
     bootstrapSampleEl.hidden = false;
 
+    let animMs = 0;
     if (resampleViewMode === 'histogram') {
       showResampleHistogram(resampleValues);
     } else {
-      showResampleSummary(resampleValues, highlightStat);
+      animMs = showResampleSummary(resampleValues, highlightStat && flyingAnim);
     }
 
     if (resampleMeanEl) {
@@ -1808,12 +1813,14 @@ export function initSimPage(config) {
       mechanismDescEl.hidden = false;
     }
 
+    return animMs;
   }
 
   /**
    * Summary view: chips (small n) or text counts (large n).
    * @param {number[]} resampleValues
    * @param {boolean} [stagger=false] - Animate chips appearing sequentially (+1 only)
+   * @returns {number} Total animation duration in ms (0 if no animation)
    */
   function showResampleSummary(resampleValues, stagger = false) {
     resampleContentEl.innerHTML = '';
@@ -1831,7 +1838,7 @@ export function initSimPage(config) {
         <span class="prop-count">p̂ = ${formatStat(pHat, dataPrecision, 'proportion')}</span>
       `;
       resampleContentEl.appendChild(container);
-      return;
+      return 0;
     }
 
     /** @type {Map<number, number>} */
@@ -1843,6 +1850,11 @@ export function initSimPage(config) {
     // Should we animate the stagger? Only for small n on +1, with motion allowed
     const shouldStagger = stagger && data1.length <= CHIP_THRESHOLD && !prefersReducedMotion();
 
+    // Get original chips for draw-link flash animation
+    const origChips = shouldStagger && originalContentEl
+      ? /** @type {HTMLElement[]} */ ([...originalContentEl.querySelectorAll('.sample-dot')])
+      : [];
+
     if (data1.length <= CHIP_THRESHOLD) {
       const container = document.createElement('div');
       container.className = 'sample-dots';
@@ -1850,51 +1862,111 @@ export function initSimPage(config) {
       container.setAttribute('aria-label', 'Bootstrap resample values');
       const sorted = [...data1].sort((a, b) => a - b);
       const remaining = new Map(counts);
+      // Pre-count how many positions remain for each value (for fair allocation)
+      /** @type {Map<number, number>} */
+      const positionsLeft = new Map();
+      for (const v of sorted) positionsLeft.set(v, (positionsLeft.get(v) ?? 0) + 1);
+
+      /** @type {{dot: HTMLElement, chipIdx: number}[]} */
+      const drawnChips = [];
+      /** @type {HTMLElement[]} */
+      const notDrawnChips = [];
       for (let chipIdx = 0; chipIdx < sorted.length; chipIdx++) {
         const v = sorted[chipIdx];
-        const timesDrawn = remaining.get(v) ?? 0;
+        const rem = remaining.get(v) ?? 0;
+        const pLeft = positionsLeft.get(v) ?? 1;
+        // Allocate draws fairly across chip positions for this value
+        const allocated = Math.ceil(rem / pLeft);
         const dot = document.createElement('span');
         dot.className = 'sample-dot';
         if (config.proportion) {
           dot.classList.add(v === 1 ? 'sample-dot--success' : 'sample-dot--failure');
         }
-        if (timesDrawn === 0) {
+        if (allocated === 0) {
           dot.classList.add('not-drawn');
-        } else if (timesDrawn > 1) {
+        } else if (allocated > 1) {
           dot.classList.add('multi-drawn');
         }
         dot.textContent = config.proportion ? (v === 1 ? 'S' : 'F') : formatChipValue(v);
-        dot.title = timesDrawn === 0 ? 'Not selected'
-          : timesDrawn === 1 ? 'Selected once'
-          : `Selected ${timesDrawn} times`;
-        if (timesDrawn > 1) {
+        dot.title = allocated === 0 ? 'Not selected'
+          : allocated === 1 ? 'Selected once'
+          : `Selected ${allocated} times`;
+        if (allocated > 1) {
           const badge = document.createElement('sup');
           badge.className = 'draw-count';
-          badge.textContent = `\u00d7${timesDrawn}`;
+          badge.textContent = `\u00d7${allocated}`;
           dot.appendChild(badge);
         }
-        // Stagger: hide chip initially, reveal with delay
-        if (shouldStagger && timesDrawn > 0) {
+        // Stagger: hide chip initially, animate a flying dot from original → resample
+        if (shouldStagger && allocated > 0) {
           dot.classList.add('chip-hidden');
-          const delay = chipIdx * 25;
-          setTimeout(() => {
-            dot.classList.remove('chip-hidden');
-            dot.classList.add('chip-appear');
-          }, delay);
-        } else if (shouldStagger && timesDrawn === 0) {
-          // Not-drawn chips appear after all drawn chips
+          drawnChips.push({ dot, chipIdx });
+        } else if (shouldStagger && allocated === 0) {
           dot.classList.add('chip-hidden');
-          const delay = sorted.length * 25 + 50;
-          setTimeout(() => {
-            dot.classList.remove('chip-hidden');
-          }, delay);
+          notDrawnChips.push(dot);
         }
         container.appendChild(dot);
-        if (timesDrawn > 0) {
-          remaining.set(v, timesDrawn - 1);
-        }
+        remaining.set(v, rem - allocated);
+        positionsLeft.set(v, pLeft - 1);
       }
       resampleContentEl.appendChild(container);
+
+      // Animate flying dots from original → resample chips
+      if (shouldStagger && drawnChips.length > 0) {
+        const STAGGER_MS = 60;  // time between each draw
+        const FLIGHT_MS = 250;  // flight duration
+        for (let i = 0; i < drawnChips.length; i++) {
+          const { dot, chipIdx } = drawnChips[i];
+          const origChip = origChips[chipIdx];
+          const delay = i * STAGGER_MS;
+
+          setTimeout(() => {
+            // Flash the source chip
+            if (origChip) {
+              origChip.classList.add('chip-source-flash');
+              setTimeout(() => origChip.classList.remove('chip-source-flash'), 400);
+
+              // Create flying dot
+              const origRect = origChip.getBoundingClientRect();
+              const destRect = dot.getBoundingClientRect();
+              const flyer = document.createElement('span');
+              flyer.className = 'chip-flyer';
+              flyer.textContent = dot.textContent.replace(/×\d+$/, ''); // strip badge text
+              flyer.style.left = origRect.left + 'px';
+              flyer.style.top = origRect.top + 'px';
+              flyer.style.width = origRect.width + 'px';
+              flyer.style.height = origRect.height + 'px';
+              document.body.appendChild(flyer);
+
+              // Force reflow then animate to destination
+              void flyer.offsetHeight;
+              flyer.style.transition = `left ${FLIGHT_MS}ms cubic-bezier(0.4, 0, 0.2, 1), top ${FLIGHT_MS}ms cubic-bezier(0.4, 0, 0.2, 1), opacity ${FLIGHT_MS * 0.3}ms ease ${FLIGHT_MS * 0.7}ms`;
+              flyer.style.left = destRect.left + 'px';
+              flyer.style.top = destRect.top + 'px';
+              flyer.style.opacity = '0';
+
+              // On arrival: reveal the actual chip, remove the flyer
+              setTimeout(() => {
+                dot.classList.remove('chip-hidden');
+                dot.classList.add('chip-appear');
+                flyer.remove();
+              }, FLIGHT_MS);
+            } else {
+              // No original chip (shouldn't happen) — just reveal
+              dot.classList.remove('chip-hidden');
+              dot.classList.add('chip-appear');
+            }
+          }, delay);
+        }
+
+        // Not-drawn chips fade in after all flights complete
+        const notDrawnDelay = drawnChips.length * STAGGER_MS + FLIGHT_MS + 50;
+        for (const ndot of notDrawnChips) {
+          setTimeout(() => ndot.classList.remove('chip-hidden'), notDrawnDelay);
+        }
+        return notDrawnDelay + 150; // total animation duration
+      }
+      return 0;
     } else {
       let notSelected = 0, once = 0, twice = 0, threeOrMore = 0;
       const uniqueOriginal = new Set(data1);
@@ -1917,6 +1989,7 @@ export function initSimPage(config) {
       `;
       resampleContentEl.appendChild(summary);
     }
+    return 0;
   }
 
   /**
