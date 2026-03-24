@@ -2035,7 +2035,7 @@ export function initSimPage(config) {
       numBins: nBins,
       thresholds,
       animate: false,
-      margin: { top: 5, right: 10, bottom: 40, left: 35 },
+      margin: { top: 5, right: 10, bottom: 50, left: 35 },
       showExport: false,
     });
     resampleContentEl.appendChild(container);
@@ -2070,15 +2070,16 @@ export function initSimPage(config) {
         ? formatStat(resampleVal, dataPrecision, 'proportion')
         : formatStat(resampleVal, dataPrecision);
       const pillText = `${sym} = ${valStr}`;
-      const pillY = fh + 18; // below x-axis ticks
-      const pillW = pillText.length * 7.5 + 14;
-      const pillH = 18;
+      const pillY = fh + 22; // below x-axis ticks
+      // Use 1em so pill scales with chart font size (--font-size-chart)
+      const pillW = pillText.length * 9 + 18;
+      const pillH = 24;
       g.append('rect')
         .attr('x', xPos - pillW / 2)
         .attr('y', pillY - pillH / 2)
         .attr('width', pillW)
         .attr('height', pillH)
-        .attr('rx', 3)
+        .attr('rx', 4)
         .attr('fill', '#FFF3E6')
         .attr('stroke', '#D35400')
         .attr('stroke-width', 1.5);
@@ -2087,7 +2088,7 @@ export function initSimPage(config) {
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'central')
         .attr('fill', '#D35400')
-        .attr('font-size', '11px')
+        .attr('font-size', '1em')
         .attr('font-weight', '700')
         .style('pointer-events', 'none')
         .text(pillText);
