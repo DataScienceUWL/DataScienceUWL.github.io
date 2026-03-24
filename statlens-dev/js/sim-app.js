@@ -2053,7 +2053,7 @@ export function initSimPage(config) {
       numBins: nBins,
       thresholds,
       animate: false,
-      margin: { top: 5, right: 10, bottom: 42, left: 35 },
+      margin: { top: 5, right: 10, bottom: 38, left: 35 },
       showExport: false,
     });
     resampleContentEl.appendChild(container);
@@ -2078,32 +2078,22 @@ export function initSimPage(config) {
         .attr('stroke', '#D35400')
         .attr('stroke-width', 3)
         .attr('stroke-dasharray', '6,3');
-      // Small symbol pill below x-axis marking the line position
+      // Symbol label below x-axis, centered on the dashed line
       const statKey = bootStatSelect?.value ?? 'mean';
       const sym = config.proportion ? 'p\u0302'
         : statKey === 'mean' ? 'x\u0304'
         : statKey === 'median' ? 'M\u0303'
         : statKey === 'sd' ? 's' : stat.label.split(' ').pop() || '';
-      const pillY = fh + 20;
-      const pillW = 26;
-      const pillH = 20;
-      g.append('rect')
-        .attr('x', xPos - pillW / 2)
-        .attr('y', pillY - pillH / 2)
-        .attr('width', pillW)
-        .attr('height', pillH)
-        .attr('rx', 4)
-        .attr('fill', '#FFF3E6')
-        .attr('stroke', '#D35400')
-        .attr('stroke-width', 1.5);
       g.append('text')
-        .attr('x', xPos).attr('y', pillY)
+        .attr('x', xPos).attr('y', fh + 22)
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'central')
         .attr('fill', '#D35400')
-        .attr('font-size', '0.9em')
+        .attr('stroke', 'white')
+        .attr('stroke-width', 3)
+        .attr('paint-order', 'stroke')
+        .attr('font-size', '1.15em')
         .attr('font-weight', '700')
-        .style('pointer-events', 'none')
         .text(sym);
     }
 
