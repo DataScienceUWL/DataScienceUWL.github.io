@@ -157,6 +157,7 @@ export function computeBins(values, options = {}) {
  * @param {number} [options.viewHeight] - Override default viewBox height (for compact stacked charts)
  * @param {boolean} [options.showExport] - Show export buttons (default: true)
  * @param {string} [options.filename] - PNG download filename
+ * @param {'full'|'names'|'none'} [options.labels] - Label visibility: 'full' (default), 'names' (no numeric tooltips/click labels), 'none' (no tooltips at all)
  * @returns {{ frame: ChartFrame, bins: d3Array.Bin<number, number>[], xScale: d3Scale.ScaleLinear<number,number>, yScale: d3Scale.ScaleLinear<number,number>, update: (values: number[], opts?: object) => void }}
  */
 export function drawHistogram(container, values, options = {}) {
@@ -182,6 +183,7 @@ export function drawHistogram(container, values, options = {}) {
     viewHeight,
     showExport,
     filename,
+    labels = 'full',
   } = options;
   const effectiveYLabel = yLabel ?? (relativeFrequency ? 'Proportion' : 'Frequency');
 
@@ -217,7 +219,7 @@ export function drawHistogram(container, values, options = {}) {
   // drawHorizontalGridlines(frame); // disabled — bars are readable without gridlines (theme_classic style)
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
-  renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate, frame.inner, observedStat, ciLines, relativeFrequency, totalN, fillColor);
+  renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate, frame.inner, observedStat, ciLines, relativeFrequency, totalN, fillColor, labels);
 
   // Stacked delta highlight: show new portions of bars in orange
   if (prevBinCounts) {
@@ -263,7 +265,7 @@ export function drawHistogram(container, values, options = {}) {
 
       // Re-render bars
       dataGroup.selectAll('rect').remove();
-      renderBars(dataGroup, result.bins, xScale, yScale, frame.height, newIsTail, animate, frame.inner, newObserved, newCiLines, relativeFrequency, newValues.length || 1);
+      renderBars(dataGroup, result.bins, xScale, yScale, frame.height, newIsTail, animate, frame.inner, newObserved, newCiLines, relativeFrequency, newValues.length || 1, undefined, labels);
 
       // Re-render overlays
       overlays.selectAll('*').remove();
@@ -350,7 +352,7 @@ function renderDeltaBars(group, bins, xScale, yScale, innerHeight, prevCounts) {
  * @param {number} [observedStat] - Observed stat value for split-bar rendering
  * @param {[number, number]} [ciLines] - CI bounds for split-bar rendering
  */
-function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, innerNode, observedStat, ciLines, relativeFrequency = false, totalN = 1, fillColor) {
+function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, innerNode, observedStat, ciLines, relativeFrequency = false, totalN = 1, fillColor, labels = 'full') {
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
   // Collect all boundary values that can split bars
@@ -430,8 +432,15 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, i
   }
 
   // Hover/focus tooltip: show bin range and frequency (or relative frequency)
-  if (innerNode) {
+  if (innerNode && labels !== 'none') {
     attachTooltip(bars, innerNode, (d) => {
+      if (labels === 'names') {
+        return {
+          lines: [`${formatTick(d.x0)} to ${formatTick(d.x1)}`],
+          x: (xScale(d.x0) + xScale(d.x1)) / 2,
+          y: yScale(d.length),
+        };
+      }
       const valLabel = relativeFrequency
         ? `Proportion: ${(d.length / totalN).toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}`
         : `Frequency: ${d.length}`;
@@ -443,26 +452,28 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, i
     });
   }
 
-  // Click bar → show count label above it
-  bars.style('cursor', 'pointer')
-    .on('click', function(event, d) {
-      group.selectAll('.bar-count-label').remove();
-      bars.attr('stroke', d2 => d2.isSplit ? 'none' : BAR_STROKE)
-        .attr('stroke-width', d2 => d2.isSplit ? 0 : 1);
-      d3Selection.select(this).attr('stroke', '#000').attr('stroke-width', 2);
-      const barX = xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2;
-      const barY = yScale(d.length);
-      const labelText = relativeFrequency
-        ? (d.length / totalN).toFixed(4).replace(/0+$/, '').replace(/\.$/, '')
-        : String(d.length);
-      group.append('text')
-        .attr('class', 'bar-count-label')
-        .attr('x', barX)
-        .attr('y', barY - 5)
-        .attr('text-anchor', 'middle')
-        .attr('fill', '#000')
-        .text(labelText);
-    });
+  // Click bar → show count label above it (suppressed in names/none mode)
+  if (labels === 'full') {
+    bars.style('cursor', 'pointer')
+      .on('click', function(event, d) {
+        group.selectAll('.bar-count-label').remove();
+        bars.attr('stroke', d2 => d2.isSplit ? 'none' : BAR_STROKE)
+          .attr('stroke-width', d2 => d2.isSplit ? 0 : 1);
+        d3Selection.select(this).attr('stroke', '#000').attr('stroke-width', 2);
+        const barX = xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2;
+        const barY = yScale(d.length);
+        const labelText = relativeFrequency
+          ? (d.length / totalN).toFixed(4).replace(/0+$/, '').replace(/\.$/, '')
+          : String(d.length);
+        group.append('text')
+          .attr('class', 'bar-count-label')
+          .attr('x', barX)
+          .attr('y', barY - 5)
+          .attr('text-anchor', 'middle')
+          .attr('fill', '#000')
+          .text(labelText);
+      });
+  }
 }
 
 /**

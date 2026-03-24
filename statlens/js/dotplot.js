@@ -166,6 +166,7 @@ export function computeDotRadius(innerWidth, innerHeight, maxStack, numBins) {
  * @param {number} [options.viewHeight] - Override default viewBox height (for compact stacked charts)
  * @param {boolean} [options.showExport] - Show export buttons (default: true)
  * @param {string} [options.filename] - PNG download filename
+ * @param {'full'|'names'|'none'} [options.labels] - Label visibility: 'full' (default), 'names'/'none' (no value tooltips)
  * @returns {{ frame: ChartFrame, dots: Array<{value: number, binCenter: number, stackIndex: number}>, xScale: d3Scale.ScaleLinear<number,number>, maxStack: number, binWidth: number, update: (values: number[], opts?: object) => void }}
  */
 export function drawDotplot(container, values, options = {}) {
@@ -194,6 +195,7 @@ export function drawDotplot(container, values, options = {}) {
     viewHeight,
     showExport,
     filename,
+    labels = 'full',
   } = options;
 
   const result = computeDots(values, { numBins, domain, binWidth: lockedBinWidth, binOrigin: lockedBinOrigin });
@@ -266,10 +268,11 @@ export function drawDotplot(container, values, options = {}) {
   }
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
+  const tooltipNode = labels === 'none' ? undefined : frame.inner;
   if (wouldOverflow) {
-    renderColumns(dataGroup, dots, xScale, /** @type {d3Scale.ScaleLinear<number,number>} */ (yScale), frame.height, isExtreme, highlightIndex, highlightIndices, frame.inner, fillColor, optBaseFill, optExtremeFill);
+    renderColumns(dataGroup, dots, xScale, /** @type {d3Scale.ScaleLinear<number,number>} */ (yScale), frame.height, isExtreme, highlightIndex, highlightIndices, tooltipNode, fillColor, optBaseFill, optExtremeFill);
   } else {
-    renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex, highlightIndices, frame.inner, fillColor, optBaseFill, optExtremeFill);
+    renderDots(dataGroup, dots, xScale, frame.height, dotRadius, isExtreme, animate, highlightIndex, highlightIndices, tooltipNode, fillColor, optBaseFill, optExtremeFill);
   }
 
   // Observed statistic line
@@ -317,7 +320,7 @@ export function drawDotplot(container, values, options = {}) {
         axes.selectAll('*').remove();
         addAxes(frame, xAxis, yAxisFn, xLabel, 'Frequency');
 
-        renderColumns(dataGroup, newResult.dots, xScale, yScale, frame.height, newIsExtreme, newHighlight, newHighlightSet, frame.inner, undefined, optBaseFill, optExtremeFill);
+        renderColumns(dataGroup, newResult.dots, xScale, yScale, frame.height, newIsExtreme, newHighlight, newHighlightSet, tooltipNode, undefined, optBaseFill, optExtremeFill);
       } else {
         // Dot mode — remove y-axis if it was added
         if (yScale) {
@@ -343,7 +346,7 @@ export function drawDotplot(container, values, options = {}) {
 
         const newRadius = computeDotRadius(
           frame.width, frame.height, newResult.maxStack, newEffectiveBins);
-        renderDots(dataGroup, newResult.dots, xScale, frame.height, newRadius, newIsExtreme, animate, newHighlight, newHighlightSet, frame.inner, undefined, optBaseFill, optExtremeFill);
+        renderDots(dataGroup, newResult.dots, xScale, frame.height, newRadius, newIsExtreme, animate, newHighlight, newHighlightSet, tooltipNode, undefined, optBaseFill, optExtremeFill);
       }
 
       const overlays = d3Selection.select(frame.inner).select('.overlays');

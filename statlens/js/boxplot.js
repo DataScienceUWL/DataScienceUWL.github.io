@@ -84,6 +84,7 @@ export function computeBoxplotStats(values) {
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
  * @param {boolean} [options.showExport] - Show export buttons (default: true)
  * @param {string} [options.filename] - PNG download filename
+ * @param {'full'|'names'|'none'} [options.labels] - Label visibility: 'full' (default), 'names'/'none' (no numeric tooltips)
  * @returns {{ frame: ChartFrame, stats: Record<string, BoxplotStats> }}
  */
 export function drawBoxplot(container, data, options = {}) {
@@ -98,6 +99,7 @@ export function drawBoxplot(container, data, options = {}) {
     margin,
     showExport,
     filename,
+    labels = 'full',
   } = options;
 
   // Normalize to grouped format
@@ -275,8 +277,9 @@ export function drawBoxplot(container, data, options = {}) {
     const dataMin = d3Array.min(vals);
     const dataMax = d3Array.max(vals);
 
-    // Helper: attach mouse + keyboard tooltip to a single element
+    // Helper: attach mouse + keyboard tooltip to a single element (suppressed in names/none mode)
     const tipEl = (el, lines, tx, ty) => {
+      if (labels === 'none') return;
       el.attr('tabindex', '0').style('outline', 'none')
         .style('cursor', 'pointer')
         .on('mouseenter', () => showTooltip(frame.inner, lines, tx, ty))
@@ -294,8 +297,10 @@ export function drawBoxplot(container, data, options = {}) {
       .attr('height', bandH)
       .attr('fill', 'transparent')
       .attr('aria-label', `Five-number summary: Min ${dataMin}, Q1 ${s.q1}, Median ${s.median}, Q3 ${s.q3}, Max ${dataMax}`);
-    tipEl(hitRect,
-      [`Min = ${dataMin}`, `Q1 = ${s.q1}`, `Median = ${s.median}`, `Q3 = ${s.q3}`, `Max = ${dataMax}`],
+    const fiveNumLines = labels === 'full'
+      ? [`Min = ${dataMin}`, `Q1 = ${s.q1}`, `Median = ${s.median}`, `Q3 = ${s.q3}`, `Max = ${dataMax}`]
+      : ['Five-number summary'];
+    tipEl(hitRect, fiveNumLines,
       (xScale(s.q1) + xScale(s.q3)) / 2, boxY);
 
     // Whisker cap hit zones — label depends on whether outliers exist on that side
@@ -304,7 +309,9 @@ export function drawBoxplot(container, data, options = {}) {
       const hasHighOutliers = s.mildOutliers.some(d => d > s.q3) || s.extremeOutliers.some(d => d > s.q3);
       const capHitW = 16;
 
-      const loLabel = hasLowOutliers ? ['Smallest non-outlier', String(wLo)] : [`Min = ${wLo}`];
+      const loLabel = labels === 'full'
+        ? (hasLowOutliers ? ['Smallest non-outlier', String(wLo)] : [`Min = ${wLo}`])
+        : (hasLowOutliers ? ['Smallest non-outlier'] : ['Min']);
       const capLo = g.append('rect')
         .attr('class', 'cap-hit-lo')
         .attr('x', xScale(wLo) - capHitW / 2)
@@ -315,7 +322,9 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('aria-label', loLabel.join(': '));
       tipEl(capLo, loLabel, xScale(wLo), capY);
 
-      const hiLabel = hasHighOutliers ? ['Largest non-outlier', String(wHi)] : [`Max = ${wHi}`];
+      const hiLabel = labels === 'full'
+        ? (hasHighOutliers ? ['Largest non-outlier', String(wHi)] : [`Max = ${wHi}`])
+        : (hasHighOutliers ? ['Largest non-outlier'] : ['Max']);
       const capHi = g.append('rect')
         .attr('class', 'cap-hit-hi')
         .attr('x', xScale(wHi) - capHitW / 2)
@@ -368,11 +377,16 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('cy', outlierCy)
         .attr('r', Math.max(OUTLIER_RADIUS * 3, 8))
         .attr('fill', 'transparent');
-      attachTooltip(outlierHits, frame.inner, (d) => ({
-        lines: [`Outlier: ${d}`],
-        x: xScale(d),
-        y: outlierCy - OUTLIER_RADIUS * 3,
-      }));
+      if (labels !== 'none') {
+        const outlierTipLines = labels === 'full'
+          ? (/** @param {number} d */ d) => [`Outlier: ${d}`]
+          : () => ['Outlier'];
+        attachTooltip(outlierHits, frame.inner, (/** @type {number} */ d) => ({
+          lines: outlierTipLines(d),
+          x: xScale(d),
+          y: outlierCy - OUTLIER_RADIUS * 3,
+        }));
+      }
     }
 
     // Mean marker (diamond)
@@ -391,16 +405,19 @@ export function drawBoxplot(container, data, options = {}) {
           .attr('aria-label', `Mean: ${meanVal.toFixed(2)}`);
 
         // Hit zone for tooltip
-        const meanHit = g.append('circle')
-          .attr('cx', mx)
-          .attr('cy', my)
-          .attr('r', Math.max(ds * 2, 8))
-          .attr('fill', 'transparent');
-        attachTooltip(meanHit, frame.inner, () => ({
-          lines: [`Mean: ${meanVal.toFixed(2)}`],
-          x: mx,
-          y: my - ds - 4,
-        }));
+        if (labels !== 'none') {
+          const meanHit = g.append('circle')
+            .attr('cx', mx)
+            .attr('cy', my)
+            .attr('r', Math.max(ds * 2, 8))
+            .attr('fill', 'transparent');
+          const meanTipLines = labels === 'full' ? [`Mean: ${meanVal.toFixed(2)}`] : ['Mean'];
+          attachTooltip(meanHit, frame.inner, () => ({
+            lines: meanTipLines,
+            x: mx,
+            y: my - ds - 4,
+          }));
+        }
       }
     }
   }

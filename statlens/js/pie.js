@@ -22,6 +22,7 @@ import { computeFrequencies } from './barchart.js';
  * @param {string} [options.id]
  * @param {string} [options.xLabel] - Variable name (shown as title)
  * @param {string[]} [options.categoryOrder]
+ * @param {'full'|'names'|'none'} [options.labels] - Label visibility: 'full' (default), 'names' (no numbers), 'none' (no labels/tooltips)
  * @returns {{ frame: ChartFrame }}
  */
 export function drawPieChart(container, values, options = {}) {
@@ -31,6 +32,7 @@ export function drawPieChart(container, values, options = {}) {
     id,
     xLabel,
     categoryOrder,
+    labels = 'full',
   } = options;
 
   const frame = createChart(container, {
@@ -80,23 +82,27 @@ export function drawPieChart(container, values, options = {}) {
     const centroid = /** @type {[number, number]} */ (labelArc.centroid(/** @type {any} */ (d)));
 
     // Slice
-    dataGroup.append('path')
+    const ariaText = labels === 'full' ? `${d.data.category}: ${count} (${pct}%)` : d.data.category;
+    const slice = dataGroup.append('path')
       .attr('d', /** @type {string} */ (arc(/** @type {any} */ (d))))
       .attr('fill', colors[catIdx % colors.length])
       .attr('stroke', '#fff')
       .attr('stroke-width', 2)
       .attr('role', 'listitem')
-      .attr('aria-label', `${d.data.category}: ${count} (${pct}%)`)
-      .on('mouseenter', function () {
-        showTooltip(frame.inner,
-          [`${d.data.category}: ${count} (${pct}%)`],
-          centerX + centroid[0], centerY + centroid[1]);
-      })
-      .on('mouseleave', () => hideTooltip(frame.inner));
+      .attr('aria-label', ariaText);
 
-    // Labels on slices (only if big enough to read)
+    if (labels !== 'none') {
+      const tipText = labels === 'full' ? `${d.data.category}: ${count} (${pct}%)` : d.data.category;
+      slice
+        .on('mouseenter', function () {
+          showTooltip(frame.inner, [tipText], centerX + centroid[0], centerY + centroid[1]);
+        })
+        .on('mouseleave', () => hideTooltip(frame.inner));
+    }
+
+    // Labels on slices (only if big enough to read and labels=full)
     const angle = d.endAngle - d.startAngle;
-    if (angle > 0.35) { // ~20 degrees minimum
+    if (labels === 'full' && angle > 0.35) { // ~20 degrees minimum
       dataGroup.append('text')
         .attr('transform', `translate(${centroid[0]}, ${centroid[1]})`)
         .attr('text-anchor', 'middle')
@@ -108,8 +114,10 @@ export function drawPieChart(container, values, options = {}) {
     }
   }
 
-  // Draw legend
-  drawPieLegend(frame, categories, counts, total, colors, xLabel);
+  // Draw legend (skip in 'none' mode)
+  if (labels !== 'none') {
+    drawPieLegend(frame, categories, counts, total, colors, xLabel, labels);
+  }
 
   return { frame };
 }
@@ -122,8 +130,9 @@ export function drawPieChart(container, values, options = {}) {
  * @param {number} total
  * @param {string[]} colors
  * @param {string} [title]
+ * @param {'full'|'names'|'none'} [labels]
  */
-function drawPieLegend(frame, categories, counts, total, colors, title) {
+function drawPieLegend(frame, categories, counts, total, colors, title, labels = 'full') {
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   const g = overlays.append('g')
     .attr('class', 'chart-legend')
@@ -165,7 +174,7 @@ function drawPieLegend(frame, categories, counts, total, colors, title) {
       .attr('y', yOff + swatchSize - 2)
       .attr('class', 'legend-text')
       .attr('fill', '#333')
-      .text(`${categories[i]}: ${count} (${pct}%)`);
+      .text(labels === 'full' ? `${categories[i]}: ${count} (${pct}%)` : categories[i]);
 
     yOff += lineHeight;
   }

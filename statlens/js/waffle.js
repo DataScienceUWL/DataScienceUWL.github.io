@@ -21,6 +21,7 @@ import { computeFrequencies } from './barchart.js';
  * @param {string} [options.id]
  * @param {string} [options.xLabel] - Variable name (shown in legend)
  * @param {string[]} [options.categoryOrder]
+ * @param {'full'|'names'|'none'} [options.labels] - Label visibility: 'full' (default), 'names' (no numbers), 'none' (no labels/tooltips/legend)
  * @returns {{ frame: ChartFrame }}
  */
 export function drawWaffleChart(container, values, options = {}) {
@@ -30,6 +31,7 @@ export function drawWaffleChart(container, values, options = {}) {
     id,
     xLabel,
     categoryOrder,
+    labels = 'full',
   } = options;
 
   // Use a square-ish viewBox for the waffle grid
@@ -81,7 +83,7 @@ export function drawWaffleChart(container, values, options = {}) {
     const count = counts.get(cat) ?? 0;
     const pct = ((count / total) * 100).toFixed(1);
 
-    dataGroup.append('rect')
+    const cell = dataGroup.append('rect')
       .attr('x', x)
       .attr('y', y)
       .attr('width', cellSize)
@@ -91,16 +93,22 @@ export function drawWaffleChart(container, values, options = {}) {
       .attr('stroke', '#fff')
       .attr('stroke-width', 1)
       .attr('role', 'listitem')
-      .attr('aria-label', `${cat}`)
-      .on('mouseenter', function () {
-        showTooltip(frame.inner, [`${cat}: ${count} (${pct}%)`],
-          x + cellSize / 2, y);
-      })
-      .on('mouseleave', () => hideTooltip(frame.inner));
+      .attr('aria-label', labels === 'full' ? `${cat}: ${count} (${pct}%)` : `${cat}`);
+
+    if (labels !== 'none') {
+      const tipText = labels === 'full' ? `${cat}: ${count} (${pct}%)` : cat;
+      cell
+        .on('mouseenter', function () {
+          showTooltip(frame.inner, [tipText], x + cellSize / 2, y);
+        })
+        .on('mouseleave', () => hideTooltip(frame.inner));
+    }
   }
 
-  // Draw legend
-  drawWaffleLegend(frame, categories, counts, total, colors, xLabel);
+  // Draw legend (skip in 'none' mode)
+  if (labels !== 'none') {
+    drawWaffleLegend(frame, categories, counts, total, colors, xLabel, labels);
+  }
 
   return { frame };
 }
@@ -145,8 +153,9 @@ function assignCells(categories, counts, total, cells) {
  * @param {number} total
  * @param {string[]} colors
  * @param {string} [title]
+ * @param {'full'|'names'|'none'} [labels]
  */
-function drawWaffleLegend(frame, categories, counts, total, colors, title) {
+function drawWaffleLegend(frame, categories, counts, total, colors, title, labels = 'full') {
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   const g = overlays.append('g')
     .attr('class', 'chart-legend')
@@ -188,7 +197,7 @@ function drawWaffleLegend(frame, categories, counts, total, colors, title) {
       .attr('y', yOff + swatchSize - 2)
       .attr('class', 'legend-text')
       .attr('fill', '#333')
-      .text(`${categories[i]}: ${count} (${pct}%)`);
+      .text(labels === 'full' ? `${categories[i]}: ${count} (${pct}%)` : categories[i]);
 
     yOff += lineHeight;
   }

@@ -33,8 +33,9 @@ const modeSep = document.getElementById('mode-sep');
 const modeFreqLabel = document.getElementById('mode-freq');
 const modeRelLabel = document.getElementById('mode-rel');
 let activeChart = 'bar';
-// Apply ?chart= URL param
-const _chartParam = new URLSearchParams(window.location.search).get('chart');
+// Apply URL params
+const _urlParams = new URLSearchParams(window.location.search);
+const _chartParam = _urlParams.get('chart');
 if (_chartParam && ['bar', 'pie', 'waffle'].includes(_chartParam)) {
   activeChart = /** @type {'bar'|'pie'|'waffle'} */ (_chartParam);
   const _radio = /** @type {HTMLInputElement|null} */ (
@@ -42,6 +43,13 @@ if (_chartParam && ['bar', 'pie', 'waffle'].includes(_chartParam)) {
   if (_radio) _radio.checked = true;
 }
 let activeMode = 'frequency';
+
+/** @type {'full'|'names'|'none'} */
+let labelsMode = 'full';
+const _labelsParam = _urlParams.get('labels');
+if (_labelsParam && ['full', 'names', 'none'].includes(_labelsParam)) {
+  labelsMode = /** @type {'full'|'names'|'none'} */ (_labelsParam);
+}
 const catSheetBody = /** @type {HTMLElement} */ (document.getElementById('cat-sheet-body'));
 const numCategoriesInput = /** @type {HTMLInputElement} */ (document.getElementById('num-categories'));
 const summaryTableBody = /** @type {HTMLElement} */ (document.getElementById('summary-table-body'));
@@ -256,6 +264,20 @@ modeRadios.forEach(radio => {
   });
 });
 
+// "Show values" toggle — visible when labelsMode starts as non-full (URL param)
+const showValuesToggle = document.getElementById('show-values-toggle');
+const showValuesCb = /** @type {HTMLInputElement|null} */ (document.getElementById('show-values'));
+if (showValuesToggle && showValuesCb) {
+  if (labelsMode !== 'full') {
+    showValuesToggle.hidden = false;
+    showValuesCb.checked = false;
+  }
+  showValuesCb.addEventListener('change', () => {
+    labelsMode = showValuesCb.checked ? 'full' : /** @type {'full'|'names'|'none'} */ (_labelsParam ?? 'names');
+    updateDisplay();
+  });
+}
+
 // ── Render ───────────────────────────────────────────────────────────
 
 function updateDisplay() {
@@ -263,6 +285,9 @@ function updateDisplay() {
   renderTable();
   renderChart();
   if (resultsSection) resultsSection.hidden = false;
+  // Hide frequency table when labels are suppressed (it reveals the numbers)
+  const sidebar = document.querySelector('.app-sidebar');
+  if (sidebar) /** @type {HTMLElement} */ (sidebar).hidden = labelsMode !== 'full';
 }
 
 function renderTable() {
@@ -314,12 +339,14 @@ function renderChart() {
       xLabel: currentVarName,
       titleText: currentVarName,
       id: 'cat-chart',
+      labels: labelsMode,
     });
   } else if (activeChart === 'waffle') {
     drawWaffleChart(chartContainer, currentValues, {
       xLabel: currentVarName,
       titleText: currentVarName,
       id: 'cat-chart',
+      labels: labelsMode,
     });
   } else {
     drawBarChart(chartContainer, currentValues, {
@@ -329,6 +356,7 @@ function renderChart() {
       id: 'cat-chart',
       animate: false,
       margin: { top: 30, right: 15, bottom: 80 },
+      labels: labelsMode,
     });
   }
 
