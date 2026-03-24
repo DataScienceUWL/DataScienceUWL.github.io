@@ -114,6 +114,9 @@ export function initSimPage(config) {
   /** Cached original-sample histogram result for morph animation (large-n). */
   /** @type {{ bins: ReturnType<typeof computeBins>['bins'], thresholds: number[], numBins: number } | null} */
   let origHistCache = null;
+  /** Cached original proportion counts for proportion bar morph. */
+  /** @type {{ successes: number, failures: number, pHat: number } | null} */
+  let origPropCache = null;
   /** Whether the last generate action was +1 (for persistent highlight). */
   let lastWasSingle = false;
   /** Whether the mechanism strip has been initialized (deferred to first generate). */
@@ -1217,8 +1220,9 @@ export function initSimPage(config) {
         mechanismStrip.hidden = false;
         initMechanismCollapse(mechanismStrip);
         renderOriginalSample();
-        // Auto-default to histogram view for large samples (unless user explicitly chose)
-        if (!resampleViewExplicit && data1.length > CHIP_THRESHOLD) {
+        // Auto-default to histogram view for large numeric samples (unless user explicitly chose)
+        // Proportions use proportion bars in both views, so no need to switch
+        if (!resampleViewExplicit && !config.proportion && data1.length > CHIP_THRESHOLD) {
           setResampleViewMode('histogram');
         }
       } else if (config.twoGroup) {
@@ -1556,18 +1560,22 @@ export function initSimPage(config) {
     }
 
     if (config.proportion && !config.twoGroup) {
-      // One-sample proportion: text counts
+      // One-sample proportion: visual proportion bar
       const successes = data1.filter(v => v === 1).length;
       const failures = data1.length - successes;
       const pHat = mean(data1);
+      const pct = (pHat * 100).toFixed(1);
+      origPropCache = { successes, failures, pHat };
       const container = document.createElement('div');
-      container.className = 'prop-summary';
+      container.className = 'prop-bar-wrap';
       container.setAttribute('role', 'img');
       container.setAttribute('aria-label', `Original sample: ${successes} successes, ${failures} failures, p-hat = ${formatStat(pHat, dataPrecision, 'proportion')}`);
       container.innerHTML = `
-        <span class="prop-count"><strong>${successes}</strong> S</span>
-        <span class="prop-count"><strong>${failures}</strong> F</span>
-        <span class="prop-count">p̂ = ${formatStat(pHat, dataPrecision, 'proportion')}</span>
+        <div class="mech-prop-bar mech-prop-bar-lg">
+          <div class="mech-prop-fill" style="width:${pct}%"></div>
+          <span class="mech-prop-label-left${pHat < 0.15 ? ' outside' : ''}">${successes} S</span>
+          <span class="mech-prop-label-right">${failures} F</span>
+        </div>
       `;
       originalContentEl.appendChild(container);
     } else if (data1.length <= CHIP_THRESHOLD) {
@@ -1859,20 +1867,9 @@ export function initSimPage(config) {
   function showResampleSummary(resampleValues, stagger = false) {
     resampleContentEl.innerHTML = '';
 
-    // Proportion mode: just show counts and p̂
+    // Proportion mode: use proportion bar (same as histogram view)
     if (config.proportion && !config.twoGroup) {
-      const successes = resampleValues.filter(v => v === 1).length;
-      const failures = resampleValues.length - successes;
-      const pHat = mean(resampleValues);
-      const container = document.createElement('div');
-      container.className = 'prop-summary';
-      container.innerHTML = `
-        <span class="prop-count"><strong>${successes}</strong> S</span>
-        <span class="prop-count"><strong>${failures}</strong> F</span>
-        <span class="prop-count">p̂ = ${formatStat(pHat, dataPrecision, 'proportion')}</span>
-      `;
-      resampleContentEl.appendChild(container);
-      return 0;
+      return showResamplePropBar(resampleValues, stagger);
     }
 
     /** @type {Map<number, number>} */
@@ -2036,8 +2033,79 @@ export function initSimPage(config) {
    * @param {boolean} [morph=false] - Animate bar morph from original heights (+1 only)
    * @returns {number} Animation duration in ms (0 if no morph)
    */
+  /**
+   * Show resample as a proportion bar with morph animation from original proportions.
+   * @param {number[]} resampleValues
+   * @param {boolean} [animate=false] - Animate bar width transition (+1 only)
+   * @returns {number} Animation duration in ms
+   */
+  function showResamplePropBar(resampleValues, animate = false) {
+    const successes = resampleValues.filter(v => v === 1).length;
+    const failures = resampleValues.length - successes;
+    const pHat = mean(resampleValues);
+    const pct = (pHat * 100).toFixed(1);
+
+    const shouldAnimate = animate && origPropCache && !prefersReducedMotion();
+    const origPct = origPropCache ? (origPropCache.pHat * 100).toFixed(1) : pct;
+
+    const container = document.createElement('div');
+    container.className = 'prop-bar-wrap';
+    container.setAttribute('role', 'img');
+    container.setAttribute('aria-label', `Resample: ${successes} successes, ${failures} failures`);
+
+    const fill = document.createElement('div');
+    fill.className = 'mech-prop-fill';
+    // Start at original width if animating, else jump to final
+    fill.style.width = shouldAnimate ? `${origPct}%` : `${pct}%`;
+
+    const bar = document.createElement('div');
+    bar.className = 'mech-prop-bar mech-prop-bar-lg';
+    bar.appendChild(fill);
+
+    const labelL = document.createElement('span');
+    labelL.className = 'mech-prop-label-left' + (pHat < 0.15 ? ' outside' : '');
+    labelL.textContent = `${successes} S`;
+    bar.appendChild(labelL);
+
+    const labelR = document.createElement('span');
+    labelR.className = 'mech-prop-label-right';
+    labelR.textContent = `${failures} F`;
+    bar.appendChild(labelR);
+
+    container.appendChild(bar);
+    resampleContentEl.appendChild(container);
+
+    const MORPH_MS = 400;
+    if (shouldAnimate) {
+      // Animate the fill width from original to resample proportion
+      fill.style.transition = `width ${MORPH_MS}ms ease-out`;
+      requestAnimationFrame(() => {
+        fill.style.width = `${pct}%`;
+      });
+
+      // Hide stat text during animation, reveal after
+      const mechStatEl = resampleMeanEl?.closest('.mechanism-stat');
+      if (mechStatEl) {
+        /** @type {HTMLElement} */ (mechStatEl).style.opacity = '0';
+        /** @type {HTMLElement} */ (mechStatEl).style.transition = 'opacity 250ms ease';
+        setTimeout(() => {
+          /** @type {HTMLElement} */ (mechStatEl).style.opacity = '1';
+        }, MORPH_MS);
+      }
+
+      return MORPH_MS + 250;
+    }
+    return 0;
+  }
+
   function showResampleHistogram(resampleValues, morph = false) {
     resampleContentEl.innerHTML = '';
+
+    // Proportion mode: use proportion bar instead of histogram
+    if (config.proportion && !config.twoGroup) {
+      return showResamplePropBar(resampleValues, morph);
+    }
+
     const container = document.createElement('div');
     container.className = 'mini-chart';
 
@@ -2446,6 +2514,7 @@ export function initSimPage(config) {
     lockedDotGrid = null;
     mechanismInitialized = false;
     origHistCache = null;
+    origPropCache = null;
     // New random seed each reset (unless URL-locked for graded work)
     if (!urlSeed) {
       seed = Math.random().toString(36).slice(2, 10);
