@@ -11,7 +11,7 @@ import { sturgesBins } from '../../js/histogram.js';
 import { computeDots } from '../../js/dotplot.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { drawGroupedDensity } from '../../js/kde.js';
-import { createExportBar, addChartSaveButton } from '../../js/export.js';
+import { wrapTable } from '../../js/export.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper, setPageTitle } from '../../js/page-utils.js';
 import { getColors } from '../../js/chart-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
@@ -174,7 +174,7 @@ function updateChartControls() {
 
     // Y-axis scale toggle
     const yLabel = document.createElement('label');
-    yLabel.innerHTML = 'Y-axis: <select id="y-scale"><option value="frequency">Frequency</option><option value="relative">Relative Frequency</option></select>';
+    yLabel.innerHTML = 'Y-axis: <select id="y-scale"><option value="frequency">Frequency</option><option value="relative">Proportion</option></select>';
     yLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
     chartControls.appendChild(yLabel);
     const ySelect = /** @type {HTMLSelectElement} */ (yLabel.querySelector('select'));
@@ -612,16 +612,13 @@ function renderActiveChart() {
     }
   }
 
-  // Export bar
+  // Wrap stats table with copy button (only once — skip if already wrapped)
   const statsTable = /** @type {HTMLTableElement|null} */ (
     document.getElementById('grouped-stats-table'));
-  createExportBar({
-    chartContainer: chartArea,
-    chartFilename: `${currentVarLabel.replace(/\s+/g, '_')}_by_${currentGroupLabel.replace(/\s+/g, '_')}_${activeChart}.png`,
-    table: statsTable ?? undefined,
-  });
+  if (statsTable && !statsTable.closest('.statlens-table')) {
+    wrapTable(statsTable);
+  }
 
-  addChartSaveButton(chartArea, `${currentVarLabel.replace(/\s+/g, '_')}_by_${currentGroupLabel.replace(/\s+/g, '_')}_${activeChart}.png`);
 }
 
 /**

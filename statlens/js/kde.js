@@ -168,6 +168,8 @@ export function overlayDensityOnHistogram(innerNode, values, xScale, yScale, bin
  * @param {string[]} [opts.colors] - Colors per group (default: Okabe-Ito)
  * @param {number} [opts.bandwidth] - Override bandwidth (applies to all groups)
  * @param {boolean} [opts.fill] - Fill area under single-group curves (default: true when 1 group)
+ * @param {boolean} [opts.showExport] - Show export buttons (default: true)
+ * @param {string} [opts.filename] - PNG download filename
  * @returns {{ frame: import('./types.js').ChartFrame, xScale: any }}
  */
 export function drawGroupedDensity(container, groupedData, opts) {
@@ -206,6 +208,8 @@ export function drawGroupedDensity(container, groupedData, opts) {
     titleText: opts.titleText ?? 'Density Plot',
     descText: opts.descText ?? '',
     id: opts.id ?? 'density',
+    showExport: opts.showExport,
+    filename: opts.filename,
   });
 
   // Scales

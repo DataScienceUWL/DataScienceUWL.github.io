@@ -12,9 +12,9 @@ import { drawBoxplot } from '../../js/boxplot.js';
 import { announce, initTabs, initDataPanel, initHelp, wrapWithStepper, setPageTitle } from '../../js/page-utils.js';
 import { DOTPLOT_AUTO_THRESHOLD } from '../../js/chart-defaults.js';
 import { overlayDensityOnHistogram, silvermanBandwidth, drawGroupedDensity } from '../../js/kde.js';
-import { createExportBar, addChartSaveButton } from '../../js/export.js';
+import { wrapTable } from '../../js/export.js';
 import { initSheet, handleSheetPaste, readSheetValues, populateSheet } from '../../js/spreadsheet.js';
-import { drawMeanOnHistogram, drawMeanOnDotplot } from '../../js/mean-marker.js';
+import { drawMeanOnHistogram, drawMeanOnDotplot, drawMeanOnGroupedDensity } from '../../js/mean-marker.js';
 import { renderBinTable } from '../../js/stats-tables.js';
 
 initHelp();
@@ -143,7 +143,7 @@ function updateChartControls() {
 
     // Y-axis scale toggle
     const yLabel = document.createElement('label');
-    yLabel.innerHTML = 'Y-axis: <select id="y-scale"><option value="frequency">Frequency</option><option value="relative">Relative Frequency</option></select>';
+    yLabel.innerHTML = 'Y-axis: <select id="y-scale"><option value="frequency">Frequency</option><option value="relative">Proportion</option></select>';
     yLabel.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:0.3rem;font-weight:400;font-size:0.85rem;';
     chartControls.appendChild(yLabel);
     const ySelect = /** @type {HTMLSelectElement} */ (yLabel.querySelector('select'));
@@ -676,25 +676,26 @@ function renderActiveChart() {
 
   } else if (activeChart === 'density') {
     const bw = silvermanBandwidth(currentValues) * bandwidthMult;
-    drawGroupedDensity(chartArea, { [xLabel]: currentValues }, {
+    const grouped = { [xLabel]: currentValues };
+    const densityResult = drawGroupedDensity(chartArea, grouped, {
       xLabel,
       titleText: `Density Plot of ${xLabel}`,
       descText: `Kernel density estimate showing the distribution shape of ${xLabel}`,
       id: 'desc-density',
       bandwidth: bw,
     });
+    if (showMeanMarker) {
+      drawMeanOnGroupedDensity(densityResult, grouped, [xLabel], ['#F05133']);
+    }
   }
 
-  // Export bar
+  // Wrap stats table with copy button (only once — skip if already wrapped)
   const statsTable = /** @type {HTMLTableElement|null} */ (
     document.querySelector('#numeric-stats .sidebar-stats'));
-  createExportBar({
-    chartContainer: chartArea,
-    chartFilename: `${xLabel.replace(/\s+/g, '_')}_${activeChart}.png`,
-    table: statsTable ?? undefined,
-  });
+  if (statsTable && !statsTable.closest('.statlens-table')) {
+    wrapTable(statsTable, { copyTitle: 'Copy statistics to clipboard' });
+  }
 
-  addChartSaveButton(chartArea, `${xLabel.replace(/\s+/g, '_')}_${activeChart}.png`);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────

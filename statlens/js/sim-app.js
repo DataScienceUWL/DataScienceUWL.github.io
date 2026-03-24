@@ -18,7 +18,6 @@ import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animate
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
-import { addChartSaveButton } from './export.js';
 /**
  * @typedef {object} SimConfig
  * @property {'bootstrap'|'randomization'} mode
@@ -1528,6 +1527,7 @@ export function initSimPage(config) {
           numBins: Math.min(Math.ceil(Math.sqrt(diffs.length)), 40),
           animate: false,
           margin: { top: 5, right: 10, bottom: 25, left: 35 },
+          showExport: false,
         });
       }
       originalContentEl.appendChild(container);
@@ -1583,6 +1583,7 @@ export function initSimPage(config) {
         numBins: Math.min(Math.ceil(Math.sqrt(data1.length)), 40),
         animate: false,
         margin: { top: 5, right: 10, bottom: 25, left: 35 },
+        showExport: false,
       });
       originalContentEl.appendChild(container);
     }
@@ -1752,7 +1753,7 @@ export function initSimPage(config) {
     if (resampleViewMode === 'histogram') {
       showResampleHistogram(resampleValues);
     } else {
-      showResampleSummary(resampleValues);
+      showResampleSummary(resampleValues, highlightStat);
     }
 
     if (resampleMeanEl) {
@@ -1812,8 +1813,9 @@ export function initSimPage(config) {
   /**
    * Summary view: chips (small n) or text counts (large n).
    * @param {number[]} resampleValues
+   * @param {boolean} [stagger=false] - Animate chips appearing sequentially (+1 only)
    */
-  function showResampleSummary(resampleValues) {
+  function showResampleSummary(resampleValues, stagger = false) {
     resampleContentEl.innerHTML = '';
 
     // Proportion mode: just show counts and p̂
@@ -1838,6 +1840,9 @@ export function initSimPage(config) {
       counts.set(v, (counts.get(v) ?? 0) + 1);
     }
 
+    // Should we animate the stagger? Only for small n on +1, with motion allowed
+    const shouldStagger = stagger && data1.length <= CHIP_THRESHOLD && !prefersReducedMotion();
+
     if (data1.length <= CHIP_THRESHOLD) {
       const container = document.createElement('div');
       container.className = 'sample-dots';
@@ -1845,7 +1850,8 @@ export function initSimPage(config) {
       container.setAttribute('aria-label', 'Bootstrap resample values');
       const sorted = [...data1].sort((a, b) => a - b);
       const remaining = new Map(counts);
-      for (const v of sorted) {
+      for (let chipIdx = 0; chipIdx < sorted.length; chipIdx++) {
+        const v = sorted[chipIdx];
         const timesDrawn = remaining.get(v) ?? 0;
         const dot = document.createElement('span');
         dot.className = 'sample-dot';
@@ -1866,6 +1872,22 @@ export function initSimPage(config) {
           badge.className = 'draw-count';
           badge.textContent = `\u00d7${timesDrawn}`;
           dot.appendChild(badge);
+        }
+        // Stagger: hide chip initially, reveal with delay
+        if (shouldStagger && timesDrawn > 0) {
+          dot.classList.add('chip-hidden');
+          const delay = chipIdx * 25;
+          setTimeout(() => {
+            dot.classList.remove('chip-hidden');
+            dot.classList.add('chip-appear');
+          }, delay);
+        } else if (shouldStagger && timesDrawn === 0) {
+          // Not-drawn chips appear after all drawn chips
+          dot.classList.add('chip-hidden');
+          const delay = sorted.length * 25 + 50;
+          setTimeout(() => {
+            dot.classList.remove('chip-hidden');
+          }, delay);
         }
         container.appendChild(dot);
         if (timesDrawn > 0) {
@@ -1912,6 +1934,7 @@ export function initSimPage(config) {
       numBins: Math.min(Math.ceil(Math.sqrt(resampleValues.length)), 40),
       animate: false,
       margin: { top: 5, right: 10, bottom: 25, left: 35 },
+      showExport: false,
     });
     resampleContentEl.appendChild(container);
   }
@@ -1936,6 +1959,7 @@ export function initSimPage(config) {
       container.setAttribute('role', 'img');
       container.setAttribute('aria-label', 'Sign-flipped differences');
 
+      const shouldAnimate = highlightStat && !prefersReducedMotion();
       for (let i = 0; i < flippedDiffs.length; i++) {
         const orig = originalDiffs[i];
         const flipped = flippedDiffs[i];
@@ -1952,6 +1976,11 @@ export function initSimPage(config) {
           badge.className = 'flip-badge';
           badge.textContent = '\u00b1';
           dot.appendChild(badge);
+          // Animate: scaleX flip with stagger
+          if (shouldAnimate) {
+            dot.style.animationDelay = `${i * 20}ms`;
+            dot.classList.add('chip-flip');
+          }
         }
         container.appendChild(dot);
       }
@@ -2284,10 +2313,6 @@ export function initSimPage(config) {
     if (theoryOverlayOn && (activeChart === 'histogram' || activeChart === 'dotplot') && config.mode === 'bootstrap') {
       applyTheoryOverlay(stats);
     }
-
-    // Floating save button
-    const simLabel = config.mode === 'bootstrap' ? 'bootstrap' : 'randomization';
-    addChartSaveButton(chartContainer, `${simLabel}_distribution.png`);
 
     lastStatIndex = -1; // Reset after rendering
     batchHighlightIndices = null;

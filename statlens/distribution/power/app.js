@@ -10,7 +10,6 @@ import { createChart, addAxes, formatTick, debounce, prefersReducedMotion } from
 import { generateCurveData } from '../../js/curve.js';
 import { initHelp } from '../../js/page-utils.js';
 import { parseParams } from '../../js/url-params.js';
-import { addChartSaveButton } from '../../js/export.js';
 
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
@@ -332,9 +331,6 @@ function initPowerVisualizer() {
           betaLabelX, frame.height * 0.45, '#283593');
       }
     }
-
-    // Save button
-    addChartSaveButton(chartContainer, 'power_visualizer.png');
 
     // ── Update results panel ────────────────────────────────────
     resultPower.textContent = power.toFixed(4);

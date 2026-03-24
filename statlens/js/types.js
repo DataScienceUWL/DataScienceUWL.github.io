@@ -109,11 +109,12 @@
 /**
  * SVG chart frame returned by createChart().
  * @typedef {object} ChartFrame
- * @property {SVGSVGElement}  svg    - The root <svg> element (D3 selection)
- * @property {SVGGElement}    inner  - The <g class="chart-inner"> (D3 selection)
- * @property {number}         width  - Inner width (viewBox width minus margins)
- * @property {number}         height - Inner height (viewBox height minus margins)
+ * @property {SVGSVGElement}  svg     - The root <svg> element
+ * @property {SVGGElement}    inner   - The <g class="chart-inner">
+ * @property {number}         width   - Inner width (viewBox width minus margins)
+ * @property {number}         height  - Inner height (viewBox height minus margins)
  * @property {{top:number, right:number, bottom:number, left:number}} margin
+ * @property {HTMLDivElement} wrapper - The .statlens-chart wrapper div containing the SVG + export buttons
  */
 
 export {};  // Make this a module (required for @import to work)

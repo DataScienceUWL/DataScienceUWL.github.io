@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
+import { createChart, addAxes, /* drawHorizontalGridlines, */ formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
 
 /** Default bar fill (IMS blue at 50% opacity) — used when no isTail predicate. */
 const BAR_FILL = '#569BBD80';
@@ -155,6 +155,8 @@ export function computeBins(values, options = {}) {
  * @param {boolean} [options.relativeFrequency] - Show relative frequency (proportion) on y-axis instead of count
  * @param {string} [options.fillColor] - Override default bar fill color (hex, will be used at 50% opacity)
  * @param {number} [options.viewHeight] - Override default viewBox height (for compact stacked charts)
+ * @param {boolean} [options.showExport] - Show export buttons (default: true)
+ * @param {string} [options.filename] - PNG download filename
  * @returns {{ frame: ChartFrame, bins: d3Array.Bin<number, number>[], xScale: d3Scale.ScaleLinear<number,number>, yScale: d3Scale.ScaleLinear<number,number>, update: (values: number[], opts?: object) => void }}
  */
 export function drawHistogram(container, values, options = {}) {
@@ -178,10 +180,12 @@ export function drawHistogram(container, values, options = {}) {
     relativeFrequency = false,
     fillColor,
     viewHeight,
+    showExport,
+    filename,
   } = options;
-  const effectiveYLabel = yLabel ?? (relativeFrequency ? 'Rel. Frequency' : 'Frequency');
+  const effectiveYLabel = yLabel ?? (relativeFrequency ? 'Proportion' : 'Frequency');
 
-  const frame = createChart(container, { titleText, descText, id, margin, ...(viewHeight != null && { viewHeight }) });
+  const frame = createChart(container, { titleText, descText, id, margin, showExport, filename, ...(viewHeight != null && { viewHeight }) });
   const { bins, domain: finalDomain } = computeBins(values, { numBins, domain, thresholds });
 
   // Extend x-domain to encompass full first and last bins (no partial bars)
@@ -210,6 +214,7 @@ export function drawHistogram(container, values, options = {}) {
       })
     : d3Axis.axisLeft(yScale).tickFormat(formatTick);
   addAxes(frame, xAxis, yAxis, xLabel, effectiveYLabel);
+  // drawHorizontalGridlines(frame); // disabled — bars are readable without gridlines (theme_classic style)
 
   const dataGroup = d3Selection.select(frame.inner).select('.data');
   renderBars(dataGroup, bins, xScale, yScale, frame.height, isTail, animate, frame.inner, observedStat, ciLines, relativeFrequency, totalN, fillColor);
@@ -428,7 +433,7 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, i
   if (innerNode) {
     attachTooltip(bars, innerNode, (d) => {
       const valLabel = relativeFrequency
-        ? `Rel. Frequency: ${(d.length / totalN).toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}`
+        ? `Proportion: ${(d.length / totalN).toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}`
         : `Frequency: ${d.length}`;
       return {
         lines: [`${formatTick(d.x0)} to ${formatTick(d.x1)}`, valLabel],

@@ -8,7 +8,6 @@
 import { setJStat, pdfT } from '../../js/distributions.js';
 import { oneMeanT, oneMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
-import { addChartSaveButton } from '../../js/export.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
@@ -485,5 +484,4 @@ function drawChart(result) {
     statValueNeg: tail === 'both' ? -Math.abs(tStat) : undefined,
   });
 
-  addChartSaveButton(chartContainer, 'one_mean_t_test.png');
 }

@@ -17,7 +17,6 @@ import { drawCurve, computeDomain } from './curve.js';
 import { debounce } from './chart-utils.js';
 import { enableHorizontalDrag, showInlineEdit, formatEditValue } from './chart-interactions.js';
 import { initHelp, setPageTitle } from './page-utils.js';
-import { addChartSaveButton } from './export.js';
 import * as d3Selection from 'd3-selection';
 
 /**
@@ -219,8 +218,6 @@ export function initDistCalculator(config) {
     addInteractiveLayer(tail);
     computeAndDisplay(tail);
 
-    // Floating save button
-    addChartSaveButton(chartContainer, `${config.type}_distribution.png`);
   }
 
   /**

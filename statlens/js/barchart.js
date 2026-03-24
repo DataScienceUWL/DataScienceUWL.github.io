@@ -11,7 +11,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels, autoRotateLabels, fitYLabel } from './chart-utils.js';
+import { createChart, addAxes, drawHorizontalGridlines, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels, autoRotateLabels, fitYLabel } from './chart-utils.js';
 
 /** Bar stroke (white separator). */
 const BAR_STROKE = '#FFFFFF';
@@ -158,32 +158,6 @@ function defaultYLabel(mode) {
     case 'filled': return 'Proportion';
     default: return 'Count';
   }
-}
-
-/**
- * Draw faint horizontal gridlines from y-axis ticks (ggplot2-style).
- * @param {import('./types.js').ChartFrame} frame
- */
-function drawHorizontalGridlines(frame) {
-  const axes = d3Selection.select(frame.inner).select('.axes');
-  const dataGroup = d3Selection.select(frame.inner).select('.data');
-  axes.select('.y-axis').selectAll('.tick').each(function () {
-    const transform = d3Selection.select(this).attr('transform');
-    const m = transform && transform.match(/translate\(\s*[\d.e+-]+\s*,\s*([\d.e+-]+)/);
-    if (m) {
-      const ty = parseFloat(m[1]);
-      // Skip the baseline (y = frame.height)
-      if (Math.abs(ty - frame.height) < 1) return;
-      dataGroup.insert('line', ':first-child')
-        .attr('class', 'grid-line')
-        .attr('x1', 0)
-        .attr('x2', frame.width)
-        .attr('y1', ty)
-        .attr('y2', ty)
-        .attr('stroke', '#d8d8d8')
-        .attr('stroke-width', 0.5);
-    }
-  });
 }
 
 /**

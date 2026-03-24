@@ -186,7 +186,7 @@ export function renderBinTable(container, bins, options) {
   details.className = 'bin-table-details';
   details.style.cssText = 'margin:0.5rem 0;font-size:0.85rem;';
   const summary = document.createElement('summary');
-  summary.textContent = relativeFreq ? 'Bin relative frequencies' : 'Bin frequencies';
+  summary.textContent = relativeFreq ? 'Bin proportions' : 'Bin frequencies';
   summary.style.cssText = 'cursor:pointer;color:var(--ims-green);font-weight:500;';
   details.appendChild(summary);
 
@@ -211,7 +211,7 @@ export function renderBinTable(container, bins, options) {
     }
   } else {
     const th = document.createElement('th');
-    th.textContent = relativeFreq ? 'Rel. Frequency' : 'Frequency';
+    th.textContent = relativeFreq ? 'Proportion' : 'Frequency';
     th.style.cssText = 'text-align:right;padding:0.2rem 0.4rem;border-bottom:2px solid #ccc;';
     headerRow.appendChild(th);
   }

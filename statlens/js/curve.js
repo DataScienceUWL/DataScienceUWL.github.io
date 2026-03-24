@@ -106,6 +106,8 @@ export function generateCurveData(pdfFn, domain, nPoints = N_POINTS) {
  * @param {number} [options.critLow] - Lower bound for both/middle shading
  * @param {number} [options.critHigh] - Upper bound for both/middle shading
  * @param {{top:number,right:number,bottom:number,left:number}} [options.margin]
+ * @param {boolean} [options.showExport] - Show export buttons (default: true)
+ * @param {string} [options.filename] - PNG download filename
  * @returns {{ frame: ChartFrame, curveData: Array<{x: number, y: number}>, xScale: import('d3-scale').ScaleLinear<number,number>, yScale: import('d3-scale').ScaleLinear<number,number>, update: (opts: object) => void }}
  */
 export function drawCurve(container, pdfFn, domain, options = {}) {
@@ -120,9 +122,11 @@ export function drawCurve(container, pdfFn, domain, options = {}) {
     critLow,
     critHigh,
     margin,
+    showExport,
+    filename,
   } = options;
 
-  const frame = createChart(container, { titleText, descText, id, margin });
+  const frame = createChart(container, { titleText, descText, id, margin, showExport, filename });
   const curveData = generateCurveData(pdfFn, domain);
 
   const xScale = d3Scale.scaleLinear()

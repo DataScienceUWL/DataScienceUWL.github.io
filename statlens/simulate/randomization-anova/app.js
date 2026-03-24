@@ -11,7 +11,6 @@ import { computeBins } from '../../js/histogram.js';
 import { drawBoxplot } from '../../js/boxplot.js';
 import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, initHelp, setPageTitle } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
-import { addChartSaveButton } from '../../js/export.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
 
 initHelp();
@@ -426,8 +425,6 @@ function renderChart(stats, observed, highlightIndex = -1, highlightIndices, pre
     pValue,
   });
 
-  // Floating save button
-  addChartSaveButton(chartContainer, 'randomization_anova_distribution.png');
 }
 
 /**

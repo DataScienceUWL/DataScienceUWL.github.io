@@ -10,7 +10,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
+import { createChart, addAxes, drawHorizontalGridlines, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, attachTooltip } from './chart-utils.js';
 import { sturgesBins } from './histogram.js';
 
 /** Default dot fill — IMS blue. */
@@ -164,6 +164,8 @@ export function computeDotRadius(innerWidth, innerHeight, maxStack, numBins) {
  * @param {string} [options.baseFill] - Override non-extreme dot fill (when isExtreme returns false)
  * @param {string} [options.extremeFill] - Override extreme dot fill (when isExtreme returns true)
  * @param {number} [options.viewHeight] - Override default viewBox height (for compact stacked charts)
+ * @param {boolean} [options.showExport] - Show export buttons (default: true)
+ * @param {string} [options.filename] - PNG download filename
  * @returns {{ frame: ChartFrame, dots: Array<{value: number, binCenter: number, stackIndex: number}>, xScale: d3Scale.ScaleLinear<number,number>, maxStack: number, binWidth: number, update: (values: number[], opts?: object) => void }}
  */
 export function drawDotplot(container, values, options = {}) {
@@ -190,6 +192,8 @@ export function drawDotplot(container, values, options = {}) {
     baseFill: optBaseFill,
     extremeFill: optExtremeFill,
     viewHeight,
+    showExport,
+    filename,
   } = options;
 
   const result = computeDots(values, { numBins, domain, binWidth: lockedBinWidth, binOrigin: lockedBinOrigin });
@@ -199,7 +203,7 @@ export function drawDotplot(container, values, options = {}) {
     ?? (lockedBinWidth && finalDomain ? Math.ceil((finalDomain[1] - finalDomain[0]) / lockedBinWidth) : null)
     ?? dotplotBins(values);
 
-  const frame = createChart(container, { titleText, descText, id, margin, ...(viewHeight != null && { viewHeight }) });
+  const frame = createChart(container, { titleText, descText, id, margin, showExport, filename, ...(viewHeight != null && { viewHeight }) });
 
   const xScale = d3Scale.scaleLinear()
     .domain(finalDomain)
@@ -223,6 +227,7 @@ export function drawDotplot(container, values, options = {}) {
       .range([frame.height, 0]);
     const yAxis = d3Axis.axisLeft(yScale).tickFormat(formatTick);
     addAxes(frame, xAxis, yAxis, xLabel, 'Frequency');
+    drawHorizontalGridlines(frame);
   } else {
     const xAxisG = axes.append('g')
       .attr('class', 'x-axis')

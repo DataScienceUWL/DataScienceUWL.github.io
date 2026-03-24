@@ -57,6 +57,8 @@ export function pointRadius(n) {
  * @param {boolean} [options.minimal] - If true, hide axis labels and tick labels (show only dots + regression line)
  * @param {number} [options.yTicks] - Number of y-axis ticks (default: auto)
  * @param {number} [options.xTicks] - Number of x-axis ticks (default: auto)
+ * @param {boolean} [options.showExport] - Show export buttons (default: true)
+ * @param {string} [options.filename] - PNG download filename
  * @returns {{ frame: ChartFrame, xScale: d3Scale.ScaleLinear<number,number>, yScale: d3Scale.ScaleLinear<number,number> }}
  */
 export function drawScatterplot(container, xValues, yValues, options = {}) {
@@ -73,10 +75,12 @@ export function drawScatterplot(container, xValues, yValues, options = {}) {
     minimal = false,
     yTicks,
     xTicks,
+    showExport,
+    filename,
   } = options;
 
   const n = Math.min(xValues.length, yValues.length);
-  const frame = createChart(container, { titleText, descText, id, margin });
+  const frame = createChart(container, { titleText, descText, id, margin, showExport, filename });
 
   // Compute domains with 5% padding (guard against empty/NaN data)
   const xExtent = d3Array.extent(xValues.slice(0, n));
