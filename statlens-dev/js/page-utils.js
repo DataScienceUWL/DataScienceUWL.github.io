@@ -415,6 +415,81 @@ export function flashMechanism(mechanismStrip) {
 }
 
 /**
+ * Spawn a stream of small dots flying from one element to another.
+ * Communicates visually that "data flows from original → resample."
+ * @param {HTMLElement} fromEl - Source element (original sample content)
+ * @param {HTMLElement} toEl - Destination element (resample content)
+ * @param {object} [opts]
+ * @param {number} [opts.count] - Number of dots (default 8)
+ * @param {number} [opts.duration] - Flight duration per dot in ms (default 350)
+ * @param {string} [opts.color] - Dot color (default accent blue)
+ * @returns {number} Total animation time in ms
+ */
+export function flyDataStream(fromEl, toEl, opts = {}) {
+  if (prefersReducedMotion() || !fromEl || !toEl) return 0;
+
+  const count = opts.count ?? 8;
+  const duration = opts.duration ?? 350;
+  const color = opts.color ?? '#569BBD';
+
+  const fromRect = fromEl.getBoundingClientRect();
+  const toRect = toEl.getBoundingClientRect();
+
+  const fromX = fromRect.left + fromRect.width / 2;
+  const fromY = fromRect.top + fromRect.height / 2;
+  const toX = toRect.left + toRect.width / 2;
+  const toY = toRect.top + toRect.height / 2;
+
+  const stagger = 25;
+  const totalMs = duration + stagger * (count - 1);
+
+  for (let i = 0; i < count; i++) {
+    const dot = document.createElement('div');
+    dot.style.cssText = `
+      position: fixed; z-index: 1000; pointer-events: none;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: ${color}; opacity: 0;
+      left: ${fromX - 3}px; top: ${fromY - 3}px;
+      will-change: transform, opacity;
+    `;
+    document.body.appendChild(dot);
+
+    const spreadX = (Math.random() - 0.5) * 24;
+    const spreadY = (Math.random() - 0.5) * 16;
+    const dx = toX - fromX + spreadX;
+    const dy = toY - fromY + spreadY;
+    const arcY = -Math.abs(dx) * 0.08 - 8;
+
+    const delay = i * stagger;
+    const start = performance.now() + delay;
+
+    /** @param {number} now */
+    function animate(now) {
+      const elapsed = now - start;
+      if (elapsed < 0) { requestAnimationFrame(animate); return; }
+      const t = Math.min(1, elapsed / duration);
+      const e = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+
+      const curX = dx * e;
+      const curY = dy * e + arcY * 4 * t * (1 - t);
+      const scale = 0.6 + 0.8 * Math.sin(t * Math.PI);
+
+      dot.style.transform = `translate(${curX}px, ${curY}px) scale(${scale})`;
+      dot.style.opacity = String(t < 0.15 ? t / 0.15 : t > 0.75 ? (1 - t) / 0.25 : 1);
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        dot.remove();
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+
+  return totalMs;
+}
+
+/**
  * Animate a dot "dropping" from the mechanism strip resample mean to the
  * highlighted dot in the chart. Creates a fixed-position orange circle that
  * flies along a curved path from source to target, then fades out on arrival.

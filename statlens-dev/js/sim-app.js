@@ -13,8 +13,8 @@ import * as d3Selection from 'd3-selection';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { drawSpike } from './spike.js';
-import { renderSimPills, formatMechStat, drawMiniBoxplot, prefersReducedMotion, hasD3Transition } from './chart-utils.js';
-import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from './page-utils.js';
+import { renderSimPills, formatMechStat, drawMiniBoxplot, morphMiniBoxplot, prefersReducedMotion, hasD3Transition } from './chart-utils.js';
+import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, flyDataStream, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { rowsToCSV, downloadCSV } from './csv-parser.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
@@ -94,6 +94,11 @@ export function initSimPage(config) {
   const originalContentEl = document.getElementById('original-sample-content');
   const resampleContentEl = document.getElementById('resample-content');
   const bootstrapSampleEl = document.getElementById('bootstrap-sample');
+
+  // Move mechanism description inside the resample panel so it appears under that half
+  if (mechanismDescEl && bootstrapSampleEl) {
+    bootstrapSampleEl.appendChild(mechanismDescEl);
+  }
   const origNEl = document.getElementById('orig-n');
   const origMeanEl = document.getElementById('orig-mean');
   const resampleMeanEl = document.getElementById('resample-mean');
@@ -117,6 +122,8 @@ export function initSimPage(config) {
   /** Cached original proportion counts for proportion bar morph. */
   /** @type {{ successes: number, failures: number, pHat: number } | null} */
   let origPropCache = null;
+  /** Duration (ms) of last two-group boxplot morph animation. */
+  let twoGroupMorphMs = 0;
   /** Whether the last generate action was +1 (for persistent highlight). */
   let lastWasSingle = false;
   /** Whether the mechanism strip has been initialized (deferred to first generate). */
@@ -928,11 +935,14 @@ export function initSimPage(config) {
       opt.textContent = o;
       successOutcomeSelect.appendChild(opt);
     }
-    // Check URL param ?success= to pre-select the success outcome
+    // Check URL param ?success= first, then dataset context successLabel
     const urlSuccess = new URLSearchParams(location.search).get('success');
     if (urlSuccess && outcomes.includes(urlSuccess)) {
       successOutcomeSelect.value = urlSuccess;
       successOutcome = urlSuccess;
+    } else if (datasetContext.successLabel && outcomes.includes(datasetContext.successLabel)) {
+      successOutcomeSelect.value = datasetContext.successLabel;
+      successOutcome = datasetContext.successLabel;
     } else {
       successOutcome = outcomes[0];
     }
@@ -1266,7 +1276,7 @@ export function initSimPage(config) {
           const stat = statFn(rs1) - statFn(rs2);
           allStats.push(stat);
         }
-        showTwoGroupMechanism(lastRs1, lastRs2, false, count === 1);
+        twoGroupMorphMs = showTwoGroupMechanism(lastRs1, lastRs2, false, count === 1);
       } else {
         // One-sample bootstrap
         for (let i = 0; i < count; i++) {
@@ -1344,6 +1354,9 @@ export function initSimPage(config) {
         if (showOneSampleMech) {
           lastResample = lastResampleValues;
           mechAnimMs = showResample(lastResampleValues, false, true, !isAutoPlay);
+        } else if (config.twoGroup && !config.paired) {
+          // Two-group boxplot morph duration (returned from showTwoGroupMechanism above)
+          mechAnimMs = twoGroupMorphMs;
         }
         // For two-group, get the diff value element for drop animation
         const bootDiffEl = !showOneSampleMech
@@ -1447,7 +1460,7 @@ export function initSimPage(config) {
         allStats.push(stat);
       }
 
-      showTwoGroupMechanism(lastG1, lastG2, false, count === 1);
+      twoGroupMorphMs = showTwoGroupMechanism(lastG1, lastG2, false, count === 1);
       // Always compute dot-level highlights
       if (count === 1) {
         lastStatIndex = allStats.length - 1;
@@ -1495,7 +1508,8 @@ export function initSimPage(config) {
       if (count === 1) {
         // The diff value gets highlight-last via showTwoGroupMechanism(…, highlight=true)
         const mechDiffEl = document.querySelector('#mech-resample-content .mech-diff');
-        // Brief pause for mechanism to update, then render chart + drop
+        // Wait for boxplot morph to finish, then render chart + drop
+        const randDelay = Math.max(150, twoGroupMorphMs);
         pendingChartTimer = setTimeout(() => {
           pendingChartTimer = null;
           renderChart(allStats, null, observedStat, direction);
@@ -1503,7 +1517,7 @@ export function initSimPage(config) {
           if (dropSourceEl && chartContainer) {
             animateDropToChart(/** @type {HTMLElement} */ (dropSourceEl), chartContainer);
           }
-        }, 150);
+        }, randDelay);
       } else {
         renderChart(allStats, null, observedStat, direction);
       }
@@ -1573,7 +1587,7 @@ export function initSimPage(config) {
       container.innerHTML = `
         <div class="mech-prop-bar mech-prop-bar-lg">
           <div class="mech-prop-fill" style="width:${pct}%"></div>
-          <span class="mech-prop-label-left${pHat < 0.15 ? ' outside' : ''}">${successes} S</span>
+          <span class="mech-prop-label-left">${successes} S</span>
           <span class="mech-prop-label-right">${failures} F</span>
         </div>
       `;
@@ -1751,9 +1765,77 @@ export function initSimPage(config) {
    * @param {boolean} [highlight] - Highlight diff value (+1 animation, auto-fades via CSS)
    */
   function showTwoGroupMechanism(g1, g2, _flash = false, highlight = false) {
-    if (!mechResampleContent || !mechanismDescEl) return;
-    mechResampleContent.innerHTML = buildTwoGroupHTML(g1, g2, highlight);
-    renderTwoGroupBoxplots(g1, g2, 'resamp', highlight);
+    if (!mechResampleContent || !mechanismDescEl) return 0;
+
+    const statFn = config.mode === 'bootstrap' ? getBootstrapStat().fn : mean;
+    const fmtType = config.proportion ? 'proportion' : undefined;
+
+    // Can we morph existing boxplots? (non-proportion, single-step, containers exist)
+    const canMorph = !config.proportion && highlight
+      && document.getElementById('mech-box-resamp-1')?.querySelector('svg.mech-minibox')
+      && document.getElementById('mech-box-resamp-2')?.querySelector('svg.mech-minibox');
+
+    let morphMs = 0;
+
+    if (canMorph && mechOriginalContent) {
+      // Snap boxplots to original values as a faded ghost
+      const box1 = /** @type {HTMLElement} */ (document.getElementById('mech-box-resamp-1'));
+      const box2 = /** @type {HTMLElement} */ (document.getElementById('mech-box-resamp-2'));
+      const domainOpt = twoGroupBoxDomain ?? undefined;
+      drawMiniBoxplot(box1, data1, { domain: domainOpt, meanValue: statFn(data1) });
+      drawMiniBoxplot(box2, data2, { domain: domainOpt, meanValue: statFn(data2) });
+
+      // Ghost: show original at low opacity
+      const svg1 = box1.querySelector('svg');
+      const svg2 = box2.querySelector('svg');
+      if (svg1) svg1.style.opacity = '0.25';
+      if (svg2) svg2.style.opacity = '0.25';
+
+      // Fade stat text too
+      const statSpans = mechResampleContent.querySelectorAll('.mech-group-stat');
+      const diffSpan = mechResampleContent.querySelector('.mech-stat-value');
+      statSpans.forEach(s => { /** @type {HTMLElement} */ (s).style.opacity = '0.2'; });
+      if (diffSpan) /** @type {HTMLElement} */ (diffSpan).style.opacity = '0.2';
+
+      // Fire flying dots from original → resample (over the ghost)
+      flyDataStream(mechOriginalContent, mechResampleContent);
+
+      // After ghost is visible and dots are mid-flight, morph + solidify
+      setTimeout(() => {
+        // Fade SVGs to full opacity during morph
+        if (svg1) { svg1.style.transition = 'opacity 400ms ease'; svg1.style.opacity = '1'; }
+        if (svg2) { svg2.style.transition = 'opacity 400ms ease'; svg2.style.opacity = '1'; }
+
+        const boxOpts1 = { domain: domainOpt, meanValue: statFn(g1), highlightMean: true };
+        const boxOpts2 = { domain: domainOpt, meanValue: statFn(g2), highlightMean: true };
+        morphMiniBoxplot(box1, g1, boxOpts1);
+        morphMiniBoxplot(box2, g2, boxOpts2);
+
+        // Update stat text
+        const statSymbol = '<span class="x-bar">x</span>';
+        if (statSpans[0]) statSpans[0].innerHTML = `n = ${g1.length}, ${statSymbol} = ${formatStat(statFn(g1), dataPrecision, fmtType)}`;
+        if (statSpans[1]) statSpans[1].innerHTML = `n = ${g2.length}, ${statSymbol} = ${formatStat(statFn(g2), dataPrecision, fmtType)}`;
+        statSpans.forEach(s => {
+          /** @type {HTMLElement} */ (s).style.transition = 'opacity 250ms ease';
+          /** @type {HTMLElement} */ (s).style.opacity = '1';
+        });
+
+        // Update diff
+        const diffVal = formatStat(statFn(g1) - statFn(g2), dataPrecision, fmtType);
+        if (diffSpan) {
+          diffSpan.textContent = diffVal;
+          diffSpan.classList.add('highlight-last');
+          /** @type {HTMLElement} */ (diffSpan).style.transition = 'opacity 250ms ease';
+          /** @type {HTMLElement} */ (diffSpan).style.opacity = '1';
+        }
+      }, 200);
+
+      morphMs = 200 + 400; // ghost pause + morph duration
+    } else {
+      // Full rebuild (first time or batch)
+      mechResampleContent.innerHTML = buildTwoGroupHTML(g1, g2, highlight);
+      renderTwoGroupBoxplots(g1, g2, 'resamp', highlight);
+    }
 
     if (config.mode === 'bootstrap') {
       mechanismDescEl.textContent = 'Resample each group independently with replacement';
@@ -1761,6 +1843,7 @@ export function initSimPage(config) {
       mechanismDescEl.textContent = 'Shuffle group labels · same values, new grouping';
     }
     mechanismDescEl.hidden = false;
+    return morphMs;
   }
 
   /**
@@ -1777,6 +1860,11 @@ export function initSimPage(config) {
   function showResample(resampleValues, _flash = false, highlightStat = false, flyingAnim = true) {
     if (!resampleContentEl || !bootstrapSampleEl) return 0;
     bootstrapSampleEl.hidden = false;
+
+    // Fire flying dots from original → resample on +1
+    if (highlightStat && flyingAnim && originalContentEl && resampleContentEl) {
+      flyDataStream(originalContentEl, resampleContentEl);
+    }
 
     let animMs = 0;
     if (resampleViewMode === 'histogram') {
@@ -2063,7 +2151,7 @@ export function initSimPage(config) {
     bar.appendChild(fill);
 
     const labelL = document.createElement('span');
-    labelL.className = 'mech-prop-label-left' + (pHat < 0.15 ? ' outside' : '');
+    labelL.className = 'mech-prop-label-left';
     labelL.textContent = `${successes} S`;
     bar.appendChild(labelL);
 
@@ -2076,24 +2164,43 @@ export function initSimPage(config) {
     resampleContentEl.appendChild(container);
 
     const MORPH_MS = 400;
+    const GHOST_PAUSE = 200;
     if (shouldAnimate) {
-      // Animate the fill width from original to resample proportion
-      fill.style.transition = `width ${MORPH_MS}ms ease-out`;
-      requestAnimationFrame(() => {
-        fill.style.width = `${pct}%`;
-      });
+      // Ghost: show original proportion at low opacity
+      bar.style.opacity = '0.25';
 
-      // Hide stat text during animation, reveal after
+      // Hide stat text and labels during ghost phase
       const mechStatEl = resampleMeanEl?.closest('.mechanism-stat');
       if (mechStatEl) {
         /** @type {HTMLElement} */ (mechStatEl).style.opacity = '0';
         /** @type {HTMLElement} */ (mechStatEl).style.transition = 'opacity 250ms ease';
-        setTimeout(() => {
-          /** @type {HTMLElement} */ (mechStatEl).style.opacity = '1';
-        }, MORPH_MS);
       }
+      labelL.style.opacity = '0';
+      labelR.style.opacity = '0';
 
-      return MORPH_MS + 250;
+      // After ghost pause, solidify and morph
+      setTimeout(() => {
+        bar.style.transition = `opacity ${MORPH_MS}ms ease`;
+        bar.style.opacity = '1';
+        fill.style.transition = `width ${MORPH_MS}ms ease-out`;
+        fill.style.width = `${pct}%`;
+
+        // Update and reveal labels + stat text after morph
+        labelL.textContent = `${successes} S`;
+        labelR.textContent = `${failures} F`;
+        labelL.style.transition = 'opacity 200ms ease';
+        labelR.style.transition = 'opacity 200ms ease';
+        labelL.style.opacity = '1';
+        labelR.style.opacity = '1';
+
+        if (mechStatEl) {
+          setTimeout(() => {
+            /** @type {HTMLElement} */ (mechStatEl).style.opacity = '1';
+          }, MORPH_MS);
+        }
+      }, GHOST_PAUSE);
+
+      return GHOST_PAUSE + MORPH_MS + 250;
     }
     return 0;
   }
@@ -2225,7 +2332,7 @@ export function initSimPage(config) {
     const SHRINK_FILL = '#B8D4E8'; // light blue — bar shrank (fewer values here)
     const DEFAULT_FILL = '#569BBD80';
 
-    // Record final (resample) positions, then snap to original positions
+    // Record final (resample) positions, then snap to original positions as ghost
     /** @type {Array<{rect: SVGRectElement, finalY: string, finalH: string, grew: boolean, shrank: boolean}>} */
     const morphData = [];
 
@@ -2239,7 +2346,6 @@ export function initSimPage(config) {
       const x0 = x0Match ? parseFloat(x0Match[1]) : NaN;
 
       const origCount = isNaN(x0) ? 0 : (origCounts.get(x0) ?? 0);
-      // Use computeBins result for accurate resample count at this bin
       const resampleBin = result.bins.find(b => Math.abs(b.x0 - x0) < 1e-10);
       const newCount = resampleBin ? resampleBin.length : 0;
       const grew = newCount > origCount;
@@ -2254,12 +2360,10 @@ export function initSimPage(config) {
       morphData.push({ rect, finalY, finalH, grew, shrank });
     }
 
-    // Animate bar morph via requestAnimationFrame interpolation
-    // (CSS/WAAPI transitions don't work on SVG geometry attributes)
-    const startTime = performance.now();
-
-    /** Ease-out cubic: decelerating curve */
-    function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+    // Ghost: show bars at low opacity (faded copy of original)
+    const GHOST_OPACITY = 0.25;
+    const svgNode = /** @type {SVGSVGElement} */ (svg);
+    svgNode.style.opacity = String(GHOST_OPACITY);
 
     /** @type {Array<{rect: SVGRectElement, startY: number, startH: number, endY: number, endH: number, grew: boolean, shrank: boolean}>} */
     const animItems = morphData.map(({ rect, finalY, finalH, grew, shrank }) => ({
@@ -2271,37 +2375,53 @@ export function initSimPage(config) {
       grew, shrank,
     }));
 
-    // Apply highlight colors immediately
-    for (const { rect, grew, shrank } of animItems) {
-      if (grew) rect.setAttribute('fill', GROW_FILL);
-      else if (shrank) rect.setAttribute('fill', SHRINK_FILL);
-    }
+    // Delay morph start so ghost is visible briefly while dots fly
+    const GHOST_PAUSE = 200;
+    setTimeout(() => {
+      // Apply highlight colors at morph start
+      for (const { rect, grew, shrank } of animItems) {
+        if (grew) rect.setAttribute('fill', GROW_FILL);
+        else if (shrank) rect.setAttribute('fill', SHRINK_FILL);
+      }
 
-    function morphFrame(now) {
-      const elapsed = now - startTime;
-      const t = Math.min(1, elapsed / MORPH_MS);
-      const e = easeOut(t);
-      for (const { rect, startY, startH, endY, endH } of animItems) {
-        const y = startY + (endY - startY) * e;
-        const h = startH + (endH - startH) * e;
-        rect.setAttribute('y', String(y));
-        rect.setAttribute('height', String(Math.max(0, h)));
-      }
-      if (t < 1) {
-        requestAnimationFrame(morphFrame);
-      } else {
-        // Morph complete — reveal the mean line and stat text, then fade bar colors
-        if (meanLineGroup) {
-          meanLineGroup.style.transition = 'opacity 250ms ease';
-          meanLineGroup.style.opacity = '1';
+      const startTime = performance.now();
+      /** Ease-out cubic */
+      function easeOut(/** @type {number} */ t) { return 1 - Math.pow(1 - t, 3); }
+
+      function morphFrame(/** @type {number} */ now) {
+        const elapsed = now - startTime;
+        const t = Math.min(1, elapsed / MORPH_MS);
+        const e = easeOut(t);
+
+        // Morph bar geometry
+        for (const { rect, startY, startH, endY, endH } of animItems) {
+          const y = startY + (endY - startY) * e;
+          const h = startH + (endH - startH) * e;
+          rect.setAttribute('y', String(y));
+          rect.setAttribute('height', String(Math.max(0, h)));
         }
-        if (mechStatEl) {
-          /** @type {HTMLElement} */ (mechStatEl).style.opacity = '1';
+
+        // Solidify: ghost opacity → full opacity during morph
+        const opacity = GHOST_OPACITY + (1 - GHOST_OPACITY) * e;
+        svgNode.style.opacity = String(opacity);
+
+        if (t < 1) {
+          requestAnimationFrame(morphFrame);
+        } else {
+          svgNode.style.opacity = '1';
+          // Morph complete — reveal the mean line and stat text, then fade bar colors
+          if (meanLineGroup) {
+            meanLineGroup.style.transition = 'opacity 250ms ease';
+            meanLineGroup.style.opacity = '1';
+          }
+          if (mechStatEl) {
+            /** @type {HTMLElement} */ (mechStatEl).style.opacity = '1';
+          }
+          fadeColors();
         }
-        fadeColors();
       }
-    }
-    requestAnimationFrame(morphFrame);
+      requestAnimationFrame(morphFrame);
+    }, GHOST_PAUSE);
 
     function fadeColors() {
       // SVG fill IS a CSS presentation property, so CSS transition works here
@@ -2317,9 +2437,9 @@ export function initSimPage(config) {
       }, FADE_MS);
     }
 
-    // Return time until dot should drop: morph + brief pause after mean line appears
+    // Return time until dot should drop: ghost pause + morph + brief pause after mean line
     // (color fade continues in background but shouldn't delay the dot drop)
-    return MORPH_MS + 300;
+    return GHOST_PAUSE + MORPH_MS + 300;
   }
 
   /**

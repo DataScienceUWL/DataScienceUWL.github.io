@@ -883,21 +883,21 @@ export function drawMiniBoxplot(container, values, options = {}) {
   let svg = `<svg class="mech-minibox" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">`;
 
   // Whisker lines
-  svg += `<line x1="${x(whiskerLo)}" x2="${x(q1)}" y1="${cy}" y2="${cy}" stroke="${color}" stroke-width="1.5"/>`;
-  svg += `<line x1="${x(q3)}" x2="${x(whiskerHi)}" y1="${cy}" y2="${cy}" stroke="${color}" stroke-width="1.5"/>`;
+  svg += `<line class="bp-wlo" x1="${x(whiskerLo)}" x2="${x(q1)}" y1="${cy}" y2="${cy}" stroke="${color}" stroke-width="1.5"/>`;
+  svg += `<line class="bp-whi" x1="${x(q3)}" x2="${x(whiskerHi)}" y1="${cy}" y2="${cy}" stroke="${color}" stroke-width="1.5"/>`;
 
   // Whisker caps
   const capH = boxH * 0.5;
-  svg += `<line x1="${x(whiskerLo)}" x2="${x(whiskerLo)}" y1="${cy - capH/2}" y2="${cy + capH/2}" stroke="${color}" stroke-width="1.5"/>`;
-  svg += `<line x1="${x(whiskerHi)}" x2="${x(whiskerHi)}" y1="${cy - capH/2}" y2="${cy + capH/2}" stroke="${color}" stroke-width="1.5"/>`;
+  svg += `<line class="bp-clo" x1="${x(whiskerLo)}" x2="${x(whiskerLo)}" y1="${cy - capH/2}" y2="${cy + capH/2}" stroke="${color}" stroke-width="1.5"/>`;
+  svg += `<line class="bp-chi" x1="${x(whiskerHi)}" x2="${x(whiskerHi)}" y1="${cy - capH/2}" y2="${cy + capH/2}" stroke="${color}" stroke-width="1.5"/>`;
 
   // Box
   const bx = x(q1);
   const bw = x(q3) - bx;
-  svg += `<rect x="${bx}" y="${boxTop}" width="${Math.max(bw, 1)}" height="${boxH}" fill="${color}30" stroke="${color}" stroke-width="1.5" rx="1"/>`;
+  svg += `<rect class="bp-box" x="${bx}" y="${boxTop}" width="${Math.max(bw, 1)}" height="${boxH}" fill="${color}30" stroke="${color}" stroke-width="1.5" rx="1"/>`;
 
   // Median line
-  svg += `<line x1="${x(med)}" x2="${x(med)}" y1="${boxTop}" y2="${boxTop + boxH}" stroke="${color}" stroke-width="2"/>`;
+  svg += `<line class="bp-med" x1="${x(med)}" x2="${x(med)}" y1="${boxTop}" y2="${boxTop + boxH}" stroke="${color}" stroke-width="2"/>`;
 
   // Outliers
   for (const o of outliers) {
@@ -909,9 +909,173 @@ export function drawMiniBoxplot(container, values, options = {}) {
     const mx = x(meanValue);
     const ms = 4; // half-size
     const mColor = highlightMean ? '#E07020' : color;
-    svg += `<polygon points="${mx},${cy - ms} ${mx + ms},${cy} ${mx},${cy + ms} ${mx - ms},${cy}" fill="${mColor}" stroke="${mColor}" stroke-width="0.5"/>`;
+    svg += `<polygon class="bp-mean" points="${mx},${cy - ms} ${mx + ms},${cy} ${mx},${cy + ms} ${mx - ms},${cy}" fill="${mColor}" stroke="${mColor}" stroke-width="0.5"/>`;
   }
 
   svg += '</svg>';
   container.innerHTML = svg;
+}
+
+/**
+ * Animate an existing mini boxplot to new data values.
+ * Falls back to instant drawMiniBoxplot if no existing SVG or reduced motion.
+ * @param {HTMLElement} container
+ * @param {number[]} values
+ * @param {{ width?: number, height?: number, meanValue?: number, highlightMean?: boolean, domain?: [number, number], color?: string, label?: string }} options
+ * @returns {number} Animation duration in ms (0 if instant)
+ */
+export function morphMiniBoxplot(container, values, options = {}) {
+  const width = options.width ?? 200;
+  const height = options.height ?? 32;
+  const meanValue = options.meanValue;
+  const highlightMean = options.highlightMean ?? false;
+  const domain = options.domain;
+  const color = options.color ?? '#569BBD';
+
+  const svgEl = container.querySelector('svg.mech-minibox');
+  if (!svgEl || !values || values.length < 2 || prefersReducedMotion()) {
+    drawMiniBoxplot(container, values, options);
+    return 0;
+  }
+
+  // Compute new boxplot stats
+  const sorted = [...values].sort((a, b) => a - b);
+  const n = sorted.length;
+  const qFn = (/** @type {number} */ p) => {
+    const h = (n - 1) * p;
+    const flo = Math.floor(h);
+    const fhi = Math.ceil(h);
+    return sorted[flo] + (sorted[fhi] - sorted[flo]) * (h - flo);
+  };
+  const q1 = qFn(0.25);
+  const med = qFn(0.5);
+  const q3 = qFn(0.75);
+  const iqr = q3 - q1;
+  const lowerFence = q1 - 1.5 * iqr;
+  const upperFence = q3 + 1.5 * iqr;
+  const whiskerLo = sorted.find(d => d >= lowerFence) ?? q1;
+  const whiskerHi = sorted.findLast(d => d <= upperFence) ?? q3;
+
+  // Scale (same as drawMiniBoxplot)
+  const pad = 6;
+  const lo = domain ? domain[0] : Math.min(...sorted);
+  const hi = domain ? domain[1] : Math.max(...sorted);
+  const range = hi - lo || 1;
+  const x = (/** @type {number} */ v) => pad + ((v - lo) / range) * (width - 2 * pad);
+
+  const cy = height / 2;
+
+  // Target positions
+  const targets = {
+    wloX1: x(whiskerLo), wloX2: x(q1),
+    whiX1: x(q3), whiX2: x(whiskerHi),
+    cloX: x(whiskerLo), chiX: x(whiskerHi),
+    boxX: x(q1), boxW: Math.max(x(q3) - x(q1), 1),
+    medX: x(med),
+    meanX: meanValue !== undefined ? x(meanValue) : null,
+  };
+
+  // Read current positions from SVG elements
+  const wlo = svgEl.querySelector('.bp-wlo');
+  const whi = svgEl.querySelector('.bp-whi');
+  const clo = svgEl.querySelector('.bp-clo');
+  const chi = svgEl.querySelector('.bp-chi');
+  const box = svgEl.querySelector('.bp-box');
+  const medLine = svgEl.querySelector('.bp-med');
+  const meanEl = svgEl.querySelector('.bp-mean');
+
+  if (!wlo || !whi || !clo || !chi || !box || !medLine) {
+    drawMiniBoxplot(container, values, options);
+    return 0;
+  }
+
+  /** @param {string|null} a */
+  const num = (a) => +(a ?? '0');
+
+  const starts = {
+    wloX1: num(wlo.getAttribute('x1')), wloX2: num(wlo.getAttribute('x2')),
+    whiX1: num(whi.getAttribute('x1')), whiX2: num(whi.getAttribute('x2')),
+    cloX: num(clo.getAttribute('x1')), chiX: num(chi.getAttribute('x1')),
+    boxX: num(box.getAttribute('x')), boxW: num(box.getAttribute('width')),
+    medX: num(medLine.getAttribute('x1')),
+    meanX: meanEl ? num((meanEl.getAttribute('points') ?? '').split(',')[0]) : null,
+  };
+
+  const MORPH_MS = 400;
+  const easeOut = (/** @type {number} */ t) => 1 - (1 - t) ** 3;
+  let startTime = 0;
+
+  /**
+   * @param {number} from
+   * @param {number} to
+   * @param {number} e
+   */
+  const lerp = (from, to, e) => from + (to - from) * e;
+
+  /** @param {number} now */
+  function frame(now) {
+    if (!startTime) startTime = now;
+    const t = Math.min(1, (now - startTime) / MORPH_MS);
+    const e = easeOut(t);
+
+    // Whisker lo
+    wlo.setAttribute('x1', String(lerp(starts.wloX1, targets.wloX1, e)));
+    wlo.setAttribute('x2', String(lerp(starts.wloX2, targets.wloX2, e)));
+
+    // Whisker hi
+    whi.setAttribute('x1', String(lerp(starts.whiX1, targets.whiX1, e)));
+    whi.setAttribute('x2', String(lerp(starts.whiX2, targets.whiX2, e)));
+
+    // Caps
+    const cloX = lerp(starts.cloX, targets.cloX, e);
+    const chiX = lerp(starts.chiX, targets.chiX, e);
+    clo.setAttribute('x1', String(cloX));
+    clo.setAttribute('x2', String(cloX));
+    chi.setAttribute('x1', String(chiX));
+    chi.setAttribute('x2', String(chiX));
+
+    // Box
+    const bx = lerp(starts.boxX, targets.boxX, e);
+    const bw = lerp(starts.boxW, targets.boxW, e);
+    box.setAttribute('x', String(bx));
+    box.setAttribute('width', String(Math.max(bw, 1)));
+
+    // Median
+    const mx = lerp(starts.medX, targets.medX, e);
+    medLine.setAttribute('x1', String(mx));
+    medLine.setAttribute('x2', String(mx));
+
+    // Mean diamond
+    if (meanEl && starts.meanX !== null && targets.meanX !== null) {
+      const meanX = lerp(starts.meanX, targets.meanX, e);
+      const ms = 4;
+      meanEl.setAttribute('points',
+        `${meanX},${cy - ms} ${meanX + ms},${cy} ${meanX},${cy + ms} ${meanX - ms},${cy}`);
+      const mColor = highlightMean ? '#E07020' : color;
+      meanEl.setAttribute('fill', mColor);
+      meanEl.setAttribute('stroke', mColor);
+    }
+
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      // Rebuild outliers (too many to track individually — just swap)
+      svgEl.querySelectorAll('circle').forEach(c => c.remove());
+      const outliers = sorted.filter(d => d < lowerFence || d > upperFence);
+      for (const o of outliers) {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', String(x(o)));
+        circle.setAttribute('cy', String(cy));
+        circle.setAttribute('r', '2');
+        circle.setAttribute('fill', 'none');
+        circle.setAttribute('stroke', color);
+        circle.setAttribute('stroke-width', '1');
+        if (meanEl) svgEl.insertBefore(circle, meanEl);
+        else svgEl.appendChild(circle);
+      }
+    }
+  }
+
+  requestAnimationFrame(frame);
+  return MORPH_MS;
 }
