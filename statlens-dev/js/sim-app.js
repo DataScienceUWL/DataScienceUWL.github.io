@@ -1780,24 +1780,42 @@ export function initSimPage(config) {
     if (resampleMeanEl) {
       const stat = getBootstrapStat();
       const resampleVal = stat.fn(resampleValues);
-      resampleMeanEl.textContent = config.proportion
+      const statKey = bootStatSelect?.value ?? 'mean';
+
+      // Build symbol HTML with proper overline for x-bar
+      let symHTML;
+      if (config.proportion) {
+        symHTML = 'p\u0302';
+      } else if (statKey === 'mean') {
+        symHTML = '<span class="x-bar">x</span>';
+      } else if (statKey === 'median') {
+        symHTML = 'median';
+      } else if (statKey === 'sd') {
+        symHTML = 's';
+      } else {
+        symHTML = stat.label.replace('Sample ', '').toLowerCase();
+      }
+
+      const valText = config.proportion
         ? formatStat(resampleVal, dataPrecision, 'proportion')
         : formatStat(resampleVal, dataPrecision);
-      // Orange highlight only on +1 to visually link to persistent dot
-      // Force-restart animation by removing and re-adding the class
+
+      // Update the value span with symbol + value, styled orange
+      resampleMeanEl.innerHTML = `${symHTML} = ${valText}`;
+      resampleMeanEl.style.color = '#D35400';
+      resampleMeanEl.style.fontWeight = '700';
+
+      // Orange highlight class for +1 (used by dot-drop animation source)
       resampleMeanEl.classList.remove('highlight-last');
       if (highlightStat) {
-        void resampleMeanEl.offsetWidth; // reflow to restart animation
+        void resampleMeanEl.offsetWidth;
         resampleMeanEl.classList.add('highlight-last');
       }
+
+      // Update the label span: just "Resample" in the default color
       const statLabelEl = document.getElementById('resample-stat-label');
       if (statLabelEl) {
-        if (config.proportion) {
-          statLabelEl.textContent = 'Resample proportion';
-        } else {
-          const shortName = stat.label.replace('Sample ', '').toLowerCase();
-          statLabelEl.textContent = `Resample ${shortName}`;
-        }
+        statLabelEl.textContent = config.mode === 'randomization' ? 'Shuffled' : 'Resample';
       }
     }
     // Mechanism description: summarize what "with replacement" did
@@ -2035,7 +2053,7 @@ export function initSimPage(config) {
       numBins: nBins,
       thresholds,
       animate: false,
-      margin: { top: 5, right: 10, bottom: 50, left: 35 },
+      margin: { top: 5, right: 10, bottom: 42, left: 35 },
       showExport: false,
     });
     resampleContentEl.appendChild(container);
@@ -2060,20 +2078,15 @@ export function initSimPage(config) {
         .attr('stroke', '#D35400')
         .attr('stroke-width', 3)
         .attr('stroke-dasharray', '6,3');
-      // Pill label below x-axis showing resample stat value
+      // Small symbol pill below x-axis marking the line position
       const statKey = bootStatSelect?.value ?? 'mean';
       const sym = config.proportion ? 'p\u0302'
         : statKey === 'mean' ? 'x\u0304'
-        : statKey === 'median' ? 'med'
+        : statKey === 'median' ? 'M\u0303'
         : statKey === 'sd' ? 's' : stat.label.split(' ').pop() || '';
-      const valStr = config.proportion
-        ? formatStat(resampleVal, dataPrecision, 'proportion')
-        : formatStat(resampleVal, dataPrecision);
-      const pillText = `${sym} = ${valStr}`;
-      const pillY = fh + 22; // below x-axis ticks
-      // Use 1em so pill scales with chart font size (--font-size-chart)
-      const pillW = pillText.length * 9 + 18;
-      const pillH = 24;
+      const pillY = fh + 20;
+      const pillW = 26;
+      const pillH = 20;
       g.append('rect')
         .attr('x', xPos - pillW / 2)
         .attr('y', pillY - pillH / 2)
@@ -2088,10 +2101,10 @@ export function initSimPage(config) {
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'central')
         .attr('fill', '#D35400')
-        .attr('font-size', '1em')
+        .attr('font-size', '0.9em')
         .attr('font-weight', '700')
         .style('pointer-events', 'none')
-        .text(pillText);
+        .text(sym);
     }
 
     if (!shouldMorph || !result || !origHistCache) return 0;
@@ -2288,17 +2301,20 @@ export function initSimPage(config) {
       resampleContentEl.appendChild(summary);
     }
 
-    // Update stat value
+    // Update stat value: "Shuffled" (dark) + "x̄ = value" (orange)
     if (resampleMeanEl) {
       const resampleVal = mean(flippedDiffs);
-      resampleMeanEl.textContent = formatStat(resampleVal, dataPrecision);
+      const valText = formatStat(resampleVal, dataPrecision);
+      resampleMeanEl.innerHTML = `<span class="x-bar">x</span> = ${valText}`;
+      resampleMeanEl.style.color = '#D35400';
+      resampleMeanEl.style.fontWeight = '700';
       resampleMeanEl.classList.remove('highlight-last');
       if (highlightStat) {
         void resampleMeanEl.offsetWidth;
         resampleMeanEl.classList.add('highlight-last');
       }
       const statLabelEl = document.getElementById('resample-stat-label');
-      if (statLabelEl) statLabelEl.textContent = 'Shuffled mean';
+      if (statLabelEl) statLabelEl.textContent = 'Shuffled';
     }
 
     // Mechanism description
