@@ -1,0 +1,27 @@
+{
+  "title": "Outliers and Robust Statistics",
+  "tool": "explore/descriptive",
+  "params": { "dataset": "county_pop" },
+  "steps": [
+    {
+      "instruction": "The 2017 populations of 3,137 US counties are loaded as a **histogram**. Look at the shape — where are most counties? Where does the tail stretch?",
+      "observe": "Most counties have small populations, but a few (like Los Angeles County) have populations in the millions. This is an extremely **right-skewed** distribution.",
+      "reveal": "The vast majority of US counties have populations under 100,000. A handful of very large counties stretch the tail far to the right. This extreme skew will have a big impact on which summary statistics are useful."
+    },
+    {
+      "instruction": "Look at the **summary statistics** panel. Find the **mean** and the **median**. How do they compare?",
+      "observe": "The mean is much larger than the median. Think about why: the mean adds up all values and divides by n, so a few counties with millions of people pull it to the right. The median just finds the middle value — it doesn't care how extreme the largest counties are.",
+      "reveal": "This is a textbook example of why the **median** is more representative of a \"typical\" county than the mean when the distribution is strongly skewed. The mean is pulled toward the tail by the extreme values, while the median stays anchored in the middle of the data."
+    },
+    {
+      "instruction": "Now compare the **standard deviation** to the **IQR** in the summary statistics. The SD measures typical distance from the mean; the IQR measures the range of the middle 50%.",
+      "observe": "The SD is very large — much larger than you might expect for a typical county. Meanwhile, the IQR gives a more grounded sense of the spread among ordinary counties. Why is the SD so inflated?",
+      "reveal": "The SD squares deviations before averaging, so extreme outliers contribute enormously. A county with 10 million people might be thousands of times the mean — when you square that deviation, it dominates the sum. The **IQR** ignores these extremes entirely, making it a **robust** measure of spread. When data are strongly skewed, report the median and IQR rather than the mean and SD."
+    },
+    {
+      "instruction": "Switch to a **boxplot**. Count the outlier dots beyond the right whisker.",
+      "observe": "How many outlier points do you see? The 1.5×IQR rule flags any point more than 1.5 IQRs above Q₃ or below Q₁. With this much skew, many counties qualify as outliers — even though they are legitimate data points, not errors.",
+      "reveal": "With extremely skewed data, the 1.5×IQR rule can flag a large number of points as \"outliers.\" These aren't mistakes — they're real counties with large populations. This is a reminder that **outlier ≠ error**. The outlier rule is a screening tool, not a deletion rule. Never remove data points without a substantive reason."
+    }
+  ]
+}

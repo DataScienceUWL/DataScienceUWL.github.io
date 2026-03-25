@@ -14,9 +14,8 @@ import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.j
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { drawSpike } from './spike.js';
 import { renderSimPills, formatMechStat, drawMiniBoxplot, morphMiniBoxplot, prefersReducedMotion, hasD3Transition } from './chart-utils.js';
-import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, flyDataStream, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from './page-utils.js';
+import { initPlayPause, initHelp, initMechanismCollapse, animateDropToChart, flyDataStream, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle, initDataPanel } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
-import { rowsToCSV, downloadCSV } from './csv-parser.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
 /**
  * @typedef {object} SimConfig
@@ -45,12 +44,6 @@ export function initSimPage(config) {
   const seedNotice = document.getElementById('seed-notice');
   const dataSummary = document.getElementById('data-summary');
   const dataPreview = document.getElementById('data-preview');
-  const pasteArea = /** @type {HTMLTextAreaElement} */ (document.getElementById('paste-area'));
-  const loadPastedBtn = document.getElementById('load-pasted');
-  const clearBtn = document.getElementById('clear-btn');
-  const saveBtn = document.getElementById('save-btn');
-  const datasetSelect = /** @type {HTMLSelectElement} */ (document.getElementById('dataset-select'));
-  const datasetDesc = document.getElementById('dataset-desc');
   const bootStatSelect = /** @type {HTMLSelectElement} */ (document.getElementById('boot-stat'));
 
   // Bootstrap stat functions keyed by select value
@@ -73,8 +66,6 @@ export function initSimPage(config) {
   const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
     document.querySelectorAll('.gen-btn'));
 
-  // Data panel (for collapse after data loads)
-  const dataPanel = document.getElementById('data-panel');
   // Controls section (for sticky + expert toggle)
   const controlsSection = document.getElementById('controls');
 
@@ -447,12 +438,7 @@ export function initSimPage(config) {
     seedNotice.textContent = `Seed: ${urlSeed}`;
   }
 
-  // Apply URL params
-  // Apply inline ?data= only if no ?dataset= (dataset auto-select handles that case)
-  if (urlParams.data && !urlParams.dataset) {
-    data1 = urlParams.data;
-    showDataLoaded();
-  }
+  // Apply URL params (data loading is now handled by initDataPanel)
   if (urlParams.ci && ciSelect) {
     ciSelect.value = String(urlParams.ci);
   }
@@ -638,55 +624,6 @@ export function initSimPage(config) {
       }
   }
 
-  if (loadPastedBtn && pasteArea) {
-    loadPastedBtn.addEventListener('click', () => {
-      loadTextData(pasteArea.value);
-    });
-  }
-
-  const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
-  if (fileInput) {
-    setupFileInput(fileInput, (text, filename) => {
-      if (pasteArea) pasteArea.value = text;
-      currentSourceName = (filename || 'data').replace(/\.\w+$/, '');
-      loadTextData(text);
-    });
-  }
-
-  if (clearBtn) {
-    clearBtn.addEventListener('click', () => {
-      data1 = [];
-      data2 = [];
-      resampleViewExplicit = false;
-      resetSimulation();
-      hideVarSelector();
-      if (pasteArea) pasteArea.value = '';
-      if (dataPreview) dataPreview.hidden = true;
-      if (dataSummary) dataSummary.textContent = '\u2014';
-      for (const btn of genBtns) btn.disabled = true;
-      if (mechanismStrip) mechanismStrip.hidden = true;
-      if (successSelector) successSelector.hidden = true;
-      if (hypothesisDisplay) hypothesisDisplay.hidden = true;
-      const groupOrderEl = document.getElementById('group-order');
-      if (groupOrderEl) groupOrderEl.hidden = true;
-      announce('Data cleared.');
-    });
-  }
-
-  // ── Save ──
-  if (saveBtn) {
-    saveBtn.addEventListener('click', () => {
-      const text = pasteArea?.value?.trim();
-      if (!text) {
-        announce('No data to save.');
-        return;
-      }
-      const safeName = currentSourceName.replace(/[^a-zA-Z0-9_-]/g, '_');
-      downloadCSV(text, `${safeName}.csv`);
-      announce('Data saved.');
-    });
-  }
-
   // ── Summary input (proportion pages) ──
   const loadSummaryBtn = document.getElementById('load-summary');
   if (loadSummaryBtn && config.proportion) {
@@ -735,6 +672,7 @@ export function initSimPage(config) {
 
         if (successSelector) successSelector.hidden = true;
         showDataLoaded();
+        dataApi.triggerPostLoad();
         announce(`Loaded: ${group1Name} ${x1}/${n1}, ${group2Name} ${x2}/${n2}.`);
       } else {
         // One-proportion summary: successes + n
@@ -763,6 +701,7 @@ export function initSimPage(config) {
 
         if (successSelector) successSelector.hidden = true;
         showDataLoaded();
+        dataApi.triggerPostLoad();
         announce(`Loaded: n = ${n}, successes = ${k}.`);
       }
     });
@@ -819,11 +758,7 @@ export function initSimPage(config) {
     resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
     // Mechanism strip is deferred until first generate click (see generateSamples)
 
-    // Collapse data panel to compact summary bar
-    collapseDataPanel(dataPanel, currentDatasetJSON);
-
-    // Make controls sticky on desktop
-    controlsSection?.classList.add('sticky');
+    // Note: data panel collapse and sticky controls are handled by initDataPanel's postLoadUI
 
     // Show hypothesis display (randomization tests)
     if (config.mode === 'randomization' && (config.twoGroup || config.paired) && hypothesisDisplay) {
@@ -968,173 +903,113 @@ export function initSimPage(config) {
     });
   }
 
-  // ─── Dataset selector ───
+  // ─── Data panel (shared initDataPanel) ───
 
-  /**
-   * Resolve the path to the data/ directory from the current page.
-   * Uses the <base> href or infers from the CSS stylesheet link.
-   */
-  function dataPath(file) {
-    // Try to compute from the known CSS path (../../../css/style.css → ../../../data/)
-    const link = document.querySelector('link[rel="stylesheet"][href*="style.css"]');
-    if (link) {
-      const href = link.getAttribute('href');
-      const prefix = href.replace(/css\/style\.css$/, '');
-      return `${prefix}data/${file}`;
-    }
-    // Fallback: assume root-relative
-    return `/data/${file}`;
+  /** @param {any} ds */
+  function simDatasetFilter(ds) {
+    if (config.paired) return ds.type === 'paired';
+    if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) return ds.type === 'bootstrap_prop';
+    if (config.mode === 'bootstrap' && config.twoGroup && config.proportion) return ds.type === 'randomization_prop';
+    if (config.mode === 'bootstrap' && config.twoGroup) return ds.type === 'randomization';
+    if (config.mode === 'bootstrap') return ds.hasNumeric === true && ds.hasCategorical !== true && ds.type !== 'regression' && ds.type !== 'paired';
+    if (config.proportion) return ds.type === 'randomization_prop';
+    if (config.twoGroup) return ds.type === 'randomization';
+    return ds.type === 'randomization' || ds.type === 'randomization_prop';
   }
 
-  /** @type {Array<{id:string,name:string,description:string,type:string,chapter:string,n:number}>} */
-  let datasetIndex = [];
+  const dataApi = initDataPanel({
+    autoCollapse: true,
+    stickyControls: true,
+    showPreview: true,
+    datasetFilter: simDatasetFilter,
+    onDataset: (/** @type {any} */ ds) => {
+      resetSimulation();
+      hideVarSelector();
+      selectedVarName = '';
+      datasetContext = ds.context || {};
+      currentDatasetJSON = ds;
+      currentSourceName = ds.name || ds.id;
 
-  if (datasetSelect) {
-    fetch(dataPath('datasets.json'))
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((index) => {
-        const relevant = index.filter(ds => {
-          if (config.paired) return ds.type === 'paired';
-          if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) return ds.type === 'bootstrap_prop';
-          if (config.mode === 'bootstrap' && config.twoGroup && config.proportion) return ds.type === 'randomization_prop';
-          if (config.mode === 'bootstrap' && config.twoGroup) return ds.type === 'randomization';
-          if (config.mode === 'bootstrap') return ds.hasNumeric === true && ds.hasCategorical !== true && ds.type !== 'regression' && ds.type !== 'paired';
-          if (config.proportion) return ds.type === 'randomization_prop';
-          if (config.twoGroup) return ds.type === 'randomization';
-          return ds.type === 'randomization' || ds.type === 'randomization_prop';
-        });
-        datasetIndex = relevant;
-
-        for (const ds of relevant) {
-          const opt = document.createElement('option');
-          opt.value = ds.id;
-          opt.textContent = `${ds.name} (n = ${ds.n})`;
-          datasetSelect.appendChild(opt);
-        }
-
-        // Auto-select dataset from URL param (?dataset=NAME)
-        if (urlParams.dataset && relevant.some(ds => ds.id === urlParams.dataset)) {
-          datasetSelect.value = urlParams.dataset;
-          datasetSelect.dispatchEvent(new Event('change'));
-        }
-      })
-      .catch(() => {
-        if (datasetDesc) datasetDesc.textContent = 'Could not load datasets.';
-      });
-
-    datasetSelect.addEventListener('change', () => {
-      const id = datasetSelect.value;
-      if (!id) {
-        if (datasetDesc) datasetDesc.textContent = '';
-        return;
+      if (config.paired) {
+        const numVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'numeric');
+        if (numVars.length < 2) return;
+        group1Name = numVars[0].name;
+        group2Name = numVars[1].name;
+        data1 = ds.rows.map(/** @param {any} r */ r => r[numVars[0].name]).filter(/** @param {any} v */ v => isFinite(v));
+        data2 = ds.rows.map(/** @param {any} r */ r => r[numVars[1].name]).filter(/** @param {any} v */ v => isFinite(v));
+        const minLen = Math.min(data1.length, data2.length);
+        data1 = data1.slice(0, minLen);
+        data2 = data2.slice(0, minLen);
+      } else if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) {
+        const catVar = ds.variables.find(/** @param {any} v */ v => v.type === 'categorical');
+        if (!catVar) return;
+        rawOutcomes1 = ds.rows.map(/** @param {any} r */ r => r[catVar.name]);
+        rawOutcomes2 = [];
+        populateSuccessSelector([...new Set(rawOutcomes1)]);
+        encodeProportionData();
+      } else if (config.mode === 'bootstrap' && !config.twoGroup) {
+        const numVar = ds.variables.find(/** @param {any} v */ v => v.type === 'numeric');
+        if (!numVar) return;
+        data1 = ds.rows.map(/** @param {any} r */ r => r[numVar.name]).filter(/** @param {any} v */ v => isFinite(v));
+        data2 = [];
+      } else if (config.proportion) {
+        const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
+        if (catVars.length < 2) return;
+        const groupVar = catVars[0];
+        const outcomeVar = catVars[1];
+        const groups = [...new Set(ds.rows.map(/** @param {any} r */ r => r[groupVar.name]))];
+        const outcomes = [...new Set(ds.rows.map(/** @param {any} r */ r => r[outcomeVar.name]))];
+        group1Name = groups[0];
+        group2Name = groups[1];
+        rawOutcomes1 = ds.rows
+          .filter(/** @param {any} r */ r => r[groupVar.name] === groups[0])
+          .map(/** @param {any} r */ r => r[outcomeVar.name]);
+        rawOutcomes2 = ds.rows
+          .filter(/** @param {any} r */ r => r[groupVar.name] === groups[1])
+          .map(/** @param {any} r */ r => r[outcomeVar.name]);
+        populateSuccessSelector(outcomes);
+        encodeProportionData();
+      } else {
+        const catVar = ds.variables.find(/** @param {any} v */ v => v.type === 'categorical');
+        const numVar = ds.variables.find(/** @param {any} v */ v => v.type === 'numeric');
+        if (!catVar || !numVar) return;
+        const groups = [...new Set(ds.rows.map(/** @param {any} r */ r => r[catVar.name]))];
+        group1Name = groups[0];
+        group2Name = groups[1];
+        data1 = ds.rows
+          .filter(/** @param {any} r */ r => r[catVar.name] === groups[0])
+          .map(/** @param {any} r */ r => r[numVar.name])
+          .filter(/** @param {any} v */ v => isFinite(v));
+        data2 = ds.rows
+          .filter(/** @param {any} r */ r => r[catVar.name] === groups[1])
+          .map(/** @param {any} r */ r => r[numVar.name])
+          .filter(/** @param {any} v */ v => isFinite(v));
       }
-      const meta = datasetIndex.find(d => d.id === id);
-      if (meta && datasetDesc) {
-        datasetDesc.textContent = meta.description;
-      }
-      loadDataset(id);
-    });
-  }
 
-  /**
-   * Fetch and load a bundled dataset by ID.
-   * @param {string} id
-   */
-  function loadDataset(id) {
-    fetch(dataPath(`${id}.json`))
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((ds) => {
-        resetSimulation();
-        hideVarSelector();
-        selectedVarName = '';
-        datasetContext = ds.context || {};
-        currentDatasetJSON = ds;
-
-        if (config.paired) {
-          // Paired data: two numeric columns
-          const numVars = ds.variables.filter(v => v.type === 'numeric');
-          if (numVars.length < 2) return;
-          group1Name = numVars[0].name;
-          group2Name = numVars[1].name;
-          data1 = ds.rows.map(r => r[numVars[0].name]).filter(v => isFinite(v));
-          data2 = ds.rows.map(r => r[numVars[1].name]).filter(v => isFinite(v));
-          const minLen = Math.min(data1.length, data2.length);
-          data1 = data1.slice(0, minLen);
-          data2 = data2.slice(0, minLen);
-        } else if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) {
-          // One-sample bootstrap proportion: single categorical column → 0/1
-          const catVar = ds.variables.find(v => v.type === 'categorical');
-          if (!catVar) return;
-          rawOutcomes1 = ds.rows.map(r => r[catVar.name]);
-          rawOutcomes2 = [];
-          const outcomes = [...new Set(rawOutcomes1)];
-          populateSuccessSelector(outcomes);
-          encodeProportionData();
-        } else if (config.mode === 'bootstrap' && !config.twoGroup) {
-          // Single numeric variable — extract first numeric column
-          const numVar = ds.variables.find(v => v.type === 'numeric');
-          if (!numVar) return;
-          data1 = ds.rows.map(r => r[numVar.name]).filter(v => isFinite(v));
-          data2 = [];
-        } else if (config.proportion) {
-          // Two categorical variables: group + outcome → encode as 0/1
-          const catVars = ds.variables.filter(v => v.type === 'categorical');
-          if (catVars.length < 2) return;
-          const groupVar = catVars[0];
-          const outcomeVar = catVars[1];
-          const groups = [...new Set(ds.rows.map(r => r[groupVar.name]))];
-          const outcomes = [...new Set(ds.rows.map(r => r[outcomeVar.name]))];
-          group1Name = groups[0];
-          group2Name = groups[1];
-          rawOutcomes1 = ds.rows
-            .filter(r => r[groupVar.name] === groups[0])
-            .map(r => r[outcomeVar.name]);
-          rawOutcomes2 = ds.rows
-            .filter(r => r[groupVar.name] === groups[1])
-            .map(r => r[outcomeVar.name]);
-          populateSuccessSelector(outcomes);
-          encodeProportionData();
-        } else {
-          // Two-group: categorical grouping + numeric outcome
-          const catVar = ds.variables.find(v => v.type === 'categorical');
-          const numVar = ds.variables.find(v => v.type === 'numeric');
-          if (!catVar || !numVar) return;
-          const groups = [...new Set(ds.rows.map(r => r[catVar.name]))];
-          group1Name = groups[0];
-          group2Name = groups[1];
-          data1 = ds.rows
-            .filter(r => r[catVar.name] === groups[0])
-            .map(r => r[numVar.name])
-            .filter(v => isFinite(v));
-          data2 = ds.rows
-            .filter(r => r[catVar.name] === groups[1])
-            .map(r => r[numVar.name])
-            .filter(v => isFinite(v));
-        }
-
-        currentSourceName = ds.name || id;
-
-        showDataLoaded();
-        document.body.setAttribute('data-loaded', 'true');
-
-        // Populate editor with dataset as CSV
-        if (pasteArea && ds.rows && ds.variables) {
-          const cols = ds.variables.map(/** @param {any} v */ v => v.name);
-          pasteArea.value = rowsToCSV(ds.rows, cols);
-        }
-
-        announce(`${ds.name}.`);
-      })
-      .catch(() => {
-        announce('Failed to load dataset.');
-      });
-  }
+      showDataLoaded();
+      announce(`${ds.name}.`);
+    },
+    onRawText: (/** @type {string} */ text, /** @type {string} */ sourceName) => {
+      currentSourceName = sourceName || 'data';
+      loadTextData(text);
+    },
+    onClear: () => {
+      data1 = [];
+      data2 = [];
+      resampleViewExplicit = false;
+      resetSimulation();
+      hideVarSelector();
+      if (dataPreview) dataPreview.hidden = true;
+      if (dataSummary) dataSummary.textContent = '\u2014';
+      for (const btn of genBtns) btn.disabled = true;
+      if (mechanismStrip) mechanismStrip.hidden = true;
+      if (successSelector) successSelector.hidden = true;
+      if (hypothesisDisplay) hypothesisDisplay.hidden = true;
+      const groupOrderEl = document.getElementById('group-order');
+      if (groupOrderEl) groupOrderEl.hidden = true;
+      announce('Data cleared.');
+    },
+  });
 
   /** Map alternative hypothesis selection to tail direction. */
   function getDirection() {
