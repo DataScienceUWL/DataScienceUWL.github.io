@@ -26,8 +26,23 @@ const resultsSection = document.getElementById('results-section');
 const tableContainer = document.getElementById('table-container');
 const chartContainer = document.getElementById('chart-container');
 const tableModeSelect = /** @type {HTMLSelectElement} */ (document.getElementById('table-mode'));
-const chartModeSelect = /** @type {HTMLSelectElement} */ (document.getElementById('chart-mode'));
+const chartModeGroup = document.getElementById('chart-mode');
 const proportionNote = document.getElementById('proportion-note');
+
+/** Get the currently selected chart mode from the segmented control. */
+function getChartMode() {
+  const pressed = /** @type {HTMLButtonElement|null} */ (chartModeGroup?.querySelector('button[aria-pressed="true"]'));
+  return pressed?.dataset.value ?? 'stacked';
+}
+
+/** Set the chart mode on the segmented control.
+ * @param {string} value */
+function setChartMode(value) {
+  if (!chartModeGroup) return;
+  for (const btn of chartModeGroup.querySelectorAll('button')) {
+    btn.setAttribute('aria-pressed', String(/** @type {HTMLButtonElement} */ (btn).dataset.value === value));
+  }
+}
 const catSheetBody = /** @type {HTMLElement} */ (document.getElementById('cat-sheet-body'));
 const numCategoriesInput = /** @type {HTMLInputElement} */ (document.getElementById('num-categories'));
 const summaryTableBody = /** @type {HTMLElement} */ (document.getElementById('summary-table-body'));
@@ -293,7 +308,14 @@ if (swapBtn) {
 // ── Display controls ─────────────────────────────────────────────────
 
 tableModeSelect.addEventListener('change', () => updateDisplay());
-chartModeSelect.addEventListener('change', () => updateDisplay());
+if (chartModeGroup) {
+  for (const btn of chartModeGroup.querySelectorAll('button')) {
+    btn.addEventListener('click', () => {
+      setChartMode(/** @type {HTMLButtonElement} */ (btn).dataset.value ?? 'stacked');
+      updateDisplay();
+    });
+  }
+}
 
 // ── Show data ────────────────────────────────────────────────────────
 
@@ -303,7 +325,7 @@ chartModeSelect.addEventListener('change', () => updateDisplay());
 function showDataLoaded(sourceName) {
   // Reset controls to defaults on new data
   if (tableModeSelect) tableModeSelect.value = 'counts';
-  if (chartModeSelect) chartModeSelect.value = 'stacked';
+  setChartMode('stacked');
   if (dataSummary) dataSummary.textContent = `${sourceName} (n = ${rawRows.length})`;
   updateDisplay();
   setPageTitle(baseTitle, sourceName, { n: rawRows.length });
@@ -458,7 +480,7 @@ function renderChart(primaryValues, primaryLabel, secondaryValues, secondaryLabe
   chartContainer.innerHTML = '';
   lastColorMap = null;
 
-  const chartMode = chartModeSelect.value;
+  const chartMode = getChartMode();
 
   if (chartMode === 'relative' || !secondaryValues) {
     // Single-variable bar chart

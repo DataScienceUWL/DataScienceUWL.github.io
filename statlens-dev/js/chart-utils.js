@@ -1171,11 +1171,11 @@ export function drawMiniDotplot(container, values, options = {}) {
 
   let svg = `<svg class="mech-minichart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">`;
 
-  // Dots (bottom-up stacking)
+  // Dots (bottom-up stacking) — cx is the bin center, not the raw data x
   const baseY = plotH - effectiveR;
-  for (const [, stack] of stacks) {
+  for (const [binCenter, stack] of stacks) {
     for (let i = 0; i < stack.length; i++) {
-      const cx = x(stack[i]);
+      const cx = binCenter;
       const cy = baseY - i * effectiveSpacing;
       svg += `<circle class="mc-dot" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${effectiveR.toFixed(1)}" fill="${color}" fill-opacity="0.7" stroke="${color}" stroke-width="0.5"/>`;
     }
