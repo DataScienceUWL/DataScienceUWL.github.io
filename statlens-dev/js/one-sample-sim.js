@@ -12,7 +12,7 @@ import { createRng, sampleWithReplacement } from './prng.js';
 import { mean, sd, detectPrecision, formatStat } from './stats.js';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
-import { renderSimPills, formatMechStat, drawMiniBoxplot, morphMiniBoxplot, prefersReducedMotion } from './chart-utils.js';
+import { renderSimPills, formatMechStat, drawMiniChart, morphMiniChart, prefersReducedMotion } from './chart-utils.js';
 import { announce, initKeyboardShortcuts, initPlayPause, initTabs, animateDropToChart, flyDataStream, initDataPanel, computeHighlights, initHelp, initSettings, initMechanismCollapse, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from './page-utils.js';
 import { parseParams } from './url-params.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
@@ -447,10 +447,10 @@ export function initOneSamplePage(config) {
       // Populate mechanism strip content (stays hidden until first generate)
       if (mechObservedStat) {
         mechObservedStat.innerHTML = `n = ${sampleN}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedStat, dataPrecision)}</span>
-          <div id="mech-obs-box" class="mech-box-container"></div>`;
-        const obsBoxEl = document.getElementById('mech-obs-box');
-        if (obsBoxEl && sampleData.length >= 2) {
-          drawMiniBoxplot(obsBoxEl, sampleData, {
+          <div id="mech-obs-chart" class="mech-chart-container"></div>`;
+        const obsChartEl = document.getElementById('mech-obs-chart');
+        if (obsChartEl && sampleData.length >= 2) {
+          drawMiniChart(obsChartEl, sampleData, {
             meanValue: observedStat,
             domain: sharedBoxplotDomain(),
             label: 'Observed data distribution',
@@ -630,25 +630,17 @@ export function initOneSamplePage(config) {
         })
       );
 
-      const boxEl = document.getElementById('mech-obs-box');
-      if (boxEl && shiftedData.length >= 2 && !prefersReducedMotion()) {
-        // Morph from original data to shifted data (boxplot slides to μ₀)
+      const chartEl = document.getElementById('mech-obs-chart');
+      if (chartEl && shiftedData.length >= 2) {
+        // Morph from original data to shifted data (dots/bars slide to μ₀)
         const dom = sharedBoxplotDomain();
-        const ms = morphMiniBoxplot(boxEl, shiftedData, {
+        const ms = morphMiniChart(chartEl, shiftedData, {
           meanValue: mean(shiftedData),
           highlightMean: true,
           domain: dom,
           label: 'Null distribution (shifted to μ₀)',
         });
         return Math.max(ms, 400);
-      }
-      // Fallback: instant redraw
-      if (boxEl && shiftedData.length >= 2) {
-        drawMiniBoxplot(boxEl, shiftedData, {
-          meanValue: mean(shiftedData),
-          domain: sharedBoxplotDomain(),
-          label: 'Null distribution (shifted to μ₀)',
-        });
       }
       return 0;
     }
@@ -674,13 +666,13 @@ export function initOneSamplePage(config) {
           </div>`;
       }
     } else {
-      // Re-render with original sample boxplot
+      // Re-render with original sample dotplot/histogram
       if (mechObservedStat && sampleData.length >= 2) {
         mechObservedStat.innerHTML = `n = ${sampleN}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedStat, dataPrecision)}</span>
-          <div id="mech-obs-box" class="mech-box-container"></div>`;
-        const obsBoxEl = document.getElementById('mech-obs-box');
-        if (obsBoxEl) {
-          drawMiniBoxplot(obsBoxEl, sampleData, {
+          <div id="mech-obs-chart" class="mech-chart-container"></div>`;
+        const obsChartEl = document.getElementById('mech-obs-chart');
+        if (obsChartEl) {
+          drawMiniChart(obsChartEl, sampleData, {
             meanValue: observedStat,
             domain: sharedBoxplotDomain(),
             label: 'Observed data distribution',
@@ -782,7 +774,7 @@ export function initOneSamplePage(config) {
       }
       const hlClass = isSingle ? ' highlight-last' : '';
       lastSimDetail = `<span class="x-bar">x</span>* = <span class="mech-stat-value${hlClass}">${formatStat(lastSimStat, dataPrecision)}</span>`;
-      lastSimDetail += '<div id="mech-sim-box" class="mech-box-container"></div>';
+      lastSimDetail += '<div id="mech-sim-chart" class="mech-chart-container"></div>';
 
       if (mechanismDescEl) {
         mechanismDescEl.textContent = `Resample ${n} values (with replacement) from null distribution (\u03BC\u2080 = ${getNullValue()}), compute mean`;
@@ -798,11 +790,11 @@ export function initOneSamplePage(config) {
 
       mechSimStat.innerHTML = lastSimDetail;
 
-      // Render mini boxplot for one-mean after DOM update
+      // Render mini dotplot/histogram for one-mean after DOM update
       if (!isProp && lastResampleArr && lastResampleArr.length >= 2) {
-        const boxEl = document.getElementById('mech-sim-box');
-        if (boxEl) {
-          drawMiniBoxplot(boxEl, lastResampleArr, {
+        const simChartEl = document.getElementById('mech-sim-chart');
+        if (simChartEl) {
+          drawMiniChart(simChartEl, lastResampleArr, {
             domain: sharedBoxplotDomain(),
             meanValue: lastSimStat,
             highlightMean: isSingle,

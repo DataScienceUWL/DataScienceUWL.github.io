@@ -1079,3 +1079,318 @@ export function morphMiniBoxplot(container, values, options = {}) {
   requestAnimationFrame(frame);
   return MORPH_MS;
 }
+
+// ─── Mini dotplot / histogram for mechanism strip ───
+
+/**
+ * Choose ~3-5 "nice" tick values for a mini axis.
+ * @param {number} lo
+ * @param {number} hi
+ * @returns {number[]}
+ */
+function miniAxisTicks(lo, hi) {
+  const range = hi - lo;
+  if (range === 0) return [lo];
+  // Target ~4 ticks
+  const rawStep = range / 4;
+  const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const candidates = [1, 2, 2.5, 5, 10];
+  const match = candidates.find(c => c * mag >= rawStep);
+  let step = (match ?? 1) * mag;
+  if (!step) step = rawStep;
+  const start = Math.ceil(lo / step) * step;
+  const ticks = [];
+  for (let v = start; v <= hi + step * 0.001; v += step) {
+    ticks.push(Math.round(v / (step * 0.1)) * (step * 0.1)); // avoid FP noise
+  }
+  return ticks;
+}
+
+/**
+ * Format a tick value compactly (drop trailing zeros).
+ * @param {number} v
+ * @returns {string}
+ */
+function fmtTick(v) {
+  if (Number.isInteger(v)) return String(v);
+  // Up to 2 decimal places
+  const s = v.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+  return s;
+}
+
+/**
+ * Draw a mini dotplot in a mechanism strip panel.
+ * Uses stacked dots on an x-axis with ticks and a mean marker line.
+ * Best for n ≤ 30.
+ *
+ * @param {HTMLElement} container
+ * @param {number[]} values
+ * @param {{ width?: number, height?: number, meanValue?: number, highlightMean?: boolean, domain?: [number, number], color?: string, label?: string }} options
+ */
+export function drawMiniDotplot(container, values, options = {}) {
+  const {
+    width = 220,
+    height = 60,
+    meanValue,
+    highlightMean = false,
+    domain,
+    color = '#569BBD',
+    label = 'Mini dotplot',
+  } = options;
+
+  if (!values || values.length < 1) { container.innerHTML = ''; return; }
+
+  const axisH = 14; // space for axis ticks + labels
+  const plotH = height - axisH;
+  const padX = 10;
+
+  // Domain
+  const sorted = [...values].sort((a, b) => a - b);
+  const dLo = domain ? domain[0] : sorted[0];
+  const dHi = domain ? domain[1] : sorted[sorted.length - 1];
+  const range = dHi - dLo || 1;
+  const x = (/** @type {number} */ v) => padX + ((v - dLo) / range) * (width - 2 * padX);
+
+  // Bin values into stacks (snap to nearest pixel)
+  const dotR = Math.min(4, Math.max(2, (width - 2 * padX) / (values.length * 2.5)));
+  const binWidth = dotR * 2.2;
+  /** @type {Map<number, number[]>} */
+  const stacks = new Map();
+  for (const v of sorted) {
+    const bin = Math.round(x(v) / binWidth) * binWidth;
+    if (!stacks.has(bin)) stacks.set(bin, []);
+    /** @type {number[]} */ (stacks.get(bin)).push(v);
+  }
+
+  const maxStack = Math.max(...[...stacks.values()].map(s => s.length));
+  const dotSpacing = dotR * 2.1;
+  const neededH = maxStack * dotSpacing + dotR;
+  const scale = neededH > plotH ? plotH / neededH : 1;
+  const effectiveR = dotR * scale;
+  const effectiveSpacing = dotSpacing * scale;
+
+  let svg = `<svg class="mech-minichart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">`;
+
+  // Dots (bottom-up stacking)
+  const baseY = plotH - effectiveR;
+  for (const [, stack] of stacks) {
+    for (let i = 0; i < stack.length; i++) {
+      const cx = x(stack[i]);
+      const cy = baseY - i * effectiveSpacing;
+      svg += `<circle class="mc-dot" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${effectiveR.toFixed(1)}" fill="${color}" fill-opacity="0.7" stroke="${color}" stroke-width="0.5"/>`;
+    }
+  }
+
+  // Mean marker line (vertical, full height of plot area)
+  if (meanValue !== undefined) {
+    const mx = x(meanValue);
+    const mColor = highlightMean ? '#E07020' : '#D33';
+    svg += `<line class="mc-mean" x1="${mx.toFixed(1)}" x2="${mx.toFixed(1)}" y1="0" y2="${plotH}" stroke="${mColor}" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+    // Small triangle at top
+    svg += `<polygon class="mc-mean-tri" points="${mx - 3},0 ${mx + 3},0 ${mx},4" fill="${mColor}"/>`;
+  }
+
+  // X-axis line
+  svg += `<line x1="${padX}" x2="${width - padX}" y1="${plotH}" y2="${plotH}" stroke="#666" stroke-width="0.75"/>`;
+
+  // Tick marks and labels
+  const ticks = miniAxisTicks(dLo, dHi);
+  for (const t of ticks) {
+    const tx = x(t);
+    if (tx < padX - 1 || tx > width - padX + 1) continue;
+    svg += `<line x1="${tx.toFixed(1)}" x2="${tx.toFixed(1)}" y1="${plotH}" y2="${plotH + 3}" stroke="#666" stroke-width="0.75"/>`;
+    svg += `<text x="${tx.toFixed(1)}" y="${height - 1}" text-anchor="middle" fill="#555" font-size="8">${fmtTick(t)}</text>`;
+  }
+
+  svg += '</svg>';
+  container.innerHTML = svg;
+}
+
+/**
+ * Draw a mini histogram in a mechanism strip panel.
+ * Uses bars on an x-axis with ticks and a mean marker line.
+ * Best for n > 30.
+ *
+ * @param {HTMLElement} container
+ * @param {number[]} values
+ * @param {{ width?: number, height?: number, meanValue?: number, highlightMean?: boolean, domain?: [number, number], color?: string, label?: string, numBins?: number }} options
+ */
+export function drawMiniHistogram(container, values, options = {}) {
+  const {
+    width = 220,
+    height = 60,
+    meanValue,
+    highlightMean = false,
+    domain,
+    color = '#569BBD',
+    label = 'Mini histogram',
+    numBins = 10,
+  } = options;
+
+  if (!values || values.length < 1) { container.innerHTML = ''; return; }
+
+  const axisH = 14;
+  const plotH = height - axisH;
+  const padX = 10;
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const dLo = domain ? domain[0] : sorted[0];
+  const dHi = domain ? domain[1] : sorted[sorted.length - 1];
+  const range = dHi - dLo || 1;
+  const x = (/** @type {number} */ v) => padX + ((v - dLo) / range) * (width - 2 * padX);
+
+  // Build bins
+  const binW = range / numBins;
+  /** @type {number[]} */
+  const counts = new Array(numBins).fill(0);
+  for (const v of sorted) {
+    let idx = Math.floor((v - dLo) / binW);
+    if (idx >= numBins) idx = numBins - 1;
+    if (idx < 0) idx = 0;
+    counts[idx]++;
+  }
+
+  const maxCount = Math.max(...counts, 1);
+  const barH = (/** @type {number} */ c) => (c / maxCount) * (plotH - 2);
+
+  let svg = `<svg class="mech-minichart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">`;
+
+  // Bars
+  for (let i = 0; i < numBins; i++) {
+    if (counts[i] === 0) continue;
+    const bx = x(dLo + i * binW);
+    const bw = x(dLo + (i + 1) * binW) - bx;
+    const bh = barH(counts[i]);
+    const by = plotH - bh;
+    svg += `<rect class="mc-bar" x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${Math.max(bw - 0.5, 0.5).toFixed(1)}" height="${bh.toFixed(1)}" fill="${color}" fill-opacity="0.5" stroke="${color}" stroke-width="0.5"/>`;
+  }
+
+  // Mean marker line
+  if (meanValue !== undefined) {
+    const mx = x(meanValue);
+    const mColor = highlightMean ? '#E07020' : '#D33';
+    svg += `<line class="mc-mean" x1="${mx.toFixed(1)}" x2="${mx.toFixed(1)}" y1="0" y2="${plotH}" stroke="${mColor}" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+    svg += `<polygon class="mc-mean-tri" points="${mx - 3},0 ${mx + 3},0 ${mx},4" fill="${mColor}"/>`;
+  }
+
+  // X-axis line
+  svg += `<line x1="${padX}" x2="${width - padX}" y1="${plotH}" y2="${plotH}" stroke="#666" stroke-width="0.75"/>`;
+
+  // Tick marks and labels
+  const ticks = miniAxisTicks(dLo, dHi);
+  for (const t of ticks) {
+    const tx = x(t);
+    if (tx < padX - 1 || tx > width - padX + 1) continue;
+    svg += `<line x1="${tx.toFixed(1)}" x2="${tx.toFixed(1)}" y1="${plotH}" y2="${plotH + 3}" stroke="#666" stroke-width="0.75"/>`;
+    svg += `<text x="${tx.toFixed(1)}" y="${height - 1}" text-anchor="middle" fill="#555" font-size="8">${fmtTick(t)}</text>`;
+  }
+
+  svg += '</svg>';
+  container.innerHTML = svg;
+}
+
+/**
+ * Convenience: draw whichever mini chart is appropriate for the sample size.
+ * n ≤ 30 → dotplot, n > 30 → histogram.
+ *
+ * @param {HTMLElement} container
+ * @param {number[]} values
+ * @param {{ width?: number, height?: number, meanValue?: number, highlightMean?: boolean, domain?: [number, number], color?: string, label?: string }} options
+ */
+export function drawMiniChart(container, values, options = {}) {
+  if (!values || values.length === 0) { container.innerHTML = ''; return; }
+  if (values.length <= 30) {
+    drawMiniDotplot(container, values, options);
+  } else {
+    drawMiniHistogram(container, values, options);
+  }
+}
+
+/**
+ * Animate a mini dotplot or histogram to new data by shifting all elements horizontally.
+ * Used for the observed→null morph in the mechanism strip.
+ * Falls back to instant redraw if no SVG exists or reduced motion is preferred.
+ *
+ * @param {HTMLElement} container
+ * @param {number[]} newValues
+ * @param {{ width?: number, height?: number, meanValue?: number, highlightMean?: boolean, domain?: [number, number], color?: string, label?: string }} options
+ * @returns {number} Animation duration in ms (0 if instant)
+ */
+export function morphMiniChart(container, newValues, options = {}) {
+  const svgEl = container.querySelector('svg.mech-minichart');
+  if (!svgEl || !newValues || newValues.length < 1 || prefersReducedMotion()) {
+    drawMiniChart(container, newValues, options);
+    return 0;
+  }
+
+  const width = options.width ?? 220;
+  const domain = options.domain;
+  const padX = 10;
+
+  // Compute horizontal shift: domain is the same, but data positions change.
+  // We'll shift the entire SVG content, then redraw at the end.
+  // For a clean morph: compute shift in data space and convert to pixel offset.
+
+  // Compute the old mean x position from the existing mean marker
+  const oldMeanLine = svgEl.querySelector('.mc-mean');
+  if (!oldMeanLine) {
+    drawMiniChart(container, newValues, options);
+    return 0;
+  }
+
+  const oldMeanPx = parseFloat(oldMeanLine.getAttribute('x1') ?? '0');
+
+  // New scale (same domain, shared for smooth morph)
+  const dLo = domain ? domain[0] : Math.min(...newValues);
+  const dHi = domain ? domain[1] : Math.max(...newValues);
+  const range = dHi - dLo || 1;
+  const x = (/** @type {number} */ v) => padX + ((v - dLo) / range) * (width - 2 * padX);
+
+  const newMeanPx = options.meanValue !== undefined ? x(options.meanValue) : oldMeanPx;
+  const shiftPx = newMeanPx - oldMeanPx;
+
+  // If shift is negligible, just redraw
+  if (Math.abs(shiftPx) < 0.5) {
+    drawMiniChart(container, newValues, options);
+    return 0;
+  }
+
+  const MORPH_MS = 400;
+  const easeOut = (/** @type {number} */ t) => 1 - (1 - t) ** 3;
+  let startTime = 0;
+
+  // Create a <g> wrapper around all content (except axis) for smooth translation
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.classList.add('mc-morph-group');
+  // Move dots, bars, mean line, mean triangle into the group
+  const moveable = svgEl.querySelectorAll('.mc-dot, .mc-bar, .mc-mean, .mc-mean-tri');
+  for (const el of moveable) g.appendChild(el);
+  svgEl.appendChild(g);
+
+  // Also update mean marker color immediately
+  const meanLine = g.querySelector('.mc-mean');
+  const meanTri = g.querySelector('.mc-mean-tri');
+  if (options.highlightMean) {
+    if (meanLine) { meanLine.setAttribute('stroke', '#E07020'); }
+    if (meanTri) { meanTri.setAttribute('fill', '#E07020'); }
+  }
+
+  /** @param {number} now */
+  function frame(now) {
+    if (!startTime) startTime = now;
+    const t = Math.min(1, (now - startTime) / MORPH_MS);
+    const e = easeOut(t);
+    const dx = shiftPx * e;
+    g.setAttribute('transform', `translate(${dx.toFixed(1)}, 0)`);
+
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      // Replace with final clean render
+      drawMiniChart(container, newValues, options);
+    }
+  }
+
+  requestAnimationFrame(frame);
+  return MORPH_MS;
+}
