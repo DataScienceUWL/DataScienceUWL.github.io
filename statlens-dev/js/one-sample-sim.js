@@ -446,8 +446,8 @@ export function initOneSamplePage(config) {
 
       // Populate mechanism strip content (stays hidden until first generate)
       if (mechObservedStat) {
-        mechObservedStat.innerHTML = `n = ${sampleN}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedStat, dataPrecision)}</span>
-          <div id="mech-obs-chart" class="mech-chart-container"></div>`;
+        mechObservedStat.innerHTML = `<div id="mech-obs-chart" class="mech-chart-container"></div>
+          <span class="mech-stat-text">n = ${sampleN}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedStat, dataPrecision)}</span></span>`;
         const obsChartEl = document.getElementById('mech-obs-chart');
         if (obsChartEl && sampleData.length >= 2) {
           drawMiniChart(obsChartEl, sampleData, {
@@ -622,13 +622,11 @@ export function initOneSamplePage(config) {
       // One-mean: morph boxplot from observed x̄ to shifted (centered at μ₀)
       if (mechObservedTitle) mechObservedTitle.textContent = 'Null Distribution';
 
-      // Update stat text
-      mechObservedStat.querySelector('.observed-highlight')?.replaceWith(
-        Object.assign(document.createElement('span'), {
-          className: 'observed-highlight',
-          innerHTML: `\u03BC\u2080 = ${getNullValue()}`,
-        })
-      );
+      // Update stat text below the chart
+      const statText = mechObservedStat.querySelector('.mech-stat-text');
+      if (statText) {
+        statText.innerHTML = `n = ${sampleN}, <span class="observed-highlight">\u03BC\u2080 = ${getNullValue()}</span>`;
+      }
 
       const chartEl = document.getElementById('mech-obs-chart');
       if (chartEl && shiftedData.length >= 2) {
@@ -668,8 +666,8 @@ export function initOneSamplePage(config) {
     } else {
       // Re-render with original sample dotplot/histogram
       if (mechObservedStat && sampleData.length >= 2) {
-        mechObservedStat.innerHTML = `n = ${sampleN}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedStat, dataPrecision)}</span>
-          <div id="mech-obs-chart" class="mech-chart-container"></div>`;
+        mechObservedStat.innerHTML = `<div id="mech-obs-chart" class="mech-chart-container"></div>
+          <span class="mech-stat-text">n = ${sampleN}, <span class="observed-highlight"><span class="x-bar">x</span> = ${formatStat(observedStat, dataPrecision)}</span></span>`;
         const obsChartEl = document.getElementById('mech-obs-chart');
         if (obsChartEl) {
           drawMiniChart(obsChartEl, sampleData, {
@@ -773,8 +771,8 @@ export function initOneSamplePage(config) {
         allStats.push(simMean);
       }
       const hlClass = isSingle ? ' highlight-last' : '';
-      lastSimDetail = `<span class="x-bar">x</span>* = <span class="mech-stat-value${hlClass}">${formatStat(lastSimStat, dataPrecision)}</span>`;
-      lastSimDetail += '<div id="mech-sim-chart" class="mech-chart-container"></div>';
+      lastSimDetail = '<div id="mech-sim-chart" class="mech-chart-container"></div>';
+      lastSimDetail += `<span class="mech-stat-text"><span class="x-bar">x</span>* = <span class="mech-stat-value${hlClass}">${formatStat(lastSimStat, dataPrecision)}</span></span>`;
 
       if (mechanismDescEl) {
         mechanismDescEl.textContent = `Resample ${n} values (with replacement) from null distribution (\u03BC\u2080 = ${getNullValue()}), compute mean`;
