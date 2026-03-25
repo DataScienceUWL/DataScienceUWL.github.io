@@ -180,6 +180,28 @@ export function initOneSamplePage(config) {
 
   // ─── Shared helpers ───
 
+  /** Recompute shifted data for one-mean (no-op for one-prop). */
+  function computeShiftedData() {
+    if (isProp) return;
+    const mu0 = getNullValue();
+    const shift = mu0 - observedStat;
+    shiftedData = sampleData.map(v => v + shift);
+  }
+
+  /**
+   * Compute a shared domain that covers both original and shifted data,
+   * so the boxplot morph slides smoothly without rescaling.
+   * @returns {[number, number]}
+   */
+  function sharedBoxplotDomain() {
+    const all = sampleData.concat(shiftedData);
+    if (all.length === 0) return [0, 1];
+    const lo = Math.min(...all);
+    const hi = Math.max(...all);
+    const pad = (hi - lo) * 0.08 || 0.5;
+    return [lo - pad, hi + pad];
+  }
+
   function getNullValue() {
     const val = parseFloat(nullInput?.value);
     if (!isFinite(val)) return isProp ? 0.5 : 0;
@@ -440,25 +462,6 @@ export function initOneSamplePage(config) {
       scrollToControls();
     }
 
-    function computeShiftedData() {
-      const mu0 = getNullValue();
-      const shift = mu0 - observedStat;
-      shiftedData = sampleData.map(v => v + shift);
-    }
-
-    /**
-     * Compute a shared domain that covers both original and shifted data,
-     * so the boxplot morph slides smoothly without rescaling.
-     * @returns {[number, number]}
-     */
-    function sharedBoxplotDomain() {
-      const all = sampleData.concat(shiftedData);
-      const lo = Math.min(...all);
-      const hi = Math.max(...all);
-      const pad = (hi - lo) * 0.08 || 0.5;
-      return [lo - pad, hi + pad];
-    }
-
     initDataPanel({
       autoCollapse: true,
       stickyControls: true,
@@ -511,10 +514,7 @@ export function initOneSamplePage(config) {
     nullInput.addEventListener('change', () => {
       syncAltNullValue();
       if (!isProp && sampleData.length > 0) {
-        // Recompute shifted data for one-mean
-        const mu0 = getNullValue();
-        const shift = mu0 - observedStat;
-        shiftedData = sampleData.map(v => v + shift);
+        computeShiftedData();
       }
       // Revert left panel so the next +1 will re-morph to the new null value
       if (nullShown) revertToObserved();
