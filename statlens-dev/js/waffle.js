@@ -7,7 +7,7 @@
  */
 
 import * as d3Selection from 'd3-selection';
-import { createChart, getColors, showTooltip, hideTooltip } from './chart-utils.js';
+import { createChart, getColors, ensurePatterns, showTooltip, hideTooltip } from './chart-utils.js';
 import { computeFrequencies } from './barchart.js';
 
 /**
@@ -45,6 +45,7 @@ export function drawWaffleChart(container, values, options = {}) {
 
   const { categories, counts, total } = computeFrequencies(values, categoryOrder);
   const colors = getColors(categories.length);
+  const patterns = ensurePatterns(/** @type {SVGSVGElement} */ (frame.svg), colors);
 
   // Build the 100-cell grid assignment
   // Each cell represents total/100 of the data
@@ -94,6 +95,16 @@ export function drawWaffleChart(container, values, options = {}) {
       .attr('stroke-width', 1)
       .attr('role', 'listitem')
       .attr('aria-label', labels === 'full' ? `${cat}: ${count} (${pct}%)` : `${cat}`);
+    // Pattern overlay
+    if (patterns[catIdx] && patterns[catIdx] !== 'none') {
+      dataGroup.append('rect')
+        .attr('x', x).attr('y', y)
+        .attr('width', cellSize).attr('height', cellSize)
+        .attr('rx', 2)
+        .attr('fill', patterns[catIdx])
+        .attr('stroke', 'none')
+        .style('pointer-events', 'none');
+    }
 
     if (labels !== 'none') {
       const tipText = labels === 'full' ? `${cat}: ${count} (${pct}%)` : cat;
@@ -107,7 +118,7 @@ export function drawWaffleChart(container, values, options = {}) {
 
   // Draw legend (skip in 'none' mode)
   if (labels !== 'none') {
-    drawWaffleLegend(frame, categories, counts, total, colors, xLabel, labels);
+    drawWaffleLegend(frame, categories, counts, total, colors, xLabel, labels, patterns);
   }
 
   return { frame };
@@ -155,7 +166,7 @@ function assignCells(categories, counts, total, cells) {
  * @param {string} [title]
  * @param {'full'|'names'|'none'} [labels]
  */
-function drawWaffleLegend(frame, categories, counts, total, colors, title, labels = 'full') {
+function drawWaffleLegend(frame, categories, counts, total, colors, title, labels = 'full', patterns = []) {
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   const g = overlays.append('g')
     .attr('class', 'chart-legend')
@@ -191,6 +202,13 @@ function drawWaffleLegend(frame, categories, counts, total, colors, title, label
       .attr('stroke', '#999')
       .attr('stroke-width', 0.5)
       .attr('rx', 2);
+    if (patterns[i] && patterns[i] !== 'none') {
+      g.append('rect')
+        .attr('x', padX).attr('y', yOff)
+        .attr('width', swatchSize).attr('height', swatchSize)
+        .attr('fill', patterns[i])
+        .attr('stroke', 'none').attr('rx', 2);
+    }
 
     g.append('text')
       .attr('x', padX + swatchSize + 6)

@@ -29,15 +29,24 @@ const PHONE_MARGIN = { top: 30, right: 15, bottom: 60, left: 80 };
 export const TRANSITION_MS = 300;
 
 /**
- * Okabe-Ito accessible color palette.
+ * Okabe-Ito accessible color palette — reordered so the first 2-3 colors
+ * are maximally distinguishable under protanopia and deuteranopia.
+ *
+ * Original Okabe-Ito order: blue, orange, teal, vermillion, rose, sky, gold, gray.
+ * Problem: teal (#009E73) and vermillion (#D55E00) both shift to brownish-yellow
+ * under deuteranopia, making 3- and 4-group charts hard to read.
+ *
+ * Reordered: blue, orange, rose, teal, vermillion, sky, gold, gray.
+ * Rose (#CC79A7) appears as desaturated blue-gray under deuteranopia,
+ * clearly distinct from both blue and orange.
  * @type {readonly string[]}
  */
 const OKABE_ITO = [
   '#0072B2',   // blue (5.19:1)
   '#C08700',   // orange (3.13:1) — darkened from #E69F00 for WCAG 3:1
+  '#CC79A7',   // rose (3.06:1) — moved up: distinct from blue+orange under all CVD types
   '#009E73',   // teal (3.42:1)
   '#D55E00',   // vermillion (3.87:1)
-  '#CC79A7',   // rose (3.06:1)
   '#2E8BC0',   // sky blue (3.77:1) — darkened from #56B4E9 for WCAG 3:1
   '#9A8C00',   // gold (3.43:1) — darkened from #F0E442 for WCAG 3:1
   '#767676',   // gray (4.54:1) — darkened from #999999 for WCAG 3:1
@@ -160,6 +169,166 @@ function _siClean(v) {
 export function getColors(n = 5) {
   const count = Math.max(1, Math.min(n, OKABE_ITO.length));
   return OKABE_ITO.slice(0, count);
+}
+
+/**
+ * SVG pattern definitions for distinguishing groups without relying on color alone.
+ * Each pattern is a function that creates a <pattern> element inside an SVG <defs>.
+ *
+ * Pattern types (in order, matching Okabe-Ito palette positions):
+ *  0: solid (no pattern — just the base color)
+ *  1: diagonal lines (45°, ////)
+ *  2: dots (regular grid)
+ *  3: crosshatch (X pattern)
+ *  4: horizontal lines (----)
+ *  5: diagonal lines (135°, \\\\)
+ *  6: dense dots
+ *  7: vertical lines (||||)
+ *
+ * @type {readonly {id: string, create: (defs: SVGDefsElement, color: string, idx: number) => void}[]}
+ */
+const PATTERN_DEFS = [
+  { id: 'solid', create: () => {} }, // slot 0 = no pattern, just solid fill
+  {
+    id: 'diag',
+    create: (defs, color, idx) => {
+      const p = _mkPattern(defs, `sl-pat-diag-${idx}`, 6, 6);
+      _line(p, 0, 6, 6, 0, color, 1.5);
+    },
+  },
+  {
+    id: 'dots',
+    create: (defs, color, idx) => {
+      const p = _mkPattern(defs, `sl-pat-dots-${idx}`, 6, 6);
+      _circle(p, 3, 3, 1.4, color);
+    },
+  },
+  {
+    id: 'cross',
+    create: (defs, color, idx) => {
+      const p = _mkPattern(defs, `sl-pat-cross-${idx}`, 7, 7);
+      _line(p, 0, 7, 7, 0, color, 1.2);
+      _line(p, 0, 0, 7, 7, color, 1.2);
+    },
+  },
+  {
+    id: 'horiz',
+    create: (defs, color, idx) => {
+      const p = _mkPattern(defs, `sl-pat-horiz-${idx}`, 6, 6);
+      _line(p, 0, 3, 6, 3, color, 1.5);
+    },
+  },
+  {
+    id: 'diag2',
+    create: (defs, color, idx) => {
+      const p = _mkPattern(defs, `sl-pat-diag2-${idx}`, 6, 6);
+      _line(p, 0, 0, 6, 6, color, 1.5);
+    },
+  },
+  {
+    id: 'dots2',
+    create: (defs, color, idx) => {
+      const p = _mkPattern(defs, `sl-pat-dots2-${idx}`, 4, 4);
+      _circle(p, 2, 2, 1.2, color);
+    },
+  },
+  {
+    id: 'vert',
+    create: (defs, color, idx) => {
+      const p = _mkPattern(defs, `sl-pat-vert-${idx}`, 6, 6);
+      _line(p, 3, 0, 3, 6, color, 1.5);
+    },
+  },
+];
+
+/** Create a <pattern> element inside defs.
+ * @param {SVGDefsElement} defs @param {string} id @param {number} w @param {number} h */
+function _mkPattern(defs, id, w, h) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const p = document.createElementNS(ns, 'pattern');
+  p.setAttribute('id', id);
+  p.setAttribute('patternUnits', 'userSpaceOnUse');
+  p.setAttribute('width', String(w));
+  p.setAttribute('height', String(h));
+  defs.appendChild(p);
+  return p;
+}
+
+/** Append a <line> to a pattern element.
+ * @param {SVGPatternElement} parent @param {number} x1 @param {number} y1 @param {number} x2 @param {number} y2 @param {string} color @param {number} sw */
+function _line(parent, x1, y1, x2, y2, color, sw) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const l = document.createElementNS(ns, 'line');
+  l.setAttribute('x1', String(x1));
+  l.setAttribute('y1', String(y1));
+  l.setAttribute('x2', String(x2));
+  l.setAttribute('y2', String(y2));
+  l.setAttribute('stroke', color);
+  l.setAttribute('stroke-width', String(sw));
+  l.setAttribute('stroke-linecap', 'square');
+  parent.appendChild(l);
+}
+
+/** Append a <circle> to a pattern element.
+ * @param {SVGPatternElement} parent @param {number} cx @param {number} cy @param {number} r @param {string} color */
+function _circle(parent, cx, cy, r, color) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const c = document.createElementNS(ns, 'circle');
+  c.setAttribute('cx', String(cx));
+  c.setAttribute('cy', String(cy));
+  c.setAttribute('r', String(r));
+  c.setAttribute('fill', color);
+  parent.appendChild(c);
+}
+
+/**
+ * Inject pattern <defs> into an SVG and return fill references for each group.
+ * Call this once per chart after creating the SVG. Patterns use a darkened
+ * version of each group color so they're visible on the lighter fill.
+ *
+ * @param {SVGSVGElement} svgEl - The chart's <svg> element
+ * @param {string[]} colors - Array of hex colors (from getColors)
+ * @returns {string[]} Array of CSS fill values — 'url(#sl-pat-diag-1)' or 'none' for solid
+ */
+export function ensurePatterns(svgEl, colors) {
+  let defs = svgEl.querySelector('defs');
+  if (!defs) {
+    defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    svgEl.insertBefore(defs, svgEl.firstChild);
+  }
+
+  /** @type {string[]} */
+  const fills = [];
+  for (let i = 0; i < colors.length; i++) {
+    const patIdx = i % PATTERN_DEFS.length;
+    const pat = PATTERN_DEFS[patIdx];
+    if (patIdx === 0) {
+      fills.push('none'); // solid fill — no pattern overlay needed
+    } else {
+      // Darken the color for pattern strokes so they show on light fill
+      const patColor = _darken(colors[i], 0.35);
+      pat.create(/** @type {SVGDefsElement} */ (defs), patColor, i);
+      fills.push(`url(#sl-pat-${pat.id}-${i})`);
+    }
+  }
+  return fills;
+}
+
+/**
+ * Darken a hex color by mixing toward black.
+ * @param {string} hex - e.g. '#0072B2'
+ * @param {number} amount - 0 = unchanged, 1 = black
+ * @returns {string} Darkened hex
+ */
+function _darken(hex, amount) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const f = 1 - amount;
+  const dr = Math.round(r * f);
+  const dg = Math.round(g * f);
+  const db = Math.round(b * f);
+  return `#${dr.toString(16).padStart(2, '0')}${dg.toString(16).padStart(2, '0')}${db.toString(16).padStart(2, '0')}`;
 }
 
 /**

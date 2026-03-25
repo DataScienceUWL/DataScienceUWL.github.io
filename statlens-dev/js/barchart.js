@@ -11,7 +11,7 @@ import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
-import { createChart, addAxes, drawHorizontalGridlines, formatTick, getColors, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels, autoRotateLabels, fitYLabel } from './chart-utils.js';
+import { createChart, addAxes, drawHorizontalGridlines, formatTick, getColors, ensurePatterns, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels, autoRotateLabels, fitYLabel } from './chart-utils.js';
 
 /** Bar stroke (white separator). */
 const BAR_STROKE = '#FFFFFF';
@@ -127,12 +127,12 @@ export function drawBarChart(container, values, options = {}) {
   const frame = createChart(container, { titleText, descText, id, margin: effectiveMargin });
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
-  /** @type {{ categories: string[], colors: string[] } | undefined} */
+  /** @type {{ categories: string[], colors: string[], patterns?: string[] } | undefined} */
   let colorMap;
 
   if (isGrouped) {
     colorMap = drawGroupedBars(frame, values, groupValues, mode, { xLabel, categoryOrder, shouldAnimate, labels });
-    drawLegend(frame, colorMap.categories, colorMap.colors, groupLabel);
+    drawLegend(frame, colorMap.categories, colorMap.colors, groupLabel, colorMap.patterns);
   } else {
     drawSimpleBars(frame, values, mode, { xLabel, categoryOrder, shouldAnimate, labels });
   }
@@ -268,7 +268,7 @@ function drawSimpleBars(frame, values, mode, opts) {
  * @param {string[]} colors
  * @param {string} [title]
  */
-function drawLegend(frame, categories, colors, title) {
+function drawLegend(frame, categories, colors, title, patterns) {
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   const legendLabel = title ? `Legend: ${title}` : 'Legend';
   const g = overlays.append('g')
@@ -303,6 +303,14 @@ function drawLegend(frame, categories, colors, title) {
       .attr('stroke', '#999')
       .attr('stroke-width', 0.5)
       .attr('rx', 2);
+    // Pattern overlay on legend swatch
+    if (patterns && patterns[i] && patterns[i] !== 'none') {
+      g.append('rect')
+        .attr('x', padX).attr('y', yOff)
+        .attr('width', swatchSize).attr('height', swatchSize)
+        .attr('fill', patterns[i])
+        .attr('stroke', 'none').attr('rx', 2);
+    }
 
     g.append('text')
       .attr('x', padX + swatchSize + 5)
@@ -358,6 +366,7 @@ function drawLegend(frame, categories, colors, title) {
 function drawGroupedBars(frame, values, groupValues, mode, opts) {
   const { primaryCats, secondaryCats, table, primaryTotals } = computeGroupedFrequencies(values, groupValues);
   const colors = getColors(secondaryCats.length);
+  const patterns = ensurePatterns(/** @type {SVGSVGElement} */ (frame.svg), colors);
   const isPhone = typeof globalThis.matchMedia === 'function'
     && globalThis.matchMedia('(max-width: 480px)').matches;
 
@@ -421,6 +430,16 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
           .attr('aria-label', ariaText)
           .attr('tabindex', '0')
           .style('outline', 'none');
+        // Pattern overlay (secondary visual cue beyond color)
+        if (patterns[si] && patterns[si] !== 'none') {
+          g.append('rect')
+            .attr('x', barX).attr('y', barY)
+            .attr('width', xSubScale.bandwidth())
+            .attr('height', frame.height - barY)
+            .attr('fill', patterns[si])
+            .attr('stroke', 'none')
+            .style('pointer-events', 'none');
+        }
         if (opts.labels !== 'none') {
           rect
             .on('mouseenter', () => showTooltip(frame.inner, tipLines, tipX, barY))
@@ -477,6 +496,16 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
           .attr('aria-label', ariaText2)
           .attr('tabindex', '0')
           .style('outline', 'none');
+        // Pattern overlay (secondary visual cue beyond color)
+        if (patterns[si] && patterns[si] !== 'none') {
+          dataGroup.append('rect')
+            .attr('x', xScale(p)).attr('y', barY)
+            .attr('width', xScale.bandwidth())
+            .attr('height', yScale(y0) - barY)
+            .attr('fill', patterns[si])
+            .attr('stroke', 'none')
+            .style('pointer-events', 'none');
+        }
         if (opts.labels !== 'none') {
           stackRect
             .on('mouseenter', () => showTooltip(frame.inner, [tipLabel], barMidX, barY))
@@ -490,5 +519,5 @@ function drawGroupedBars(frame, values, groupValues, mode, opts) {
     }
   }
 
-  return { categories: secondaryCats, colors };
+  return { categories: secondaryCats, colors, patterns };
 }

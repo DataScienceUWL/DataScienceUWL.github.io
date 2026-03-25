@@ -8,7 +8,7 @@
 
 import * as d3Selection from 'd3-selection';
 import * as d3Shape from 'd3-shape';
-import { createChart, getColors, showTooltip, hideTooltip } from './chart-utils.js';
+import { createChart, getColors, ensurePatterns, showTooltip, hideTooltip } from './chart-utils.js';
 import { computeFrequencies } from './barchart.js';
 
 /**
@@ -45,6 +45,7 @@ export function drawPieChart(container, values, options = {}) {
 
   const { categories, counts, total } = computeFrequencies(values, categoryOrder);
   const colors = getColors(categories.length);
+  const patterns = ensurePatterns(/** @type {SVGSVGElement} */ (frame.svg), colors);
 
   // Radius fits inside the plot area
   const radius = Math.min(frame.width, frame.height) / 2 - 10;
@@ -90,6 +91,14 @@ export function drawPieChart(container, values, options = {}) {
       .attr('stroke-width', 2)
       .attr('role', 'listitem')
       .attr('aria-label', ariaText);
+    // Pattern overlay
+    if (patterns[catIdx] && patterns[catIdx] !== 'none') {
+      dataGroup.append('path')
+        .attr('d', /** @type {string} */ (arc(/** @type {any} */ (d))))
+        .attr('fill', patterns[catIdx])
+        .attr('stroke', 'none')
+        .style('pointer-events', 'none');
+    }
 
     if (labels !== 'none') {
       const tipText = labels === 'full' ? `${d.data.category}: ${count} (${pct}%)` : d.data.category;
@@ -116,7 +125,7 @@ export function drawPieChart(container, values, options = {}) {
 
   // Draw legend (skip in 'none' mode)
   if (labels !== 'none') {
-    drawPieLegend(frame, categories, counts, total, colors, xLabel, labels);
+    drawPieLegend(frame, categories, counts, total, colors, xLabel, labels, patterns);
   }
 
   return { frame };
@@ -132,7 +141,7 @@ export function drawPieChart(container, values, options = {}) {
  * @param {string} [title]
  * @param {'full'|'names'|'none'} [labels]
  */
-function drawPieLegend(frame, categories, counts, total, colors, title, labels = 'full') {
+function drawPieLegend(frame, categories, counts, total, colors, title, labels = 'full', patterns = []) {
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   const g = overlays.append('g')
     .attr('class', 'chart-legend')
@@ -168,6 +177,13 @@ function drawPieLegend(frame, categories, counts, total, colors, title, labels =
       .attr('stroke', '#999')
       .attr('stroke-width', 0.5)
       .attr('rx', 2);
+    if (patterns[i] && patterns[i] !== 'none') {
+      g.append('rect')
+        .attr('x', padX).attr('y', yOff)
+        .attr('width', swatchSize).attr('height', swatchSize)
+        .attr('fill', patterns[i])
+        .attr('stroke', 'none').attr('rx', 2);
+    }
 
     g.append('text')
       .attr('x', padX + swatchSize + 6)
