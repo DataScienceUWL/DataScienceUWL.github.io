@@ -47,11 +47,51 @@
     (document.body || document.documentElement).appendChild(shareScript);
   }
 
-  // Activity panel: load guided instructions from JSON
-  if (params.get('activity')) {
-    // Dynamically load the activity panel script
+  // Activity panel: load guided instructions from JSON.
+  // We start the fetch HERE (in a synchronous script) so the activity JSON's
+  // default params (e.g. dataset=immigration) are injected into the URL BEFORE
+  // any module scripts run. This prevents the race condition where initDataPanel
+  // reads URL params before activity defaults are applied (REQ-020).
+  const activityUrl = params.get('activity');
+  if (activityUrl) {
     const link = document.querySelector('link[rel="stylesheet"][href*="style.css"]');
     const prefix = link ? link.getAttribute('href')?.replace(/css\/style\.css$/, '') || '' : '';
+
+    // Resolve the activity URL (same logic as activity-panel.js)
+    let resolvedUrl;
+    if (activityUrl.startsWith('http://') || activityUrl.startsWith('https://')) {
+      resolvedUrl = activityUrl;
+    } else if (activityUrl.startsWith('/')) {
+      resolvedUrl = activityUrl;
+    } else {
+      resolvedUrl = `${prefix}activities/${activityUrl}`;
+    }
+
+    // Fetch and inject params early; store promise so activity-panel.js can reuse it
+    window.__activityParamsReady = fetch(resolvedUrl)
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then(activity => {
+        // Inject activity params as URL defaults (existing URL params win)
+        const current = new URLSearchParams(location.search);
+        let changed = false;
+        for (const [key, value] of Object.entries(activity.params || {})) {
+          if (key === 'activity') continue;
+          if (!current.has(key)) {
+            current.set(key, String(value));
+            changed = true;
+          }
+        }
+        if (changed) {
+          history.replaceState(null, '', '?' + current.toString());
+        }
+        return activity;
+      })
+      .catch(err => {
+        console.warn('Activity panel: failed to load', resolvedUrl, err);
+        return null;
+      });
+
+    // Also load the activity panel UI script (uses window.__activityParamsReady)
     const script = document.createElement('script');
     script.src = `${prefix}js/activity-panel.js`;
     script.defer = true;

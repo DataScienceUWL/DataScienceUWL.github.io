@@ -1324,18 +1324,30 @@ export function initDataPanel(config) {
 
   // ── Dataset dropdown ──
   if (datasetSelect) {
-    loadDatasetIndex(datasetSelect, datasetFilter, datasetDesc, datasetGroupFn)
-      .then(index => {
+    // If an activity panel is loading, wait for its params to be injected into the
+    // URL before processing auto-load logic. This prevents the race condition where
+    // datasets.json loads before the activity JSON, causing the wrong dataset to load
+    // (REQ-020). The activity fetch was started early in page-number.js.
+    const activityReady = typeof window !== 'undefined' && window.__activityParamsReady
+      ? window.__activityParamsReady : Promise.resolve(null);
+
+    Promise.all([
+      loadDatasetIndex(datasetSelect, datasetFilter, datasetDesc, datasetGroupFn),
+      activityReady,
+    ]).then(([index]) => {
         fullIndex = index;
         datasetIndex = index;
 
+        // Re-read URL params after activity defaults have been injected
+        const effectiveParams = parseParams();
+
         // Auto-select dataset from URL param (?dataset=NAME)
-        if (urlParams.dataset && index.some(ds => ds.id === urlParams.dataset)) {
-          datasetSelect.value = urlParams.dataset;
+        if (effectiveParams.dataset && index.some(ds => ds.id === effectiveParams.dataset)) {
+          datasetSelect.value = effectiveParams.dataset;
           datasetSelect.dispatchEvent(new Event('change'));
-        } else if (urlParams.data && urlParams.data.length > 0) {
+        } else if (effectiveParams.data && effectiveParams.data.length > 0) {
           // Auto-load inline data from URL (?data=1,2,3,...)
-          const csv = 'value\n' + urlParams.data.join('\n');
+          const csv = 'value\n' + effectiveParams.data.join('\n');
           queueMicrotask(() => {
             handleText(csv, 'URL data');
             populateEditor(csv, 'url_data');
@@ -1357,12 +1369,12 @@ export function initDataPanel(config) {
               postLoadUI();
               resolveReady();
             });
-          } else if (urlParams.json) {
+          } else if (effectiveParams.json) {
             // Fetch external JSON dataset (?json=URL)
-            fetchExternalJSON(urlParams.json, onDataset, populateEditor, () => { postLoadUI(); resolveReady(); });
-          } else if (urlParams.csv) {
+            fetchExternalJSON(effectiveParams.json, onDataset, populateEditor, () => { postLoadUI(); resolveReady(); });
+          } else if (effectiveParams.csv) {
             // Fetch external CSV (?csv=URL)
-            fetchExternalCSV(urlParams.csv, handleText, populateEditor, () => { postLoadUI(); resolveReady(); });
+            fetchExternalCSV(effectiveParams.csv, handleText, populateEditor, () => { postLoadUI(); resolveReady(); });
           } else {
             resolveReady();
           }

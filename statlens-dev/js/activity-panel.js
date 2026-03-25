@@ -16,21 +16,25 @@
   const activityUrl = params.get('activity');
   if (!activityUrl) return;
 
-  // Resolve relative URLs against the page's activities/ directory
-  const resolvedUrl = resolveActivityUrl(activityUrl);
+  // page-number.js already fetched the activity JSON and injected params into
+  // the URL (REQ-020 race condition fix). Reuse that promise if available;
+  // otherwise fall back to fetching ourselves.
+  const activityPromise = window.__activityParamsReady || (() => {
+    const resolvedUrl = resolveActivityUrl(activityUrl);
+    return fetch(resolvedUrl)
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(activity => { applyDefaultParams(activity.params || {}); return activity; });
+  })();
 
-  fetch(resolvedUrl)
-    .then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json();
-    })
+  activityPromise
     .then(activity => {
-      applyDefaultParams(activity.params || {});
+      if (!activity) return; // fetch failed in page-number.js
+      // Params already injected by page-number.js; just trigger dataset load and render UI
       triggerDatasetLoad(activity.params || {});
       renderPanel(activity);
     })
     .catch(err => {
-      console.warn('Activity panel: failed to load', resolvedUrl, err);
+      console.warn('Activity panel: failed to load', err);
     });
 
   /**
@@ -73,10 +77,12 @@
   }
 
   /**
-   * After injecting params into the URL, trigger dataset loading if the page
-   * already initialized its data panel (race condition fix for REQ-004).
-   * The dataset select is already populated by the time this fetch completes —
-   * we just need to set its value and fire change to load the data.
+   * After params are in the URL, apply non-dataset params that the page may
+   * have already read before injection (e.g., CI level).
+   *
+   * Dataset loading is handled by initDataPanel which now awaits
+   * __activityParamsReady before reading URL params (REQ-020 fix).
+   * This function only handles params that initDataPanel doesn't cover.
    */
   function triggerDatasetLoad(defaults) {
     // Set CI level if specified (page already parsed URL before our params were injected)
@@ -87,28 +93,6 @@
         ciSel.dispatchEvent(new Event('change'));
       }
     }
-
-    const dsId = defaults.dataset;
-    if (!dsId) return;
-    const sel = /** @type {HTMLSelectElement|null} */ (document.getElementById('dataset-select'));
-    if (!sel) return;
-    // Only trigger if no dataset is already loaded
-    if (sel.value) return;
-    // The dataset select options may still be populating (datasets.json fetch in progress)
-    const trySet = () => {
-      const opt = sel.querySelector(`option[value="${dsId}"]`);
-      if (opt) {
-        sel.value = dsId;
-        sel.dispatchEvent(new Event('change'));
-      } else {
-        // Retry after datasets.json fetch completes
-        setTimeout(() => {
-          sel.value = dsId;
-          sel.dispatchEvent(new Event('change'));
-        }, 500);
-      }
-    };
-    trySet();
   }
 
   /**
