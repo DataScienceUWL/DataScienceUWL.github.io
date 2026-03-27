@@ -362,6 +362,8 @@ export function drawBoxplot(container, data, options = {}) {
     if (showOutliers) {
       const outlierCy = bandY + bandH / 2;
       const allOutlierValues = [...s.mildOutliers, ...s.extremeOutliers];
+      // Use group color for outliers in grouped mode, IMS red for single boxplots
+      const oColor = isGrouped ? gc.stroke : OUTLIER_COLOR;
 
       // Mild outliers (open circles)
       g.selectAll('.outlier-mild')
@@ -372,7 +374,7 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('cy', outlierCy)
         .attr('r', OUTLIER_RADIUS)
         .attr('fill', 'none')
-        .attr('stroke', OUTLIER_COLOR)
+        .attr('stroke', oColor)
         .attr('stroke-width', 1.5)
         .attr('role', 'listitem')
         .attr('aria-label', d => `Mild outlier: ${d}`);
@@ -385,8 +387,8 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('cx', d => xScale(d))
         .attr('cy', outlierCy)
         .attr('r', OUTLIER_RADIUS)
-        .attr('fill', OUTLIER_COLOR)
-        .attr('stroke', OUTLIER_COLOR)
+        .attr('fill', oColor)
+        .attr('stroke', oColor)
         .attr('stroke-width', 1.5)
         .attr('role', 'listitem')
         .attr('aria-label', d => `Extreme outlier: ${d}`);
