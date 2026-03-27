@@ -152,9 +152,12 @@ export function initSimPage(config) {
   /** Indices of batch-added dots for +10 highlight, or null. */
   /** @type {Set<number>|null} */
   let batchHighlightIndices = null;
-  /** Previous histogram bin counts for stacked delta highlight. */
+  /** Previous histogram bin counts for stacked delta highlight (batch only). */
   /** @type {number[]|null} */
   let prevBinCounts = null;
+  /** New stat value for single-value histogram highlight (+1 case). */
+  /** @type {number|null} */
+  let lastHighlightValue = null;
   /** User's chart type preference: 'auto' (dotplot ≤200, histogram >200), 'dotplot', or 'histogram'. */
   /** @type {'auto'|'dotplot'|'histogram'} */
   let chartType = 'auto';
@@ -192,6 +195,7 @@ export function initSimPage(config) {
           lastStatIndex = -1;
           batchHighlightIndices = null;
           prevBinCounts = null;
+          lastHighlightValue = null;
           renderChart(allStats, lastCI, lastObserved, lastDirection);
         }
       },
@@ -239,6 +243,7 @@ export function initSimPage(config) {
           lastStatIndex = -1;
           batchHighlightIndices = null;
           prevBinCounts = null;
+          lastHighlightValue = null;
           renderChart(allStats, lastCI, lastObserved, lastDirection);
         }
       },
@@ -375,6 +380,7 @@ export function initSimPage(config) {
           lastStatIndex = -1;
           batchHighlightIndices = null;
           prevBinCounts = null;
+          lastHighlightValue = null;
           renderChart(allStats, lastCI, lastObserved, lastDirection);
         }
       });
@@ -1178,17 +1184,17 @@ export function initSimPage(config) {
       // Track new data for highlight — always compute dot-level highlights
       if (count === 1) {
         lastStatIndex = allStats.length - 1;
+        // For histogram +1: pass the new value directly (no bin alignment issues)
+        lastHighlightValue = allStats[allStats.length - 1];
       } else {
+        lastHighlightValue = null;
         batchHighlightIndices = new Set();
         for (let j = prevLength; j < allStats.length; j++) {
           batchHighlightIndices.add(j);
         }
       }
-      if (allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
-        // Histogram mode: compute previous bin counts for stacked delta
-        // Must use EXACT same domain + thresholds as renderChart to align bins
-        // Include observedStat in domain — matches renderChart's domain logic
-        // (bootstrap mode has no observedStat; randomization paths declare it locally)
+      // Batch histogram delta: compute previous bin counts for stacked overlay
+      if (count > 1 && allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
         const domainVals = allStats;
         let lo = Math.min(...domainVals);
         let hi = Math.max(...domainVals);
@@ -1206,13 +1212,10 @@ export function initSimPage(config) {
         const histThresholds = config.proportion
           ? snappedPropThresholds(histSampleSize, fullDomain, allStats.length)
           : undefined;
-        // Bin the FULL dataset first to lock in bin edges
-        // Pass same numBins as renderChart to ensure identical bin edges
         const { bins: fullBins } = computeBins(allStats, {
           domain: fullDomain, thresholds: histThresholds,
           numBins: config.proportion ? undefined : userBinCount,
         });
-        // Extract interior edges so prev data bins with identical edges
         const lockedThresholds = fullBins.slice(1).map(b => b.x0);
         const prevStats = allStats.slice(0, prevLength);
         const { bins: prevBins } = computeBins(prevStats, {
@@ -1281,14 +1284,16 @@ export function initSimPage(config) {
       // Highlights
       if (count === 1) {
         lastStatIndex = allStats.length - 1;
+        lastHighlightValue = allStats[allStats.length - 1];
       } else {
+        lastHighlightValue = null;
         batchHighlightIndices = new Set();
         for (let j = prevLength; j < allStats.length; j++) {
           batchHighlightIndices.add(j);
         }
       }
       // Histogram delta for batch
-      if (allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
+      if (count > 1 && allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
         const rVals = [...allStats, observedStat];
         let rLo = Math.min(...rVals);
         let rHi = Math.max(...rVals);
@@ -1342,13 +1347,15 @@ export function initSimPage(config) {
       // Always compute dot-level highlights
       if (count === 1) {
         lastStatIndex = allStats.length - 1;
+        lastHighlightValue = allStats[allStats.length - 1];
       } else {
+        lastHighlightValue = null;
         batchHighlightIndices = new Set();
         for (let j = prevLength; j < allStats.length; j++) {
           batchHighlightIndices.add(j);
         }
       }
-      if (allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
+      if (count > 1 && allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
         // Histogram mode: compute previous bin counts for stacked delta
         const rVals = observedStat != null ? [...allStats, observedStat] : allStats;
         let rLo = Math.min(...rVals);
@@ -2677,6 +2684,7 @@ export function initSimPage(config) {
         thresholds: propThresholds,
         numBins: userBinCount,
         prevBinCounts: prevBinCounts ?? undefined,
+        highlightValue: lastHighlightValue ?? undefined,
         precision: config.proportion ? Math.max(dataPrecision + 1, 3) : dataPrecision + 1,
       });
       chartResult = r.frame;
@@ -2711,6 +2719,7 @@ export function initSimPage(config) {
     lastStatIndex = -1; // Reset after rendering
     batchHighlightIndices = null;
     prevBinCounts = null;
+    lastHighlightValue = null;
   }
 
   /** @type {(v: number, obs: number, dir?: 'left'|'right'|'both') => boolean} */

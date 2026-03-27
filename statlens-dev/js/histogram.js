@@ -151,6 +151,7 @@ export function computeBins(values, options = {}) {
  * @param {[number,number]} [options.domain] - Override x-axis domain
  * @param {number[]} [options.thresholds] - Explicit bin threshold values (overrides numBins)
  * @param {number[]} [options.prevBinCounts] - Previous bin counts for stacked delta highlight
+ * @param {number} [options.highlightValue] - Single new value to highlight (flashes the receiving bin)
  * @param {number} [options.precision] - Decimal places for overlay value labels (default: 2)
  * @param {boolean} [options.relativeFrequency] - Show relative frequency (proportion) on y-axis instead of count
  * @param {string} [options.fillColor] - Override default bar fill color (hex, will be used at 50% opacity)
@@ -177,6 +178,7 @@ export function drawHistogram(container, values, options = {}) {
     domain,
     thresholds,
     prevBinCounts,
+    highlightValue,
     precision = 2,
     relativeFrequency = false,
     fillColor,
@@ -224,6 +226,11 @@ export function drawHistogram(container, values, options = {}) {
   // Stacked delta highlight: show new portions of bars in orange
   if (prevBinCounts) {
     renderDeltaBars(dataGroup, bins, xScale, yScale, frame.height, prevBinCounts);
+  }
+
+  // Single-value highlight: flash the bin that received the new value (+1 case)
+  if (highlightValue != null && !prevBinCounts) {
+    renderSingleHighlight(dataGroup, bins, xScale, yScale, frame.height, highlightValue);
   }
 
   // Overlay lines
@@ -333,6 +340,48 @@ function renderDeltaBars(group, bins, xScale, yScale, innerHeight, prevCounts) {
         setTimeout(() => el.remove(), 600);
       }
     });
+  }, 800);
+}
+
+/**
+ * Flash the single bin that received a new value (+1 animation).
+ * Draws a thin orange stripe at the top of the target bin, then fades it out.
+ * @param {d3Selection.Selection} group
+ * @param {d3Array.Bin<number, number>[]} bins
+ * @param {d3Scale.ScaleLinear<number, number>} xScale
+ * @param {d3Scale.ScaleLinear<number, number>} yScale
+ * @param {number} innerHeight
+ * @param {number} value - The new stat value to locate
+ */
+function renderSingleHighlight(group, bins, xScale, yScale, innerHeight, value) {
+  // Find the bin containing this value
+  const targetBin = bins.find(b => value >= b.x0 && value < b.x1)
+    // Last bin includes upper bound
+    || bins.find(b => value >= b.x0 && value <= b.x1);
+  if (!targetBin || targetBin.length === 0) return;
+
+  // Draw a stripe at the top of the bar representing 1 unit of height
+  const prevCount = targetBin.length - 1;
+  const rect = group.append('rect')
+    .attr('class', 'delta-bar')
+    .attr('x', xScale(targetBin.x0))
+    .attr('width', Math.max(0, xScale(targetBin.x1) - xScale(targetBin.x0)))
+    .attr('y', yScale(targetBin.length))
+    .attr('height', Math.max(2, yScale(prevCount) - yScale(targetBin.length)))
+    .attr('fill', HIGHLIGHT_FILL)
+    .attr('stroke', BAR_STROKE)
+    .attr('stroke-width', 1)
+    .style('pointer-events', 'none');
+
+  // Fade out after 800ms
+  setTimeout(() => {
+    if (prefersReducedMotion()) {
+      rect.remove();
+    } else {
+      rect.style('transition', 'opacity 0.5s');
+      rect.style('opacity', '0');
+      setTimeout(() => rect.remove(), 600);
+    }
   }, 800);
 }
 
