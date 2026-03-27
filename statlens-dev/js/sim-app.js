@@ -442,6 +442,9 @@ export function initSimPage(config) {
   if (urlParams.ci && ciSelect) {
     ciSelect.value = String(urlParams.ci);
   }
+  if (urlParams.stat && bootStatSelect) {
+    bootStatSelect.value = urlParams.stat;
+  }
 
   // ─── Variable selector helpers ───
 

@@ -10,19 +10,21 @@
 export const MAX_DATA_LENGTH = 10_000;
 
 /** Parameters that should be parsed as positive integers */
-const INT_PARAMS = new Set(['n', 'B', 'ci', 'df', 'df1', 'df2', 'n1', 'n2']);
+const INT_PARAMS = new Set(['n', 'B', 'ci', 'df', 'df1', 'df2', 'n1', 'n2', 'trials', 'round']);
 
 /** Parameters that should be parsed as floats */
 const FLOAT_PARAMS = new Set([
     'mu', 'sigma', 'p', 'min', 'max', 'mu1', 'mu2',
     'sigma1', 'sigma2', 'p1', 'p2', 'rho',
     'intercept', 'slope', 'sigma_error', 'x_min', 'x_max',
-    'decimals', 'clip_min', 'clip_max', 'null_value', 'alpha'
+    'decimals', 'clip_min', 'clip_max', 'null_value', 'alpha',
+    'shape', 'scale', 'lambda', 'prob', 'a', 'b'
 ]);
 
 /** Parameters that should remain as sanitized strings */
 const STRING_PARAMS = new Set([
-    'seed', 'gen', 'stat', 'direction', 'tail', 'dataset', 'csv', 'json',
+    'seed', 'gen_seed', 'gen', 'stat', 'direction', 'tail', 'dataset',
+    'csv', 'json', 'dist',
     'var', 'x', 'y', 'group', 'response', 'label', 'units', 'context',
     'success', 'failure', 'group1', 'group2', 'var1', 'var2',
     'x_label', 'y_label', 'summary', 'alt'

@@ -8,6 +8,7 @@
 import { parseCSV, rowsToCSV, downloadCSV } from './csv-parser.js';
 import { getSettings, setSettings, resetSettings, applySettings, getActivityMode, getExpertMode, prefersReducedMotion } from './settings.js';
 import { parseParams } from './url-params.js';
+import { configFromUrlParams, configFromGenerator, generateFromConfig } from './datagen.js';
 
 /**
  * Resolve the path to the data/ directory from any page.
@@ -1345,6 +1346,24 @@ export function initDataPanel(config) {
         if (effectiveParams.dataset && index.some(ds => ds.id === effectiveParams.dataset)) {
           datasetSelect.value = effectiveParams.dataset;
           datasetSelect.dispatchEvent(new Event('change'));
+        } else if (effectiveParams.dist) {
+          // Inline parametric data generation (?dist=normal&mu=100&sigma=15&n=50&gen_seed=abc)
+          const distConfig = configFromUrlParams(effectiveParams);
+          if (distConfig) {
+            const seed = effectiveParams.gen_seed || effectiveParams.seed || String(Date.now());
+            const result = generateFromConfig(distConfig, seed);
+            const varName = distConfig.var || 'value';
+            const csv = varName + '\n' + result.values.join('\n');
+            queueMicrotask(() => {
+              handleText(csv, `Generated ${effectiveParams.dist} (n=${result.n})`);
+              populateEditor(csv, `generated_${effectiveParams.dist}`);
+              postLoadUI();
+              resolveReady();
+            });
+          } else {
+            // dist param present but invalid (missing n, etc.) — fall through
+            resolveReady();
+          }
         } else if (effectiveParams.data && effectiveParams.data.length > 0) {
           // Auto-load inline data from URL (?data=1,2,3,...)
           const csv = 'value\n' + effectiveParams.data.join('\n');
@@ -1395,6 +1414,30 @@ export function initDataPanel(config) {
         .then(ds => {
           currentDatasetId = id;
           currentSourceName = meta?.name || ds.name || id;
+
+          // Generator block: if dataset has a generator and gen_seed is present,
+          // generate fresh data instead of using stored rows (REQ-023 mode 2)
+          const curParams = parseParams();
+          if (ds.generator && curParams.gen_seed) {
+            const genConfig = configFromGenerator(ds.generator, curParams);
+            const overrides = /** @type {Object<string,number>} */ ({});
+            for (const k of ['mu', 'sigma', 'shape', 'scale', 'lambda', 'prob', 'trials', 'a', 'b', 'df']) {
+              const v = /** @type {any} */ (curParams)[k];
+              if (v != null && typeof v === 'number') overrides[k] = v;
+            }
+            if (curParams.n) overrides.n = curParams.n;
+            const result = generateFromConfig(genConfig, curParams.gen_seed, overrides);
+            // Replace rows with generated data
+            const varName = genConfig.var || 'value';
+            ds.rows = result.values.map(v => ({ [varName]: v }));
+            // Ensure variables array includes the generated variable
+            if (!ds.variables) ds.variables = [];
+            if (!ds.variables.some(/** @param {any} v */ v => v.name === varName)) {
+              const vType = typeof result.values[0] === 'string' ? 'categorical' : 'numeric';
+              ds.variables = [{ name: varName, label: genConfig.label || varName, type: vType }];
+            }
+          }
+
           lastLoadedDataset = ds;
           onDataset(ds, meta);
           // Populate editor with dataset as CSV
