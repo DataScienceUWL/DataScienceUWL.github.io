@@ -125,8 +125,11 @@ export function parseParams(queryString) {
                 if (!['less', 'greater', 'two-sided'].includes(sanitized)) {
                     continue;
                 }
+            } else if (key === 'label' || key === 'units' || key === 'x_label' || key === 'y_label') {
+                // Display-facing params: preserve case, allow spaces
+                sanitized = sanitized.replace(/[^a-zA-Z0-9_ ()-]/g, '').slice(0, 200);
             } else {
-                // General string params: alphanumeric + underscore
+                // General string params: alphanumeric + underscore, lowercased
                 sanitized = sanitized.replace(/[^a-zA-Z0-9_ -]/g, '').toLowerCase();
             }
             if (sanitized.length > 0) {
