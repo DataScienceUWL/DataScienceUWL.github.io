@@ -1132,6 +1132,7 @@ input[aria-invalid="true"] {
   color: var(--ims-green);
   margin: 0.25rem 0 0;
   font-weight: 600;
+  text-align: center;
 }
 
 /* Persistent highlight for resample statistic — stays orange until next +1 or reset */
@@ -1157,6 +1158,7 @@ input[aria-invalid="true"] {
   color: var(--ims-gray-text);
   margin: 0.35rem 0 0;
   font-style: italic;
+  text-align: center;
 }
 
 /* Mechanism strip flash — disabled (was too stroby during auto-play).
@@ -1229,6 +1231,21 @@ input[aria-invalid="true"] {
 .mech-box-container {
   margin: 2px 0 4px;
 }
+.mech-chart-container {
+  margin: 4px auto;
+  display: flex;
+  justify-content: center;
+}
+.mech-minichart {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.mech-stat-text {
+  display: block;
+  text-align: center;
+  margin-top: 2px;
+}
 /* Proportion bar visualization in two-group mechanism strip */
 .mech-prop-bar {
   position: relative;
@@ -1255,6 +1272,35 @@ input[aria-invalid="true"] {
   color: #fff;
   pointer-events: none;
   text-shadow: 0 0 3px rgba(0,0,0,0.5);
+}
+/* Larger proportion bar for one-sample mechanism strip */
+.mech-prop-bar-lg {
+  height: 28px;
+  border-radius: 4px;
+  margin: 0.5rem 0 1.4rem;
+  overflow: visible;
+}
+.mech-prop-bar-lg .mech-prop-fill {
+  border-radius: 4px 0 0 4px;
+}
+.mech-prop-label-left,
+.mech-prop-label-right {
+  position: absolute;
+  top: 100%;
+  margin-top: 2px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  pointer-events: none;
+  color: var(--text, #333);
+}
+.mech-prop-label-left {
+  left: 0;
+}
+.mech-prop-label-right {
+  right: 0;
+}
+.prop-bar-wrap {
+  padding: 0.25rem 0;
 }
 
 .sample-dots {
@@ -1726,7 +1772,7 @@ body[data-hide-interpretations="true"] .interpretation { display: none !importan
   left: 0;
   right: 0;
   top: 100%;
-  z-index: 10;
+  z-index: 20;
   margin-top: 0.25rem;
   padding: 0.5rem 0.75rem;
   background: var(--bg);
@@ -2464,14 +2510,14 @@ body[data-mode="discover"] .present-only { display: none !important; }
 }
 .gate-choice:hover { background: #f0f7ff; }
 .gate-choice:focus-visible { outline: 2px solid var(--ims-blue); outline-offset: 2px; }
-.gate-choice.correct { background: #e8f5e9; border-color: #2e7d32; }
-.gate-choice.incorrect { background: #fce4ec; border-color: #c62828; }
+.gate-choice.correct { background: #e3f0f8; border-color: #0072B2; }
+.gate-choice.incorrect { background: #fef0e6; border-color: #D55E00; }
 .gate-choice.disabled { pointer-events: none; opacity: 0.7; }
 .gate-feedback {
   padding: 0.4rem 0.8rem; border-radius: 4px; margin: 0.5rem 0;
   font-size: 0.85rem; line-height: 1.4;
 }
-.gate-feedback.success { background: #e8f5e9; color: #1b5e20; }
+.gate-feedback.success { background: #e3f0f8; color: #0072B2; }
 .gate-feedback.retry { background: #fff8e1; color: #e65100; }
 
 /* Step progress bar */
@@ -2483,7 +2529,7 @@ body[data-mode="discover"] .present-only { display: none !important; }
   width: 10px; height: 10px; border-radius: 50%;
   background: var(--border, #ccc);
 }
-.step-dot.completed { background: var(--ims-green, #2e7d32); }
+.step-dot.completed { background: var(--ims-green, #114B5F); }
 .step-dot.active { background: var(--ims-blue, #569BBD); box-shadow: 0 0 0 2px #569BBD40; }
 
 /* Step card locked state */
@@ -3396,12 +3442,12 @@ body[data-activity="true"] #data-panel {
 
 .activity-reveal {
   display: none;
-  background: #f0faf0;
-  border-left: 3px solid #2e7d32;
+  background: #f0f7fb;
+  border-left: 3px solid var(--ims-blue, #569BBD);
   padding: 0.5rem 0.75rem;
   border-radius: 0 4px 4px 0;
   font-size: 0.85rem;
-  color: #1b5e20;
+  color: #114B5F;
 }
 
 .activity-reveal.open {

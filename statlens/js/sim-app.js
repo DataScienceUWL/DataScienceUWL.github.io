@@ -13,10 +13,9 @@ import * as d3Selection from 'd3-selection';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { drawSpike } from './spike.js';
-import { renderSimPills, formatMechStat, drawMiniBoxplot, prefersReducedMotion } from './chart-utils.js';
-import { initPlayPause, setupFileInput, initHelp, initMechanismCollapse, animateDropToChart, collapseDataPanel, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from './page-utils.js';
+import { renderSimPills, formatMechStat, drawMiniBoxplot, morphMiniBoxplot, prefersReducedMotion, hasD3Transition } from './chart-utils.js';
+import { initPlayPause, initHelp, initMechanismCollapse, animateDropToChart, flyDataStream, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle, initDataPanel } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
-import { rowsToCSV, downloadCSV } from './csv-parser.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
 /**
  * @typedef {object} SimConfig
@@ -45,12 +44,6 @@ export function initSimPage(config) {
   const seedNotice = document.getElementById('seed-notice');
   const dataSummary = document.getElementById('data-summary');
   const dataPreview = document.getElementById('data-preview');
-  const pasteArea = /** @type {HTMLTextAreaElement} */ (document.getElementById('paste-area'));
-  const loadPastedBtn = document.getElementById('load-pasted');
-  const clearBtn = document.getElementById('clear-btn');
-  const saveBtn = document.getElementById('save-btn');
-  const datasetSelect = /** @type {HTMLSelectElement} */ (document.getElementById('dataset-select'));
-  const datasetDesc = document.getElementById('dataset-desc');
   const bootStatSelect = /** @type {HTMLSelectElement} */ (document.getElementById('boot-stat'));
 
   // Bootstrap stat functions keyed by select value
@@ -73,8 +66,6 @@ export function initSimPage(config) {
   const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
     document.querySelectorAll('.gen-btn'));
 
-  // Data panel (for collapse after data loads)
-  const dataPanel = document.getElementById('data-panel');
   // Controls section (for sticky + expert toggle)
   const controlsSection = document.getElementById('controls');
 
@@ -94,6 +85,11 @@ export function initSimPage(config) {
   const originalContentEl = document.getElementById('original-sample-content');
   const resampleContentEl = document.getElementById('resample-content');
   const bootstrapSampleEl = document.getElementById('bootstrap-sample');
+
+  // Move mechanism description inside the resample panel so it appears under that half
+  if (mechanismDescEl && bootstrapSampleEl) {
+    bootstrapSampleEl.appendChild(mechanismDescEl);
+  }
   const origNEl = document.getElementById('orig-n');
   const origMeanEl = document.getElementById('orig-mean');
   const resampleMeanEl = document.getElementById('resample-mean');
@@ -107,8 +103,18 @@ export function initSimPage(config) {
   const CHIP_THRESHOLD = 30;
   /** @type {'summary'|'histogram'} */
   let resampleViewMode = 'summary';
+  /** Whether the view mode was explicitly chosen by the user (overrides auto-default). */
+  let resampleViewExplicit = false;
   /** @type {number[]} */
   let lastResample = [];
+  /** Cached original-sample histogram result for morph animation (large-n). */
+  /** @type {{ bins: ReturnType<typeof computeBins>['bins'], thresholds: number[], numBins: number } | null} */
+  let origHistCache = null;
+  /** Cached original proportion counts for proportion bar morph. */
+  /** @type {{ successes: number, failures: number, pHat: number } | null} */
+  let origPropCache = null;
+  /** Duration (ms) of last two-group boxplot morph animation. */
+  let twoGroupMorphMs = 0;
   /** Whether the last generate action was +1 (for persistent highlight). */
   let lastWasSingle = false;
   /** Whether the mechanism strip has been initialized (deferred to first generate). */
@@ -146,9 +152,12 @@ export function initSimPage(config) {
   /** Indices of batch-added dots for +10 highlight, or null. */
   /** @type {Set<number>|null} */
   let batchHighlightIndices = null;
-  /** Previous histogram bin counts for stacked delta highlight. */
+  /** Previous histogram bin counts for stacked delta highlight (batch only). */
   /** @type {number[]|null} */
   let prevBinCounts = null;
+  /** New stat value for single-value histogram highlight (+1 case). */
+  /** @type {number|null} */
+  let lastHighlightValue = null;
   /** User's chart type preference: 'auto' (dotplot ≤200, histogram >200), 'dotplot', or 'histogram'. */
   /** @type {'auto'|'dotplot'|'histogram'} */
   let chartType = 'auto';
@@ -186,6 +195,7 @@ export function initSimPage(config) {
           lastStatIndex = -1;
           batchHighlightIndices = null;
           prevBinCounts = null;
+          lastHighlightValue = null;
           renderChart(allStats, lastCI, lastObserved, lastDirection);
         }
       },
@@ -233,6 +243,7 @@ export function initSimPage(config) {
           lastStatIndex = -1;
           batchHighlightIndices = null;
           prevBinCounts = null;
+          lastHighlightValue = null;
           renderChart(allStats, lastCI, lastObserved, lastDirection);
         }
       },
@@ -369,6 +380,7 @@ export function initSimPage(config) {
           lastStatIndex = -1;
           batchHighlightIndices = null;
           prevBinCounts = null;
+          lastHighlightValue = null;
           renderChart(allStats, lastCI, lastObserved, lastDirection);
         }
       });
@@ -432,14 +444,12 @@ export function initSimPage(config) {
     seedNotice.textContent = `Seed: ${urlSeed}`;
   }
 
-  // Apply URL params
-  // Apply inline ?data= only if no ?dataset= (dataset auto-select handles that case)
-  if (urlParams.data && !urlParams.dataset) {
-    data1 = urlParams.data;
-    showDataLoaded();
-  }
+  // Apply URL params (data loading is now handled by initDataPanel)
   if (urlParams.ci && ciSelect) {
     ciSelect.value = String(urlParams.ci);
+  }
+  if (urlParams.stat && bootStatSelect) {
+    bootStatSelect.value = urlParams.stat;
   }
 
   // ─── Variable selector helpers ───
@@ -623,54 +633,6 @@ export function initSimPage(config) {
       }
   }
 
-  if (loadPastedBtn && pasteArea) {
-    loadPastedBtn.addEventListener('click', () => {
-      loadTextData(pasteArea.value);
-    });
-  }
-
-  const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
-  if (fileInput) {
-    setupFileInput(fileInput, (text, filename) => {
-      if (pasteArea) pasteArea.value = text;
-      currentSourceName = (filename || 'data').replace(/\.\w+$/, '');
-      loadTextData(text);
-    });
-  }
-
-  if (clearBtn) {
-    clearBtn.addEventListener('click', () => {
-      data1 = [];
-      data2 = [];
-      resetSimulation();
-      hideVarSelector();
-      if (pasteArea) pasteArea.value = '';
-      if (dataPreview) dataPreview.hidden = true;
-      if (dataSummary) dataSummary.textContent = '\u2014';
-      for (const btn of genBtns) btn.disabled = true;
-      if (mechanismStrip) mechanismStrip.hidden = true;
-      if (successSelector) successSelector.hidden = true;
-      if (hypothesisDisplay) hypothesisDisplay.hidden = true;
-      const groupOrderEl = document.getElementById('group-order');
-      if (groupOrderEl) groupOrderEl.hidden = true;
-      announce('Data cleared.');
-    });
-  }
-
-  // ── Save ──
-  if (saveBtn) {
-    saveBtn.addEventListener('click', () => {
-      const text = pasteArea?.value?.trim();
-      if (!text) {
-        announce('No data to save.');
-        return;
-      }
-      const safeName = currentSourceName.replace(/[^a-zA-Z0-9_-]/g, '_');
-      downloadCSV(text, `${safeName}.csv`);
-      announce('Data saved.');
-    });
-  }
-
   // ── Summary input (proportion pages) ──
   const loadSummaryBtn = document.getElementById('load-summary');
   if (loadSummaryBtn && config.proportion) {
@@ -719,6 +681,7 @@ export function initSimPage(config) {
 
         if (successSelector) successSelector.hidden = true;
         showDataLoaded();
+        dataApi.triggerPostLoad();
         announce(`Loaded: ${group1Name} ${x1}/${n1}, ${group2Name} ${x2}/${n2}.`);
       } else {
         // One-proportion summary: successes + n
@@ -747,6 +710,7 @@ export function initSimPage(config) {
 
         if (successSelector) successSelector.hidden = true;
         showDataLoaded();
+        dataApi.triggerPostLoad();
         announce(`Loaded: n = ${n}, successes = ${k}.`);
       }
     });
@@ -803,11 +767,7 @@ export function initSimPage(config) {
     resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
     // Mechanism strip is deferred until first generate click (see generateSamples)
 
-    // Collapse data panel to compact summary bar
-    collapseDataPanel(dataPanel, currentDatasetJSON);
-
-    // Make controls sticky on desktop
-    controlsSection?.classList.add('sticky');
+    // Note: data panel collapse and sticky controls are handled by initDataPanel's postLoadUI
 
     // Show hypothesis display (randomization tests)
     if (config.mode === 'randomization' && (config.twoGroup || config.paired) && hypothesisDisplay) {
@@ -919,11 +879,14 @@ export function initSimPage(config) {
       opt.textContent = o;
       successOutcomeSelect.appendChild(opt);
     }
-    // Check URL param ?success= to pre-select the success outcome
+    // Check URL param ?success= first, then dataset context successLabel
     const urlSuccess = new URLSearchParams(location.search).get('success');
     if (urlSuccess && outcomes.includes(urlSuccess)) {
       successOutcomeSelect.value = urlSuccess;
       successOutcome = urlSuccess;
+    } else if (datasetContext.successLabel && outcomes.includes(datasetContext.successLabel)) {
+      successOutcomeSelect.value = datasetContext.successLabel;
+      successOutcome = datasetContext.successLabel;
     } else {
       successOutcome = outcomes[0];
     }
@@ -949,173 +912,113 @@ export function initSimPage(config) {
     });
   }
 
-  // ─── Dataset selector ───
+  // ─── Data panel (shared initDataPanel) ───
 
-  /**
-   * Resolve the path to the data/ directory from the current page.
-   * Uses the <base> href or infers from the CSS stylesheet link.
-   */
-  function dataPath(file) {
-    // Try to compute from the known CSS path (../../../css/style.css → ../../../data/)
-    const link = document.querySelector('link[rel="stylesheet"][href*="style.css"]');
-    if (link) {
-      const href = link.getAttribute('href');
-      const prefix = href.replace(/css\/style\.css$/, '');
-      return `${prefix}data/${file}`;
-    }
-    // Fallback: assume root-relative
-    return `/data/${file}`;
+  /** @param {any} ds */
+  function simDatasetFilter(ds) {
+    if (config.paired) return ds.type === 'paired';
+    if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) return ds.type === 'bootstrap_prop';
+    if (config.mode === 'bootstrap' && config.twoGroup && config.proportion) return ds.type === 'randomization_prop';
+    if (config.mode === 'bootstrap' && config.twoGroup) return ds.type === 'randomization';
+    if (config.mode === 'bootstrap') return ds.hasNumeric === true && ds.hasCategorical !== true && ds.type !== 'regression' && ds.type !== 'paired';
+    if (config.proportion) return ds.type === 'randomization_prop';
+    if (config.twoGroup) return ds.type === 'randomization';
+    return ds.type === 'randomization' || ds.type === 'randomization_prop';
   }
 
-  /** @type {Array<{id:string,name:string,description:string,type:string,chapter:string,n:number}>} */
-  let datasetIndex = [];
+  const dataApi = initDataPanel({
+    autoCollapse: true,
+    stickyControls: true,
+    showPreview: true,
+    datasetFilter: simDatasetFilter,
+    onDataset: (/** @type {any} */ ds) => {
+      resetSimulation();
+      hideVarSelector();
+      selectedVarName = '';
+      datasetContext = ds.context || {};
+      currentDatasetJSON = ds;
+      currentSourceName = ds.name || ds.id;
 
-  if (datasetSelect) {
-    fetch(dataPath('datasets.json'))
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((index) => {
-        const relevant = index.filter(ds => {
-          if (config.paired) return ds.type === 'paired';
-          if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) return ds.type === 'bootstrap_prop';
-          if (config.mode === 'bootstrap' && config.twoGroup && config.proportion) return ds.type === 'randomization_prop';
-          if (config.mode === 'bootstrap' && config.twoGroup) return ds.type === 'randomization';
-          if (config.mode === 'bootstrap') return ds.hasNumeric === true && ds.hasCategorical !== true && ds.type !== 'regression' && ds.type !== 'paired';
-          if (config.proportion) return ds.type === 'randomization_prop';
-          if (config.twoGroup) return ds.type === 'randomization';
-          return ds.type === 'randomization' || ds.type === 'randomization_prop';
-        });
-        datasetIndex = relevant;
-
-        for (const ds of relevant) {
-          const opt = document.createElement('option');
-          opt.value = ds.id;
-          opt.textContent = `${ds.name} (n = ${ds.n})`;
-          datasetSelect.appendChild(opt);
-        }
-
-        // Auto-select dataset from URL param (?dataset=NAME)
-        if (urlParams.dataset && relevant.some(ds => ds.id === urlParams.dataset)) {
-          datasetSelect.value = urlParams.dataset;
-          datasetSelect.dispatchEvent(new Event('change'));
-        }
-      })
-      .catch(() => {
-        if (datasetDesc) datasetDesc.textContent = 'Could not load datasets.';
-      });
-
-    datasetSelect.addEventListener('change', () => {
-      const id = datasetSelect.value;
-      if (!id) {
-        if (datasetDesc) datasetDesc.textContent = '';
-        return;
+      if (config.paired) {
+        const numVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'numeric');
+        if (numVars.length < 2) return;
+        group1Name = numVars[0].name;
+        group2Name = numVars[1].name;
+        data1 = ds.rows.map(/** @param {any} r */ r => r[numVars[0].name]).filter(/** @param {any} v */ v => isFinite(v));
+        data2 = ds.rows.map(/** @param {any} r */ r => r[numVars[1].name]).filter(/** @param {any} v */ v => isFinite(v));
+        const minLen = Math.min(data1.length, data2.length);
+        data1 = data1.slice(0, minLen);
+        data2 = data2.slice(0, minLen);
+      } else if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) {
+        const catVar = ds.variables.find(/** @param {any} v */ v => v.type === 'categorical');
+        if (!catVar) return;
+        rawOutcomes1 = ds.rows.map(/** @param {any} r */ r => r[catVar.name]);
+        rawOutcomes2 = [];
+        populateSuccessSelector([...new Set(rawOutcomes1)]);
+        encodeProportionData();
+      } else if (config.mode === 'bootstrap' && !config.twoGroup) {
+        const numVar = ds.variables.find(/** @param {any} v */ v => v.type === 'numeric');
+        if (!numVar) return;
+        data1 = ds.rows.map(/** @param {any} r */ r => r[numVar.name]).filter(/** @param {any} v */ v => isFinite(v));
+        data2 = [];
+      } else if (config.proportion) {
+        const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
+        if (catVars.length < 2) return;
+        const groupVar = catVars[0];
+        const outcomeVar = catVars[1];
+        const groups = [...new Set(ds.rows.map(/** @param {any} r */ r => r[groupVar.name]))];
+        const outcomes = [...new Set(ds.rows.map(/** @param {any} r */ r => r[outcomeVar.name]))];
+        group1Name = groups[0];
+        group2Name = groups[1];
+        rawOutcomes1 = ds.rows
+          .filter(/** @param {any} r */ r => r[groupVar.name] === groups[0])
+          .map(/** @param {any} r */ r => r[outcomeVar.name]);
+        rawOutcomes2 = ds.rows
+          .filter(/** @param {any} r */ r => r[groupVar.name] === groups[1])
+          .map(/** @param {any} r */ r => r[outcomeVar.name]);
+        populateSuccessSelector(outcomes);
+        encodeProportionData();
+      } else {
+        const catVar = ds.variables.find(/** @param {any} v */ v => v.type === 'categorical');
+        const numVar = ds.variables.find(/** @param {any} v */ v => v.type === 'numeric');
+        if (!catVar || !numVar) return;
+        const groups = [...new Set(ds.rows.map(/** @param {any} r */ r => r[catVar.name]))];
+        group1Name = groups[0];
+        group2Name = groups[1];
+        data1 = ds.rows
+          .filter(/** @param {any} r */ r => r[catVar.name] === groups[0])
+          .map(/** @param {any} r */ r => r[numVar.name])
+          .filter(/** @param {any} v */ v => isFinite(v));
+        data2 = ds.rows
+          .filter(/** @param {any} r */ r => r[catVar.name] === groups[1])
+          .map(/** @param {any} r */ r => r[numVar.name])
+          .filter(/** @param {any} v */ v => isFinite(v));
       }
-      const meta = datasetIndex.find(d => d.id === id);
-      if (meta && datasetDesc) {
-        datasetDesc.textContent = meta.description;
-      }
-      loadDataset(id);
-    });
-  }
 
-  /**
-   * Fetch and load a bundled dataset by ID.
-   * @param {string} id
-   */
-  function loadDataset(id) {
-    fetch(dataPath(`${id}.json`))
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((ds) => {
-        resetSimulation();
-        hideVarSelector();
-        selectedVarName = '';
-        datasetContext = ds.context || {};
-        currentDatasetJSON = ds;
-
-        if (config.paired) {
-          // Paired data: two numeric columns
-          const numVars = ds.variables.filter(v => v.type === 'numeric');
-          if (numVars.length < 2) return;
-          group1Name = numVars[0].name;
-          group2Name = numVars[1].name;
-          data1 = ds.rows.map(r => r[numVars[0].name]).filter(v => isFinite(v));
-          data2 = ds.rows.map(r => r[numVars[1].name]).filter(v => isFinite(v));
-          const minLen = Math.min(data1.length, data2.length);
-          data1 = data1.slice(0, minLen);
-          data2 = data2.slice(0, minLen);
-        } else if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) {
-          // One-sample bootstrap proportion: single categorical column → 0/1
-          const catVar = ds.variables.find(v => v.type === 'categorical');
-          if (!catVar) return;
-          rawOutcomes1 = ds.rows.map(r => r[catVar.name]);
-          rawOutcomes2 = [];
-          const outcomes = [...new Set(rawOutcomes1)];
-          populateSuccessSelector(outcomes);
-          encodeProportionData();
-        } else if (config.mode === 'bootstrap' && !config.twoGroup) {
-          // Single numeric variable — extract first numeric column
-          const numVar = ds.variables.find(v => v.type === 'numeric');
-          if (!numVar) return;
-          data1 = ds.rows.map(r => r[numVar.name]).filter(v => isFinite(v));
-          data2 = [];
-        } else if (config.proportion) {
-          // Two categorical variables: group + outcome → encode as 0/1
-          const catVars = ds.variables.filter(v => v.type === 'categorical');
-          if (catVars.length < 2) return;
-          const groupVar = catVars[0];
-          const outcomeVar = catVars[1];
-          const groups = [...new Set(ds.rows.map(r => r[groupVar.name]))];
-          const outcomes = [...new Set(ds.rows.map(r => r[outcomeVar.name]))];
-          group1Name = groups[0];
-          group2Name = groups[1];
-          rawOutcomes1 = ds.rows
-            .filter(r => r[groupVar.name] === groups[0])
-            .map(r => r[outcomeVar.name]);
-          rawOutcomes2 = ds.rows
-            .filter(r => r[groupVar.name] === groups[1])
-            .map(r => r[outcomeVar.name]);
-          populateSuccessSelector(outcomes);
-          encodeProportionData();
-        } else {
-          // Two-group: categorical grouping + numeric outcome
-          const catVar = ds.variables.find(v => v.type === 'categorical');
-          const numVar = ds.variables.find(v => v.type === 'numeric');
-          if (!catVar || !numVar) return;
-          const groups = [...new Set(ds.rows.map(r => r[catVar.name]))];
-          group1Name = groups[0];
-          group2Name = groups[1];
-          data1 = ds.rows
-            .filter(r => r[catVar.name] === groups[0])
-            .map(r => r[numVar.name])
-            .filter(v => isFinite(v));
-          data2 = ds.rows
-            .filter(r => r[catVar.name] === groups[1])
-            .map(r => r[numVar.name])
-            .filter(v => isFinite(v));
-        }
-
-        currentSourceName = ds.name || id;
-
-        showDataLoaded();
-        document.body.setAttribute('data-loaded', 'true');
-
-        // Populate editor with dataset as CSV
-        if (pasteArea && ds.rows && ds.variables) {
-          const cols = ds.variables.map(/** @param {any} v */ v => v.name);
-          pasteArea.value = rowsToCSV(ds.rows, cols);
-        }
-
-        announce(`${ds.name}.`);
-      })
-      .catch(() => {
-        announce('Failed to load dataset.');
-      });
-  }
+      showDataLoaded();
+      announce(`${ds.name}.`);
+    },
+    onRawText: (/** @type {string} */ text, /** @type {string} */ sourceName) => {
+      currentSourceName = sourceName || 'data';
+      loadTextData(text);
+    },
+    onClear: () => {
+      data1 = [];
+      data2 = [];
+      resampleViewExplicit = false;
+      resetSimulation();
+      hideVarSelector();
+      if (dataPreview) dataPreview.hidden = true;
+      if (dataSummary) dataSummary.textContent = '\u2014';
+      for (const btn of genBtns) btn.disabled = true;
+      if (mechanismStrip) mechanismStrip.hidden = true;
+      if (successSelector) successSelector.hidden = true;
+      if (hypothesisDisplay) hypothesisDisplay.hidden = true;
+      const groupOrderEl = document.getElementById('group-order');
+      if (groupOrderEl) groupOrderEl.hidden = true;
+      announce('Data cleared.');
+    },
+  });
 
   /** Map alternative hypothesis selection to tail direction. */
   function getDirection() {
@@ -1211,6 +1114,11 @@ export function initSimPage(config) {
         mechanismStrip.hidden = false;
         initMechanismCollapse(mechanismStrip);
         renderOriginalSample();
+        // Auto-default to histogram view for large numeric samples (unless user explicitly chose)
+        // Proportions use proportion bars in both views, so no need to switch
+        if (!resampleViewExplicit && !config.proportion && data1.length > CHIP_THRESHOLD) {
+          setResampleViewMode('histogram');
+        }
       } else if (config.twoGroup) {
         mechanismStrip.hidden = false;
         initMechanismCollapse(mechanismStrip);
@@ -1252,7 +1160,7 @@ export function initSimPage(config) {
           const stat = statFn(rs1) - statFn(rs2);
           allStats.push(stat);
         }
-        showTwoGroupMechanism(lastRs1, lastRs2, false, count === 1);
+        twoGroupMorphMs = showTwoGroupMechanism(lastRs1, lastRs2, false, count === 1);
       } else {
         // One-sample bootstrap
         for (let i = 0; i < count; i++) {
@@ -1276,17 +1184,17 @@ export function initSimPage(config) {
       // Track new data for highlight — always compute dot-level highlights
       if (count === 1) {
         lastStatIndex = allStats.length - 1;
+        // For histogram +1: pass the new value directly (no bin alignment issues)
+        lastHighlightValue = allStats[allStats.length - 1];
       } else {
+        lastHighlightValue = null;
         batchHighlightIndices = new Set();
         for (let j = prevLength; j < allStats.length; j++) {
           batchHighlightIndices.add(j);
         }
       }
-      if (allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
-        // Histogram mode: compute previous bin counts for stacked delta
-        // Must use EXACT same domain + thresholds as renderChart to align bins
-        // Include observedStat in domain — matches renderChart's domain logic
-        // (bootstrap mode has no observedStat; randomization paths declare it locally)
+      // Batch histogram delta: compute previous bin counts for stacked overlay
+      if (count > 1 && allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
         const domainVals = allStats;
         let lo = Math.min(...domainVals);
         let hi = Math.max(...domainVals);
@@ -1304,13 +1212,10 @@ export function initSimPage(config) {
         const histThresholds = config.proportion
           ? snappedPropThresholds(histSampleSize, fullDomain, allStats.length)
           : undefined;
-        // Bin the FULL dataset first to lock in bin edges
-        // Pass same numBins as renderChart to ensure identical bin edges
         const { bins: fullBins } = computeBins(allStats, {
           domain: fullDomain, thresholds: histThresholds,
           numBins: config.proportion ? undefined : userBinCount,
         });
-        // Extract interior edges so prev data bins with identical edges
         const lockedThresholds = fullBins.slice(1).map(b => b.x0);
         const prevStats = allStats.slice(0, prevLength);
         const { bins: prevBins } = computeBins(prevStats, {
@@ -1330,6 +1235,9 @@ export function initSimPage(config) {
         if (showOneSampleMech) {
           lastResample = lastResampleValues;
           mechAnimMs = showResample(lastResampleValues, false, true, !isAutoPlay);
+        } else if (config.twoGroup && !config.paired) {
+          // Two-group boxplot morph duration (returned from showTwoGroupMechanism above)
+          mechAnimMs = twoGroupMorphMs;
         }
         // For two-group, get the diff value element for drop animation
         const bootDiffEl = !showOneSampleMech
@@ -1376,14 +1284,16 @@ export function initSimPage(config) {
       // Highlights
       if (count === 1) {
         lastStatIndex = allStats.length - 1;
+        lastHighlightValue = allStats[allStats.length - 1];
       } else {
+        lastHighlightValue = null;
         batchHighlightIndices = new Set();
         for (let j = prevLength; j < allStats.length; j++) {
           batchHighlightIndices.add(j);
         }
       }
       // Histogram delta for batch
-      if (allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
+      if (count > 1 && allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
         const rVals = [...allStats, observedStat];
         let rLo = Math.min(...rVals);
         let rHi = Math.max(...rVals);
@@ -1433,17 +1343,19 @@ export function initSimPage(config) {
         allStats.push(stat);
       }
 
-      showTwoGroupMechanism(lastG1, lastG2, false, count === 1);
+      twoGroupMorphMs = showTwoGroupMechanism(lastG1, lastG2, false, count === 1);
       // Always compute dot-level highlights
       if (count === 1) {
         lastStatIndex = allStats.length - 1;
+        lastHighlightValue = allStats[allStats.length - 1];
       } else {
+        lastHighlightValue = null;
         batchHighlightIndices = new Set();
         for (let j = prevLength; j < allStats.length; j++) {
           batchHighlightIndices.add(j);
         }
       }
-      if (allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
+      if (count > 1 && allStats.length > DOTPLOT_AUTO_THRESHOLD && prevLength > 0) {
         // Histogram mode: compute previous bin counts for stacked delta
         const rVals = observedStat != null ? [...allStats, observedStat] : allStats;
         let rLo = Math.min(...rVals);
@@ -1481,7 +1393,8 @@ export function initSimPage(config) {
       if (count === 1) {
         // The diff value gets highlight-last via showTwoGroupMechanism(…, highlight=true)
         const mechDiffEl = document.querySelector('#mech-resample-content .mech-diff');
-        // Brief pause for mechanism to update, then render chart + drop
+        // Wait for boxplot morph to finish, then render chart + drop
+        const randDelay = Math.max(150, twoGroupMorphMs);
         pendingChartTimer = setTimeout(() => {
           pendingChartTimer = null;
           renderChart(allStats, null, observedStat, direction);
@@ -1489,7 +1402,7 @@ export function initSimPage(config) {
           if (dropSourceEl && chartContainer) {
             animateDropToChart(/** @type {HTMLElement} */ (dropSourceEl), chartContainer);
           }
-        }, 150);
+        }, randDelay);
       } else {
         renderChart(allStats, null, observedStat, direction);
       }
@@ -1546,18 +1459,22 @@ export function initSimPage(config) {
     }
 
     if (config.proportion && !config.twoGroup) {
-      // One-sample proportion: text counts
+      // One-sample proportion: visual proportion bar
       const successes = data1.filter(v => v === 1).length;
       const failures = data1.length - successes;
       const pHat = mean(data1);
+      const pct = (pHat * 100).toFixed(1);
+      origPropCache = { successes, failures, pHat };
       const container = document.createElement('div');
-      container.className = 'prop-summary';
+      container.className = 'prop-bar-wrap';
       container.setAttribute('role', 'img');
       container.setAttribute('aria-label', `Original sample: ${successes} successes, ${failures} failures, p-hat = ${formatStat(pHat, dataPrecision, 'proportion')}`);
       container.innerHTML = `
-        <span class="prop-count"><strong>${successes}</strong> S</span>
-        <span class="prop-count"><strong>${failures}</strong> F</span>
-        <span class="prop-count">p̂ = ${formatStat(pHat, dataPrecision, 'proportion')}</span>
+        <div class="mech-prop-bar mech-prop-bar-lg">
+          <div class="mech-prop-fill" style="width:${pct}%"></div>
+          <span class="mech-prop-label-left">${successes} S</span>
+          <span class="mech-prop-label-right">${failures} F</span>
+        </div>
       `;
       originalContentEl.appendChild(container);
     } else if (data1.length <= CHIP_THRESHOLD) {
@@ -1576,14 +1493,20 @@ export function initSimPage(config) {
       }
       originalContentEl.appendChild(container);
     } else {
-      // Large dataset: show mini histogram
+      // Large dataset: show mini histogram + cache bins for morph animation
+      const nBins = Math.min(Math.ceil(Math.sqrt(data1.length)), 40);
+      const binResult = computeBins(data1, { numBins: nBins });
+      // Extract explicit thresholds from computed bin edges
+      const thresholds = binResult.bins.slice(1).map(b => b.x0);
+      origHistCache = { bins: binResult.bins, thresholds, numBins: nBins };
+
       const container = document.createElement('div');
       container.className = 'mini-chart';
       drawHistogram(container, data1, {
         id: 'orig-hist',
         xLabel: '',
         titleText: 'Original sample distribution',
-        numBins: Math.min(Math.ceil(Math.sqrt(data1.length)), 40),
+        numBins: nBins,
         animate: false,
         margin: { top: 5, right: 10, bottom: 25, left: 35 },
         showExport: false,
@@ -1727,9 +1650,77 @@ export function initSimPage(config) {
    * @param {boolean} [highlight] - Highlight diff value (+1 animation, auto-fades via CSS)
    */
   function showTwoGroupMechanism(g1, g2, _flash = false, highlight = false) {
-    if (!mechResampleContent || !mechanismDescEl) return;
-    mechResampleContent.innerHTML = buildTwoGroupHTML(g1, g2, highlight);
-    renderTwoGroupBoxplots(g1, g2, 'resamp', highlight);
+    if (!mechResampleContent || !mechanismDescEl) return 0;
+
+    const statFn = config.mode === 'bootstrap' ? getBootstrapStat().fn : mean;
+    const fmtType = config.proportion ? 'proportion' : undefined;
+
+    // Can we morph existing boxplots? (non-proportion, single-step, containers exist)
+    const canMorph = !config.proportion && highlight
+      && document.getElementById('mech-box-resamp-1')?.querySelector('svg.mech-minibox')
+      && document.getElementById('mech-box-resamp-2')?.querySelector('svg.mech-minibox');
+
+    let morphMs = 0;
+
+    if (canMorph && mechOriginalContent) {
+      // Snap boxplots to original values as a faded ghost
+      const box1 = /** @type {HTMLElement} */ (document.getElementById('mech-box-resamp-1'));
+      const box2 = /** @type {HTMLElement} */ (document.getElementById('mech-box-resamp-2'));
+      const domainOpt = twoGroupBoxDomain ?? undefined;
+      drawMiniBoxplot(box1, data1, { domain: domainOpt, meanValue: statFn(data1) });
+      drawMiniBoxplot(box2, data2, { domain: domainOpt, meanValue: statFn(data2) });
+
+      // Ghost: show original at low opacity
+      const svg1 = box1.querySelector('svg');
+      const svg2 = box2.querySelector('svg');
+      if (svg1) svg1.style.opacity = '0.25';
+      if (svg2) svg2.style.opacity = '0.25';
+
+      // Fade stat text too
+      const statSpans = mechResampleContent.querySelectorAll('.mech-group-stat');
+      const diffSpan = mechResampleContent.querySelector('.mech-stat-value');
+      statSpans.forEach(s => { /** @type {HTMLElement} */ (s).style.opacity = '0.2'; });
+      if (diffSpan) /** @type {HTMLElement} */ (diffSpan).style.opacity = '0.2';
+
+      // Fire flying dots from original → resample (over the ghost)
+      flyDataStream(mechOriginalContent, mechResampleContent);
+
+      // After ghost is visible and dots are mid-flight, morph + solidify
+      setTimeout(() => {
+        // Fade SVGs to full opacity during morph
+        if (svg1) { svg1.style.transition = 'opacity 400ms ease'; svg1.style.opacity = '1'; }
+        if (svg2) { svg2.style.transition = 'opacity 400ms ease'; svg2.style.opacity = '1'; }
+
+        const boxOpts1 = { domain: domainOpt, meanValue: statFn(g1), highlightMean: true };
+        const boxOpts2 = { domain: domainOpt, meanValue: statFn(g2), highlightMean: true };
+        morphMiniBoxplot(box1, g1, boxOpts1);
+        morphMiniBoxplot(box2, g2, boxOpts2);
+
+        // Update stat text
+        const statSymbol = '<span class="x-bar">x</span>';
+        if (statSpans[0]) statSpans[0].innerHTML = `n = ${g1.length}, ${statSymbol} = ${formatStat(statFn(g1), dataPrecision, fmtType)}`;
+        if (statSpans[1]) statSpans[1].innerHTML = `n = ${g2.length}, ${statSymbol} = ${formatStat(statFn(g2), dataPrecision, fmtType)}`;
+        statSpans.forEach(s => {
+          /** @type {HTMLElement} */ (s).style.transition = 'opacity 250ms ease';
+          /** @type {HTMLElement} */ (s).style.opacity = '1';
+        });
+
+        // Update diff
+        const diffVal = formatStat(statFn(g1) - statFn(g2), dataPrecision, fmtType);
+        if (diffSpan) {
+          diffSpan.textContent = diffVal;
+          diffSpan.classList.add('highlight-last');
+          /** @type {HTMLElement} */ (diffSpan).style.transition = 'opacity 250ms ease';
+          /** @type {HTMLElement} */ (diffSpan).style.opacity = '1';
+        }
+      }, 200);
+
+      morphMs = 200 + 400; // ghost pause + morph duration
+    } else {
+      // Full rebuild (first time or batch)
+      mechResampleContent.innerHTML = buildTwoGroupHTML(g1, g2, highlight);
+      renderTwoGroupBoxplots(g1, g2, 'resamp', highlight);
+    }
 
     if (config.mode === 'bootstrap') {
       mechanismDescEl.textContent = 'Resample each group independently with replacement';
@@ -1737,6 +1728,7 @@ export function initSimPage(config) {
       mechanismDescEl.textContent = 'Shuffle group labels · same values, new grouping';
     }
     mechanismDescEl.hidden = false;
+    return morphMs;
   }
 
   /**
@@ -1754,9 +1746,14 @@ export function initSimPage(config) {
     if (!resampleContentEl || !bootstrapSampleEl) return 0;
     bootstrapSampleEl.hidden = false;
 
+    // Fire flying dots from original → resample on +1
+    if (highlightStat && flyingAnim && originalContentEl && resampleContentEl) {
+      flyDataStream(originalContentEl, resampleContentEl);
+    }
+
     let animMs = 0;
     if (resampleViewMode === 'histogram') {
-      showResampleHistogram(resampleValues);
+      animMs = showResampleHistogram(resampleValues, highlightStat && flyingAnim);
     } else {
       animMs = showResampleSummary(resampleValues, highlightStat && flyingAnim);
     }
@@ -1764,24 +1761,42 @@ export function initSimPage(config) {
     if (resampleMeanEl) {
       const stat = getBootstrapStat();
       const resampleVal = stat.fn(resampleValues);
-      resampleMeanEl.textContent = config.proportion
+      const statKey = bootStatSelect?.value ?? 'mean';
+
+      // Build symbol HTML with proper overline for x-bar
+      let symHTML;
+      if (config.proportion) {
+        symHTML = 'p\u0302';
+      } else if (statKey === 'mean') {
+        symHTML = '<span class="x-bar">x</span>';
+      } else if (statKey === 'median') {
+        symHTML = 'median';
+      } else if (statKey === 'sd') {
+        symHTML = 's';
+      } else {
+        symHTML = stat.label.replace('Sample ', '').toLowerCase();
+      }
+
+      const valText = config.proportion
         ? formatStat(resampleVal, dataPrecision, 'proportion')
         : formatStat(resampleVal, dataPrecision);
-      // Orange highlight only on +1 to visually link to persistent dot
-      // Force-restart animation by removing and re-adding the class
+
+      // Update the value span with symbol + value, styled orange
+      resampleMeanEl.innerHTML = `${symHTML} = ${valText}`;
+      resampleMeanEl.style.color = '#D35400';
+      resampleMeanEl.style.fontWeight = '700';
+
+      // Orange highlight class for +1 (used by dot-drop animation source)
       resampleMeanEl.classList.remove('highlight-last');
       if (highlightStat) {
-        void resampleMeanEl.offsetWidth; // reflow to restart animation
+        void resampleMeanEl.offsetWidth;
         resampleMeanEl.classList.add('highlight-last');
       }
+
+      // Update the label span: just "Resample" in the default color
       const statLabelEl = document.getElementById('resample-stat-label');
       if (statLabelEl) {
-        if (config.proportion) {
-          statLabelEl.textContent = 'Resample proportion';
-        } else {
-          const shortName = stat.label.replace('Sample ', '').toLowerCase();
-          statLabelEl.textContent = `Resample ${shortName}`;
-        }
+        statLabelEl.textContent = config.mode === 'randomization' ? 'Shuffled' : 'Resample';
       }
     }
     // Mechanism description: summarize what "with replacement" did
@@ -1825,20 +1840,9 @@ export function initSimPage(config) {
   function showResampleSummary(resampleValues, stagger = false) {
     resampleContentEl.innerHTML = '';
 
-    // Proportion mode: just show counts and p̂
+    // Proportion mode: use proportion bar (same as histogram view)
     if (config.proportion && !config.twoGroup) {
-      const successes = resampleValues.filter(v => v === 1).length;
-      const failures = resampleValues.length - successes;
-      const pHat = mean(resampleValues);
-      const container = document.createElement('div');
-      container.className = 'prop-summary';
-      container.innerHTML = `
-        <span class="prop-count"><strong>${successes}</strong> S</span>
-        <span class="prop-count"><strong>${failures}</strong> F</span>
-        <span class="prop-count">p̂ = ${formatStat(pHat, dataPrecision, 'proportion')}</span>
-      `;
-      resampleContentEl.appendChild(container);
-      return 0;
+      return showResamplePropBar(resampleValues, stagger);
     }
 
     /** @type {Map<number, number>} */
@@ -1994,22 +1998,333 @@ export function initSimPage(config) {
 
   /**
    * Histogram view: mini histogram of the resample values.
+   * When origHistCache is available and morph=true, uses shared bin edges
+   * and transitions bars from original heights to resample heights, with
+   * brief color highlights on bars that grew or shrank.
+   * Also draws a dashed mean line on the resample histogram.
    * @param {number[]} resampleValues
+   * @param {boolean} [morph=false] - Animate bar morph from original heights (+1 only)
+   * @returns {number} Animation duration in ms (0 if no morph)
    */
-  function showResampleHistogram(resampleValues) {
+  /**
+   * Show resample as a proportion bar with morph animation from original proportions.
+   * @param {number[]} resampleValues
+   * @param {boolean} [animate=false] - Animate bar width transition (+1 only)
+   * @returns {number} Animation duration in ms
+   */
+  function showResamplePropBar(resampleValues, animate = false) {
+    const successes = resampleValues.filter(v => v === 1).length;
+    const failures = resampleValues.length - successes;
+    const pHat = mean(resampleValues);
+    const pct = (pHat * 100).toFixed(1);
+
+    const shouldAnimate = animate && origPropCache && !prefersReducedMotion();
+    const origPct = origPropCache ? (origPropCache.pHat * 100).toFixed(1) : pct;
+
+    const container = document.createElement('div');
+    container.className = 'prop-bar-wrap';
+    container.setAttribute('role', 'img');
+    container.setAttribute('aria-label', `Resample: ${successes} successes, ${failures} failures`);
+
+    const fill = document.createElement('div');
+    fill.className = 'mech-prop-fill';
+    // Start at original width if animating, else jump to final
+    fill.style.width = shouldAnimate ? `${origPct}%` : `${pct}%`;
+
+    const bar = document.createElement('div');
+    bar.className = 'mech-prop-bar mech-prop-bar-lg';
+    bar.appendChild(fill);
+
+    const labelL = document.createElement('span');
+    labelL.className = 'mech-prop-label-left';
+    labelL.textContent = `${successes} S`;
+    bar.appendChild(labelL);
+
+    const labelR = document.createElement('span');
+    labelR.className = 'mech-prop-label-right';
+    labelR.textContent = `${failures} F`;
+    bar.appendChild(labelR);
+
+    container.appendChild(bar);
+    resampleContentEl.appendChild(container);
+
+    const MORPH_MS = 400;
+    const GHOST_PAUSE = 200;
+    if (shouldAnimate) {
+      // Ghost: show original proportion at low opacity
+      bar.style.opacity = '0.25';
+
+      // Hide stat text and labels during ghost phase
+      const mechStatEl = resampleMeanEl?.closest('.mechanism-stat');
+      if (mechStatEl) {
+        /** @type {HTMLElement} */ (mechStatEl).style.opacity = '0';
+        /** @type {HTMLElement} */ (mechStatEl).style.transition = 'opacity 250ms ease';
+      }
+      labelL.style.opacity = '0';
+      labelR.style.opacity = '0';
+
+      // After ghost pause, solidify and morph
+      setTimeout(() => {
+        bar.style.transition = `opacity ${MORPH_MS}ms ease`;
+        bar.style.opacity = '1';
+        fill.style.transition = `width ${MORPH_MS}ms ease-out`;
+        fill.style.width = `${pct}%`;
+
+        // Update and reveal labels + stat text after morph
+        labelL.textContent = `${successes} S`;
+        labelR.textContent = `${failures} F`;
+        labelL.style.transition = 'opacity 200ms ease';
+        labelR.style.transition = 'opacity 200ms ease';
+        labelL.style.opacity = '1';
+        labelR.style.opacity = '1';
+
+        if (mechStatEl) {
+          setTimeout(() => {
+            /** @type {HTMLElement} */ (mechStatEl).style.opacity = '1';
+          }, MORPH_MS);
+        }
+      }, GHOST_PAUSE);
+
+      return GHOST_PAUSE + MORPH_MS + 250;
+    }
+    return 0;
+  }
+
+  function showResampleHistogram(resampleValues, morph = false) {
     resampleContentEl.innerHTML = '';
+
+    // Proportion mode: use proportion bar instead of histogram
+    if (config.proportion && !config.twoGroup) {
+      return showResamplePropBar(resampleValues, morph);
+    }
+
     const container = document.createElement('div');
     container.className = 'mini-chart';
-    drawHistogram(container, resampleValues, {
+
+    const shouldMorph = morph && origHistCache && !prefersReducedMotion();
+    const nBins = origHistCache ? origHistCache.numBins : Math.min(Math.ceil(Math.sqrt(resampleValues.length)), 40);
+    // Use same thresholds as original so bars align for visual comparison
+    const thresholds = origHistCache ? origHistCache.thresholds : undefined;
+
+    const result = drawHistogram(container, resampleValues, {
       id: 'resample-hist',
       xLabel: '',
       titleText: 'Bootstrap resample distribution',
-      numBins: Math.min(Math.ceil(Math.sqrt(resampleValues.length)), 40),
+      numBins: nBins,
+      thresholds,
       animate: false,
-      margin: { top: 5, right: 10, bottom: 25, left: 35 },
+      margin: { top: 5, right: 10, bottom: 38, left: 35 },
       showExport: false,
     });
     resampleContentEl.appendChild(container);
+
+    // Draw resample statistic line on the histogram (dashed orange)
+    // When morphing, start hidden and reveal after bars finish transitioning
+    /** @type {SVGElement|null} */
+    let meanLineGroup = null;
+    if (result && result.xScale && result.frame) {
+      const stat = getBootstrapStat();
+      const resampleVal = stat.fn(resampleValues);
+      const xPos = result.xScale(resampleVal);
+      const fh = result.frame.height;
+      const overlays = d3Selection.select(result.frame.inner).select('.overlays');
+      const g = overlays.append('g')
+        .attr('class', 'resample-mean-group')
+        .style('opacity', shouldMorph ? '0' : '1');
+      meanLineGroup = /** @type {SVGElement} */ (g.node());
+      g.append('line')
+        .attr('x1', xPos).attr('x2', xPos)
+        .attr('y1', 0).attr('y2', fh)
+        .attr('stroke', '#D35400')
+        .attr('stroke-width', 3)
+        .attr('stroke-dasharray', '6,3');
+      // Symbol label below x-axis, centered on the dashed line
+      const statKey = bootStatSelect?.value ?? 'mean';
+      const labelY = fh + 22;
+      const fontSize = 1.15; // em
+      if (statKey === 'mean' && !config.proportion) {
+        // Draw x with a manually positioned overline (combining char is unreliable in SVG)
+        const xText = g.append('text')
+          .attr('x', xPos).attr('y', labelY)
+          .attr('text-anchor', 'middle')
+          .attr('dominant-baseline', 'central')
+          .attr('fill', '#D35400')
+          .attr('stroke', 'white')
+          .attr('stroke-width', 3)
+          .attr('paint-order', 'stroke')
+          .attr('font-size', `${fontSize}em`)
+          .attr('font-weight', '700')
+          .text('x');
+        // Overline: white shadow for contrast, then colored bar
+        const barY = labelY - 9;
+        g.append('line')
+          .attr('x1', xPos - 7).attr('x2', xPos + 7)
+          .attr('y1', barY).attr('y2', barY)
+          .attr('stroke', 'white')
+          .attr('stroke-width', 5)
+          .attr('stroke-linecap', 'round');
+        g.append('line')
+          .attr('x1', xPos - 6).attr('x2', xPos + 6)
+          .attr('y1', barY).attr('y2', barY)
+          .attr('stroke', '#D35400')
+          .attr('stroke-width', 2)
+          .attr('stroke-linecap', 'round');
+      } else {
+        const sym = config.proportion ? 'p\u0302'
+          : statKey === 'median' ? 'M\u0303'
+          : statKey === 'sd' ? 's' : stat.label.split(' ').pop() || '';
+        g.append('text')
+          .attr('x', xPos).attr('y', labelY)
+          .attr('text-anchor', 'middle')
+          .attr('dominant-baseline', 'central')
+          .attr('fill', '#D35400')
+          .attr('stroke', 'white')
+          .attr('stroke-width', 3)
+          .attr('paint-order', 'stroke')
+          .attr('font-size', `${fontSize}em`)
+          .attr('font-weight', '700')
+          .text(sym);
+      }
+    }
+
+    if (!shouldMorph || !result || !origHistCache) return 0;
+
+    // Hide the resample stat text during morph — it will be revealed after bars finish
+    const mechStatEl = resampleMeanEl?.closest('.mechanism-stat');
+    if (mechStatEl) {
+      /** @type {HTMLElement} */ (mechStatEl).style.opacity = '0';
+      /** @type {HTMLElement} */ (mechStatEl).style.transition = 'opacity 250ms ease';
+    }
+
+    // Build a map of original bin counts keyed by bin x0
+    /** @type {Map<number, number>} */
+    const origCounts = new Map();
+    for (const b of origHistCache.bins) {
+      origCounts.set(b.x0, b.length);
+    }
+
+    // Morph animation using CSS transitions on SVG rect attributes
+    const svg = container.querySelector('svg');
+    if (!svg) return 0;
+    const rects = /** @type {SVGRectElement[]} */ ([...svg.querySelectorAll('.data rect')]);
+    const { yScale, frame } = result;
+    if (!yScale || !frame) return 0;
+    const innerHeight = frame.height;
+
+    const MORPH_MS = 450;
+    const FADE_MS = 600;
+    const GROW_FILL = '#2A6496'; // dark blue — bar grew (more values landed here)
+    const SHRINK_FILL = '#B8D4E8'; // light blue — bar shrank (fewer values here)
+    const DEFAULT_FILL = '#569BBD80';
+
+    // Record final (resample) positions, then snap to original positions as ghost
+    /** @type {Array<{rect: SVGRectElement, finalY: string, finalH: string, grew: boolean, shrank: boolean}>} */
+    const morphData = [];
+
+    for (const rect of rects) {
+      const finalY = rect.getAttribute('y') || '0';
+      const finalH = rect.getAttribute('height') || '0';
+
+      // Parse bin x0 from the aria-label ("x0 to x1: count")
+      const label = rect.getAttribute('aria-label') || '';
+      const x0Match = label.match(/^([\d.e+-]+)\s+to/);
+      const x0 = x0Match ? parseFloat(x0Match[1]) : NaN;
+
+      const origCount = isNaN(x0) ? 0 : (origCounts.get(x0) ?? 0);
+      const resampleBin = result.bins.find(b => Math.abs(b.x0 - x0) < 1e-10);
+      const newCount = resampleBin ? resampleBin.length : 0;
+      const grew = newCount > origCount;
+      const shrank = newCount < origCount;
+
+      // Snap bar to original height
+      const origY = origCount > 0 ? yScale(origCount) : innerHeight;
+      const origH = innerHeight - origY;
+      rect.setAttribute('y', String(origY));
+      rect.setAttribute('height', String(Math.max(0, origH)));
+
+      morphData.push({ rect, finalY, finalH, grew, shrank });
+    }
+
+    // Ghost: show bars at low opacity (faded copy of original)
+    const GHOST_OPACITY = 0.25;
+    const svgNode = /** @type {SVGSVGElement} */ (svg);
+    svgNode.style.opacity = String(GHOST_OPACITY);
+
+    /** @type {Array<{rect: SVGRectElement, startY: number, startH: number, endY: number, endH: number, grew: boolean, shrank: boolean}>} */
+    const animItems = morphData.map(({ rect, finalY, finalH, grew, shrank }) => ({
+      rect,
+      startY: parseFloat(rect.getAttribute('y') || '0'),
+      startH: parseFloat(rect.getAttribute('height') || '0'),
+      endY: parseFloat(finalY),
+      endH: parseFloat(finalH),
+      grew, shrank,
+    }));
+
+    // Delay morph start so ghost is visible briefly while dots fly
+    const GHOST_PAUSE = 200;
+    setTimeout(() => {
+      // Apply highlight colors at morph start
+      for (const { rect, grew, shrank } of animItems) {
+        if (grew) rect.setAttribute('fill', GROW_FILL);
+        else if (shrank) rect.setAttribute('fill', SHRINK_FILL);
+      }
+
+      const startTime = performance.now();
+      /** Ease-out cubic */
+      function easeOut(/** @type {number} */ t) { return 1 - Math.pow(1 - t, 3); }
+
+      function morphFrame(/** @type {number} */ now) {
+        const elapsed = now - startTime;
+        const t = Math.min(1, elapsed / MORPH_MS);
+        const e = easeOut(t);
+
+        // Morph bar geometry
+        for (const { rect, startY, startH, endY, endH } of animItems) {
+          const y = startY + (endY - startY) * e;
+          const h = startH + (endH - startH) * e;
+          rect.setAttribute('y', String(y));
+          rect.setAttribute('height', String(Math.max(0, h)));
+        }
+
+        // Solidify: ghost opacity → full opacity during morph
+        const opacity = GHOST_OPACITY + (1 - GHOST_OPACITY) * e;
+        svgNode.style.opacity = String(opacity);
+
+        if (t < 1) {
+          requestAnimationFrame(morphFrame);
+        } else {
+          svgNode.style.opacity = '1';
+          // Morph complete — reveal the mean line and stat text, then fade bar colors
+          if (meanLineGroup) {
+            meanLineGroup.style.transition = 'opacity 250ms ease';
+            meanLineGroup.style.opacity = '1';
+          }
+          if (mechStatEl) {
+            /** @type {HTMLElement} */ (mechStatEl).style.opacity = '1';
+          }
+          fadeColors();
+        }
+      }
+      requestAnimationFrame(morphFrame);
+    }, GHOST_PAUSE);
+
+    function fadeColors() {
+      // SVG fill IS a CSS presentation property, so CSS transition works here
+      for (const { rect, grew, shrank } of animItems) {
+        if (!grew && !shrank) continue;
+        rect.style.transition = `fill ${FADE_MS}ms ease`;
+        rect.setAttribute('fill', DEFAULT_FILL);
+      }
+      setTimeout(() => {
+        for (const { rect } of animItems) {
+          rect.style.transition = '';
+        }
+      }, FADE_MS);
+    }
+
+    // Return time until dot should drop: ghost pause + morph + brief pause after mean line
+    // (color fade continues in background but shouldn't delay the dot drop)
+    return GHOST_PAUSE + MORPH_MS + 300;
   }
 
   /**
@@ -2079,17 +2394,20 @@ export function initSimPage(config) {
       resampleContentEl.appendChild(summary);
     }
 
-    // Update stat value
+    // Update stat value: "Shuffled" (dark) + "x̄ = value" (orange)
     if (resampleMeanEl) {
       const resampleVal = mean(flippedDiffs);
-      resampleMeanEl.textContent = formatStat(resampleVal, dataPrecision);
+      const valText = formatStat(resampleVal, dataPrecision);
+      resampleMeanEl.innerHTML = `<span class="x-bar">x</span> = ${valText}`;
+      resampleMeanEl.style.color = '#D35400';
+      resampleMeanEl.style.fontWeight = '700';
       resampleMeanEl.classList.remove('highlight-last');
       if (highlightStat) {
         void resampleMeanEl.offsetWidth;
         resampleMeanEl.classList.add('highlight-last');
       }
       const statLabelEl = document.getElementById('resample-stat-label');
-      if (statLabelEl) statLabelEl.textContent = 'Shuffled mean';
+      if (statLabelEl) statLabelEl.textContent = 'Shuffled';
     }
 
     // Mechanism description
@@ -2108,18 +2426,34 @@ export function initSimPage(config) {
   }
 
   // Replace single toggle button with segmented control
+  /** @type {HTMLButtonElement|null} */
+  let btnSummary = null;
+  /** @type {HTMLButtonElement|null} */
+  let btnHistogram = null;
+
+  /**
+   * Switch resample view mode and update toggle UI.
+   * @param {'summary'|'histogram'} mode
+   */
+  function setResampleViewMode(mode) {
+    resampleViewMode = mode;
+    if (btnSummary) btnSummary.setAttribute('aria-pressed', String(mode === 'summary'));
+    if (btnHistogram) btnHistogram.setAttribute('aria-pressed', String(mode === 'histogram'));
+    if (lastResample.length > 0) showResample(lastResample, false, lastWasSingle);
+  }
+
   if (resampleToggle) {
     const seg = document.createElement('div');
     seg.className = 'seg-control';
     seg.setAttribute('role', 'group');
     seg.setAttribute('aria-label', 'Resample view');
 
-    const btnSummary = document.createElement('button');
+    btnSummary = /** @type {HTMLButtonElement} */ (document.createElement('button'));
     btnSummary.type = 'button';
     btnSummary.textContent = 'Summary';
     btnSummary.setAttribute('aria-pressed', 'true');
 
-    const btnHistogram = document.createElement('button');
+    btnHistogram = /** @type {HTMLButtonElement} */ (document.createElement('button'));
     btnHistogram.type = 'button';
     btnHistogram.textContent = 'Histogram';
     btnHistogram.setAttribute('aria-pressed', 'false');
@@ -2128,16 +2462,8 @@ export function initSimPage(config) {
     seg.appendChild(btnHistogram);
     resampleToggle.replaceWith(seg);
 
-    /** @param {'summary'|'histogram'} mode */
-    function setResampleView(mode) {
-      resampleViewMode = mode;
-      btnSummary.setAttribute('aria-pressed', String(mode === 'summary'));
-      btnHistogram.setAttribute('aria-pressed', String(mode === 'histogram'));
-      if (lastResample.length > 0) showResample(lastResample, false, lastWasSingle);
-    }
-
-    btnSummary.addEventListener('click', () => setResampleView('summary'));
-    btnHistogram.addEventListener('click', () => setResampleView('histogram'));
+    btnSummary.addEventListener('click', () => { resampleViewExplicit = true; setResampleViewMode('summary'); });
+    btnHistogram.addEventListener('click', () => { resampleViewExplicit = true; setResampleViewMode('histogram'); });
   }
 
   // Re-render when CI level changes
@@ -2192,6 +2518,8 @@ export function initSimPage(config) {
     rng = null;
     lockedDotGrid = null;
     mechanismInitialized = false;
+    origHistCache = null;
+    origPropCache = null;
     // New random seed each reset (unless URL-locked for graded work)
     if (!urlSeed) {
       seed = Math.random().toString(36).slice(2, 10);
@@ -2356,6 +2684,7 @@ export function initSimPage(config) {
         thresholds: propThresholds,
         numBins: userBinCount,
         prevBinCounts: prevBinCounts ?? undefined,
+        highlightValue: lastHighlightValue ?? undefined,
         precision: config.proportion ? Math.max(dataPrecision + 1, 3) : dataPrecision + 1,
       });
       chartResult = r.frame;
@@ -2390,6 +2719,7 @@ export function initSimPage(config) {
     lastStatIndex = -1; // Reset after rendering
     batchHighlightIndices = null;
     prevBinCounts = null;
+    lastHighlightValue = null;
   }
 
   /** @type {(v: number, obs: number, dir?: 'left'|'right'|'both') => boolean} */

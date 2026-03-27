@@ -10,19 +10,21 @@
 export const MAX_DATA_LENGTH = 10_000;
 
 /** Parameters that should be parsed as positive integers */
-const INT_PARAMS = new Set(['n', 'B', 'ci', 'df', 'df1', 'df2', 'n1', 'n2']);
+const INT_PARAMS = new Set(['n', 'B', 'ci', 'df', 'df1', 'df2', 'n1', 'n2', 'trials', 'round']);
 
 /** Parameters that should be parsed as floats */
 const FLOAT_PARAMS = new Set([
     'mu', 'sigma', 'p', 'min', 'max', 'mu1', 'mu2',
     'sigma1', 'sigma2', 'p1', 'p2', 'rho',
     'intercept', 'slope', 'sigma_error', 'x_min', 'x_max',
-    'decimals', 'clip_min', 'clip_max', 'null_value', 'alpha'
+    'decimals', 'clip_min', 'clip_max', 'null_value', 'alpha',
+    'shape', 'scale', 'lambda', 'prob', 'a', 'b'
 ]);
 
 /** Parameters that should remain as sanitized strings */
 const STRING_PARAMS = new Set([
-    'seed', 'gen', 'stat', 'direction', 'tail', 'dataset', 'csv', 'json',
+    'seed', 'gen_seed', 'gen', 'stat', 'direction', 'tail', 'dataset',
+    'csv', 'json', 'dist',
     'var', 'x', 'y', 'group', 'response', 'label', 'units', 'context',
     'success', 'failure', 'group1', 'group2', 'var1', 'var2',
     'x_label', 'y_label', 'summary', 'alt'
@@ -91,7 +93,9 @@ export function parseParams(queryString) {
 
         if (INT_PARAMS.has(key)) {
             const parsed = parseInt(value, 10);
-            if (isFinite(parsed) && parsed > 0) {
+            // round=0 is valid (round to integers), so allow >= 0 for 'round'
+            const minVal = key === 'round' ? 0 : 1;
+            if (isFinite(parsed) && parsed >= minVal) {
                 /** @type {any} */ (params)[key] = parsed;
             }
         } else if (FLOAT_PARAMS.has(key)) {
@@ -121,8 +125,11 @@ export function parseParams(queryString) {
                 if (!['less', 'greater', 'two-sided'].includes(sanitized)) {
                     continue;
                 }
+            } else if (key === 'label' || key === 'units' || key === 'x_label' || key === 'y_label') {
+                // Display-facing params: preserve case, allow spaces
+                sanitized = sanitized.replace(/[^a-zA-Z0-9_ ()-]/g, '').slice(0, 200);
             } else {
-                // General string params: alphanumeric + underscore
+                // General string params: alphanumeric + underscore, lowercased
                 sanitized = sanitized.replace(/[^a-zA-Z0-9_ -]/g, '').toLowerCase();
             }
             if (sanitized.length > 0) {

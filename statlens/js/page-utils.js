@@ -8,6 +8,7 @@
 import { parseCSV, rowsToCSV, downloadCSV } from './csv-parser.js';
 import { getSettings, setSettings, resetSettings, applySettings, getActivityMode, getExpertMode, prefersReducedMotion } from './settings.js';
 import { parseParams } from './url-params.js';
+import { configFromUrlParams, configFromGenerator, generateFromConfig } from './datagen.js';
 
 /**
  * Resolve the path to the data/ directory from any page.
@@ -412,6 +413,81 @@ export function flashMechanism(mechanismStrip) {
   mechanismStrip.classList.remove('mechanism-flash');
   void mechanismStrip.offsetWidth; // force reflow to restart animation
   mechanismStrip.classList.add('mechanism-flash');
+}
+
+/**
+ * Spawn a stream of small dots flying from one element to another.
+ * Communicates visually that "data flows from original → resample."
+ * @param {HTMLElement} fromEl - Source element (original sample content)
+ * @param {HTMLElement} toEl - Destination element (resample content)
+ * @param {object} [opts]
+ * @param {number} [opts.count] - Number of dots (default 8)
+ * @param {number} [opts.duration] - Flight duration per dot in ms (default 350)
+ * @param {string} [opts.color] - Dot color (default accent blue)
+ * @returns {number} Total animation time in ms
+ */
+export function flyDataStream(fromEl, toEl, opts = {}) {
+  if (prefersReducedMotion() || !fromEl || !toEl) return 0;
+
+  const count = opts.count ?? 8;
+  const duration = opts.duration ?? 350;
+  const color = opts.color ?? '#569BBD';
+
+  const fromRect = fromEl.getBoundingClientRect();
+  const toRect = toEl.getBoundingClientRect();
+
+  const fromX = fromRect.left + fromRect.width / 2;
+  const fromY = fromRect.top + fromRect.height / 2;
+  const toX = toRect.left + toRect.width / 2;
+  const toY = toRect.top + toRect.height / 2;
+
+  const stagger = 25;
+  const totalMs = duration + stagger * (count - 1);
+
+  for (let i = 0; i < count; i++) {
+    const dot = document.createElement('div');
+    dot.style.cssText = `
+      position: fixed; z-index: 1000; pointer-events: none;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: ${color}; opacity: 0;
+      left: ${fromX - 3}px; top: ${fromY - 3}px;
+      will-change: transform, opacity;
+    `;
+    document.body.appendChild(dot);
+
+    const spreadX = (Math.random() - 0.5) * 24;
+    const spreadY = (Math.random() - 0.5) * 16;
+    const dx = toX - fromX + spreadX;
+    const dy = toY - fromY + spreadY;
+    const arcY = -Math.abs(dx) * 0.08 - 8;
+
+    const delay = i * stagger;
+    const start = performance.now() + delay;
+
+    /** @param {number} now */
+    function animate(now) {
+      const elapsed = now - start;
+      if (elapsed < 0) { requestAnimationFrame(animate); return; }
+      const t = Math.min(1, elapsed / duration);
+      const e = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+
+      const curX = dx * e;
+      const curY = dy * e + arcY * 4 * t * (1 - t);
+      const scale = 0.6 + 0.8 * Math.sin(t * Math.PI);
+
+      dot.style.transform = `translate(${curX}px, ${curY}px) scale(${scale})`;
+      dot.style.opacity = String(t < 0.15 ? t / 0.15 : t > 0.75 ? (1 - t) / 0.25 : 1);
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        dot.remove();
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+
+  return totalMs;
 }
 
 /**
@@ -1249,18 +1325,80 @@ export function initDataPanel(config) {
 
   // ── Dataset dropdown ──
   if (datasetSelect) {
-    loadDatasetIndex(datasetSelect, datasetFilter, datasetDesc, datasetGroupFn)
-      .then(index => {
+    // If an activity panel is loading, wait for its params to be injected into the
+    // URL before processing auto-load logic. This prevents the race condition where
+    // datasets.json loads before the activity JSON, causing the wrong dataset to load
+    // (REQ-020). The activity fetch was started early in page-number.js.
+    const activityReady = typeof window !== 'undefined' && window.__activityParamsReady
+      ? window.__activityParamsReady : Promise.resolve(null);
+
+    Promise.all([
+      loadDatasetIndex(datasetSelect, datasetFilter, datasetDesc, datasetGroupFn),
+      activityReady,
+    ]).then(([index]) => {
         fullIndex = index;
         datasetIndex = index;
 
+        // Re-read URL params after activity defaults have been injected
+        const effectiveParams = parseParams();
+
         // Auto-select dataset from URL param (?dataset=NAME)
-        if (urlParams.dataset && index.some(ds => ds.id === urlParams.dataset)) {
-          datasetSelect.value = urlParams.dataset;
+        if (effectiveParams.dataset && index.some(ds => ds.id === effectiveParams.dataset)) {
+          datasetSelect.value = effectiveParams.dataset;
           datasetSelect.dispatchEvent(new Event('change'));
-        } else if (urlParams.data && urlParams.data.length > 0) {
+        } else if (effectiveParams.dist) {
+          // Inline parametric data generation (?dist=normal&mu=100&sigma=15&n=50&gen_seed=abc)
+          const distConfig = configFromUrlParams(effectiveParams);
+          if (distConfig) {
+            const seed = effectiveParams.gen_seed || effectiveParams.seed || String(Date.now());
+            let result;
+            try {
+              result = generateFromConfig(distConfig, seed);
+            } catch (e) {
+              console.warn('[datagen] generation failed:', /** @type {Error} */ (e).message);
+              resolveReady();
+              return;
+            }
+            // Use label as CSV header (shown in summary bar and axis labels).
+            // With ?label=: students see a meaningful name like "Test Scores"
+            // Without: they see "Random Data" (distribution details go in browser tab title for instructors)
+            const hasLabel = result.label && result.label !== 'x';
+            const hasVar = result.variable !== 'x';
+            const csvHeader = hasLabel ? result.label
+              : hasVar ? result.variable : 'Random Data';
+            const csv = csvHeader + '\n' + result.values.join('\n');
+            // Source name: label for students, distribution summary for instructors
+            const unitsSuffix = result.units ? ` (${result.units})` : '';
+            const distName = effectiveParams.dist.charAt(0).toUpperCase() + effectiveParams.dist.slice(1);
+            let sourceName;
+            if (hasLabel) {
+              sourceName = `${result.label}${unitsSuffix}`;
+            } else {
+              // Distribution summary for browser tab title: "Normal(μ=100, σ=15)"
+              const p = result.params;
+              const paramParts = Object.entries(p)
+                .filter(([, v]) => v != null)
+                .map(([k, v]) => {
+                  const sym = { mu: 'μ', sigma: 'σ', lambda: 'λ' }[k] || k;
+                  return `${sym}=${v}`;
+                });
+              sourceName = paramParts.length
+                ? `${distName}(${paramParts.join(', ')})`
+                : distName;
+            }
+            queueMicrotask(() => {
+              handleText(csv, sourceName);
+              populateEditor(csv, `generated_${effectiveParams.dist}`);
+              postLoadUI();
+              resolveReady();
+            });
+          } else {
+            // dist param present but invalid (missing n, etc.) — fall through
+            resolveReady();
+          }
+        } else if (effectiveParams.data && effectiveParams.data.length > 0) {
           // Auto-load inline data from URL (?data=1,2,3,...)
-          const csv = 'value\n' + urlParams.data.join('\n');
+          const csv = 'value\n' + effectiveParams.data.join('\n');
           queueMicrotask(() => {
             handleText(csv, 'URL data');
             populateEditor(csv, 'url_data');
@@ -1282,12 +1420,12 @@ export function initDataPanel(config) {
               postLoadUI();
               resolveReady();
             });
-          } else if (urlParams.json) {
+          } else if (effectiveParams.json) {
             // Fetch external JSON dataset (?json=URL)
-            fetchExternalJSON(urlParams.json, onDataset, populateEditor, () => { postLoadUI(); resolveReady(); });
-          } else if (urlParams.csv) {
+            fetchExternalJSON(effectiveParams.json, onDataset, populateEditor, () => { postLoadUI(); resolveReady(); });
+          } else if (effectiveParams.csv) {
             // Fetch external CSV (?csv=URL)
-            fetchExternalCSV(urlParams.csv, handleText, populateEditor, () => { postLoadUI(); resolveReady(); });
+            fetchExternalCSV(effectiveParams.csv, handleText, populateEditor, () => { postLoadUI(); resolveReady(); });
           } else {
             resolveReady();
           }
@@ -1308,6 +1446,30 @@ export function initDataPanel(config) {
         .then(ds => {
           currentDatasetId = id;
           currentSourceName = meta?.name || ds.name || id;
+
+          // Generator block: if dataset has a generator and gen_seed is present,
+          // generate fresh data instead of using stored rows (REQ-023 mode 2)
+          const curParams = parseParams();
+          if (ds.generator && curParams.gen_seed) {
+            const genConfig = configFromGenerator(ds.generator, curParams);
+            const overrides = /** @type {Object<string,number>} */ ({});
+            for (const k of ['mu', 'sigma', 'shape', 'scale', 'lambda', 'prob', 'trials', 'a', 'b', 'df']) {
+              const v = /** @type {any} */ (curParams)[k];
+              if (v != null && typeof v === 'number') overrides[k] = v;
+            }
+            if (curParams.n) overrides.n = curParams.n;
+            const result = generateFromConfig(genConfig, curParams.gen_seed, overrides);
+            // Replace rows with generated data
+            const varName = genConfig.var || 'value';
+            ds.rows = result.values.map(v => ({ [varName]: v }));
+            // Ensure variables array includes the generated variable
+            if (!ds.variables) ds.variables = [];
+            if (!ds.variables.some(/** @param {any} v */ v => v.name === varName)) {
+              const vType = typeof result.values[0] === 'string' ? 'categorical' : 'numeric';
+              ds.variables = [{ name: varName, label: genConfig.label || varName, type: vType }];
+            }
+          }
+
           lastLoadedDataset = ds;
           onDataset(ds, meta);
           // Populate editor with dataset as CSV
@@ -1326,6 +1488,23 @@ export function initDataPanel(config) {
 
   // ── Text handler (shared by paste + file) ──
   const handleText = onRawText || ((/** @type {string} */ text, /** @type {string} */ sourceName) => {
+    // Try JSON dataset format first (silently — if it fails, fall through to CSV)
+    if (text.startsWith('{')) {
+      try {
+        const ds = JSON.parse(text);
+        if (ds.variables && Array.isArray(ds.variables) && ds.rows && Array.isArray(ds.rows)) {
+          for (const v of ds.variables) {
+            if (typeof v.name !== 'string') throw new Error('bad variable');
+            v.name = v.name.replace(/<[^>]*>/g, '').trim();
+          }
+          const meta = { id: ds.id || 'pasted', name: ds.name || sourceName, description: ds.description || '', type: 'external', n: ds.rows.length };
+          onDataset(ds, meta);
+          const cols = ds.variables.map(/** @param {any} v */ v => v.name);
+          populateEditor(rowsToCSV(ds.rows, cols), meta.name);
+          return;
+        }
+      } catch { /* not valid JSON dataset — fall through to CSV */ }
+    }
     if (!onText) return;
     try {
       const parsed = parseCSV(text);

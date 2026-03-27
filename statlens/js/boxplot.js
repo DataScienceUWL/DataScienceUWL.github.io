@@ -11,7 +11,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import { quantile } from './stats.js';
-import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels, getColors } from './chart-utils.js';
+import { createChart, addAxes, formatTick, autoReduceTicks, prefersReducedMotion, hasD3Transition, TRANSITION_MS, showTooltip, hideTooltip, attachTooltip, wrapTickLabels, getColors, ensurePatterns } from './chart-utils.js';
 
 /** IMS blue for strokes and fills. */
 const IMS_BLUE = '#569BBD';
@@ -179,9 +179,15 @@ export function drawBoxplot(container, data, options = {}) {
   const shouldAnimate = animate && !prefersReducedMotion() && hasD3Transition();
 
   // Per-group colors: use Okabe-Ito palette for grouped boxplots, IMS blue for single
+  const rawColors = isGrouped ? getColors(groupNames.length) : [IMS_BLUE];
   const groupColors = isGrouped
-    ? getColors(groupNames.length).map(c => ({ stroke: c, fill: c + '30' }))
+    ? rawColors.map(c => ({ stroke: c, fill: c + '30' }))
     : [{ stroke: IMS_BLUE, fill: BOX_FILL }];
+
+  // Inject pattern defs for grouped boxplots (secondary visual cue beyond color)
+  const patterns = isGrouped
+    ? ensurePatterns(/** @type {SVGSVGElement} */ (frame.svg), rawColors)
+    : [];
 
   for (let gi = 0; gi < groupNames.length; gi++) {
     const name = groupNames[gi];
@@ -221,6 +227,23 @@ export function drawBoxplot(container, data, options = {}) {
         .transition()
         .duration(TRANSITION_MS)
         .attr('width', xScale(s.q3) - xScale(s.q1));
+    }
+
+    // Pattern overlay (grouped only — adds hatching/dots as secondary visual cue)
+    if (isGrouped && patterns[gi] && patterns[gi] !== 'none') {
+      const patRect = g.append('rect')
+        .attr('class', 'box-pattern')
+        .attr('x', xScale(s.q1))
+        .attr('y', boxY)
+        .attr('width', shouldAnimate ? 0 : xScale(s.q3) - xScale(s.q1))
+        .attr('height', boxH)
+        .attr('fill', patterns[gi])
+        .attr('stroke', 'none')
+        .style('pointer-events', 'none');
+      if (shouldAnimate) {
+        patRect.transition().duration(TRANSITION_MS)
+          .attr('width', xScale(s.q3) - xScale(s.q1));
+      }
     }
 
     // Median line
@@ -339,6 +362,8 @@ export function drawBoxplot(container, data, options = {}) {
     if (showOutliers) {
       const outlierCy = bandY + bandH / 2;
       const allOutlierValues = [...s.mildOutliers, ...s.extremeOutliers];
+      // Use group color for outliers in grouped mode, IMS red for single boxplots
+      const oColor = isGrouped ? gc.stroke : OUTLIER_COLOR;
 
       // Mild outliers (open circles)
       g.selectAll('.outlier-mild')
@@ -349,7 +374,7 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('cy', outlierCy)
         .attr('r', OUTLIER_RADIUS)
         .attr('fill', 'none')
-        .attr('stroke', OUTLIER_COLOR)
+        .attr('stroke', oColor)
         .attr('stroke-width', 1.5)
         .attr('role', 'listitem')
         .attr('aria-label', d => `Mild outlier: ${d}`);
@@ -362,8 +387,8 @@ export function drawBoxplot(container, data, options = {}) {
         .attr('cx', d => xScale(d))
         .attr('cy', outlierCy)
         .attr('r', OUTLIER_RADIUS)
-        .attr('fill', OUTLIER_COLOR)
-        .attr('stroke', OUTLIER_COLOR)
+        .attr('fill', oColor)
+        .attr('stroke', oColor)
         .attr('stroke-width', 1.5)
         .attr('role', 'listitem')
         .attr('aria-label', d => `Extreme outlier: ${d}`);

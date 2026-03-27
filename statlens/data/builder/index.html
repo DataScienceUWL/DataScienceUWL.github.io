@@ -195,6 +195,22 @@
             padding: 0.2rem 0.4rem;
             font-size: 0.85rem;
         }
+        .col-config .levels-input {
+            width: 100%;
+            min-width: 12rem;
+            padding: 0.2rem 0.4rem;
+            font-size: 0.82rem;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            font-family: var(--font-body);
+        }
+        .col-config .levels-input::placeholder {
+            font-size: 0.78rem;
+        }
+        .col-config .levels-input:disabled {
+            opacity: 0.35;
+            background: var(--bg-alt, #f5f5f5);
+        }
 
         /* ── Variable descriptions grid ───────────────────────── */
         .var-desc-grid {
@@ -327,7 +343,7 @@
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 1a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V5.414a1 1 0 00-.293-.707l-3.414-3.414A1 1 0 009.586 1H4zm5 1.5L12.5 6H10a1 1 0 01-1-1V2.5zM4 8h8v1H4V8zm0 2h6v1H4v-1z"/></svg>
                     Upload File
                 </label>
-                <input type="file" id="file-input" accept=".csv,.tsv,.txt">
+                <input type="file" id="file-input" accept=".csv,.tsv,.txt,.json">
                 <button type="button" id="clear-input-btn" class="btn-secondary">Clear</button>
             </div>
             <div id="parse-status" aria-live="polite"></div>
@@ -337,7 +353,7 @@
                 <h3 style="font-size:0.95rem; margin:0.75rem 0 0.25rem;">Column Configuration</h3>
                 <table class="col-config" aria-label="Column types">
                     <thead>
-                        <tr><th>Column</th><th>Detected Type</th><th>Override Type</th></tr>
+                        <tr><th>Column</th><th>Detected Type</th><th>Override Type</th><th>Levels <span style="font-weight:400; color:#666;">(optional)</span></th></tr>
                     </thead>
                     <tbody id="col-config-body"></tbody>
                 </table>
@@ -424,8 +440,16 @@
                 </ol>
 
                 <h3>2. Use in StatLens</h3>
-                <p>Append the raw URL to any explore page:</p>
-                <p><code>https://datascienceuwl.github.io/statlens/explore/descriptive/?dataset=YOUR_RAW_URL</code></p>
+                <p>Use <code>?json=</code> on any StatLens page — explore tools, simulation pages, inference tests, and more:</p>
+                <ul style="margin:0.25rem 0 0.5rem 1.25rem; font-size:0.85rem;">
+                    <li><code>explore/descriptive/?json=YOUR_RAW_URL</code></li>
+                    <li><code>simulate/bootstrap-mean/?json=YOUR_RAW_URL</code></li>
+                    <li><code>inference/two-means/?json=YOUR_RAW_URL</code></li>
+                </ul>
+                <p style="margin-top:0.25rem;">You can also link directly to a CSV or TSV (tab-separated values) file using <code>?csv=</code> instead — no JSON conversion needed:</p>
+                <ul style="margin:0.25rem 0 0.5rem 1.25rem; font-size:0.85rem;">
+                    <li><code>explore/descriptive/?csv=YOUR_RAW_CSV_URL</code></li>
+                </ul>
 
                 <h3>3. Submit for inclusion</h3>
                 <p>To add your dataset to StatLens's built-in collection, open an issue at

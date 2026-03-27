@@ -379,7 +379,11 @@ function loadRawText(raw, sourceName) {
     const catVars = parsed.headers.filter((_h, i) => parsed.types[i] === 'categorical');
 
     if (numericVars.length === 0 || catVars.length === 0) {
-      announce('Data must contain at least one numeric and one categorical column.');
+      const msg = 'This data needs at least one numeric and one categorical column for grouped comparison.';
+      announce(msg);
+      if (chartArea) {
+        chartArea.innerHTML = `<p class="hint" style="text-align:center;padding:2rem 1rem;">${msg}</p>`;
+      }
       return;
     }
 

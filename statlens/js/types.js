@@ -12,14 +12,24 @@
  * @property {string}   [dataset]       - Bundled dataset name from ?dataset=
  * @property {string}   [csv]           - Remote CSV URL from ?csv=
  * @property {string}   [json]          - Remote JSON dataset URL from ?json=
- * @property {string}   [seed]          - PRNG seed string (auto-generated if omitted)
+ * @property {string}   [seed]          - PRNG seed string (for simulation resampling)
+ * @property {string}   [gen_seed]      - PRNG seed for parametric data generation (separate from seed)
  * @property {string}   [gen]           - Generator type: normal|uniform|bernoulli|...
+ * @property {string}   [dist]          - Distribution family for inline generation: normal|gamma|exponential|bernoulli|binomial|poisson|uniform|lognormal|chisq|t|categorical
  * @property {number}   [n]             - Sample size for generation
  * @property {number}   [mu]            - Mean (normal, distribution calc)
  * @property {number}   [sigma]         - SD (normal, distribution calc)
  * @property {number}   [min]           - Lower bound (uniform)
  * @property {number}   [max]           - Upper bound (uniform)
- * @property {number}   [p]             - Probability (bernoulli, proportion)
+ * @property {number}   [p]             - Probability (bernoulli, proportion null hypothesis)
+ * @property {number}   [prob]          - Success probability for datagen (avoids ?p= conflict)
+ * @property {number}   [shape]         - Shape parameter (gamma)
+ * @property {number}   [scale]         - Scale parameter (gamma)
+ * @property {number}   [lambda]        - Rate parameter (exponential, poisson)
+ * @property {number}   [trials]        - Number of trials (binomial)
+ * @property {number}   [a]             - Lower bound (uniform)
+ * @property {number}   [b]             - Upper bound (uniform)
+ * @property {number}   [round]         - Decimal places for rounding (datagen)
  * @property {number}   [n1]            - Group 1 size (two-group)
  * @property {number}   [n2]            - Group 2 size (two-group)
  * @property {number}   [mu1]           - Group 1 mean (two-group means)
@@ -47,7 +57,7 @@
  * @property {string}   [response]      - Response column name
  * @property {number}   [B]             - Bootstrap/randomization replicates (default 1000)
  * @property {number}   [ci]            - CI confidence level (default 95)
- * @property {string}   [stat]          - Statistic: mean|prop|diff_mean|diff_prop|chisq|F|slope
+ * @property {string}   [stat]          - Statistic: mean|median|sd|q1|q3|prop|diff_mean|diff_prop|chisq|F|slope
  * @property {string}   [direction]     - Tail direction: left|right|both
  * @property {number}   [null_value]    - Null hypothesis value (renamed from 'null')
  * @property {number}   [df]            - Degrees of freedom (t, chi-sq)

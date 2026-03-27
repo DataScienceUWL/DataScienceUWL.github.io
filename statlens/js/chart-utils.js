@@ -29,15 +29,24 @@ const PHONE_MARGIN = { top: 30, right: 15, bottom: 60, left: 80 };
 export const TRANSITION_MS = 300;
 
 /**
- * Okabe-Ito accessible color palette.
+ * Okabe-Ito accessible color palette — reordered so the first 2-3 colors
+ * are maximally distinguishable under protanopia and deuteranopia.
+ *
+ * Original Okabe-Ito order: blue, orange, teal, vermillion, rose, sky, gold, gray.
+ * Problem: teal (#009E73) and vermillion (#D55E00) both shift to brownish-yellow
+ * under deuteranopia, making 3- and 4-group charts hard to read.
+ *
+ * Reordered: blue, orange, rose, teal, vermillion, sky, gold, gray.
+ * Rose (#CC79A7) appears as desaturated blue-gray under deuteranopia,
+ * clearly distinct from both blue and orange.
  * @type {readonly string[]}
  */
 const OKABE_ITO = [
   '#0072B2',   // blue (5.19:1)
   '#C08700',   // orange (3.13:1) — darkened from #E69F00 for WCAG 3:1
+  '#CC79A7',   // rose (3.06:1) — moved up: distinct from blue+orange under all CVD types
   '#009E73',   // teal (3.42:1)
   '#D55E00',   // vermillion (3.87:1)
-  '#CC79A7',   // rose (3.06:1)
   '#2E8BC0',   // sky blue (3.77:1) — darkened from #56B4E9 for WCAG 3:1
   '#9A8C00',   // gold (3.43:1) — darkened from #F0E442 for WCAG 3:1
   '#767676',   // gray (4.54:1) — darkened from #999999 for WCAG 3:1
@@ -160,6 +169,166 @@ function _siClean(v) {
 export function getColors(n = 5) {
   const count = Math.max(1, Math.min(n, OKABE_ITO.length));
   return OKABE_ITO.slice(0, count);
+}
+
+/**
+ * SVG pattern definitions for distinguishing groups without relying on color alone.
+ * Each pattern is a function that creates a <pattern> element inside an SVG <defs>.
+ *
+ * Pattern types (in order, matching Okabe-Ito palette positions):
+ *  0: solid (no pattern — just the base color)
+ *  1: diagonal lines (45°, ////)
+ *  2: dots (regular grid)
+ *  3: crosshatch (X pattern)
+ *  4: horizontal lines (----)
+ *  5: diagonal lines (135°, \\\\)
+ *  6: dense dots
+ *  7: vertical lines (||||)
+ *
+ * @type {readonly {id: string, create: (defs: SVGDefsElement, color: string, idx: number) => void}[]}
+ */
+const PATTERN_DEFS = [
+  { id: 'solid', create: () => {} }, // slot 0 = no pattern, just solid fill
+  {
+    id: 'diag',
+    create: (defs, color, idx) => {
+      const p = _mkPattern(defs, `sl-pat-diag-${idx}`, 6, 6);
+      _line(p, 0, 6, 6, 0, color, 1.5);
+    },
+  },
+  {
+    id: 'dots',
+    create: (defs, color, idx) => {
+      const p = _mkPattern(defs, `sl-pat-dots-${idx}`, 6, 6);
+      _circle(p, 3, 3, 1.4, color);
+    },
+  },
+  {
+    id: 'cross',
+    create: (defs, color, idx) => {
+      const p = _mkPattern(defs, `sl-pat-cross-${idx}`, 7, 7);
+      _line(p, 0, 7, 7, 0, color, 1.2);
+      _line(p, 0, 0, 7, 7, color, 1.2);
+    },
+  },
+  {
+    id: 'horiz',
+    create: (defs, color, idx) => {
+      const p = _mkPattern(defs, `sl-pat-horiz-${idx}`, 6, 6);
+      _line(p, 0, 3, 6, 3, color, 1.5);
+    },
+  },
+  {
+    id: 'diag2',
+    create: (defs, color, idx) => {
+      const p = _mkPattern(defs, `sl-pat-diag2-${idx}`, 6, 6);
+      _line(p, 0, 0, 6, 6, color, 1.5);
+    },
+  },
+  {
+    id: 'dots2',
+    create: (defs, color, idx) => {
+      const p = _mkPattern(defs, `sl-pat-dots2-${idx}`, 4, 4);
+      _circle(p, 2, 2, 1.2, color);
+    },
+  },
+  {
+    id: 'vert',
+    create: (defs, color, idx) => {
+      const p = _mkPattern(defs, `sl-pat-vert-${idx}`, 6, 6);
+      _line(p, 3, 0, 3, 6, color, 1.5);
+    },
+  },
+];
+
+/** Create a <pattern> element inside defs.
+ * @param {SVGDefsElement} defs @param {string} id @param {number} w @param {number} h */
+function _mkPattern(defs, id, w, h) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const p = document.createElementNS(ns, 'pattern');
+  p.setAttribute('id', id);
+  p.setAttribute('patternUnits', 'userSpaceOnUse');
+  p.setAttribute('width', String(w));
+  p.setAttribute('height', String(h));
+  defs.appendChild(p);
+  return p;
+}
+
+/** Append a <line> to a pattern element.
+ * @param {SVGPatternElement} parent @param {number} x1 @param {number} y1 @param {number} x2 @param {number} y2 @param {string} color @param {number} sw */
+function _line(parent, x1, y1, x2, y2, color, sw) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const l = document.createElementNS(ns, 'line');
+  l.setAttribute('x1', String(x1));
+  l.setAttribute('y1', String(y1));
+  l.setAttribute('x2', String(x2));
+  l.setAttribute('y2', String(y2));
+  l.setAttribute('stroke', color);
+  l.setAttribute('stroke-width', String(sw));
+  l.setAttribute('stroke-linecap', 'square');
+  parent.appendChild(l);
+}
+
+/** Append a <circle> to a pattern element.
+ * @param {SVGPatternElement} parent @param {number} cx @param {number} cy @param {number} r @param {string} color */
+function _circle(parent, cx, cy, r, color) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const c = document.createElementNS(ns, 'circle');
+  c.setAttribute('cx', String(cx));
+  c.setAttribute('cy', String(cy));
+  c.setAttribute('r', String(r));
+  c.setAttribute('fill', color);
+  parent.appendChild(c);
+}
+
+/**
+ * Inject pattern <defs> into an SVG and return fill references for each group.
+ * Call this once per chart after creating the SVG. Patterns use a darkened
+ * version of each group color so they're visible on the lighter fill.
+ *
+ * @param {SVGSVGElement} svgEl - The chart's <svg> element
+ * @param {string[]} colors - Array of hex colors (from getColors)
+ * @returns {string[]} Array of CSS fill values — 'url(#sl-pat-diag-1)' or 'none' for solid
+ */
+export function ensurePatterns(svgEl, colors) {
+  let defs = svgEl.querySelector('defs');
+  if (!defs) {
+    defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    svgEl.insertBefore(defs, svgEl.firstChild);
+  }
+
+  /** @type {string[]} */
+  const fills = [];
+  for (let i = 0; i < colors.length; i++) {
+    const patIdx = i % PATTERN_DEFS.length;
+    const pat = PATTERN_DEFS[patIdx];
+    if (patIdx === 0) {
+      fills.push('none'); // solid fill — no pattern overlay needed
+    } else {
+      // Darken the color for pattern strokes so they show on light fill
+      const patColor = _darken(colors[i], 0.35);
+      pat.create(/** @type {SVGDefsElement} */ (defs), patColor, i);
+      fills.push(`url(#sl-pat-${pat.id}-${i})`);
+    }
+  }
+  return fills;
+}
+
+/**
+ * Darken a hex color by mixing toward black.
+ * @param {string} hex - e.g. '#0072B2'
+ * @param {number} amount - 0 = unchanged, 1 = black
+ * @returns {string} Darkened hex
+ */
+function _darken(hex, amount) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const f = 1 - amount;
+  const dr = Math.round(r * f);
+  const dg = Math.round(g * f);
+  const db = Math.round(b * f);
+  return `#${dr.toString(16).padStart(2, '0')}${dg.toString(16).padStart(2, '0')}${db.toString(16).padStart(2, '0')}`;
 }
 
 /**
@@ -883,21 +1052,21 @@ export function drawMiniBoxplot(container, values, options = {}) {
   let svg = `<svg class="mech-minibox" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">`;
 
   // Whisker lines
-  svg += `<line x1="${x(whiskerLo)}" x2="${x(q1)}" y1="${cy}" y2="${cy}" stroke="${color}" stroke-width="1.5"/>`;
-  svg += `<line x1="${x(q3)}" x2="${x(whiskerHi)}" y1="${cy}" y2="${cy}" stroke="${color}" stroke-width="1.5"/>`;
+  svg += `<line class="bp-wlo" x1="${x(whiskerLo)}" x2="${x(q1)}" y1="${cy}" y2="${cy}" stroke="${color}" stroke-width="1.5"/>`;
+  svg += `<line class="bp-whi" x1="${x(q3)}" x2="${x(whiskerHi)}" y1="${cy}" y2="${cy}" stroke="${color}" stroke-width="1.5"/>`;
 
   // Whisker caps
   const capH = boxH * 0.5;
-  svg += `<line x1="${x(whiskerLo)}" x2="${x(whiskerLo)}" y1="${cy - capH/2}" y2="${cy + capH/2}" stroke="${color}" stroke-width="1.5"/>`;
-  svg += `<line x1="${x(whiskerHi)}" x2="${x(whiskerHi)}" y1="${cy - capH/2}" y2="${cy + capH/2}" stroke="${color}" stroke-width="1.5"/>`;
+  svg += `<line class="bp-clo" x1="${x(whiskerLo)}" x2="${x(whiskerLo)}" y1="${cy - capH/2}" y2="${cy + capH/2}" stroke="${color}" stroke-width="1.5"/>`;
+  svg += `<line class="bp-chi" x1="${x(whiskerHi)}" x2="${x(whiskerHi)}" y1="${cy - capH/2}" y2="${cy + capH/2}" stroke="${color}" stroke-width="1.5"/>`;
 
   // Box
   const bx = x(q1);
   const bw = x(q3) - bx;
-  svg += `<rect x="${bx}" y="${boxTop}" width="${Math.max(bw, 1)}" height="${boxH}" fill="${color}30" stroke="${color}" stroke-width="1.5" rx="1"/>`;
+  svg += `<rect class="bp-box" x="${bx}" y="${boxTop}" width="${Math.max(bw, 1)}" height="${boxH}" fill="${color}30" stroke="${color}" stroke-width="1.5" rx="1"/>`;
 
   // Median line
-  svg += `<line x1="${x(med)}" x2="${x(med)}" y1="${boxTop}" y2="${boxTop + boxH}" stroke="${color}" stroke-width="2"/>`;
+  svg += `<line class="bp-med" x1="${x(med)}" x2="${x(med)}" y1="${boxTop}" y2="${boxTop + boxH}" stroke="${color}" stroke-width="2"/>`;
 
   // Outliers
   for (const o of outliers) {
@@ -909,9 +1078,488 @@ export function drawMiniBoxplot(container, values, options = {}) {
     const mx = x(meanValue);
     const ms = 4; // half-size
     const mColor = highlightMean ? '#E07020' : color;
-    svg += `<polygon points="${mx},${cy - ms} ${mx + ms},${cy} ${mx},${cy + ms} ${mx - ms},${cy}" fill="${mColor}" stroke="${mColor}" stroke-width="0.5"/>`;
+    svg += `<polygon class="bp-mean" points="${mx},${cy - ms} ${mx + ms},${cy} ${mx},${cy + ms} ${mx - ms},${cy}" fill="${mColor}" stroke="${mColor}" stroke-width="0.5"/>`;
   }
 
   svg += '</svg>';
   container.innerHTML = svg;
+}
+
+/**
+ * Animate an existing mini boxplot to new data values.
+ * Falls back to instant drawMiniBoxplot if no existing SVG or reduced motion.
+ * @param {HTMLElement} container
+ * @param {number[]} values
+ * @param {{ width?: number, height?: number, meanValue?: number, highlightMean?: boolean, domain?: [number, number], color?: string, label?: string }} options
+ * @returns {number} Animation duration in ms (0 if instant)
+ */
+export function morphMiniBoxplot(container, values, options = {}) {
+  const width = options.width ?? 200;
+  const height = options.height ?? 32;
+  const meanValue = options.meanValue;
+  const highlightMean = options.highlightMean ?? false;
+  const domain = options.domain;
+  const color = options.color ?? '#569BBD';
+
+  const svgEl = container.querySelector('svg.mech-minibox');
+  if (!svgEl || !values || values.length < 2 || prefersReducedMotion()) {
+    drawMiniBoxplot(container, values, options);
+    return 0;
+  }
+
+  // Compute new boxplot stats
+  const sorted = [...values].sort((a, b) => a - b);
+  const n = sorted.length;
+  const qFn = (/** @type {number} */ p) => {
+    const h = (n - 1) * p;
+    const flo = Math.floor(h);
+    const fhi = Math.ceil(h);
+    return sorted[flo] + (sorted[fhi] - sorted[flo]) * (h - flo);
+  };
+  const q1 = qFn(0.25);
+  const med = qFn(0.5);
+  const q3 = qFn(0.75);
+  const iqr = q3 - q1;
+  const lowerFence = q1 - 1.5 * iqr;
+  const upperFence = q3 + 1.5 * iqr;
+  const whiskerLo = sorted.find(d => d >= lowerFence) ?? q1;
+  const whiskerHi = sorted.findLast(d => d <= upperFence) ?? q3;
+
+  // Scale (same as drawMiniBoxplot)
+  const pad = 6;
+  const lo = domain ? domain[0] : Math.min(...sorted);
+  const hi = domain ? domain[1] : Math.max(...sorted);
+  const range = hi - lo || 1;
+  const x = (/** @type {number} */ v) => pad + ((v - lo) / range) * (width - 2 * pad);
+
+  const cy = height / 2;
+
+  // Target positions
+  const targets = {
+    wloX1: x(whiskerLo), wloX2: x(q1),
+    whiX1: x(q3), whiX2: x(whiskerHi),
+    cloX: x(whiskerLo), chiX: x(whiskerHi),
+    boxX: x(q1), boxW: Math.max(x(q3) - x(q1), 1),
+    medX: x(med),
+    meanX: meanValue !== undefined ? x(meanValue) : null,
+  };
+
+  // Read current positions from SVG elements
+  const wlo = svgEl.querySelector('.bp-wlo');
+  const whi = svgEl.querySelector('.bp-whi');
+  const clo = svgEl.querySelector('.bp-clo');
+  const chi = svgEl.querySelector('.bp-chi');
+  const box = svgEl.querySelector('.bp-box');
+  const medLine = svgEl.querySelector('.bp-med');
+  const meanEl = svgEl.querySelector('.bp-mean');
+
+  if (!wlo || !whi || !clo || !chi || !box || !medLine) {
+    drawMiniBoxplot(container, values, options);
+    return 0;
+  }
+
+  /** @param {string|null} a */
+  const num = (a) => +(a ?? '0');
+
+  const starts = {
+    wloX1: num(wlo.getAttribute('x1')), wloX2: num(wlo.getAttribute('x2')),
+    whiX1: num(whi.getAttribute('x1')), whiX2: num(whi.getAttribute('x2')),
+    cloX: num(clo.getAttribute('x1')), chiX: num(chi.getAttribute('x1')),
+    boxX: num(box.getAttribute('x')), boxW: num(box.getAttribute('width')),
+    medX: num(medLine.getAttribute('x1')),
+    meanX: meanEl ? num((meanEl.getAttribute('points') ?? '').split(',')[0]) : null,
+  };
+
+  const MORPH_MS = 400;
+  const easeOut = (/** @type {number} */ t) => 1 - (1 - t) ** 3;
+  let startTime = 0;
+
+  /**
+   * @param {number} from
+   * @param {number} to
+   * @param {number} e
+   */
+  const lerp = (from, to, e) => from + (to - from) * e;
+
+  /** @param {number} now */
+  function frame(now) {
+    if (!startTime) startTime = now;
+    const t = Math.min(1, (now - startTime) / MORPH_MS);
+    const e = easeOut(t);
+
+    // Whisker lo
+    wlo.setAttribute('x1', String(lerp(starts.wloX1, targets.wloX1, e)));
+    wlo.setAttribute('x2', String(lerp(starts.wloX2, targets.wloX2, e)));
+
+    // Whisker hi
+    whi.setAttribute('x1', String(lerp(starts.whiX1, targets.whiX1, e)));
+    whi.setAttribute('x2', String(lerp(starts.whiX2, targets.whiX2, e)));
+
+    // Caps
+    const cloX = lerp(starts.cloX, targets.cloX, e);
+    const chiX = lerp(starts.chiX, targets.chiX, e);
+    clo.setAttribute('x1', String(cloX));
+    clo.setAttribute('x2', String(cloX));
+    chi.setAttribute('x1', String(chiX));
+    chi.setAttribute('x2', String(chiX));
+
+    // Box
+    const bx = lerp(starts.boxX, targets.boxX, e);
+    const bw = lerp(starts.boxW, targets.boxW, e);
+    box.setAttribute('x', String(bx));
+    box.setAttribute('width', String(Math.max(bw, 1)));
+
+    // Median
+    const mx = lerp(starts.medX, targets.medX, e);
+    medLine.setAttribute('x1', String(mx));
+    medLine.setAttribute('x2', String(mx));
+
+    // Mean diamond
+    if (meanEl && starts.meanX !== null && targets.meanX !== null) {
+      const meanX = lerp(starts.meanX, targets.meanX, e);
+      const ms = 4;
+      meanEl.setAttribute('points',
+        `${meanX},${cy - ms} ${meanX + ms},${cy} ${meanX},${cy + ms} ${meanX - ms},${cy}`);
+      const mColor = highlightMean ? '#E07020' : color;
+      meanEl.setAttribute('fill', mColor);
+      meanEl.setAttribute('stroke', mColor);
+    }
+
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      // Rebuild outliers (too many to track individually — just swap)
+      svgEl.querySelectorAll('circle').forEach(c => c.remove());
+      const outliers = sorted.filter(d => d < lowerFence || d > upperFence);
+      for (const o of outliers) {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', String(x(o)));
+        circle.setAttribute('cy', String(cy));
+        circle.setAttribute('r', '2');
+        circle.setAttribute('fill', 'none');
+        circle.setAttribute('stroke', color);
+        circle.setAttribute('stroke-width', '1');
+        if (meanEl) svgEl.insertBefore(circle, meanEl);
+        else svgEl.appendChild(circle);
+      }
+    }
+  }
+
+  requestAnimationFrame(frame);
+  return MORPH_MS;
+}
+
+// ─── Mini dotplot / histogram for mechanism strip ───
+
+/**
+ * Choose ~3-5 "nice" tick values for a mini axis.
+ * @param {number} lo
+ * @param {number} hi
+ * @returns {number[]}
+ */
+function miniAxisTicks(lo, hi) {
+  const range = hi - lo;
+  if (range === 0) return [lo];
+  // Target ~4 ticks
+  const rawStep = range / 4;
+  const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const candidates = [1, 2, 2.5, 5, 10];
+  const match = candidates.find(c => c * mag >= rawStep);
+  let step = (match ?? 1) * mag;
+  if (!step) step = rawStep;
+  const start = Math.ceil(lo / step) * step;
+  const ticks = [];
+  for (let v = start; v <= hi + step * 0.001; v += step) {
+    ticks.push(Math.round(v / (step * 0.1)) * (step * 0.1)); // avoid FP noise
+  }
+  return ticks;
+}
+
+/**
+ * Format a tick value compactly (drop trailing zeros).
+ * @param {number} v
+ * @returns {string}
+ */
+function fmtTick(v) {
+  if (Number.isInteger(v)) return String(v);
+  // Up to 2 decimal places
+  const s = v.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+  return s;
+}
+
+/**
+ * Draw a mini dotplot in a mechanism strip panel.
+ * Uses stacked dots on an x-axis with ticks and a mean marker line.
+ * Best for n ≤ 30.
+ *
+ * @param {HTMLElement} container
+ * @param {number[]} values
+ * @param {{ width?: number, height?: number, meanValue?: number, highlightMean?: boolean, domain?: [number, number], color?: string, label?: string }} options
+ */
+export function drawMiniDotplot(container, values, options = {}) {
+  const {
+    width = 220,
+    height = 60,
+    meanValue,
+    highlightMean = false,
+    domain,
+    color = '#569BBD',
+    label = 'Mini dotplot',
+  } = options;
+
+  if (!values || values.length < 1) { container.innerHTML = ''; return; }
+
+  const axisH = 14; // space for axis ticks + labels
+  const plotH = height - axisH;
+  const padX = 10;
+
+  // Domain
+  const sorted = [...values].sort((a, b) => a - b);
+  const dLo = domain ? domain[0] : sorted[0];
+  const dHi = domain ? domain[1] : sorted[sorted.length - 1];
+  const range = dHi - dLo || 1;
+  const x = (/** @type {number} */ v) => padX + ((v - dLo) / range) * (width - 2 * padX);
+
+  // Bin values into stacks (snap to nearest pixel)
+  const dotR = Math.min(4, Math.max(2, (width - 2 * padX) / (values.length * 2.5)));
+  const binWidth = dotR * 2.2;
+  /** @type {Map<number, number[]>} */
+  const stacks = new Map();
+  for (const v of sorted) {
+    const bin = Math.round(x(v) / binWidth) * binWidth;
+    if (!stacks.has(bin)) stacks.set(bin, []);
+    /** @type {number[]} */ (stacks.get(bin)).push(v);
+  }
+
+  const maxStack = Math.max(...[...stacks.values()].map(s => s.length));
+  const dotSpacing = dotR * 2.1;
+  const neededH = maxStack * dotSpacing + dotR;
+  const scale = neededH > plotH ? plotH / neededH : 1;
+  const effectiveR = dotR * scale;
+  const effectiveSpacing = dotSpacing * scale;
+
+  let svg = `<svg class="mech-minichart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">`;
+
+  // Dots (bottom-up stacking) — cx is the bin center, not the raw data x
+  const baseY = plotH - effectiveR;
+  for (const [binCenter, stack] of stacks) {
+    for (let i = 0; i < stack.length; i++) {
+      const cx = binCenter;
+      const cy = baseY - i * effectiveSpacing;
+      svg += `<circle class="mc-dot" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${effectiveR.toFixed(1)}" fill="${color}" fill-opacity="0.7" stroke="${color}" stroke-width="0.5"/>`;
+    }
+  }
+
+  // Mean marker line (vertical, full height of plot area)
+  if (meanValue !== undefined) {
+    const mx = x(meanValue);
+    const mColor = highlightMean ? '#E07020' : '#D33';
+    svg += `<line class="mc-mean" x1="${mx.toFixed(1)}" x2="${mx.toFixed(1)}" y1="0" y2="${plotH}" stroke="${mColor}" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+    // Small triangle at top
+    svg += `<polygon class="mc-mean-tri" points="${mx - 3},0 ${mx + 3},0 ${mx},4" fill="${mColor}"/>`;
+  }
+
+  // X-axis line
+  svg += `<line x1="${padX}" x2="${width - padX}" y1="${plotH}" y2="${plotH}" stroke="#666" stroke-width="0.75"/>`;
+
+  // Tick marks and labels
+  const ticks = miniAxisTicks(dLo, dHi);
+  for (const t of ticks) {
+    const tx = x(t);
+    if (tx < padX - 1 || tx > width - padX + 1) continue;
+    svg += `<line x1="${tx.toFixed(1)}" x2="${tx.toFixed(1)}" y1="${plotH}" y2="${plotH + 3}" stroke="#666" stroke-width="0.75"/>`;
+    svg += `<text x="${tx.toFixed(1)}" y="${height - 1}" text-anchor="middle" fill="#555" font-size="8">${fmtTick(t)}</text>`;
+  }
+
+  svg += '</svg>';
+  container.innerHTML = svg;
+}
+
+/**
+ * Draw a mini histogram in a mechanism strip panel.
+ * Uses bars on an x-axis with ticks and a mean marker line.
+ * Best for n > 30.
+ *
+ * @param {HTMLElement} container
+ * @param {number[]} values
+ * @param {{ width?: number, height?: number, meanValue?: number, highlightMean?: boolean, domain?: [number, number], color?: string, label?: string, numBins?: number }} options
+ */
+export function drawMiniHistogram(container, values, options = {}) {
+  const {
+    width = 220,
+    height = 60,
+    meanValue,
+    highlightMean = false,
+    domain,
+    color = '#569BBD',
+    label = 'Mini histogram',
+    numBins = 10,
+  } = options;
+
+  if (!values || values.length < 1) { container.innerHTML = ''; return; }
+
+  const axisH = 14;
+  const plotH = height - axisH;
+  const padX = 10;
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const dLo = domain ? domain[0] : sorted[0];
+  const dHi = domain ? domain[1] : sorted[sorted.length - 1];
+  const range = dHi - dLo || 1;
+  const x = (/** @type {number} */ v) => padX + ((v - dLo) / range) * (width - 2 * padX);
+
+  // Build bins
+  const binW = range / numBins;
+  /** @type {number[]} */
+  const counts = new Array(numBins).fill(0);
+  for (const v of sorted) {
+    let idx = Math.floor((v - dLo) / binW);
+    if (idx >= numBins) idx = numBins - 1;
+    if (idx < 0) idx = 0;
+    counts[idx]++;
+  }
+
+  const maxCount = Math.max(...counts, 1);
+  const barH = (/** @type {number} */ c) => (c / maxCount) * (plotH - 2);
+
+  let svg = `<svg class="mech-minichart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">`;
+
+  // Bars
+  for (let i = 0; i < numBins; i++) {
+    if (counts[i] === 0) continue;
+    const bx = x(dLo + i * binW);
+    const bw = x(dLo + (i + 1) * binW) - bx;
+    const bh = barH(counts[i]);
+    const by = plotH - bh;
+    svg += `<rect class="mc-bar" x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${Math.max(bw - 0.5, 0.5).toFixed(1)}" height="${bh.toFixed(1)}" fill="${color}" fill-opacity="0.5" stroke="${color}" stroke-width="0.5"/>`;
+  }
+
+  // Mean marker line
+  if (meanValue !== undefined) {
+    const mx = x(meanValue);
+    const mColor = highlightMean ? '#E07020' : '#D33';
+    svg += `<line class="mc-mean" x1="${mx.toFixed(1)}" x2="${mx.toFixed(1)}" y1="0" y2="${plotH}" stroke="${mColor}" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+    svg += `<polygon class="mc-mean-tri" points="${mx - 3},0 ${mx + 3},0 ${mx},4" fill="${mColor}"/>`;
+  }
+
+  // X-axis line
+  svg += `<line x1="${padX}" x2="${width - padX}" y1="${plotH}" y2="${plotH}" stroke="#666" stroke-width="0.75"/>`;
+
+  // Tick marks and labels
+  const ticks = miniAxisTicks(dLo, dHi);
+  for (const t of ticks) {
+    const tx = x(t);
+    if (tx < padX - 1 || tx > width - padX + 1) continue;
+    svg += `<line x1="${tx.toFixed(1)}" x2="${tx.toFixed(1)}" y1="${plotH}" y2="${plotH + 3}" stroke="#666" stroke-width="0.75"/>`;
+    svg += `<text x="${tx.toFixed(1)}" y="${height - 1}" text-anchor="middle" fill="#555" font-size="8">${fmtTick(t)}</text>`;
+  }
+
+  svg += '</svg>';
+  container.innerHTML = svg;
+}
+
+/**
+ * Convenience: draw whichever mini chart is appropriate for the sample size.
+ * n ≤ 30 → dotplot, n > 30 → histogram.
+ *
+ * @param {HTMLElement} container
+ * @param {number[]} values
+ * @param {{ width?: number, height?: number, meanValue?: number, highlightMean?: boolean, domain?: [number, number], color?: string, label?: string }} options
+ */
+export function drawMiniChart(container, values, options = {}) {
+  if (!values || values.length === 0) { container.innerHTML = ''; return; }
+  if (values.length <= 30) {
+    drawMiniDotplot(container, values, options);
+  } else {
+    drawMiniHistogram(container, values, options);
+  }
+}
+
+/**
+ * Animate a mini dotplot or histogram to new data by shifting all elements horizontally.
+ * Used for the observed→null morph in the mechanism strip.
+ * Falls back to instant redraw if no SVG exists or reduced motion is preferred.
+ *
+ * @param {HTMLElement} container
+ * @param {number[]} newValues
+ * @param {{ width?: number, height?: number, meanValue?: number, highlightMean?: boolean, domain?: [number, number], color?: string, label?: string }} options
+ * @returns {number} Animation duration in ms (0 if instant)
+ */
+export function morphMiniChart(container, newValues, options = {}) {
+  const svgEl = container.querySelector('svg.mech-minichart');
+  if (!svgEl || !newValues || newValues.length < 1 || prefersReducedMotion()) {
+    drawMiniChart(container, newValues, options);
+    return 0;
+  }
+
+  const width = options.width ?? 220;
+  const domain = options.domain;
+  const padX = 10;
+
+  // Compute horizontal shift: domain is the same, but data positions change.
+  // We'll shift the entire SVG content, then redraw at the end.
+  // For a clean morph: compute shift in data space and convert to pixel offset.
+
+  // Compute the old mean x position from the existing mean marker
+  const oldMeanLine = svgEl.querySelector('.mc-mean');
+  if (!oldMeanLine) {
+    drawMiniChart(container, newValues, options);
+    return 0;
+  }
+
+  const oldMeanPx = parseFloat(oldMeanLine.getAttribute('x1') ?? '0');
+
+  // New scale (same domain, shared for smooth morph)
+  const dLo = domain ? domain[0] : Math.min(...newValues);
+  const dHi = domain ? domain[1] : Math.max(...newValues);
+  const range = dHi - dLo || 1;
+  const x = (/** @type {number} */ v) => padX + ((v - dLo) / range) * (width - 2 * padX);
+
+  const newMeanPx = options.meanValue !== undefined ? x(options.meanValue) : oldMeanPx;
+  const shiftPx = newMeanPx - oldMeanPx;
+
+  // If shift is negligible, just redraw
+  if (Math.abs(shiftPx) < 0.5) {
+    drawMiniChart(container, newValues, options);
+    return 0;
+  }
+
+  const MORPH_MS = 400;
+  const easeOut = (/** @type {number} */ t) => 1 - (1 - t) ** 3;
+  let startTime = 0;
+
+  // Create a <g> wrapper around all content (except axis) for smooth translation
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.classList.add('mc-morph-group');
+  // Move dots, bars, mean line, mean triangle into the group
+  const moveable = svgEl.querySelectorAll('.mc-dot, .mc-bar, .mc-mean, .mc-mean-tri');
+  for (const el of moveable) g.appendChild(el);
+  svgEl.appendChild(g);
+
+  // Also update mean marker color immediately
+  const meanLine = g.querySelector('.mc-mean');
+  const meanTri = g.querySelector('.mc-mean-tri');
+  if (options.highlightMean) {
+    if (meanLine) { meanLine.setAttribute('stroke', '#E07020'); }
+    if (meanTri) { meanTri.setAttribute('fill', '#E07020'); }
+  }
+
+  /** @param {number} now */
+  function frame(now) {
+    if (!startTime) startTime = now;
+    const t = Math.min(1, (now - startTime) / MORPH_MS);
+    const e = easeOut(t);
+    const dx = shiftPx * e;
+    g.setAttribute('transform', `translate(${dx.toFixed(1)}, 0)`);
+
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      // Replace with final clean render
+      drawMiniChart(container, newValues, options);
+    }
+  }
+
+  requestAnimationFrame(frame);
+  return MORPH_MS;
 }

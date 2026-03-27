@@ -11,6 +11,13 @@ import * as d3Axis from 'd3-axis';
 import { createChart, addAxes, getColors } from './chart-utils.js';
 
 /**
+ * Dash patterns for distinguishing grouped density curves without color alone.
+ * Solid, dashed, dotted, dash-dot, long-dash, etc.
+ * @type {readonly string[]}
+ */
+const DASH_PATTERNS = ['', '8,4', '2,3', '8,3,2,3', '12,4', '4,4', '2,2', '6,2,2,2,2,2'];
+
+/**
  * Silverman's rule-of-thumb bandwidth.
  * h = 0.9 * min(sd, IQR/1.34) * n^(-1/5)
  *
@@ -93,12 +100,14 @@ export function kde(values, opts = {}) {
  * @param {object} [opts]
  * @param {string} [opts.stroke] - Stroke color (default: '#569BBD')
  * @param {number} [opts.strokeWidth] - Stroke width (default: 2)
+ * @param {string} [opts.dashArray] - SVG stroke-dasharray (default: '' = solid)
  * @param {string} [opts.className] - CSS class (default: 'density-curve')
  * @returns {SVGPathElement}
  */
 export function drawDensityCurve(innerNode, xData, yData, xScale, yScale, opts = {}) {
   const stroke = opts.stroke ?? '#569BBD';
   const strokeWidth = opts.strokeWidth ?? 2;
+  const dashArray = opts.dashArray ?? '';
   const className = opts.className ?? 'density-curve';
 
   let d = '';
@@ -113,6 +122,7 @@ export function drawDensityCurve(innerNode, xData, yData, xScale, yScale, opts =
   path.setAttribute('fill', 'none');
   path.setAttribute('stroke', stroke);
   path.setAttribute('stroke-width', String(strokeWidth));
+  if (dashArray) path.setAttribute('stroke-dasharray', dashArray);
   path.setAttribute('class', className);
   path.setAttribute('aria-hidden', 'true');
   innerNode.appendChild(path);
@@ -186,6 +196,7 @@ export function drawGroupedDensity(container, groupedData, opts) {
 
   // Compute all density curves and find max density
   /** @type {Array<{name: string, x: number[], y: number[], color: string, n: number}>} */
+  /** @type {Array<{name: string, x: number[], y: number[], color: string, n: number, dash: string}>} */
   const curves = [];
   let maxDensity = 0;
 
@@ -198,7 +209,7 @@ export function drawGroupedDensity(container, groupedData, opts) {
     const result = kde(values, kdeOpts);
     const yMax = Math.max(...result.y);
     if (yMax > maxDensity) maxDensity = yMax;
-    curves.push({ name, x: result.x, y: result.y, color: colors[i % colors.length], n: values.length });
+    curves.push({ name, x: result.x, y: result.y, color: colors[i % colors.length], n: values.length, dash: DASH_PATTERNS[i % DASH_PATTERNS.length] });
   }
 
   if (maxDensity === 0) maxDensity = 1;
@@ -242,6 +253,7 @@ export function drawGroupedDensity(container, groupedData, opts) {
     drawDensityCurve(frame.inner, curve.x, curve.y, xScale, yScale, {
       stroke: curve.color,
       strokeWidth: 2.5,
+      dashArray: curve.dash,
     });
   }
 
@@ -264,6 +276,7 @@ export function drawGroupedDensity(container, groupedData, opts) {
     line.setAttribute('y2', '0');
     line.setAttribute('stroke', curves[i].color);
     line.setAttribute('stroke-width', '2.5');
+    if (curves[i].dash) line.setAttribute('stroke-dasharray', curves[i].dash);
     g.appendChild(line);
 
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');

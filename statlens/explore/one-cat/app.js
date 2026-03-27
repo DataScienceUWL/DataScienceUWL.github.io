@@ -50,6 +50,18 @@ const _labelsParam = _urlParams.get('labels');
 if (_labelsParam && ['full', 'names', 'none'].includes(_labelsParam)) {
   labelsMode = /** @type {'full'|'names'|'none'} */ (_labelsParam);
 }
+/** @type {'data'|'freq-desc'|'freq-asc'|'alpha'} */
+let activeSort = 'data';
+const _sortParam = _urlParams.get('sort');
+if (_sortParam && ['data', 'freq-desc', 'freq-asc', 'alpha'].includes(_sortParam)) {
+  activeSort = /** @type {'data'|'freq-desc'|'freq-asc'|'alpha'} */ (_sortParam);
+  const _sortRadio = /** @type {HTMLInputElement|null} */ (
+    document.querySelector(`input[name="sort-order"][value="${_sortParam}"]`));
+  if (_sortRadio) _sortRadio.checked = true;
+}
+const sortRadios = /** @type {NodeListOf<HTMLInputElement>} */ (
+  document.querySelectorAll('input[name="sort-order"]')
+);
 const catSheetBody = /** @type {HTMLElement} */ (document.getElementById('cat-sheet-body'));
 const numCategoriesInput = /** @type {HTMLInputElement} */ (document.getElementById('num-categories'));
 const summaryTableBody = /** @type {HTMLElement} */ (document.getElementById('summary-table-body'));
@@ -123,6 +135,8 @@ function readSummaryData() {
 /** @type {string[]} */
 let currentValues = [];
 let currentVarName = '';
+/** @type {string[]|null} Ordered levels from dataset metadata (null = use first-occurrence). */
+let currentLevels = null;
 
 // ── Data loading ─────────────────────────────────────────────────────
 
@@ -140,6 +154,7 @@ function loadParsedData(parsed, sourceName) {
   }
   const varName = parsed.headers[catIdx];
   const values = parsed.data.map(row => String(row[varName]));
+  currentLevels = null;
   loadValues(values, varName, sourceName);
 }
 
@@ -179,8 +194,12 @@ initDataPanel({
     const catVars = ds.variables.filter(/** @param {any} v */ v =>
       typeof v === 'object' ? v.type === 'categorical' : true
     );
-    const varName = typeof catVars[0] === 'object' ? catVars[0].name : catVars[0];
+    const catVar = catVars[0];
+    const varName = typeof catVar === 'object' ? catVar.name : catVar;
     const values = ds.rows.map(/** @param {any} r */ r => String(r[varName]));
+    // Store levels from dataset metadata if available
+    currentLevels = (typeof catVar === 'object' && Array.isArray(catVar.levels))
+      ? catVar.levels : null;
     // Populate spreadsheet
     if (catSheetBody) populateSheet(catSheetBody, 'text', values);
     loadValues(values, varName, ds.name);
@@ -189,6 +208,7 @@ initDataPanel({
   onClear: () => {
     currentValues = [];
     currentVarName = '';
+    currentLevels = null;
     if (dataPreview) dataPreview.hidden = true;
     if (resultsSection) resultsSection.hidden = true;
     if (tableContainer) tableContainer.innerHTML = '';
@@ -203,6 +223,8 @@ initDataPanel({
  * Handle the Apply button — check summary table, then spreadsheet, then CSV textarea.
  */
 function handleApply() {
+  // User-entered data has no levels metadata
+  currentLevels = null;
   // 1. Summary table
   const summary = readSummaryData();
   if (summary) {
@@ -278,6 +300,90 @@ if (showValuesToggle && showValuesCb) {
   });
 }
 
+// ── Sort controls ────────────────────────────────────────────────────
+
+sortRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    activeSort = /** @type {'data'|'freq-desc'|'freq-asc'|'alpha'} */ (radio.value);
+    updateDisplay();
+  });
+});
+
+/**
+ * Sort category names according to the active sort mode.
+ * @param {string[]} cats - unique categories in first-occurrence order
+ * @param {Map<string, number>} counts
+ * @returns {string[]} sorted copy
+ */
+function sortCategories(cats, counts) {
+  const sorted = [...cats];
+  switch (activeSort) {
+    case 'freq-desc':
+      sorted.sort((a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0));
+      break;
+    case 'freq-asc':
+      sorted.sort((a, b) => (counts.get(a) ?? 0) - (counts.get(b) ?? 0));
+      break;
+    case 'alpha':
+      sorted.sort((a, b) => a.localeCompare(b));
+      break;
+    default: // 'data' — use levels if available, otherwise first-occurrence
+      if (currentLevels) {
+        sorted.sort((a, b) => {
+          const ai = currentLevels?.indexOf(a) ?? -1;
+          const bi = currentLevels?.indexOf(b) ?? -1;
+          // Categories not in levels go to the end
+          return (ai < 0 ? Infinity : ai) - (bi < 0 ? Infinity : bi);
+        });
+      }
+      break;
+  }
+  return sorted;
+}
+
+/**
+ * Reorder values array so categories appear in the given order.
+ * Chart modules derive category order from first-occurrence, so reordering
+ * values is sufficient to control chart category order.
+ * @param {string[]} values
+ * @param {string[]} catOrder
+ * @returns {string[]}
+ */
+function reorderValues(values, catOrder) {
+  /** @type {Map<string, string[]>} */
+  const buckets = new Map();
+  for (const cat of catOrder) buckets.set(cat, []);
+  for (const v of values) {
+    const bucket = buckets.get(v);
+    if (bucket) bucket.push(v);
+  }
+  /** @type {string[]} */
+  const result = [];
+  for (const cat of catOrder) {
+    const bucket = buckets.get(cat);
+    if (bucket) result.push(...bucket);
+  }
+  return result;
+}
+
+/**
+ * Get current values reordered according to the active sort mode.
+ * @returns {string[]}
+ */
+function getSortedValues() {
+  if (activeSort === 'data' && !currentLevels) return currentValues;
+  /** @type {Map<string, number>} */
+  const counts = new Map();
+  /** @type {string[]} */
+  const cats = [];
+  for (const v of currentValues) {
+    counts.set(v, (counts.get(v) ?? 0) + 1);
+    if (!cats.includes(v)) cats.push(v);
+  }
+  const sorted = sortCategories(cats, counts);
+  return reorderValues(currentValues, sorted);
+}
+
 // ── Render ───────────────────────────────────────────────────────────
 
 function updateDisplay() {
@@ -301,6 +407,7 @@ function renderTable() {
     counts.set(v, (counts.get(v) ?? 0) + 1);
     if (!cats.includes(v)) cats.push(v);
   }
+  const sortedCats = sortCategories(cats, counts);
   const total = currentValues.length;
 
   let html = '<table class="freq-table" aria-label="Frequency table">';
@@ -309,7 +416,7 @@ function renderTable() {
   html += '<th scope="col">Proportion</th>';
   html += '</tr></thead><tbody>';
 
-  for (const cat of cats) {
+  for (const cat of sortedCats) {
     const count = counts.get(cat) ?? 0;
     html += `<tr><th scope="row">${cat}</th>`;
     html += `<td>${count}</td>`;
@@ -333,23 +440,24 @@ function renderChart() {
   chartContainer.innerHTML = '';
 
   const chartMode = activeMode;
+  const sortedValues = getSortedValues();
 
   if (activeChart === 'pie') {
-    drawPieChart(chartContainer, currentValues, {
+    drawPieChart(chartContainer, sortedValues, {
       xLabel: currentVarName,
       titleText: currentVarName,
       id: 'cat-chart',
       labels: labelsMode,
     });
   } else if (activeChart === 'waffle') {
-    drawWaffleChart(chartContainer, currentValues, {
+    drawWaffleChart(chartContainer, sortedValues, {
       xLabel: currentVarName,
       titleText: currentVarName,
       id: 'cat-chart',
       labels: labelsMode,
     });
   } else {
-    drawBarChart(chartContainer, currentValues, {
+    drawBarChart(chartContainer, sortedValues, {
       mode: chartMode === 'relative' ? 'relative' : 'frequency',
       xLabel: currentVarName,
       titleText: currentVarName,
