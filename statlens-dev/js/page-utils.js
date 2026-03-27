@@ -1352,14 +1352,28 @@ export function initDataPanel(config) {
           if (distConfig) {
             const seed = effectiveParams.gen_seed || effectiveParams.seed || String(Date.now());
             const result = generateFromConfig(distConfig, seed);
-            const varName = distConfig.var || 'value';
+            const varName = result.variable !== 'x' ? result.variable : 'value';
             const csv = varName + '\n' + result.values.join('\n');
             // Build a descriptive source name from label/units/distribution
-            const displayLabel = distConfig.label && distConfig.label !== 'x' ? distConfig.label : '';
-            const unitsSuffix = distConfig.units ? ` (${distConfig.units})` : '';
-            const sourceName = displayLabel
-              ? `${displayLabel}${unitsSuffix} — n=${result.n}`
-              : `Generated ${effectiveParams.dist} (n=${result.n})`;
+            const hasLabel = result.label && result.label !== 'x';
+            const unitsSuffix = result.units ? ` (${result.units})` : '';
+            let sourceName;
+            if (hasLabel) {
+              sourceName = `${result.label}${unitsSuffix} — n=${result.n}`;
+            } else {
+              // Build a param summary like "Normal(μ=100, σ=15)"
+              const p = result.params;
+              const paramParts = Object.entries(p)
+                .filter(([, v]) => v != null)
+                .map(([k, v]) => {
+                  const sym = { mu: 'μ', sigma: 'σ', lambda: 'λ' }[k] || k;
+                  return `${sym}=${v}`;
+                });
+              const distName = effectiveParams.dist.charAt(0).toUpperCase() + effectiveParams.dist.slice(1);
+              sourceName = paramParts.length
+                ? `${distName}(${paramParts.join(', ')})  n=${result.n}`
+                : `${distName}  n=${result.n}`;
+            }
             queueMicrotask(() => {
               handleText(csv, sourceName);
               populateEditor(csv, `generated_${effectiveParams.dist}`);
