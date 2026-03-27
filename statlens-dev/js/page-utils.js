@@ -1354,8 +1354,14 @@ export function initDataPanel(config) {
             const result = generateFromConfig(distConfig, seed);
             const varName = distConfig.var || 'value';
             const csv = varName + '\n' + result.values.join('\n');
+            // Build a descriptive source name from label/units/distribution
+            const displayLabel = distConfig.label && distConfig.label !== 'x' ? distConfig.label : '';
+            const unitsSuffix = distConfig.units ? ` (${distConfig.units})` : '';
+            const sourceName = displayLabel
+              ? `${displayLabel}${unitsSuffix} — n=${result.n}`
+              : `Generated ${effectiveParams.dist} (n=${result.n})`;
             queueMicrotask(() => {
-              handleText(csv, `Generated ${effectiveParams.dist} (n=${result.n})`);
+              handleText(csv, sourceName);
               populateEditor(csv, `generated_${effectiveParams.dist}`);
               postLoadUI();
               resolveReady();

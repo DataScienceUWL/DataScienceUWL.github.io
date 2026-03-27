@@ -199,6 +199,7 @@ function sampleCategorical(rng, categories, probs) {
  * @property {number} n - Sample size
  * @property {string} [var] - Variable name
  * @property {string} [label] - Display label
+ * @property {string} [units] - Units of measurement (e.g., 'inches', 'kg')
  * @property {number} [round] - Decimal places to round to
  * @property {number} [clip_min] - Lower bound for clipping
  * @property {number} [clip_max] - Upper bound for clipping
@@ -292,7 +293,7 @@ function resolveParamRanges(rng, baseParams, ranges) {
  * @param {DistConfig} config - Distribution specification
  * @param {string} seed - PRNG seed string
  * @param {Object<string, number>} [overrides] - URL param overrides for distribution params
- * @returns {{ values: (number|string)[], variable: string, label: string, n: number, params: Object<string, number> }}
+ * @returns {{ values: (number|string)[], variable: string, label: string, units: string, n: number, params: Object<string, number> }}
  */
 export function generateFromConfig(config, seed, overrides) {
   const rng = createRng(seed);
@@ -333,6 +334,7 @@ export function generateFromConfig(config, seed, overrides) {
     values,
     variable: config.var ?? 'x',
     label: config.label ?? config.var ?? 'x',
+    units: config.units ?? '',
     n,
     params
   };
@@ -372,6 +374,7 @@ export function configFromUrlParams(urlParams) {
     n,
     var: urlParams.var ?? 'x',
     label: urlParams.label ?? urlParams.var ?? 'x',
+    units: urlParams.units ?? '',
   };
 
   // Optional transforms from URL
@@ -393,7 +396,7 @@ export function configFromUrlParams(urlParams) {
 
 /**
  * Build a DistConfig from a dataset JSON's generator block.
- * @param {object} generator - The generator block from the dataset JSON
+ * @param {{ distribution: string, params?: Object<string, number>, n?: number, transforms?: Array<Object<string, number>>, param_ranges?: Object<string, [number, number]>, version?: number, variable_name?: string, units?: string, display?: { label?: string } }} generator - The generator block from the dataset JSON
  * @param {import('./types.js').StatLensParams} urlParams - For overrides
  * @returns {DistConfig}
  */
@@ -413,6 +416,8 @@ export function configFromGenerator(generator, urlParams) {
   if (urlParams.var) config.var = urlParams.var;
   if (generator.display?.label) config.label = generator.display.label;
   if (urlParams.label) config.label = urlParams.label;
+  if (generator.units) config.units = generator.units;
+  if (urlParams.units) config.units = urlParams.units;
 
   return config;
 }
