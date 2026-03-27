@@ -1351,7 +1351,14 @@ export function initDataPanel(config) {
           const distConfig = configFromUrlParams(effectiveParams);
           if (distConfig) {
             const seed = effectiveParams.gen_seed || effectiveParams.seed || String(Date.now());
-            const result = generateFromConfig(distConfig, seed);
+            let result;
+            try {
+              result = generateFromConfig(distConfig, seed);
+            } catch (e) {
+              console.warn('[datagen] generation failed:', /** @type {Error} */ (e).message);
+              resolveReady();
+              return;
+            }
             // Use label as CSV header (shown in summary bar and axis labels).
             // With ?label=: students see a meaningful name like "Test Scores"
             // Without: they see "Random Data" (distribution details go in browser tab title for instructors)

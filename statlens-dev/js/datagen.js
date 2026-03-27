@@ -296,9 +296,11 @@ function resolveParamRanges(rng, baseParams, ranges) {
  * @returns {{ values: (number|string)[], variable: string, label: string, units: string, n: number, params: Object<string, number> }}
  */
 export function generateFromConfig(config, seed, overrides) {
+  const MAX_N = 10000;
   const rng = createRng(seed);
   const dist = config.distribution;
-  const n = overrides?.n ?? config.n;
+  const rawN = overrides?.n ?? config.n;
+  const n = Math.min(Math.max(rawN, 1), MAX_N);
 
   // Start with base params, resolve ranges, then apply overrides
   let params = { ...(config.params ?? {}) };
@@ -312,6 +314,32 @@ export function generateFromConfig(config, seed, overrides) {
         params[k] = v;
       }
     }
+  }
+
+  // Validate distribution parameters
+  if ((dist === 'normal' || dist === 'lognormal') && params.sigma != null && params.sigma < 0) {
+    params.sigma = Math.abs(params.sigma);
+  }
+  if (dist === 'exponential' && params.lambda != null && params.lambda <= 0) {
+    params.lambda = 1;
+  }
+  if ((dist === 'gamma' || dist === 'chisq') && params.shape != null && params.shape <= 0) {
+    params.shape = 1;
+  }
+  if (dist === 'gamma' && params.scale != null && params.scale <= 0) {
+    params.scale = 1;
+  }
+  if ((dist === 'binomial' || dist === 'bernoulli') && params.prob != null) {
+    params.prob = Math.max(0, Math.min(1, params.prob));
+  }
+  if (dist === 'binomial' && params.trials != null && params.trials < 1) {
+    params.trials = 1;
+  }
+  if ((dist === 'chisq' || dist === 't') && params.df != null && params.df < 1) {
+    params.df = 1;
+  }
+  if (dist === 'uniform' && params.a != null && params.b != null && params.a >= params.b) {
+    params.b = params.a + 1;
   }
 
   // Generate values
