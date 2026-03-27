@@ -93,7 +93,9 @@ export function parseParams(queryString) {
 
         if (INT_PARAMS.has(key)) {
             const parsed = parseInt(value, 10);
-            if (isFinite(parsed) && parsed > 0) {
+            // round=0 is valid (round to integers), so allow >= 0 for 'round'
+            const minVal = key === 'round' ? 0 : 1;
+            if (isFinite(parsed) && parsed >= minVal) {
                 /** @type {any} */ (params)[key] = parsed;
             }
         } else if (FLOAT_PARAMS.has(key)) {
