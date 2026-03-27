@@ -74,11 +74,14 @@ const POINT_STROKE = '#569BBD';
 /** Extra vertical padding factor (fraction of data range) for line manipulation room. */
 const Y_PAD_FACTOR = 0.25;
 
-/** Width of the invisible hit area for the draggable line (viewBox units). */
-const LINE_HIT_WIDTH = 16;
+/** Whether this is a touch-capable device. */
+const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
 
-/** Small endpoint indicators (viewBox units). */
-const ENDPOINT_RADIUS = 5;
+/** Width of the invisible hit area for the draggable line (viewBox units). */
+const LINE_HIT_WIDTH = IS_TOUCH ? 36 : 16;
+
+/** Endpoint indicators (viewBox units) — larger on touch for 44px-equivalent targets. */
+const ENDPOINT_RADIUS = IS_TOUCH ? 12 : 5;
 
 /** Debounce interval for screen reader announcements (ms). */
 const ANNOUNCE_DEBOUNCE = 500;
@@ -430,6 +433,10 @@ function renderChart() {
     // Update sidebar
     sidebar.hidden = false;
     updateStats();
+
+    // Show touch hint on touch devices
+    const touchHint = /** @type {HTMLElement|null} */ (document.querySelector('.touch-hint'));
+    if (touchHint && IS_TOUCH) touchHint.hidden = false;
 }
 
 /** Draw or update the student's line + endpoint indicators. */
@@ -452,25 +459,25 @@ function drawUserLine() {
         .attr('stroke-width', 2.5)
         .style('pointer-events', 'none');
 
-    // Small endpoint indicators
+    // Endpoint indicators
     overlays.append('circle')
-        .attr('class', 'user-endpoint')
+        .attr('class', 'user-endpoint user-endpoint-left')
         .attr('cx', xScale(x0))
         .attr('cy', yScale(handleLeftY))
         .attr('r', ENDPOINT_RADIUS)
         .attr('fill', USER_COLOR)
         .attr('stroke', '#fff')
-        .attr('stroke-width', 1.5)
+        .attr('stroke-width', IS_TOUCH ? 2 : 1.5)
         .style('pointer-events', 'none');
 
     overlays.append('circle')
-        .attr('class', 'user-endpoint')
+        .attr('class', 'user-endpoint user-endpoint-right')
         .attr('cx', xScale(x1))
         .attr('cy', yScale(handleRightY))
         .attr('r', ENDPOINT_RADIUS)
         .attr('fill', USER_COLOR)
         .attr('stroke', '#fff')
-        .attr('stroke-width', 1.5)
+        .attr('stroke-width', IS_TOUCH ? 2 : 1.5)
         .style('pointer-events', 'none');
 }
 
@@ -484,15 +491,22 @@ function drawUserLine() {
 function setupLineDrag() {
     if (!frame || !xScale || !yScale) return;
     const annotations = d3Selection.select(frame.inner).select('.annotations');
-    annotations.selectAll('.line-hit-area, .line-drag-focus').remove();
+    annotations.selectAll('.line-hit-area, .line-drag-focus, .endpoint-handle').remove();
 
     const [x0, x1] = xScale.domain();
+    const svgEl = /** @type {SVGSVGElement} */ (d3Selection.select(frame.inner).node()?.closest?.('svg'));
 
     // Readonly mode — no dragging
     if (readonlyMode) return;
 
+    /** Prevent page scroll while dragging the line on touch devices. */
+    function preventScroll(/** @type {boolean} */ active) {
+        if (svgEl) svgEl.style.touchAction = active ? 'none' : 'pan-x';
+    }
+
     const drag = d3Drag.drag()
         .on('start', function (event) {
+            preventScroll(true);
             // Determine where along the line the user grabbed (0 = left, 1 = right)
             const px = event.x;
             const px0 = /** @type {Function} */ (xScale)(x0);
@@ -515,6 +529,9 @@ function setupLineDrag() {
             handleRightY += dy * rightWeight;
 
             updateFromDrag();
+        })
+        .on('end', function () {
+            preventScroll(false);
         });
 
     // Invisible wide hit area for easy grabbing
@@ -535,6 +552,54 @@ function setupLineDrag() {
         .on('mouseup.cursor', function () {
             d3Selection.select(this).style('cursor', 'grab');
         });
+
+    // On touch devices, add visible draggable endpoint handles for easier manipulation
+    if (IS_TOUCH) {
+        const endpointDrag = (/** @type {'left'|'right'} */ side) => d3Drag.drag()
+            .on('start', function () { preventScroll(true); })
+            .on('drag', function (event) {
+                if (!yScale) return;
+                const dy = /** @type {Function} */ (yScale).invert(event.y) -
+                           /** @type {Function} */ (yScale).invert(event.y - event.dy);
+                if (side === 'left') handleLeftY += dy;
+                else handleRightY += dy;
+                updateFromDrag();
+                // Also update this handle's position
+                d3Selection.select(this).attr('cy', /** @type {Function} */ (yScale)(side === 'left' ? handleLeftY : handleRightY));
+                // Update the other endpoint handle too
+                const other = annotations.select(side === 'left' ? '.endpoint-handle-right' : '.endpoint-handle-left');
+                other.attr('cy', /** @type {Function} */ (yScale)(side === 'left' ? handleRightY : handleLeftY));
+            })
+            .on('end', function () { preventScroll(false); });
+
+        // Left endpoint handle
+        annotations.append('circle')
+            .attr('class', 'endpoint-handle endpoint-handle-left')
+            .attr('cx', xScale(x0))
+            .attr('cy', yScale(handleLeftY))
+            .attr('r', ENDPOINT_RADIUS + 4)
+            .attr('fill', USER_COLOR)
+            .attr('fill-opacity', 0.25)
+            .attr('stroke', USER_COLOR)
+            .attr('stroke-width', 2)
+            .style('cursor', 'ns-resize')
+            .style('touch-action', 'none')
+            .call(/** @type {any} */ (endpointDrag('left')));
+
+        // Right endpoint handle
+        annotations.append('circle')
+            .attr('class', 'endpoint-handle endpoint-handle-right')
+            .attr('cx', xScale(x1))
+            .attr('cy', yScale(handleRightY))
+            .attr('r', ENDPOINT_RADIUS + 4)
+            .attr('fill', USER_COLOR)
+            .attr('fill-opacity', 0.25)
+            .attr('stroke', USER_COLOR)
+            .attr('stroke-width', 2)
+            .style('cursor', 'ns-resize')
+            .style('touch-action', 'none')
+            .call(/** @type {any} */ (endpointDrag('right')));
+    }
 
     // Focusable element for keyboard control
     annotations.append('rect')
@@ -596,15 +661,18 @@ function setupLineDrag() {
         });
 }
 
-/** Update the hit area position to match the current line. */
+/** Update the hit area and endpoint handle positions to match the current line. */
 function updateHitArea() {
     if (!frame || !xScale || !yScale) return;
     const annotations = d3Selection.select(frame.inner).select('.annotations');
-    const [x0, x1] = xScale.domain();
 
     annotations.select('.line-hit-area')
         .attr('y1', yScale(handleLeftY))
         .attr('y2', yScale(handleRightY));
+
+    // Update touch endpoint handles if present
+    annotations.select('.endpoint-handle-left').attr('cy', yScale(handleLeftY));
+    annotations.select('.endpoint-handle-right').attr('cy', yScale(handleRightY));
 }
 
 /**
