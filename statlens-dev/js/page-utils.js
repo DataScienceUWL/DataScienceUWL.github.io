@@ -1352,18 +1352,22 @@ export function initDataPanel(config) {
           if (distConfig) {
             const seed = effectiveParams.gen_seed || effectiveParams.seed || String(Date.now());
             const result = generateFromConfig(distConfig, seed);
-            // Use label as CSV header (shown in summary bar), fall back to var, then 'value'
+            // Use label as CSV header (shown in summary bar and axis labels).
+            // With ?label=: students see a meaningful name like "Test Scores"
+            // Without: they see "Random Data" (distribution details go in browser tab title for instructors)
             const hasLabel = result.label && result.label !== 'x';
+            const hasVar = result.variable !== 'x';
             const csvHeader = hasLabel ? result.label
-              : (result.variable !== 'x' ? result.variable : 'value');
+              : hasVar ? result.variable : 'Random Data';
             const csv = csvHeader + '\n' + result.values.join('\n');
-            // Build a descriptive source name
+            // Source name: label for students, distribution summary for instructors
             const unitsSuffix = result.units ? ` (${result.units})` : '';
+            const distName = effectiveParams.dist.charAt(0).toUpperCase() + effectiveParams.dist.slice(1);
             let sourceName;
             if (hasLabel) {
               sourceName = `${result.label}${unitsSuffix}`;
             } else {
-              // Build a param summary like "Normal(μ=100, σ=15)"
+              // Distribution summary for browser tab title: "Normal(μ=100, σ=15)"
               const p = result.params;
               const paramParts = Object.entries(p)
                 .filter(([, v]) => v != null)
@@ -1371,7 +1375,6 @@ export function initDataPanel(config) {
                   const sym = { mu: 'μ', sigma: 'σ', lambda: 'λ' }[k] || k;
                   return `${sym}=${v}`;
                 });
-              const distName = effectiveParams.dist.charAt(0).toUpperCase() + effectiveParams.dist.slice(1);
               sourceName = paramParts.length
                 ? `${distName}(${paramParts.join(', ')})`
                 : distName;
