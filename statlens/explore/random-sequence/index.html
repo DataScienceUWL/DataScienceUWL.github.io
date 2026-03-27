@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stump the Chump | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <style>
+    /* ── Layout ─────────────────────────────────────────────────────── */
+    .chump-app {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    .intro-text {
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+
+    /* ── Sequence input ────────────────────────────────────────────── */
+    .seq-section {
+      margin: 1.5rem 0;
+    }
+    .seq-section h2 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    .seq-input-wrap {
+      position: relative;
+    }
+    .seq-input {
+      width: 100%;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.3rem;
+      letter-spacing: 0.25em;
+      padding: 0.75rem 1rem;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      text-transform: uppercase;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    .seq-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(86, 155, 189, 0.2);
+    }
+    .seq-counter {
+      font-size: 0.85rem;
+      color: #777;
+      margin-top: 0.25rem;
+      text-align: right;
+    }
+    .seq-hint {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 0.25rem;
+    }
+
+    /* ── Quick-entry buttons ───────────────────────────────────────── */
+    .quick-entry {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .quick-entry span {
+      font-size: 0.85rem;
+      color: #777;
+    }
+    .quick-btn {
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 0.4rem 1.2rem;
+      border-radius: 6px;
+      border: 2px solid var(--accent);
+      background: white;
+      color: var(--accent);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .quick-btn:hover, .quick-btn:focus-visible {
+      background: var(--accent);
+      color: white;
+    }
+    .quick-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ── Action buttons ────────────────────────────────────────────── */
+    .action-row {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin: 1.5rem 0;
+      flex-wrap: wrap;
+    }
+    .compare-btn {
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 0.7rem 2rem;
+      border-radius: 8px;
+      border: none;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .compare-btn:hover, .compare-btn:focus-visible {
+      opacity: 0.85;
+    }
+    .compare-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .reset-btn {
+      font-size: 0.95rem;
+      padding: 0.5rem 1.5rem;
+      border-radius: 6px;
+      border: 2px solid #888;
+      background: white;
+      color: #555;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .reset-btn:hover, .reset-btn:focus-visible {
+      background: #555;
+      color: white;
+    }
+
+    /* ── Sequence display ──────────────────────────────────────────── */
+    .results-panel {
+      margin: 1.5rem 0;
+    }
+    .seq-display-section {
+      margin-bottom: 1.5rem;
+    }
+    .seq-display-section h3 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .seq-display {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.2rem;
+      letter-spacing: 0.2em;
+      line-height: 1.8;
+      padding: 0.75rem 1rem;
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      word-break: break-all;
+    }
+    .seq-display .run {
+      display: inline;
+      border-radius: 3px;
+      padding: 1px 0;
+    }
+    .seq-display .run-h {
+      background: rgba(86, 155, 189, 0.15);
+    }
+    .seq-display .run-t {
+      background: rgba(240, 81, 51, 0.15);
+    }
+    .seq-display .run-long {
+      font-weight: 700;
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    .seq-display .run-long.run-h {
+      background: rgba(86, 155, 189, 0.35);
+      text-decoration-color: #569BBD;
+    }
+    .seq-display .run-long.run-t {
+      background: rgba(240, 81, 51, 0.35);
+      text-decoration-color: #F05133;
+    }
+
+    /* ── Stats comparison table ─────────────────────────────────────── */
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.95rem;
+    }
+    .stats-table th, .stats-table td {
+      padding: 0.5rem 0.75rem;
+      text-align: center;
+      border-bottom: 1px solid #dee2e6;
+    }
+    .stats-table th {
+      background: #f1f3f5;
+      font-weight: 700;
+    }
+    .stats-table th:first-child,
+    .stats-table td:first-child {
+      text-align: left;
+    }
+    .stats-table .highlight-cell {
+      font-weight: 700;
+      color: #D55E00;
+    }
+    .stats-table .label-col {
+      font-weight: 600;
+      color: #444;
+    }
+
+    /* ── Run-length chart ──────────────────────────────────────────── */
+    .run-chart-section {
+      margin: 1.5rem 0;
+    }
+    .run-chart-section h3 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .run-bars {
+      display: flex;
+      gap: 2px;
+      align-items: flex-end;
+      height: 120px;
+      padding: 0 4px;
+    }
+    .run-bar-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      min-width: 0;
+    }
+    .run-bar {
+      width: 100%;
+      min-height: 2px;
+      border-radius: 2px 2px 0 0;
+      transition: height 0.4s ease;
+    }
+    .run-bar-label {
+      font-size: 0.7rem;
+      color: #777;
+      text-align: center;
+    }
+    .run-chart-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .run-chart-col h4 {
+      font-size: 0.9rem;
+      text-align: center;
+      margin: 0 0 0.5rem;
+      color: #555;
+    }
+
+    /* ── Interpretation ────────────────────────────────────────────── */
+    .interpretation {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+      line-height: 1.6;
+    }
+    .interpretation h3 {
+      margin-top: 0;
+      font-size: 1rem;
+    }
+    .interpretation p {
+      margin: 0.5rem 0;
+    }
+    .callout {
+      background: rgba(86, 155, 189, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 0.75rem 1rem;
+      margin: 1rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+    .try-again-row {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    /* ── Responsive ────────────────────────────────────────────────── */
+    @media (max-width: 480px) {
+      .seq-input { font-size: 1.1rem; letter-spacing: 0.15em; }
+      .seq-display { font-size: 1rem; letter-spacing: 0.1em; }
+      .run-chart-pair { grid-template-columns: 1fr; }
+      .run-bars { height: 80px; }
+    }
+
+    /* ── Reduced motion ────────────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      .run-bar { transition: none; }
+    }
+
+    /* ── Screen reader ─────────────────────────────────────────────── */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); border: 0;
+    }
+    </style>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../../">StatLens</a> &rsaquo;
+        <a href="../">Explore</a> &rsaquo;
+        <span aria-current="page">Stump the Chump</span>
+    </nav>
+
+    <main id="main" class="chump-app">
+        <h1>Stump the Chump</h1>
+
+        <div class="intro-text">
+            <p>Think you can fake randomness? Type a sequence of <strong>H</strong> (heads)
+            and <strong>T</strong> (tails) that <em>looks</em> like it came from flipping a fair coin.
+            Then we'll compare yours to a real random sequence and see if we can tell the difference.</p>
+        </div>
+
+        <!-- Step 1: Student enters their sequence -->
+        <div class="seq-section" id="input-section">
+            <h2>Your "Random" Sequence</h2>
+            <p class="seq-hint">Type <strong>H</strong> and <strong>T</strong> only — at least <span id="min-len">20</span> characters.
+            Or tap the buttons below.</p>
+            <div class="seq-input-wrap">
+                <input type="text" class="seq-input" id="seq-input"
+                       placeholder="e.g. HTHTTHHTTHHT..."
+                       autocomplete="off" autocapitalize="characters" spellcheck="false"
+                       aria-label="Enter your random-looking sequence of H and T">
+            </div>
+            <div class="seq-counter"><span id="char-count">0</span> / <span id="target-len">40</span></div>
+            <div class="quick-entry">
+                <span>Tap to add:</span>
+                <button class="quick-btn" id="btn-add-h" aria-label="Add H">H</button>
+                <button class="quick-btn" id="btn-add-t" aria-label="Add T">T</button>
+                <button class="quick-btn" id="btn-backspace" aria-label="Delete last character" style="border-color:#888; color:#888;">&larr;</button>
+            </div>
+        </div>
+
+        <div class="action-row">
+            <button class="compare-btn" id="btn-compare" disabled>Compare to Real Random</button>
+            <button class="reset-btn" id="btn-reset" hidden>Try Again</button>
+        </div>
+
+        <!-- Results (hidden until compare) -->
+        <div id="results" class="results-panel" hidden>
+            <!-- Sequences side by side -->
+            <div class="seq-display-section">
+                <h3>Your Sequence</h3>
+                <div class="seq-display" id="display-human" aria-label="Your sequence with runs highlighted"></div>
+            </div>
+            <div class="seq-display-section">
+                <h3>Computer's Random Sequence</h3>
+                <div class="seq-display" id="display-random" aria-label="Computer random sequence with runs highlighted"></div>
+            </div>
+
+            <!-- Stats table -->
+            <table class="stats-table" aria-label="Sequence comparison statistics">
+                <thead>
+                    <tr>
+                        <th>Statistic</th>
+                        <th>Yours</th>
+                        <th>Computer</th>
+                        <th>Expected</th>
+                    </tr>
+                </thead>
+                <tbody id="stats-body">
+                </tbody>
+            </table>
+
+            <!-- Run-length distribution chart -->
+            <div class="run-chart-section">
+                <h3>Run-Length Distribution</h3>
+                <p style="font-size: 0.85rem; color: #777; margin-bottom: 0.75rem;">
+                    A "run" is a streak of consecutive identical flips (e.g., HHH = run of 3).
+                    Longer bars mean more runs of that length.
+                </p>
+                <div class="run-chart-pair">
+                    <div class="run-chart-col">
+                        <h4>Your Sequence</h4>
+                        <div class="run-bars" id="chart-human"></div>
+                    </div>
+                    <div class="run-chart-col">
+                        <h4>Computer's Random</h4>
+                        <div class="run-bars" id="chart-random"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interpretation -->
+            <div class="interpretation" id="interpretation"></div>
+
+            <div class="try-again-row">
+                <button class="reset-btn" id="btn-reset-bottom">Try Again</button>
+            </div>
+        </div>
+
+        <div id="sr-announce" class="sr-only" aria-live="polite"></div>
+    </main>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>
