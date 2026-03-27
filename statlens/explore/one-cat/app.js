@@ -12,6 +12,7 @@ import { announce, initTabs, initDataPanel, initHelp, setPageTitle } from '../..
 import { parseCSV } from '../../js/csv-parser.js';
 import { initSheet, handleSheetPaste, readSheetValues, populateSheet } from '../../js/spreadsheet.js';
 import { wrapTable } from '../../js/export.js';
+import { getColors } from '../../js/chart-utils.js';
 
 initHelp();
 const baseTitle = document.title.replace(/\s*\|\s*StatLens$/, '');
@@ -430,6 +431,18 @@ function renderTable() {
   html += '</tr></tfoot></table>';
 
   tableContainer.innerHTML = html;
+
+  // Tint rows to match chart colors (same palette order as drawBarChart)
+  const colors = getColors(sortedCats.length);
+  const bodyRows = tableContainer.querySelectorAll('tbody tr');
+  bodyRows.forEach((row, i) => {
+    const color = colors[i % colors.length];
+    const th = row.querySelector('th[scope="row"]');
+    if (th) /** @type {HTMLElement} */ (th).style.borderLeft = `3px solid ${color}`;
+    row.querySelectorAll('td').forEach(cell => {
+      /** @type {HTMLElement} */ (cell).style.backgroundColor = color + '18';
+    });
+  });
 
   const table = /** @type {HTMLTableElement|null} */ (tableContainer.querySelector('table'));
   if (table) wrapTable(table, { copyTitle: 'Copy frequency table to clipboard' });
