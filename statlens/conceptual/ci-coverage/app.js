@@ -218,7 +218,7 @@ function renderChart() {
   const shown = intervals.slice(-maxShow);
   const startIdx = Math.max(0, total - maxShow);
 
-  const margin = { top: 34, right: 30, bottom: 40, left: 50 };
+  const margin = { top: 38, right: 30, bottom: 44, left: 50 };
   const width = 560;
   const barHeight = Math.min(5, 400 / shown.length);
   const height = Math.max(200, shown.length * (barHeight + 1) + margin.top + margin.bottom);
@@ -246,7 +246,7 @@ function renderChart() {
     .attr('y', 14)
     .attr('text-anchor', 'middle')
     .attr('font-weight', 700)
-    .attr('font-size', '12px')
+    .attr('font-size', '14px')
     .text(`Confidence Intervals (showing last ${shown.length} of ${total})`);
 
   const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
@@ -266,7 +266,7 @@ function renderChart() {
     .attr('x', xScale(popMu))
     .attr('y', -4)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '11px')
+    .attr('font-size', '13px')
     .attr('fill', '#7B2D8E')
     .attr('font-weight', 700)
     .text(`μ = ${popMu.toFixed(2)}`);
@@ -283,9 +283,9 @@ function renderChart() {
     .attr('stroke', '#bbb').attr('stroke-width', 0.5);
 
   const tooltipLine1 = tooltipG.append('text')
-    .attr('font-size', '9.5px');
+    .attr('font-size', '13px');
   const tooltipLine2 = tooltipG.append('text')
-    .attr('font-size', '9.5px');
+    .attr('font-size', '13px');
 
   /**
    * @param {typeof shown[0]} ci
@@ -300,8 +300,8 @@ function renderChart() {
     renderStatLabel(tooltipLine1, `(${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)})  x\u0304 = ${ci.xbar.toFixed(2)}`);
     tooltipLine2.text(captureText).attr('fill', captureColor).attr('font-weight', 600);
 
-    const pad = 5;
-    const lineSpacing = 12;
+    const pad = 6;
+    const lineSpacing = 16;
 
     tooltipLine1.attr('x', pad).attr('y', lineSpacing);
     tooltipLine2.attr('x', pad).attr('y', lineSpacing * 2 + 1);
@@ -375,7 +375,7 @@ function renderChart() {
     .attr('x', innerW / 2)
     .attr('y', innerH + 32)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '11px')
+    .attr('font-size', '13px')
     .text('Value');
 
   // Coverage stats overlay (top-right corner, always visible)
@@ -391,9 +391,9 @@ function renderChart() {
     `${intervals.filter(c => c.captures).length} captured μ,  ${total - intervals.filter(c => c.captures).length} missed`,
     `Coverage: ${rate}%`,
   ];
-  const lineH = 14;
-  const boxH = statsLines.length * lineH + 8;
-  const boxW = 138;
+  const lineH = 17;
+  const boxH = statsLines.length * lineH + 10;
+  const boxW = 170;
   statsG.append('rect')
     .attr('x', -boxW)
     .attr('y', 0)
@@ -409,7 +409,7 @@ function renderChart() {
     statsG.append('text')
       .attr('x', -boxW + 6)
       .attr('y', lineH * (i + 1))
-      .attr('font-size', '10px')
+      .attr('font-size', '13px')
       .attr('fill', i === 2 ? '#114B5F' : '#333')
       .attr('font-weight', i === 2 ? 700 : 400)
       .text(line);

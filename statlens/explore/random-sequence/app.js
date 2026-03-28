@@ -11,6 +11,7 @@
  */
 
 import { createRng } from '../../js/prng.js';
+import { initHelp } from '../../js/page-utils.js';
 
 // ── Config from URL ──────────────────────────────────────────────────
 const params = new URLSearchParams(location.search);
@@ -394,3 +395,6 @@ function reset() {
 function announce(msg) {
   if (announceEl) announceEl.textContent = msg;
 }
+
+// ── Init page chrome ──────────────────────────────────────────────────
+initHelp();
