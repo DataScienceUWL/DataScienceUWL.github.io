@@ -277,17 +277,14 @@ function renderChart() {
     .attr('pointer-events', 'none');
 
   const tooltipRect = tooltipG.append('rect')
-    .attr('rx', 4).attr('ry', 4)
-    .attr('fill', 'white').attr('fill-opacity', 0.95)
-    .attr('stroke', '#999').attr('stroke-width', 0.5)
-    .attr('filter', 'drop-shadow(0 1px 3px rgba(0,0,0,0.15))');
+    .attr('rx', 3).attr('ry', 3)
+    .attr('fill', 'white').attr('fill-opacity', 0.92)
+    .attr('stroke', '#bbb').attr('stroke-width', 0.5);
 
   const tooltipLine1 = tooltipG.append('text')
-    .attr('font-size', '10.5px').attr('font-weight', 700);
+    .attr('font-size', '9.5px');
   const tooltipLine2 = tooltipG.append('text')
-    .attr('font-size', '10px');
-  const tooltipLine3 = tooltipG.append('text')
-    .attr('font-size', '10px');
+    .attr('font-size', '9.5px');
 
   /**
    * @param {typeof shown[0]} ci
@@ -295,32 +292,26 @@ function renderChart() {
    * @param {number} cy — y position of the CI line
    */
   function showTooltip(ci, idx, cy) {
-    const ciNum = startIdx + idx + 1;
     const captureText = ci.captures ? 'Captures μ' : 'Misses μ';
     const captureColor = ci.captures ? '#569BBD' : '#F05133';
 
-    tooltipLine1.text(`CI #${ciNum}: (${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)})`);
-    tooltipLine2.text(`x̄ = ${ci.xbar.toFixed(2)},  width = ${(ci.hi - ci.lo).toFixed(2)}`);
-    tooltipLine3.text(captureText).attr('fill', captureColor).attr('font-weight', 600);
+    tooltipLine1.text(`(${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)})  x̄ = ${ci.xbar.toFixed(2)}`);
+    tooltipLine2.text(captureText).attr('fill', captureColor).attr('font-weight', 600);
 
-    // Position: try to place above the line, flip below if near top
-    const pad = 6;
-    const boxW = 190;
-    const boxH = 46;
-    const lineSpacing = 13;
+    const pad = 5;
+    const boxW = 175;
+    const boxH = 30;
+    const lineSpacing = 12;
 
-    // Horizontal: center on CI midpoint, clamp to SVG bounds
     let tx = margin.left + xScale((ci.lo + ci.hi) / 2) - boxW / 2;
     tx = Math.max(4, Math.min(width - boxW - 4, tx));
-    // Vertical: above the line, or below if too close to top
-    let ty = margin.top + cy - boxH - 6;
-    if (ty < 4) ty = margin.top + cy + 8;
+    let ty = margin.top + cy - boxH - 4;
+    if (ty < 4) ty = margin.top + cy + 6;
 
     tooltipG.attr('transform', `translate(${tx}, ${ty})`);
     tooltipRect.attr('width', boxW).attr('height', boxH);
     tooltipLine1.attr('x', pad).attr('y', lineSpacing);
-    tooltipLine2.attr('x', pad).attr('y', lineSpacing * 2);
-    tooltipLine3.attr('x', pad).attr('y', lineSpacing * 3 + 1);
+    tooltipLine2.attr('x', pad).attr('y', lineSpacing * 2 + 1);
     tooltipG.attr('visibility', 'visible');
   }
 
