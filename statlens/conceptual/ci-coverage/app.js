@@ -295,7 +295,7 @@ function renderChart() {
     const captureText = ci.captures ? 'Captures μ' : 'Misses μ';
     const captureColor = ci.captures ? '#569BBD' : '#F05133';
 
-    tooltipLine1.text(`(${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)})  x̄ = ${ci.xbar.toFixed(2)}`);
+    tooltipLine1.text(`(${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)})  mean = ${ci.xbar.toFixed(2)}`);
     tooltipLine2.text(captureText).attr('fill', captureColor).attr('font-weight', 600);
 
     const pad = 5;
