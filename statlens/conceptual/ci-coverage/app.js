@@ -270,6 +270,64 @@ function renderChart() {
     .attr('font-weight', 700)
     .text(`μ = ${popMu.toFixed(2)}`);
 
+  // Tooltip group (hidden by default, rendered on top of everything)
+  const tooltipG = svg.append('g')
+    .attr('class', 'ci-tooltip')
+    .attr('visibility', 'hidden')
+    .attr('pointer-events', 'none');
+
+  const tooltipRect = tooltipG.append('rect')
+    .attr('rx', 4).attr('ry', 4)
+    .attr('fill', 'white').attr('fill-opacity', 0.95)
+    .attr('stroke', '#999').attr('stroke-width', 0.5)
+    .attr('filter', 'drop-shadow(0 1px 3px rgba(0,0,0,0.15))');
+
+  const tooltipLine1 = tooltipG.append('text')
+    .attr('font-size', '10.5px').attr('font-weight', 700);
+  const tooltipLine2 = tooltipG.append('text')
+    .attr('font-size', '10px');
+  const tooltipLine3 = tooltipG.append('text')
+    .attr('font-size', '10px');
+
+  /**
+   * @param {typeof shown[0]} ci
+   * @param {number} idx — index within shown array
+   * @param {number} cy — y position of the CI line
+   */
+  function showTooltip(ci, idx, cy) {
+    const ciNum = startIdx + idx + 1;
+    const captureText = ci.captures ? 'Captures μ' : 'Misses μ';
+    const captureColor = ci.captures ? '#569BBD' : '#F05133';
+
+    tooltipLine1.text(`CI #${ciNum}: (${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)})`);
+    tooltipLine2.text(`x̄ = ${ci.xbar.toFixed(2)},  width = ${(ci.hi - ci.lo).toFixed(2)}`);
+    tooltipLine3.text(captureText).attr('fill', captureColor).attr('font-weight', 600);
+
+    // Position: try to place above the line, flip below if near top
+    const pad = 6;
+    const boxW = 190;
+    const boxH = 46;
+    const lineSpacing = 13;
+
+    // Horizontal: center on CI midpoint, clamp to SVG bounds
+    let tx = margin.left + xScale((ci.lo + ci.hi) / 2) - boxW / 2;
+    tx = Math.max(4, Math.min(width - boxW - 4, tx));
+    // Vertical: above the line, or below if too close to top
+    let ty = margin.top + cy - boxH - 6;
+    if (ty < 4) ty = margin.top + cy + 8;
+
+    tooltipG.attr('transform', `translate(${tx}, ${ty})`);
+    tooltipRect.attr('width', boxW).attr('height', boxH);
+    tooltipLine1.attr('x', pad).attr('y', lineSpacing);
+    tooltipLine2.attr('x', pad).attr('y', lineSpacing * 2);
+    tooltipLine3.attr('x', pad).attr('y', lineSpacing * 3 + 1);
+    tooltipG.attr('visibility', 'visible');
+  }
+
+  function hideTooltip() {
+    tooltipG.attr('visibility', 'hidden');
+  }
+
   // CI segments
   const yStep = innerH / shown.length;
   for (let i = 0; i < shown.length; i++) {
@@ -293,6 +351,19 @@ function renderChart() {
       .attr('cy', y)
       .attr('r', Math.max(1.2, barHeight * 0.4))
       .attr('fill', color);
+
+    // Invisible wider hit target for hover/touch
+    g.append('rect')
+      .attr('x', xScale(ci.lo) - 2)
+      .attr('y', y - Math.max(4, yStep / 2))
+      .attr('width', Math.max(4, xScale(ci.hi) - xScale(ci.lo) + 4))
+      .attr('height', Math.max(8, yStep))
+      .attr('fill', 'transparent')
+      .attr('cursor', 'pointer')
+      .on('mouseenter', () => showTooltip(ci, i, y))
+      .on('mouseleave', hideTooltip)
+      .on('touchstart', (e) => { e.preventDefault(); showTooltip(ci, i, y); })
+      .on('touchend', hideTooltip);
   }
 
   // X axis
