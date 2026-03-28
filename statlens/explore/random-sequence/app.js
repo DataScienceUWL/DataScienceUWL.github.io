@@ -300,9 +300,8 @@ function renderRunFreqTable(humanDist, randomDist, maxRunLen) {
     const rDots = Array(rCount).fill('<span class="run-dot computer"></span>').join('');
     const hClass = hCount === 0 ? 'count-cell zero-count' : 'count-cell count-yours';
     const rClass = rCount === 0 ? 'count-cell zero-count' : 'count-cell count-computer';
-    const example = 'H'.repeat(len);
     rows += `<tr>
-      <td>${len} <span style="color:#aaa; font-size:0.75rem">(${example})</span></td>
+      <td>${len}</td>
       <td class="${hClass}">${hCount}</td>
       <td class="dot-cell"><span class="run-dots">${hDots || '&mdash;'}</span></td>
       <td class="${rClass}">${rCount}</td>
@@ -316,7 +315,7 @@ function renderRunFreqTable(humanDist, randomDist, maxRunLen) {
         <tr>
           <th>Run Length</th>
           <th colspan="2" style="color:#569BBD">Yours</th>
-          <th colspan="2" style="color:#F05133">Computer</th>
+          <th colspan="2" style="color:#114B5F">Computer</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
