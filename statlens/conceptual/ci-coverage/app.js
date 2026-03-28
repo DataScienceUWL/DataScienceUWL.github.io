@@ -12,6 +12,7 @@ import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import * as d3Array from 'd3-array';
 import { announce, initKeyboardShortcuts, initPlayPause, fetchDataset } from '../../js/page-utils.js';
+import { renderStatLabel } from '../../js/chart-utils.js';
 
 // ─── DOM ───
 
@@ -295,7 +296,8 @@ function renderChart() {
     const captureText = ci.captures ? 'Captures μ' : 'Misses μ';
     const captureColor = ci.captures ? '#569BBD' : '#F05133';
 
-    tooltipLine1.text(`(${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)})  mean = ${ci.xbar.toFixed(2)}`);
+    tooltipLine1.text('');  // clear previous tspans
+    renderStatLabel(tooltipLine1, `(${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)})  x\u0304 = ${ci.xbar.toFixed(2)}`);
     tooltipLine2.text(captureText).attr('fill', captureColor).attr('font-weight', 600);
 
     const pad = 5;
