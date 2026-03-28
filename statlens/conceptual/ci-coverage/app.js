@@ -412,6 +412,9 @@ function renderChart() {
       .attr('font-weight', i === 2 ? 700 : 400)
       .text(line);
   });
+
+  // Raise tooltip to front so it renders above the stats overlay
+  svg.node().appendChild(tooltipG.node());
 }
 
 // ─── Interpretation ───
