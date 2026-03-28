@@ -32,8 +32,7 @@ const resultsPanel = /** @type {HTMLElement} */ (document.getElementById('result
 const displayHuman = /** @type {HTMLElement} */ (document.getElementById('display-human'));
 const displayRandom = /** @type {HTMLElement} */ (document.getElementById('display-random'));
 const statsBody = /** @type {HTMLElement} */ (document.getElementById('stats-body'));
-const chartHuman = /** @type {HTMLElement} */ (document.getElementById('chart-human'));
-const chartRandom = /** @type {HTMLElement} */ (document.getElementById('chart-random'));
+const runFreqContainer = /** @type {HTMLElement} */ (document.getElementById('run-freq-container'));
 const interpretation = /** @type {HTMLElement} */ (document.getElementById('interpretation'));
 const announceEl = document.getElementById('sr-announce');
 
@@ -227,10 +226,9 @@ function compare() {
     (randomStats.alternationRate * 100).toFixed(0) + '%', '50%',
     humanStats.alternationRate > randomStats.alternationRate + 0.05);
 
-  // Run-length distribution charts
-  const maxRunLen = Math.max(humanStats.longestRun, randomStats.longestRun);
-  renderRunChart(chartHuman, humanStats.runLengthDist, maxRunLen, '#569BBD');
-  renderRunChart(chartRandom, randomStats.runLengthDist, maxRunLen, '#F05133');
+  // Run-length frequency table with inline dotplot
+  renderRunFreqTable(humanStats.runLengthDist, randomStats.runLengthDist,
+    Math.max(humanStats.longestRun, randomStats.longestRun));
 
   // Interpretation
   renderInterpretation(humanStats, randomStats, n);
@@ -287,37 +285,42 @@ function addStatRow(label, humanVal, randomVal, expectedVal, highlightHuman) {
   statsBody.appendChild(tr);
 }
 
-// ── Run-length distribution bar chart ────────────────────────────────
+// ── Run-length frequency table with inline dotplot ───────────────────
 /**
- * @param {HTMLElement} container
- * @param {Map<number, number>} dist
+ * @param {Map<number, number>} humanDist
+ * @param {Map<number, number>} randomDist
  * @param {number} maxRunLen
- * @param {string} color
  */
-function renderRunChart(container, dist, maxRunLen, color) {
-  container.innerHTML = '';
-  const maxCount = Math.max(1, ...dist.values());
-
+function renderRunFreqTable(humanDist, randomDist, maxRunLen) {
+  let rows = '';
   for (let len = 1; len <= maxRunLen; len++) {
-    const count = dist.get(len) ?? 0;
-    const group = document.createElement('div');
-    group.className = 'run-bar-group';
-
-    const bar = document.createElement('div');
-    bar.className = 'run-bar';
-    const heightPct = maxCount > 0 ? (count / maxCount) * 100 : 0;
-    bar.style.height = heightPct + '%';
-    bar.style.background = count > 0 ? color : '#e9ecef';
-    bar.title = `Run length ${len}: ${count} run${count !== 1 ? 's' : ''}`;
-
-    const label = document.createElement('div');
-    label.className = 'run-bar-label';
-    label.textContent = String(len);
-
-    group.appendChild(bar);
-    group.appendChild(label);
-    container.appendChild(group);
+    const hCount = humanDist.get(len) ?? 0;
+    const rCount = randomDist.get(len) ?? 0;
+    const hDots = Array(hCount).fill('<span class="run-dot yours"></span>').join('');
+    const rDots = Array(rCount).fill('<span class="run-dot computer"></span>').join('');
+    const hClass = hCount === 0 ? 'count-cell zero-count' : 'count-cell count-yours';
+    const rClass = rCount === 0 ? 'count-cell zero-count' : 'count-cell count-computer';
+    const example = 'H'.repeat(len);
+    rows += `<tr>
+      <td>${len} <span style="color:#aaa; font-size:0.75rem">(${example})</span></td>
+      <td class="${hClass}">${hCount}</td>
+      <td class="dot-cell"><span class="run-dots">${hDots || '&mdash;'}</span></td>
+      <td class="${rClass}">${rCount}</td>
+      <td class="dot-cell"><span class="run-dots">${rDots || '&mdash;'}</span></td>
+    </tr>`;
   }
+
+  runFreqContainer.innerHTML = `
+    <table class="run-freq-table" aria-label="Run-length frequency comparison">
+      <thead>
+        <tr>
+          <th>Run Length</th>
+          <th colspan="2" style="color:#569BBD">Yours</th>
+          <th colspan="2" style="color:#F05133">Computer</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 }
 
 // ── Interpretation ───────────────────────────────────────────────────

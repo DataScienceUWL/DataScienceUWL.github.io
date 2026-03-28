@@ -216,7 +216,7 @@
       color: #444;
     }
 
-    /* ── Run-length chart ──────────────────────────────────────────── */
+    /* ── Run-length frequency table with dotplot ─────────────────── */
     .run-chart-section {
       margin: 1.5rem 0;
     }
@@ -224,43 +224,58 @@
       font-size: 1rem;
       margin-bottom: 0.5rem;
     }
-    .run-bars {
-      display: flex;
-      gap: 2px;
-      align-items: flex-end;
-      height: 120px;
-      padding: 0 4px;
-    }
-    .run-bar-group {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      min-width: 0;
-    }
-    .run-bar {
+    .run-freq-table {
       width: 100%;
-      min-height: 2px;
-      border-radius: 2px 2px 0 0;
-      transition: height 0.4s ease;
-    }
-    .run-bar-label {
-      font-size: 0.7rem;
-      color: #777;
-      text-align: center;
-    }
-    .run-chart-pair {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-    }
-    .run-chart-col h4 {
+      border-collapse: collapse;
       font-size: 0.9rem;
-      text-align: center;
-      margin: 0 0 0.5rem;
-      color: #555;
     }
+    .run-freq-table th, .run-freq-table td {
+      padding: 0.35rem 0.5rem;
+      border-bottom: 1px solid #dee2e6;
+      vertical-align: middle;
+    }
+    .run-freq-table thead th {
+      background: #f1f3f5;
+      font-weight: 700;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    .run-freq-table thead th:first-child {
+      text-align: left;
+      width: 5rem;
+    }
+    .run-freq-table td:first-child {
+      font-weight: 600;
+      text-align: center;
+      color: #444;
+      font-family: 'Courier New', monospace;
+      white-space: nowrap;
+    }
+    .run-dots {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .run-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .run-dot.yours { background: #569BBD; }
+    .run-dot.computer { background: #F05133; }
+    .dot-cell {
+      padding-left: 0.5rem;
+    }
+    .run-freq-table .count-cell {
+      text-align: center;
+      font-weight: 600;
+      width: 2.5rem;
+    }
+    .run-freq-table .count-yours { color: #569BBD; }
+    .run-freq-table .count-computer { color: #F05133; }
+    .run-freq-table .zero-count { color: #ccc; font-weight: 400; }
 
     /* ── Interpretation ────────────────────────────────────────────── */
     .interpretation {
@@ -294,13 +309,8 @@
     @media (max-width: 480px) {
       .seq-input { font-size: 1.1rem; letter-spacing: 0.15em; }
       .seq-display { font-size: 1rem; letter-spacing: 0.1em; }
-      .run-chart-pair { grid-template-columns: 1fr; }
-      .run-bars { height: 80px; }
-    }
-
-    /* ── Reduced motion ────────────────────────────────────────────── */
-    @media (prefers-reduced-motion: reduce) {
-      .run-bar { transition: none; }
+      .run-freq-table { font-size: 0.8rem; }
+      .run-dot { width: 8px; height: 8px; }
     }
 
     /* ── Screen reader ─────────────────────────────────────────────── */
@@ -379,23 +389,14 @@
                 </tbody>
             </table>
 
-            <!-- Run-length distribution chart -->
+            <!-- Run-length frequency table -->
             <div class="run-chart-section">
                 <h3>Run-Length Distribution</h3>
                 <p style="font-size: 0.85rem; color: #777; margin-bottom: 0.75rem;">
-                    A "run" is a streak of consecutive identical flips (e.g., HHH = run of 3).
-                    Longer bars mean more runs of that length.
+                    A "run" is a streak of consecutive identical flips (e.g., HHH is a run of 3).
+                    Each dot represents one run of that length.
                 </p>
-                <div class="run-chart-pair">
-                    <div class="run-chart-col">
-                        <h4>Your Sequence</h4>
-                        <div class="run-bars" id="chart-human"></div>
-                    </div>
-                    <div class="run-chart-col">
-                        <h4>Computer's Random</h4>
-                        <div class="run-bars" id="chart-random"></div>
-                    </div>
-                </div>
+                <div id="run-freq-container"></div>
             </div>
 
             <!-- Interpretation -->
