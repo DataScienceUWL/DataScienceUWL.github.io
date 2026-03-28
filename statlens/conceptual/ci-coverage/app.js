@@ -299,9 +299,18 @@ function renderChart() {
     tooltipLine2.text(captureText).attr('fill', captureColor).attr('font-weight', 600);
 
     const pad = 5;
-    const boxW = 175;
-    const boxH = 30;
     const lineSpacing = 12;
+
+    // Position text first so we can measure
+    tooltipLine1.attr('x', pad).attr('y', lineSpacing);
+    tooltipLine2.attr('x', pad).attr('y', lineSpacing * 2 + 1);
+
+    // Auto-size box to fit text
+    tooltipG.attr('visibility', 'visible').attr('transform', 'translate(0,0)');
+    const bbox = /** @type {SVGGraphicsElement} */ (tooltipG.node()).getBBox();
+    const boxW = bbox.width + pad * 2;
+    const boxH = lineSpacing * 2 + pad + 2;
+    tooltipRect.attr('width', boxW).attr('height', boxH);
 
     let tx = margin.left + xScale((ci.lo + ci.hi) / 2) - boxW / 2;
     tx = Math.max(4, Math.min(width - boxW - 4, tx));
@@ -309,10 +318,6 @@ function renderChart() {
     if (ty < 4) ty = margin.top + cy + 6;
 
     tooltipG.attr('transform', `translate(${tx}, ${ty})`);
-    tooltipRect.attr('width', boxW).attr('height', boxH);
-    tooltipLine1.attr('x', pad).attr('y', lineSpacing);
-    tooltipLine2.attr('x', pad).attr('y', lineSpacing * 2 + 1);
-    tooltipG.attr('visibility', 'visible');
   }
 
   function hideTooltip() {
