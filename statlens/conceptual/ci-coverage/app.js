@@ -301,14 +301,12 @@ function renderChart() {
     const pad = 5;
     const lineSpacing = 12;
 
-    // Position text first so we can measure
     tooltipLine1.attr('x', pad).attr('y', lineSpacing);
     tooltipLine2.attr('x', pad).attr('y', lineSpacing * 2 + 1);
 
-    // Auto-size box to fit text
-    tooltipG.attr('visibility', 'visible').attr('transform', 'translate(0,0)');
-    const bbox = /** @type {SVGGraphicsElement} */ (tooltipG.node()).getBBox();
-    const boxW = bbox.width + pad * 2;
+    // Measure the wider text element to auto-size the box
+    const textW = /** @type {SVGTextElement} */ (tooltipLine1.node()).getComputedTextLength();
+    const boxW = textW + pad * 2;
     const boxH = lineSpacing * 2 + pad + 2;
     tooltipRect.attr('width', boxW).attr('height', boxH);
 
