@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>15.5 - Surface Area | MTH 310</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/white.min.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root {
+    --accent-blue: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-amber: #e09f3e;
+    --accent-purple: #6c3483; --fg: #222222; --bg: #ffffff;
+}
+.reveal { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; font-size: 30px; color: var(--fg); }
+.reveal .slides section { text-align: left; }
+.reveal .slides > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides > section > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides section::-webkit-scrollbar { width: 6px; }
+.reveal .slides section::-webkit-scrollbar-track { background: transparent; }
+.reveal .slides section::-webkit-scrollbar-thumb { background: rgba(0,119,182,0.2); border-radius: 3px; }
+.reveal .slides section::-webkit-scrollbar-thumb:hover { background: rgba(0,119,182,0.4); }
+.reveal .slides > section::after, .reveal .slides > section > section::after {
+    content: ''; display: block; height: 0; clear: both; }
+.reveal h1,.reveal h2,.reveal h3 { text-transform: none; font-weight: 600; }
+.reveal h1 { font-size: 2.2em; color: var(--accent-blue); }
+.reveal h2 { font-size: 1.35em; color: var(--accent-blue); border-bottom: 2px solid rgba(0,119,182,0.25);
+    padding-bottom: 0.2em; margin-bottom: 0.4em; margin-top: 0; }
+.reveal h3 { font-size: 1.1em; color: var(--accent-green); margin: 0.2em 0; }
+.reveal p { margin: 0.3em 0; line-height: 1.4; }
+.reveal li { margin-bottom: 0.15em; line-height: 1.35; }
+.reveal ul,.reveal ol { margin-left: 0.5em; }
+.title-slide { text-align: center !important; }
+.title-slide h1 { font-size: 2.8em; margin-bottom: 0.1em; }
+.title-slide .subtitle { font-size: 1.4em; color: #b07d00; }
+.title-slide .course-info { font-size: 0.85em; color: #595959; margin-top: 2em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-blue);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.theorem-box { background: #fdf6ec; border-left-color: var(--accent-amber); }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.solution { background: #fffdf5; border-left: 4px solid var(--accent-amber);
+    border-radius: 8px; padding: 0.4em 0.8em; margin-top: 0.3em; color: #7a5c00; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7;
+    border-radius: 8px; padding: 0.5em 0.8em; margin: 0.4em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #666; margin: 0.3em 0; font-size: 0.85em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red);
+    border-radius: 10px; padding: 1em 1.5em; text-align: center; margin: 1em 0; }
+.hw-box h3 { color: var(--accent-red); margin: 0 0 0.3em 0; }
+.two-col { display: flex; gap: 1.2em; align-items: flex-start; }
+.two-col > * { flex: 1; }
+.fig-container { text-align: center; margin: 0.3em 0; }
+.fig-container img { max-height: 60vh; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    cursor: zoom-in; transition: opacity 0.15s; }
+.fig-container img:hover { opacity: 0.8; }
+.fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
+.fig-link { display: inline-block; }
+.textbook-fig img { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; }
+.plotly-lazy-thumb { cursor: pointer; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+.plotly-lazy-thumb:hover { opacity: 0.92; outline: 2px solid #0077b6; outline-offset: 2px; }
+#plotly-lightbox { display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+    justify-content:center; align-items:center; cursor:default; }
+#plotly-lightbox.active { display:flex; }
+#plotly-lightbox .plb-close { position:fixed; top:14px; left:20px;
+    font-size:2.2em; color:#fff; background:rgba(0,0,0,0.55);
+    border:1px solid rgba(255,255,255,0.4); border-radius:6px;
+    padding:2px 14px; cursor:pointer; z-index:10001; line-height:1; }
+#plotly-lightbox .plb-close:hover { color:#e09f3e; background:rgba(0,0,0,0.75); }
+#plotly-lightbox .plb-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+#plotly-lightbox .plb-content { width:92vw; height:85vh; }
+#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; }
+/* Lightbox overlay */
+#lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
+    cursor: zoom-out; backdrop-filter: blur(4px); }
+#lightbox.active { display: flex; }
+#lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5); object-fit: contain; background: white; }
+#lightbox .lb-caption { position: absolute; bottom: 1.5em; left: 50%;
+    transform: translateX(-50%); color: #fff; font-size: 0.55em;
+    background: rgba(0,0,0,0.7); padding: 0.3em 1em; border-radius: 4px; }
+#lightbox .lb-close { position: absolute; top: 0.8em; right: 1.2em;
+    color: #fff; font-size: 1.5em; cursor: pointer; transition: color 0.15s;
+    background: none; border: none; padding: 0.2em 0.5em; }
+#lightbox .lb-close:hover { color: #e09f3e; }
+#lightbox .lb-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.interactive-link { color: var(--accent-blue); text-decoration: none; font-size: 0.9em; }
+.interactive-link:hover { text-decoration: underline; }
+.desmos-container { text-align: center; margin: 0.3em auto; }
+.desmos-container iframe { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    border: 1px solid #ddd; }
+.desmos-label { font-size: 0.65em; color: var(--accent-blue); margin-top: 0.2em; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.4em;
+    color: var(--accent-blue); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+aside.notes { display: none; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 0.5em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.3em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.75em; color: var(--accent-blue);
+    text-align: center; margin-bottom: 0.1em; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 18vh; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+.small { font-size: 0.8em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-blue);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600;
+    font-size: 16px; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+table { border-collapse: collapse; font-size: 0.8em; margin: 0.5em 0; }
+th, td { padding: 0.2em 0.6em; border-bottom: 1px solid #ddd; }
+th { color: var(--accent-blue); }
+.reveal .progress { color: var(--accent-blue); }
+.reveal .slide-number { color: #767676; font-size: 0.5em; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+</style>
+</head>
+<body data-section="Section_15p5">
+<a href="#" class="skip-link" onclick="Reveal.next();return false;">Skip to first slide</a>
+<div class="reveal">
+<div class="slides">
+<section class="title-slide" data-background-gradient="radial-gradient(circle at 30% 50%, #e8f4f8 0%, #f8f9fa 70%)">
+  <h1>15.5</h1>
+  <p class="subtitle">Surface Area</p>
+  <hr style="border-color:rgba(0,212,255,0.3);width:60%;margin:1em auto;" aria-hidden="true">
+  <p class="course-info">MTH 310 &mdash; Calculus III<br>  Multiple Integrals</p>
+</section>
+
+<section id="from-arc-length-to-surface-area">
+<h2>From Arc Length to Surface Area</h2>
+<div class="fragment" data-editor-line="17"><p>In Calc I, you learned that the <strong>arc length</strong> of \(y = f(x)\) from \(a\) to \(b\) is:</p>
+<p>\[L = \int_a^b \sqrt{1 + \left[f'(x)\right]^2}\, dx\]</p>
+<p>Where does this \(\sqrt{1 + (f')^2}\) come from?</p></div>
+<div class="fig-container fragment" data-editor-line="22">
+  <a href="figures/arc_length_triangle.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/arc_length_triangle.png"><img src="figures/arc_length_triangle.png" alt="A smooth curve y = f(x) with a zoomed-in view of a small interval. On the x-axis, an interval of width delta x is marked with a light gray strip. A right triangle is drawn at the curve with horizontal leg delta x (green), vertical leg f prime of x times delta x (red), and hypotenuse labeled square root of 1 plus f prime squared times delta x (amber). The hypotenuse approximates the actual arc length of the curve segment." style="max-height:60vh;"></a>
+</div>
+<div class="fragment" data-editor-line="24"><p>Zoom in on one small piece. The curve segment has length \(\approx\) the <strong>hypotenuse</strong>, not the horizontal distance \(\Delta x\). By the Pythagorean theorem:</p>
+<p>\[\text{length} \approx \sqrt{(\Delta x)^2 + (f' \Delta x)^2} = \sqrt{1 + (f')^2}\; \Delta x\]</p></div>
+<div class="fragment" data-editor-line="29"><p>The factor \(\sqrt{1 + (f')^2}\) is a <strong>correction factor</strong> that accounts for the <strong>tilt</strong> of the curve. If \(f' = 0\) (flat), the correction is 1. If the curve is steep, the correction is larger.</p></div>
+<div class="fragment" data-editor-line="33"><p><strong>Surface area is the same idea</strong> &mdash; but in two dimensions. We need a correction factor that accounts for the tilt of a <strong>surface</strong>, not just a curve.</p></div>
+<div class="key-point fragment" data-editor-line="37"><p>Arc length: \(\int \sqrt{1 + (f')^2}  dx\). Surface area: \(\iint \sqrt{?}  dA\). Our job is to find what goes under the square root.</p></div>
+<aside class="notes">Let students see this connection before diving into the derivation. The arc length formula is familiar; the surface area formula follows the same logic.</aside>
+</section>
+
+<section id="why-surface-area-needs-a-correction-factor">
+<h2>Why Surface Area Needs a Correction Factor</h2>
+<div class="fragment" data-editor-line="46"><p>Think of draping a <strong>bedsheet over a tent pole</strong>. The sheet covers more area than its shadow on the floor.</p></div>
+<div class="fragment" data-editor-line="48"><p>A tilted or curved surface has <strong>more area</strong> than its projection onto the \(xy\)-plane. How much more depends on how <strong>steep</strong> the surface is.</p></div>
+<div class="fragment" data-editor-line="52"><p>For a flat region \(D\) in the \(xy\)-plane, \(\text{area} = \iint_D 1  dA\).</p>
+<p>For a curved surface \(z = f(x,y)\) above \(D\):</p>
+<p>\[\text{surface area} = \iint_D (\text{correction factor})\, dA\]</p></div>
+<div class="fragment" data-editor-line="59"><p>The correction factor is \(\geq 1\) everywhere. It equals 1 only where the surface is perfectly flat (\(f_x = 0\) and \(f_y = 0\)).</p></div>
+<div class="key-point fragment" data-editor-line="63"><p>We need to find the correction factor for surfaces. The arc length correction was \(\sqrt{1 + (f')^2}\). The surface area correction will involve <strong>both</strong> partial derivatives \(f_x\) and \(f_y\).</p></div>
+</section>
+
+<section id="deriving-the-correction-factor">
+<h2>Deriving the Correction Factor</h2>
+<div class="fragment" data-editor-line="70"><p>Let's carefully derive the area of one small surface patch. Consider \(z = f(x,y)\) above a small rectangle \([x_0, x_0 + \Delta x] \times [y_0, y_0 + \Delta y]\).</p></div>
+<div class="fragment" data-editor-line="72"><p><strong>Step 1 &mdash; Parameterize two traces</strong> through the corner point \((x_0, y_0, f(x_0,y_0))\):</p>
+<ul>
+<li><strong>x-trace</strong> (hold \(y = y_0\) fixed): \(\vec{r}_1(x) = \langle x,\; y_0,\; f(x, y_0) \rangle\)</li>
+<li><strong>y-trace</strong> (hold \(x = x_0\) fixed): \(\vec{r}_2(y) = \langle x_0,\; y,\; f(x_0, y) \rangle\)</li>
+</ul>
+<p>These are curves <strong>on the surface</strong>.</p></div>
+<div class="fig-container fragment" data-editor-line="81">
+  <img src="figures/trace_derivation.png" alt="A 3D surface z equals f of x y with a small green rectangle on the xy-plane labeled delta x by delta y. Two trace curves are drawn on the surface through the corner point: a red x-trace holding y fixed and a purple y-trace holding x fixed. Red and purple arrows show the tangent vectors delta x times r1 prime and delta y times r2 prime along the traces. These two vectors span an amber parallelogram that approximates the surface patch. Dashed lines connect the domain rectangle corners to the parallelogram corners on the surface." class="plotly-lazy-thumb" data-plotly-src="figures/trace_derivation.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="83"><p><strong>Step 2 &mdash; Tangent vectors</strong> to the traces:</p>
+<p>\[\vec{r}_1'(x) = \langle 1, 0, f_x \rangle \qquad \vec{r}_2'(y) = \langle 0, 1, f_y \rangle\]</p></div>
+<div class="fragment" data-editor-line="88"><p><strong>Step 3 &mdash; Approximate the patch sides.</strong> You already know that displacement \(\approx\) velocity \(\times \Delta t\). Here \(\Delta x\) and \(\Delta y\) play the role of \(\Delta t\) (the change in the parameter):</p>
+<p>\[\vec{a} = \vec{r}_1' \, \Delta x = \langle \Delta x,\; 0,\; f_x \Delta x \rangle \qquad \vec{b} = \vec{r}_2' \, \Delta y = \langle 0,\; \Delta y,\; f_y \Delta y \rangle\]</p></div>
+</section>
+
+<section>
+<h2>Deriving the Correction Factor</h2>
+<div class="fragment" data-editor-line="95"><p><strong>Step 4 &mdash; Area of the parallelogram</strong> via the cross product:</p>
+<p>\[\vec{a} \times \vec{b} = \left| \begin{array}{ccc} \vec{i} & \vec{j} & \vec{k} \\ \Delta x & 0 & f_x \Delta x \\ 0 & \Delta y & f_y \Delta y \end{array} \right| = \langle -f_x, \; -f_y, \; 1 \rangle \, \Delta x \, \Delta y\]</p></div>
+<div class="fragment" data-editor-line="100"><p>\[|\vec{a} \times \vec{b}| = \sqrt{f_x^2 + f_y^2 + 1} \; \Delta x \, \Delta y = \sqrt{f_x^2 + f_y^2 + 1} \; \Delta A\]</p></div>
+<div class="fragment" data-editor-line="104"><p>Sum over all patches and take the limit:</p>
+<p>\[A(S) = \iint_D \sqrt{f_x^2 + f_y^2 + 1} \, dA\]</p></div>
+<div class="key-point fragment" data-editor-line="109"><p>The correction factor \(\sqrt{f_x^2 + f_y^2 + 1}\) comes directly from the cross product of the tangent vectors to the surface traces. This same construction &mdash; parameterize, take partials, cross product &mdash; will reappear in Chapter 16 for surface integrals over parametric surfaces.</p></div>
+<aside class="notes">This derivation is the same machinery as Section 16.6. Take time here and students will be well-prepared for parametric surface area later. Emphasize: the traces are curves ON the surface, the velocity vectors are tangent to the surface, and the cross product gives the area of the tangent plane patch.</aside>
+</section>
+
+<section id="the-surface-area-formula">
+<h2>The Surface Area Formula</h2>
+<div class="fragment" data-editor-line="118"><p>Summing up the parallelogram areas and taking the limit gives us the integral formula.</p></div>
+<div class="defn-box fragment" data-editor-line="120">
+  <div class="defn-title">Surface Area</div>
+  <p>The area of the surface \(z = f(x,y)\) over a region \(D\), where \(f_x\) and \(f_y\) are continuous, is</p>
+<p>\[A(S) = \iint_D \sqrt{\left[f_x(x,y)\right]^2 + \left[f_y(x,y)\right]^2 + 1} \, dA\]</p>
+</div>
+<div class="fragment" data-editor-line="126"><p><strong>Sanity check:</strong> If \(f\) is <strong>constant</strong> (a flat horizontal surface), then \(f_x = 0\) and \(f_y = 0\), so the integrand is \(\sqrt{0 + 0 + 1} = 1\), and we get \(A(S) = \iint_D 1  dA = \) area of \(D\). That's exactly right &mdash; a flat surface has the same area as its shadow!</p></div>
+<div class="key-point fragment" data-editor-line="130"><p>The formula \(\sqrt{f_x^2 + f_y^2 + 1}\) always gives a value \(\geq 1\), so the surface area is always at least as large as the area of \(D\). Equality only when the surface is perfectly flat.</p></div>
+<aside class="notes">Have students verify the sanity check themselves &mdash; it builds confidence. Also worth noting: this is analogous to arc length \(\int \sqrt{1 + (f')^2}  dx\), which gives arc length \(\geq\) horizontal distance, with equality only when the curve is flat.</aside>
+</section>
+
+<section id="example-1-plane-inside-a-cylinder">
+<h2>Example 1: Plane Inside a Cylinder</h2>
+<div class="example-box fragment" data-editor-line="139">
+  <div class="example-title">Example 1</div>
+  <p>Find the surface area of the part of the plane \(2x + 5y + z = 10\) that lies inside the cylinder \(x^2 + y^2 = 9\).</p>
+</div>
+<div class="fragment" data-editor-line="143"><p class="work-prompt">Solve for \(z = f(x,y)\), compute the partials, and set up the integral over the disk. What shape is \(D\)?</p></div>
+<div class="fig-container fragment" data-editor-line="146">
+  <img src="figures/plane_in_cylinder.png" alt="A tilted plane z = 10 minus 2x minus 5y clipped inside the cylinder x squared plus y squared equals 9, viewed in 3D. A light green disk (the shadow region D) is shown on z = 0. The boundary circle on the plane is highlighted in red. Thin vertical lines from the boundary show the relationship between the domain and the surface above it." class="plotly-lazy-thumb" data-plotly-src="figures/plane_in_cylinder.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="149"><p><strong>Solve for \(z\):</strong> \(z = f(x,y) = 10 - 2x - 5y\)</p></div>
+<div class="fragment" data-editor-line="153"><p><strong>Partial derivatives:</strong> \(f_x = -2\), \(\quad f_y = -5\)</p></div>
+<div class="fragment" data-editor-line="157"><p><strong>The integrand is constant!</strong></p>
+<p>\[\sqrt{f_x^2 + f_y^2 + 1} = \sqrt{4 + 25 + 1} = \sqrt{30}\]</p></div>
+<div class="fragment" data-editor-line="162"><p><strong>The domain</strong> \(D\) is the disk \(x^2 + y^2 \leq 9\).</p>
+<p>\[A(S) = \iint_D \sqrt{30}\, dA = \sqrt{30} \cdot (\text{area of } D) = \sqrt{30} \cdot \pi(3)^2 = 9\pi\sqrt{30}\]</p></div>
+<div class="key-point fragment" data-editor-line="167"><p>When the surface is a <strong>plane</strong>, the integrand is constant, so the surface area is just (correction factor) \(\times\) (area of domain). No integration needed!</p></div>
+<aside class="notes">Emphasize this shortcut: for planes, you never need to set up an actual integral. Just compute \(\sqrt{f_x^2 + f_y^2 + 1}\) and multiply by the area of \(D\). Students should recognize this as a major time-saver on homework and exams.</aside>
+</section>
+
+<section id="example-2-area-of-a-spherical-cap">
+<h2>Example 2: Area of a Spherical Cap</h2>
+<div class="example-box fragment" data-editor-line="176">
+  <div class="example-title">Example 2</div>
+  <p>Find the surface area of the part of the sphere \(x^2 + y^2 + z^2 = 4\) that lies above the plane \(z = 1\).</p>
+</div>
+<div class="fragment" data-editor-line="180"><p class="work-prompt">Solve for \(z\) (upper hemisphere), find \(f_x\) and \(f_y\), simplify the integrand, then switch to polar. What is the domain \(D\)?</p></div>
+<div class="fig-container fragment" data-editor-line="183">
+  <img src="figures/sphere_cap.png" alt="The sphere x squared plus y squared plus z squared equals 4 (radius 2). The spherical cap above the plane z = 1 is highlighted in blue. The lower portion of the sphere is shown in transparent gray. The boundary circle at z = 1 (with radius sqrt(3)) is marked in red, and a faint amber disk shows the cutting plane z = 1." class="plotly-lazy-thumb" data-plotly-src="figures/sphere_cap.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="186"><p><strong>Solve for the upper hemisphere:</strong> \(z = f(x,y) = \sqrt{4 - x^2 - y^2}\)</p></div>
+<div class="fragment" data-editor-line="190"><p><strong>Partial derivatives:</strong></p>
+<p>\[f_x = \frac{-x}{\sqrt{4 - x^2 - y^2}}, \qquad f_y = \frac{-y}{\sqrt{4 - x^2 - y^2}}\]</p></div>
+<div class="fragment" data-editor-line="195"><p><strong>Simplify the integrand:</strong></p>
+<p>\[f_x^2 + f_y^2 + 1 = \frac{x^2 + y^2}{4 - x^2 - y^2} + 1 = \frac{4}{4 - x^2 - y^2}\]</p>
+<p>So \(\sqrt{f_x^2 + f_y^2 + 1} = \dfrac{2}{\sqrt{4 - x^2 - y^2}}\)</p></div>
+</section>
+
+<section>
+<h2>Example 2: Area of a Spherical Cap</h2>
+<div class="fragment" data-editor-line="204"><p><strong>Find the domain:</strong> \(z \geq 1\) means \(\sqrt{4 - x^2 - y^2} \geq 1\), so \(x^2 + y^2 \leq 3\).</p></div>
+<div class="fragment" data-editor-line="206"><p><strong>Switch to polar:</strong></p>
+<p>\[A(S) = \int_0^{2\pi} \int_0^{\sqrt{3}} \frac{2}{\sqrt{4 - r^2}} \cdot r \, dr \, d\theta\]</p></div>
+<div class="fragment" data-editor-line="211"><p><strong>Inner integral:</strong> Let \(u = 4 - r^2\), \(\;du = -2r  dr\):</p>
+<p>\[\int_0^{\sqrt{3}} \frac{2r}{\sqrt{4 - r^2}}\, dr = \left[-2\sqrt{4 - r^2}\right]_0^{\sqrt{3}} = -2(1) + 2(2) = 2\]</p></div>
+<div class="fragment" data-editor-line="216"><p>\[A(S) = \int_0^{2\pi} 2 \, d\theta = 4\pi\]</p></div>
+<div class="key-point fragment" data-editor-line="220"><p>The sphere's integrand \(\frac{2}{\sqrt{4-r^2}}\) blows up as \(r \to 2\) (the equator), but our domain stops at \(r = \sqrt{3}\), so the integral is perfectly well-behaved. We'll deal with that boundary singularity in Example 3.</p></div>
+<aside class="notes">Students often lose track of the substitution. Walk through the \(u\)-sub slowly, emphasizing the sign change and the evaluation at the bounds. The fact that the sphere's integrand simplifies so nicely (\(4/(4-x^2-y^2)\)) is worth pausing on &mdash; it's a special property of the sphere.</aside>
+</section>
+
+<section id="example-3-why">
+<h2>Example 3: Why \(A(\text{sphere}) = 4\pi a^2\)</h2>
+<div class="example-box fragment" data-editor-line="230">
+  <div class="example-title">Example 3</div>
+  <p>Prove that the surface area of a sphere of radius \(a\) is \(4\pi a^2\).</p>
+</div>
+<div class="fragment" data-editor-line="234"><p><strong>Strategy:</strong> Find the area of the upper hemisphere \(z = \sqrt{a^2 - x^2 - y^2}\) and double it.</p></div>
+<div class="fragment" data-editor-line="236"><p class="work-prompt">Set up the integrand for \(z = \sqrt{a^2 - x^2 - y^2}\) over the disk \(x^2 + y^2 \leq a^2\). Use the pattern from Example 2.</p></div>
+<div class="fragment" data-editor-line="238"><p><strong>From Example 2's pattern:</strong> For the sphere \(x^2 + y^2 + z^2 = a^2\):</p>
+<p>\[\sqrt{f_x^2 + f_y^2 + 1} = \frac{a}{\sqrt{a^2 - x^2 - y^2}}\]</p></div>
+<div class="fragment" data-editor-line="243"><p><strong>Set up in polar:</strong></p>
+<p>\[A_{\text{hemisphere}} = \int_0^{2\pi} \int_0^{a} \frac{a}{\sqrt{a^2 - r^2}} \cdot r \, dr \, d\theta\]</p></div>
+<div class="fragment" data-editor-line="248"><p><strong>Inner integral:</strong> Let \(u = a^2 - r^2\), \(\;du = -2r  dr\):</p>
+<p>\[\int_0^{a} \frac{ar}{\sqrt{a^2 - r^2}} \, dr = \left[-a\sqrt{a^2 - r^2}\right]_0^{a} = 0 + a^2 = a^2\]</p></div>
+<div class="fragment" data-editor-line="253"><p>\[A_{\text{hemisphere}} = 2\pi a^2\]</p></div>
+<div class="fragment" data-editor-line="257"><p>The full sphere has twice this area:</p>
+<p>\[A_{\text{sphere}} = 2 \cdot 2\pi a^2 = 4\pi a^2 \qquad \checkmark\]</p></div>
+<div class="key-point fragment" data-editor-line="262"><p>We recover the familiar formula \(4\pi a^2\) using our surface area integral. The same derivation approach (parameterize, find the correction factor, integrate in polar) works for any surface of revolution.</p></div>
+<aside class="notes">A beautiful result that students will remember. We recover the formula they've known since geometry using the machinery we just built.</aside>
+</section>
+
+<section id="section-15-5-summary">
+<h2>Section 15.5 Summary</h2>
+<div class="summary-grid">
+<div class="defn-box"><div class="defn-title">The Key Idea</div><p class="small">A tilted surface has more area than its shadow on the \(xy\)-plane. The correction factor \(\sqrt{f_x^2 + f_y^2 + 1}\) accounts for the tilt.</p></div>
+<div class="defn-box"><div class="defn-title">The Formula</div><p class="small">\(A(S) = \displaystyle\iint_D \sqrt{f_x^2 + f_y^2 + 1}  dA\). The integrand is the magnitude of the normal vector \(\langle -f_x, -f_y, 1 \rangle\).</p></div>
+<div class="defn-box"><div class="defn-title">Plane Shortcut</div><p class="small">For a plane, the integrand is <strong>constant</strong>, so \(A = \sqrt{f_x^2 + f_y^2 + 1} \cdot (\text{area of } D)\). No integration needed!</p></div>
+<div class="defn-box"><div class="defn-title">Polar Coordinates</div><p class="small">When \(D\) is a disk (or part of one), switch to polar: \(dA = r  dr  d\theta\).</p></div>
+<div class="defn-box"><div class="defn-title">Sphere Area</div><p class="small">\(A = 4\pi a^2\), proved using the surface area formula in polar coordinates.</p></div>
+</div>
+<div class="key-point fragment" data-editor-line="279"><p><strong>Coming up next:</strong> Section 15.6 &mdash; Triple Integrals. We move from integrating over 2D regions to integrating over 3D solids!</p></div>
+</section>
+
+<section>
+<h2>Homework</h2>
+<div class="hw-box"><h3>Section 15.5</h3>
+<p style="font-size:1.3em;color:var(--accent-amber);">1, 3, 9, 11, 13, 23</p>
+</div>
+<div class="key-point fragment" style="margin-top:1.5em;"><strong>Next time:</strong> Section 15.6 &mdash; Triple Integrals</div>
+</section>
+</div>
+</div>
+<!-- Lightbox overlay -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged figure" tabindex="-1">
+  <button class="lb-close" aria-label="Close lightbox">&times;</button>
+  <img src="" alt="">
+  <div class="lb-caption"></div>
+</div>
+<!-- Plotly fullscreen overlay -->
+<div id="plotly-lightbox" role="dialog" aria-modal="true" aria-label="Expanded interactive figure">
+  <button class="plb-close" aria-label="Close">&times;</button>
+  <div class="plb-content"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<script>
+Reveal.initialize({
+    hash: true, slideNumber: 'c/t', progress: true, center: false,
+    transition: 'slide', width: 1280, height: 800, margin: 0.04,
+    // Allow mouse wheel to scroll overflowing slide content instead of advancing
+    mouseWheel: false,
+    plugins: [RevealNotes]
+});
+// ── Scoped MathJax: only typeset the current slide, not the whole document ──
+function typesetCurrentSlide() {
+    var slide = Reveal.getCurrentSlide();
+    if (slide && MathJax?.typesetPromise) {
+        MathJax.typesetPromise([slide]).catch(function(){});
+    }
+}
+// ── Iframe cleanup: pause Desmos/embedded iframes on non-visible slides ──
+function manageIframes(event) {
+    // Pause iframes on the previous slide
+    if (event.previousSlide) {
+        event.previousSlide.querySelectorAll('iframe[data-src-active]').forEach(function(iframe) {
+            iframe.setAttribute('data-src-paused', iframe.src);
+            iframe.src = 'about:blank';
+        });
+    }
+    // Restore iframes on the current slide
+    if (event.currentSlide) {
+        event.currentSlide.querySelectorAll('iframe[data-src-paused]').forEach(function(iframe) {
+            iframe.src = iframe.getAttribute('data-src-paused');
+            iframe.removeAttribute('data-src-paused');
+        });
+    }
+}
+// Mark all Desmos/embedded iframes for management
+document.querySelectorAll('.desmos-container iframe').forEach(function(iframe) {
+    iframe.setAttribute('data-src-active', '1');
+});
+Reveal.on('slidechanged', (event) => {
+    typesetCurrentSlide();
+    manageIframes(event);
+    // Reset scroll position on the new slide so it starts at the top
+    if (event.currentSlide) event.currentSlide.scrollTop = 0;
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealSlideChanged', indexh: event.indexh, indexv: event.indexv }, '*');
+        }
+    } catch (e) {}
+});
+// Fragment auto-scroll: configurable via meta.fragment_scroll in content.yaml
+// Value is the max fraction down the slide viewport (0.0=top, 1.0=bottom)
+var FRAG_SCROLL_TARGET = 0.67;
+function findScrollContainer(el) {
+    var section = el.closest('section');
+    while (section) {
+        if (section.scrollHeight > section.clientHeight + 1) return section;
+        var parent = section.parentElement?.closest('section, .slides, .reveal');
+        if (!parent || parent === section) break;
+        section = parent;
+    }
+    return null;
+}
+function scrollToFragment(frag, direction) {
+    var container = findScrollContainer(frag);
+    if (!container) return;
+    var fragRect = frag.getBoundingClientRect();
+    var containerRect = container.getBoundingClientRect();
+    // Reveal.js scales slides via CSS transform — account for the scale factor
+    var scale = containerRect.height / container.clientHeight || 1;
+    // Convert screen-space positions to unscaled slide-space
+    var fragBottom = (fragRect.bottom - containerRect.top) / scale + container.scrollTop;
+    var fragTop = (fragRect.top - containerRect.top) / scale + container.scrollTop;
+    var targetLine = container.clientHeight * FRAG_SCROLL_TARGET;
+    if (direction === 'forward') {
+        // Scroll so the fragment's bottom is at the target line
+        var desiredScrollTop = fragBottom - targetLine;
+        if (desiredScrollTop > container.scrollTop) {
+            container.scrollTo({ top: desiredScrollTop, behavior: 'smooth' });
+        }
+    } else {
+        // Scrolling backward: find the previous visible fragment and scroll to it
+        // If the fragment's top is above the viewport, scroll up to show it
+        var desiredScrollTop = fragTop - targetLine * 0.5;
+        if (desiredScrollTop < container.scrollTop) {
+            container.scrollTo({ top: Math.max(0, desiredScrollTop), behavior: 'smooth' });
+        }
+    }
+}
+// Add spacer to scrollable slides so the last fragment can scroll up to the target line
+Reveal.on('ready', () => {
+    var slideH = Reveal.getConfig().height || 800;
+    var spacerH = Math.round((1 - FRAG_SCROLL_TARGET) * slideH);
+    document.querySelectorAll('.reveal .slides > section, .reveal .slides > section > section').forEach(function(s) {
+        if (s.querySelector('.fragment')) {
+            var spacer = document.createElement('div');
+            spacer.style.height = spacerH + 'px';
+            spacer.style.pointerEvents = 'none';
+            spacer.setAttribute('aria-hidden', 'true');
+            s.appendChild(spacer);
+        }
+    });
+});
+function _notifyParentFragment() {
+    // Read data-editor-line from the last visible fragment in the current slide.
+    // Works for both fragmentshown and fragmenthidden events.
+    try {
+        if (!window.parent || window.parent === window) return;
+        var s = Reveal.getState();
+        var slideEl = Reveal.getCurrentSlide();
+        var editorLine = null;
+        if (slideEl) {
+            var visibleFrags = slideEl.querySelectorAll('.fragment.visible[data-editor-line]');
+            if (visibleFrags.length > 0) {
+                var ln = parseInt(visibleFrags[visibleFrags.length - 1].dataset.editorLine, 10);
+                if (!isNaN(ln)) editorLine = ln;
+            }
+        }
+        window.parent.postMessage({
+            type: 'revealFragmentChanged',
+            indexh: s.indexh, indexv: s.indexv, indexf: s.indexf,
+            editorLine: editorLine
+        }, '*');
+    } catch(e) {}
+}
+Reveal.on('fragmentshown', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('fragmenthidden', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    // Scroll back to the previous fragment or top of slide
+    var prev = event.fragment.previousElementSibling;
+    while (prev && !prev.classList.contains('fragment')) {
+        prev = prev.previousElementSibling;
+    }
+    var target = prev || event.fragment.closest('section')?.querySelector('h2') || event.fragment;
+    setTimeout(function() { scrollToFragment(target, 'backward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('ready', () => {
+    typesetCurrentSlide();
+    // Tell the CourseKit editor that Reveal is initialized so it can sync the fragment
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealReady' }, '*');
+        }
+    } catch(e) {}
+});
+
+// ── Plotly lightbox (iframe approach — zero WebGL until opened) ──
+(function() {
+    var plb = document.getElementById('plotly-lightbox');
+    if (!plb) return;
+    var plbClose = plb.querySelector('.plb-close');
+    var plbContent = plb.querySelector('.plb-content');
+    var triggerImg = null;
+    var currentBlobUrl = null;
+
+    function openPlotlyLightbox(blobUrl) {
+        // Revoke any previous blob URL
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); }
+        currentBlobUrl = blobUrl;
+        var iframe = plbContent.querySelector('iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:80vh;border:none;background:#fff;';
+            plbContent.appendChild(iframe);
+        }
+        iframe.src = blobUrl;
+        plb.classList.add('active');
+        plbClose.focus();
+    }
+
+    function closePlotlyLightbox() {
+        var iframe = plbContent.querySelector('iframe');
+        if (iframe) iframe.src = '';   // Unloads WebGL context immediately
+        plb.classList.remove('active');
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+        if (triggerImg) { triggerImg.focus(); triggerImg = null; }
+    }
+
+    document.addEventListener('click', function(e) {
+        var img = e.target.closest('img[data-plotly-src]');
+        if (!img) return;
+        e.stopPropagation();
+        triggerImg = img;
+        // The companion .html is a bare Plotly div fragment (no CDN script).
+        // Fetch it and wrap in a complete page so it renders in the iframe.
+        fetch(img.dataset.plotlySrc)
+            .then(function(r) { return r.text(); })
+            .then(function(fragment) {
+                var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+                    '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"><\/script>' +
+                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;' +
+                    'display:flex;justify-content:center;align-items:center;width:100vw;height:100vh;}' +
+                    '.js-plotly-plot,.plotly-graph-div{width:100%!important;height:100%!important;}</style>' +
+                    '</head><body>' + fragment + '</body></html>';
+                var blob = new Blob([html], {type: 'text/html'});
+                openPlotlyLightbox(URL.createObjectURL(blob));
+            })
+            .catch(function() {
+                // Fallback: open in new tab
+                window.open(img.dataset.plotlySrc, '_blank');
+            });
+    });
+
+    plbClose.addEventListener('click', closePlotlyLightbox);
+    plb.addEventListener('click', function(e) { if (e.target === plb) closePlotlyLightbox(); });
+
+    // Capture-phase Escape so Reveal.js doesn't grab it first
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape' || !plb.classList.contains('active')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closePlotlyLightbox();
+    }, true);
+})();
+
+// ── Lightbox for figures (accessible: focus trap, focus return) ──
+(function() {
+    const lb = document.getElementById('lightbox');
+    const lbImg = lb.querySelector('img');
+    const lbCap = lb.querySelector('.lb-caption');
+    const lbClose = lb.querySelector('.lb-close');
+    var triggerEl = null;
+
+    function openLightbox(src, alt, caption) {
+        lbImg.src = src;
+        lbImg.alt = alt;
+        lbCap.textContent = caption || alt;
+        lb.classList.add('active');
+        lbClose.focus();
+    }
+
+    function closeLightbox() {
+        lb.classList.remove('active');
+        lbImg.src = '';
+        if (triggerEl) { triggerEl.focus(); triggerEl = null; }
+    }
+
+    // Open lightbox on figure click (prevent default link navigation)
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.fig-link');
+        if (!link) return;
+        e.preventDefault();
+        e.stopPropagation();
+        triggerEl = link;
+        var src = link.getAttribute('data-src');
+        var alt = link.querySelector('img')?.alt || '';
+        var caption = link.closest('.fig-container')?.querySelector('.fig-caption')?.textContent || '';
+        openLightbox(src, alt, caption);
+    });
+
+    // Close on click anywhere on overlay
+    lb.addEventListener('click', function() { closeLightbox(); });
+
+    // Prevent closing when clicking the image itself (let user right-click → open in tab)
+    lbImg.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    // Close on Escape; trap Tab within lightbox
+    document.addEventListener('keydown', function(e) {
+        if (!lb.classList.contains('active')) return;
+        if (e.key === 'Escape') { closeLightbox(); }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            lbClose.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>

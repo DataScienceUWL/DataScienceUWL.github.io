@@ -35,7 +35,7 @@ p { margin: 0.15em 0; }
 .key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
     padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
 .blank-space { margin: 0.2em 0; position: relative;
-    border: 1px dashed #ccc; border-radius: 3px; box-sizing: border-box; }
+    border: none; border-top: 1px dashed #ccc; box-sizing: border-box; }
 .blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
     color: #767676; font-style: italic; }
 .hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
@@ -67,8 +67,9 @@ ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
 li { margin-bottom: 0.05em; }
 .pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
 .homework-section { page-break-before: auto; }
-.defn-box, .example-box, .key-point { page-break-inside: avoid; break-inside: avoid; }
-.example-group { page-break-inside: avoid; break-inside: avoid; }
+.defn-box, .example-box, .key-point, .blank-space, .theorem-box { page-break-inside: avoid; break-inside: avoid; }
+main > section { page-break-inside: auto; }
+main > section.example-group { page-break-inside: avoid; break-inside: avoid; }
 a:focus-visible, summary:focus-visible, button:focus-visible {
     outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
 @media print {
@@ -95,86 +96,12 @@ window.MathJax = {
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
 <script>
-// After MathJax renders, adjust workspace boxes for better print pagination.
-// Two mechanisms:
-// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
-//    then remove the pagebreak div (the expanded workspace pushes content naturally).
-// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
-//    page, expand the preceding workspace to push the section to the next page.
-function adjustWorkspaces() {
-    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
-
-    function findPrecedingWorkspace(el) {
-        // Walk backwards through preceding siblings (and into them) to find .blank-space
-        var prev = el.previousElementSibling;
-        while (prev) {
-            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
-            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
-            if (ws) return ws;
-            prev = prev.previousElementSibling;
-        }
-        // Also check inside parent section (pagebreak might be inside a section)
-        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
-            var children = el.parentElement.children;
-            for (var j = children.length - 1; j >= 0; j--) {
-                if (children[j] === el) continue;
-                if (children[j].classList.contains('blank-space')) return children[j];
-                var inner = children[j].querySelector('.blank-space:last-of-type');
-                if (inner) return inner;
-            }
-        }
-        return null;
-    }
-
-    function expandWorkspace(ws, extraPx) {
-        var curH = ws.getBoundingClientRect().height;
-        ws.style.minHeight = (curH + extraPx + 4) + 'px';
-    }
-
-    // --- Pass A: Handle explicit \pagebreak markers ---
-    var pagebreaks = document.querySelectorAll('.pagebreak');
-    pagebreaks.forEach(function(pb) {
-        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
-        var remaining = PAGE_H - (pbTop % PAGE_H);
-        if (remaining > 0 && remaining < PAGE_H) {
-            var ws = findPrecedingWorkspace(pb);
-            if (ws) expandWorkspace(ws, remaining);
-        }
-        pb.remove();  // no longer needed — workspace expansion handles the break
-    });
-
-    // --- Pass B: Auto-detect orphaned section starts ---
-    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
-    var sections = document.querySelectorAll('main > section');
-    for (var pass = 0; pass < 3; pass++) {
-        var changed = false;
-        for (var i = 1; i < sections.length; i++) {
-            var sec = sections[i];
-            var secRect = sec.getBoundingClientRect();
-            var secTop = secRect.top + window.scrollY;
-            var secBot = secTop + secRect.height;
-            var pageOfTop = Math.floor(secTop / PAGE_H);
-            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
-            if (pageOfBot > pageOfTop) {
-                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
-                if (contentOnFirstPage < MIN_CONTENT) {
-                    var ws = findPrecedingWorkspace(sec);
-                    if (ws) {
-                        expandWorkspace(ws, contentOnFirstPage);
-                        changed = true;
-                    }
-                }
-            }
-        }
-        if (!changed) break;
-    }
-}
-// Run after MathJax finishes so layout is finalized
-if (window.MathJax && window.MathJax.startup) {
-    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
-} else {
-    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
-}
+// Pagination is handled entirely by CSS:
+//   .pagebreak            → page-break-before: always
+//   .example-group        → page-break-inside: avoid
+//   .defn-box, .key-point → page-break-inside: avoid
+// Workspaces use their declared min-height only — no JS expansion.
+// This produces dense, predictable handouts.
 </script>
 </head>
 <body>
@@ -193,82 +120,123 @@ if (window.MathJax && window.MathJax.startup) {
 </header>
 <hr aria-hidden="true">
 
-<section id="from-double-to-triple" aria-label="From Double to Triple">
+<section id="from-double-to-triple" data-source-line="15" aria-label="From Double to Triple">
   <h2>From Double to Triple</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>Same idea, one more dimension. Chop, multiply, add, take the limit.</p></aside>
+  <div><p>In Sections 15.1&ndash;15.5 we integrated \(f(x,y)\) over a 2D region in \(\mathbb{R}^2\). Now we go one dimension higher: integrating \(f(x,y,z)\) over a 3D solid in \(\mathbb{R}^3\).</p></div>
+<div><p>Recall the progression:</p>
+<ul>
+<li><strong>Calc I:</strong> \(\displaystyle\int_a^b f(x)\,dx\) &mdash; integrate over an interval (1D)</li>
+<li><strong>Calc III (Ch 15.1&ndash;15.5):</strong> \(\displaystyle\iint_D f(x,y)\,dA\) &mdash; integrate over a region (2D)</li>
+<li><strong>Now:</strong> \(\displaystyle\iiint_E f(x,y,z)\,dV\) &mdash; integrate over a solid (3D)</li>
+</ul></div>
+<div><p>The construction is the same: partition the solid \(E\) into tiny boxes, multiply each \(f\)-value by the volume of the box \(\Delta V = \Delta x \Delta y \Delta z\), add them all up, and take the limit:</p>
+<p>\[\iiint_E f(x,y,z)\,dV = \lim_{l,m,n \to \infty} \sum_{i=1}^{l}\sum_{j=1}^{m}\sum_{k=1}^{n} f(x_{ijk}^*, y_{ijk}^*, z_{ijk}^*)\,\Delta V\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Same idea, one more dimension. Chop, multiply, add, take the limit.</p></aside>
 </section>
 
-<section id="interpretation-density-and-mass" aria-label="Interpretation: Density and Mass">
+<section id="interpretation-density-and-mass" data-source-line="36" aria-label="Interpretation: Density and Mass">
   <h2>Interpretation: Density and Mass</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>Triple integrals accumulate a quantity spread throughout a 3D solid &mdash; density times volume gives mass.</p></aside>
+  <div><p>What does \(\iiint_E f(x,y,z)\,dV\) <em>mean</em> physically?</p></div>
+<div><p>If \(f(x,y,z) = 1\) for all points, then:</p>
+<p>\[\iiint_E 1\,dV = \text{volume of } E\]</p>
+<p>This is the 3D version of “area \(= \iint_D 1\,dA\).”</p></div>
+<div><p>The most common physical interpretation: if \(f(x,y,z) = \rho(x,y,z)\) is a <strong>density function</strong> (mass per unit volume, like \(\text{g/cm}^3\) or \(\text{kg/m}^3\)), then</p>
+<p>\[\iiint_E \rho(x,y,z)\,dV = \text{total mass of } E\]</p></div>
+<div><p>More generally, if \(f\) gives “amount per unit volume,” then \(\iiint_E f\,dV\) gives the total amount in \(E\):</p>
+<ul>
+<li>Charge density (\(\text{C/m}^3\)) \(\to\) total charge</li>
+<li>Bacteria concentration (\(\text{cells/cm}^3\)) \(\to\) total bacteria count</li>
+<li>Probability density \(\to\) total probability</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Triple integrals accumulate a quantity spread throughout a 3D solid &mdash; density times volume gives mass.</p></aside>
 </section>
 
-<section id="quick-check-interpret-a-triple-integral" aria-label="Quick Check: Interpret a Triple Integral">
+<section id="quick-check-interpret-a-triple-integral" data-source-line="59" aria-label="Quick Check: Interpret a Triple Integral">
   <h2>Quick Check: Interpret a Triple Integral</h2>
-  <div class="blank-space" role="region" aria-label="Student workspace: Think about what density $\times$ volume gives you. What role does $z$ play in the density?" style="min-height:1.5in;">
+  <div><p>Suppose \(\rho(x,y,z) = 3z\) gives the density (in g/cm\(^3\)) of a solid \(E\).</p>
+<p><em>What does \(\displaystyle\iiint_E 3z\,dV\) compute? What are the units?</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Think about what density $\times$ volume gives you. What role does $z$ play in the density?" style="min-height:1.5in;">
   <div class="blank-prompt">Think about what density \(\times\) volume gives you. What role does \(z\) play in the density?</div>
 </div>
 </section>
 
-<section id="setting-up-the-limits-of-integration" aria-label="Setting Up the Limits of Integration">
+<section id="setting-up-the-limits-of-integration" data-source-line="78" aria-label="Setting Up the Limits of Integration">
   <h2>Setting Up the Limits of Integration</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>The hardest part of triple integrals is <strong>finding the limits</strong>. The actual integration is just three rounds of Calc I antiderivatives.</p></aside>
+  <div><p>Just like double integrals, we evaluate triple integrals as <strong>iterated integrals</strong>. There are <strong>six possible orders</strong> (we'll discuss this more shortly), but the strategy is the same for all of them.</p></div>
+<div><p><strong>The key idea:</strong> Choose one variable to integrate first (the <strong>inner</strong> integral). Its limits may depend on the other two variables. Then set up a double integral over the remaining two variables &mdash; exactly like Sections 15.2&ndash;15.3.</p></div>
+<div><p><strong>A common approach</strong> (inside out):</p>
+<ol>
+<li>Pick a direction to “slice” the solid. For each fixed point in the other two variables, find where the solid starts and stops in the slicing direction \(\to\) limits on the <strong>inner</strong> integral.</li>
+<li><strong>Project</strong> the solid onto the plane of the other two variables \(\to\) a 2D region.</li>
+<li>Set up the double integral over that 2D region as in Sections 15.2&ndash;15.3.</li>
+</ol></div>
+<div><p>For example, if we slice in the \(z\)-direction:</p>
+<p>\[\iiint_E f\,dV = \iint_D \left[\int_{z_{\text{bottom}}}^{z_{\text{top}}} f\,dz\right] dA\]</p>
+<p>where \(D\) is the <strong>shadow</strong> of \(E\) on the \(xy\)-plane.</p></div>
+<figure>
+  <img src="figures/projection_diagram.png" alt="Side-by-side diagrams. Left: a 3D tetrahedron with vertices at the origin, (2,0,0), (0,2,0), and (0,0,4), showing the solid E with colored faces. Right: the projection of the solid onto the xy-plane, showing the triangular shadow region D bounded by x plus y equals 2.">
+</figure>
+<aside class="key-point" role="note" aria-label="Key point"><p>The hardest part of triple integrals is <strong>finding the limits</strong>. The actual integration is just three rounds of Calc I antiderivatives.</p></aside>
 </section>
 
-<section id="example-1-triple-integral-over-a-tetrahedron" class="example-group" aria-label="Example 1: Triple Integral Over a Tetrahedron">
+<section id="example-1-triple-integral-over-a-tetrahedron" class="example-group" data-source-line="110" aria-label="Example 1: Triple Integral Over a Tetrahedron">
   <h2>Example 1: Triple Integral Over a Tetrahedron</h2>
   <section class="example-box" role="region" aria-label="Example 1">
   <h3 class="example-title">Example 1</h3>
   <p>Evaluate \(\displaystyle\iiint_E 2xyz\,dV\), where \(E\) is the solid in the first octant bounded by the plane \(3x + 2y + z = 1\).</p>
 </section>
-<figure>
-  <img src="figures/tetrahedron.png" alt="A tetrahedron in the first octant bounded by the coordinate planes and the plane 3x plus 2y plus z equals 1. Vertices are at the origin, (1/3, 0, 0), (0, 1/2, 0), and (0, 0, 1). The slanted face is shown in blue, and the coordinate faces (on the xy-, xz-, and yz-planes) are shown in green, amber, and purple respectively. All six edges are outlined in dark gray.">
-  <figcaption><a href="figures/tetrahedron.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure>
-<div class="blank-space" role="region" aria-label="Student workspace: Find the limits for $dz\,dy\,dx$. Start with: for fixed $x,y$, $z$ goes from $0$ up to $z = 1 - 3x - 2y$." style="min-height:3.5in;">
-  <div class="blank-prompt">Find the limits for \(dz\,dy\,dx\). Start with: for fixed \(x,y\), \(z\) goes from \(0\) up to \(z = 1 - 3x - 2y\).</div>
+<div class="blank-space" role="region" aria-label="Student workspace: Find the limits for $dz\,dy\,dx$. Start with: for fixed $x,y$, $z$ goes from $0$ up to the plane. Then project onto the $xy$-plane." style="min-height:4in;">
+  <div class="blank-prompt">Find the limits for \(dz\,dy\,dx\). Start with: for fixed \(x,y\), \(z\) goes from \(0\) up to the plane. Then project onto the \(xy\)-plane.</div>
 </div>
 </section>
 
-<section id="quick-check-describe-the-solid" aria-label="Quick Check: Describe the Solid">
+<section id="quick-check-describe-the-solid" data-source-line="162" aria-label="Quick Check: Describe the Solid">
   <h2>Quick Check: Describe the Solid</h2>
-  <div class="blank-space" role="region" aria-label="Student workspace: Read the limits from outside in. What shape has these boundary surfaces?" style="min-height:2in;">
+  <div><p><em>Describe the solid \(E\) whose volume is given by:</em></p>
+<p>\[\int_0^1 \int_0^{1-x} \int_0^{2-2x-2y} dz\,dy\,dx\]</p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Read the limits from outside in. What shape has these boundary surfaces?" style="min-height:2in;">
   <div class="blank-prompt">Read the limits from outside in. What shape has these boundary surfaces?</div>
 </div>
 </section>
 
-<section id="six-orders-of-integration" aria-label="Six Orders of Integration">
+<section id="six-orders-of-integration" data-source-line="184" aria-label="Six Orders of Integration">
   <h2>Six Orders of Integration</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>Switching the order of integration changes the <strong>limits</strong>, not the <strong>integrand</strong>. Always re-derive the limits from scratch by thinking about the geometry.</p></aside>
+  <div><p>A triple integral can be written in <strong>six</strong> different orders:</p>
+<p>\[dz\,dy\,dx \qquad dz\,dx\,dy \qquad dy\,dz\,dx \qquad dy\,dx\,dz \qquad dx\,dz\,dy \qquad dx\,dy\,dz\]</p></div>
+<div><p>All six give the same answer (assuming the function is continuous), but some orders may be <strong>much easier</strong> to evaluate than others!</p></div>
+<div><p><strong>Strategy for choosing the best order:</strong></p>
+<ul>
+<li>Look for limits that are <strong>constants</strong> &mdash; those variables should go on the outside</li>
+<li>Look for an integrand that simplifies when you integrate a particular variable first</li>
+<li>Sketch the solid and look for natural “top/bottom,” “left/right,” or “front/back” descriptions</li>
+</ul></div>
+<div><p>For the tetrahedron below \(3x + 2y + z = 1\) (Example 1), here's the \(dy\,dz\,dx\) version:</p>
+<p><strong>Fix \(x\) and \(z\):</strong> \(y\) goes from \(0\) to \(\frac{1-3x-z}{2}\). <strong>Fix \(x\):</strong> \(z\) goes from \(0\) to \(1-3x\). <strong>Then:</strong> \(x\) goes from \(0\) to \(\frac{1}{3}\).</p>
+<p>\[\int_0^{1/3}\int_0^{1-3x}\int_0^{(1-3x-z)/2} 2xyz\,dy\,dz\,dx\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Switching the order of integration changes the <strong>limits</strong>, not the <strong>integrand</strong>. Always re-derive the limits from scratch by thinking about the geometry.</p></aside>
 </section>
 
-<section id="example-2-another-tetrahedron" class="example-group" aria-label="Example 2: Another Tetrahedron">
-  <h2>Example 2: Another Tetrahedron</h2>
+<section id="example-2-volume-using-a-triple-integral" class="example-group" data-source-line="211" aria-label="Example 2: Volume Using a Triple Integral">
+  <h2>Example 2: Volume Using a Triple Integral</h2>
   <section class="example-box" role="region" aria-label="Example 2">
   <h3 class="example-title">Example 2</h3>
-  <p>Evaluate \(\displaystyle\iiint_E y\,dV\), where \(E\) is bounded by the coordinate planes \(x = 0\), \(y = 0\), \(z = 0\), and the plane \(2x + 2y + z = 4\).</p>
+  <p>Find the volume of the solid bounded by the parabolic cylinder \(y = x^2\), and the planes \(z = 0\), \(z = 4\), and \(y = 9\).</p>
 </section>
-<figure>
-  <img src="figures/tetrahedron_2.png" alt="A tetrahedron in the first octant bounded by the coordinate planes and the plane 2x plus 2y plus z equals 4. Vertices are at the origin, (2, 0, 0), (0, 2, 0), and (0, 0, 4). The slanted face is shown in blue, and the three coordinate faces are shown in green, amber, and purple respectively. All six edges are outlined in dark gray.">
-  <figcaption><a href="figures/tetrahedron_2.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure>
-<div class="blank-space" role="region" aria-label="Student workspace: Set up the integral in order $dz\,dy\,dx$. What is the top surface? What is the projection onto the $xy$-plane?" style="min-height:3.5in;">
-  <div class="blank-prompt">Set up the integral in order \(dz\,dy\,dx\). What is the top surface? What is the projection onto the \(xy\)-plane?</div>
+<div class="blank-space" role="region" aria-label="Student workspace: Set up $\iiint_E 1\,dV$ in order $dz\,dy\,dx$. What are the top/bottom surfaces? Where does $y = x^2$ intersect $y = 9$?" style="min-height:4in;">
+  <div class="blank-prompt">Set up \(\iiint_E 1\,dV\) in order \(dz\,dy\,dx\). What are the top/bottom surfaces? Where does \(y = x^2\) intersect \(y = 9\)?</div>
 </div>
 </section>
 
-<section id="example-3-volume-using-a-triple-integral" class="example-group" aria-label="Example 3: Volume Using a Triple Integral">
-  <h2>Example 3: Volume Using a Triple Integral</h2>
+<section id="example-3-setting-up-in-two-different-orders" class="example-group" data-source-line="247" aria-label="Example 3: Setting Up in Two Different Orders">
+  <h2>Example 3: Setting Up in Two Different Orders</h2>
   <section class="example-box" role="region" aria-label="Example 3">
   <h3 class="example-title">Example 3</h3>
-  <p>Find the volume of the solid bounded by the parabolic cylinder \(y = x^2\), and the planes \(z = 0\), \(z = 4\), and \(y = 9\).</p>
+  <p>The solid \(E\) is bounded by \(z = 0\), \(y = 0\), \(z = y\), and \(y = 4 - x^2\).</p>
+<p>(a) Set up \(\displaystyle\iiint_E 1\,dV\) in the order \(dz\,dy\,dx\).</p>
+<p>(b) Set up the same integral in the order \(dy\,dz\,dx\).</p>
 </section>
-<figure>
-  <img src="figures/parabolic_trough.png" alt="A 3D solid bounded by the parabolic cylinder y = x squared (the front curved wall, shown in blue), the flat back wall y = 9 (light purple), the bottom z = 0 (light green), and the top z = 4 (amber). The solid looks like a trough or channel running from x = -3 to x = 3, with parabolic cross-sections. The boundary curves of the parabolic wall at z = 0 and z = 4 are highlighted in red.">
-  <figcaption><a href="figures/parabolic_trough.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
-</figure>
-<div class="blank-space" role="region" aria-label="Student workspace: Set up $\iiint_E 1\,dV$ in order $dz\,dy\,dx$. Where does $y = x^2$ intersect $y = 9$?" style="min-height:3in;">
-  <div class="blank-prompt">Set up \(\iiint_E 1\,dV\) in order \(dz\,dy\,dx\). Where does \(y = x^2\) intersect \(y = 9\)?</div>
+<div class="blank-space" role="region" aria-label="Student workspace: For (a): What are the top and bottom surfaces? Project onto the $xy$-plane. For (b): What are the left and right surfaces in the $y$-direction? Project onto the $xz$-plane." style="min-height:4in;">
+  <div class="blank-prompt">For (a): What are the top and bottom surfaces? Project onto the \(xy\)-plane. For (b): What are the left and right surfaces in the \(y\)-direction? Project onto the \(xz\)-plane.</div>
 </div>
 </section>
 
@@ -277,5 +245,45 @@ if (window.MathJax && window.MathJax.startup) {
   <div class="hw-box"><strong>Section 15.6:</strong> 1, 3, 5, 6, 7, 9, 11, 13, 15, 17, 19, 25, 31, 33</div>
 </section>
 </main>
+<script>
+// Scroll observer: notify parent when visible section changes (for editor sync)
+(function() {
+    if (!window.parent || window.parent === window) return;
+    var sections = document.querySelectorAll('main > section[data-source-line]');
+    if (!sections.length) return;
+    var currentLine = null;
+    var scrollTimer = null;
+    function onScroll() {
+        if (scrollTimer) clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(updateVisibleSection, 80);
+    }
+    function updateVisibleSection() {
+        var viewTop = window.innerHeight * 0.3;
+        var best = null;
+        for (var i = 0; i < sections.length; i++) {
+            var rect = sections[i].getBoundingClientRect();
+            if (rect.top <= viewTop && rect.bottom > 0) best = sections[i];
+        }
+        if (best) {
+            var line = parseInt(best.dataset.sourceLine, 10);
+            if (!isNaN(line) && line !== currentLine) {
+                currentLine = line;
+                window.parent.postMessage({ type: 'htmlSectionChanged', sourceLine: line }, '*');
+            }
+        }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'goToSection' && e.data.sourceLine != null) {
+            for (var i = 0; i < sections.length; i++) {
+                if (parseInt(sections[i].dataset.sourceLine, 10) === e.data.sourceLine) {
+                    sections[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    break;
+                }
+            }
+        }
+    });
+})();
+</script>
 </body>
 </html>

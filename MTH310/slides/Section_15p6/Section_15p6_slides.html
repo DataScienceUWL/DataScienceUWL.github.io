@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>15.6 - Triple Integrals | MTH 310</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/white.min.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root {
+    --accent-blue: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-amber: #e09f3e;
+    --accent-purple: #6c3483; --fg: #222222; --bg: #ffffff;
+}
+.reveal { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; font-size: 30px; color: var(--fg); }
+.reveal .slides section { text-align: left; }
+.reveal .slides > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides > section > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides section::-webkit-scrollbar { width: 6px; }
+.reveal .slides section::-webkit-scrollbar-track { background: transparent; }
+.reveal .slides section::-webkit-scrollbar-thumb { background: rgba(0,119,182,0.2); border-radius: 3px; }
+.reveal .slides section::-webkit-scrollbar-thumb:hover { background: rgba(0,119,182,0.4); }
+.reveal .slides > section::after, .reveal .slides > section > section::after {
+    content: ''; display: block; height: 0; clear: both; }
+.reveal h1,.reveal h2,.reveal h3 { text-transform: none; font-weight: 600; }
+.reveal h1 { font-size: 2.2em; color: var(--accent-blue); }
+.reveal h2 { font-size: 1.35em; color: var(--accent-blue); border-bottom: 2px solid rgba(0,119,182,0.25);
+    padding-bottom: 0.2em; margin-bottom: 0.4em; margin-top: 0; }
+.reveal h3 { font-size: 1.1em; color: var(--accent-green); margin: 0.2em 0; }
+.reveal p { margin: 0.3em 0; line-height: 1.4; }
+.reveal li { margin-bottom: 0.15em; line-height: 1.35; }
+.reveal ul,.reveal ol { margin-left: 0.5em; }
+.title-slide { text-align: center !important; }
+.title-slide h1 { font-size: 2.8em; margin-bottom: 0.1em; }
+.title-slide .subtitle { font-size: 1.4em; color: #b07d00; }
+.title-slide .course-info { font-size: 0.85em; color: #595959; margin-top: 2em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-blue);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.theorem-box { background: #fdf6ec; border-left-color: var(--accent-amber); }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.solution { background: #fffdf5; border-left: 4px solid var(--accent-amber);
+    border-radius: 8px; padding: 0.4em 0.8em; margin-top: 0.3em; color: #7a5c00; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7;
+    border-radius: 8px; padding: 0.5em 0.8em; margin: 0.4em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #666; margin: 0.3em 0; font-size: 0.85em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red);
+    border-radius: 10px; padding: 1em 1.5em; text-align: center; margin: 1em 0; }
+.hw-box h3 { color: var(--accent-red); margin: 0 0 0.3em 0; }
+.two-col { display: flex; gap: 1.2em; align-items: flex-start; }
+.two-col > * { flex: 1; }
+.fig-container { text-align: center; margin: 0.3em 0; }
+.fig-container img { max-height: 60vh; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    cursor: zoom-in; transition: opacity 0.15s; }
+.fig-container img:hover { opacity: 0.8; }
+.fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
+.fig-link { display: inline-block; }
+.textbook-fig img { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; }
+.plotly-lazy-thumb { cursor: pointer; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+.plotly-lazy-thumb:hover { opacity: 0.92; outline: 2px solid #0077b6; outline-offset: 2px; }
+#plotly-lightbox { display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+    justify-content:center; align-items:center; cursor:default; }
+#plotly-lightbox.active { display:flex; }
+#plotly-lightbox .plb-close { position:fixed; top:14px; left:20px;
+    font-size:2.2em; color:#fff; background:rgba(0,0,0,0.55);
+    border:1px solid rgba(255,255,255,0.4); border-radius:6px;
+    padding:2px 14px; cursor:pointer; z-index:10001; line-height:1; }
+#plotly-lightbox .plb-close:hover { color:#e09f3e; background:rgba(0,0,0,0.75); }
+#plotly-lightbox .plb-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+#plotly-lightbox .plb-content { width:92vw; height:85vh; }
+#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; }
+/* Lightbox overlay */
+#lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
+    cursor: zoom-out; backdrop-filter: blur(4px); }
+#lightbox.active { display: flex; }
+#lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5); object-fit: contain; background: white; }
+#lightbox .lb-caption { position: absolute; bottom: 1.5em; left: 50%;
+    transform: translateX(-50%); color: #fff; font-size: 0.55em;
+    background: rgba(0,0,0,0.7); padding: 0.3em 1em; border-radius: 4px; }
+#lightbox .lb-close { position: absolute; top: 0.8em; right: 1.2em;
+    color: #fff; font-size: 1.5em; cursor: pointer; transition: color 0.15s;
+    background: none; border: none; padding: 0.2em 0.5em; }
+#lightbox .lb-close:hover { color: #e09f3e; }
+#lightbox .lb-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.interactive-link { color: var(--accent-blue); text-decoration: none; font-size: 0.9em; }
+.interactive-link:hover { text-decoration: underline; }
+.desmos-container { text-align: center; margin: 0.3em auto; }
+.desmos-container iframe { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    border: 1px solid #ddd; }
+.desmos-label { font-size: 0.65em; color: var(--accent-blue); margin-top: 0.2em; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.4em;
+    color: var(--accent-blue); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+aside.notes { display: none; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 0.5em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.3em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.75em; color: var(--accent-blue);
+    text-align: center; margin-bottom: 0.1em; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 18vh; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+.small { font-size: 0.8em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-blue);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600;
+    font-size: 16px; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+table { border-collapse: collapse; font-size: 0.8em; margin: 0.5em 0; }
+th, td { padding: 0.2em 0.6em; border-bottom: 1px solid #ddd; }
+th { color: var(--accent-blue); }
+.reveal .progress { color: var(--accent-blue); }
+.reveal .slide-number { color: #767676; font-size: 0.5em; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+</style>
+</head>
+<body data-section="Section_15p6">
+<a href="#" class="skip-link" onclick="Reveal.next();return false;">Skip to first slide</a>
+<div class="reveal">
+<div class="slides">
+<section class="title-slide" data-background-gradient="radial-gradient(circle at 30% 50%, #e8f4f8 0%, #f8f9fa 70%)">
+  <h1>15.6</h1>
+  <p class="subtitle">Triple Integrals</p>
+  <hr style="border-color:rgba(0,212,255,0.3);width:60%;margin:1em auto;" aria-hidden="true">
+  <p class="course-info">MTH 310 &mdash; Calculus III<br>  Multiple Integrals</p>
+</section>
+
+<section id="from-double-to-triple">
+<h2>From Double to Triple</h2>
+<div class="fragment" data-editor-line="17"><p>In Sections 15.1&ndash;15.5 we integrated \(f(x,y)\) over a 2D region in \(\mathbb{R}^2\). Now we go one dimension higher: integrating \(f(x,y,z)\) over a 3D solid in \(\mathbb{R}^3\).</p></div>
+<div class="fragment" data-editor-line="19"><p>Recall the progression:</p>
+<ul>
+<li><strong>Calc I:</strong> \(\displaystyle\int_a^b f(x)\,dx\) &mdash; integrate over an interval (1D)</li>
+<li><strong>Calc III (Ch 15.1&ndash;15.5):</strong> \(\displaystyle\iint_D f(x,y)\,dA\) &mdash; integrate over a region (2D)</li>
+<li><strong>Now:</strong> \(\displaystyle\iiint_E f(x,y,z)\,dV\) &mdash; integrate over a solid (3D)</li>
+</ul></div>
+<div class="fragment" data-editor-line="26"><p>The construction is the same: partition the solid \(E\) into tiny boxes, multiply each \(f\)-value by the volume of the box \(\Delta V = \Delta x \Delta y \Delta z\), add them all up, and take the limit:</p>
+<p>\[\iiint_E f(x,y,z)\,dV = \lim_{l,m,n \to \infty} \sum_{i=1}^{l}\sum_{j=1}^{m}\sum_{k=1}^{n} f(x_{ijk}^*, y_{ijk}^*, z_{ijk}^*)\,\Delta V\]</p></div>
+<div class="key-point fragment" data-editor-line="29"><p>Same idea, one more dimension. Chop, multiply, add, take the limit.</p></div>
+<aside class="notes">Emphasize the pattern: every time we go up a dimension, we add one more integral sign, one more sum, and one more variable. The machinery is the same.</aside>
+</section>
+
+<section id="interpretation-density-and-mass">
+<h2>Interpretation: Density and Mass</h2>
+<div class="fragment" data-editor-line="38"><p>What does \(\iiint_E f(x,y,z)\,dV\) <em>mean</em> physically?</p></div>
+<div class="fragment" data-editor-line="40"><p>If \(f(x,y,z) = 1\) for all points, then:</p>
+<p>\[\iiint_E 1\,dV = \text{volume of } E\]</p>
+<p>This is the 3D version of “area \(= \iint_D 1\,dA\).”</p></div>
+<div class="fragment" data-editor-line="44"><p>The most common physical interpretation: if \(f(x,y,z) = \rho(x,y,z)\) is a <strong>density function</strong> (mass per unit volume, like \(\text{g/cm}^3\) or \(\text{kg/m}^3\)), then</p>
+<p>\[\iiint_E \rho(x,y,z)\,dV = \text{total mass of } E\]</p></div>
+<div class="fragment" data-editor-line="47"><p>More generally, if \(f\) gives “amount per unit volume,” then \(\iiint_E f\,dV\) gives the total amount in \(E\):</p>
+<ul>
+<li>Charge density (\(\text{C/m}^3\)) \(\to\) total charge</li>
+<li>Bacteria concentration (\(\text{cells/cm}^3\)) \(\to\) total bacteria count</li>
+<li>Probability density \(\to\) total probability</li>
+</ul></div>
+<div class="key-point fragment" data-editor-line="54"><p>Triple integrals accumulate a quantity spread throughout a 3D solid &mdash; density times volume gives mass.</p></div>
+</section>
+
+<section id="quick-check-interpret-a-triple-integral">
+<h2>Quick Check: Interpret a Triple Integral</h2>
+<div class="fragment" data-editor-line="61"><p>Suppose \(\rho(x,y,z) = 3z\) gives the density (in g/cm\(^3\)) of a solid \(E\).</p>
+<p><em>What does \(\displaystyle\iiint_E 3z\,dV\) compute? What are the units?</em></p></div>
+<div class="fragment" data-editor-line="65"><p class="work-prompt">Think about what density \(\times\) volume gives you. What role does \(z\) play in the density?</p></div>
+<div class="fragment" data-editor-line="67"><p>\(\displaystyle\iiint_E 3z\,dV\) computes the <strong>total mass</strong> of the solid \(E\).</p></div>
+<div class="fragment" data-editor-line="69"><p>Units: \(\left(\frac{\text{g}}{\text{cm}^3}\right) \times \text{cm}^3 = \text{g}\) (grams).</p>
+<p>The density \(\rho = 3z\) increases with height &mdash; the solid is denser at the top than at the bottom.</p></div>
+<div class="key-point fragment" data-editor-line="73"><p>To interpret a triple integral, ask: “What does the integrand measure per unit volume?” The integral gives the total amount.</p></div>
+</section>
+
+<section id="setting-up-the-limits-of-integration">
+<h2>Setting Up the Limits of Integration</h2>
+<div class="fragment" data-editor-line="80"><p>Just like double integrals, we evaluate triple integrals as <strong>iterated integrals</strong>. There are <strong>six possible orders</strong> (we'll discuss this more shortly), but the strategy is the same for all of them.</p></div>
+<div class="fragment" data-editor-line="82"><p><strong>The key idea:</strong> Choose one variable to integrate first (the <strong>inner</strong> integral). Its limits may depend on the other two variables. Then set up a double integral over the remaining two variables &mdash; exactly like Sections 15.2&ndash;15.3.</p></div>
+<div class="fragment" data-editor-line="86"><p><strong>A common approach</strong> (inside out):</p>
+<ol>
+<li>Pick a direction to “slice” the solid. For each fixed point in the other two variables, find where the solid starts and stops in the slicing direction \(\to\) limits on the <strong>inner</strong> integral.</li>
+<li><strong>Project</strong> the solid onto the plane of the other two variables \(\to\) a 2D region.</li>
+<li>Set up the double integral over that 2D region as in Sections 15.2&ndash;15.3.</li>
+</ol></div>
+<div class="fragment" data-editor-line="95"><p>For example, if we slice in the \(z\)-direction:</p>
+<p>\[\iiint_E f\,dV = \iint_D \left[\int_{z_{\text{bottom}}}^{z_{\text{top}}} f\,dz\right] dA\]</p>
+<p>where \(D\) is the <strong>shadow</strong> of \(E\) on the \(xy\)-plane.</p></div>
+<div class="fig-container fragment" data-editor-line="101">
+  <a href="figures/projection_diagram.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/projection_diagram.png"><img src="figures/projection_diagram.png" alt="Side-by-side diagrams. Left: a 3D tetrahedron with vertices at the origin, (2,0,0), (0,2,0), and (0,0,4), showing the solid E with colored faces. Right: the projection of the solid onto the xy-plane, showing the triangular shadow region D bounded by x plus y equals 2." style="max-height:60vh;"></a>
+</div>
+<div class="key-point fragment" data-editor-line="103"><p>The hardest part of triple integrals is <strong>finding the limits</strong>. The actual integration is just three rounds of Calc I antiderivatives.</p></div>
+<aside class="notes">Draw a simple solid on the board and walk through both approaches (outside-in and inside-out). Most students find inside-out more intuitive: find the z-limits first, then project down to a 2D region they already know how to handle.</aside>
+</section>
+
+<section id="example-1-triple-integral-over-a-tetrahedron">
+<h2>Example 1: Triple Integral Over a Tetrahedron</h2>
+<div class="example-box fragment" data-editor-line="112">
+  <div class="example-title">Example 1</div>
+  <p>Evaluate \(\displaystyle\iiint_E 2xyz\,dV\), where \(E\) is the solid in the first octant bounded by the plane \(3x + 2y + z = 1\).</p>
+</div>
+<div class="fragment" data-editor-line="116"><p class="work-prompt">Find the limits for \(dz\,dy\,dx\). Start with: for fixed \(x,y\), \(z\) goes from \(0\) up to the plane. Then project onto the \(xy\)-plane.</p></div>
+<div class="fragment" data-editor-line="119"><p><strong>Describe the solid:</strong> \(E\) is a <strong>tetrahedron</strong> (triangular pyramid) with vertices at \((0,0,0)\), \((\frac{1}{3},0,0)\), \((0,\frac{1}{2},0)\), and \((0,0,1)\).</p></div>
+<div class="fig-container fragment" data-editor-line="121">
+  <img src="figures/tetrahedron.png" alt="A tetrahedron in the first octant bounded by the coordinate planes and the plane 3x plus 2y plus z equals 1. Vertices are at the origin, (1/3, 0, 0), (0, 1/2, 0), and (0, 0, 1). The slanted face is shown in blue, and the coordinate faces (on the xy-, xz-, and yz-planes) are shown in green, amber, and purple respectively. All six edges are outlined in dark gray." class="plotly-lazy-thumb" data-plotly-src="figures/tetrahedron.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="124"><p><strong>Limits on \(z\):</strong> The bottom is \(z = 0\) and the top is \(z = 1 - 3x - 2y\).</p></div>
+<div class="fragment" data-editor-line="126"><p><strong>Project onto the \(xy\)-plane:</strong> Set \(z = 0\) in the plane equation to get \(3x + 2y = 1\), or \(y = \frac{1-3x}{2}\). So \(y\) ranges from \(0\) to \(\frac{1-3x}{2}\).</p></div>
+<div class="fragment" data-editor-line="128"><p><strong>Limits on \(x\):</strong> \(x\) ranges from \(0\) to \(\frac{1}{3}\) (where \(y = 0\)).</p></div>
+<div class="fragment" data-editor-line="130"><p>\[\iiint_E 2xyz\,dV = \int_0^{1/3} \int_0^{(1-3x)/2} \int_0^{1-3x-2y} 2xyz\,dz\,dy\,dx\]</p></div>
+</section>
+
+<section>
+<h2>Example 1: Triple Integral Over a Tetrahedron</h2>
+<div class="fragment" data-editor-line="134"><p><strong>Now evaluate</strong> &mdash; three rounds of Calc I integration:</p></div>
+<div class="fragment" data-editor-line="136"><p><strong>Inner integral</strong> (integrate with respect to \(z\)):</p>
+<p>\[\int_0^{1-3x-2y} 2xyz\,dz = 2xy \cdot \frac{z^2}{2}\Big|_0^{1-3x-2y} = xy(1-3x-2y)^2\]</p></div>
+<div class="fragment" data-editor-line="139"><p><strong>Middle integral</strong> (integrate with respect to \(y\)):</p>
+<p>\[\int_0^{(1-3x)/2} xy(1-3x-2y)^2\,dy\]</p>
+<p>Let \(u = 1 - 3x - 2y\), \(du = -2\,dy\). When \(y = 0\): \(u = 1-3x\). When \(y = \frac{1-3x}{2}\): \(u = 0\).</p>
+<p>\[= x \int_{1-3x}^{0} \frac{1-3x-u}{2} \cdot u^2 \cdot \left(-\frac{du}{2}\right) = \frac{x}{4}\int_0^{1-3x} u^2(1-3x-u)\,du\]</p></div>
+<div class="fragment" data-editor-line="146"><p>\[= \frac{x}{4}\left[\frac{(1-3x)u^3}{3} - \frac{u^4}{4}\right]_0^{1-3x} = \frac{x}{4}\left[\frac{(1-3x)^4}{3} - \frac{(1-3x)^4}{4}\right] = \frac{x(1-3x)^4}{48}\]</p></div>
+<div class="fragment" data-editor-line="148"><p><strong>Outer integral:</strong></p>
+<p>\[\int_0^{1/3} \frac{x(1-3x)^4}{48}\,dx\]</p>
+<p>Let \(w = 1-3x\), \(dw = -3\,dx\), \(x = \frac{1-w}{3}\). Limits: \(w = 1\) to \(w = 0\).</p>
+<p>\[= \frac{1}{48}\int_1^0 \frac{(1-w)}{3} w^4 \left(-\frac{dw}{3}\right) = \frac{1}{432}\int_0^1 w^4(1-w)\,dw = \frac{1}{432}\left[\frac{1}{5} - \frac{1}{6}\right] = \frac{1}{432}\cdot\frac{1}{30} = \frac{1}{12960}\]</p></div>
+<div class="key-point fragment" data-editor-line="155"><p>\(\displaystyle\iiint_E 2xyz\,dV = \frac{1}{12960}\). The hardest part was the limits &mdash; the integration itself was just repeated substitutions.</p></div>
+<aside class="notes">Walk through the limit-finding slowly. Many students find it helpful to sketch the projection onto the xy-plane to see the triangular region. Emphasize that the actual antiderivatives are just Calc I.</aside>
+</section>
+
+<section id="quick-check-describe-the-solid">
+<h2>Quick Check: Describe the Solid</h2>
+<div class="fragment" data-editor-line="164"><p><em>Describe the solid \(E\) whose volume is given by:</em></p>
+<p>\[\int_0^1 \int_0^{1-x} \int_0^{2-2x-2y} dz\,dy\,dx\]</p></div>
+<div class="fragment" data-editor-line="167"><p class="work-prompt">Read the limits from outside in. What shape has these boundary surfaces?</p></div>
+<div class="fragment" data-editor-line="169"><p><strong>Bottom:</strong> \(z = 0\) (the \(xy\)-plane). <strong>Top:</strong> \(z = 2 - 2x - 2y\), i.e., the plane \(2x + 2y + z = 2\).</p></div>
+<div class="fragment" data-editor-line="171"><p><strong>Projection onto \(xy\)-plane:</strong> \(y\) from \(0\) to \(1-x\), \(x\) from \(0\) to \(1\) &mdash; a triangle with vertices \((0,0)\), \((1,0)\), \((0,1)\).</p></div>
+<div class="fragment" data-editor-line="173"><p>\(E\) is a <strong>tetrahedron</strong> with vertices at \((0,0,0)\), \((1,0,0)\), \((0,1,0)\), and \((0,0,2)\).</p>
+<p>Its volume is \(\frac{1}{3} \cdot \text{base area} \cdot \text{height} = \frac{1}{3} \cdot \frac{1}{2} \cdot 2 = \frac{1}{3}\).</p></div>
+<div class="fig-container fragment" data-editor-line="177">
+  <img src="figures/qc_tetrahedron.png" alt="A tetrahedron in the first octant with vertices at the origin, (1,0,0), (0,1,0), and (0,0,2). The slanted face is the plane 2x plus 2y plus z equals 2 shown in blue. Edges are outlined in dark gray." class="plotly-lazy-thumb" data-plotly-src="figures/qc_tetrahedron.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="key-point fragment" data-editor-line="179"><p>Reading limits tells you the solid's boundaries. Projecting onto a coordinate plane gives you the 2D shadow.</p></div>
+</section>
+
+<section id="six-orders-of-integration">
+<h2>Six Orders of Integration</h2>
+<div class="fragment" data-editor-line="186"><p>A triple integral can be written in <strong>six</strong> different orders:</p>
+<p>\[dz\,dy\,dx \qquad dz\,dx\,dy \qquad dy\,dz\,dx \qquad dy\,dx\,dz \qquad dx\,dz\,dy \qquad dx\,dy\,dz\]</p></div>
+<div class="fragment" data-editor-line="189"><p>All six give the same answer (assuming the function is continuous), but some orders may be <strong>much easier</strong> to evaluate than others!</p></div>
+<div class="fragment" data-editor-line="191"><p><strong>Strategy for choosing the best order:</strong></p>
+<ul>
+<li>Look for limits that are <strong>constants</strong> &mdash; those variables should go on the outside</li>
+<li>Look for an integrand that simplifies when you integrate a particular variable first</li>
+<li>Sketch the solid and look for natural “top/bottom,” “left/right,” or “front/back” descriptions</li>
+</ul></div>
+<div class="fragment" data-editor-line="198"><p>For the tetrahedron below \(3x + 2y + z = 1\) (Example 1), here's the \(dy\,dz\,dx\) version:</p>
+<p><strong>Fix \(x\) and \(z\):</strong> \(y\) goes from \(0\) to \(\frac{1-3x-z}{2}\). <strong>Fix \(x\):</strong> \(z\) goes from \(0\) to \(1-3x\). <strong>Then:</strong> \(x\) goes from \(0\) to \(\frac{1}{3}\).</p>
+<p>\[\int_0^{1/3}\int_0^{1-3x}\int_0^{(1-3x-z)/2} 2xyz\,dy\,dz\,dx\]</p></div>
+<div class="key-point fragment" data-editor-line="204"><p>Switching the order of integration changes the <strong>limits</strong>, not the <strong>integrand</strong>. Always re-derive the limits from scratch by thinking about the geometry.</p></div>
+<aside class="notes">Emphasize that students should NOT try to algebraically manipulate limits from one order to another. Instead, go back to the picture and re-derive limits for the new order from the geometry of the solid.</aside>
+</section>
+
+<section id="example-2-volume-using-a-triple-integral">
+<h2>Example 2: Volume Using a Triple Integral</h2>
+<div class="example-box fragment" data-editor-line="213">
+  <div class="example-title">Example 2</div>
+  <p>Find the volume of the solid bounded by the parabolic cylinder \(y = x^2\), and the planes \(z = 0\), \(z = 4\), and \(y = 9\).</p>
+</div>
+<div class="fragment" data-editor-line="217"><p class="work-prompt">Set up \(\iiint_E 1\,dV\) in order \(dz\,dy\,dx\). What are the top/bottom surfaces? Where does \(y = x^2\) intersect \(y = 9\)?</p></div>
+<div class="fragment" data-editor-line="220"><p><strong>Describe the solid:</strong> The solid sits between \(z = 0\) and \(z = 4\) (constant height), behind \(y = 9\), and in front of \(y = x^2\) (a parabolic wall).</p></div>
+<div class="fig-container fragment" data-editor-line="222">
+  <img src="figures/parabolic_trough.png" alt="A 3D solid bounded by the parabolic cylinder y = x squared (the front curved wall, shown in blue), the flat back wall y = 9 (light purple), the bottom z = 0 (light green), and the top z = 4 (amber). The solid looks like a trough or channel running from x = -3 to x = 3, with parabolic cross-sections. The boundary curves of the parabolic wall at z = 0 and z = 4 are highlighted in red." class="plotly-lazy-thumb" data-plotly-src="figures/parabolic_trough.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="225"><p><strong>Limits on \(z\):</strong> \(0 \leq z \leq 4\) (constant &mdash; nice!).</p></div>
+<div class="fragment" data-editor-line="227"><p><strong>Limits on \(y\):</strong> From the parabolic wall \(y = x^2\) to the flat wall \(y = 9\).</p></div>
+<div class="fragment" data-editor-line="229"><p><strong>Limits on \(x\):</strong> \(y = x^2 = 9 \Rightarrow x = \pm 3\), so \(-3 \leq x \leq 3\).</p>
+<p>\[V = \int_{-3}^{3}\int_{x^2}^{9}\int_0^4 dz\,dy\,dx\]</p></div>
+<div class="fragment" data-editor-line="233"><p><strong>Inner integral:</strong> \(\displaystyle\int_0^4 dz = 4\)</p></div>
+<div class="fragment" data-editor-line="235"><p><strong>Middle integral:</strong> \(\displaystyle\int_{x^2}^{9} 4\,dy = 4(9 - x^2)\)</p></div>
+<div class="fragment" data-editor-line="237"><p><strong>Outer integral:</strong></p>
+<p>\[\int_{-3}^{3} 4(9-x^2)\,dx = 4\left[9x - \frac{x^3}{3}\right]_{-3}^{3} = 4\left[(27 - 9) - (-27+9)\right] = 4 \cdot 36 = 144\]</p></div>
+<div class="key-point fragment" data-editor-line="240"><p>\(V = 144\) cubic units. When the \(z\)-limits are constants, the inner integral is trivial and the problem reduces to a double integral.</p></div>
+<aside class="notes">Point out that this is really a 2D area (\(\int\int (9-x^2)\,dy\,dx\)) times a height of 4. Ask: “Could we have seen this without setting up a triple integral?” Yes &mdash; the cross-section in \(z\) is constant, so volume = area of base \(\times\) height.</aside>
+</section>
+
+<section id="example-3-setting-up-in-two-different-orders">
+<h2>Example 3: Setting Up in Two Different Orders</h2>
+<div class="example-box fragment" data-editor-line="249">
+  <div class="example-title">Example 3</div>
+  <p>The solid \(E\) is bounded by \(z = 0\), \(y = 0\), \(z = y\), and \(y = 4 - x^2\).</p>
+<p>(a) Set up \(\displaystyle\iiint_E 1\,dV\) in the order \(dz\,dy\,dx\).</p>
+<p>(b) Set up the same integral in the order \(dy\,dz\,dx\).</p>
+</div>
+<div class="fragment" data-editor-line="257"><p class="work-prompt">For (a): What are the top and bottom surfaces? Project onto the \(xy\)-plane. For (b): What are the left and right surfaces in the \(y\)-direction? Project onto the \(xz\)-plane.</p></div>
+<div class="fragment" data-editor-line="259"><p><strong>(a) Order \(dz\,dy\,dx\):</strong></p>
+<p><strong>Inner (\(z\)):</strong> Bottom \(z = 0\), top \(z = y\). So \(0 \leq z \leq y\).</p>
+<p><strong>Middle (\(y\)):</strong> From \(y = 0\) to \(y = 4 - x^2\) (the parabola).</p>
+<p><strong>Outer (\(x\)):</strong> \(4 - x^2 = 0 \Rightarrow x = \pm 2\).</p>
+<p>\[V = \int_{-2}^{2} \int_0^{4-x^2} \int_0^{y} dz\,dy\,dx\]</p></div>
+<div class="fragment" data-editor-line="271"><p><strong>(b) Order \(dy\,dz\,dx\):</strong> Now \(y\) is the inner variable.</p>
+<p><strong>Inner (\(y\)):</strong> The plane \(z = y\) gives \(y = z\) as the lower bound. The parabola gives \(y = 4 - x^2\) as the upper bound. So \(z \leq y \leq 4 - x^2\).</p>
+<p><strong>Middle (\(z\)):</strong> \(z\) goes from \(0\) up to where \(z = y\) meets \(y = 4 - x^2\), i.e., \(z = 4 - x^2\).</p>
+<p><strong>Outer (\(x\)):</strong> Still \(-2 \leq x \leq 2\).</p>
+<p>\[V = \int_{-2}^{2} \int_0^{4-x^2} \int_z^{4-x^2} dy\,dz\,dx\]</p></div>
+<div class="key-point fragment" data-editor-line="283"><p>Same solid, same answer, different limits. Switching the order changes which variable depends on which &mdash; always re-derive limits from the geometry, never try to algebraically rearrange old limits.</p></div>
+<aside class="notes">This is a good exercise to do side-by-side on the board. Ask: “Which order looks easier to evaluate?” Order (a) has simpler inner limits. The point is that they should be comfortable setting up limits in more than one order.</aside>
+</section>
+
+<section id="section-15-6-summary">
+<h2>Section 15.6 Summary</h2>
+<div class="summary-grid">
+<div class="defn-box"><div class="defn-title">Triple Integral</div><p class="small">\(\displaystyle\iiint_E f(x,y,z)\,dV\) &mdash; limit of triple Riemann sums over tiny boxes.</p></div>
+<div class="defn-box"><div class="defn-title">Interpretation</div><p class="small">\(f = 1\): volume. \(f = \rho\) (density): total mass. \(f = \) amount per volume: total amount.</p></div>
+<div class="defn-box"><div class="defn-title">Setting Up Limits</div><p class="small">Identify top/bottom surfaces for \(z\), project onto \(xy\)-plane, then set up the 2D region as in 15.2&ndash;15.3.</p></div>
+<div class="defn-box"><div class="defn-title">Six Orders</div><p class="small">\(dz\,dy\,dx\), \(dz\,dx\,dy\), \(dy\,dz\,dx\), \(dy\,dx\,dz\), \(dx\,dz\,dy\), \(dx\,dy\,dz\). All give the same answer; some are easier.</p></div>
+<div class="defn-box"><div class="defn-title">Evaluation</div><p class="small">Three nested Calc I integrals. Work from the inside out.</p></div>
+</div>
+<div class="key-point fragment" data-editor-line="300"><p><strong>Coming up next:</strong> Some solids have circular symmetry that makes Cartesian limits messy. In Section 15.7 we'll switch to <strong>cylindrical coordinates</strong> &mdash; polar coordinates plus a \(z\)-axis &mdash; to handle cylinders, cones, and paraboloids.</p></div>
+</section>
+
+<section>
+<h2>Homework</h2>
+<div class="hw-box"><h3>Section 15.6</h3>
+<p style="font-size:1.3em;color:var(--accent-amber);">1, 3, 5, 6, 7, 9, 11, 13, 15, 17, 19, 25, 31, 33</p>
+</div>
+<div class="key-point fragment" style="margin-top:1.5em;"><strong>Next time:</strong> Section 15.7 &mdash; Triple Integrals in Cylindrical Coordinates</div>
+</section>
+</div>
+</div>
+<!-- Lightbox overlay -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged figure" tabindex="-1">
+  <button class="lb-close" aria-label="Close lightbox">&times;</button>
+  <img src="" alt="">
+  <div class="lb-caption"></div>
+</div>
+<!-- Plotly fullscreen overlay -->
+<div id="plotly-lightbox" role="dialog" aria-modal="true" aria-label="Expanded interactive figure">
+  <button class="plb-close" aria-label="Close">&times;</button>
+  <div class="plb-content"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<script>
+Reveal.initialize({
+    hash: true, slideNumber: 'c/t', progress: true, center: false,
+    transition: 'slide', width: 1280, height: 800, margin: 0.04,
+    // Allow mouse wheel to scroll overflowing slide content instead of advancing
+    mouseWheel: false,
+    plugins: [RevealNotes]
+});
+// ── Scoped MathJax: only typeset the current slide, not the whole document ──
+function typesetCurrentSlide() {
+    var slide = Reveal.getCurrentSlide();
+    if (slide && MathJax?.typesetPromise) {
+        MathJax.typesetPromise([slide]).catch(function(){});
+    }
+}
+// ── Iframe cleanup: pause Desmos/embedded iframes on non-visible slides ──
+function manageIframes(event) {
+    // Pause iframes on the previous slide
+    if (event.previousSlide) {
+        event.previousSlide.querySelectorAll('iframe[data-src-active]').forEach(function(iframe) {
+            iframe.setAttribute('data-src-paused', iframe.src);
+            iframe.src = 'about:blank';
+        });
+    }
+    // Restore iframes on the current slide
+    if (event.currentSlide) {
+        event.currentSlide.querySelectorAll('iframe[data-src-paused]').forEach(function(iframe) {
+            iframe.src = iframe.getAttribute('data-src-paused');
+            iframe.removeAttribute('data-src-paused');
+        });
+    }
+}
+// Mark all Desmos/embedded iframes for management
+document.querySelectorAll('.desmos-container iframe').forEach(function(iframe) {
+    iframe.setAttribute('data-src-active', '1');
+});
+Reveal.on('slidechanged', (event) => {
+    typesetCurrentSlide();
+    manageIframes(event);
+    // Reset scroll position on the new slide so it starts at the top
+    if (event.currentSlide) event.currentSlide.scrollTop = 0;
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealSlideChanged', indexh: event.indexh, indexv: event.indexv }, '*');
+        }
+    } catch (e) {}
+});
+// Fragment auto-scroll: configurable via meta.fragment_scroll in content.yaml
+// Value is the max fraction down the slide viewport (0.0=top, 1.0=bottom)
+var FRAG_SCROLL_TARGET = 0.67;
+function findScrollContainer(el) {
+    var section = el.closest('section');
+    while (section) {
+        if (section.scrollHeight > section.clientHeight + 1) return section;
+        var parent = section.parentElement?.closest('section, .slides, .reveal');
+        if (!parent || parent === section) break;
+        section = parent;
+    }
+    return null;
+}
+function scrollToFragment(frag, direction) {
+    var container = findScrollContainer(frag);
+    if (!container) return;
+    var fragRect = frag.getBoundingClientRect();
+    var containerRect = container.getBoundingClientRect();
+    // Reveal.js scales slides via CSS transform — account for the scale factor
+    var scale = containerRect.height / container.clientHeight || 1;
+    // Convert screen-space positions to unscaled slide-space
+    var fragBottom = (fragRect.bottom - containerRect.top) / scale + container.scrollTop;
+    var fragTop = (fragRect.top - containerRect.top) / scale + container.scrollTop;
+    var targetLine = container.clientHeight * FRAG_SCROLL_TARGET;
+    if (direction === 'forward') {
+        // Scroll so the fragment's bottom is at the target line
+        var desiredScrollTop = fragBottom - targetLine;
+        if (desiredScrollTop > container.scrollTop) {
+            container.scrollTo({ top: desiredScrollTop, behavior: 'smooth' });
+        }
+    } else {
+        // Scrolling backward: find the previous visible fragment and scroll to it
+        // If the fragment's top is above the viewport, scroll up to show it
+        var desiredScrollTop = fragTop - targetLine * 0.5;
+        if (desiredScrollTop < container.scrollTop) {
+            container.scrollTo({ top: Math.max(0, desiredScrollTop), behavior: 'smooth' });
+        }
+    }
+}
+// Add spacer to scrollable slides so the last fragment can scroll up to the target line
+Reveal.on('ready', () => {
+    var slideH = Reveal.getConfig().height || 800;
+    var spacerH = Math.round((1 - FRAG_SCROLL_TARGET) * slideH);
+    document.querySelectorAll('.reveal .slides > section, .reveal .slides > section > section').forEach(function(s) {
+        if (s.querySelector('.fragment')) {
+            var spacer = document.createElement('div');
+            spacer.style.height = spacerH + 'px';
+            spacer.style.pointerEvents = 'none';
+            spacer.setAttribute('aria-hidden', 'true');
+            s.appendChild(spacer);
+        }
+    });
+});
+function _notifyParentFragment() {
+    // Read data-editor-line from the last visible fragment in the current slide.
+    // Works for both fragmentshown and fragmenthidden events.
+    try {
+        if (!window.parent || window.parent === window) return;
+        var s = Reveal.getState();
+        var slideEl = Reveal.getCurrentSlide();
+        var editorLine = null;
+        if (slideEl) {
+            var visibleFrags = slideEl.querySelectorAll('.fragment.visible[data-editor-line]');
+            if (visibleFrags.length > 0) {
+                var ln = parseInt(visibleFrags[visibleFrags.length - 1].dataset.editorLine, 10);
+                if (!isNaN(ln)) editorLine = ln;
+            }
+        }
+        window.parent.postMessage({
+            type: 'revealFragmentChanged',
+            indexh: s.indexh, indexv: s.indexv, indexf: s.indexf,
+            editorLine: editorLine
+        }, '*');
+    } catch(e) {}
+}
+Reveal.on('fragmentshown', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('fragmenthidden', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    // Scroll back to the previous fragment or top of slide
+    var prev = event.fragment.previousElementSibling;
+    while (prev && !prev.classList.contains('fragment')) {
+        prev = prev.previousElementSibling;
+    }
+    var target = prev || event.fragment.closest('section')?.querySelector('h2') || event.fragment;
+    setTimeout(function() { scrollToFragment(target, 'backward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('ready', () => {
+    typesetCurrentSlide();
+    // Tell the CourseKit editor that Reveal is initialized so it can sync the fragment
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealReady' }, '*');
+        }
+    } catch(e) {}
+});
+
+// ── Plotly lightbox (iframe approach — zero WebGL until opened) ──
+(function() {
+    var plb = document.getElementById('plotly-lightbox');
+    if (!plb) return;
+    var plbClose = plb.querySelector('.plb-close');
+    var plbContent = plb.querySelector('.plb-content');
+    var triggerImg = null;
+    var currentBlobUrl = null;
+
+    function openPlotlyLightbox(blobUrl) {
+        // Revoke any previous blob URL
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); }
+        currentBlobUrl = blobUrl;
+        var iframe = plbContent.querySelector('iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:80vh;border:none;background:#fff;';
+            plbContent.appendChild(iframe);
+        }
+        iframe.src = blobUrl;
+        plb.classList.add('active');
+        plbClose.focus();
+    }
+
+    function closePlotlyLightbox() {
+        var iframe = plbContent.querySelector('iframe');
+        if (iframe) iframe.src = '';   // Unloads WebGL context immediately
+        plb.classList.remove('active');
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+        if (triggerImg) { triggerImg.focus(); triggerImg = null; }
+    }
+
+    document.addEventListener('click', function(e) {
+        var img = e.target.closest('img[data-plotly-src]');
+        if (!img) return;
+        e.stopPropagation();
+        triggerImg = img;
+        // The companion .html is a bare Plotly div fragment (no CDN script).
+        // Fetch it and wrap in a complete page so it renders in the iframe.
+        fetch(img.dataset.plotlySrc)
+            .then(function(r) { return r.text(); })
+            .then(function(fragment) {
+                var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+                    '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"><\/script>' +
+                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;' +
+                    'display:flex;justify-content:center;align-items:center;width:100vw;height:100vh;}' +
+                    '.js-plotly-plot,.plotly-graph-div{width:100%!important;height:100%!important;}</style>' +
+                    '</head><body>' + fragment + '</body></html>';
+                var blob = new Blob([html], {type: 'text/html'});
+                openPlotlyLightbox(URL.createObjectURL(blob));
+            })
+            .catch(function() {
+                // Fallback: open in new tab
+                window.open(img.dataset.plotlySrc, '_blank');
+            });
+    });
+
+    plbClose.addEventListener('click', closePlotlyLightbox);
+    plb.addEventListener('click', function(e) { if (e.target === plb) closePlotlyLightbox(); });
+
+    // Capture-phase Escape so Reveal.js doesn't grab it first
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape' || !plb.classList.contains('active')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closePlotlyLightbox();
+    }, true);
+})();
+
+// ── Lightbox for figures (accessible: focus trap, focus return) ──
+(function() {
+    const lb = document.getElementById('lightbox');
+    const lbImg = lb.querySelector('img');
+    const lbCap = lb.querySelector('.lb-caption');
+    const lbClose = lb.querySelector('.lb-close');
+    var triggerEl = null;
+
+    function openLightbox(src, alt, caption) {
+        lbImg.src = src;
+        lbImg.alt = alt;
+        lbCap.textContent = caption || alt;
+        lb.classList.add('active');
+        lbClose.focus();
+    }
+
+    function closeLightbox() {
+        lb.classList.remove('active');
+        lbImg.src = '';
+        if (triggerEl) { triggerEl.focus(); triggerEl = null; }
+    }
+
+    // Open lightbox on figure click (prevent default link navigation)
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.fig-link');
+        if (!link) return;
+        e.preventDefault();
+        e.stopPropagation();
+        triggerEl = link;
+        var src = link.getAttribute('data-src');
+        var alt = link.querySelector('img')?.alt || '';
+        var caption = link.closest('.fig-container')?.querySelector('.fig-caption')?.textContent || '';
+        openLightbox(src, alt, caption);
+    });
+
+    // Close on click anywhere on overlay
+    lb.addEventListener('click', function() { closeLightbox(); });
+
+    // Prevent closing when clicking the image itself (let user right-click → open in tab)
+    lbImg.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    // Close on Escape; trap Tab within lightbox
+    document.addEventListener('keydown', function(e) {
+        if (!lb.classList.contains('active')) return;
+        if (e.key === 'Escape') { closeLightbox(); }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            lbClose.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>
