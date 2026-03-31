@@ -218,10 +218,11 @@ function renderChart() {
   const shown = intervals.slice(-maxShow);
   const startIdx = Math.max(0, total - maxShow);
 
+  const isMobile = window.innerWidth < 600;
   const margin = { top: 38, right: 30, bottom: 44, left: 50 };
   const width = 560;
-  const barHeight = Math.min(5, 400 / shown.length);
-  const height = Math.max(200, shown.length * (barHeight + 1) + margin.top + margin.bottom);
+  const barHeight = Math.min(isMobile ? 8 : 5, (isMobile ? 600 : 400) / shown.length);
+  const height = Math.max(isMobile ? 420 : 200, shown.length * (barHeight + 1) + margin.top + margin.bottom);
   const innerW = width - margin.left - margin.right;
   const innerH = height - margin.top - margin.bottom;
 
@@ -277,15 +278,17 @@ function renderChart() {
     .attr('visibility', 'hidden')
     .attr('pointer-events', 'none');
 
+  const tooltipFontSize = isMobile ? '16px' : '13px';
+
   const tooltipRect = tooltipG.append('rect')
-    .attr('rx', 3).attr('ry', 3)
-    .attr('fill', 'white').attr('fill-opacity', 0.92)
-    .attr('stroke', '#bbb').attr('stroke-width', 0.5);
+    .attr('rx', 4).attr('ry', 4)
+    .attr('fill', 'white').attr('fill-opacity', 0.95)
+    .attr('stroke', '#999').attr('stroke-width', 1);
 
   const tooltipLine1 = tooltipG.append('text')
-    .attr('font-size', '13px');
+    .attr('font-size', tooltipFontSize);
   const tooltipLine2 = tooltipG.append('text')
-    .attr('font-size', '13px');
+    .attr('font-size', tooltipFontSize).attr('font-weight', 600);
 
   /**
    * @param {typeof shown[0]} ci
@@ -300,8 +303,8 @@ function renderChart() {
     renderStatLabel(tooltipLine1, `(${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)})  x\u0304 = ${ci.xbar.toFixed(2)}`);
     tooltipLine2.text(captureText).attr('fill', captureColor).attr('font-weight', 600);
 
-    const pad = 6;
-    const lineSpacing = 16;
+    const pad = isMobile ? 8 : 6;
+    const lineSpacing = isMobile ? 20 : 16;
 
     tooltipLine1.attr('x', pad).attr('y', lineSpacing);
     tooltipLine2.attr('x', pad).attr('y', lineSpacing * 2 + 1);
@@ -323,8 +326,11 @@ function renderChart() {
     tooltipG.attr('transform', `translate(${tx}, ${ty})`);
   }
 
+  let pinnedIndex = -1;  // track which CI is tapped/pinned on mobile
+
   function hideTooltip() {
     tooltipG.attr('visibility', 'hidden');
+    pinnedIndex = -1;
   }
 
   // CI segments
@@ -353,17 +359,31 @@ function renderChart() {
 
     // Invisible wider hit target for hover/touch
     g.append('rect')
-      .attr('x', xScale(ci.lo) - 2)
-      .attr('y', y - Math.max(4, yStep / 2))
-      .attr('width', Math.max(4, xScale(ci.hi) - xScale(ci.lo) + 4))
-      .attr('height', Math.max(8, yStep))
+      .attr('x', xScale(ci.lo) - 4)
+      .attr('y', y - Math.max(isMobile ? 10 : 4, yStep / 2))
+      .attr('width', Math.max(8, xScale(ci.hi) - xScale(ci.lo) + 8))
+      .attr('height', Math.max(isMobile ? 20 : 8, yStep))
       .attr('fill', 'transparent')
       .attr('cursor', 'pointer')
       .on('mouseenter', () => showTooltip(ci, i, y))
-      .on('mouseleave', hideTooltip)
-      .on('touchstart', (e) => { e.preventDefault(); showTooltip(ci, i, y); })
-      .on('touchend', hideTooltip);
+      .on('mouseleave', () => { if (pinnedIndex === -1) hideTooltip(); })
+      .on('touchstart', (e) => {
+        e.preventDefault();
+        if (pinnedIndex === i) {
+          hideTooltip();  // tap same CI again → dismiss
+        } else {
+          showTooltip(ci, i, y);
+          pinnedIndex = i;  // pin until next tap
+        }
+      });
   }
+
+  // Tap on empty chart area dismisses pinned tooltip
+  svg.on('touchstart', (e) => {
+    if (pinnedIndex !== -1 && e.target === svg.node()) {
+      hideTooltip();
+    }
+  });
 
   // X axis
   const xAxis = d3Axis.axisBottom(xScale).ticks(8);

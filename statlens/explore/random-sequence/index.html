@@ -49,12 +49,31 @@
       text-transform: uppercase;
       box-sizing: border-box;
       transition: border-color 0.2s;
+      color: transparent;
+      caret-color: #333;
+    }
+    .seq-input::placeholder {
+      color: #aaa;
     }
     .seq-input:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(86, 155, 189, 0.2);
     }
+    .seq-preview {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.3rem;
+      letter-spacing: 0.25em;
+      padding: 0.75rem 1rem;
+      border: 2px solid transparent;
+      pointer-events: none;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .seq-preview .ch-h { color: #9B2D6B; }
+    .seq-preview .ch-t { color: #3A7D44; }
     .seq-counter {
       font-size: 0.85rem;
       color: #777;
@@ -84,19 +103,38 @@
       font-weight: 700;
       padding: 0.4rem 1.2rem;
       border-radius: 6px;
-      border: 2px solid var(--accent);
+      border: 2px solid #aaa;
       background: white;
-      color: var(--accent);
+      color: #555;
       cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-    }
-    .quick-btn:hover, .quick-btn:focus-visible {
-      background: var(--accent);
-      color: white;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
     }
     .quick-btn:disabled {
       opacity: 0.4;
       cursor: not-allowed;
+    }
+    #btn-add-h {
+      border-color: #9B2D6B;
+      color: #9B2D6B;
+      background: rgba(155, 45, 107, 0.06);
+    }
+    #btn-add-h:hover, #btn-add-h:focus-visible {
+      background: #9B2D6B;
+      color: white;
+    }
+    #btn-add-t {
+      border-color: #3A7D44;
+      color: #3A7D44;
+      background: rgba(58, 125, 68, 0.06);
+    }
+    #btn-add-t:hover, #btn-add-t:focus-visible {
+      background: #3A7D44;
+      color: white;
+    }
+    #btn-backspace:hover, #btn-backspace:focus-visible {
+      background: #555;
+      color: white;
+      border-color: #555;
     }
 
     /* ── Action buttons ────────────────────────────────────────────── */
@@ -348,13 +386,14 @@
                        placeholder="e.g. HTHTTHHTTHHT..."
                        autocomplete="off" autocapitalize="characters" spellcheck="false"
                        aria-label="Enter your random-looking sequence of H and T">
+                <div class="seq-preview" id="seq-preview" aria-hidden="true"></div>
             </div>
             <div class="seq-counter"><span id="char-count">0</span> / <span id="target-len">40</span></div>
             <div class="quick-entry">
                 <span>Tap to add:</span>
                 <button class="quick-btn" id="btn-add-h" aria-label="Add H">H</button>
                 <button class="quick-btn" id="btn-add-t" aria-label="Add T">T</button>
-                <button class="quick-btn" id="btn-backspace" aria-label="Delete last character" style="border-color:#888; color:#888;">&larr;</button>
+                <button class="quick-btn" id="btn-backspace" aria-label="Delete last character">&larr;</button>
             </div>
         </div>
 

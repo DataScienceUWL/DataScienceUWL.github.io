@@ -36,6 +36,7 @@ const statsBody = /** @type {HTMLElement} */ (document.getElementById('stats-bod
 const runFreqContainer = /** @type {HTMLElement} */ (document.getElementById('run-freq-container'));
 const interpretation = /** @type {HTMLElement} */ (document.getElementById('interpretation'));
 const announceEl = document.getElementById('sr-announce');
+const seqPreview = /** @type {HTMLElement} */ (document.getElementById('seq-preview'));
 
 // ── Init ─────────────────────────────────────────────────────────────
 targetLenEl.textContent = String(TARGET_LEN);
@@ -49,6 +50,18 @@ btnResetBottom.addEventListener('click', reset);
 btnAddH.addEventListener('click', () => appendChar('H'));
 btnAddT.addEventListener('click', () => appendChar('T'));
 btnBackspace.addEventListener('click', deleteLastChar);
+
+// ── Colored preview ──────────────────────────────────────────────────
+/** @param {string} text */
+function updatePreview(text) {
+  let html = '';
+  for (const ch of text) {
+    html += ch === 'H'
+      ? '<span class="ch-h">H</span>'
+      : '<span class="ch-t">T</span>';
+  }
+  seqPreview.innerHTML = html;
+}
 
 // ── Input handling ───────────────────────────────────────────────────
 function onInputChange() {
@@ -67,6 +80,8 @@ function onInputChange() {
 
   // Enable compare when we have enough
   btnCompare.disabled = len < MIN_LEN;
+
+  updatePreview(filtered);
 
   // Update quick-entry button states
   const atMax = len >= TARGET_LEN;
@@ -387,6 +402,7 @@ function reset() {
   btnAddT.disabled = false;
   btnBackspace.disabled = false;
   resultsPanel.hidden = true;
+  seqPreview.innerHTML = '';
   seqInput.focus();
 }
 
