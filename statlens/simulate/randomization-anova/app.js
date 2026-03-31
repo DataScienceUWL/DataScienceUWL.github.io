@@ -9,7 +9,7 @@ import { createRng, shuffle } from '../../js/prng.js';
 import { fStat, mean, sd, formatStat, detectPrecision } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
 import { drawBoxplot } from '../../js/boxplot.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, initHelp, setPageTitle } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, flyDataStream, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, initHelp, setPageTitle } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
 
@@ -347,6 +347,11 @@ function generateSimulations(count) {
       }
       lastF = f;
     }
+  }
+
+  // Fire flying dots on +1 before updating the shuffled panel
+  if (count === 1 && mechObservedBoxplots && mechShuffledBoxplots) {
+    flyDataStream(mechObservedBoxplots, mechShuffledBoxplots);
   }
 
   // Update mechanism strip shuffled panel

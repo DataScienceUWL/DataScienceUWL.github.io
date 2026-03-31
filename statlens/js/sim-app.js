@@ -13,7 +13,7 @@ import * as d3Selection from 'd3-selection';
 import { drawHistogram, computeBins, snappedPropThresholds } from './histogram.js';
 import { drawDotplot, computeDotRadius } from './dotplot.js';
 import { drawSpike } from './spike.js';
-import { renderSimPills, formatMechStat, drawMiniBoxplot, morphMiniBoxplot, prefersReducedMotion, hasD3Transition } from './chart-utils.js';
+import { renderSimPills, formatMechStat, drawMiniBoxplot, morphMiniBoxplot, drawMiniChart, morphMiniChart, prefersReducedMotion, hasD3Transition } from './chart-utils.js';
 import { initPlayPause, initHelp, initMechanismCollapse, animateDropToChart, flyDataStream, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle, initDataPanel } from './page-utils.js';
 import { normalPdf, overlayTheoryCurve, removeTheoryOverlay, createTheoryToggle } from './theory-overlay.js';
 import { resolveChartType, createChartToggle, displayPrecision, isExtreme as isExtremeShared, DOTPLOT_AUTO_THRESHOLD, createBinAdjuster } from './chart-defaults.js';
@@ -1533,8 +1533,10 @@ export function initSimPage(config) {
    * @param {boolean} [highlightDiff] - Highlight diff in orange
    * @returns {string} HTML string
    */
-  /** Shared x-domain for two-group mini boxplots (set from original data). */
-  let twoGroupBoxDomain = /** @type {[number,number]|null} */ (null);
+  /** Shared x-domain for two-group mini charts (set from original data). */
+  let twoGroupChartDomain = /** @type {[number,number]|null} */ (null);
+  /** Shared bin count for two-group mini histograms. */
+  let twoGroupNumBins = 10;
 
   /**
    * Build HTML for a two-group panel (shared by original and resample).
@@ -1578,15 +1580,21 @@ export function initSimPage(config) {
           <span class="mech-prop-label">${succ2} S / ${fail2} F</span>
         </div>`;
     } else {
-      // Means: text stats + mini boxplots
+      // Means: side-by-side mini histograms
       const tag = isOriginal ? 'orig' : 'resamp';
       html += `
-        <div class="mech-group-row"><span class="mech-group-name">${group1Name}:</span>
-          <span class="mech-group-stat">n = ${g1.length}, ${statSymbol} = ${formatStat(s1, dataPrecision, fmtType)}</span></div>
-        <div id="mech-box-${tag}-1" class="mech-box-container"></div>
-        <div class="mech-group-row"><span class="mech-group-name">${group2Name}:</span>
-          <span class="mech-group-stat">n = ${g2.length}, ${statSymbol} = ${formatStat(s2, dataPrecision, fmtType)}</span></div>
-        <div id="mech-box-${tag}-2" class="mech-box-container"></div>`;
+        <div class="mech-hist-pair">
+          <div class="mech-hist-col">
+            <div class="mech-group-label">${group1Name}</div>
+            <div id="mech-hist-${tag}-1" class="mech-hist-cell"></div>
+            <div class="mech-group-stat-sm">n=${g1.length}, ${statSymbol}=${formatStat(s1, dataPrecision, fmtType)}</div>
+          </div>
+          <div class="mech-hist-col">
+            <div class="mech-group-label">${group2Name}</div>
+            <div id="mech-hist-${tag}-2" class="mech-hist-cell"></div>
+            <div class="mech-group-stat-sm">n=${g2.length}, ${statSymbol}=${formatStat(s2, dataPrecision, fmtType)}</div>
+          </div>
+        </div>`;
     }
 
     const hlClass = highlightDiff ? ' highlight-last' : '';
@@ -1595,43 +1603,42 @@ export function initSimPage(config) {
   }
 
   /**
-   * Render mini boxplots into the two-group mechanism containers.
+   * Render mini histograms into the two-group mechanism containers.
    * Must be called AFTER innerHTML is set (so the containers exist in DOM).
    * @param {number[]} g1 - Group 1 values
    * @param {number[]} g2 - Group 2 values
    * @param {string} tag - 'orig' or 'resamp'
    * @param {boolean} [highlightMean=false] - Highlight mean markers in orange
    */
-  function renderTwoGroupBoxplots(g1, g2, tag, highlightMean = false) {
+  function renderTwoGroupCharts(g1, g2, tag, highlightMean = false) {
     if (config.proportion) return;
     const statFn = config.mode === 'bootstrap' ? getBootstrapStat().fn : mean;
 
-    // Set domain from original data (stable across resamples)
+    // Set domain and bins from original data (stable across resamples)
     if (tag === 'orig') {
       const allVals = [...g1, ...g2];
       const lo = Math.min(...allVals);
       const hi = Math.max(...allVals);
       const pad = (hi - lo) * 0.08 || 0.5;
-      twoGroupBoxDomain = [lo - pad, hi + pad];
+      twoGroupChartDomain = [lo - pad, hi + pad];
+      twoGroupNumBins = Math.min(Math.max(Math.ceil(Math.sqrt(Math.max(g1.length, g2.length))), 6), 15);
     }
 
-    const box1 = document.getElementById(`mech-box-${tag}-1`);
-    const box2 = document.getElementById(`mech-box-${tag}-2`);
-    if (box1 && g1.length >= 2) {
-      drawMiniBoxplot(box1, g1, {
-        domain: twoGroupBoxDomain ?? undefined,
-        meanValue: statFn(g1),
-        highlightMean,
-        label: `${tag === 'orig' ? 'Original' : 'Resampled'} ${group1Name} distribution`,
-      });
+    const cell1 = document.getElementById(`mech-hist-${tag}-1`);
+    const cell2 = document.getElementById(`mech-hist-${tag}-2`);
+    const prefix = tag === 'orig' ? 'Original' : 'Resampled';
+    const opts = {
+      width: 180,
+      height: 70,
+      domain: twoGroupChartDomain ?? undefined,
+      numBins: twoGroupNumBins,
+      highlightMean,
+    };
+    if (cell1 && g1.length >= 1) {
+      drawMiniChart(cell1, g1, { ...opts, meanValue: statFn(g1), label: `${prefix} ${group1Name}` });
     }
-    if (box2 && g2.length >= 2) {
-      drawMiniBoxplot(box2, g2, {
-        domain: twoGroupBoxDomain ?? undefined,
-        meanValue: statFn(g2),
-        highlightMean,
-        label: `${tag === 'orig' ? 'Original' : 'Resampled'} ${group2Name} distribution`,
-      });
+    if (cell2 && g2.length >= 1) {
+      drawMiniChart(cell2, g2, { ...opts, meanValue: statFn(g2), label: `${prefix} ${group2Name}` });
     }
   }
 
@@ -1639,7 +1646,7 @@ export function initSimPage(config) {
   function renderTwoGroupOriginal() {
     if (!mechOriginalContent) return;
     mechOriginalContent.innerHTML = buildTwoGroupHTML(data1, data2, false, true);
-    renderTwoGroupBoxplots(data1, data2, 'orig');
+    renderTwoGroupCharts(data1, data2, 'orig');
   }
 
   /**
@@ -1655,10 +1662,10 @@ export function initSimPage(config) {
     const statFn = config.mode === 'bootstrap' ? getBootstrapStat().fn : mean;
     const fmtType = config.proportion ? 'proportion' : undefined;
 
-    // Can we morph existing boxplots? (non-proportion, single-step, containers exist)
-    const canMorphBoxplots = !config.proportion && highlight
-      && document.getElementById('mech-box-resamp-1')?.querySelector('svg.mech-minibox')
-      && document.getElementById('mech-box-resamp-2')?.querySelector('svg.mech-minibox');
+    // Can we morph existing histograms? (non-proportion, single-step, charts exist)
+    const canMorphCharts = !config.proportion && highlight
+      && document.getElementById('mech-hist-resamp-1')?.querySelector('svg.mech-minichart')
+      && document.getElementById('mech-hist-resamp-2')?.querySelector('svg.mech-minichart');
 
     // Can we animate proportion bars? (proportion, single-step, bars already rendered)
     const canAnimateProps = config.proportion && highlight
@@ -1731,45 +1738,39 @@ export function initSimPage(config) {
 
       morphMs = 200 + 400;
 
-    } else if (canMorphBoxplots && mechOriginalContent) {
-      // Snap boxplots to original values as a faded ghost
-      const box1 = /** @type {HTMLElement} */ (document.getElementById('mech-box-resamp-1'));
-      const box2 = /** @type {HTMLElement} */ (document.getElementById('mech-box-resamp-2'));
-      const domainOpt = twoGroupBoxDomain ?? undefined;
-      drawMiniBoxplot(box1, data1, { domain: domainOpt, meanValue: statFn(data1) });
-      drawMiniBoxplot(box2, data2, { domain: domainOpt, meanValue: statFn(data2) });
-
-      // Ghost: show original at low opacity
-      const svg1 = box1.querySelector('svg');
-      const svg2 = box2.querySelector('svg');
+    } else if (canMorphCharts && mechOriginalContent) {
+      // Ghost: fade resample histograms to low opacity
+      const cell1 = /** @type {HTMLElement} */ (document.getElementById('mech-hist-resamp-1'));
+      const cell2 = /** @type {HTMLElement} */ (document.getElementById('mech-hist-resamp-2'));
+      const svg1 = cell1?.querySelector('svg');
+      const svg2 = cell2?.querySelector('svg');
       if (svg1) svg1.style.opacity = '0.25';
       if (svg2) svg2.style.opacity = '0.25';
 
       // Fade stat text too
-      const statSpans = mechResampleContent.querySelectorAll('.mech-group-stat');
+      const statSpans = mechResampleContent.querySelectorAll('.mech-group-stat-sm');
       const diffSpan = mechResampleContent.querySelector('.mech-stat-value');
       statSpans.forEach(s => { /** @type {HTMLElement} */ (s).style.opacity = '0.2'; });
       if (diffSpan) /** @type {HTMLElement} */ (diffSpan).style.opacity = '0.2';
 
-      // Fire flying dots from original → resample (over the ghost)
+      // Fire flying dots from original → resample
       flyDataStream(mechOriginalContent, mechResampleContent);
 
-      // After ghost is visible and dots are mid-flight, morph + solidify
+      // After dots are mid-flight, morph histograms to new data
       setTimeout(() => {
-        // Fade SVGs to full opacity during morph
         if (svg1) { svg1.style.transition = 'opacity 400ms ease'; svg1.style.opacity = '1'; }
         if (svg2) { svg2.style.transition = 'opacity 400ms ease'; svg2.style.opacity = '1'; }
 
-        const boxOpts1 = { domain: domainOpt, meanValue: statFn(g1), highlightMean: true };
-        const boxOpts2 = { domain: domainOpt, meanValue: statFn(g2), highlightMean: true };
-        morphMiniBoxplot(box1, g1, boxOpts1);
-        morphMiniBoxplot(box2, g2, boxOpts2);
+        const domainOpt = twoGroupChartDomain ?? undefined;
+        const chartOpts = { width: 180, height: 70, domain: domainOpt, numBins: twoGroupNumBins, highlightMean: true };
+        if (cell1) morphMiniChart(cell1, g1, { ...chartOpts, meanValue: statFn(g1), label: `Resampled ${group1Name}` });
+        if (cell2) morphMiniChart(cell2, g2, { ...chartOpts, meanValue: statFn(g2), label: `Resampled ${group2Name}` });
 
         // Update stat text
-        const statSymbol = '<span class="x-bar">x</span>';
-        if (statSpans[0]) statSpans[0].innerHTML = `n = ${g1.length}, ${statSymbol} = ${formatStat(statFn(g1), dataPrecision, fmtType)}`;
-        if (statSpans[1]) statSpans[1].innerHTML = `n = ${g2.length}, ${statSymbol} = ${formatStat(statFn(g2), dataPrecision, fmtType)}`;
-        statSpans.forEach(s => {
+        const statSymbol = config.proportion ? 'p\u0302' : '<span class="x-bar">x</span>';
+        statSpans.forEach((s, i) => {
+          const gData = i === 0 ? g1 : g2;
+          s.innerHTML = `n=${gData.length}, ${statSymbol}=${formatStat(statFn(gData), dataPrecision, fmtType)}`;
           /** @type {HTMLElement} */ (s).style.transition = 'opacity 250ms ease';
           /** @type {HTMLElement} */ (s).style.opacity = '1';
         });
@@ -1784,11 +1785,11 @@ export function initSimPage(config) {
         }
       }, 200);
 
-      morphMs = 200 + 400; // ghost pause + morph duration
+      morphMs = 200 + 400;
     } else {
       // Full rebuild (first time or batch)
       mechResampleContent.innerHTML = buildTwoGroupHTML(g1, g2, highlight);
-      renderTwoGroupBoxplots(g1, g2, 'resamp', highlight);
+      renderTwoGroupCharts(g1, g2, 'resamp', highlight);
     }
 
     if (config.mode === 'bootstrap') {
