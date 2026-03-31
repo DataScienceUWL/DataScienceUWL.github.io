@@ -1656,13 +1656,82 @@ export function initSimPage(config) {
     const fmtType = config.proportion ? 'proportion' : undefined;
 
     // Can we morph existing boxplots? (non-proportion, single-step, containers exist)
-    const canMorph = !config.proportion && highlight
+    const canMorphBoxplots = !config.proportion && highlight
       && document.getElementById('mech-box-resamp-1')?.querySelector('svg.mech-minibox')
       && document.getElementById('mech-box-resamp-2')?.querySelector('svg.mech-minibox');
 
+    // Can we animate proportion bars? (proportion, single-step, bars already rendered)
+    const canAnimateProps = config.proportion && highlight
+      && mechResampleContent.querySelector('.mech-prop-bar');
+
     let morphMs = 0;
 
-    if (canMorph && mechOriginalContent) {
+    if (canAnimateProps && mechOriginalContent) {
+      // Ghost: fade resample panel to low opacity
+      const propBars = mechResampleContent.querySelectorAll('.mech-prop-fill');
+      const statSpans = mechResampleContent.querySelectorAll('.mech-group-stat');
+      const propLabels = mechResampleContent.querySelectorAll('.mech-prop-label');
+      const diffSpan = mechResampleContent.querySelector('.mech-stat-value');
+
+      propBars.forEach(b => { /** @type {HTMLElement} */ (b).style.opacity = '0.25'; });
+      propLabels.forEach(l => { /** @type {HTMLElement} */ (l).style.opacity = '0.2'; });
+      statSpans.forEach(s => { /** @type {HTMLElement} */ (s).style.opacity = '0.2'; });
+      if (diffSpan) /** @type {HTMLElement} */ (diffSpan).style.opacity = '0.2';
+
+      // Fire flying dots from original → resample
+      flyDataStream(mechOriginalContent, mechResampleContent);
+
+      // After dots are mid-flight, update prop bars to new values
+      setTimeout(() => {
+        const statSymbol = 'p\u0302';
+        const succ1 = g1.filter(v => v === 1).length;
+        const fail1 = g1.length - succ1;
+        const succ2 = g2.filter(v => v === 1).length;
+        const fail2 = g2.length - succ2;
+        const pct1 = g1.length > 0 ? (succ1 / g1.length * 100) : 0;
+        const pct2 = g2.length > 0 ? (succ2 / g2.length * 100) : 0;
+        const s1 = statFn(g1);
+        const s2 = statFn(g2);
+
+        // Animate prop bar widths
+        const fills = mechResampleContent.querySelectorAll('.mech-prop-fill');
+        const labels = mechResampleContent.querySelectorAll('.mech-prop-label');
+        if (fills[0]) {
+          /** @type {HTMLElement} */ (fills[0]).style.transition = 'width 400ms ease, opacity 300ms ease';
+          /** @type {HTMLElement} */ (fills[0]).style.width = `${pct1}%`;
+          /** @type {HTMLElement} */ (fills[0]).style.opacity = '1';
+        }
+        if (fills[1]) {
+          /** @type {HTMLElement} */ (fills[1]).style.transition = 'width 400ms ease, opacity 300ms ease';
+          /** @type {HTMLElement} */ (fills[1]).style.width = `${pct2}%`;
+          /** @type {HTMLElement} */ (fills[1]).style.opacity = '1';
+        }
+
+        // Update labels
+        if (labels[0]) { labels[0].textContent = `${succ1} S / ${fail1} F`; /** @type {HTMLElement} */ (labels[0]).style.transition = 'opacity 250ms ease'; /** @type {HTMLElement} */ (labels[0]).style.opacity = '1'; }
+        if (labels[1]) { labels[1].textContent = `${succ2} S / ${fail2} F`; /** @type {HTMLElement} */ (labels[1]).style.transition = 'opacity 250ms ease'; /** @type {HTMLElement} */ (labels[1]).style.opacity = '1'; }
+
+        // Update stat text
+        if (statSpans[0]) { statSpans[0].innerHTML = `n = ${g1.length}, ${statSymbol} = ${formatStat(s1, dataPrecision, fmtType)}`; }
+        if (statSpans[1]) { statSpans[1].innerHTML = `n = ${g2.length}, ${statSymbol} = ${formatStat(s2, dataPrecision, fmtType)}`; }
+        statSpans.forEach(s => {
+          /** @type {HTMLElement} */ (s).style.transition = 'opacity 250ms ease';
+          /** @type {HTMLElement} */ (s).style.opacity = '1';
+        });
+
+        // Update diff
+        const diffVal = formatStat(s1 - s2, dataPrecision, fmtType);
+        if (diffSpan) {
+          diffSpan.textContent = diffVal;
+          diffSpan.classList.add('highlight-last');
+          /** @type {HTMLElement} */ (diffSpan).style.transition = 'opacity 250ms ease';
+          /** @type {HTMLElement} */ (diffSpan).style.opacity = '1';
+        }
+      }, 200);
+
+      morphMs = 200 + 400;
+
+    } else if (canMorphBoxplots && mechOriginalContent) {
       // Snap boxplots to original values as a faded ghost
       const box1 = /** @type {HTMLElement} */ (document.getElementById('mech-box-resamp-1'));
       const box2 = /** @type {HTMLElement} */ (document.getElementById('mech-box-resamp-2'));
