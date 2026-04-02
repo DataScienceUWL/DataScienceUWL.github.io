@@ -35,7 +35,7 @@ p { margin: 0.15em 0; }
 .key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
     padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
 .blank-space { margin: 0.2em 0; position: relative;
-    border: 1px dashed #ccc; border-radius: 3px; box-sizing: border-box; }
+    border: none; border-top: 1px dashed #ccc; box-sizing: border-box; }
 .blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
     color: #767676; font-style: italic; }
 .hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
@@ -67,8 +67,9 @@ ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
 li { margin-bottom: 0.05em; }
 .pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
 .homework-section { page-break-before: auto; }
-.defn-box, .example-box, .key-point { page-break-inside: avoid; break-inside: avoid; }
-.example-group { page-break-inside: avoid; break-inside: avoid; }
+.defn-box, .example-box, .key-point, .blank-space, .theorem-box { page-break-inside: avoid; break-inside: avoid; }
+main > section { page-break-inside: auto; }
+main > section.example-group { page-break-inside: avoid; break-inside: avoid; }
 a:focus-visible, summary:focus-visible, button:focus-visible {
     outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
 @media print {
@@ -95,86 +96,12 @@ window.MathJax = {
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
 <script>
-// After MathJax renders, adjust workspace boxes for better print pagination.
-// Two mechanisms:
-// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
-//    then remove the pagebreak div (the expanded workspace pushes content naturally).
-// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
-//    page, expand the preceding workspace to push the section to the next page.
-function adjustWorkspaces() {
-    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
-
-    function findPrecedingWorkspace(el) {
-        // Walk backwards through preceding siblings (and into them) to find .blank-space
-        var prev = el.previousElementSibling;
-        while (prev) {
-            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
-            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
-            if (ws) return ws;
-            prev = prev.previousElementSibling;
-        }
-        // Also check inside parent section (pagebreak might be inside a section)
-        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
-            var children = el.parentElement.children;
-            for (var j = children.length - 1; j >= 0; j--) {
-                if (children[j] === el) continue;
-                if (children[j].classList.contains('blank-space')) return children[j];
-                var inner = children[j].querySelector('.blank-space:last-of-type');
-                if (inner) return inner;
-            }
-        }
-        return null;
-    }
-
-    function expandWorkspace(ws, extraPx) {
-        var curH = ws.getBoundingClientRect().height;
-        ws.style.minHeight = (curH + extraPx + 4) + 'px';
-    }
-
-    // --- Pass A: Handle explicit \pagebreak markers ---
-    var pagebreaks = document.querySelectorAll('.pagebreak');
-    pagebreaks.forEach(function(pb) {
-        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
-        var remaining = PAGE_H - (pbTop % PAGE_H);
-        if (remaining > 0 && remaining < PAGE_H) {
-            var ws = findPrecedingWorkspace(pb);
-            if (ws) expandWorkspace(ws, remaining);
-        }
-        pb.remove();  // no longer needed — workspace expansion handles the break
-    });
-
-    // --- Pass B: Auto-detect orphaned section starts ---
-    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
-    var sections = document.querySelectorAll('main > section');
-    for (var pass = 0; pass < 3; pass++) {
-        var changed = false;
-        for (var i = 1; i < sections.length; i++) {
-            var sec = sections[i];
-            var secRect = sec.getBoundingClientRect();
-            var secTop = secRect.top + window.scrollY;
-            var secBot = secTop + secRect.height;
-            var pageOfTop = Math.floor(secTop / PAGE_H);
-            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
-            if (pageOfBot > pageOfTop) {
-                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
-                if (contentOnFirstPage < MIN_CONTENT) {
-                    var ws = findPrecedingWorkspace(sec);
-                    if (ws) {
-                        expandWorkspace(ws, contentOnFirstPage);
-                        changed = true;
-                    }
-                }
-            }
-        }
-        if (!changed) break;
-    }
-}
-// Run after MathJax finishes so layout is finalized
-if (window.MathJax && window.MathJax.startup) {
-    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
-} else {
-    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
-}
+// Pagination is handled entirely by CSS:
+//   .pagebreak            → page-break-before: always
+//   .example-group        → page-break-inside: avoid
+//   .defn-box, .key-point → page-break-inside: avoid
+// Workspaces use their declared min-height only — no JS expansion.
+// This produces dense, predictable handouts.
 </script>
 </head>
 <body>
@@ -193,22 +120,61 @@ if (window.MathJax && window.MathJax.startup) {
 </header>
 <hr aria-hidden="true">
 
-<section id="why-spherical-coordinates" aria-label="Why Spherical Coordinates?">
+<section id="why-spherical-coordinates" data-source-line="15" aria-label="Why Spherical Coordinates?">
   <h2>Why Spherical Coordinates?</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>Use spherical when the solid or integrand involves \(x^2 + y^2 + z^2\) (distance from origin). Use cylindrical when it involves \(x^2 + y^2\) (distance from the \(z\)-axis).</p></aside>
+  <div><p>Cylindrical coordinates handle solids with circular cross-sections in the \(xy\)-plane. But some solids are more naturally described by their <strong>distance from the origin</strong>:</p>
+<ul>
+<li>Spheres: \(x^2 + y^2 + z^2 = a^2\)</li>
+<li>Cones: \(z = c\sqrt{x^2 + y^2}\)</li>
+<li>Hemispheres, spherical shells, ice-cream-cone regions</li>
+</ul></div>
+<div><p>In cylindrical coordinates, a sphere is \(r^2 + z^2 = a^2\) &mdash; still messy. In <strong>spherical coordinates</strong>, it becomes simply \(\rho = a\).</p></div>
+<div><p>Spherical coordinates describe a point by:</p>
+<ol>
+<li>How far it is from the <strong>origin</strong> (\(\rho\))</li>
+<li>What direction it's in (\(\theta\) and \(\phi\))</li>
+</ol></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Use spherical when the solid or integrand involves \(x^2 + y^2 + z^2\) (distance from origin). Use cylindrical when it involves \(x^2 + y^2\) (distance from the \(z\)-axis).</p></aside>
 </section>
 
-<section id="the-spherical-coordinate-system" aria-label="The Spherical Coordinate System">
+<section id="the-spherical-coordinate-system" data-source-line="40" aria-label="The Spherical Coordinate System">
   <h2>The Spherical Coordinate System</h2>
-  <figure>
+  <div><p>A point in 3D space is described by \((\rho, \theta, \phi)\) where:</p>
+<ul>
+<li>\(\rho\) = distance from the <strong>origin</strong> (\(\rho \geq 0\))</li>
+<li>\(\theta\) = angle in the \(xy\)-plane from the positive \(x\)-axis (same as in cylindrical/polar)</li>
+<li>\(\phi\) = angle from the positive \(z\)-axis down to the point (\(0 \leq \phi \leq \pi\))</li>
+</ul></div>
+<figure>
   <img src="figures/spherical_coords.png" alt="A 3D coordinate system showing a point P with spherical coordinates (rho, theta, phi). Rho is a line from the origin to P. Theta is the angle in the xy-plane measured from the positive x-axis to the projection of the point. Phi is the angle measured from the positive z-axis down to the line from the origin to P. The projection of P onto the xy-plane is shown with a dashed line, and the relationship r = rho sin phi is labeled.">
+  <figcaption><a href="figures/spherical_coords.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
+<div><p><strong>Important:</strong> \(\phi\) is measured from the <strong>top</strong> (positive \(z\)-axis):</p>
+<ul>
+<li>\(\phi = 0\): pointing straight up (north pole)</li>
+<li>\(\phi = \pi/2\): in the \(xy\)-plane (equator)</li>
+<li>\(\phi = \pi\): pointing straight down (south pole)</li>
+</ul></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>\(\rho\) tells you how far, \(\theta\) tells you which compass direction, \(\phi\) tells you how far from vertical. Think of it as GPS coordinates on a sphere: longitude (\(\theta\)) and colatitude (\(\phi\)).</p></aside>
 </section>
 
-<section id="coordinate-surfaces-what-does-each-constant-look-like" aria-label="Coordinate Surfaces: What Does Each Constant Look Like?">
+<section id="coordinate-surfaces-what-does-each-constant-look-like" data-source-line="64" aria-label="Coordinate Surfaces: What Does Each Constant Look Like?">
   <h2>Coordinate Surfaces: What Does Each Constant Look Like?</h2>
-  <div class="two-col-print">
+  <div><p><em>What surface do you get when you hold one coordinate constant?</em></p>
+<table>
+<tr><th><strong>Equation</strong></th><th><strong>Surface</strong></th><th><strong>Description</strong></th></tr>
+<tr><td>\(\rho = c\)</td><td>Sphere</td><td>Centered at origin, radius \(c\)</td></tr>
+<tr><td>\(\theta = c\)</td><td>Half-plane</td><td>Vertical, hinged on the \(z\)-axis</td></tr>
+<tr><td>\(\phi = c\)</td><td>Cone</td><td>Half-cone opening from the \(z\)-axis</td></tr>
+</table></div>
+<div><p>Some important special cases for \(\phi\):</p>
+<ul>
+<li>\(\phi = 0\): the positive \(z\)-axis (a degenerate “cone” &mdash; just a ray)</li>
+<li>\(\phi = \pi/4\): a cone at 45 degrees from vertical</li>
+<li>\(\phi = \pi/2\): the \(xy\)-plane (the “widest” cone &mdash; a flat disk)</li>
+<li>\(\phi = \pi\): the negative \(z\)-axis</li>
+</ul></div>
+<div class="two-col-print">
   <div><figure>
   <img src="figures/coord_rho_const.png" alt="A sphere of radius c centered at the origin. All points at distance rho = c from the origin form this sphere.">
   <figcaption><a href="figures/coord_rho_const.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
@@ -225,71 +191,111 @@ if (window.MathJax && window.MathJax.startup) {
 <aside class="key-point" role="note" aria-label="Key point"><p>\(\rho = \) const gives a sphere, \(\theta = \) const gives a half-plane, \(\phi = \) const gives a cone. These are the building blocks for spherical regions.</p></aside>
 </section>
 
-<section id="conversion-formulas" aria-label="Conversion Formulas">
+<section id="conversion-formulas" data-source-line="99" aria-label="Conversion Formulas">
   <h2>Conversion Formulas</h2>
   <section class="defn-box" role="region" aria-label="Spherical $\leftrightarrow$ Cartesian Conversions">
-  <h3 class="defn-title">Spherical $\leftrightarrow$ Cartesian Conversions</h3>
+  <h3 class="defn-title">Spherical \(\leftrightarrow\) Cartesian Conversions</h3>
   <p><strong>Spherical to Cartesian:</strong></p>
 <p>\[x = \rho\sin\phi\cos\theta, \qquad y = \rho\sin\phi\sin\theta, \qquad z = \rho\cos\phi\]</p>
 <p><strong>Cartesian to Spherical:</strong></p>
 <p>\[\rho^2 = x^2 + y^2 + z^2, \qquad \tan\theta = \frac{y}{x}, \qquad \cos\phi = \frac{z}{\rho}\]</p>
 </section>
+<figure>
+  <img src="figures/spherical_coords_detailed.png" alt="A detailed diagram showing a point P in 3D space with both Cartesian coordinates (x,y,z) and spherical coordinates (rho,theta,phi). The line from O to P has length rho. The angle phi is measured from the z-axis. The projection onto the xy-plane shows r = rho sin phi, with x and y components labeled. The vertical component z = rho cos phi is shown.">
+</figure>
+<div><p><strong>Useful relationship to cylindrical:</strong></p>
+<p>\[r = \rho\sin\phi, \qquad z = \rho\cos\phi\]</p>
+<p>This makes sense: the projection of \(\rho\) onto the \(xy\)-plane is \(\rho\sin\phi\) (the cylindrical \(r\)), and the vertical component is \(\rho\cos\phi\) (the height \(z\)).</p></div>
+<div><p><strong>Common conversions:</strong></p>
+<table>
+<tr><th><strong>Cartesian</strong></th><th><strong>Spherical</strong></th><th><strong>Surface</strong></th></tr>
+<tr><td>\(x^2 + y^2 + z^2 = 16\)</td><td>\(\rho = 4\)</td><td>Sphere of radius 4</td></tr>
+<tr><td>\(z = \sqrt{x^2 + y^2}\)</td><td>\(\phi = \pi/4\)</td><td>Cone at 45 degrees</td></tr>
+<tr><td>\(z = 0\)</td><td>\(\phi = \pi/2\)</td><td>The \(xy\)-plane</td></tr>
+<tr><td>\(x^2 + y^2 + z^2 = 2z\)</td><td>\(\rho = 2\cos\phi\)</td><td>Sphere tangent to origin</td></tr>
+</table></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>The master identity is \(\rho^2 = x^2 + y^2 + z^2\). For cones \(z = c\sqrt{x^2+y^2}\), divide both sides by \(\rho\) to get \(\cos\phi = c\sin\phi\), i.e., \(\phi = \arctan(1/c)\).</p></aside>
 </section>
 
-<section id="quick-check-convert-equations-to-spherical" aria-label="Quick Check: Convert Equations to Spherical">
+<section id="quick-check-convert-equations-to-spherical" data-source-line="134" aria-label="Quick Check: Convert Equations to Spherical">
   <h2>Quick Check: Convert Equations to Spherical</h2>
-  <div class="blank-space" role="region" aria-label="Student workspace: For (1), use $\rho^2 = x^2+y^2+z^2$. For (2), write in terms of $\rho$, $\phi$ and simplify." style="min-height:2in;">
+  <div><p><em>Write each equation in spherical coordinates:</em></p>
+<ol>
+<li>\(x^2 + y^2 + z^2 = 16\)</li>
+<li>\(z = \sqrt{x^2 + y^2}\)</li>
+</ol></div>
+<div class="blank-space" role="region" aria-label="Student workspace: For (1), use $\rho^2 = x^2+y^2+z^2$. For (2), write in terms of $\rho$, $\phi$ and simplify." style="min-height:2in;">
   <div class="blank-prompt">For (1), use \(\rho^2 = x^2+y^2+z^2\). For (2), write in terms of \(\rho\), \(\phi\) and simplify.</div>
 </div>
 </section>
 
-<section id="the-volume-element-in-spherical-coordinates" aria-label="The Volume Element in Spherical Coordinates">
+<section id="the-volume-element-in-spherical-coordinates" data-source-line="158" aria-label="The Volume Element in Spherical Coordinates">
   <h2>The Volume Element in Spherical Coordinates</h2>
-  <figure>
+  <div><p>In Cartesian, \(dV = dx\,dy\,dz\). In cylindrical, \(dV = r\,dz\,dr\,d\theta\). What about spherical?</p></div>
+<div><p>A small “spherical wedge” at position \((\rho, \theta, \phi)\) has three edge lengths:</p>
+<ul>
+<li>Radial: \(d\rho\)</li>
+<li>Longitudinal arc: \(\rho\sin\phi\,d\theta\) (circle of radius \(\rho\sin\phi\) in the \(xy\)-plane)</li>
+<li>Latitudinal arc: \(\rho\,d\phi\) (arc along a meridian)</li>
+</ul></div>
+<div><p>The volume of this wedge is the product of the three edge lengths:</p>
+<p>\[\boxed{dV = \rho^2\sin\phi\,d\rho\,d\phi\,d\theta}\]</p></div>
+<figure>
   <img src="figures/spherical_wedge.png" alt="A small spherical volume element showing a wedge-shaped piece with radial thickness d-rho, longitudinal arc length rho sin phi d-theta, and latitudinal arc length rho d-phi. The volume element dV = rho-squared sin phi d-rho d-phi d-theta is labeled.">
   <figcaption><a href="figures/spherical_wedge.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
-<aside class="key-point" role="note" aria-label="Key point"><p>The Jacobian factor is \(\rho^2\sin\phi\). This is the price of using curved coordinates &mdash; but it's worth it when the limits become simple constants.</p></aside>
+<aside class="key-point" role="note" aria-label="Key point"><p>The magnification factor \(\rho^2\sin\phi\) accounts for the stretching of the coordinate grid. It's the price of using curved coordinates &mdash; but it's worth it when the limits become simple constants.</p></aside>
 </section>
 
-<section id="quick-check-describe-the-region" aria-label="Quick Check: Describe the Region">
+<section id="quick-check-describe-the-region" data-source-line="181" aria-label="Quick Check: Describe the Region">
   <h2>Quick Check: Describe the Region</h2>
-  <div class="blank-space" role="region" aria-label="Student workspace: Think about each limit: what does $\rho \leq 3$ mean? What does $\phi \leq \pi/2$ restrict? What does $\theta$ from $0$ to $2\pi$ mean?" style="min-height:1.5in;">
+  <div><p><em>What solid does the following region describe?</em></p>
+<p>\[0 \leq \rho \leq 3, \qquad 0 \leq \phi \leq \pi/2, \qquad 0 \leq \theta \leq 2\pi\]</p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Think about each limit: what does $\rho \leq 3$ mean? What does $\phi \leq \pi/2$ restrict? What does $\theta$ from $0$ to $2\pi$ mean?" style="min-height:1.5in;">
   <div class="blank-prompt">Think about each limit: what does \(\rho \leq 3\) mean? What does \(\phi \leq \pi/2\) restrict? What does \(\theta\) from \(0\) to \(2\pi\) mean?</div>
 </div>
 </section>
 
-<section id="when-to-use-spherical-coordinates" aria-label="When to Use Spherical Coordinates">
+<section id="when-to-use-spherical-coordinates" data-source-line="201" aria-label="When to Use Spherical Coordinates">
   <h2>When to Use Spherical Coordinates</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>The decision tree: <strong>circles in \(xy\)-plane?</strong> \(\to\) cylindrical. <strong>Spheres or cones from origin?</strong> \(\to\) spherical. <strong>Neither?</strong> \(\to\) Cartesian.</p></aside>
+  <div><p><strong>Use spherical when:</strong></p>
+<ol>
+<li>The region is bounded by <strong>spheres</strong> (\(\rho = a\)) and/or <strong>cones</strong> (\(\phi = c\))</li>
+<li>The integrand involves \(x^2 + y^2 + z^2\) (becomes \(\rho^2\))</li>
+<li>The solid is a full ball, hemisphere, spherical shell, or “ice-cream cone” shape</li>
+</ol></div>
+<div><p><strong>Template:</strong></p>
+<p>\[\iiint_E f\,dV = \int_{\alpha}^{\beta}\int_{\phi_1}^{\phi_2}\int_{\rho_1(\theta,\phi)}^{\rho_2(\theta,\phi)} f(\rho\sin\phi\cos\theta,\, \rho\sin\phi\sin\theta,\, \rho\cos\phi)\;\rho^2\sin\phi\,d\rho\,d\phi\,d\theta\]</p></div>
+<div><p><strong>Typical order:</strong> \(d\rho\,d\phi\,d\theta\). The \(\rho\)-integral is innermost (simplest limits), and \(\theta\) is outermost (usually \(0\) to \(2\pi\)).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The decision tree: <strong>circles in \(xy\)-plane?</strong> \(\to\) cylindrical. <strong>Spheres or cones from origin?</strong> \(\to\) spherical. <strong>Neither?</strong> \(\to\) Cartesian.</p></aside>
 </section>
 
-<section id="example-1-integral-over-a-lower-hemisphere" class="example-group" aria-label="Example 1: Integral Over a Lower Hemisphere">
+<section id="example-1-integral-over-a-lower-hemisphere" class="example-group" data-source-line="220" aria-label="Example 1: Integral Over a Lower Hemisphere">
   <h2>Example 1: Integral Over a Lower Hemisphere</h2>
   <section class="example-box" role="region" aria-label="Example 1">
   <h3 class="example-title">Example 1</h3>
   <p>Evaluate \(\displaystyle\iiint_H (9 - x^2 - y^2)\,dV\), where \(H\) is the solid lower hemisphere \(x^2 + y^2 + z^2 \leq 9\), \(z \leq 0\).</p>
 </section>
-<div class="blank-space" role="region" aria-label="Student workspace: Set up the triple integral with $dV = \rho^2\sin\phi\,d\rho\,d\phi\,d\theta$. What are the limits on $\rho$, $\phi$, $\theta$?" style="min-height:3in;">
-  <div class="blank-prompt">Set up the triple integral with \(dV = \rho^2\sin\phi\,d\rho\,d\phi\,d\theta\). What are the limits on \(\rho\), \(\phi\), \(\theta\)?</div>
+<div class="blank-space" role="region" aria-label="Student workspace: Convert to spherical. What are the limits on $\rho$, $\phi$, $\theta$? Remember $x^2+y^2 = \rho^2\sin^2\phi$ and $dV = \rho^2\sin\phi\,d\rho\,d\phi\,d\theta$." style="min-height:4in;">
+  <div class="blank-prompt">Convert to spherical. What are the limits on \(\rho\), \(\phi\), \(\theta\)? Remember \(x^2+y^2 = \rho^2\sin^2\phi\) and \(dV = \rho^2\sin\phi\,d\rho\,d\phi\,d\theta\).</div>
 </div>
 </section>
 
-<section id="example-2-between-spheres-above-a-cone" class="example-group" aria-label="Example 2: Between Spheres, Above a Cone">
+<section id="example-2-between-spheres-above-a-cone" class="example-group" data-source-line="276" aria-label="Example 2: Between Spheres, Above a Cone">
   <h2>Example 2: Between Spheres, Above a Cone</h2>
   <section class="example-box" role="region" aria-label="Example 2">
   <h3 class="example-title">Example 2</h3>
   <p>Evaluate \(\displaystyle\iiint_E xyz\,dV\), where \(E\) lies between the spheres \(\rho = 2\) and \(\rho = 4\), and above the cone \(\phi = \pi/3\).</p>
 </section>
-<div class="blank-space" role="region" aria-label="Student workspace: Convert $xyz$ to spherical coordinates and set up the integral. Recall $x = \rho\sin\phi\cos\theta$, $y = \rho\sin\phi\sin\theta$, $z = \rho\cos\phi$." style="min-height:3in;">
-  <div class="blank-prompt">Convert \(xyz\) to spherical coordinates and set up the integral. Recall \(x = \rho\sin\phi\cos\theta\), \(y = \rho\sin\phi\sin\theta\), \(z = \rho\cos\phi\).</div>
+<div class="blank-space" role="region" aria-label="Student workspace: Convert $xyz$ to spherical coordinates and set up the integral. What are the limits on $\rho$, $\phi$, $\theta$?" style="min-height:4in;">
+  <div class="blank-prompt">Convert \(xyz\) to spherical coordinates and set up the integral. What are the limits on \(\rho\), \(\phi\), \(\theta\)?</div>
 </div>
 </section>
 
-<section id="choosing-the-right-coordinate-system" aria-label="Choosing the Right Coordinate System">
+<section id="choosing-the-right-coordinate-system" data-source-line="322" aria-label="Choosing the Right Coordinate System">
   <h2>Choosing the Right Coordinate System</h2>
-  <table>
+  <div><p>After Chapters 15.6&ndash;15.8, you have three coordinate systems for triple integrals. How do you choose?</p></div>
+<table>
 <thead><tr><th scope="col">Coordinate System</th><th scope="col">Best When</th><th scope="col">Volume Element</th></tr></thead>
 <tbody>
 <tr><td><strong>Cartesian</strong> \((x,y,z)\)</td><td>Rectangular solids, no obvious symmetry</td><td>\(dV = dx\,dy\,dz\)</td></tr>
@@ -297,7 +303,15 @@ if (window.MathJax && window.MathJax.startup) {
 <tr><td><strong>Spherical</strong> \((\rho,\theta,\phi)\)</td><td>Symmetry about the origin: spheres, cones from origin</td><td>\(dV = \rho^2\sin\phi\,d\rho\,d\phi\,d\theta\)</td></tr>
 </tbody>
 </table>
-<aside class="key-point" role="note" aria-label="Key point"><p>The ``right'' coordinate system is the one that makes the <strong>limits of integration</strong> simplest. If the boundaries become constants, you've found the right system.</p></aside>
+<div><p><strong>Quick decision guide:</strong></p>
+<ul>
+<li>See \(x^2 + y^2\) in the region or integrand? \(\to\) <strong>Cylindrical</strong></li>
+<li>See \(x^2 + y^2 + z^2\) in the region or integrand? \(\to\) <strong>Spherical</strong></li>
+<li>Region described by planes only? \(\to\) <strong>Cartesian</strong></li>
+<li>Sphere + cone? \(\to\) <strong>Spherical</strong> (both become constants)</li>
+<li>Cylinder + horizontal planes? \(\to\) <strong>Cylindrical</strong></li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The “right” coordinate system is the one that makes the <strong>limits of integration</strong> simplest. If the boundaries become constants, you've found the right system.</p></aside>
 </section>
 
 <section class="homework-section" aria-label="Homework">
@@ -305,5 +319,45 @@ if (window.MathJax && window.MathJax.startup) {
   <div class="hw-box"><strong>Section 15.8:</strong> 1, 3, 5, 6, 7, 9, 11, 15, 17, 19, 20, 23, 25, 27, 29, 31, 37, 43, 50</div>
 </section>
 </main>
+<script>
+// Scroll observer: notify parent when visible section changes (for editor sync)
+(function() {
+    if (!window.parent || window.parent === window) return;
+    var sections = document.querySelectorAll('main > section[data-source-line]');
+    if (!sections.length) return;
+    var currentLine = null;
+    var scrollTimer = null;
+    function onScroll() {
+        if (scrollTimer) clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(updateVisibleSection, 80);
+    }
+    function updateVisibleSection() {
+        var viewTop = window.innerHeight * 0.3;
+        var best = null;
+        for (var i = 0; i < sections.length; i++) {
+            var rect = sections[i].getBoundingClientRect();
+            if (rect.top <= viewTop && rect.bottom > 0) best = sections[i];
+        }
+        if (best) {
+            var line = parseInt(best.dataset.sourceLine, 10);
+            if (!isNaN(line) && line !== currentLine) {
+                currentLine = line;
+                window.parent.postMessage({ type: 'htmlSectionChanged', sourceLine: line }, '*');
+            }
+        }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'goToSection' && e.data.sourceLine != null) {
+            for (var i = 0; i < sections.length; i++) {
+                if (parseInt(sections[i].dataset.sourceLine, 10) === e.data.sourceLine) {
+                    sections[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    break;
+                }
+            }
+        }
+    });
+})();
+</script>
 </body>
 </html>

@@ -35,7 +35,7 @@ p { margin: 0.15em 0; }
 .key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
     padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
 .blank-space { margin: 0.2em 0; position: relative;
-    border: 1px dashed #ccc; border-radius: 3px; box-sizing: border-box; }
+    border: none; border-top: 1px dashed #ccc; box-sizing: border-box; }
 .blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
     color: #767676; font-style: italic; }
 .hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
@@ -67,8 +67,9 @@ ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
 li { margin-bottom: 0.05em; }
 .pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
 .homework-section { page-break-before: auto; }
-.defn-box, .example-box, .key-point { page-break-inside: avoid; break-inside: avoid; }
-.example-group { page-break-inside: avoid; break-inside: avoid; }
+.defn-box, .example-box, .key-point, .blank-space, .theorem-box { page-break-inside: avoid; break-inside: avoid; }
+main > section { page-break-inside: auto; }
+main > section.example-group { page-break-inside: avoid; break-inside: avoid; }
 a:focus-visible, summary:focus-visible, button:focus-visible {
     outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
 @media print {
@@ -95,86 +96,12 @@ window.MathJax = {
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
 <script>
-// After MathJax renders, adjust workspace boxes for better print pagination.
-// Two mechanisms:
-// 1. Explicit \pagebreak: stretch the preceding workspace to fill the page remainder,
-//    then remove the pagebreak div (the expanded workspace pushes content naturally).
-// 2. Auto-detect: if a section spans a page break with < MIN_CONTENT on the first
-//    page, expand the preceding workspace to push the section to the next page.
-function adjustWorkspaces() {
-    var PAGE_H = (11 - 0.8) * 96;  // letter height minus top+bottom margins (px at 96dpi)
-
-    function findPrecedingWorkspace(el) {
-        // Walk backwards through preceding siblings (and into them) to find .blank-space
-        var prev = el.previousElementSibling;
-        while (prev) {
-            var ws = prev.querySelector ? prev.querySelector('.blank-space:last-of-type') : null;
-            if (!ws && prev.classList && prev.classList.contains('blank-space')) ws = prev;
-            if (ws) return ws;
-            prev = prev.previousElementSibling;
-        }
-        // Also check inside parent section (pagebreak might be inside a section)
-        if (el.parentElement && el.parentElement.tagName === 'SECTION') {
-            var children = el.parentElement.children;
-            for (var j = children.length - 1; j >= 0; j--) {
-                if (children[j] === el) continue;
-                if (children[j].classList.contains('blank-space')) return children[j];
-                var inner = children[j].querySelector('.blank-space:last-of-type');
-                if (inner) return inner;
-            }
-        }
-        return null;
-    }
-
-    function expandWorkspace(ws, extraPx) {
-        var curH = ws.getBoundingClientRect().height;
-        ws.style.minHeight = (curH + extraPx + 4) + 'px';
-    }
-
-    // --- Pass A: Handle explicit \pagebreak markers ---
-    var pagebreaks = document.querySelectorAll('.pagebreak');
-    pagebreaks.forEach(function(pb) {
-        var pbTop = pb.getBoundingClientRect().top + window.scrollY;
-        var remaining = PAGE_H - (pbTop % PAGE_H);
-        if (remaining > 0 && remaining < PAGE_H) {
-            var ws = findPrecedingWorkspace(pb);
-            if (ws) expandWorkspace(ws, remaining);
-        }
-        pb.remove();  // no longer needed — workspace expansion handles the break
-    });
-
-    // --- Pass B: Auto-detect orphaned section starts ---
-    var MIN_CONTENT = 2.5 * 96;  // need at least 2.5in on the page
-    var sections = document.querySelectorAll('main > section');
-    for (var pass = 0; pass < 3; pass++) {
-        var changed = false;
-        for (var i = 1; i < sections.length; i++) {
-            var sec = sections[i];
-            var secRect = sec.getBoundingClientRect();
-            var secTop = secRect.top + window.scrollY;
-            var secBot = secTop + secRect.height;
-            var pageOfTop = Math.floor(secTop / PAGE_H);
-            var pageOfBot = Math.floor((secBot - 1) / PAGE_H);
-            if (pageOfBot > pageOfTop) {
-                var contentOnFirstPage = (pageOfTop + 1) * PAGE_H - secTop;
-                if (contentOnFirstPage < MIN_CONTENT) {
-                    var ws = findPrecedingWorkspace(sec);
-                    if (ws) {
-                        expandWorkspace(ws, contentOnFirstPage);
-                        changed = true;
-                    }
-                }
-            }
-        }
-        if (!changed) break;
-    }
-}
-// Run after MathJax finishes so layout is finalized
-if (window.MathJax && window.MathJax.startup) {
-    window.MathJax.startup.promise.then(function() { setTimeout(adjustWorkspaces, 200); });
-} else {
-    window.addEventListener('load', function() { setTimeout(adjustWorkspaces, 1500); });
-}
+// Pagination is handled entirely by CSS:
+//   .pagebreak            → page-break-before: always
+//   .example-group        → page-break-inside: avoid
+//   .defn-box, .key-point → page-break-inside: avoid
+// Workspaces use their declared min-height only — no JS expansion.
+// This produces dense, predictable handouts.
 </script>
 </head>
 <body>
@@ -193,70 +120,124 @@ if (window.MathJax && window.MathJax.startup) {
 </header>
 <hr aria-hidden="true">
 
-<section id="why-cylindrical-coordinates" aria-label="Why Cylindrical Coordinates?">
+<section id="why-cylindrical-coordinates" data-source-line="15" aria-label="Why Cylindrical Coordinates?">
   <h2>Why Cylindrical Coordinates?</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>Cylindrical coordinates are just <strong>polar coordinates with a \(z\)-axis attached</strong>. If the solid has symmetry about the \(z\)-axis (or the integrand involves \(x^2 + y^2\)), cylindrical is the way to go.</p></aside>
+  <div><p>In Section 15.4 we saw that <strong>polar coordinates</strong> simplify double integrals over circular regions. Now we need the same trick for triple integrals over solids with circular symmetry.</p></div>
+<div><p><strong>Examples of circularly symmetric solids:</strong></p>
+<ul>
+<li>A cylinder \(x^2 + y^2 \leq 4\) with \(0 \leq z \leq 5\)</li>
+<li>A cone \(z = \sqrt{x^2 + y^2}\) capped at \(z = 3\)</li>
+<li>A paraboloid \(z = x^2 + y^2\) below \(z = 9\)</li>
+</ul></div>
+<div><p>In Cartesian coordinates, the limits involve \(\sqrt{...}\) expressions from solving \(x^2 + y^2 = r^2\). In <strong>cylindrical coordinates</strong>, these become simply \(r = \text{const}\) &mdash; much cleaner.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Cylindrical coordinates are just <strong>polar coordinates with a \(z\)-axis attached</strong>. If the solid has symmetry about the \(z\)-axis (or the integrand involves \(x^2 + y^2\)), cylindrical is the way to go.</p></aside>
 </section>
 
-<section id="the-cylindrical-coordinate-system" aria-label="The Cylindrical Coordinate System">
+<section id="the-cylindrical-coordinate-system" data-source-line="35" aria-label="The Cylindrical Coordinate System">
   <h2>The Cylindrical Coordinate System</h2>
-  <figure>
+  <div><p>A point in 3D space can be described by \((r, \theta, z)\) where:</p>
+<ul>
+<li>\(r\) = distance from the \(z\)-axis (same as in polar: \(r \geq 0\))</li>
+<li>\(\theta\) = angle in the \(xy\)-plane from the positive \(x\)-axis (same as in polar)</li>
+<li>\(z\) = height above (or below) the \(xy\)-plane (same as in Cartesian)</li>
+</ul></div>
+<figure>
   <img src="figures/cylindrical_coords.png" alt="A 3D coordinate system showing a point P labeled with cylindrical coordinates (r, theta, z). The r-coordinate is shown as the horizontal distance from the z-axis to the projection of P in the xy-plane, theta is the angle from the positive x-axis to this projection, and z is the vertical height from the xy-plane to P. Dashed lines connect the components.">
+  <figcaption><a href="figures/cylindrical_coords.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
-<aside class="key-point" role="note" aria-label="Key point"><p>Cylindrical \(=\) polar \(+\) height. The ``cylindrical'' name comes from the fact that \(r = c\) is a <strong>cylinder</strong> centered on the \(z\)-axis.</p></aside>
+<div><p>Think of it this way: stand at the origin, face along the positive \(x\)-axis, turn by angle \(\theta\), walk out a distance \(r\) &mdash; that puts you at \((r,\theta,0)\) in the \(xy\)-plane. Then ride the elevator up (or down) by \(z\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Cylindrical \(=\) polar \(+\) height. The “cylindrical” name comes from the fact that \(r = c\) is a <strong>cylinder</strong> centered on the \(z\)-axis.</p></aside>
 </section>
 
-<section id="conversion-formulas" aria-label="Conversion Formulas">
+<section id="conversion-formulas" data-source-line="54" aria-label="Conversion Formulas">
   <h2>Conversion Formulas</h2>
   <section class="defn-box" role="region" aria-label="Cylindrical $\leftrightarrow$ Cartesian Conversions">
-  <h3 class="defn-title">Cylindrical $\leftrightarrow$ Cartesian Conversions</h3>
+  <h3 class="defn-title">Cylindrical \(\leftrightarrow\) Cartesian Conversions</h3>
   <p><strong>Cylindrical to Cartesian:</strong></p>
 <p>\[x = r\cos\theta, \qquad y = r\sin\theta, \qquad z = z\]</p>
 <p><strong>Cartesian to Cylindrical:</strong></p>
 <p>\[r^2 = x^2 + y^2, \qquad \tan\theta = \frac{y}{x}, \qquad z = z\]</p>
 </section>
+<div><p><strong>Common surface conversions:</strong></p>
+<table>
+<tr><th><strong>Cartesian</strong></th><th><strong>Cylindrical</strong></th><th><strong>Surface</strong></th></tr>
+<tr><td>\(x^2 + y^2 = 4\)</td><td>\(r = 2\)</td><td>Cylinder of radius 2</td></tr>
+<tr><td>\(z = \sqrt{x^2 + y^2}\)</td><td>\(z = r\)</td><td>Cone</td></tr>
+<tr><td>\(z = x^2 + y^2\)</td><td>\(z = r^2\)</td><td>Paraboloid</td></tr>
+<tr><td>\(x^2 + y^2 + z^2 = 9\)</td><td>\(r^2 + z^2 = 9\)</td><td>Sphere of radius 3</td></tr>
+<tr><td>\(z = 2x\)</td><td>\(z = 2r\cos\theta\)</td><td>Plane through \(z\)-axis</td></tr>
+</table></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>The key substitution is \(x^2 + y^2 = r^2\). Any equation involving \(x^2 + y^2\) becomes simpler in cylindrical coordinates.</p></aside>
 </section>
 
-<section id="the-volume-element-in-cylindrical-coordinates" aria-label="The Volume Element in Cylindrical Coordinates">
+<section id="the-volume-element-in-cylindrical-coordinates" data-source-line="83" aria-label="The Volume Element in Cylindrical Coordinates">
   <h2>The Volume Element in Cylindrical Coordinates</h2>
-  <figure>
+  <div><p>In Cartesian: \(dV = dx\,dy\,dz\).</p>
+<p>In cylindrical, we need the same extra factor we saw in polar coordinates.</p></div>
+<div><p>A small cylindrical “wedge” at position \((r, \theta, z)\) has:</p>
+<ul>
+<li>Radial thickness: \(dr\)</li>
+<li>Arc length: \(r\,d\theta\) (the \(r\) factor!)</li>
+<li>Height: \(dz\)</li>
+</ul></div>
+<div><p>So the volume element is:</p>
+<p>\[\boxed{dV = r\,dz\,dr\,d\theta}\]</p>
+<p>This is exactly the polar area element \(dA = r\,dr\,d\theta\) with a \(dz\) tacked on.</p></div>
+<figure>
   <img src="figures/cylindrical_wedge.png" alt="A small cylindrical volume element showing a wedge-shaped piece with radial thickness dr, arc length r d-theta, and height dz. The volume is labeled dV = r dz dr d-theta.">
   <figcaption><a href="figures/cylindrical_wedge.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
 </figure>
-<aside class="key-point" role="note" aria-label="Key point"><p>Don't forget the extra \(r\)! The factor \(r\) appears because the ``width'' of the wedge in the angular direction is \(r\,d\theta\), not just \(d\theta\).</p></aside>
+<aside class="key-point" role="note" aria-label="Key point"><p>Don't forget the extra \(r\)! The factor \(r\) appears because the “width” of the wedge in the angular direction is \(r\,d\theta\), not just \(d\theta\).</p></aside>
 </section>
 
-<section id="quick-check-convert-to-cylindrical" aria-label="Quick Check: Convert to Cylindrical">
+<section id="quick-check-convert-to-cylindrical" data-source-line="110" aria-label="Quick Check: Convert to Cylindrical">
   <h2>Quick Check: Convert to Cylindrical</h2>
-  <div class="blank-space" role="region" aria-label="Student workspace: Replace $x^2 + y^2$ with $r^2$ in each equation." style="min-height:1.5in;">
+  <div><p><em>Rewrite each equation in cylindrical coordinates:</em></p>
+<ol>
+<li>\(x^2 + y^2 + z^2 = 9\)</li>
+<li>\(x^2 + y^2 = 4\)</li>
+<li>\(z = 3x^2 + 3y^2\)</li>
+</ol></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Replace $x^2 + y^2$ with $r^2$ in each equation." style="min-height:1.5in;">
   <div class="blank-prompt">Replace \(x^2 + y^2\) with \(r^2\) in each equation.</div>
 </div>
 </section>
 
-<section id="when-to-use-cylindrical-coordinates" aria-label="When to Use Cylindrical Coordinates">
+<section id="when-to-use-cylindrical-coordinates" data-source-line="134" aria-label="When to Use Cylindrical Coordinates">
   <h2>When to Use Cylindrical Coordinates</h2>
-  <aside class="key-point" role="note" aria-label="Key point"><p>If you see \(x^2 + y^2\) in the region description or the integrand, think cylindrical.</p></aside>
+  <div><p>Use cylindrical coordinates when:</p>
+<ol>
+<li><strong>The region</strong> involves cylinders (\(x^2 + y^2 = a^2\)), cones (\(z = c\sqrt{x^2 + y^2}\)), or paraboloids (\(z = a(x^2 + y^2)\))</li>
+<li><strong>The integrand</strong> involves \(x^2 + y^2\) (it becomes \(r^2\) &mdash; cleaner)</li>
+<li><strong>The projection</strong> onto the \(xy\)-plane is a circle, annulus, or sector</li>
+</ol></div>
+<figure>
+  <img src="figures/cylindrical_region.png" alt="A 3D region in cylindrical coordinates. The solid is bounded above by z = u2(x,y), below by z = u1(x,y), and its projection D onto the xy-plane is bounded by r = h1(theta) and r = h2(theta) between angles theta = alpha and theta = beta. Dashed lines connect the projection to the 3D region.">
+</figure>
+<div><p><strong>Template for a cylindrical triple integral:</strong></p>
+<p>\[\iiint_E f(x,y,z)\,dV = \int_{\alpha}^{\beta}\int_{h_1(\theta)}^{h_2(\theta)}\int_{u_1(r,\theta)}^{u_2(r,\theta)} f(r\cos\theta,\, r\sin\theta,\, z)\;\underbrace{r\,dz\,dr\,d\theta}_{dV}\]</p></div>
+<div><p><strong>Typical order:</strong> \(dz\,dr\,d\theta\) (height first, then radial, then angular). But other orders are possible.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>If you see \(x^2 + y^2\) in the region description or the integrand, think cylindrical.</p></aside>
 </section>
 
-<section id="example-1-volume-in-the-first-octant" class="example-group" aria-label="Example 1: Volume in the First Octant">
+<section id="example-1-volume-in-the-first-octant" class="example-group" data-source-line="156" aria-label="Example 1: Volume in the First Octant">
   <h2>Example 1: Volume in the First Octant</h2>
   <section class="example-box" role="region" aria-label="Example 1">
   <h3 class="example-title">Example 1</h3>
   <p>Find the volume of the solid in the first octant that lies under the plane \(z = 2x\) and inside the cylinder \(x^2 + y^2 = 4\).</p>
 </section>
-<div class="blank-space" role="region" aria-label="Student workspace: What are the limits on $\theta$? On $r$? On $z$? Don't forget the $r$ in $dV$!" style="min-height:3in;">
-  <div class="blank-prompt">What are the limits on \(\theta\)? On \(r\)? On \(z\)? Don't forget the \(r\) in \(dV\)!</div>
+<div class="blank-space" role="region" aria-label="Student workspace: Convert the boundaries to cylindrical. What are the limits on $\theta$? On $r$? On $z$? Don't forget the $r$ in $dV$!" style="min-height:3.5in;">
+  <div class="blank-prompt">Convert the boundaries to cylindrical. What are the limits on \(\theta\)? On \(r\)? On \(z\)? Don't forget the \(r\) in \(dV\)!</div>
 </div>
 </section>
 
-<section id="example-2-volume-inside-a-cylinder-below-a-cone" class="example-group" aria-label="Example 2: Volume Inside a Cylinder, Below a Cone">
+<section id="example-2-volume-inside-a-cylinder-below-a-cone" class="example-group" data-source-line="203" aria-label="Example 2: Volume Inside a Cylinder, Below a Cone">
   <h2>Example 2: Volume Inside a Cylinder, Below a Cone</h2>
   <section class="example-box" role="region" aria-label="Example 2">
   <h3 class="example-title">Example 2</h3>
   <p>Find the volume of the solid inside the cylinder \(x^2 + y^2 = 4\) between \(z = 0\) and the cone \(z = \sqrt{x^2 + y^2}\).</p>
 </section>
-<div class="blank-space" role="region" aria-label="Student workspace: Convert the surfaces to cylindrical and set up $\int\int\int r\,dz\,dr\,d\theta$. The full circle means $\theta$ goes from $0$ to $2\pi$." style="min-height:3in;">
+<div class="blank-space" role="region" aria-label="Student workspace: Convert the surfaces to cylindrical and set up $\int\int\int r\,dz\,dr\,d\theta$. The full circle means $\theta$ goes from $0$ to $2\pi$." style="min-height:3.5in;">
   <div class="blank-prompt">Convert the surfaces to cylindrical and set up \(\int\int\int r\,dz\,dr\,d\theta\). The full circle means \(\theta\) goes from \(0\) to \(2\pi\).</div>
 </div>
 </section>
@@ -266,5 +247,45 @@ if (window.MathJax && window.MathJax.startup) {
   <div class="hw-box"><strong>Section 15.7:</strong> 3, 9, 13, 17, 19, 23, 25, 31, 33</div>
 </section>
 </main>
+<script>
+// Scroll observer: notify parent when visible section changes (for editor sync)
+(function() {
+    if (!window.parent || window.parent === window) return;
+    var sections = document.querySelectorAll('main > section[data-source-line]');
+    if (!sections.length) return;
+    var currentLine = null;
+    var scrollTimer = null;
+    function onScroll() {
+        if (scrollTimer) clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(updateVisibleSection, 80);
+    }
+    function updateVisibleSection() {
+        var viewTop = window.innerHeight * 0.3;
+        var best = null;
+        for (var i = 0; i < sections.length; i++) {
+            var rect = sections[i].getBoundingClientRect();
+            if (rect.top <= viewTop && rect.bottom > 0) best = sections[i];
+        }
+        if (best) {
+            var line = parseInt(best.dataset.sourceLine, 10);
+            if (!isNaN(line) && line !== currentLine) {
+                currentLine = line;
+                window.parent.postMessage({ type: 'htmlSectionChanged', sourceLine: line }, '*');
+            }
+        }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'goToSection' && e.data.sourceLine != null) {
+            for (var i = 0; i < sections.length; i++) {
+                if (parseInt(sections[i].dataset.sourceLine, 10) === e.data.sourceLine) {
+                    sections[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    break;
+                }
+            }
+        }
+    });
+})();
+</script>
 </body>
 </html>
