@@ -53,6 +53,9 @@ function generatePopulation(shape, rng) {
   switch (shape) {
     case 'normal':
       for (let i = 0; i < POP_SIZE; i++) vals.push(randNormal(50, 10, rng));
+      // Standardize to exactly μ = 50, σ = 10 for clean display
+      { const m = mean(vals), s = sd(vals);
+        for (let i = 0; i < vals.length; i++) vals[i] = 50 + (vals[i] - m) / s * 10; }
       break;
     case 'right-skewed':
       for (let i = 0; i < POP_SIZE; i++) vals.push(-Math.log(1 - rng()) / 0.1);
@@ -62,6 +65,8 @@ function generatePopulation(shape, rng) {
       break;
     default:
       for (let i = 0; i < POP_SIZE; i++) vals.push(randNormal(50, 10, rng));
+      { const m = mean(vals), s = sd(vals);
+        for (let i = 0; i < vals.length; i++) vals[i] = 50 + (vals[i] - m) / s * 10; }
   }
   return vals;
 }
@@ -164,7 +169,9 @@ function initPopulation() {
   const popSigma = sd(population);
   if (popInfoEl) {
     const names = { normal: 'Normal', 'right-skewed': 'Right-skewed', uniform: 'Uniform' };
-    popInfoEl.textContent = `Population: ${names[shape] || shape} (μ = ${popMu.toFixed(2)}, σ = ${popSigma.toFixed(2)})`;
+    // Use clean integers when values are close to whole numbers
+    const fmtNum = (v) => Math.abs(v - Math.round(v)) < 0.005 ? Math.round(v).toString() : v.toFixed(2);
+    popInfoEl.textContent = `Population: ${names[shape] || shape} (μ = ${fmtNum(popMu)}, σ = ${fmtNum(popSigma)})`;
   }
 
   resetSimulation();
@@ -241,13 +248,18 @@ function renderChart() {
     .attr('width', '100%')
     .attr('preserveAspectRatio', 'xMidYMid meet');
 
+  // Font sizes: scale up on mobile since viewBox (560px) shrinks to ~412px
+  const titleSize = isMobile ? '17px' : '14px';
+  const labelSize = isMobile ? '15px' : '13px';
+  const statsSize = isMobile ? '14px' : '13px';
+
   // Title
   svg.append('text')
     .attr('x', width / 2)
     .attr('y', 14)
     .attr('text-anchor', 'middle')
     .attr('font-weight', 700)
-    .attr('font-size', '14px')
+    .attr('font-size', titleSize)
     .text(`Confidence Intervals (showing last ${shown.length} of ${total})`);
 
   const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
@@ -267,10 +279,10 @@ function renderChart() {
     .attr('x', xScale(popMu))
     .attr('y', -4)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '13px')
+    .attr('font-size', labelSize)
     .attr('fill', '#7B2D8E')
     .attr('font-weight', 700)
-    .text(`μ = ${popMu.toFixed(2)}`);
+    .text(`μ = ${Math.abs(popMu - Math.round(popMu)) < 0.005 ? Math.round(popMu) : popMu.toFixed(2)}`);
 
   // Tooltip group (hidden by default, rendered on top of everything)
   const tooltipG = svg.append('g')
@@ -395,7 +407,7 @@ function renderChart() {
     .attr('x', innerW / 2)
     .attr('y', innerH + 32)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '13px')
+    .attr('font-size', labelSize)
     .text('Value');
 
   // Coverage stats overlay (top-right corner, always visible)
@@ -429,7 +441,7 @@ function renderChart() {
     statsG.append('text')
       .attr('x', -boxW + 6)
       .attr('y', lineH * (i + 1))
-      .attr('font-size', '13px')
+      .attr('font-size', statsSize)
       .attr('fill', i === 2 ? '#114B5F' : '#333')
       .attr('font-weight', i === 2 ? 700 : 400)
       .text(line);

@@ -26,13 +26,13 @@ const BODY_FILL = '#a0a0a0';
 const OBSERVED_COLOR = '#7B2D8E';
 
 /** Minimum dot radius. */
-const MIN_RADIUS = 2;
+const MIN_RADIUS = 3;
 
 /** Maximum dot radius (explore dotplots may go up to this). */
 const MAX_RADIUS = 12;
 
 /** Maximum column stroke-width when in filled-column mode. */
-const COLUMN_MAX_WIDTH = 6;
+const COLUMN_MAX_WIDTH = 10;
 
 /**
  * Compute default bin count for dotplots — finer than Sturges so dots form
@@ -199,11 +199,13 @@ export function drawDotplot(container, values, options = {}) {
   } = options;
 
   const result = computeDots(values, { numBins, domain, binWidth: lockedBinWidth, binOrigin: lockedBinOrigin });
-  const { dots, maxStack, domain: finalDomain } = result;
-  // Compute effective bin count from locked grid + domain when available
-  const effectiveBins = numBins
-    ?? (lockedBinWidth && finalDomain ? Math.ceil((finalDomain[1] - finalDomain[0]) / lockedBinWidth) : null)
-    ?? dotplotBins(values);
+  const { dots, maxStack, domain: finalDomain, binWidth: actualBinWidth } = result;
+  // Compute effective bin count from the actual domain span and bin width,
+  // not from numBins which may be the theoretical max (e.g. sampleSize for
+  // proportions) rather than how many bins are visible in the current domain.
+  const effectiveBins = (actualBinWidth && finalDomain)
+    ? Math.ceil((finalDomain[1] - finalDomain[0]) / actualBinWidth)
+    : numBins ?? dotplotBins(values);
 
   const frame = createChart(container, { titleText, descText, id, margin, showExport, filename, ...(viewHeight != null && { viewHeight }) });
 
@@ -509,7 +511,7 @@ function renderColumns(group, dots, xScale, yScale, innerHeight, isExtreme, high
   const binPixelWidth = columnData.length > 1
     ? Math.abs(xScale(columnData[1].center) - xScale(columnData[0].center))
     : 10;
-  const colWidth = Math.max(MIN_RADIUS * 2, Math.min(COLUMN_MAX_WIDTH, binPixelWidth * 0.6));
+  const colWidth = Math.max(MIN_RADIUS * 2, Math.min(COLUMN_MAX_WIDTH, binPixelWidth * 0.75));
 
   /** Color for a column based on its bin center value. */
   function colColor(center) {
@@ -708,17 +710,11 @@ function renderObservedLine(overlays, value, xScale, innerHeight, precision = 2,
     .attr('aria-label', `${label}: ${value}`);
   overlays.append('text')
     .attr('class', 'overlay-value observed-label')
-    .attr('x', x).attr('y', -16)
+    .attr('x', x).attr('y', -6)
     .attr('text-anchor', 'middle')
     .attr('fill', OBSERVED_COLOR)
-    .classed('overlay-label', true)
-    .text(label);
-  overlays.append('text')
-    .attr('class', 'overlay-value')
-    .attr('x', x).attr('y', -4)
-    .attr('text-anchor', 'middle')
-    .attr('fill', OBSERVED_COLOR)
-    .text(value.toFixed(precision));
+    .attr('font-weight', 700)
+    .text(`${label} = ${value.toFixed(precision)}`);
 }
 
 /** CI line color (dark pink — distinct from purple observed stat). */

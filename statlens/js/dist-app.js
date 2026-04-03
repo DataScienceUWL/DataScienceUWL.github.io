@@ -14,7 +14,7 @@
 
 import { parseParams } from './url-params.js';
 import { drawCurve, computeDomain } from './curve.js';
-import { debounce } from './chart-utils.js';
+import { debounce, pillDimensions } from './chart-utils.js';
 import { enableHorizontalDrag, showInlineEdit, formatEditValue } from './chart-interactions.js';
 import { initHelp, setPageTitle } from './page-utils.js';
 import * as d3Selection from 'd3-selection';
@@ -497,8 +497,8 @@ export function initDistCalculator(config) {
 
     // Background pill
     const labelText = prob.toFixed(4);
-    const textWidth = labelText.length * 8.5 + 16;
-    const pillH = 24;
+    const { charW: _pCharW, pad: _pPad, pillH } = pillDimensions('prob');
+    const textWidth = labelText.length * _pCharW + _pPad;
     group.append('rect')
       .attr('class', isComplement ? 'prob-label-bg prob-complement-bg' : 'prob-label-bg')
       .attr('x', clampedX - textWidth / 2)
@@ -569,14 +569,15 @@ export function initDistCalculator(config) {
 
     // Background pill for the label
     const labelText = formatEditValue(displayValue);
-    const textWidth = labelText.length * 8 + 12;
+    const { charW: _cCharW, pad: _cPad, pillH: _cPillH } = pillDimensions('crit');
+    const textWidth = labelText.length * _cCharW + _cPad;
 
     group.append('rect')
       .attr('class', 'crit-label-bg')
       .attr('x', px - textWidth / 2)
       .attr('y', frame.height + 6)
       .attr('width', textWidth)
-      .attr('height', 20)
+      .attr('height', _cPillH)
       .attr('rx', 3)
       .attr('fill', '#fff')
       .attr('stroke', '#569BBD')
@@ -586,8 +587,9 @@ export function initDistCalculator(config) {
     const textEl = group.append('text')
       .attr('class', 'crit-label')
       .attr('x', px)
-      .attr('y', frame.height + 20)
+      .attr('y', frame.height + 6 + _cPillH / 2)
       .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'central')
       .attr('fill', '#333')
       .attr('cursor', 'pointer')
       .text(labelText);
@@ -595,14 +597,15 @@ export function initDistCalculator(config) {
     // For "both" tails, also show the negative value
     if (tail === 'both') {
       const negPx = xScale(-Math.abs(value));
-      const negTextWidth = labelText.length * 8 + 16; // extra for minus sign
+      const negLabel = formatEditValue(-Math.abs(value));
+      const negTextWidth = negLabel.length * _cCharW + _cPad;
 
       group.append('rect')
         .attr('class', 'crit-label-bg')
         .attr('x', negPx - negTextWidth / 2)
         .attr('y', frame.height + 6)
         .attr('width', negTextWidth)
-        .attr('height', 20)
+        .attr('height', _cPillH)
         .attr('rx', 3)
         .attr('fill', '#fff')
         .attr('stroke', '#569BBD')
@@ -612,8 +615,9 @@ export function initDistCalculator(config) {
       group.append('text')
         .attr('class', 'crit-label')
         .attr('x', negPx)
-        .attr('y', frame.height + 20)
+        .attr('y', frame.height + 6 + _cPillH / 2)
         .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'central')
         .attr('fill', '#333')
         .attr('cursor', 'pointer')
         .text(formatEditValue(-Math.abs(value)));
@@ -623,7 +627,8 @@ export function initDistCalculator(config) {
     const pillRanges = [[px - textWidth / 2, px + textWidth / 2]];
     if (tail === 'both') {
       const negPx = xScale(-Math.abs(value));
-      const negW = labelText.length * 8 + 16;
+      const negLabel = formatEditValue(-Math.abs(value));
+      const negW = negLabel.length * _cCharW + _cPad;
       pillRanges.push([negPx - negW / 2, negPx + negW / 2]);
     }
     const inner = d3Selection.select(frame.inner);

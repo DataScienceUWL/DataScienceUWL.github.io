@@ -29,6 +29,36 @@ const PHONE_MARGIN = { top: 30, right: 15, bottom: 60, left: 80 };
 export const TRANSITION_MS = 300;
 
 /**
+ * Compute responsive pill dimensions (charWidth, padding, pill height)
+ * for SVG rounded-rect + text "pill" labels. All pill renderers in the
+ * app should call this instead of hard-coding per-breakpoint values.
+ *
+ * @param {'prob'|'crit'} [variant='prob'] - 'prob' for probability pills,
+ *   'crit' for smaller critical-value / k-label pills
+ * @returns {{ charW: number, pad: number, pillH: number }}
+ */
+export function pillDimensions(variant = 'prob') {
+  const isPhone = typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 480px)').matches;
+  const isTablet = !isPhone && typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 600px)').matches;
+
+  if (variant === 'crit') {
+    return {
+      charW:  isPhone ? 15 : isTablet ? 12 : 8,
+      pad:    isPhone ? 20 : isTablet ? 16 : 12,
+      pillH:  isPhone ? 30 : isTablet ? 26 : 20,
+    };
+  }
+  // 'prob' (default) — probability label pills
+  return {
+    charW:  isPhone ? 15 : isTablet ? 12 : 8.5,
+    pad:    isPhone ? 24 : isTablet ? 20 : 16,
+    pillH:  isPhone ? 34 : isTablet ? 30 : 24,
+  };
+}
+
+/**
  * Okabe-Ito accessible color palette — reordered so the first 2-3 colors
  * are maximally distinguishable under protanopia and deuteranopia.
  *
@@ -850,10 +880,8 @@ export function renderSimPills(frame, xScale, opts) {
  */
 function _addSimPill(group, text, cx, cy, isComplement) {
   const g = group.append('g').attr('class', 'sim-pill');
-  const isPhone = typeof globalThis.matchMedia === 'function'
-    && globalThis.matchMedia('(max-width: 480px)').matches;
-  const textWidth = text.length * (isPhone ? 13 : 8.5) + 16;
-  const pillH = isPhone ? 34 : 24;
+  const { charW, pad, pillH } = pillDimensions('prob');
+  const textWidth = text.length * charW + pad;
   g.append('rect')
     .attr('x', cx - textWidth / 2)
     .attr('y', cy - pillH / 2)

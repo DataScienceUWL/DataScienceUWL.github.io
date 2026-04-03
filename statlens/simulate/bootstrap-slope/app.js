@@ -138,7 +138,7 @@ function showDataLoaded() {
   const reg = linreg(xData, yData);
   observedSlope = reg.slope;
   observedIntercept = reg.intercept;
-  dataPrecision = Math.max(detectPrecision(xData), detectPrecision(yData));
+  dataPrecision = Math.min(2, Math.max(detectPrecision(xData), detectPrecision(yData)));
 
   if (dataSummary) {
     const d = dataPrecision;

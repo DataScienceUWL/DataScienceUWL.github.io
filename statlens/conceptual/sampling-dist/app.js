@@ -174,6 +174,8 @@ function renderPopulation() {
     xLabel: 'Value',
     yLabel: '',
     titleText: 'Population Distribution',
+    observedStat: popMu,
+    observedLabel: 'μ',
     animate: false,
     numBins: 40,
     domain: popDomain,

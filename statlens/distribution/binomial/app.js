@@ -9,7 +9,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import * as d3Shape from 'd3-shape';
-import { formatTick } from '../../js/chart-utils.js';
+import { formatTick, pillDimensions } from '../../js/chart-utils.js';
 import { initHelp, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
@@ -219,9 +219,11 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma, prob, type) {
   visibleHi = hi;
   const visible = data.slice(lo, hi + 1);
 
-  const margin = { top: 25, right: 20, bottom: 55, left: 60 };
+  const _mob = typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 480px)').matches;
+  const margin = { top: _mob ? 30 : 25, right: 20, bottom: _mob ? 65 : 55, left: 60 };
   const width = 560;
-  const height = 300;
+  const height = _mob ? 320 : 300;
   const innerW = width - margin.left - margin.right;
   const innerH = height - margin.top - margin.bottom;
   chartInnerH = innerH;
@@ -236,7 +238,7 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma, prob, type) {
   // Title
   svg.append('text')
     .attr('x', width / 2)
-    .attr('y', 14)
+    .attr('y', _mob ? 20 : 14)
     .attr('text-anchor', 'middle')
     .attr('font-weight', 700)
     .text(`Binomial(n = ${n}, p = ${p})`);
@@ -276,7 +278,7 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma, prob, type) {
   g.append('text')
     .attr('class', 'x-label')
     .attr('x', innerW / 2)
-    .attr('y', innerH + 45)
+    .attr('y', innerH + (_mob ? 55 : 45))
     .attr('text-anchor', 'middle')
     .text('k (number of successes)');
 
@@ -373,8 +375,8 @@ function renderChart(data, n, p, k, shadedKs, mu, sigma, prob, type) {
  * @param {boolean} isComplement
  */
 function renderPill(g, cx, cy, text, isComplement) {
-  const textWidth = text.length * 9.5 + 18;
-  const pillH = 26;
+  const { charW, pad, pillH } = pillDimensions('prob');
+  const textWidth = text.length * charW + pad;
   g.append('rect')
     .attr('class', isComplement ? 'prob-label-bg prob-complement-bg' : 'prob-label-bg')
     .attr('x', cx - textWidth / 2)
@@ -480,15 +482,16 @@ function addDraggableKLine(g, svg, data, n, k, innerW, innerH, margin) {
     .attr('cursor', 'ew-resize');
 
   // k value label below the line
+  const { charW: kCharW, pad: kPad, pillH: kPillH } = pillDimensions('crit');
   const labelG = g.append('g').attr('class', 'k-label-group');
   const labelText = `k = ${k}`;
-  const tw = labelText.length * 8 + 12;
+  const tw = labelText.length * kCharW + kPad;
   labelG.append('rect')
     .attr('class', 'k-label-bg')
     .attr('x', kPx - tw / 2)
     .attr('y', innerH + 6)
     .attr('width', tw)
-    .attr('height', 20)
+    .attr('height', kPillH)
     .attr('rx', 3)
     .attr('fill', '#fff')
     .attr('stroke', '#569BBD')
@@ -496,8 +499,9 @@ function addDraggableKLine(g, svg, data, n, k, innerW, innerH, margin) {
   const labelEl = labelG.append('text')
     .attr('class', 'crit-label')
     .attr('x', kPx)
-    .attr('y', innerH + 20)
+    .attr('y', innerH + 6 + kPillH / 2)
     .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'central')
     .attr('fill', '#333')
     .text(labelText);
 
@@ -534,7 +538,7 @@ function addDraggableKLine(g, svg, data, n, k, innerW, innerH, margin) {
     // Update label
     const newLabel = `k = ${newK}`;
     labelEl.text(newLabel);
-    const newTw = newLabel.length * 8 + 12;
+    const newTw = newLabel.length * kCharW + kPad;
     labelG.select('.k-label-bg')
       .attr('x', newPx - newTw / 2)
       .attr('width', newTw);

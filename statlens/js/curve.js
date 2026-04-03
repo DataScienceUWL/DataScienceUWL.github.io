@@ -11,7 +11,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import * as d3Shape from 'd3-shape';
-import { createChart, addAxes, formatTick } from './chart-utils.js';
+import { createChart, addAxes, formatTick, pillDimensions } from './chart-utils.js';
 
 /** IMS blue for curve stroke. */
 const CURVE_STROKE = '#569BBD';
@@ -444,10 +444,8 @@ export function addInferenceAnnotations(chart, opts) {
  */
 function _addPill(group, text, cx, cy, isComplement) {
   const g = group.append('g').attr('class', 'inf-annotation');
-  const isPhone = typeof globalThis.matchMedia === 'function'
-    && globalThis.matchMedia('(max-width: 480px)').matches;
-  const textWidth = text.length * (isPhone ? 13 : 8.5) + 16;
-  const pillH = isPhone ? 34 : 24;
+  const { charW, pad, pillH } = pillDimensions('prob');
+  const textWidth = text.length * charW + pad;
   g.append('rect')
     .attr('x', cx - textWidth / 2)
     .attr('y', cy - pillH / 2)

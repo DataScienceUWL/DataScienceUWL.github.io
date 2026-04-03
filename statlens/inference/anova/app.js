@@ -301,6 +301,12 @@ function showDataSummary() {
     const namePrefix = currentSourceName ? `${currentSourceName}: ` : '';
     dataSummary.textContent = `${namePrefix}${groupNames.length} groups, N = ${totalN}`;
   }
+  // Update H₀ with actual group names
+  const h0Text = document.getElementById('h0-text');
+  if (h0Text && groupNames.length >= 2) {
+    const muList = groupNames.map(name => `μ<sub>${name}</sub>`).join(' = ');
+    h0Text.innerHTML = `${muList} (all ${groupNames.length} group means are equal)`;
+  }
 }
 
 function clearData() {

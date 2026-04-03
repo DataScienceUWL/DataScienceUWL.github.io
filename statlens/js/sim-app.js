@@ -717,13 +717,14 @@ export function initSimPage(config) {
   }
 
   function showDataLoaded() {
-    // Set dataPrecision based on source data type
+    // Set dataPrecision based on source data type, capped at 2 so that
+    // computed stats (d + 1 rule) never exceed 3 decimal places.
     if (config.proportion) {
       dataPrecision = 0; // proportion data is 0/1 integers
     } else if (config.paired || (config.twoGroup && data2.length > 0)) {
-      dataPrecision = Math.max(detectPrecision(data1), detectPrecision(data2));
+      dataPrecision = Math.min(2, Math.max(detectPrecision(data1), detectPrecision(data2)));
     } else {
-      dataPrecision = detectPrecision(data1);
+      dataPrecision = Math.min(2, detectPrecision(data1));
     }
 
     if (dataPreview) dataPreview.hidden = false;
@@ -850,7 +851,11 @@ export function initSimPage(config) {
           ? Math.round(data1.length * data2.length / (data1.length + data2.length))
           : data1.length)
       : (userBinCount ?? 40);
-    const gridBinWidth = (preSimDomain[1] - preSimDomain[0]) / gridNumBins;
+    // For proportions, use natural 1/n step size (not domain_range/n) so dots
+    // are sized correctly relative to the visible bins, not the full 0-1 range.
+    const gridBinWidth = config.proportion
+      ? 1 / gridNumBins
+      : (preSimDomain[1] - preSimDomain[0]) / gridNumBins;
     lockedDotGrid = { binWidth: gridBinWidth, binOrigin: preSimDomain[0] };
 
     // Render empty chart (no observed stat line — just axes)
@@ -2712,7 +2717,7 @@ export function initSimPage(config) {
         animate: false,
         domain,
         numBins: config.proportion ? sampleSize : userBinCount,
-        binWidth: lockedDotGrid?.binWidth,
+        binWidth: lockedDotGrid?.binWidth ?? (config.proportion ? 1 / sampleSize : undefined),
         binOrigin: lockedDotGrid?.binOrigin,
         highlightIndex,
         highlightIndices,
