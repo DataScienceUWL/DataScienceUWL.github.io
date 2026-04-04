@@ -242,7 +242,6 @@ function renderChart() {
     .range([0, innerW]);
 
   const svg = d3Selection.select(ciContainer).append('svg')
-    .attr('role', 'img')
     .attr('aria-label', `${shown.length} confidence intervals. ${shown.filter(c => c.captures).length} capture the true mean.`)
     .attr('viewBox', `0 0 ${width} ${height}`)
     .attr('width', '100%')

@@ -145,7 +145,6 @@ function drawPieLegend(frame, categories, counts, total, colors, title, labels =
   const overlays = d3Selection.select(frame.inner).select('.overlays');
   const g = overlays.append('g')
     .attr('class', 'chart-legend')
-    .attr('role', 'img')
     .attr('aria-label', `Legend: ${categories.join(', ')}`);
 
   const swatchSize = 14;

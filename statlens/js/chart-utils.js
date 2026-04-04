@@ -404,7 +404,6 @@ export function createChart(container, options = {}) {
   containerEl.appendChild(wrapper);
 
   const svg = d3Selection.select(wrapper).append('svg')
-    .attr('role', 'img')
     .attr('aria-label', [titleText, descText].filter(Boolean).join(' — '))
     .attr('viewBox', `0 0 ${viewWidth} ${viewHeight}`)
     .attr('preserveAspectRatio', 'xMidYMid meet')
@@ -1077,7 +1076,7 @@ export function drawMiniBoxplot(container, values, options = {}) {
   const boxH = height * 0.55;
   const boxTop = cy - boxH / 2;
 
-  let svg = `<svg class="mech-minibox" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">`;
+  let svg = `<svg class="mech-minibox" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" aria-label="${label}">`;
 
   // Whisker lines
   svg += `<line class="bp-wlo" x1="${x(whiskerLo)}" x2="${x(q1)}" y1="${cy}" y2="${cy}" stroke="${color}" stroke-width="1.5"/>`;
@@ -1366,7 +1365,7 @@ export function drawMiniDotplot(container, values, options = {}) {
   const effectiveR = dotR * scale;
   const effectiveSpacing = dotSpacing * scale;
 
-  let svg = `<svg class="mech-minichart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">`;
+  let svg = `<svg class="mech-minichart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" aria-label="${label}">`;
 
   // Dots (bottom-up stacking) — cx is the bin center, not the raw data x
   const baseY = plotH - effectiveR;
@@ -1450,7 +1449,7 @@ export function drawMiniHistogram(container, values, options = {}) {
   const maxCount = Math.max(...counts, 1);
   const barH = (/** @type {number} */ c) => (c / maxCount) * (plotH - 2);
 
-  let svg = `<svg class="mech-minichart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">`;
+  let svg = `<svg class="mech-minichart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" aria-label="${label}">`;
 
   // Bars
   for (let i = 0; i < numBins; i++) {
