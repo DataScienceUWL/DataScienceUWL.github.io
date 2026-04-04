@@ -258,9 +258,13 @@ function renderHistBox(container, data, varName, context, isGrouped) {
   const wrapper = document.createElement('div');
   wrapper.className = 'conditions-hist-box';
 
+  // Compact margins and viewBox for conditions diagnostics
+  const compactMargin = { top: 22, right: 10, bottom: 34, left: 40 };
+  const compactBoxMargin = { top: 22, right: 10, bottom: 34, left: 55 };
+
   if (isGrouped) {
     const groups = /** @type {Record<string, number[]>} */ (data);
-    // Histogram per group
+    // Histogram per group — side by side
     const histDiv = document.createElement('div');
     histDiv.className = 'conditions-histograms';
     for (const [name, vals] of Object.entries(groups)) {
@@ -272,7 +276,8 @@ function renderHistBox(container, data, varName, context, isGrouped) {
         id: `cond-hist-${name.replace(/\W/g, '')}`,
         animate: false,
         showExport: false,
-        margin: { top: 24, right: 12, bottom: 36, left: 45 },
+        margin: compactMargin,
+        viewHeight: 220,
       });
       histDiv.appendChild(groupDiv);
     }
@@ -287,21 +292,23 @@ function renderHistBox(container, data, varName, context, isGrouped) {
       id: 'cond-boxplot',
       animate: false,
       showOutliers: true,
-      margin: { top: 24, right: 12, bottom: 36, left: 60 },
+      margin: compactBoxMargin,
     });
     wrapper.appendChild(boxDiv);
   } else {
     const vals = /** @type {number[]} */ (data);
-    // Single histogram
+    // Single histogram + boxplot side by side
     const histDiv = document.createElement('div');
     histDiv.className = 'conditions-single-hist';
-    const label = context === 'paired' ? 'Differences' : varName;
+    const label = context === 'paired' ? 'Differences' : (context === 'residuals' ? 'Residuals' : varName);
     drawHistogram(histDiv, vals, {
       xLabel: label,
       titleText: `Histogram of ${label}`,
       id: 'cond-hist',
       animate: false,
       showExport: false,
+      margin: compactMargin,
+      viewHeight: 220,
     });
     wrapper.appendChild(histDiv);
 
@@ -314,6 +321,7 @@ function renderHistBox(container, data, varName, context, isGrouped) {
       id: 'cond-boxplot',
       animate: false,
       showOutliers: true,
+      margin: compactBoxMargin,
     });
     wrapper.appendChild(boxDiv);
   }
