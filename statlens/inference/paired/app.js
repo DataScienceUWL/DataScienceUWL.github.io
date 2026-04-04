@@ -9,6 +9,7 @@ import { setJStat, pdfT } from '../../js/distributions.js';
 import { pairedT, pairedTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { drawBoxplot } from '../../js/boxplot.js';
+import { renderConditionsDiagnostic } from '../../js/conditions.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
@@ -302,13 +303,9 @@ function showConditionsCheckpoint() {
         const diffLabel = var1Name && var2Name
           ? `${var1Name} \u2212 ${var2Name}`
           : 'Differences';
-        drawBoxplot(/** @type {HTMLElement} */ (chartEl), /** @type {number[]} */ (currentDiffs), {
-          xLabel: diffLabel,
-          titleText: `Boxplot of paired differences`,
-          descText: `Boxplot showing the distribution of paired differences.`,
-          id: 'conditions-boxplot',
-          animate: false,
-          showOutliers: true,
+        renderConditionsDiagnostic(/** @type {HTMLElement} */ (chartEl), /** @type {number[]} */ (currentDiffs), {
+          varName: diffLabel,
+          context: 'paired',
         });
       }
     });

@@ -9,6 +9,7 @@ import { setJStat, pdfT } from '../../js/distributions.js';
 import { oneMeanT, oneMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { drawBoxplot } from '../../js/boxplot.js';
+import { renderConditionsDiagnostic } from '../../js/conditions.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
@@ -415,13 +416,9 @@ function showConditionsCheckpoint() {
       panel.hidden = expanded;
       if (!expanded && chartEl.children.length === 0) {
         const varName = varSelect?.value || '';
-        drawBoxplot(/** @type {HTMLElement} */ (chartEl), /** @type {number[]} */ (currentData), {
-          xLabel: varName,
-          titleText: `Boxplot of ${varName}`,
-          descText: `Boxplot showing the distribution of ${varName}.`,
-          id: 'conditions-boxplot',
-          animate: false,
-          showOutliers: true,
+        renderConditionsDiagnostic(/** @type {HTMLElement} */ (chartEl), /** @type {number[]} */ (currentData), {
+          varName,
+          context: 'one-sample',
         });
       }
     });

@@ -10,6 +10,7 @@ import { setJStat, pdfT } from '../../js/distributions.js';
 import { twoMeanT, twoMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { drawBoxplot } from '../../js/boxplot.js';
+import { renderConditionsDiagnostic } from '../../js/conditions.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
@@ -350,16 +351,9 @@ function showConditionsCheckpoint() {
       panel.hidden = expanded;
       if (!expanded && chartEl.children.length === 0) {
         const responseVar = responseVarSelect?.value || '';
-        drawBoxplot(/** @type {HTMLElement} */ (chartEl),
+        renderConditionsDiagnostic(/** @type {HTMLElement} */ (chartEl),
           { [group1Name]: group1, [group2Name]: group2 },
-          {
-            xLabel: responseVar,
-            titleText: `Boxplot of ${responseVar} by group`,
-            descText: `Side-by-side boxplots comparing ${responseVar} between ${group1Name} and ${group2Name}.`,
-            id: 'conditions-boxplots',
-            animate: false,
-            showOutliers: true,
-          });
+          { varName: responseVar, context: 'two-sample' });
       }
     });
   }
