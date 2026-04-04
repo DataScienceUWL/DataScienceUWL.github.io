@@ -972,6 +972,7 @@ export function initSimPage(config) {
         const groupVar = catVars[0];
         const outcomeVar = catVars[1];
         const groups = [...new Set(ds.rows.map(/** @param {any} r */ r => r[groupVar.name]))];
+        if (groups.length < 2) return;
         const outcomes = [...new Set(ds.rows.map(/** @param {any} r */ r => r[outcomeVar.name]))];
         group1Name = groups[0];
         group2Name = groups[1];
@@ -988,6 +989,7 @@ export function initSimPage(config) {
         const numVar = ds.variables.find(/** @param {any} v */ v => v.type === 'numeric');
         if (!catVar || !numVar) return;
         const groups = [...new Set(ds.rows.map(/** @param {any} r */ r => r[catVar.name]))];
+        if (groups.length < 2) return;
         group1Name = groups[0];
         group2Name = groups[1];
         data1 = ds.rows
