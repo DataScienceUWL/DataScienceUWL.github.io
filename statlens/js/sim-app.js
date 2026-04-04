@@ -1426,15 +1426,16 @@ export function initSimPage(config) {
     originalContentEl.innerHTML = '';
 
     if (config.paired && data2.length > 0) {
-      // Paired data: show the differences
+      // Paired data: show the differences (sorted for easier visual tracking)
       const diffs = data2.map((v, i) => v - data1[i]);
+      const sortedDiffs = [...diffs].sort((a, b) => a - b);
       const container = document.createElement('div');
       container.className = 'sample-dots';
       container.setAttribute('role', 'img');
       container.setAttribute('aria-label', `Paired differences (${group2Name} − ${group1Name})`);
 
       if (diffs.length <= CHIP_THRESHOLD) {
-        for (const d of diffs) {
+        for (const d of sortedDiffs) {
           const dot = document.createElement('span');
           dot.className = 'sample-dot';
           dot.textContent = formatChipValue(d);
@@ -1928,20 +1929,25 @@ export function initSimPage(config) {
       counts.set(v, (counts.get(v) ?? 0) + 1);
     }
 
+    // For paired data, the "original" values are the differences, not data1
+    const origValues = (config.paired && data2.length > 0)
+      ? data2.map((v, i) => v - data1[i])
+      : data1;
+
     // Should we animate the stagger? Only for small n on +1, with motion allowed
-    const shouldStagger = stagger && data1.length <= CHIP_THRESHOLD && !prefersReducedMotion();
+    const shouldStagger = stagger && origValues.length <= CHIP_THRESHOLD && !prefersReducedMotion();
 
     // Get original chips for draw-link flash animation
     const origChips = shouldStagger && originalContentEl
       ? /** @type {HTMLElement[]} */ ([...originalContentEl.querySelectorAll('.sample-dot')])
       : [];
 
-    if (data1.length <= CHIP_THRESHOLD) {
+    if (origValues.length <= CHIP_THRESHOLD) {
       const container = document.createElement('div');
       container.className = 'sample-dots';
       container.setAttribute('role', 'img');
       container.setAttribute('aria-label', 'Bootstrap resample values');
-      const sorted = [...data1].sort((a, b) => a - b);
+      const sorted = [...origValues].sort((a, b) => a - b);
       const remaining = new Map(counts);
       // Pre-count how many positions remain for each value (for fair allocation)
       /** @type {Map<number, number>} */
