@@ -538,9 +538,9 @@ export function initDistCalculator(config) {
       .text(labelText);
 
     // Dashed leader line from pill into the shaded region
-    // Target: region midpoint horizontally, near baseline vertically (shading always exists there)
+    // Target: region midpoint horizontally, baseline vertically (shading always reaches baseline)
     const leaderTargetX = Math.max(4, Math.min(frame.width - 4, midPx));
-    const leaderEndY = frame.height * 0.92;
+    const leaderEndY = frame.height - 2;
     group.append('line')
       .attr('class', 'prob-leader')
       .attr('x1', clampedX).attr('y1', labelY + pillH / 2 + 2)
@@ -766,7 +766,7 @@ export function initDistCalculator(config) {
 
       // Update leader lines (point to region midpoint near baseline)
       annotations.selectAll('.prob-leader').remove();
-      const leaderY = frame.height * 0.92;
+      const leaderY = frame.height - 2;
       for (let i = 0; i < 3; i++) {
         const targetX = Math.max(4, Math.min(frame.width - 4, rawCenters[i]));
         annotations.append('line')
@@ -806,7 +806,7 @@ export function initDistCalculator(config) {
 
       // Update leader lines (point to region midpoint near baseline)
       annotations.selectAll('.prob-leader').remove();
-      const leaderY = frame.height * 0.92;
+      const leaderY = frame.height - 2;
       for (let i = 0; i < 2; i++) {
         const targetX = Math.max(4, Math.min(frame.width - 4, rawCenters[i]));
         annotations.append('line')
