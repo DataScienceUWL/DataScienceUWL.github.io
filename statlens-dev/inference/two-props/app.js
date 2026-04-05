@@ -44,6 +44,17 @@ const variableSelectors = document.getElementById('variable-selectors');
 const successSelector = document.getElementById('success-selector');
 const successOutcome = /** @type {HTMLSelectElement|null} */ (document.getElementById('success-outcome'));
 const loadSummaryBtn = document.getElementById('load-summary');
+const inputP0 = /** @type {HTMLInputElement} */ (document.getElementById('input-p0'));
+const nullDisplay = document.getElementById('null-display');
+
+function syncNullDisplay() {
+  if (nullDisplay) nullDisplay.textContent = inputP0.value || '0';
+}
+inputP0.addEventListener('input', syncNullDisplay);
+syncNullDisplay();
+inputP0.addEventListener('input', () => {
+  if (resultsPanel.querySelector('.results-table')) compute();
+});
 
 initTabs({ hintTarget: resultsPanel, hintAction: 'click Compute' });
 initKeyboardShortcuts();
@@ -85,6 +96,10 @@ const dataPanel = initDataPanel({
   onDataset: (ds) => {
     const ctx = findContext(ds, 'two-props');
     currentContext = ctx;
+    if (ctx && ctx.nullValue != null) {
+      inputP0.value = String(ctx.nullValue);
+      syncNullDisplay();
+    }
     const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
     if (catVars.length < 2) {
       announce('This dataset needs at least two categorical variables (group + outcome).');
@@ -298,7 +313,8 @@ function compute() {
   }
 
   // ── Run test ──
-  const result = twoPropZ(currentX1, currentN1, currentX2, currentN2, { alternative, confLevel });
+  const nullDiff = Number(inputP0.value) || 0;
+  const result = twoPropZ(currentX1, currentN1, currentX2, currentN2, { alternative, confLevel, nullDiff });
 
   // ── Display results ──
   displayResults(result, label1, label2);
@@ -388,14 +404,14 @@ function displayResults(r, lbl1, lbl2) {
     </div>
 
     <div class="interpretation">
-      <p>${tex('\\hat{p}_1 - \\hat{p}_2')} = ${formatStat(r.diff, 0, 'proportion')} is ${formatStat(seCount, 0, 'correlation')} SEs ${seDirection} 0.</p>
+      <p>${tex('\\hat{p}_1 - \\hat{p}_2')} = ${formatStat(r.diff, 0, 'proportion')} is ${formatStat(seCount, 0, 'correlation')} SEs ${seDirection} ${formatStat(Number(inputP0.value) || 0, 0, 'proportion')}.</p>
       ${(() => {
         const alpha = 1 - r.confLevel;
         const c = generateConclusions({
           pValue: r.pValue, alpha, alternative: r.alternative,
           testType: 'two-props', statName: 'z',
           statValue: formatStat(r.zStat, 0, 'correlation'),
-          context: { parameter: currentContext?.parameter, nullValue: 0, claim: currentContext?.claim },
+          context: { parameter: currentContext?.parameter, nullValue: Number(inputP0.value) || 0, claim: currentContext?.claim },
         });
         let html = `<p><strong>Formal conclusion:</strong> ${c.formal}</p>`;
         if (c.practical) html += `<p><strong>Practical conclusion:</strong> ${c.practical}</p>`;

@@ -12,6 +12,7 @@ import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import * as d3Array from 'd3-array';
 import { announce, initKeyboardShortcuts, initPlayPause, fetchDataset } from '../../js/page-utils.js';
+import { renderStatLabel } from '../../js/chart-utils.js';
 
 // ─── DOM ───
 
@@ -52,6 +53,9 @@ function generatePopulation(shape, rng) {
   switch (shape) {
     case 'normal':
       for (let i = 0; i < POP_SIZE; i++) vals.push(randNormal(50, 10, rng));
+      // Standardize to exactly μ = 50, σ = 10 for clean display
+      { const m = mean(vals), s = sd(vals);
+        for (let i = 0; i < vals.length; i++) vals[i] = 50 + (vals[i] - m) / s * 10; }
       break;
     case 'right-skewed':
       for (let i = 0; i < POP_SIZE; i++) vals.push(-Math.log(1 - rng()) / 0.1);
@@ -61,6 +65,8 @@ function generatePopulation(shape, rng) {
       break;
     default:
       for (let i = 0; i < POP_SIZE; i++) vals.push(randNormal(50, 10, rng));
+      { const m = mean(vals), s = sd(vals);
+        for (let i = 0; i < vals.length; i++) vals[i] = 50 + (vals[i] - m) / s * 10; }
   }
   return vals;
 }
@@ -163,7 +169,9 @@ function initPopulation() {
   const popSigma = sd(population);
   if (popInfoEl) {
     const names = { normal: 'Normal', 'right-skewed': 'Right-skewed', uniform: 'Uniform' };
-    popInfoEl.textContent = `Population: ${names[shape] || shape} (μ = ${popMu.toFixed(2)}, σ = ${popSigma.toFixed(2)})`;
+    // Use clean integers when values are close to whole numbers
+    const fmtNum = (v) => Math.abs(v - Math.round(v)) < 0.005 ? Math.round(v).toString() : v.toFixed(2);
+    popInfoEl.textContent = `Population: ${names[shape] || shape} (μ = ${fmtNum(popMu)}, σ = ${fmtNum(popSigma)})`;
   }
 
   resetSimulation();
@@ -217,10 +225,11 @@ function renderChart() {
   const shown = intervals.slice(-maxShow);
   const startIdx = Math.max(0, total - maxShow);
 
-  const margin = { top: 34, right: 30, bottom: 40, left: 50 };
+  const isMobile = window.innerWidth < 600;
+  const margin = { top: 38, right: 30, bottom: 44, left: 50 };
   const width = 560;
-  const barHeight = Math.min(5, 400 / shown.length);
-  const height = Math.max(200, shown.length * (barHeight + 1) + margin.top + margin.bottom);
+  const barHeight = Math.min(isMobile ? 8 : 5, (isMobile ? 600 : 400) / shown.length);
+  const height = Math.max(isMobile ? 420 : 200, shown.length * (barHeight + 1) + margin.top + margin.bottom);
   const innerW = width - margin.left - margin.right;
   const innerH = height - margin.top - margin.bottom;
 
@@ -233,11 +242,15 @@ function renderChart() {
     .range([0, innerW]);
 
   const svg = d3Selection.select(ciContainer).append('svg')
-    .attr('role', 'img')
     .attr('aria-label', `${shown.length} confidence intervals. ${shown.filter(c => c.captures).length} capture the true mean.`)
     .attr('viewBox', `0 0 ${width} ${height}`)
     .attr('width', '100%')
     .attr('preserveAspectRatio', 'xMidYMid meet');
+
+  // Font sizes: scale up on mobile since viewBox (560px) shrinks to ~412px
+  const titleSize = isMobile ? '17px' : '14px';
+  const labelSize = isMobile ? '15px' : '13px';
+  const statsSize = isMobile ? '14px' : '13px';
 
   // Title
   svg.append('text')
@@ -245,7 +258,7 @@ function renderChart() {
     .attr('y', 14)
     .attr('text-anchor', 'middle')
     .attr('font-weight', 700)
-    .attr('font-size', '12px')
+    .attr('font-size', titleSize)
     .text(`Confidence Intervals (showing last ${shown.length} of ${total})`);
 
   const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
@@ -265,10 +278,71 @@ function renderChart() {
     .attr('x', xScale(popMu))
     .attr('y', -4)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '11px')
+    .attr('font-size', labelSize)
     .attr('fill', '#7B2D8E')
     .attr('font-weight', 700)
-    .text(`μ = ${popMu.toFixed(2)}`);
+    .text(`μ = ${Math.abs(popMu - Math.round(popMu)) < 0.005 ? Math.round(popMu) : popMu.toFixed(2)}`);
+
+  // Tooltip group (hidden by default, rendered on top of everything)
+  const tooltipG = svg.append('g')
+    .attr('class', 'ci-tooltip')
+    .attr('visibility', 'hidden')
+    .attr('pointer-events', 'none');
+
+  const tooltipFontSize = isMobile ? '16px' : '13px';
+
+  const tooltipRect = tooltipG.append('rect')
+    .attr('rx', 4).attr('ry', 4)
+    .attr('fill', 'white').attr('fill-opacity', 0.95)
+    .attr('stroke', '#999').attr('stroke-width', 1);
+
+  const tooltipLine1 = tooltipG.append('text')
+    .attr('font-size', tooltipFontSize);
+  const tooltipLine2 = tooltipG.append('text')
+    .attr('font-size', tooltipFontSize).attr('font-weight', 600);
+
+  /**
+   * @param {typeof shown[0]} ci
+   * @param {number} idx — index within shown array
+   * @param {number} cy — y position of the CI line
+   */
+  function showTooltip(ci, idx, cy) {
+    const captureText = ci.captures ? 'Captures μ' : 'Misses μ';
+    const captureColor = ci.captures ? '#569BBD' : '#F05133';
+
+    tooltipLine1.text('');  // clear previous tspans
+    renderStatLabel(tooltipLine1, `(${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)})  x\u0304 = ${ci.xbar.toFixed(2)}`);
+    tooltipLine2.text(captureText).attr('fill', captureColor).attr('font-weight', 600);
+
+    const pad = isMobile ? 8 : 6;
+    const lineSpacing = isMobile ? 20 : 16;
+
+    tooltipLine1.attr('x', pad).attr('y', lineSpacing);
+    tooltipLine2.attr('x', pad).attr('y', lineSpacing * 2 + 1);
+
+    // Must be visible to measure text; park offscreen to avoid flicker
+    tooltipRect.attr('width', 0).attr('height', 0);
+    tooltipG.attr('visibility', 'visible').attr('transform', 'translate(-9999,-9999)');
+
+    const textW = /** @type {SVGTextElement} */ (tooltipLine1.node()).getComputedTextLength();
+    const boxW = textW + pad * 2;
+    const boxH = lineSpacing * 2 + pad + 2;
+    tooltipRect.attr('width', boxW).attr('height', boxH);
+
+    let tx = margin.left + xScale((ci.lo + ci.hi) / 2) - boxW / 2;
+    tx = Math.max(4, Math.min(width - boxW - 4, tx));
+    let ty = margin.top + cy - boxH - 4;
+    if (ty < 4) ty = margin.top + cy + 6;
+
+    tooltipG.attr('transform', `translate(${tx}, ${ty})`);
+  }
+
+  let pinnedIndex = -1;  // track which CI is tapped/pinned on mobile
+
+  function hideTooltip() {
+    tooltipG.attr('visibility', 'hidden');
+    pinnedIndex = -1;
+  }
 
   // CI segments
   const yStep = innerH / shown.length;
@@ -293,7 +367,34 @@ function renderChart() {
       .attr('cy', y)
       .attr('r', Math.max(1.2, barHeight * 0.4))
       .attr('fill', color);
+
+    // Invisible wider hit target for hover/touch
+    g.append('rect')
+      .attr('x', xScale(ci.lo) - 4)
+      .attr('y', y - Math.max(isMobile ? 10 : 4, yStep / 2))
+      .attr('width', Math.max(8, xScale(ci.hi) - xScale(ci.lo) + 8))
+      .attr('height', Math.max(isMobile ? 20 : 8, yStep))
+      .attr('fill', 'transparent')
+      .attr('cursor', 'pointer')
+      .on('mouseenter', () => showTooltip(ci, i, y))
+      .on('mouseleave', () => { if (pinnedIndex === -1) hideTooltip(); })
+      .on('touchstart', (e) => {
+        e.preventDefault();
+        if (pinnedIndex === i) {
+          hideTooltip();  // tap same CI again → dismiss
+        } else {
+          showTooltip(ci, i, y);
+          pinnedIndex = i;  // pin until next tap
+        }
+      });
   }
+
+  // Tap on empty chart area dismisses pinned tooltip
+  svg.on('touchstart', (e) => {
+    if (pinnedIndex !== -1 && e.target === svg.node()) {
+      hideTooltip();
+    }
+  });
 
   // X axis
   const xAxis = d3Axis.axisBottom(xScale).ticks(8);
@@ -305,7 +406,7 @@ function renderChart() {
     .attr('x', innerW / 2)
     .attr('y', innerH + 32)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '11px')
+    .attr('font-size', labelSize)
     .text('Value');
 
   // Coverage stats overlay (top-right corner, always visible)
@@ -321,9 +422,9 @@ function renderChart() {
     `${intervals.filter(c => c.captures).length} captured μ,  ${total - intervals.filter(c => c.captures).length} missed`,
     `Coverage: ${rate}%`,
   ];
-  const lineH = 14;
-  const boxH = statsLines.length * lineH + 8;
-  const boxW = 138;
+  const lineH = 17;
+  const boxH = statsLines.length * lineH + 10;
+  const boxW = 170;
   statsG.append('rect')
     .attr('x', -boxW)
     .attr('y', 0)
@@ -339,11 +440,14 @@ function renderChart() {
     statsG.append('text')
       .attr('x', -boxW + 6)
       .attr('y', lineH * (i + 1))
-      .attr('font-size', '10px')
+      .attr('font-size', statsSize)
       .attr('fill', i === 2 ? '#114B5F' : '#333')
       .attr('font-weight', i === 2 ? 700 : 400)
       .text(line);
   });
+
+  // Raise tooltip to front so it renders above the stats overlay
+  svg.node().appendChild(tooltipG.node());
 }
 
 // ─── Interpretation ───

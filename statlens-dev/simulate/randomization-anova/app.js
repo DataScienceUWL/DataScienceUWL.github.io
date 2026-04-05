@@ -9,7 +9,7 @@ import { createRng, shuffle } from '../../js/prng.js';
 import { fStat, mean, sd, formatStat, detectPrecision } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
 import { drawBoxplot } from '../../js/boxplot.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, initHelp, setPageTitle } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, flyDataStream, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, initHelp, setPageTitle } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
 import { generateConclusions, findContext } from '../../js/conclusions.js';
 
@@ -132,7 +132,7 @@ function extractGroups() {
   groupedValues = groups;
   allValues = names.flatMap(n => groups[n]);
   totalN = allValues.length;
-  dataPrecision = detectPrecision(allValues);
+  dataPrecision = Math.min(2, detectPrecision(allValues));
 
   const groupArrays = names.map(n => groups[n]);
   observedF = fStat(groupArrays);
@@ -236,7 +236,16 @@ function showDataLoaded() {
     dataSummary.textContent = `${namePrefix}${groupNames.length} groups, n = ${totalN}, observed F = ${formatStat(observedF, 2)}`;
   }
 
-  if (hypothesisDisplay) hypothesisDisplay.hidden = false;
+  if (hypothesisDisplay) {
+    hypothesisDisplay.hidden = false;
+    // Update H₀ with actual group count and names
+    const h0Text = document.getElementById('h0-text');
+    if (h0Text) {
+      const k = groupNames.length;
+      const muList = groupNames.map((name, i) => `μ<sub>${name}</sub>`).join(' = ');
+      h0Text.innerHTML = `${muList} (all ${k} group means are equal)`;
+    }
+  }
 
   for (const btn of genBtns) btn.disabled = false;
   if (resultDiv) resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
@@ -347,6 +356,11 @@ function generateSimulations(count) {
       }
       lastF = f;
     }
+  }
+
+  // Fire flying dots on +1 before updating the shuffled panel
+  if (count === 1 && mechObservedBoxplots && mechShuffledBoxplots) {
+    flyDataStream(mechObservedBoxplots, mechShuffledBoxplots);
   }
 
   // Update mechanism strip shuffled panel

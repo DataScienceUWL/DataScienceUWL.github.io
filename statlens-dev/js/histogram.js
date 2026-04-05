@@ -546,18 +546,20 @@ function renderOverlayLine(overlays, value, xScale, innerHeight, color, label, p
     .attr('aria-label', `${label}: ${value}`);
   if (dashed) line.attr('stroke-dasharray', '6,3');
   if (microLabel) {
+    // Combine symbol and value into one label (e.g. "μ = 10.08")
     overlays.append('text')
       .attr('class', 'overlay-value observed-label')
-      .attr('x', x).attr('y', -16)
+      .attr('x', x).attr('y', -6)
       .attr('text-anchor', 'middle')
       .attr('fill', color)
-      .classed('overlay-label', true)
-      .text(microLabel);
+      .attr('font-weight', 700)
+      .text(`${microLabel} = ${value.toFixed(precision)}`);
+  } else {
+    overlays.append('text')
+      .attr('class', 'overlay-value')
+      .attr('x', x).attr('y', -4)
+      .attr('text-anchor', 'middle')
+      .attr('fill', color)
+      .text(value.toFixed(precision));
   }
-  overlays.append('text')
-    .attr('class', 'overlay-value')
-    .attr('x', x).attr('y', -4)
-    .attr('text-anchor', 'middle')
-    .attr('fill', color)
-    .text(value.toFixed(precision));
 }

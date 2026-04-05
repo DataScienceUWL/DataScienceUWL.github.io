@@ -273,7 +273,6 @@ function drawLegend(frame, categories, colors, title, patterns) {
   const legendLabel = title ? `Legend: ${title}` : 'Legend';
   const g = overlays.append('g')
     .attr('class', 'chart-legend')
-    .attr('role', 'img')
     .attr('aria-label', `${legendLabel} — ${categories.join(', ')}`);
 
   const swatchSize = 12;

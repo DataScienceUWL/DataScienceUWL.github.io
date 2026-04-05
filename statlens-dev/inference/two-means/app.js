@@ -10,6 +10,7 @@ import { setJStat, pdfT } from '../../js/distributions.js';
 import { twoMeanT, twoMeanTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { drawBoxplot } from '../../js/boxplot.js';
+import { renderConditionsDiagnostic } from '../../js/conditions.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
@@ -73,6 +74,15 @@ const dataPanel = initDataPanel({
 const altSelect = initHypToggle('input-alt', runAnalysis);
 const confSelect = /** @type {HTMLSelectElement} */ (document.getElementById('conf-level'));
 confSelect?.addEventListener('change', runAnalysis);
+
+const inputMu0 = /** @type {HTMLInputElement} */ (document.getElementById('input-mu0'));
+const nullDisplay = document.getElementById('null-display');
+function syncNullDisplay() {
+  if (nullDisplay) nullDisplay.textContent = inputMu0.value || '0';
+}
+inputMu0.addEventListener('input', syncNullDisplay);
+syncNullDisplay();
+inputMu0.addEventListener('input', runAnalysis);
 
 // Variable selector changes
 groupVarSelect?.addEventListener('change', reExtractGroups);
@@ -139,6 +149,10 @@ function loadFromDataset(ds, _meta) {
   currentContext = ctx;
   if (ctx && ctx.alternative) {
     altSelect.setValue(ctx.alternative);
+  }
+  if (ctx && ctx.nullValue != null) {
+    inputMu0.value = String(ctx.nullValue);
+    syncNullDisplay();
   }
 
   const catVars = ds.variables.filter(/** @param {any} v */ v => v.type === 'categorical');
@@ -298,16 +312,17 @@ function getConfLevel() {
 function runAnalysis() {
   const alternative = getAlternative();
   const confLevel = getConfLevel();
+  const nullDiff = Number(inputMu0.value) || 0;
 
   /** @type {import('../../js/inference.js').TwoMeanResult} */
   let result;
 
   if (fromSummary && summaryResult) {
     const { xbar1, s1, n1, xbar2, s2, n2 } = summaryResult;
-    result = twoMeanTSummary(xbar1, s1, n1, xbar2, s2, n2, { alternative, confLevel });
+    result = twoMeanTSummary(xbar1, s1, n1, xbar2, s2, n2, { alternative, confLevel, nullDiff });
   } else {
     if (group1.length === 0 || group2.length === 0) return;
-    result = twoMeanT(group1, group2, { alternative, confLevel });
+    result = twoMeanT(group1, group2, { alternative, confLevel, nullDiff });
   }
 
   // Conditions checkpoint
@@ -350,16 +365,9 @@ function showConditionsCheckpoint() {
       panel.hidden = expanded;
       if (!expanded && chartEl.children.length === 0) {
         const responseVar = responseVarSelect?.value || '';
-        drawBoxplot(/** @type {HTMLElement} */ (chartEl),
+        renderConditionsDiagnostic(/** @type {HTMLElement} */ (chartEl),
           { [group1Name]: group1, [group2Name]: group2 },
-          {
-            xLabel: responseVar,
-            titleText: `Boxplot of ${responseVar} by group`,
-            descText: `Side-by-side boxplots comparing ${responseVar} between ${group1Name} and ${group2Name}.`,
-            id: 'conditions-boxplots',
-            animate: false,
-            showOutliers: true,
-          });
+          { varName: responseVar, context: 'two-sample' });
       }
     });
   }
@@ -444,13 +452,14 @@ function renderResults(r) {
 
   // Significance interpretation
   const alpha = 1 - r.confLevel;
+  const nullDiff = Number(inputMu0.value) || 0;
 
   // CI interpretation
-  const ciContainsZero = r.ciLower <= 0 && r.ciUpper >= 0;
-  const ciInterpretation = ciContainsZero
-    ? 'The confidence interval contains 0, suggesting no significant difference.'
-    : 'The confidence interval does not contain 0, suggesting a significant difference.';
-
+  const ciContainsNull = r.ciLower <= nullDiff && r.ciUpper >= nullDiff;
+  const nullStr = nullDiff === 0 ? '0' : formatStat(nullDiff, d);
+  const ciInterpretation = ciContainsNull
+    ? `The confidence interval contains ${nullStr}, consistent with H\u2080.`
+    : `The confidence interval does not contain ${nullStr}, suggesting the true difference differs from ${nullStr}.`;
   const conclusions = generateConclusions({
     pValue: r.pValue, alpha, alternative: r.alternative,
     testType: 'two-means',
@@ -458,7 +467,7 @@ function renderResults(r) {
     statValue: r.tStat.toFixed(3),
     context: {
       parameter: currentContext?.parameter,
-      nullValue: 0,
+      nullValue: nullDiff,
       claim: currentContext?.claim,
     },
   });
@@ -470,9 +479,11 @@ function renderResults(r) {
   const S = '\\textcolor{#7B2D8E}';
   const P = '\\textcolor{#2e7d32}';
 
+  const nullTerm = nullDiff !== 0 ? ` - ${nullDiff < 0 ? `(${nullDiff})` : nullDiff}` : '';
+  const nullTermGeneric = nullDiff !== 0 ? ' - \\delta_0' : '';
   const testFormula = tex(`\\begin{aligned}
-    t &= \\frac{\\bar{x}_1 - \\bar{x}_2}{\\sqrt{\\dfrac{s_1^2}{n_1} + \\dfrac{s_2^2}{n_2}}} \\\\[10pt]
-    &= \\frac{${V}{${formatStat(r.xbar1, d)}} - ${V}{${formatStat(r.xbar2, d)}}}{\\sqrt{\\dfrac{${V}{${formatStat(r.s1, d)}}^2}{${V}{${r.n1}}} + \\dfrac{${V}{${formatStat(r.s2, d)}}^2}{${V}{${r.n2}}}}} \\\\[10pt]
+    t &= \\frac{(\\bar{x}_1 - \\bar{x}_2)${nullTermGeneric}}{\\sqrt{\\dfrac{s_1^2}{n_1} + \\dfrac{s_2^2}{n_2}}} \\\\[10pt]
+    &= \\frac{(${V}{${formatStat(r.xbar1, d)}} - ${V}{${formatStat(r.xbar2, d)}})${nullTerm}}{\\sqrt{\\dfrac{${V}{${formatStat(r.s1, d)}}^2}{${V}{${r.n1}}} + \\dfrac{${V}{${formatStat(r.s2, d)}}^2}{${V}{${r.n2}}}}} \\\\[10pt]
     &= ${S}{${r.tStat.toFixed(4)}}
   \\end{aligned}`, true);
 

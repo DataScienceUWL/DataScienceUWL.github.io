@@ -11,13 +11,16 @@ import * as d3Scale from 'd3-scale';
 import * as d3Selection from 'd3-selection';
 import * as d3Axis from 'd3-axis';
 import * as d3Shape from 'd3-shape';
-import { createChart, addAxes, formatTick } from './chart-utils.js';
+import { createChart, addAxes, formatTick, pillDimensions } from './chart-utils.js';
 
 /** IMS blue for curve stroke. */
 const CURVE_STROKE = '#569BBD';
 
 /** Shaded area fill (IMS blue at 50% opacity). */
 const SHADE_FILL = '#569BBD80';
+
+/** Light gray fill for the complement (non-shaded) area under the curve. */
+const COMPLEMENT_FILL = '#ededed';
 
 /** Purple for observed test statistic annotations. */
 const STAT_COLOR = '#7B2D8E';
@@ -145,7 +148,21 @@ export function drawCurve(container, pdfFn, domain, options = {}) {
   const dataGroup = d3Selection.select(frame.inner).select('.data');
   const overlays = d3Selection.select(frame.inner).select('.overlays');
 
-  // Draw shading first (behind curve)
+  // Draw full complement fill (light gray under entire curve, behind everything)
+  const fullAreaGen = d3Shape.area()
+    .x(d => xScale(d.x))
+    .y0(yScale(0))
+    .y1(d => yScale(d.y))
+    .curve(d3Shape.curveNatural);
+
+  overlays.append('path')
+    .datum(curveData)
+    .attr('class', 'complement-area')
+    .attr('d', fullAreaGen)
+    .attr('fill', COMPLEMENT_FILL)
+    .attr('stroke', 'none');
+
+  // Draw shading on top (blue tail areas over the gray)
   renderShading(overlays, curveData, xScale, yScale, { tail, critValue, critLow, critHigh });
 
   // Draw curve
@@ -402,17 +419,20 @@ export function addInferenceAnnotations(chart, opts) {
     const narrow = tailWidth < w * 0.25;
 
     if (narrow) {
-      // Pill floats above the main region, with leader line to tail
+      // Pill floats above the main region, with leader line to region midpoint
       const floatY = h * 0.3;
       const pillX = isLeft
         ? Math.max(60, Math.min(w * 0.35, obsX))
         : Math.min(w - 40, Math.max(w * 0.78, obsX));
       _addPill(annotations, pText, pillX, floatY, false);
-      const lineTargetX = Math.max(4, Math.min(w - 4, obsX));
+      // Leader points to midpoint of the shaded region, not the critical value
+      const regionMidX = isLeft
+        ? Math.max(4, obsX / 2)
+        : Math.min(w - 4, (obsX + w) / 2);
       annotations.append('line')
         .attr('class', 'inf-annotation')
         .attr('x1', pillX).attr('y1', floatY + 14)
-        .attr('x2', lineTargetX).attr('y2', h - 2)
+        .attr('x2', regionMidX).attr('y2', h * 0.82)
         .attr('stroke', CURVE_STROKE)
         .attr('stroke-width', 1)
         .attr('stroke-dasharray', '3,2')
@@ -444,18 +464,16 @@ export function addInferenceAnnotations(chart, opts) {
  */
 function _addPill(group, text, cx, cy, isComplement) {
   const g = group.append('g').attr('class', 'inf-annotation');
-  const isPhone = typeof globalThis.matchMedia === 'function'
-    && globalThis.matchMedia('(max-width: 480px)').matches;
-  const textWidth = text.length * (isPhone ? 13 : 8.5) + 16;
-  const pillH = isPhone ? 34 : 24;
+  const { charW, pad, pillH } = pillDimensions('prob');
+  const textWidth = text.length * charW + pad;
   g.append('rect')
     .attr('x', cx - textWidth / 2)
     .attr('y', cy - pillH / 2)
     .attr('width', textWidth)
     .attr('height', pillH)
     .attr('rx', 4)
-    .attr('fill', isComplement ? '#f5f5f5' : '#e8f4f8')
-    .attr('stroke', isComplement ? '#ccc' : CURVE_STROKE)
+    .attr('fill', isComplement ? '#ffffff' : '#e8f4f8')
+    .attr('stroke', isComplement ? '#888' : CURVE_STROKE)
     .attr('stroke-width', 1)
     .style('pointer-events', 'none');
   g.append('text')

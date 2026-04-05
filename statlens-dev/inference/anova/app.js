@@ -10,6 +10,7 @@ import { setJStat, pdfF, fInv } from '../../js/distributions.js';
 import { anovaF, anovaFSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { drawBoxplot } from '../../js/boxplot.js';
+import { renderConditionsDiagnostic } from '../../js/conditions.js';
 import { initTabs, initDataPanel, announce, initHelp, getActiveTabId, getTabHintText, buildSimLink, parseGroupSummary, setPageTitle } from '../../js/page-utils.js';
 import { parseParams } from '../../js/url-params.js';
 import { mean, sd, detectPrecision, formatStat } from '../../js/stats.js';
@@ -301,6 +302,12 @@ function showDataSummary() {
     const namePrefix = currentSourceName ? `${currentSourceName}: ` : '';
     dataSummary.textContent = `${namePrefix}${groupNames.length} groups, N = ${totalN}`;
   }
+  // Update H₀ with actual group names
+  const h0Text = document.getElementById('h0-text');
+  if (h0Text && groupNames.length >= 2) {
+    const muList = groupNames.map(name => `μ<sub>${name}</sub>`).join(' = ');
+    h0Text.innerHTML = `${muList} (all ${groupNames.length} group means are equal)`;
+  }
 }
 
 function clearData() {
@@ -387,13 +394,9 @@ function renderConditionsChart(container) {
   if (Object.keys(groupedData).length === 0) return;
   const responseVar = responseVarSelect?.value || '';
 
-  drawBoxplot(container, groupedData, {
-    xLabel: responseVar,
-    titleText: `Boxplot of ${responseVar} by group`,
-    descText: `Side-by-side boxplots comparing ${responseVar} across ${groupNames.length} groups.`,
-    id: 'conditions-boxplots',
-    animate: false,
-    showOutliers: true,
+  renderConditionsDiagnostic(container, groupedData, {
+    varName: responseVar,
+    context: 'anova',
   });
 }
 

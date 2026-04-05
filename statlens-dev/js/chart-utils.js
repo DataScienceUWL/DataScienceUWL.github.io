@@ -29,6 +29,36 @@ const PHONE_MARGIN = { top: 30, right: 15, bottom: 60, left: 80 };
 export const TRANSITION_MS = 300;
 
 /**
+ * Compute responsive pill dimensions (charWidth, padding, pill height)
+ * for SVG rounded-rect + text "pill" labels. All pill renderers in the
+ * app should call this instead of hard-coding per-breakpoint values.
+ *
+ * @param {'prob'|'crit'} [variant='prob'] - 'prob' for probability pills,
+ *   'crit' for smaller critical-value / k-label pills
+ * @returns {{ charW: number, pad: number, pillH: number }}
+ */
+export function pillDimensions(variant = 'prob') {
+  const isPhone = typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 480px)').matches;
+  const isTablet = !isPhone && typeof globalThis.matchMedia === 'function'
+    && globalThis.matchMedia('(max-width: 600px)').matches;
+
+  if (variant === 'crit') {
+    return {
+      charW:  isPhone ? 15 : isTablet ? 12 : 8,
+      pad:    isPhone ? 20 : isTablet ? 16 : 12,
+      pillH:  isPhone ? 30 : isTablet ? 26 : 20,
+    };
+  }
+  // 'prob' (default) — probability label pills
+  return {
+    charW:  isPhone ? 15 : isTablet ? 12 : 8.5,
+    pad:    isPhone ? 24 : isTablet ? 20 : 16,
+    pillH:  isPhone ? 34 : isTablet ? 30 : 24,
+  };
+}
+
+/**
  * Okabe-Ito accessible color palette — reordered so the first 2-3 colors
  * are maximally distinguishable under protanopia and deuteranopia.
  *
@@ -374,7 +404,6 @@ export function createChart(container, options = {}) {
   containerEl.appendChild(wrapper);
 
   const svg = d3Selection.select(wrapper).append('svg')
-    .attr('role', 'img')
     .attr('aria-label', [titleText, descText].filter(Boolean).join(' — '))
     .attr('viewBox', `0 0 ${viewWidth} ${viewHeight}`)
     .attr('preserveAspectRatio', 'xMidYMid meet')
@@ -850,10 +879,8 @@ export function renderSimPills(frame, xScale, opts) {
  */
 function _addSimPill(group, text, cx, cy, isComplement) {
   const g = group.append('g').attr('class', 'sim-pill');
-  const isPhone = typeof globalThis.matchMedia === 'function'
-    && globalThis.matchMedia('(max-width: 480px)').matches;
-  const textWidth = text.length * (isPhone ? 13 : 8.5) + 16;
-  const pillH = isPhone ? 34 : 24;
+  const { charW, pad, pillH } = pillDimensions('prob');
+  const textWidth = text.length * charW + pad;
   g.append('rect')
     .attr('x', cx - textWidth / 2)
     .attr('y', cy - pillH / 2)
@@ -1049,7 +1076,7 @@ export function drawMiniBoxplot(container, values, options = {}) {
   const boxH = height * 0.55;
   const boxTop = cy - boxH / 2;
 
-  let svg = `<svg class="mech-minibox" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">`;
+  let svg = `<svg class="mech-minibox" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" aria-label="${label}">`;
 
   // Whisker lines
   svg += `<line class="bp-wlo" x1="${x(whiskerLo)}" x2="${x(q1)}" y1="${cy}" y2="${cy}" stroke="${color}" stroke-width="1.5"/>`;
@@ -1338,7 +1365,7 @@ export function drawMiniDotplot(container, values, options = {}) {
   const effectiveR = dotR * scale;
   const effectiveSpacing = dotSpacing * scale;
 
-  let svg = `<svg class="mech-minichart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">`;
+  let svg = `<svg class="mech-minichart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" aria-label="${label}">`;
 
   // Dots (bottom-up stacking) — cx is the bin center, not the raw data x
   const baseY = plotH - effectiveR;
@@ -1422,7 +1449,7 @@ export function drawMiniHistogram(container, values, options = {}) {
   const maxCount = Math.max(...counts, 1);
   const barH = (/** @type {number} */ c) => (c / maxCount) * (plotH - 2);
 
-  let svg = `<svg class="mech-minichart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">`;
+  let svg = `<svg class="mech-minichart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" aria-label="${label}">`;
 
   // Bars
   for (let i = 0; i < numBins; i++) {

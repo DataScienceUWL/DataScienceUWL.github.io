@@ -49,12 +49,31 @@
       text-transform: uppercase;
       box-sizing: border-box;
       transition: border-color 0.2s;
+      color: transparent;
+      caret-color: #333;
+    }
+    .seq-input::placeholder {
+      color: #aaa;
     }
     .seq-input:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(86, 155, 189, 0.2);
     }
+    .seq-preview {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.3rem;
+      letter-spacing: 0.25em;
+      padding: 0.75rem 1rem;
+      border: 2px solid transparent;
+      pointer-events: none;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .seq-preview .ch-h { color: #9B2D6B; }
+    .seq-preview .ch-t { color: #3A7D44; }
     .seq-counter {
       font-size: 0.85rem;
       color: #777;
@@ -84,19 +103,38 @@
       font-weight: 700;
       padding: 0.4rem 1.2rem;
       border-radius: 6px;
-      border: 2px solid var(--accent);
+      border: 2px solid #aaa;
       background: white;
-      color: var(--accent);
+      color: #555;
       cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-    }
-    .quick-btn:hover, .quick-btn:focus-visible {
-      background: var(--accent);
-      color: white;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
     }
     .quick-btn:disabled {
       opacity: 0.4;
       cursor: not-allowed;
+    }
+    #btn-add-h {
+      border-color: #9B2D6B;
+      color: #9B2D6B;
+      background: rgba(155, 45, 107, 0.06);
+    }
+    #btn-add-h:hover, #btn-add-h:focus-visible {
+      background: #9B2D6B;
+      color: white;
+    }
+    #btn-add-t {
+      border-color: #3A7D44;
+      color: #3A7D44;
+      background: rgba(58, 125, 68, 0.06);
+    }
+    #btn-add-t:hover, #btn-add-t:focus-visible {
+      background: #3A7D44;
+      color: white;
+    }
+    #btn-backspace:hover, #btn-backspace:focus-visible {
+      background: #555;
+      color: white;
+      border-color: #555;
     }
 
     /* ── Action buttons ────────────────────────────────────────────── */
@@ -168,10 +206,12 @@
       padding: 1px 0;
     }
     .seq-display .run-h {
-      background: rgba(86, 155, 189, 0.15);
+      color: #9B2D6B;
+      background: rgba(155, 45, 107, 0.08);
     }
     .seq-display .run-t {
-      background: rgba(240, 81, 51, 0.15);
+      color: #3A7D44;
+      background: rgba(58, 125, 68, 0.08);
     }
     .seq-display .run-long {
       font-weight: 700;
@@ -179,12 +219,12 @@
       text-decoration-thickness: 2px;
     }
     .seq-display .run-long.run-h {
-      background: rgba(86, 155, 189, 0.35);
-      text-decoration-color: #569BBD;
+      background: rgba(155, 45, 107, 0.16);
+      text-decoration-color: #9B2D6B;
     }
     .seq-display .run-long.run-t {
-      background: rgba(240, 81, 51, 0.35);
-      text-decoration-color: #F05133;
+      background: rgba(58, 125, 68, 0.16);
+      text-decoration-color: #3A7D44;
     }
 
     /* ── Stats comparison table ─────────────────────────────────────── */
@@ -216,7 +256,7 @@
       color: #444;
     }
 
-    /* ── Run-length chart ──────────────────────────────────────────── */
+    /* ── Run-length frequency table with dotplot ─────────────────── */
     .run-chart-section {
       margin: 1.5rem 0;
     }
@@ -224,46 +264,61 @@
       font-size: 1rem;
       margin-bottom: 0.5rem;
     }
-    .run-bars {
-      display: flex;
-      gap: 2px;
-      align-items: flex-end;
-      height: 120px;
-      padding: 0 4px;
-    }
-    .run-bar-group {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      min-width: 0;
-    }
-    .run-bar {
+    .run-freq-table {
       width: 100%;
-      min-height: 2px;
-      border-radius: 2px 2px 0 0;
-      transition: height 0.4s ease;
-    }
-    .run-bar-label {
-      font-size: 0.7rem;
-      color: #777;
-      text-align: center;
-    }
-    .run-chart-pair {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-    }
-    .run-chart-col h4 {
+      border-collapse: collapse;
       font-size: 0.9rem;
-      text-align: center;
-      margin: 0 0 0.5rem;
-      color: #555;
     }
+    .run-freq-table th, .run-freq-table td {
+      padding: 0.35rem 0.5rem;
+      border-bottom: 1px solid #dee2e6;
+      vertical-align: middle;
+    }
+    .run-freq-table thead th {
+      background: #f1f3f5;
+      font-weight: 700;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    .run-freq-table thead th:first-child {
+      text-align: left;
+      width: 5rem;
+    }
+    .run-freq-table td:first-child {
+      font-weight: 600;
+      text-align: center;
+      color: #444;
+      font-family: 'Courier New', monospace;
+      white-space: nowrap;
+    }
+    .run-dots {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .run-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .run-dot.yours { background: #569BBD; }
+    .run-dot.computer { background: #114B5F; }
+    .dot-cell {
+      padding-left: 0.5rem;
+    }
+    .run-freq-table .count-cell {
+      text-align: center;
+      font-weight: 600;
+      width: 2.5rem;
+    }
+    .run-freq-table .count-yours { color: #569BBD; }
+    .run-freq-table .count-computer { color: #114B5F; }
+    .run-freq-table .zero-count { color: #ccc; font-weight: 400; }
 
     /* ── Interpretation ────────────────────────────────────────────── */
-    .interpretation {
+    .chump-interpretation {
       background: #f8f9fa;
       border: 1px solid #dee2e6;
       border-radius: 8px;
@@ -271,11 +326,11 @@
       margin: 1.5rem 0;
       line-height: 1.6;
     }
-    .interpretation h3 {
+    .chump-interpretation h3 {
       margin-top: 0;
       font-size: 1rem;
     }
-    .interpretation p {
+    .chump-interpretation p {
       margin: 0.5rem 0;
     }
     .callout {
@@ -294,13 +349,8 @@
     @media (max-width: 480px) {
       .seq-input { font-size: 1.1rem; letter-spacing: 0.15em; }
       .seq-display { font-size: 1rem; letter-spacing: 0.1em; }
-      .run-chart-pair { grid-template-columns: 1fr; }
-      .run-bars { height: 80px; }
-    }
-
-    /* ── Reduced motion ────────────────────────────────────────────── */
-    @media (prefers-reduced-motion: reduce) {
-      .run-bar { transition: none; }
+      .run-freq-table { font-size: 0.8rem; }
+      .run-dot { width: 8px; height: 8px; }
     }
 
     /* ── Screen reader ─────────────────────────────────────────────── */
@@ -312,15 +362,13 @@
     </style>
 </head>
 <body>
-    <a href="#main" class="skip-link">Skip to content</a>
-    <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="../../">StatLens</a> &rsaquo;
-        <a href="../">Explore</a> &rsaquo;
-        <span aria-current="page">Stump the Chump</span>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#input-section">Skip to Input</a>
+        <a href="#results">Skip to Results</a>
     </nav>
 
     <main id="main" class="chump-app">
-        <h1>Stump the Chump</h1>
+        <h1>Stump the Chump<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
 
         <div class="intro-text">
             <p>Think you can fake randomness? Type a sequence of <strong>H</strong> (heads)
@@ -338,13 +386,14 @@
                        placeholder="e.g. HTHTTHHTTHHT..."
                        autocomplete="off" autocapitalize="characters" spellcheck="false"
                        aria-label="Enter your random-looking sequence of H and T">
+                <div class="seq-preview" id="seq-preview" aria-hidden="true"></div>
             </div>
             <div class="seq-counter"><span id="char-count">0</span> / <span id="target-len">40</span></div>
             <div class="quick-entry">
                 <span>Tap to add:</span>
                 <button class="quick-btn" id="btn-add-h" aria-label="Add H">H</button>
                 <button class="quick-btn" id="btn-add-t" aria-label="Add T">T</button>
-                <button class="quick-btn" id="btn-backspace" aria-label="Delete last character" style="border-color:#888; color:#888;">&larr;</button>
+                <button class="quick-btn" id="btn-backspace" aria-label="Delete last character">&larr;</button>
             </div>
         </div>
 
@@ -370,8 +419,8 @@
                 <thead>
                     <tr>
                         <th>Statistic</th>
-                        <th>Yours</th>
-                        <th>Computer</th>
+                        <th style="color:#569BBD">Yours</th>
+                        <th style="color:#114B5F">Computer</th>
                         <th>Expected</th>
                     </tr>
                 </thead>
@@ -379,27 +428,18 @@
                 </tbody>
             </table>
 
-            <!-- Run-length distribution chart -->
+            <!-- Run-length frequency table -->
             <div class="run-chart-section">
                 <h3>Run-Length Distribution</h3>
                 <p style="font-size: 0.85rem; color: #777; margin-bottom: 0.75rem;">
-                    A "run" is a streak of consecutive identical flips (e.g., HHH = run of 3).
-                    Longer bars mean more runs of that length.
+                    A "run" is a streak of consecutive identical flips (e.g., HHH is a run of 3).
+                    Each dot represents one run of that length.
                 </p>
-                <div class="run-chart-pair">
-                    <div class="run-chart-col">
-                        <h4>Your Sequence</h4>
-                        <div class="run-bars" id="chart-human"></div>
-                    </div>
-                    <div class="run-chart-col">
-                        <h4>Computer's Random</h4>
-                        <div class="run-bars" id="chart-random"></div>
-                    </div>
-                </div>
+                <div id="run-freq-container"></div>
             </div>
 
             <!-- Interpretation -->
-            <div class="interpretation" id="interpretation"></div>
+            <div class="chump-interpretation" id="interpretation"></div>
 
             <div class="try-again-row">
                 <button class="reset-btn" id="btn-reset-bottom">Try Again</button>
@@ -408,6 +448,18 @@
 
         <div id="sr-announce" class="sr-only" aria-live="polite"></div>
     </main>
+
+    <dialog id="page-help" aria-label="Help">
+        <h2>Stump the Chump</h2>
+        <p class="help-intro">Type a sequence of heads and tails that <em>looks</em> random, then compare it to a truly random sequence. Can you fool the tests?</p>
+        <dl>
+            <dt>How to play</dt>
+            <dd>Type or tap H and T to build a sequence of at least 20 characters, then click "Compare to Real Random."</dd>
+            <dt>What we check</dt>
+            <dd>Proportion of heads, longest run, number of runs, and streak patterns — the same things statisticians look for.</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
 
     <script type="module" src="app.js"></script>
 

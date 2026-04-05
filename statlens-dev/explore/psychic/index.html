@@ -15,6 +15,17 @@
     <link rel="manifest" href="../../manifest.json">
     <link rel="apple-touch-icon" href="../../icon-192.png">
 
+    <script type="importmap">
+    {
+        "imports": {
+            "d3-array":     "https://cdn.jsdelivr.net/npm/d3-array@3/+esm",
+            "d3-scale":     "https://cdn.jsdelivr.net/npm/d3-scale@4/+esm",
+            "d3-selection": "https://cdn.jsdelivr.net/npm/d3-selection@3/+esm",
+            "d3-axis":      "https://cdn.jsdelivr.net/npm/d3-axis@3/+esm",
+            "d3-shape":     "https://cdn.jsdelivr.net/npm/d3-shape@3/+esm"
+        }
+    }
+    </script>
     <style>
     /* ── Layout ─────────────────────────────────────────────────────── */
     .psychic-app {
@@ -171,9 +182,9 @@
       justify-content: center;
       font-size: 0.75rem;
       font-weight: 700;
-      border: 2px solid #ccc;
+      border: 2px solid #bbb;
       background: #f5f5f5;
-      color: #999;
+      color: #767676;
       transition: all 0.3s;
     }
     .trial-dot.correct {
@@ -246,6 +257,64 @@
       background: #555;
       color: white;
     }
+    .callout {
+      background: rgba(86, 155, 189, 0.1);
+      border-left: 4px solid var(--accent, #569BBD);
+      padding: 0.75rem 1rem;
+      border-radius: 0 6px 6px 0;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* ── Simulation section ──────────────────────────────────────────── */
+    .sim-section {
+      margin: 1.5rem 0;
+    }
+    .sim-section h2 {
+      font-size: 1.15rem;
+      margin-bottom: 0.5rem;
+    }
+    .sim-intro {
+      font-size: 0.9rem;
+      color: #555;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+    .sim-chart-area {
+      border: 1px solid var(--border, #dee2e6);
+      border-radius: 6px;
+      padding: 0.5rem;
+      margin: 1rem 0;
+      min-height: 120px;
+      background: #fafafa;
+    }
+    .sim-count-text {
+      font-size: 0.9rem;
+      text-align: center;
+      margin: 0.5rem 0;
+      font-family: var(--font-mono, monospace);
+    }
+    .sim-interp {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      line-height: 1.6;
+      font-size: 0.9rem;
+    }
+    .sim-interp:empty {
+      display: none;
+    }
+    .sim-link-small {
+      font-size: 0.85rem;
+      padding: 0.5rem 1rem;
+    }
+    .sim-formal-link {
+      text-align: center;
+      margin: 1rem 0;
+    }
 
     /* ── Responsive ─────────────────────────────────────────────────── */
     @media (max-width: 480px) {
@@ -270,15 +339,12 @@
     </style>
 </head>
 <body>
-    <a href="#main" class="skip-link">Skip to content</a>
-    <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="../../">StatLens</a> &rsaquo;
-        <a href="../">Explore</a> &rsaquo;
-        <span aria-current="page">Are You Psychic?</span>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#main">Skip to content</a>
     </nav>
 
     <main id="main" class="psychic-app">
-        <h1>Are You Psychic?</h1>
+        <h1>Are You Psychic?<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">&#9881;</button></span></h1>
 
         <div class="intro-text">
             <p>Can you predict the outcome of a coin flip? Make your predictions below
@@ -318,8 +384,50 @@
         <div id="summary" class="summary-panel" hidden>
         </div>
 
+        <section id="sim-section" class="sim-section" hidden>
+            <h2>What Does Random Guessing Look Like?</h2>
+            <p class="sim-intro" id="sim-intro"></p>
+
+            <div class="generate-bar" role="group" aria-label="Simulate random guessers">
+                <button type="button" class="gen-btn" data-sim-count="1">+1</button>
+                <button type="button" class="gen-btn" data-sim-count="5">+5</button>
+                <button type="button" class="gen-btn" data-sim-count="25">+25</button>
+                <button type="button" class="gen-btn" data-sim-count="100">+100</button>
+                <span class="gen-label">Random Guessers</span>
+            </div>
+
+            <div class="sim-chart-area">
+                <div id="sim-dotplot"></div>
+            </div>
+
+            <div id="sim-count-text" class="sim-count-text"></div>
+            <div id="sim-interp" class="sim-interp"></div>
+
+            <div class="sim-formal-link">
+                <a class="sim-link-btn sim-link-small" id="formal-link" href="#">
+                    See this in the formal hypothesis testing framework &rarr;
+                </a>
+            </div>
+
+            <div style="text-align:center; margin-top: 1rem;">
+                <button class="restart-btn" id="btn-restart-sim">Try again</button>
+            </div>
+        </section>
+
         <div id="sr-announce" class="sr-only" aria-live="polite"></div>
     </main>
+
+    <dialog id="page-help" aria-label="Help">
+        <h2>Are You Psychic?</h2>
+        <p class="help-intro">Predict 20 coin flips, then see how your results compare to what we'd expect from random guessing. Link your results to a simulation to test whether your score is statistically significant.</p>
+        <dl>
+            <dt>How to play</dt>
+            <dd>Click Heads or Tails before each flip. After 20 trials, you'll see your score and an interpretation.</dd>
+            <dt>What to look for</dt>
+            <dd>With random guessing, you'd expect about 10 out of 20 correct. The question is whether your result is far enough from 10 to rule out luck.</dd>
+        </dl>
+        <button type="button" autofocus>Close</button>
+    </dialog>
 
     <script type="module" src="app.js"></script>
 </body>

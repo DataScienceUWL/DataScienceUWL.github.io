@@ -506,6 +506,19 @@ main {
     min-height: 44px;
     min-width: 44px;
   }
+  /* 44px touch targets for form controls and tabs */
+  input[type="number"],
+  select {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+  [role="tab"] {
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+  }
+  .btn-primary, .btn-secondary, .btn-sm {
+    min-height: 44px;
+  }
   .generate-bar .expert-toggle {
     flex-basis: 100%;
     text-align: right;
@@ -691,6 +704,16 @@ input[aria-invalid="true"] {
   outline-offset: 2px;
 }
 @media (max-width: 480px) {
+  .hypothesis-row {
+    white-space: normal;
+    flex-wrap: wrap;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .hypothesis-display {
+    overflow-x: auto;
+    font-size: 0.85rem;
+  }
   .hyp-toggle {
     min-height: 44px;
     min-width: 44px;
@@ -1140,6 +1163,7 @@ input[aria-invalid="true"] {
 #resample-mean.highlight-last,
 #mech-shuffled-chisq.highlight-last,
 #mech-shuffled-r.highlight-last,
+#mech-resample-slope.highlight-last,
 .mechanism-collapsed-summary .highlight-last {
   color: var(--highlight-orange);
   font-weight: 700;
@@ -1246,6 +1270,41 @@ input[aria-invalid="true"] {
   text-align: center;
   margin-top: 2px;
 }
+/* Side-by-side mini histograms in two-group mechanism strip */
+.mech-hist-pair {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+.mech-hist-col {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+.mech-group-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ims-gray-text);
+  margin-bottom: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mech-hist-cell {
+  margin: 2px 0;
+}
+.mech-hist-cell svg.mech-minichart {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.mech-group-stat-sm {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ims-green);
+  white-space: nowrap;
+}
+
 /* Proportion bar visualization in two-group mechanism strip */
 .mech-prop-bar {
   position: relative;
@@ -1530,6 +1589,11 @@ input[aria-invalid="true"] {
 @media (max-width: 600px) {
   .mechanism-panels {
     flex-direction: column;
+    align-items: center;
+  }
+  .mechanism-panel {
+    width: 100%;
+    max-width: 400px;
   }
   .mechanism-arrow {
     align-self: center;
@@ -1690,6 +1754,7 @@ input[aria-invalid="true"] {
 /* ===== Expert Mode ===== */
 /* Hide advanced controls in simple mode (default for intro students) */
 body:not([data-expert="true"]) .expert-only { display: none !important; }
+body[data-expert="true"] .standard-only { display: none !important; }
 
 /* ===== Calculator Mode ===== */
 /* Hide auto-generated interpretations when toggled off */
@@ -2979,6 +3044,95 @@ body[data-mode="discover"] .present-only { display: none !important; }
 }
 .conditions-panel[hidden] {
   display: none;
+}
+
+/* Conditions diagnostic views (histogram + boxplot + QQ) */
+.conditions-view-toggle {
+  display: flex;
+  gap: 0;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  width: fit-content;
+}
+.conditions-view-toggle .seg-btn {
+  background: var(--bg);
+  border: none;
+  border-right: 1px solid var(--border);
+  padding: 0.3rem 0.7rem;
+  font-size: 0.82rem;
+  font-family: var(--font-body);
+  color: var(--fg);
+  cursor: pointer;
+}
+.conditions-view-toggle .seg-btn:last-child { border-right: none; }
+.conditions-view-toggle .seg-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+.conditions-note {
+  font-size: 0.82rem;
+  color: var(--ims-gray-text);
+  margin: 0.25rem 0 0.5rem;
+}
+.conditions-hist-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.conditions-histograms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+}
+.conditions-group-hist {
+  flex: 1;
+  min-width: 180px;
+  max-width: 350px;
+}
+.conditions-single-hist {
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+}
+.conditions-single-box {
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+}
+.conditions-boxplot {
+  width: 100%;
+  max-width: 500px;
+}
+.conditions-qq-view {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.conditions-group-qq {
+  flex: 1;
+  min-width: 200px;
+  max-width: 350px;
+}
+.conditions-qq-hint {
+  width: 100%;
+  font-size: 0.82rem;
+  color: var(--ims-gray-text);
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+@media (max-width: 600px) {
+  .conditions-histograms,
+  .conditions-qq-view {
+    flex-direction: column;
+  }
+  .conditions-group-hist,
+  .conditions-group-qq {
+    min-width: unset;
+    max-width: unset;
+  }
 }
 
 .results-table {

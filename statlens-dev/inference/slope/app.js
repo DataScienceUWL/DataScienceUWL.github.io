@@ -9,6 +9,7 @@ import { setJStat, pdfT } from '../../js/distributions.js';
 import { slopeT, slopeTSummary } from '../../js/inference.js';
 import { drawCurve, computeDomain, addInferenceAnnotations } from '../../js/curve.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
+import { renderConditionsDiagnostic } from '../../js/conditions.js';
 import { initTabs, initDataPanel, announce, initHelp, initHypToggle, getActiveTabId, getTabHintText, buildSimLink, setPageTitle } from '../../js/page-utils.js';
 
 initHelp();
@@ -318,13 +319,26 @@ function renderResidualPlot(container) {
   const fitted = pair.x.map(xi => intercept + slope * xi);
   const residuals = pair.y.map((yi, i) => yi - fitted[i]);
 
-  drawScatterplot(container, fitted, residuals, {
+  // Residual scatterplot (for L, I, E conditions)
+  const scatterDiv = document.createElement('div');
+  scatterDiv.style.maxWidth = '600px';
+  drawScatterplot(scatterDiv, fitted, residuals, {
     xLabel: 'Fitted values',
     yLabel: 'Residuals',
     titleText: 'Residual plot',
     descText: 'Residuals vs fitted values for checking regression conditions.',
     id: 'conditions-residuals',
   });
+  container.appendChild(scatterDiv);
+
+  // Residual histogram + boxplot + QQ (for N condition)
+  const normDiv = document.createElement('div');
+  normDiv.style.marginTop = '0.75rem';
+  renderConditionsDiagnostic(normDiv, residuals, {
+    varName: 'Residuals',
+    context: 'residuals',
+  });
+  container.appendChild(normDiv);
 }
 
 /**
