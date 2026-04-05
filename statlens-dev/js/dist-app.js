@@ -537,12 +537,14 @@ export function initDistCalculator(config) {
       .attr('cursor', 'pointer')
       .text(labelText);
 
-    // Dashed leader line from pill straight down into the shaded region
-    const leaderEndY = frame.height * 0.82;
+    // Dashed leader line from pill into the shaded region
+    // Target: region midpoint horizontally, near baseline vertically (shading always exists there)
+    const leaderTargetX = Math.max(4, Math.min(frame.width - 4, midPx));
+    const leaderEndY = frame.height * 0.92;
     group.append('line')
       .attr('class', 'prob-leader')
       .attr('x1', clampedX).attr('y1', labelY + pillH / 2 + 2)
-      .attr('x2', clampedX).attr('y2', leaderEndY)
+      .attr('x2', leaderTargetX).attr('y2', leaderEndY)
       .attr('stroke', isComplement ? '#888' : '#569BBD')
       .attr('stroke-width', 1)
       .attr('stroke-dasharray', '3,2')
@@ -762,13 +764,15 @@ export function initDistCalculator(config) {
         el.attr('x', centers[i] - tw / 2).attr('width', tw);
       });
 
-      // Update leader lines (vertical, straight down from pill)
+      // Update leader lines (point to region midpoint near baseline)
       annotations.selectAll('.prob-leader').remove();
+      const leaderY = frame.height * 0.92;
       for (let i = 0; i < 3; i++) {
+        const targetX = Math.max(4, Math.min(frame.width - 4, rawCenters[i]));
         annotations.append('line')
           .attr('class', 'prob-leader')
           .attr('x1', centers[i]).attr('y1', pillY + _bPillH / 2 + 2)
-          .attr('x2', centers[i]).attr('y2', frame.height * 0.82)
+          .attr('x2', targetX).attr('y2', leaderY)
           .attr('stroke', isComp[i] ? '#888' : '#569BBD')
           .attr('stroke-width', 1)
           .attr('stroke-dasharray', '3,2')
@@ -800,13 +804,15 @@ export function initDistCalculator(config) {
         el.attr('x', centers[i] - tw / 2).attr('width', tw);
       });
 
-      // Update leader lines (vertical, straight down from pill)
+      // Update leader lines (point to region midpoint near baseline)
       annotations.selectAll('.prob-leader').remove();
+      const leaderY = frame.height * 0.92;
       for (let i = 0; i < 2; i++) {
+        const targetX = Math.max(4, Math.min(frame.width - 4, rawCenters[i]));
         annotations.append('line')
           .attr('class', 'prob-leader')
           .attr('x1', centers[i]).attr('y1', pillY + _dPillH / 2 + 2)
-          .attr('x2', centers[i]).attr('y2', frame.height * 0.82)
+          .attr('x2', targetX).attr('y2', leaderY)
           .attr('stroke', isComp[i] ? '#888' : '#569BBD')
           .attr('stroke-width', 1)
           .attr('stroke-dasharray', '3,2')

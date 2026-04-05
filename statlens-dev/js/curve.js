@@ -432,7 +432,7 @@ export function addInferenceAnnotations(chart, opts) {
       annotations.append('line')
         .attr('class', 'inf-annotation')
         .attr('x1', pillX).attr('y1', floatY + 14)
-        .attr('x2', regionMidX).attr('y2', h * 0.82)
+        .attr('x2', regionMidX).attr('y2', h * 0.92)
         .attr('stroke', CURVE_STROKE)
         .attr('stroke-width', 1)
         .attr('stroke-dasharray', '3,2')
