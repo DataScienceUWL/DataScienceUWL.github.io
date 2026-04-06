@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>16.2 - Line Integrals | MTH 310</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/white.min.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root {
+    --accent-blue: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-amber: #e09f3e;
+    --accent-purple: #6c3483; --fg: #222222; --bg: #ffffff;
+}
+.reveal { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; font-size: 30px; color: var(--fg); }
+.reveal .slides section { text-align: left; }
+.reveal .slides > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides > section > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides section::-webkit-scrollbar { width: 6px; }
+.reveal .slides section::-webkit-scrollbar-track { background: transparent; }
+.reveal .slides section::-webkit-scrollbar-thumb { background: rgba(0,119,182,0.2); border-radius: 3px; }
+.reveal .slides section::-webkit-scrollbar-thumb:hover { background: rgba(0,119,182,0.4); }
+.reveal .slides > section::after, .reveal .slides > section > section::after {
+    content: ''; display: block; height: 0; clear: both; }
+.reveal h1,.reveal h2,.reveal h3 { text-transform: none; font-weight: 600; }
+.reveal h1 { font-size: 2.2em; color: var(--accent-blue); }
+.reveal h2 { font-size: 1.35em; color: var(--accent-blue); border-bottom: 2px solid rgba(0,119,182,0.25);
+    padding-bottom: 0.2em; margin-bottom: 0.4em; margin-top: 0; }
+.reveal h3 { font-size: 1.1em; color: var(--accent-green); margin: 0.2em 0; }
+.reveal p { margin: 0.3em 0; line-height: 1.4; }
+.reveal li { margin-bottom: 0.15em; line-height: 1.35; }
+.reveal ul,.reveal ol { margin-left: 0.5em; }
+.title-slide { text-align: center !important; }
+.title-slide h1 { font-size: 2.8em; margin-bottom: 0.1em; }
+.title-slide .subtitle { font-size: 1.4em; color: #b07d00; }
+.title-slide .course-info { font-size: 0.85em; color: #595959; margin-top: 2em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-blue);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.theorem-box { background: #fdf6ec; border-left-color: var(--accent-amber); }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.solution { background: #fffdf5; border-left: 4px solid var(--accent-amber);
+    border-radius: 8px; padding: 0.4em 0.8em; margin-top: 0.3em; color: #7a5c00; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7;
+    border-radius: 8px; padding: 0.5em 0.8em; margin: 0.4em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #666; margin: 0.3em 0; font-size: 0.85em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red);
+    border-radius: 10px; padding: 1em 1.5em; text-align: center; margin: 1em 0; }
+.hw-box h3 { color: var(--accent-red); margin: 0 0 0.3em 0; }
+.two-col { display: flex; gap: 1.2em; align-items: flex-start; }
+.two-col > * { flex: 1; }
+.fig-container { text-align: center; margin: 0.3em 0; }
+.fig-container img { max-height: 60vh; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    cursor: zoom-in; transition: opacity 0.15s; }
+.fig-container img:hover { opacity: 0.8; }
+.fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
+.fig-link { display: inline-block; }
+.textbook-fig img { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; }
+.plotly-lazy-thumb { cursor: pointer; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+.plotly-lazy-thumb:hover { opacity: 0.92; outline: 2px solid #0077b6; outline-offset: 2px; }
+#plotly-lightbox { display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+    justify-content:center; align-items:center; cursor:default; }
+#plotly-lightbox.active { display:flex; }
+#plotly-lightbox .plb-close { position:fixed; top:14px; left:20px;
+    font-size:2.2em; color:#fff; background:rgba(0,0,0,0.55);
+    border:1px solid rgba(255,255,255,0.4); border-radius:6px;
+    padding:2px 14px; cursor:pointer; z-index:10001; line-height:1; }
+#plotly-lightbox .plb-close:hover { color:#e09f3e; background:rgba(0,0,0,0.75); }
+#plotly-lightbox .plb-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+#plotly-lightbox .plb-content { width:92vw; height:85vh; }
+#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; }
+/* Lightbox overlay */
+#lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
+    cursor: zoom-out; backdrop-filter: blur(4px); }
+#lightbox.active { display: flex; }
+#lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5); object-fit: contain; background: white; }
+#lightbox .lb-caption { position: absolute; bottom: 1.5em; left: 50%;
+    transform: translateX(-50%); color: #fff; font-size: 0.55em;
+    background: rgba(0,0,0,0.7); padding: 0.3em 1em; border-radius: 4px; }
+#lightbox .lb-close { position: absolute; top: 0.8em; right: 1.2em;
+    color: #fff; font-size: 1.5em; cursor: pointer; transition: color 0.15s;
+    background: none; border: none; padding: 0.2em 0.5em; }
+#lightbox .lb-close:hover { color: #e09f3e; }
+#lightbox .lb-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.interactive-link { color: var(--accent-blue); text-decoration: none; font-size: 0.9em; }
+.interactive-link:hover { text-decoration: underline; }
+.desmos-container { text-align: center; margin: 0.3em auto; }
+.desmos-container iframe { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    border: 1px solid #ddd; }
+.desmos-label { font-size: 0.65em; color: var(--accent-blue); margin-top: 0.2em; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.4em;
+    color: var(--accent-blue); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+.desmos-fullscreen { background: none; border: 1px solid var(--accent-blue); border-radius: 4px;
+    color: var(--accent-blue); font-size: 1.1em; cursor: pointer; padding: 0.1em 0.4em;
+    opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-fullscreen:hover { opacity: 1; background: rgba(0,119,182,0.1); }
+aside.notes { display: none; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 0.5em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.3em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.75em; color: var(--accent-blue);
+    text-align: center; margin-bottom: 0.1em; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 18vh; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+.small { font-size: 0.8em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-blue);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600;
+    font-size: 16px; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+table { border-collapse: collapse; font-size: 0.8em; margin: 0.5em 0; }
+th, td { padding: 0.2em 0.6em; border-bottom: 1px solid #ddd; }
+th { color: var(--accent-blue); }
+.reveal .progress { color: var(--accent-blue); }
+.reveal .slide-number { color: #767676; font-size: 0.5em; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+</style>
+</head>
+<body data-section="Section_16p2">
+<a href="#" class="skip-link" onclick="Reveal.next();return false;">Skip to first slide</a>
+<div class="reveal">
+<div class="slides">
+<section class="title-slide" data-background-gradient="radial-gradient(circle at 30% 50%, #e8f4f8 0%, #f8f9fa 70%)">
+  <h1>16.2</h1>
+  <p class="subtitle">Line Integrals</p>
+  <hr style="border-color:rgba(0,212,255,0.3);width:60%;margin:1em auto;" aria-hidden="true">
+  <p class="course-info">MTH 310 &mdash; Calculus III<br>  Vector Calculus</p>
+</section>
+
+<section id="line-integrals-integrating-along-curves">
+<h2>Line Integrals: Integrating Along Curves</h2>
+<div class="fragment" data-editor-line="17"><p>A <strong>line integral</strong> extends the definite integral from a straight interval \([a,b]\) to a <strong>curve</strong> \(C\) in 2D or 3D. Two types:</p>
+<ul>
+<li><strong>Scalar</strong>: \(\int_C f\,ds\) &mdash; add up a function weighted by arc length (e.g., mass of a wire)</li>
+<li><strong>Vector</strong>: \(\int_C \vec{F}\cdot d\vec{r}\) &mdash; add up a vector field along a curve (e.g., work done by a force)</li>
+</ul></div>
+<div class="fragment" data-editor-line="24"><p>The key ingredient from Chapter 13: the <strong>arc length element</strong></p>
+<p>\[ds = |\vec{r}'(t)|\,dt\]</p>
+<p>converts everything to an ordinary integral over \([a,b]\).</p></div>
+<aside class="notes">Riemann sum picture: chop the curve into small pieces, multiply function value by arc length of each piece, add up. The limit is the line integral.</aside>
+</section>
+
+<section id="line-integral-of-a-scalar-function">
+<h2>Line Integral of a Scalar Function</h2>
+<div class="defn-box fragment" data-editor-line="35">
+  <div class="defn-title">Line Integral with Respect to Arc Length</div>
+  <p>\[\int_C f\,ds = \int_a^b f\bigl(\vec{r}(t)\bigr)\,|\vec{r}'(t)|\,dt\]</p>
+</div>
+<div class="fragment" data-editor-line="39"><p><strong>Geometric interpretation:</strong> For \(f > 0\), \(\int_C f\,ds\) is the area of the “curtain” standing on \(C\) reaching up to \(z = f(x,y)\).</p></div>
+<div class="fig-container fragment" data-editor-line="41">
+  <a href="figures/curtain_area.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/curtain_area.png"><img src="figures/curtain_area.png" alt="A 3D view showing a curve C in the xy-plane with a vertical surface (curtain) rising from C up to the surface z equals f of x y. The shaded area between the curve and the surface represents the value of the scalar line integral." style="max-height:60vh;"></a>
+</div>
+<div class="fragment" data-editor-line="43"><p>The value does <strong>not</strong> depend on the parameterization &mdash; only on \(C\) and \(f\). (When \(C\) is a segment of the \(x\)-axis, this reduces to \(\int_a^b f(x)\,dx\).)</p></div>
+<div class="key-point fragment" data-editor-line="45"><p>Recipe: (1) parameterize \(C\) as \(\vec{r}(t)\), (2) compute \(|\vec{r}'(t)|\), (3) substitute and integrate.</p></div>
+</section>
+
+<section id="example-1-scalar-line-integral-along-a-line-segment">
+<h2>Example 1: Scalar Line Integral Along a Line Segment</h2>
+<div class="example-box fragment" data-editor-line="52">
+  <div class="example-title">Example 1</div>
+  <p>Evaluate \(\displaystyle\int_C x\sin y\,ds\), where \(C\) is the line segment from \((0,3)\) to \((4,6)\).</p>
+</div>
+<div class="fragment" data-editor-line="56"><p class="work-prompt">Parameterize: \(\vec{r}(t) = (1-t)\vec{r}_0 + t\vec{r}_1\) for \(t \in [0,1]\), then compute \(|\vec{r}'(t)|\) and set up the integral.</p></div>
+<div class="fragment" data-editor-line="58"><p><strong>Parameterize:</strong> \(\vec{r}(t) = \langle 4t, 3+3t \rangle\), \(0 \leq t \leq 1\). So \(x = 4t\), \(y = 3 + 3t\).</p></div>
+<div class="fragment" data-editor-line="60"><p><strong>Speed:</strong> \(\vec{r}'(t) = \langle 4, 3 \rangle\), \(|\vec{r}'(t)| = 5\).</p></div>
+<div class="fragment" data-editor-line="62"><p><strong>Evaluate:</strong></p>
+<p>\[\int_C x\sin y\,ds = \int_0^1 (4t)\sin(3+3t)\cdot 5\,dt = 20\int_0^1 t\sin(3+3t)\,dt\]</p></div>
+<div class="fragment" data-editor-line="65"><p>Integration by parts (\(u = t\), \(dv = \sin(3+3t)\,dt\)):</p>
+<p>\[= 20\left[-\frac{\cos 6}{3} + \frac{\sin 6 - \sin 3}{9}\right]\]</p></div>
+<div class="key-point fragment" data-editor-line="68"><p>For a line segment, \(|\vec{r}'(t)|\) is constant &mdash; a nice simplification. For most curves it won't be.</p></div>
+</section>
+
+<section id="line-integrals-with-respect-to-and">
+<h2>Line Integrals with Respect to \(x\) and \(y\)</h2>
+<div class="fragment" data-editor-line="75"><p>Besides integrating with respect to arc length (\(ds\)), we can integrate with respect to \(x\) or \(y\) individually:</p></div>
+<div class="defn-box fragment" data-editor-line="77">
+  <div class="defn-title">Line Integrals with Respect to \(x\) and \(y\)</div>
+  <p>\[\int_C f(x,y)\,dx = \int_a^b f\bigl(x(t),y(t)\bigr)\,x'(t)\,dt\]</p>
+<p>\[\int_C f(x,y)\,dy = \int_a^b f\bigl(x(t),y(t)\bigr)\,y'(t)\,dt\]</p>
+</div>
+<div class="fragment" data-editor-line="82"><p><strong>Key difference from \(ds\):</strong> These use \(x'(t)\,dt\) or \(y'(t)\,dt\) instead of \(|\vec{r}'(t)|\,dt\).</p>
+<ul>
+<li>\(ds\) always involves \(|\vec{r}'(t)|\) &mdash; a magnitude, always positive</li>
+<li>\(dx\) and \(dy\) can be <strong>negative</strong> (they track direction)</li>
+</ul></div>
+<div class="fragment" data-editor-line="89"><p>These often appear <strong>together</strong> in the combined form:</p>
+<p>\[\int_C P(x,y)\,dx + Q(x,y)\,dy = \int_C P\,dx + \int_C Q\,dy\]</p>
+<p>This notation will become very important in Green's Theorem (Section 16.4).</p></div>
+<div class="key-point fragment" data-editor-line="93"><p>\(\int_C f\,ds\) uses the speed \(|\vec{r}'(t)|\) and ignores direction. \(\int_C f\,dx\) and \(\int_C f\,dy\) track direction through the individual components \(x'(t)\) and \(y'(t)\).</p></div>
+<aside class="notes">Emphasize that \(\int_C f\,ds\) is always the same regardless of direction of travel, but \(\int_C P\,dx + Q\,dy\) changes sign if you reverse direction.</aside>
+</section>
+
+<section id="example-2-line-integral-over-a-piecewise-path">
+<h2>Example 2: Line Integral Over a Piecewise Path</h2>
+<div class="example-box fragment" data-editor-line="102">
+  <div class="example-title">Example 2</div>
+  <p>Evaluate \(\displaystyle\int_C x^2\,dx + y^2\,dy\), where \(C\) consists of the arc of the circle \(x^2 + y^2 = 4\) from \((2,0)\) to \((0,2)\), followed by the line segment from \((0,2)\) to \((4,3)\).</p>
+</div>
+<div class="fragment" data-editor-line="106"><p class="work-prompt">Split \(C\) into \(C_1\) (circular arc) and \(C_2\) (line segment). Parameterize each piece separately, then add the integrals.</p></div>
+<div class="fragment" data-editor-line="108"><p><strong>\(C_1\): Circular arc</strong> from \((2,0)\) to \((0,2)\). Parameterize: \(x = 2\cos t\), \(y = 2\sin t\), \(0 \leq t \leq \pi/2\).</p>
+<p>\(dx = -2\sin t\,dt\),   \(dy = 2\cos t\,dt\).</p></div>
+<div class="fragment" data-editor-line="112"><p>\[\int_{C_1} x^2\,dx + y^2\,dy = \int_0^{\pi/2}\bigl[(4\cos^2 t)(-2\sin t) + (4\sin^2 t)(2\cos t)\bigr]\,dt\]</p>
+<p>\[= \int_0^{\pi/2}\bigl[-8\cos^2 t\sin t + 8\sin^2 t\cos t\bigr]\,dt\]</p></div>
+<div class="fragment" data-editor-line="115"><p>\[= \left[\frac{8\cos^3 t}{3} + \frac{8\sin^3 t}{3}\right]_0^{\pi/2} = \left(\frac{0 + 8}{3}\right) - \left(\frac{8 + 0}{3}\right) = 0\]</p></div>
+</section>
+
+<section>
+<h2>Example 2: Line Integral Over a Piecewise Path</h2>
+<div class="fragment" data-editor-line="119"><p><strong>\(C_2\): Line segment</strong> from \((0,2)\) to \((4,3)\).</p></div>
+<div class="fragment" data-editor-line="121"><p>Parameterize: \(x = 4t\), \(y = 2 + t\), \(0 \leq t \leq 1\).</p>
+<p>\(dx = 4\,dt\),   \(dy = dt\).</p></div>
+<div class="fragment" data-editor-line="125"><p>\[\int_{C_2} x^2\,dx + y^2\,dy = \int_0^1\bigl[(16t^2)(4) + (2+t)^2(1)\bigr]\,dt\]</p>
+<p>\[= \int_0^1\bigl[64t^2 + 4 + 4t + t^2\bigr]\,dt = \int_0^1\bigl[65t^2 + 4t + 4\bigr]\,dt\]</p></div>
+<div class="fragment" data-editor-line="128"><p>\[= \left[\frac{65t^3}{3} + 2t^2 + 4t\right]_0^1 = \frac{65}{3} + 2 + 4 = \frac{65}{3} + 6 = \frac{83}{3}\]</p></div>
+<div class="key-point fragment" data-editor-line="130"><p>\(\displaystyle\int_C x^2\,dx + y^2\,dy = 0 + \frac{83}{3} = \frac{83}{3}\). For piecewise paths, split into smooth pieces, evaluate each, and add.</p></div>
+</section>
+
+<section id="example-3-line-integral-in-3d">
+<h2>Example 3: Line Integral in 3D</h2>
+<div class="example-box fragment" data-editor-line="137">
+  <div class="example-title">Example 3</div>
+  <p>Evaluate \(\displaystyle\int_C y\,dx + z\,dy + x\,dz\), where \(C\) is the line segment from \((1,2,3)\) to \((-1,4,6)\).</p>
+</div>
+<div class="fragment" data-editor-line="141"><p class="work-prompt">Parameterize: start at \(\langle 1,2,3\rangle\), direction \(= \langle -1,4,6\rangle - \langle 1,2,3\rangle = \langle -2,2,3\rangle\).</p></div>
+<div class="fragment" data-editor-line="143"><p><strong>Parameterize:</strong> \(\vec{r}(t) = \langle 1,2,3 \rangle + t\langle -2,2,3 \rangle = \langle 1-2t,\; 2+2t,\; 3+3t \rangle\), \(0 \leq t \leq 1\).</p>
+<p>\(dx = -2\,dt\), \; \(dy = 2\,dt\), \; \(dz = 3\,dt\).</p></div>
+<div class="fragment" data-editor-line="147"><p><strong>Substitute:</strong></p>
+<p>\[\int_C y\,dx + z\,dy + x\,dz = \int_0^1\bigl[(2+2t)(-2) + (3+3t)(2) + (1-2t)(3)\bigr]\,dt\]</p></div>
+<div class="fragment" data-editor-line="150"><p>\[= \int_0^1\bigl[-4-4t + 6+6t + 3-6t\bigr]\,dt = \int_0^1\bigl[5 - 4t\bigr]\,dt\]</p>
+<p>\[= \left[5t - 2t^2\right]_0^1 = 5 - 2 = 3\]</p></div>
+<div class="key-point fragment" data-editor-line="153"><p>\(\displaystyle\int_C y\,dx + z\,dy + x\,dz = 3\). The 3D line integral \(\int_C P\,dx + Q\,dy + R\,dz\) works exactly like the 2D version &mdash; just with three terms.</p></div>
+</section>
+
+<section id="line-integral-of-a-vector-field-work">
+<h2>Line Integral of a Vector Field (Work)</h2>
+<div class="fragment" data-editor-line="160"><p>For a varying force along a curved path, <strong>work</strong> = \(\int_C (\text{force along path}) \cdot ds\).</p></div>
+<div class="defn-box fragment" data-editor-line="162">
+  <div class="defn-title">Line Integral of a Vector Field</div>
+  <p>\[\int_C \vec{F}\cdot d\vec{r} = \int_a^b \vec{F}\bigl(\vec{r}(t)\bigr) \cdot \vec{r}'(t)\,dt\]</p>
+</div>
+<div class="fragment" data-editor-line="166"><p><strong>Three equivalent notations:</strong></p>
+<p>\[\int_C \vec{F}\cdot d\vec{r} = \int_C \vec{F}\cdot\vec{T}\,ds = \int_C P\,dx + Q\,dy + R\,dz\]</p>
+<p>The connection: \(d\vec{r} = \vec{r}'(t)\,dt = \langle dx, dy, dz \rangle\), so \(\vec{F}\cdot d\vec{r} = P\,dx + Q\,dy + R\,dz\).</p></div>
+<div class="fragment" data-editor-line="171"><p><strong>Quick Check:</strong> If \(\vec{F} = \langle 1+y, x \rangle\), then \(\int_C \vec{F}\cdot d\vec{r} = \int_C (1+y)\,dx + x\,dy\).</p></div>
+<div class="key-point fragment" data-editor-line="173"><p>To evaluate: parameterize \(C\), compute \(\vec{F}(\vec{r}(t))\cdot\vec{r}'(t)\), and integrate from \(a\) to \(b\).</p></div>
+<aside class="notes">Emphasize the three notations. Students will see \(\int_C \vec{F}\cdot d\vec{r}\) and \(\int_C P\,dx + Q\,dy\) used interchangeably.</aside>
+</section>
+
+<section id="example-4-work-done-by-a-force">
+<h2>Example 4: Work Done by a Force</h2>
+<div class="example-box fragment" data-editor-line="182">
+  <div class="example-title">Example 4</div>
+  <p>Let \(\vec{F} = \langle 1+y,\; x \rangle\) and let \(C\) be the upper semicircle from \((-1,0)\) to \((1,0)\). Compute the work \(\displaystyle\int_C \vec{F}\cdot d\vec{r}\).</p>
+</div>
+<div class="fragment" data-editor-line="186"><p class="work-prompt">Parameterize the upper semicircle from \((-1,0)\) to \((1,0)\). Hint: try \(\vec{r}(t) = \langle -\cos t, \sin t \rangle\).</p></div>
+<div class="fragment" data-editor-line="188"><p><strong>Parameterize:</strong> \(\vec{r}(t) = \langle -\cos t, \sin t \rangle\), \(0 \leq t \leq \pi\).</p>
+<p>Check: \(\vec{r}(0) = (-1, 0)\), \(\vec{r}(\pi) = (1, 0)\). \checkmark   \(\vec{r}'(t) = \langle \sin t, \cos t \rangle\).</p></div>
+<div class="fragment" data-editor-line="192"><p><strong>Dot product:</strong> \(\vec{F}(\vec{r}(t)) = \langle 1 + \sin t,\; -\cos t \rangle\).</p>
+<p>\[\vec{F}\cdot\vec{r}' = (1+\sin t)(\sin t) + (-\cos t)(\cos t) = \sin t + \sin^2 t - \cos^2 t = \sin t - \cos 2t\]</p></div>
+<div class="fragment" data-editor-line="195"><p><strong>Integrate:</strong></p>
+<p>\[\int_0^{\pi}(\sin t - \cos 2t)\,dt = \left[-\cos t - \frac{\sin 2t}{2}\right]_0^{\pi} = (1 - 0) - (-1 - 0) = \boxed{2}\]</p></div>
+<div class="key-point fragment" data-editor-line="198"><p>If we reversed direction (\((1,0)\) to \((-1,0)\)), the work would be \(-2\). Direction matters for vector line integrals!</p></div>
+</section>
+
+<section id="properties-of-line-integrals">
+<h2>Properties of Line Integrals</h2>
+<div class="fragment" data-editor-line="205"><p><strong>Linearity:</strong></p>
+<p>\[\int_C (c_1\vec{F}_1 + c_2\vec{F}_2)\cdot d\vec{r} = c_1\int_C\vec{F}_1\cdot d\vec{r} + c_2\int_C\vec{F}_2\cdot d\vec{r}\]</p></div>
+<div class="fragment" data-editor-line="208"><p><strong>Piecewise paths:</strong> \(C = C_1 \cup C_2 \cup \cdots \;\Rightarrow\; \int_C = \int_{C_1} + \int_{C_2} + \cdots\)   (used in Example 2)</p></div>
+<div class="fragment" data-editor-line="210"><p><strong>Reversing direction:</strong></p>
+<p>\[\int_{-C}\vec{F}\cdot d\vec{r} = -\int_C\vec{F}\cdot d\vec{r} \qquad\text{but}\qquad \int_{-C}f\,ds = \int_C f\,ds\]</p>
+<p>Vector line integrals <strong>change sign</strong>; scalar line integrals <strong>don't</strong> (arc length has no direction).</p></div>
+<div class="key-point fragment" data-editor-line="215"><p>Reversing direction negates \(\int_C \vec{F}\cdot d\vec{r}\) because \(d\vec{r}\) reverses, but doesn't change \(\int_C f\,ds\) because \(ds\) is always positive.</p></div>
+<aside class="notes">The reversal property means work can be negative (force opposes motion). Important for orientation in Green's Theorem later.</aside>
+</section>
+
+<section id="section-16-2-summary">
+<h2>Section 16.2 Summary</h2>
+<div class="summary-grid">
+<div class="defn-box"><div class="defn-title">Scalar Line Integral</div><p class="small">\(\displaystyle\int_C f\,ds = \int_a^b f(\vec{r}(t)) |\vec{r}'(t)|\,dt\). Adds up \(f\) weighted by arc length. Independent of parameterization and direction.</p></div>
+<div class="defn-box"><div class="defn-title">Vector Line Integral (Work)</div><p class="small">\(\displaystyle\int_C\vec{F}\cdot d\vec{r} = \int_a^b\vec{F}(\vec{r}(t))\cdot\vec{r}'(t)\,dt\). Computes work done by \(\vec{F}\) along \(C\). Depends on direction.</p></div>
+<div class="defn-box"><div class="defn-title">Three Notations</div><p class="small">\(\int_C\vec{F}\cdot d\vec{r} = \int_C\vec{F}\cdot\vec{T}\,ds = \int_C P\,dx + Q\,dy + R\,dz\). All equivalent.</p></div>
+<div class="defn-box"><div class="defn-title">Key Properties</div><p class="small">Linearity, piecewise additivity, and direction reversal: \(\int_{-C}\vec{F}\cdot d\vec{r} = -\int_C\vec{F}\cdot d\vec{r}\).</p></div>
+<div class="defn-box"><div class="defn-title">Evaluation Strategy</div><p class="small">(1) Parameterize \(C\) as \(\vec{r}(t)\). (2) Compute \(\vec{r}'(t)\). (3) Substitute and integrate over \([a,b]\).</p></div>
+</div>
+<div class="key-point fragment" data-editor-line="232"><p><strong>Coming up next:</strong> Section 16.3 &mdash; The Fundamental Theorem for Line Integrals. We'll discover that for <strong>conservative</strong> vector fields (\(\vec{F} = \nabla f\)), the line integral depends only on the endpoints &mdash; not the path!</p></div>
+</section>
+
+<section>
+<h2>Homework</h2>
+<div class="hw-box"><h3>Section 16.2</h3>
+<p style="font-size:1.3em;color:var(--accent-amber);">1, 3, 5, 7, 11, 13, 19, 21, 23, 35, 43, 45, 47, 49</p>
+</div>
+<div class="key-point fragment" style="margin-top:1.5em;"><strong>Next time:</strong> Section 16.3 &mdash; The Fundamental Theorem for Line Integrals</div>
+</section>
+</div>
+</div>
+<!-- Lightbox overlay -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged figure" tabindex="-1">
+  <button class="lb-close" aria-label="Close lightbox">&times;</button>
+  <img src="" alt="">
+  <div class="lb-caption"></div>
+</div>
+<!-- Plotly fullscreen overlay -->
+<div id="plotly-lightbox" role="dialog" aria-modal="true" aria-label="Expanded interactive figure">
+  <button class="plb-close" aria-label="Close">&times;</button>
+  <div class="plb-content"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<script>
+Reveal.initialize({
+    hash: true, slideNumber: 'c/t', progress: true, center: false,
+    transition: 'slide', width: 1280, height: 800, margin: 0.04,
+    // Allow mouse wheel to scroll overflowing slide content instead of advancing
+    mouseWheel: false,
+    plugins: [RevealNotes]
+});
+// ── Scoped MathJax: only typeset the current slide, not the whole document ──
+function typesetCurrentSlide() {
+    var slide = Reveal.getCurrentSlide();
+    if (slide && MathJax?.typesetPromise) {
+        MathJax.typesetPromise([slide]).catch(function(){});
+    }
+}
+// ── Iframe cleanup: pause Desmos/embedded iframes on non-visible slides ──
+function manageIframes(event) {
+    // Pause iframes on the previous slide
+    if (event.previousSlide) {
+        event.previousSlide.querySelectorAll('iframe[data-src-active]').forEach(function(iframe) {
+            iframe.setAttribute('data-src-paused', iframe.src);
+            iframe.src = 'about:blank';
+        });
+    }
+    // Restore iframes on the current slide
+    if (event.currentSlide) {
+        event.currentSlide.querySelectorAll('iframe[data-src-paused]').forEach(function(iframe) {
+            iframe.src = iframe.getAttribute('data-src-paused');
+            iframe.removeAttribute('data-src-paused');
+        });
+    }
+}
+// Mark all Desmos/embedded iframes for management
+document.querySelectorAll('.desmos-container iframe').forEach(function(iframe) {
+    iframe.setAttribute('data-src-active', '1');
+});
+Reveal.on('slidechanged', (event) => {
+    typesetCurrentSlide();
+    manageIframes(event);
+    // Reset scroll position on the new slide so it starts at the top
+    if (event.currentSlide) event.currentSlide.scrollTop = 0;
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealSlideChanged', indexh: event.indexh, indexv: event.indexv }, '*');
+        }
+    } catch (e) {}
+});
+// Fragment auto-scroll: configurable via meta.fragment_scroll in content.yaml
+// Value is the max fraction down the slide viewport (0.0=top, 1.0=bottom)
+var FRAG_SCROLL_TARGET = 0.67;
+function findScrollContainer(el) {
+    var section = el.closest('section');
+    while (section) {
+        if (section.scrollHeight > section.clientHeight + 1) return section;
+        var parent = section.parentElement?.closest('section, .slides, .reveal');
+        if (!parent || parent === section) break;
+        section = parent;
+    }
+    return null;
+}
+function scrollToFragment(frag, direction) {
+    var container = findScrollContainer(frag);
+    if (!container) return;
+    var fragRect = frag.getBoundingClientRect();
+    var containerRect = container.getBoundingClientRect();
+    // Reveal.js scales slides via CSS transform — account for the scale factor
+    var scale = containerRect.height / container.clientHeight || 1;
+    // Convert screen-space positions to unscaled slide-space
+    var fragBottom = (fragRect.bottom - containerRect.top) / scale + container.scrollTop;
+    var fragTop = (fragRect.top - containerRect.top) / scale + container.scrollTop;
+    var targetLine = container.clientHeight * FRAG_SCROLL_TARGET;
+    if (direction === 'forward') {
+        // Scroll so the fragment's bottom is at the target line
+        var desiredScrollTop = fragBottom - targetLine;
+        if (desiredScrollTop > container.scrollTop) {
+            container.scrollTo({ top: desiredScrollTop, behavior: 'smooth' });
+        }
+    } else {
+        // Scrolling backward: find the previous visible fragment and scroll to it
+        // If the fragment's top is above the viewport, scroll up to show it
+        var desiredScrollTop = fragTop - targetLine * 0.5;
+        if (desiredScrollTop < container.scrollTop) {
+            container.scrollTo({ top: Math.max(0, desiredScrollTop), behavior: 'smooth' });
+        }
+    }
+}
+// Add spacer to scrollable slides so the last fragment can scroll up to the target line
+Reveal.on('ready', () => {
+    var slideH = Reveal.getConfig().height || 800;
+    var spacerH = Math.round((1 - FRAG_SCROLL_TARGET) * slideH);
+    document.querySelectorAll('.reveal .slides > section, .reveal .slides > section > section').forEach(function(s) {
+        if (s.querySelector('.fragment')) {
+            var spacer = document.createElement('div');
+            spacer.style.height = spacerH + 'px';
+            spacer.style.pointerEvents = 'none';
+            spacer.setAttribute('aria-hidden', 'true');
+            s.appendChild(spacer);
+        }
+    });
+});
+function _notifyParentFragment() {
+    // Read data-editor-line from the last visible fragment in the current slide.
+    // Works for both fragmentshown and fragmenthidden events.
+    try {
+        if (!window.parent || window.parent === window) return;
+        var s = Reveal.getState();
+        var slideEl = Reveal.getCurrentSlide();
+        var editorLine = null;
+        if (slideEl) {
+            var visibleFrags = slideEl.querySelectorAll('.fragment.visible[data-editor-line]');
+            if (visibleFrags.length > 0) {
+                var ln = parseInt(visibleFrags[visibleFrags.length - 1].dataset.editorLine, 10);
+                if (!isNaN(ln)) editorLine = ln;
+            }
+        }
+        window.parent.postMessage({
+            type: 'revealFragmentChanged',
+            indexh: s.indexh, indexv: s.indexv, indexf: s.indexf,
+            editorLine: editorLine
+        }, '*');
+    } catch(e) {}
+}
+Reveal.on('fragmentshown', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('fragmenthidden', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    // Scroll back to the previous fragment or top of slide
+    var prev = event.fragment.previousElementSibling;
+    while (prev && !prev.classList.contains('fragment')) {
+        prev = prev.previousElementSibling;
+    }
+    var target = prev || event.fragment.closest('section')?.querySelector('h2') || event.fragment;
+    setTimeout(function() { scrollToFragment(target, 'backward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('ready', () => {
+    typesetCurrentSlide();
+    // Tell the CourseKit editor that Reveal is initialized so it can sync the fragment
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealReady' }, '*');
+        }
+    } catch(e) {}
+});
+
+// ── Plotly lightbox (iframe approach — zero WebGL until opened) ──
+(function() {
+    var plb = document.getElementById('plotly-lightbox');
+    if (!plb) return;
+    var plbClose = plb.querySelector('.plb-close');
+    var plbContent = plb.querySelector('.plb-content');
+    var triggerImg = null;
+    var currentBlobUrl = null;
+
+    function openPlotlyLightbox(blobUrl) {
+        // Revoke any previous blob URL
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); }
+        currentBlobUrl = blobUrl;
+        var iframe = plbContent.querySelector('iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:80vh;border:none;background:#fff;';
+            plbContent.appendChild(iframe);
+        }
+        iframe.src = blobUrl;
+        plb.classList.add('active');
+        plbClose.focus();
+    }
+
+    function closePlotlyLightbox() {
+        var iframe = plbContent.querySelector('iframe');
+        if (iframe) iframe.src = '';   // Unloads WebGL context immediately
+        plb.classList.remove('active');
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+        if (triggerImg) { triggerImg.focus(); triggerImg = null; }
+    }
+
+    document.addEventListener('click', function(e) {
+        var img = e.target.closest('img[data-plotly-src]');
+        if (!img) return;
+        e.stopPropagation();
+        triggerImg = img;
+        // The companion .html is a bare Plotly div fragment (no CDN script).
+        // Fetch it and wrap in a complete page so it renders in the iframe.
+        fetch(img.dataset.plotlySrc)
+            .then(function(r) { return r.text(); })
+            .then(function(fragment) {
+                var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+                    '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"><\/script>' +
+                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;' +
+                    'display:flex;justify-content:center;align-items:center;width:100vw;height:100vh;}' +
+                    '.js-plotly-plot,.plotly-graph-div{width:100%!important;height:100%!important;}</style>' +
+                    '</head><body>' + fragment + '</body></html>';
+                var blob = new Blob([html], {type: 'text/html'});
+                openPlotlyLightbox(URL.createObjectURL(blob));
+            })
+            .catch(function() {
+                // Fallback: open in new tab
+                window.open(img.dataset.plotlySrc, '_blank');
+            });
+    });
+
+    plbClose.addEventListener('click', closePlotlyLightbox);
+    plb.addEventListener('click', function(e) { if (e.target === plb) closePlotlyLightbox(); });
+
+    // Capture-phase Escape so Reveal.js doesn't grab it first
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape' || !plb.classList.contains('active')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closePlotlyLightbox();
+    }, true);
+
+    // Desmos/GeoGebra fullscreen: reuse lightbox with direct URL (no fetch/wrap needed)
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.desmos-fullscreen');
+        if (!btn) return;
+        e.stopPropagation();
+        var url = btn.dataset.src;
+        if (!url) return;
+        var iframe = plbContent.querySelector('iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:100%;border:none;background:#fff;border-radius:6px;';
+            plbContent.appendChild(iframe);
+        }
+        iframe.style.height = '100%';
+        iframe.src = url;
+        iframe.setAttribute('allowfullscreen', '');
+        plb.classList.add('active');
+        plbClose.focus();
+    });
+})();
+
+// ── Lightbox for figures (accessible: focus trap, focus return) ──
+(function() {
+    const lb = document.getElementById('lightbox');
+    const lbImg = lb.querySelector('img');
+    const lbCap = lb.querySelector('.lb-caption');
+    const lbClose = lb.querySelector('.lb-close');
+    var triggerEl = null;
+
+    function openLightbox(src, alt, caption) {
+        lbImg.src = src;
+        lbImg.alt = alt;
+        lbCap.textContent = caption || alt;
+        lb.classList.add('active');
+        lbClose.focus();
+    }
+
+    function closeLightbox() {
+        lb.classList.remove('active');
+        lbImg.src = '';
+        if (triggerEl) { triggerEl.focus(); triggerEl = null; }
+    }
+
+    // Open lightbox on figure click (prevent default link navigation)
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.fig-link');
+        if (!link) return;
+        e.preventDefault();
+        e.stopPropagation();
+        triggerEl = link;
+        var src = link.getAttribute('data-src');
+        var alt = link.querySelector('img')?.alt || '';
+        var caption = link.closest('.fig-container')?.querySelector('.fig-caption')?.textContent || '';
+        openLightbox(src, alt, caption);
+    });
+
+    // Close on click anywhere on overlay
+    lb.addEventListener('click', function() { closeLightbox(); });
+
+    // Prevent closing when clicking the image itself (let user right-click → open in tab)
+    lbImg.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    // Close on Escape; trap Tab within lightbox
+    document.addEventListener('keydown', function(e) {
+        if (!lb.classList.contains('active')) return;
+        if (e.key === 'Escape') { closeLightbox(); }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            lbClose.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>

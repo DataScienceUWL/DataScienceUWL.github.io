@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 16.1: Vector Fields | MTH 310</title>
+<style>
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #e09f3e;
+    --bg: #ffffff; --fg: #1a1a1a;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; max-width: 900px;
+    margin: 0 auto; padding: 1em 2em; color: var(--fg); background: var(--bg);
+    font-size: 1.05rem; line-height: 1.6; }
+h1 { font-size: 1.8em; color: var(--accent-cyan); border-bottom: 3px solid var(--accent-cyan);
+    padding-bottom: 0.2em; }
+h2 { font-size: 1.4em; color: var(--accent-cyan); margin-top: 1.5em;
+    border-bottom: 1px solid #ddd; padding-bottom: 0.15em; }
+h3 { font-size: 1.1em; margin: 0.5em 0 0.2em 0; }
+h4 { font-size: 1em; color: var(--accent-cyan); margin: 0.3em 0; }
+p { margin: 0.5em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 1em 0; }
+.course-info { color: #666; font-size: 0.9em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-cyan);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.defn-box h3, .defn-box .defn-title { color: var(--accent-red); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box h3, .theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.example-box h3, .example-box .example-title { color: var(--accent-green); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.solution { border: 1px solid #ddd; border-radius: 4px; margin: 0.5em 0; }
+.solution summary { padding: 0.5em 0.8em; cursor: pointer; font-weight: 600;
+    color: #8a6200; background: #fffdf5; border-radius: 4px; }
+.solution > div, .solution > p, .solution > ul, .solution > ol {
+    padding: 0.5em 1em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 4px;
+    padding: 0.8em 1em; margin: 0.8em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #595959; margin: 0.5em 0; font-size: 0.9em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red); border-radius: 6px;
+    padding: 0.8em 1.2em; text-align: center; margin: 1em 0; font-size: 1.1em; }
+.desmos-container { text-align: center; margin: 1em 0; }
+.desmos-container figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.desmos-container iframe { border: 1px solid #ddd; border-radius: 6px; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.2em;
+    color: var(--accent-cyan); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+.desmos-fullscreen { background: none; border: 1px solid var(--accent-cyan); border-radius: 4px;
+    color: var(--accent-cyan); font-size: 1em; cursor: pointer; padding: 0.15em 0.5em;
+    opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-fullscreen:hover { opacity: 1; background: rgba(0,119,182,0.1); }
+figure { margin: 0.8em 0; text-align: center; }
+figure img { max-width: 100%; height: auto; max-height: 500px; border-radius: 4px; }
+figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 4px; border: 1px solid #ddd; }
+.plotly-figure { border-radius: 4px; overflow: hidden; margin: 0.5em 0; }
+.plotly-figure .js-plotly-plot { width: 100% !important; height: 100% !important; }
+.plotly-figure .plotly-graph-div { width: 100% !important; height: 100% !important; }
+.plotly-figure .modebar-container { position: absolute !important; top: 2px !important; right: 2px !important; }
+.plotly-alt { margin-top: 0.3em; font-size: 0.85em; color: #666; }
+.plotly-alt summary { cursor: pointer; color: var(--accent-cyan); }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 1em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.5em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 200px; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.8em; color: #666; }
+table { border-collapse: collapse; margin: 0.5em 0; }
+th, td { padding: 0.3em 0.8em; border: 1px solid #ddd; text-align: center; }
+th { background: #f0f7ff; color: var(--accent-cyan); }
+.small { font-size: 0.85em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+a { color: var(--accent-cyan); }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media (max-width: 600px) {
+    body { padding: 0.5em 1em; }
+    .summary-grid { grid-template-columns: 1fr; }
+}
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <h1>Section 16.1: Vector Fields</h1>
+  <p class="course-info">MTH 310 &mdash; Calculus III | Vector Calculus</p>
+</header>
+<hr aria-hidden="true">
+
+<section id="from-scalar-fields-to-vector-fields" data-source-line="15" aria-label="From Scalar Fields to Vector Fields">
+  <h2>From Scalar Fields to Vector Fields</h2>
+  <figure>
+  <img src="figures/scalar_vs_vector.png" alt="Side-by-side comparison. Left: a scalar field shown as a color heatmap --- each point gets a number. Right: a vector field shown as arrows --- each point gets a vector with direction and magnitude." style="max-width:100%; max-height:500px;">
+</figure>
+<div><p>A <strong>scalar field</strong> assigns a <strong>number</strong> to each point. A <strong>vector field</strong> assigns a <strong>vector</strong> to each point.</p></div>
+</section>
+
+<section id="definition-of-a-vector-field" data-source-line="26" aria-label="Definition of a Vector Field">
+  <h2>Definition of a Vector Field</h2>
+  <section class="defn-box" role="region" aria-label="Vector Field (2D)">
+  <h3 class="defn-title">Vector Field (2D)</h3>
+  <p>\[\vec{F}(x,y) = \langle P(x,y),\; Q(x,y) \rangle\]</p>
+</section>
+<section class="defn-box" role="region" aria-label="Vector Field (3D)">
+  <h3 class="defn-title">Vector Field (3D)</h3>
+  <p>\[\vec{F}(x,y,z) = \langle P(x,y,z),\; Q(x,y,z),\; R(x,y,z) \rangle\]</p>
+</section>
+<div><p>The functions \(P\), \(Q\), \(R\) are the <strong>component functions</strong> &mdash; ordinary scalar functions that give each component of the vector at each point.</p></div>
+</section>
+
+<section id="example-1-plot-a-vector-field" data-source-line="41" aria-label="Example 1: Plot a Vector Field">
+  <h2>Example 1: Plot a Vector Field</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Plot the vector field \(\vec{F}(x,y) = \langle -y, x \rangle\) by evaluating \(\vec{F}\) at several points and drawing the vectors.</p>
+</section>
+<figure>
+  <img src="figures/plot_by_hand.png" alt="A coordinate grid with dots at integer points. One red vector is drawn at the point (1,1), showing F(1,1) = <-1, 1> as an arrow pointing up and to the left." style="max-width:100%; max-height:500px;">
+</figure>
+<div><p>At \((1, 1)\): \(\vec{F} = \langle -1, 1 \rangle\). Draw an arrow from \((1,1)\) pointing left and up.</p></div>
+<div><p>Now you try:</p>
+<ul>
+<li>At \((1, 0)\): \(\vec{F} = \langle\; ?\;,\; ?\; \rangle\)</li>
+<li>At \((0, 1)\): \(\vec{F} = \langle\; ?\;,\; ?\; \rangle\)</li>
+<li>At \((-1, 0)\): \(\vec{F} = \langle\; ?\;,\; ?\; \rangle\)</li>
+<li>At \((2, 0)\): \(\vec{F} = \langle\; ?\;,\; ?\; \rangle\)</li>
+</ul></div>
+<div><p>\(\langle 0, 1 \rangle\), \(\langle -1, 0 \rangle\), \(\langle 0, -1 \rangle\), \(\langle 0, 2 \rangle\). Do you see a pattern forming?</p></div>
+<figure>
+  <img src="figures/rotation_field.png" alt="The completed vector field F(x,y) = <-y, x> with arrows at all grid points, showing the counterclockwise rotation pattern." style="max-width:100%; max-height:500px;">
+</figure>
+</section>
+
+<section id="exploring-2d-vector-fields" data-source-line="70" aria-label="Exploring 2D Vector Fields">
+  <h2>Exploring 2D Vector Fields</h2>
+  <figure class="desmos-container" role="figure" aria-label="2D Vector Field Plotter (GeoGebra)">
+  <iframe src="https://www.geogebra.org/material/iframe/id/cXgNb58T" width="700" height="450" style="border:0" title="2D Vector Field Plotter (GeoGebra)" allowfullscreen loading="lazy"></iframe>
+  <figcaption><button class="desmos-fullscreen" data-src="https://www.geogebra.org/material/iframe/id/cXgNb58T" title="Expand to full screen">&#x26F6;</button> Interactive tool for plotting 2D vector fields. Enter component functions P(x,y) and Q(x,y) to see the field. <a href="https://www.geogebra.org/material/iframe/id/cXgNb58T" target="_blank" rel="noopener" class="desmos-open-tab" title="Open in new tab">&#x2197;</a></figcaption>
+</figure>
+<div><p><strong>Radial field:</strong> \(\langle x, y \rangle\) &mdash; every arrow points away from the origin. A <strong>source</strong>.</p></div>
+<div><p><strong>Uniform field:</strong> \(\langle 1, 0 \rangle\) &mdash; identical arrows everywhere. A constant wind.</p></div>
+<div><p><strong>Sink field:</strong> \(\langle -x, -y \rangle\) &mdash; every arrow points toward the origin.</p></div>
+<div><p><strong>Clockwise rotation:</strong> \(\langle y, -x \rangle\) &mdash; the mirror image of Example 1.</p></div>
+</section>
+
+<section id="vector-fields-in-3d" data-source-line="91" aria-label="Vector Fields in 3D">
+  <h2>Vector Fields in 3D</h2>
+  <figure class="desmos-container" role="figure" aria-label="3D Vector Field Plotter (GeoGebra)">
+  <iframe src="https://www.geogebra.org/m/u3xregNW" width="700" height="450" style="border:0" title="3D Vector Field Plotter (GeoGebra)" allowfullscreen loading="lazy"></iframe>
+  <figcaption><button class="desmos-fullscreen" data-src="https://www.geogebra.org/m/u3xregNW" title="Expand to full screen">&#x26F6;</button> Interactive tool for plotting 3D vector fields. Enter component functions P(x,y,z), Q(x,y,z), and R(x,y,z) to see the field in 3D. Rotate to explore. <a href="https://www.geogebra.org/m/u3xregNW" target="_blank" rel="noopener" class="desmos-open-tab" title="Open in new tab">&#x2197;</a></figcaption>
+</figure>
+<div><p><strong>Try it:</strong> \(\langle x, y, -z \rangle\) &mdash; a “fountain” field. Water flows outward from the center and falls back down.</p></div>
+<div><p><strong>Physics examples:</strong></p>
+<ul>
+<li><strong>Gravity:</strong> \(\displaystyle\vec{F} = -\frac{mMG}{|\vec{r}|^3} \vec{r}\) (points toward mass, inverse-square)</li>
+<li><strong>Electric field:</strong> \(\displaystyle\vec{E} = \frac{q}{|\vec{r}|^3} \vec{r}\) (same structure, points away from \(+\) charge)</li>
+</ul></div>
+</section>
+
+<section id="gradient-fields-and-conservative-vector-fields" data-source-line="108" aria-label="Gradient Fields and Conservative Vector Fields">
+  <h2>Gradient Fields and Conservative Vector Fields</h2>
+  <section class="defn-box" role="region" aria-label="Gradient Field / Conservative Vector Field">
+  <h3 class="defn-title">Gradient Field / Conservative Vector Field</h3>
+  <p>A vector field \(\vec{F}\) is called a <strong>gradient field</strong> (or <strong>conservative</strong>) if there exists a scalar function \(f\) such that:</p>
+<p>\[\vec{F} = \nabla f = \langle f_x,\; f_y \rangle \qquad\text{(or } \langle f_x, f_y, f_z \rangle \text{ in 3D)}\]</p>
+<p>The function \(f\) is called a <strong>potential function</strong> for \(\vec{F}\).</p>
+</section>
+<div><p><strong>Why “conservative”?</strong> A conservative force does zero net work around any closed path. Gravity is conservative &mdash; energy spent going uphill is recovered coming back down.</p></div>
+<div><p>Not every vector field is conservative. A big question in Chapter 16: <em>which fields are conservative, and how can we tell?</em></p></div>
+</section>
+
+<section id="example-2-verify-a-gradient-field" data-source-line="126" aria-label="Example 2: Verify a Gradient Field">
+  <h2>Example 2: Verify a Gradient Field</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Show that \(\vec{F}(x,y) = \langle 2xy + 3,\; x^2 - 4y \rangle\) is a gradient field by finding a potential function \(f\).</p>
+</section>
+<p class="work-prompt">We need \(f\) with \(\nabla f = \vec{F}\), i.e. \(f_x = 2xy + 3\) and \(f_y = x^2 - 4y\).</p>
+<div><p><strong>Integrate \(f_x = 2xy + 3\) with respect to \(x\):</strong></p>
+<p>\[f(x,y) = x^2 y + 3x + g(y)\]</p></div>
+<div><p><strong>Match \(f_y\):</strong> \(\;\;f_y = x^2 + g'(y) = x^2 - 4y \;\;\Rightarrow\;\; g'(y) = -4y \;\;\Rightarrow\;\; g(y) = -2y^2\)</p></div>
+<div><p>\[\boxed{f(x,y) = x^2 y + 3x - 2y^2}\]</p>
+<p><strong>Check:</strong> \(\nabla f = \langle 2xy + 3,\; x^2 - 4y \rangle = \vec{F}\). \checkmark</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>To find a potential function: integrate one component, then match the other to determine the leftover function.</p></aside>
+</section>
+
+<section id="how-gradient-fields-look-different" data-source-line="147" aria-label="How Gradient Fields Look Different">
+  <h2>How Gradient Fields Look Different</h2>
+  <div><p><strong>Gradient field</strong> (\(\vec{F} = \nabla f\)): arrows are <strong>perpendicular to level curves</strong> of \(f\), pointing from low to high values. No swirling &mdash; a leaf dropped in the flow moves but never spins.</p></div>
+<div><p><strong>Non-gradient field</strong>: arrows can form closed loops, swirl, or rotate. The rotation field \(\langle -y, x \rangle\) from Example 1 is the classic case.</p></div>
+<div><p><strong>Visual test:</strong> If a vector field has arrows forming closed loops, it is <strong>not conservative</strong>. Conservative fields “flow downhill” from a potential function.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>In Section 16.3, we'll develop precise tests for when a field is conservative and systematic methods for finding the potential function. For now, the gradient concept is what matters.</p></aside>
+</section>
+
+<section id="section-16-1-summary" data-source-line="162" aria-label="Section 16.1 Summary">
+  <h2>Section 16.1 Summary</h2>
+  <div class="summary-grid">
+<section class="defn-box" role="region" aria-label="Vector Field"><h3 class="defn-title">Vector Field</h3><p>A function \(\vec{F}\) that assigns a vector to each point: \(\vec{F}(x,y) = \langle P(x,y), Q(x,y) \rangle\). Visualized as arrows at sample points.</p></section>
+<section class="defn-box" role="region" aria-label="Plotting"><h3 class="defn-title">Plotting</h3><p>Evaluate \(\vec{F}\) at grid points, draw arrows. Look for patterns: rotation, radial, uniform, sink.</p></section>
+<section class="defn-box" role="region" aria-label="Gradient / Conservative Field"><h3 class="defn-title">Gradient / Conservative Field</h3><p>\(\vec{F} = \nabla f\) for some potential function \(f\). No swirling, perpendicular to level curves.</p></section>
+<section class="defn-box" role="region" aria-label="Finding $f$"><h3 class="defn-title">Finding \(f\)</h3><p>Integrate one component, match the other. Full methods in Section 16.3.</p></section>
+<section class="defn-box" role="region" aria-label="Looking Ahead"><h3 class="defn-title">Looking Ahead</h3><p>Section 16.2: <strong>line integrals</strong> &mdash; integrating along curves. Conservative fields will make this much easier.</p></section>
+</div>
+</section>
+
+<section aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 16.1:</strong> 3, 7, 13--22, 25, 27, 29, 31--34</div>
+</section>
+</main>
+<script>
+// Scroll observer: notify parent when visible section changes (for editor sync)
+(function() {
+    if (!window.parent || window.parent === window) return;
+    var sections = document.querySelectorAll('main > section[data-source-line]');
+    if (!sections.length) return;
+    var currentLine = null;
+    var scrollTimer = null;
+    function onScroll() {
+        if (scrollTimer) clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(updateVisibleSection, 80);
+    }
+    function updateVisibleSection() {
+        var viewTop = window.innerHeight * 0.3;
+        var best = null;
+        for (var i = 0; i < sections.length; i++) {
+            var rect = sections[i].getBoundingClientRect();
+            if (rect.top <= viewTop && rect.bottom > 0) best = sections[i];
+        }
+        if (best) {
+            var line = parseInt(best.dataset.sourceLine, 10);
+            if (!isNaN(line) && line !== currentLine) {
+                currentLine = line;
+                window.parent.postMessage({ type: 'htmlSectionChanged', sourceLine: line }, '*');
+            }
+        }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    // Also listen for goToSection messages from parent
+    window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'goToSection' && e.data.sourceLine != null) {
+            for (var i = 0; i < sections.length; i++) {
+                if (parseInt(sections[i].dataset.sourceLine, 10) === e.data.sourceLine) {
+                    sections[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    break;
+                }
+            }
+        }
+    });
+})();
+</script>
+</body>
+</html>

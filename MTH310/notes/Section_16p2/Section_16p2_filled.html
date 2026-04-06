@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 16.2: Line Integrals | MTH 310</title>
+<style>
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #e09f3e;
+    --bg: #ffffff; --fg: #1a1a1a;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; max-width: 900px;
+    margin: 0 auto; padding: 1em 2em; color: var(--fg); background: var(--bg);
+    font-size: 1.05rem; line-height: 1.6; }
+h1 { font-size: 1.8em; color: var(--accent-cyan); border-bottom: 3px solid var(--accent-cyan);
+    padding-bottom: 0.2em; }
+h2 { font-size: 1.4em; color: var(--accent-cyan); margin-top: 1.5em;
+    border-bottom: 1px solid #ddd; padding-bottom: 0.15em; }
+h3 { font-size: 1.1em; margin: 0.5em 0 0.2em 0; }
+h4 { font-size: 1em; color: var(--accent-cyan); margin: 0.3em 0; }
+p { margin: 0.5em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 1em 0; }
+.course-info { color: #666; font-size: 0.9em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-cyan);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.defn-box h3, .defn-box .defn-title { color: var(--accent-red); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box h3, .theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.example-box h3, .example-box .example-title { color: var(--accent-green); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.solution { border: 1px solid #ddd; border-radius: 4px; margin: 0.5em 0; }
+.solution summary { padding: 0.5em 0.8em; cursor: pointer; font-weight: 600;
+    color: #8a6200; background: #fffdf5; border-radius: 4px; }
+.solution > div, .solution > p, .solution > ul, .solution > ol {
+    padding: 0.5em 1em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 4px;
+    padding: 0.8em 1em; margin: 0.8em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #595959; margin: 0.5em 0; font-size: 0.9em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red); border-radius: 6px;
+    padding: 0.8em 1.2em; text-align: center; margin: 1em 0; font-size: 1.1em; }
+.desmos-container { text-align: center; margin: 1em 0; }
+.desmos-container figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.desmos-container iframe { border: 1px solid #ddd; border-radius: 6px; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.2em;
+    color: var(--accent-cyan); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+.desmos-fullscreen { background: none; border: 1px solid var(--accent-cyan); border-radius: 4px;
+    color: var(--accent-cyan); font-size: 1em; cursor: pointer; padding: 0.15em 0.5em;
+    opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-fullscreen:hover { opacity: 1; background: rgba(0,119,182,0.1); }
+figure { margin: 0.8em 0; text-align: center; }
+figure img { max-width: 100%; height: auto; max-height: 500px; border-radius: 4px; }
+figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 4px; border: 1px solid #ddd; }
+.plotly-figure { border-radius: 4px; overflow: hidden; margin: 0.5em 0; }
+.plotly-figure .js-plotly-plot { width: 100% !important; height: 100% !important; }
+.plotly-figure .plotly-graph-div { width: 100% !important; height: 100% !important; }
+.plotly-figure .modebar-container { position: absolute !important; top: 2px !important; right: 2px !important; }
+.plotly-alt { margin-top: 0.3em; font-size: 0.85em; color: #666; }
+.plotly-alt summary { cursor: pointer; color: var(--accent-cyan); }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 1em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.5em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 200px; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.8em; color: #666; }
+table { border-collapse: collapse; margin: 0.5em 0; }
+th, td { padding: 0.3em 0.8em; border: 1px solid #ddd; text-align: center; }
+th { background: #f0f7ff; color: var(--accent-cyan); }
+.small { font-size: 0.85em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+a { color: var(--accent-cyan); }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media (max-width: 600px) {
+    body { padding: 0.5em 1em; }
+    .summary-grid { grid-template-columns: 1fr; }
+}
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <h1>Section 16.2: Line Integrals</h1>
+  <p class="course-info">MTH 310 &mdash; Calculus III | Vector Calculus</p>
+</header>
+<hr aria-hidden="true">
+
+<section id="line-integrals-integrating-along-curves" data-source-line="15" aria-label="Line Integrals: Integrating Along Curves">
+  <h2>Line Integrals: Integrating Along Curves</h2>
+  <div><p>A <strong>line integral</strong> extends the definite integral from a straight interval \([a,b]\) to a <strong>curve</strong> \(C\) in 2D or 3D. Two types:</p>
+<ul>
+<li><strong>Scalar</strong>: \(\int_C f\,ds\) &mdash; add up a function weighted by arc length (e.g., mass of a wire)</li>
+<li><strong>Vector</strong>: \(\int_C \vec{F}\cdot d\vec{r}\) &mdash; add up a vector field along a curve (e.g., work done by a force)</li>
+</ul></div>
+<div><p>The key ingredient from Chapter 13: the <strong>arc length element</strong></p>
+<p>\[ds = |\vec{r}'(t)|\,dt\]</p>
+<p>converts everything to an ordinary integral over \([a,b]\).</p></div>
+</section>
+
+<section id="line-integral-of-a-scalar-function" data-source-line="33" aria-label="Line Integral of a Scalar Function">
+  <h2>Line Integral of a Scalar Function</h2>
+  <section class="defn-box" role="region" aria-label="Line Integral with Respect to Arc Length">
+  <h3 class="defn-title">Line Integral with Respect to Arc Length</h3>
+  <p>\[\int_C f\,ds = \int_a^b f\bigl(\vec{r}(t)\bigr)\,|\vec{r}'(t)|\,dt\]</p>
+</section>
+<div><p><strong>Geometric interpretation:</strong> For \(f > 0\), \(\int_C f\,ds\) is the area of the “curtain” standing on \(C\) reaching up to \(z = f(x,y)\).</p></div>
+<figure>
+  <img src="figures/curtain_area.png" alt="A 3D view showing a curve C in the xy-plane with a vertical surface (curtain) rising from C up to the surface z equals f of x y. The shaded area between the curve and the surface represents the value of the scalar line integral." style="max-width:100%; max-height:500px;">
+</figure>
+<div><p>The value does <strong>not</strong> depend on the parameterization &mdash; only on \(C\) and \(f\). (When \(C\) is a segment of the \(x\)-axis, this reduces to \(\int_a^b f(x)\,dx\).)</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Recipe: (1) parameterize \(C\) as \(\vec{r}(t)\), (2) compute \(|\vec{r}'(t)|\), (3) substitute and integrate.</p></aside>
+</section>
+
+<section id="example-1-scalar-line-integral-along-a-line-segment" data-source-line="50" aria-label="Example 1: Scalar Line Integral Along a Line Segment">
+  <h2>Example 1: Scalar Line Integral Along a Line Segment</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Evaluate \(\displaystyle\int_C x\sin y\,ds\), where \(C\) is the line segment from \((0,3)\) to \((4,6)\).</p>
+</section>
+<p class="work-prompt">Parameterize: \(\vec{r}(t) = (1-t)\vec{r}_0 + t\vec{r}_1\) for \(t \in [0,1]\), then compute \(|\vec{r}'(t)|\) and set up the integral.</p>
+<div><p><strong>Parameterize:</strong> \(\vec{r}(t) = \langle 4t, 3+3t \rangle\), \(0 \leq t \leq 1\). So \(x = 4t\), \(y = 3 + 3t\).</p></div>
+<div><p><strong>Speed:</strong> \(\vec{r}'(t) = \langle 4, 3 \rangle\), \(|\vec{r}'(t)| = 5\).</p></div>
+<div><p><strong>Evaluate:</strong></p>
+<p>\[\int_C x\sin y\,ds = \int_0^1 (4t)\sin(3+3t)\cdot 5\,dt = 20\int_0^1 t\sin(3+3t)\,dt\]</p></div>
+<div><p>Integration by parts (\(u = t\), \(dv = \sin(3+3t)\,dt\)):</p>
+<p>\[= 20\left[-\frac{\cos 6}{3} + \frac{\sin 6 - \sin 3}{9}\right]\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>For a line segment, \(|\vec{r}'(t)|\) is constant &mdash; a nice simplification. For most curves it won't be.</p></aside>
+</section>
+
+<section id="line-integrals-with-respect-to-and" data-source-line="73" aria-label="Line Integrals with Respect to $x$ and $y$">
+  <h2>Line Integrals with Respect to \(x\) and \(y\)</h2>
+  <div><p>Besides integrating with respect to arc length (\(ds\)), we can integrate with respect to \(x\) or \(y\) individually:</p></div>
+<section class="defn-box" role="region" aria-label="Line Integrals with Respect to $x$ and $y$">
+  <h3 class="defn-title">Line Integrals with Respect to \(x\) and \(y\)</h3>
+  <p>\[\int_C f(x,y)\,dx = \int_a^b f\bigl(x(t),y(t)\bigr)\,x'(t)\,dt\]</p>
+<p>\[\int_C f(x,y)\,dy = \int_a^b f\bigl(x(t),y(t)\bigr)\,y'(t)\,dt\]</p>
+</section>
+<div><p><strong>Key difference from \(ds\):</strong> These use \(x'(t)\,dt\) or \(y'(t)\,dt\) instead of \(|\vec{r}'(t)|\,dt\).</p>
+<ul>
+<li>\(ds\) always involves \(|\vec{r}'(t)|\) &mdash; a magnitude, always positive</li>
+<li>\(dx\) and \(dy\) can be <strong>negative</strong> (they track direction)</li>
+</ul></div>
+<div><p>These often appear <strong>together</strong> in the combined form:</p>
+<p>\[\int_C P(x,y)\,dx + Q(x,y)\,dy = \int_C P\,dx + \int_C Q\,dy\]</p>
+<p>This notation will become very important in Green's Theorem (Section 16.4).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\int_C f\,ds\) uses the speed \(|\vec{r}'(t)|\) and ignores direction. \(\int_C f\,dx\) and \(\int_C f\,dy\) track direction through the individual components \(x'(t)\) and \(y'(t)\).</p></aside>
+</section>
+
+<section id="example-2-line-integral-over-a-piecewise-path" data-source-line="100" aria-label="Example 2: Line Integral Over a Piecewise Path">
+  <h2>Example 2: Line Integral Over a Piecewise Path</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Evaluate \(\displaystyle\int_C x^2\,dx + y^2\,dy\), where \(C\) consists of the arc of the circle \(x^2 + y^2 = 4\) from \((2,0)\) to \((0,2)\), followed by the line segment from \((0,2)\) to \((4,3)\).</p>
+</section>
+<p class="work-prompt">Split \(C\) into \(C_1\) (circular arc) and \(C_2\) (line segment). Parameterize each piece separately, then add the integrals.</p>
+<div><p><strong>\(C_1\): Circular arc</strong> from \((2,0)\) to \((0,2)\). Parameterize: \(x = 2\cos t\), \(y = 2\sin t\), \(0 \leq t \leq \pi/2\).</p>
+<p>\(dx = -2\sin t\,dt\),   \(dy = 2\cos t\,dt\).</p></div>
+<div><p>\[\int_{C_1} x^2\,dx + y^2\,dy = \int_0^{\pi/2}\bigl[(4\cos^2 t)(-2\sin t) + (4\sin^2 t)(2\cos t)\bigr]\,dt\]</p>
+<p>\[= \int_0^{\pi/2}\bigl[-8\cos^2 t\sin t + 8\sin^2 t\cos t\bigr]\,dt\]</p></div>
+<div><p>\[= \left[\frac{8\cos^3 t}{3} + \frac{8\sin^3 t}{3}\right]_0^{\pi/2} = \left(\frac{0 + 8}{3}\right) - \left(\frac{8 + 0}{3}\right) = 0\]</p></div>
+
+<div><p><strong>\(C_2\): Line segment</strong> from \((0,2)\) to \((4,3)\).</p></div>
+<div><p>Parameterize: \(x = 4t\), \(y = 2 + t\), \(0 \leq t \leq 1\).</p>
+<p>\(dx = 4\,dt\),   \(dy = dt\).</p></div>
+<div><p>\[\int_{C_2} x^2\,dx + y^2\,dy = \int_0^1\bigl[(16t^2)(4) + (2+t)^2(1)\bigr]\,dt\]</p>
+<p>\[= \int_0^1\bigl[64t^2 + 4 + 4t + t^2\bigr]\,dt = \int_0^1\bigl[65t^2 + 4t + 4\bigr]\,dt\]</p></div>
+<div><p>\[= \left[\frac{65t^3}{3} + 2t^2 + 4t\right]_0^1 = \frac{65}{3} + 2 + 4 = \frac{65}{3} + 6 = \frac{83}{3}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\displaystyle\int_C x^2\,dx + y^2\,dy = 0 + \frac{83}{3} = \frac{83}{3}\). For piecewise paths, split into smooth pieces, evaluate each, and add.</p></aside>
+</section>
+
+<section id="example-3-line-integral-in-3d" data-source-line="135" aria-label="Example 3: Line Integral in 3D">
+  <h2>Example 3: Line Integral in 3D</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Evaluate \(\displaystyle\int_C y\,dx + z\,dy + x\,dz\), where \(C\) is the line segment from \((1,2,3)\) to \((-1,4,6)\).</p>
+</section>
+<p class="work-prompt">Parameterize: start at \(\langle 1,2,3\rangle\), direction \(= \langle -1,4,6\rangle - \langle 1,2,3\rangle = \langle -2,2,3\rangle\).</p>
+<div><p><strong>Parameterize:</strong> \(\vec{r}(t) = \langle 1,2,3 \rangle + t\langle -2,2,3 \rangle = \langle 1-2t,\; 2+2t,\; 3+3t \rangle\), \(0 \leq t \leq 1\).</p>
+<p>\(dx = -2\,dt\), \; \(dy = 2\,dt\), \; \(dz = 3\,dt\).</p></div>
+<div><p><strong>Substitute:</strong></p>
+<p>\[\int_C y\,dx + z\,dy + x\,dz = \int_0^1\bigl[(2+2t)(-2) + (3+3t)(2) + (1-2t)(3)\bigr]\,dt\]</p></div>
+<div><p>\[= \int_0^1\bigl[-4-4t + 6+6t + 3-6t\bigr]\,dt = \int_0^1\bigl[5 - 4t\bigr]\,dt\]</p>
+<p>\[= \left[5t - 2t^2\right]_0^1 = 5 - 2 = 3\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\displaystyle\int_C y\,dx + z\,dy + x\,dz = 3\). The 3D line integral \(\int_C P\,dx + Q\,dy + R\,dz\) works exactly like the 2D version &mdash; just with three terms.</p></aside>
+</section>
+
+<section id="line-integral-of-a-vector-field-work" data-source-line="158" aria-label="Line Integral of a Vector Field (Work)">
+  <h2>Line Integral of a Vector Field (Work)</h2>
+  <div><p>For a varying force along a curved path, <strong>work</strong> = \(\int_C (\text{force along path}) \cdot ds\).</p></div>
+<section class="defn-box" role="region" aria-label="Line Integral of a Vector Field">
+  <h3 class="defn-title">Line Integral of a Vector Field</h3>
+  <p>\[\int_C \vec{F}\cdot d\vec{r} = \int_a^b \vec{F}\bigl(\vec{r}(t)\bigr) \cdot \vec{r}'(t)\,dt\]</p>
+</section>
+<div><p><strong>Three equivalent notations:</strong></p>
+<p>\[\int_C \vec{F}\cdot d\vec{r} = \int_C \vec{F}\cdot\vec{T}\,ds = \int_C P\,dx + Q\,dy + R\,dz\]</p>
+<p>The connection: \(d\vec{r} = \vec{r}'(t)\,dt = \langle dx, dy, dz \rangle\), so \(\vec{F}\cdot d\vec{r} = P\,dx + Q\,dy + R\,dz\).</p></div>
+<div><p><strong>Quick Check:</strong> If \(\vec{F} = \langle 1+y, x \rangle\), then \(\int_C \vec{F}\cdot d\vec{r} = \int_C (1+y)\,dx + x\,dy\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>To evaluate: parameterize \(C\), compute \(\vec{F}(\vec{r}(t))\cdot\vec{r}'(t)\), and integrate from \(a\) to \(b\).</p></aside>
+</section>
+
+<section id="example-4-work-done-by-a-force" data-source-line="180" aria-label="Example 4: Work Done by a Force">
+  <h2>Example 4: Work Done by a Force</h2>
+  <section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>Let \(\vec{F} = \langle 1+y,\; x \rangle\) and let \(C\) be the upper semicircle from \((-1,0)\) to \((1,0)\). Compute the work \(\displaystyle\int_C \vec{F}\cdot d\vec{r}\).</p>
+</section>
+<p class="work-prompt">Parameterize the upper semicircle from \((-1,0)\) to \((1,0)\). Hint: try \(\vec{r}(t) = \langle -\cos t, \sin t \rangle\).</p>
+<div><p><strong>Parameterize:</strong> \(\vec{r}(t) = \langle -\cos t, \sin t \rangle\), \(0 \leq t \leq \pi\).</p>
+<p>Check: \(\vec{r}(0) = (-1, 0)\), \(\vec{r}(\pi) = (1, 0)\). \checkmark   \(\vec{r}'(t) = \langle \sin t, \cos t \rangle\).</p></div>
+<div><p><strong>Dot product:</strong> \(\vec{F}(\vec{r}(t)) = \langle 1 + \sin t,\; -\cos t \rangle\).</p>
+<p>\[\vec{F}\cdot\vec{r}' = (1+\sin t)(\sin t) + (-\cos t)(\cos t) = \sin t + \sin^2 t - \cos^2 t = \sin t - \cos 2t\]</p></div>
+<div><p><strong>Integrate:</strong></p>
+<p>\[\int_0^{\pi}(\sin t - \cos 2t)\,dt = \left[-\cos t - \frac{\sin 2t}{2}\right]_0^{\pi} = (1 - 0) - (-1 - 0) = \boxed{2}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>If we reversed direction (\((1,0)\) to \((-1,0)\)), the work would be \(-2\). Direction matters for vector line integrals!</p></aside>
+</section>
+
+<section id="properties-of-line-integrals" data-source-line="203" aria-label="Properties of Line Integrals">
+  <h2>Properties of Line Integrals</h2>
+  <div><p><strong>Linearity:</strong></p>
+<p>\[\int_C (c_1\vec{F}_1 + c_2\vec{F}_2)\cdot d\vec{r} = c_1\int_C\vec{F}_1\cdot d\vec{r} + c_2\int_C\vec{F}_2\cdot d\vec{r}\]</p></div>
+<div><p><strong>Piecewise paths:</strong> \(C = C_1 \cup C_2 \cup \cdots \;\Rightarrow\; \int_C = \int_{C_1} + \int_{C_2} + \cdots\)   (used in Example 2)</p></div>
+<div><p><strong>Reversing direction:</strong></p>
+<p>\[\int_{-C}\vec{F}\cdot d\vec{r} = -\int_C\vec{F}\cdot d\vec{r} \qquad\text{but}\qquad \int_{-C}f\,ds = \int_C f\,ds\]</p>
+<p>Vector line integrals <strong>change sign</strong>; scalar line integrals <strong>don't</strong> (arc length has no direction).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Reversing direction negates \(\int_C \vec{F}\cdot d\vec{r}\) because \(d\vec{r}\) reverses, but doesn't change \(\int_C f\,ds\) because \(ds\) is always positive.</p></aside>
+</section>
+
+<section id="section-16-2-summary" data-source-line="222" aria-label="Section 16.2 Summary">
+  <h2>Section 16.2 Summary</h2>
+  <div class="summary-grid">
+<section class="defn-box" role="region" aria-label="Scalar Line Integral"><h3 class="defn-title">Scalar Line Integral</h3><p>\(\displaystyle\int_C f\,ds = \int_a^b f(\vec{r}(t)) |\vec{r}'(t)|\,dt\). Adds up \(f\) weighted by arc length. Independent of parameterization and direction.</p></section>
+<section class="defn-box" role="region" aria-label="Vector Line Integral (Work)"><h3 class="defn-title">Vector Line Integral (Work)</h3><p>\(\displaystyle\int_C\vec{F}\cdot d\vec{r} = \int_a^b\vec{F}(\vec{r}(t))\cdot\vec{r}'(t)\,dt\). Computes work done by \(\vec{F}\) along \(C\). Depends on direction.</p></section>
+<section class="defn-box" role="region" aria-label="Three Notations"><h3 class="defn-title">Three Notations</h3><p>\(\int_C\vec{F}\cdot d\vec{r} = \int_C\vec{F}\cdot\vec{T}\,ds = \int_C P\,dx + Q\,dy + R\,dz\). All equivalent.</p></section>
+<section class="defn-box" role="region" aria-label="Key Properties"><h3 class="defn-title">Key Properties</h3><p>Linearity, piecewise additivity, and direction reversal: \(\int_{-C}\vec{F}\cdot d\vec{r} = -\int_C\vec{F}\cdot d\vec{r}\).</p></section>
+<section class="defn-box" role="region" aria-label="Evaluation Strategy"><h3 class="defn-title">Evaluation Strategy</h3><p>(1) Parameterize \(C\) as \(\vec{r}(t)\). (2) Compute \(\vec{r}'(t)\). (3) Substitute and integrate over \([a,b]\).</p></section>
+</div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Coming up next:</strong> Section 16.3 &mdash; The Fundamental Theorem for Line Integrals. We'll discover that for <strong>conservative</strong> vector fields (\(\vec{F} = \nabla f\)), the line integral depends only on the endpoints &mdash; not the path!</p></aside>
+</section>
+
+<section aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 16.2:</strong> 1, 3, 5, 7, 11, 13, 19, 21, 23, 35, 43, 45, 47, 49</div>
+</section>
+</main>
+<script>
+// Scroll observer: notify parent when visible section changes (for editor sync)
+(function() {
+    if (!window.parent || window.parent === window) return;
+    var sections = document.querySelectorAll('main > section[data-source-line]');
+    if (!sections.length) return;
+    var currentLine = null;
+    var scrollTimer = null;
+    function onScroll() {
+        if (scrollTimer) clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(updateVisibleSection, 80);
+    }
+    function updateVisibleSection() {
+        var viewTop = window.innerHeight * 0.3;
+        var best = null;
+        for (var i = 0; i < sections.length; i++) {
+            var rect = sections[i].getBoundingClientRect();
+            if (rect.top <= viewTop && rect.bottom > 0) best = sections[i];
+        }
+        if (best) {
+            var line = parseInt(best.dataset.sourceLine, 10);
+            if (!isNaN(line) && line !== currentLine) {
+                currentLine = line;
+                window.parent.postMessage({ type: 'htmlSectionChanged', sourceLine: line }, '*');
+            }
+        }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    // Also listen for goToSection messages from parent
+    window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'goToSection' && e.data.sourceLine != null) {
+            for (var i = 0; i < sections.length; i++) {
+                if (parseInt(sections[i].dataset.sourceLine, 10) === e.data.sourceLine) {
+                    sections[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    break;
+                }
+            }
+        }
+    });
+})();
+</script>
+</body>
+</html>

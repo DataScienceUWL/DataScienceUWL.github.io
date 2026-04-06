@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 16.2: Line Integrals &mdash; Handout</title>
+<style>
+@page { size: letter; margin: 0.4in 0.5in; }
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #b5850e;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    max-width: 7.5in; margin: 0 auto; padding: 0.3em;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.35; }
+.handout-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left h1 { font-size: 1.3em; color: var(--accent-cyan); margin: 0; }
+.header-left p { margin: 0.05em 0; color: #666; font-size: 0.85em; }
+.header-right { text-align: right; font-size: 0.85em; color: #333; }
+hr { border: none; border-top: 2px solid var(--accent-cyan); margin: 0.3em 0; }
+h2 { font-size: 1.1em; color: var(--accent-cyan); margin: 0.4em 0 0.15em 0;
+    border-bottom: 1px solid #ccc; padding-bottom: 0.05em; }
+h3, h4 { font-size: 0.95em; margin: 0.15em 0; }
+p { margin: 0.15em 0; }
+.defn-box { background: #f0f7ff; border-left: 3px solid var(--accent-cyan);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 3px solid var(--accent-green);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
+    padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
+.blank-space { margin: 0.2em 0; position: relative;
+    border: none; border-top: 1px dashed #ccc; box-sizing: border-box; }
+.blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
+    color: #767676; font-style: italic; }
+.hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
+    padding: 0.3em 0.8em; text-align: center; margin: 0.5em 0; }
+.desmos-link { background: #f0f7ff; border-radius: 3px; padding: 0.2em 0.5em;
+    margin: 0.3em 0; font-size: 0.8em; }
+.desmos-link a { color: var(--accent-cyan); word-break: break-all; }
+.two-col-print { display: flex; gap: 0.6em; align-items: flex-start; }
+.two-col-print > * { flex: 1; }
+figure { margin: 0.1em 0; text-align: center; }
+figure img { max-width: 100%; max-height: 3.0in; }
+figcaption { font-size: 0.7em; color: #666; margin-top: 0.05em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 2px; border: 1px solid #ddd; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.image-grid { display: flex; gap: 0.4em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.2em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.8em; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 1.5in; max-width: 100%; }
+.image-grid .grid-cell.textbook-fig img { padding: 2px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+table { border-collapse: collapse; font-size: 0.85em; margin: 0.15em auto; }
+th, td { padding: 0.1em 0.4em; border: 1px solid #ccc; text-align: center; }
+th { background: #f0f7ff; }
+.small { font-size: 0.8em; }
+ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
+li { margin-bottom: 0.05em; }
+.pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
+.homework-section { page-break-before: auto; }
+.defn-box, .example-box, .key-point, .blank-space, .theorem-box { page-break-inside: avoid; break-inside: avoid; }
+main > section { page-break-inside: auto; }
+main > section.example-group { page-break-inside: avoid; break-inside: avoid; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media print {
+    body { padding: 0; max-width: none; }
+    .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    a[href^="http"]::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="#"]::after { content: none; }
+    figure img { max-height: 2.8in; }
+    .skip-link { display: none; }
+}
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// Pagination is handled entirely by CSS:
+//   .pagebreak            → page-break-before: always
+//   .example-group        → page-break-inside: avoid
+//   .defn-box, .key-point → page-break-inside: avoid
+// Workspaces use their declared min-height only — no JS expansion.
+// This produces dense, predictable handouts.
+</script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <div class="handout-header">
+    <div class="header-left">
+      <h1>Section 16.2: Line Integrals</h1>
+      <p>Vector Calculus</p>
+    </div>
+    <div class="header-right">
+      <p>MTH 310<br>Calculus III</p>
+    </div>
+  </div>
+</header>
+<hr aria-hidden="true">
+
+<section id="line-integrals-integrating-along-curves" data-source-line="15" aria-label="Line Integrals: Integrating Along Curves">
+  <h2>Line Integrals: Integrating Along Curves</h2>
+  <div><p>A <strong>line integral</strong> extends the definite integral from a straight interval \([a,b]\) to a <strong>curve</strong> \(C\) in 2D or 3D. Two types:</p>
+<ul>
+<li><strong>Scalar</strong>: \(\int_C f\,ds\) &mdash; add up a function weighted by arc length (e.g., mass of a wire)</li>
+<li><strong>Vector</strong>: \(\int_C \vec{F}\cdot d\vec{r}\) &mdash; add up a vector field along a curve (e.g., work done by a force)</li>
+</ul></div>
+<div><p>The key ingredient from Chapter 13: the <strong>arc length element</strong></p>
+<p>\[ds = |\vec{r}'(t)|\,dt\]</p>
+<p>converts everything to an ordinary integral over \([a,b]\).</p></div>
+</section>
+
+<section id="line-integral-of-a-scalar-function" data-source-line="33" aria-label="Line Integral of a Scalar Function">
+  <h2>Line Integral of a Scalar Function</h2>
+  <section class="defn-box" role="region" aria-label="Line Integral with Respect to Arc Length">
+  <h3 class="defn-title">Line Integral with Respect to Arc Length</h3>
+  <p>\[\int_C f\,ds = \int_a^b f\bigl(\vec{r}(t)\bigr)\,|\vec{r}'(t)|\,dt\]</p>
+</section>
+<div><p><strong>Geometric interpretation:</strong> For \(f > 0\), \(\int_C f\,ds\) is the area of the “curtain” standing on \(C\) reaching up to \(z = f(x,y)\).</p></div>
+<figure>
+  <img src="figures/curtain_area.png" alt="A 3D view showing a curve C in the xy-plane with a vertical surface (curtain) rising from C up to the surface z equals f of x y. The shaded area between the curve and the surface represents the value of the scalar line integral.">
+</figure>
+<div><p>The value does <strong>not</strong> depend on the parameterization &mdash; only on \(C\) and \(f\). (When \(C\) is a segment of the \(x\)-axis, this reduces to \(\int_a^b f(x)\,dx\).)</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Recipe: (1) parameterize \(C\) as \(\vec{r}(t)\), (2) compute \(|\vec{r}'(t)|\), (3) substitute and integrate.</p></aside>
+</section>
+
+<section id="example-1-scalar-line-integral-along-a-line-segment" class="example-group" data-source-line="50" aria-label="Example 1: Scalar Line Integral Along a Line Segment">
+  <h2>Example 1: Scalar Line Integral Along a Line Segment</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Evaluate \(\displaystyle\int_C x\sin y\,ds\), where \(C\) is the line segment from \((0,3)\) to \((4,6)\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Parameterize: $\vec{r}(t) = (1-t)\vec{r}_0 + t\vec{r}_1$ for $t \in [0,1]$, then compute $|\vec{r}'(t)|$ and set up the integral." style="min-height:3.5in;">
+  <div class="blank-prompt">Parameterize: \(\vec{r}(t) = (1-t)\vec{r}_0 + t\vec{r}_1\) for \(t \in [0,1]\), then compute \(|\vec{r}'(t)|\) and set up the integral.</div>
+</div>
+</section>
+
+<section id="line-integrals-with-respect-to-and" data-source-line="73" aria-label="Line Integrals with Respect to $x$ and $y$">
+  <h2>Line Integrals with Respect to \(x\) and \(y\)</h2>
+  <div><p>Besides integrating with respect to arc length (\(ds\)), we can integrate with respect to \(x\) or \(y\) individually:</p></div>
+<section class="defn-box" role="region" aria-label="Line Integrals with Respect to $x$ and $y$">
+  <h3 class="defn-title">Line Integrals with Respect to \(x\) and \(y\)</h3>
+  <p>\[\int_C f(x,y)\,dx = \int_a^b f\bigl(x(t),y(t)\bigr)\,x'(t)\,dt\]</p>
+<p>\[\int_C f(x,y)\,dy = \int_a^b f\bigl(x(t),y(t)\bigr)\,y'(t)\,dt\]</p>
+</section>
+<div><p><strong>Key difference from \(ds\):</strong> These use \(x'(t)\,dt\) or \(y'(t)\,dt\) instead of \(|\vec{r}'(t)|\,dt\).</p>
+<ul>
+<li>\(ds\) always involves \(|\vec{r}'(t)|\) &mdash; a magnitude, always positive</li>
+<li>\(dx\) and \(dy\) can be <strong>negative</strong> (they track direction)</li>
+</ul></div>
+<div><p>These often appear <strong>together</strong> in the combined form:</p>
+<p>\[\int_C P(x,y)\,dx + Q(x,y)\,dy = \int_C P\,dx + \int_C Q\,dy\]</p>
+<p>This notation will become very important in Green's Theorem (Section 16.4).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\int_C f\,ds\) uses the speed \(|\vec{r}'(t)|\) and ignores direction. \(\int_C f\,dx\) and \(\int_C f\,dy\) track direction through the individual components \(x'(t)\) and \(y'(t)\).</p></aside>
+</section>
+
+<section id="example-2-line-integral-over-a-piecewise-path" class="example-group" data-source-line="100" aria-label="Example 2: Line Integral Over a Piecewise Path">
+  <h2>Example 2: Line Integral Over a Piecewise Path</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Evaluate \(\displaystyle\int_C x^2\,dx + y^2\,dy\), where \(C\) consists of the arc of the circle \(x^2 + y^2 = 4\) from \((2,0)\) to \((0,2)\), followed by the line segment from \((0,2)\) to \((4,3)\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Split $C$ into $C_1$ (circular arc) and $C_2$ (line segment). Parameterize each piece separately, then add the integrals." style="min-height:4in;">
+  <div class="blank-prompt">Split \(C\) into \(C_1\) (circular arc) and \(C_2\) (line segment). Parameterize each piece separately, then add the integrals.</div>
+</div>
+</section>
+
+<section id="example-3-line-integral-in-3d" class="example-group" data-source-line="135" aria-label="Example 3: Line Integral in 3D">
+  <h2>Example 3: Line Integral in 3D</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Evaluate \(\displaystyle\int_C y\,dx + z\,dy + x\,dz\), where \(C\) is the line segment from \((1,2,3)\) to \((-1,4,6)\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Parameterize: start at $\langle 1,2,3\rangle$, direction $= \langle -1,4,6\rangle - \langle 1,2,3\rangle = \langle -2,2,3\rangle$." style="min-height:3.5in;">
+  <div class="blank-prompt">Parameterize: start at \(\langle 1,2,3\rangle\), direction \(= \langle -1,4,6\rangle - \langle 1,2,3\rangle = \langle -2,2,3\rangle\).</div>
+</div>
+</section>
+
+<section id="line-integral-of-a-vector-field-work" data-source-line="158" aria-label="Line Integral of a Vector Field (Work)">
+  <h2>Line Integral of a Vector Field (Work)</h2>
+  <div><p>For a varying force along a curved path, <strong>work</strong> = \(\int_C (\text{force along path}) \cdot ds\).</p></div>
+<section class="defn-box" role="region" aria-label="Line Integral of a Vector Field">
+  <h3 class="defn-title">Line Integral of a Vector Field</h3>
+  <p>\[\int_C \vec{F}\cdot d\vec{r} = \int_a^b \vec{F}\bigl(\vec{r}(t)\bigr) \cdot \vec{r}'(t)\,dt\]</p>
+</section>
+<div><p><strong>Three equivalent notations:</strong></p>
+<p>\[\int_C \vec{F}\cdot d\vec{r} = \int_C \vec{F}\cdot\vec{T}\,ds = \int_C P\,dx + Q\,dy + R\,dz\]</p>
+<p>The connection: \(d\vec{r} = \vec{r}'(t)\,dt = \langle dx, dy, dz \rangle\), so \(\vec{F}\cdot d\vec{r} = P\,dx + Q\,dy + R\,dz\).</p></div>
+<div><p><strong>Quick Check:</strong> If \(\vec{F} = \langle 1+y, x \rangle\), then \(\int_C \vec{F}\cdot d\vec{r} = \int_C (1+y)\,dx + x\,dy\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>To evaluate: parameterize \(C\), compute \(\vec{F}(\vec{r}(t))\cdot\vec{r}'(t)\), and integrate from \(a\) to \(b\).</p></aside>
+</section>
+
+<section id="example-4-work-done-by-a-force" class="example-group" data-source-line="180" aria-label="Example 4: Work Done by a Force">
+  <h2>Example 4: Work Done by a Force</h2>
+  <section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>Let \(\vec{F} = \langle 1+y,\; x \rangle\) and let \(C\) be the upper semicircle from \((-1,0)\) to \((1,0)\). Compute the work \(\displaystyle\int_C \vec{F}\cdot d\vec{r}\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Parameterize the upper semicircle from $(-1,0)$ to $(1,0)$. Hint: try $\vec{r}(t) = \langle -\cos t, \sin t \rangle$." style="min-height:3.5in;">
+  <div class="blank-prompt">Parameterize the upper semicircle from \((-1,0)\) to \((1,0)\). Hint: try \(\vec{r}(t) = \langle -\cos t, \sin t \rangle\).</div>
+</div>
+</section>
+
+<div class="pagebreak" aria-hidden="true"></div>
+
+<section id="properties-of-line-integrals" data-source-line="205" aria-label="Properties of Line Integrals">
+  <h2>Properties of Line Integrals</h2>
+  <div><p><strong>Linearity:</strong></p>
+<p>\[\int_C (c_1\vec{F}_1 + c_2\vec{F}_2)\cdot d\vec{r} = c_1\int_C\vec{F}_1\cdot d\vec{r} + c_2\int_C\vec{F}_2\cdot d\vec{r}\]</p></div>
+<div><p><strong>Piecewise paths:</strong> \(C = C_1 \cup C_2 \cup \cdots \;\Rightarrow\; \int_C = \int_{C_1} + \int_{C_2} + \cdots\)   (used in Example 2)</p></div>
+<div><p><strong>Reversing direction:</strong></p>
+<p>\[\int_{-C}\vec{F}\cdot d\vec{r} = -\int_C\vec{F}\cdot d\vec{r} \qquad\text{but}\qquad \int_{-C}f\,ds = \int_C f\,ds\]</p>
+<p>Vector line integrals <strong>change sign</strong>; scalar line integrals <strong>don't</strong> (arc length has no direction).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Reversing direction negates \(\int_C \vec{F}\cdot d\vec{r}\) because \(d\vec{r}\) reverses, but doesn't change \(\int_C f\,ds\) because \(ds\) is always positive.</p></aside>
+</section>
+
+<section class="homework-section" aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 16.2:</strong> 1, 3, 5, 7, 11, 13, 19, 21, 23, 35, 43, 45, 47, 49</div>
+</section>
+</main>
+<script>
+// Scroll observer: notify parent when visible section changes (for editor sync)
+(function() {
+    if (!window.parent || window.parent === window) return;
+    var sections = document.querySelectorAll('main > section[data-source-line]');
+    if (!sections.length) return;
+    var currentLine = null;
+    var scrollTimer = null;
+    function onScroll() {
+        if (scrollTimer) clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(updateVisibleSection, 80);
+    }
+    function updateVisibleSection() {
+        var viewTop = window.innerHeight * 0.3;
+        var best = null;
+        for (var i = 0; i < sections.length; i++) {
+            var rect = sections[i].getBoundingClientRect();
+            if (rect.top <= viewTop && rect.bottom > 0) best = sections[i];
+        }
+        if (best) {
+            var line = parseInt(best.dataset.sourceLine, 10);
+            if (!isNaN(line) && line !== currentLine) {
+                currentLine = line;
+                window.parent.postMessage({ type: 'htmlSectionChanged', sourceLine: line }, '*');
+            }
+        }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'goToSection' && e.data.sourceLine != null) {
+            for (var i = 0; i < sections.length; i++) {
+                if (parseInt(sections[i].dataset.sourceLine, 10) === e.data.sourceLine) {
+                    sections[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    break;
+                }
+            }
+        }
+    });
+})();
+</script>
+</body>
+</html>
