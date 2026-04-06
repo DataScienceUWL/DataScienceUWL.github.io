@@ -111,6 +111,8 @@ export function initDistCalculator(config) {
   // --- State ---
   /** @type {ReturnType<typeof drawCurve>|null} */
   let curveState = null;
+  /** Current PDF function */
+  let currentPdf = null;
   /** Current CDF function */
   let currentCdf = null;
   /** Current inverse CDF function */
@@ -139,6 +141,25 @@ export function initDistCalculator(config) {
   }
 
   const inputXLabel = inputX?.closest('label');
+
+  /**
+   * Compute the Y endpoint for a leader line so it lands inside the shaded region.
+   * Returns the lower of: halfway between curve and baseline, or halfway between
+   * pillBottom and baseline.
+   * @param {number} dataX - X position in data space to sample the curve height
+   * @param {number} pillBottomY - Bottom edge of the pill in pixel space
+   * @returns {number} Y coordinate for leader endpoint
+   */
+  function leaderEndY(dataX, pillBottomY) {
+    if (!curveState) return pillBottomY + 30;
+    const { yScale } = curveState;
+    const baseline = curveState.frame.height;
+    const curveY = currentPdf ? yScale(currentPdf(dataX)) : baseline * 0.5;
+    return Math.max(
+      (curveY + baseline) / 2,      // halfway between curve and baseline
+      (pillBottomY + baseline) / 2   // halfway between pill bottom and baseline
+    );
+  }
 
   // --- Snap-to-common-values during drag ---
 
@@ -200,10 +221,11 @@ export function initDistCalculator(config) {
       clearError(paramInputs[p.paramKey]);
     }
 
+    currentPdf = config.pdfFactory(params);
     currentCdf = config.cdfFactory(params);
     currentInv = config.invFactory(params);
     updateSnapPoints();
-    const pdfFn = config.pdfFactory(params);
+    const pdfFn = currentPdf;
     const domainParams = config.domainParams(params);
     const domain = computeDomain(config.type, domainParams);
 
@@ -538,13 +560,13 @@ export function initDistCalculator(config) {
       .text(labelText);
 
     // Dashed leader line from pill into the shaded region
-    // Target: region midpoint horizontally, baseline vertically (shading always reaches baseline)
     const leaderTargetX = Math.max(4, Math.min(frame.width - 4, midPx));
-    const leaderEndY = frame.height - 2;
+    const pillBottomY = labelY + pillH / 2 + 2;
+    const endY = leaderEndY(midX, pillBottomY);
     group.append('line')
       .attr('class', 'prob-leader')
       .attr('x1', clampedX).attr('y1', labelY + pillH / 2 + 2)
-      .attr('x2', leaderTargetX).attr('y2', leaderEndY)
+      .attr('x2', leaderTargetX).attr('y2', endY)
       .attr('stroke', isComplement ? '#888' : '#569BBD')
       .attr('stroke-width', 1)
       .attr('stroke-dasharray', '3,2')
@@ -764,15 +786,16 @@ export function initDistCalculator(config) {
         el.attr('x', centers[i] - tw / 2).attr('width', tw);
       });
 
-      // Update leader lines (point to region midpoint near baseline)
+      // Update leader lines
       annotations.selectAll('.prob-leader').remove();
-      const leaderY = frame.height - 2;
+      const dataMids = [(domLo + -absX) / 2, (absX + domHi) / 2, 0];
+      const pillBottom = pillY + _bPillH / 2 + 2;
       for (let i = 0; i < 3; i++) {
         const targetX = Math.max(4, Math.min(frame.width - 4, rawCenters[i]));
         annotations.append('line')
           .attr('class', 'prob-leader')
-          .attr('x1', centers[i]).attr('y1', pillY + _bPillH / 2 + 2)
-          .attr('x2', targetX).attr('y2', leaderY)
+          .attr('x1', centers[i]).attr('y1', pillBottom)
+          .attr('x2', targetX).attr('y2', leaderEndY(dataMids[i], pillBottom))
           .attr('stroke', isComp[i] ? '#888' : '#569BBD')
           .attr('stroke-width', 1)
           .attr('stroke-dasharray', '3,2')
@@ -804,15 +827,16 @@ export function initDistCalculator(config) {
         el.attr('x', centers[i] - tw / 2).attr('width', tw);
       });
 
-      // Update leader lines (point to region midpoint near baseline)
+      // Update leader lines
       annotations.selectAll('.prob-leader').remove();
-      const leaderY = frame.height - 2;
+      const dataMids = [(domLo + newX) / 2, (newX + domHi) / 2];
+      const pillBottom = pillY + _dPillH / 2 + 2;
       for (let i = 0; i < 2; i++) {
         const targetX = Math.max(4, Math.min(frame.width - 4, rawCenters[i]));
         annotations.append('line')
           .attr('class', 'prob-leader')
-          .attr('x1', centers[i]).attr('y1', pillY + _dPillH / 2 + 2)
-          .attr('x2', targetX).attr('y2', leaderY)
+          .attr('x1', centers[i]).attr('y1', pillBottom)
+          .attr('x2', targetX).attr('y2', leaderEndY(dataMids[i], pillBottom))
           .attr('stroke', isComp[i] ? '#888' : '#569BBD')
           .attr('stroke-width', 1)
           .attr('stroke-dasharray', '3,2')
