@@ -415,41 +415,38 @@ export function addInferenceAnnotations(chart, opts) {
   } else {
     const isLeft = tail === 'left';
     const obsX = xScale(Math.max(domain[0], Math.min(domain[1], statValue)));
-    const tailWidth = isLeft ? obsX : (w - obsX);
-    const narrow = tailWidth < w * 0.25;
 
-    if (narrow) {
-      // Pill floats above the main region, with leader line to region midpoint
-      const floatY = h * 0.3;
-      const pillX = isLeft
-        ? Math.max(60, Math.min(w * 0.35, obsX))
-        : Math.min(w - 40, Math.max(w * 0.78, obsX));
-      _addPill(annotations, pText, pillX, floatY, false);
-      // Leader points to midpoint of the shaded region, not the critical value
-      const regionMidX = isLeft
-        ? Math.max(4, obsX / 2)
-        : Math.min(w - 4, (obsX + w) / 2);
+    // Tail pill: centered in tail region, clamped
+    const tailMidX = isLeft ? obsX / 2 : (obsX + w) / 2;
+    const clampedTailX = Math.max(50, Math.min(w - 50, tailMidX));
+    _addPill(annotations, pText, clampedTailX, pillY, false);
+
+    // Complement pill: centered in body region, clamped
+    const bodyMidX = isLeft ? (obsX + w) / 2 : obsX / 2;
+    const clampedBodyX = Math.max(50, Math.min(w - 50, bodyMidX));
+    _addPill(annotations, compText, clampedBodyX, pillY, true);
+
+    // Leader lines — use pdfFn to find curve height at region midpoint
+    const tailDataMid = isLeft ? (domain[0] + statValue) / 2 : (statValue + domain[1]) / 2;
+    const bodyDataMid = isLeft ? (statValue + domain[1]) / 2 : (domain[0] + statValue) / 2;
+    const pillBottom = pillY + 14;
+
+    for (const [cx, targetMidPx, dataMid, color] of [
+      [clampedTailX, Math.max(4, Math.min(w - 4, tailMidX)), tailDataMid, CURVE_STROKE],
+      [clampedBodyX, Math.max(4, Math.min(w - 4, bodyMidX)), bodyDataMid, '#888'],
+    ]) {
+      // Smart Y: halfway between curve at midpoint and baseline, or halfway between pill and baseline
+      const curveY = pdfFn ? yScale(pdfFn(dataMid)) : h * 0.5;
+      const endY = Math.max((curveY + h) / 2, (pillBottom + h) / 2);
       annotations.append('line')
         .attr('class', 'inf-annotation')
-        .attr('x1', pillX).attr('y1', floatY + 14)
-        .attr('x2', regionMidX).attr('y2', h - 2)
-        .attr('stroke', CURVE_STROKE)
+        .attr('x1', cx).attr('y1', pillBottom)
+        .attr('x2', targetMidPx).attr('y2', endY)
+        .attr('stroke', color)
         .attr('stroke-width', 1)
         .attr('stroke-dasharray', '3,2')
         .style('pointer-events', 'none');
-    } else {
-      // Normal: pill centered in tail
-      const tailX = isLeft
-        ? Math.max(50, Math.min(obsX - 10, obsX / 2))
-        : Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2));
-      _addPill(annotations, pText, tailX, pillY, false);
     }
-
-    // Complement pill in the body
-    const bodyX = isLeft
-      ? Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2))
-      : Math.max(50, Math.min(obsX - 10, obsX / 2));
-    _addPill(annotations, compText, bodyX, pillY, true);
   }
 }
 

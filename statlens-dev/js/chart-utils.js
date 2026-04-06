@@ -824,41 +824,34 @@ export function renderSimPills(frame, xScale, opts) {
     } else {
       // Determine tail and body regions
       const isLeft = opts.direction === 'left';
-      const tailEdge = isLeft ? 0 : w;
-      const tailWidth = isLeft ? obsX : (w - obsX);
-      const narrow = tailWidth < w * 0.25;
 
-      if (narrow) {
-        // Pill floats above plot area, positioned close to the tail
-        const pillX = isLeft
-          ? Math.max(60, Math.min(w * 0.35, obsX))
-          : Math.min(w - 40, Math.max(w * 0.78, obsX));
-        _addSimPill(annotations, pText, pillX, pillY, false);
-        // Leader line from pill down to the observed stat line (always visible)
-        const lineTargetX = Math.max(4, Math.min(w - 4, obsX));
+      // Tail pill: centered in tail region, clamped to chart
+      const tailMidX = isLeft ? obsX / 2 : (obsX + w) / 2;
+      const clampedTailX = Math.max(50, Math.min(w - 50, tailMidX));
+      _addSimPill(annotations, pText, clampedTailX, pillY, false);
+
+      // Complement pill: centered in body region, clamped to chart
+      const bodyMidX = isLeft ? (obsX + w) / 2 : obsX / 2;
+      const clampedBodyX = Math.max(50, Math.min(w - 50, bodyMidX));
+      _addSimPill(annotations, compText, clampedBodyX, pillY, true);
+
+      // Leader lines from each pill to its region midpoint
+      const leaderEndY = (pillY + 14 + h) / 2;  // halfway between pill bottom and baseline
+      const tailTargetX = Math.max(4, Math.min(w - 4, tailMidX));
+      const bodyTargetX = Math.max(4, Math.min(w - 4, bodyMidX));
+      for (const [x1, x2, color] of [
+        [clampedTailX, tailTargetX, '#569BBD'],
+        [clampedBodyX, bodyTargetX, '#888'],
+      ]) {
         annotations.append('line')
           .attr('class', 'sim-pill')
-          .attr('x1', pillX)
-          .attr('y1', pillY + 14)
-          .attr('x2', lineTargetX)
-          .attr('y2', h - 2)
-          .attr('stroke', '#569BBD')
+          .attr('x1', x1).attr('y1', pillY + 14)
+          .attr('x2', x2).attr('y2', leaderEndY)
+          .attr('stroke', color)
           .attr('stroke-width', 1)
           .attr('stroke-dasharray', '3,2')
           .style('pointer-events', 'none');
-      } else {
-        // Normal: pill centered in tail region
-        const tailX = isLeft
-          ? Math.max(50, Math.min(obsX - 10, obsX / 2))
-          : Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2));
-        _addSimPill(annotations, pText, tailX, pillY, false);
       }
-
-      // Complement pill in body (always has room)
-      const bodyX = isLeft
-        ? Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2))
-        : Math.max(50, Math.min(obsX - 10, obsX / 2));
-      _addSimPill(annotations, compText, bodyX, pillY, true);
     }
   } else if (opts.mode === 'bootstrap' && opts.proportionLabel && opts.ci) {
     const [ciLo, ciHi] = opts.ci;
@@ -887,8 +880,8 @@ function _addSimPill(group, text, cx, cy, isComplement) {
     .attr('width', textWidth)
     .attr('height', pillH)
     .attr('rx', 4)
-    .attr('fill', isComplement ? '#f5f5f5' : '#e8f4f8')
-    .attr('stroke', isComplement ? '#ccc' : '#569BBD')
+    .attr('fill', isComplement ? '#ffffff' : '#e8f4f8')
+    .attr('stroke', isComplement ? '#888' : '#569BBD')
     .attr('stroke-width', 1)
     .style('pointer-events', 'none');
   g.append('text')
