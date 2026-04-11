@@ -540,7 +540,7 @@ function renderOverlayLine(overlays, value, xScale, innerHeight, color, label, p
   const x = xScale(value);
   const line = overlays.append('line')
     .attr('x1', x).attr('x2', x)
-    .attr('y1', 0).attr('y2', innerHeight)
+    .attr('y1', 14).attr('y2', innerHeight)
     .attr('stroke', color)
     .attr('stroke-width', dashed ? 2 : 2.5)
     .attr('aria-label', `${label}: ${value}`);
@@ -549,7 +549,7 @@ function renderOverlayLine(overlays, value, xScale, innerHeight, color, label, p
     // Combine symbol and value into one label (e.g. "μ = 10.08")
     overlays.append('text')
       .attr('class', 'overlay-value observed-label')
-      .attr('x', x).attr('y', -6)
+      .attr('x', x).attr('y', 10)
       .attr('text-anchor', 'middle')
       .attr('fill', color)
       .attr('font-weight', 700)

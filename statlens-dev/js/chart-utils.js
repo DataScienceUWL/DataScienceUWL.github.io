@@ -827,12 +827,12 @@ export function renderSimPills(frame, xScale, opts) {
 
       // Tail pill: centered in tail region, clamped to chart
       const tailMidX = isLeft ? obsX / 2 : (obsX + w) / 2;
-      const clampedTailX = Math.max(50, Math.min(w - 50, tailMidX));
+      const clampedTailX = Math.max(35, Math.min(w - 35, tailMidX));
       _addSimPill(annotations, pText, clampedTailX, pillY, false);
 
       // Complement pill: centered in body region, clamped to chart
       const bodyMidX = isLeft ? (obsX + w) / 2 : obsX / 2;
-      const clampedBodyX = Math.max(50, Math.min(w - 50, bodyMidX));
+      const clampedBodyX = Math.max(35, Math.min(w - 35, bodyMidX));
       _addSimPill(annotations, compText, clampedBodyX, pillY, true);
 
       // Leader lines only when pill is displaced from its region
