@@ -835,22 +835,26 @@ export function renderSimPills(frame, xScale, opts) {
       const clampedBodyX = Math.max(50, Math.min(w - 50, bodyMidX));
       _addSimPill(annotations, compText, clampedBodyX, pillY, true);
 
-      // Leader lines from each pill to its region midpoint (near baseline where bars are)
+      // Leader lines only when pill is displaced from its region
+      const { charW: _lCharW, pad: _lPad } = pillDimensions('prob');
       const leaderEndY = h - 4;
-      const tailTargetX = Math.max(4, Math.min(w - 4, tailMidX));
-      const bodyTargetX = Math.max(4, Math.min(w - 4, bodyMidX));
-      for (const [x1, x2, color] of [
-        [clampedTailX, tailTargetX, '#569BBD'],
-        [clampedBodyX, bodyTargetX, '#888'],
+      for (const [cx, midX, color, text] of [
+        [clampedTailX, tailMidX, '#569BBD', pText],
+        [clampedBodyX, bodyMidX, '#888', compText],
       ]) {
-        annotations.append('line')
-          .attr('class', 'sim-pill')
-          .attr('x1', x1).attr('y1', pillY + 14)
-          .attr('x2', x2).attr('y2', leaderEndY)
-          .attr('stroke', color)
-          .attr('stroke-width', 1)
-          .attr('stroke-dasharray', '3,2')
-          .style('pointer-events', 'none');
+        const tw = /** @type {string} */ (text).length * _lCharW + _lPad;
+        const displaced = Math.abs(cx - midX) > tw * 0.5;
+        if (displaced) {
+          const targetX = Math.max(4, Math.min(w - 4, midX));
+          annotations.append('line')
+            .attr('class', 'sim-pill')
+            .attr('x1', cx).attr('y1', pillY + 14)
+            .attr('x2', targetX).attr('y2', leaderEndY)
+            .attr('stroke', color)
+            .attr('stroke-width', 1)
+            .attr('stroke-dasharray', '3,2')
+            .style('pointer-events', 'none');
+        }
       }
     }
   } else if (opts.mode === 'bootstrap' && opts.proportionLabel && opts.ci) {
