@@ -802,7 +802,7 @@ export function renderSimPills(frame, xScale, opts) {
 
   const w = frame.width;
   const h = frame.height;
-  const pillY = h * 0.22;
+  const pillY = h * 0.6;
 
   if (opts.mode === 'randomization' && opts.pValue != null && opts.observedStat != null && opts.direction) {
     const obsX = xScale(opts.observedStat);
@@ -835,8 +835,8 @@ export function renderSimPills(frame, xScale, opts) {
       const clampedBodyX = Math.max(50, Math.min(w - 50, bodyMidX));
       _addSimPill(annotations, compText, clampedBodyX, pillY, true);
 
-      // Leader lines from each pill to its region midpoint
-      const leaderEndY = (pillY + 14 + h) / 2;  // halfway between pill bottom and baseline
+      // Leader lines from each pill to its region midpoint (near baseline where bars are)
+      const leaderEndY = h - 4;
       const tailTargetX = Math.max(4, Math.min(w - 4, tailMidX));
       const bodyTargetX = Math.max(4, Math.min(w - 4, bodyMidX));
       for (const [x1, x2, color] of [
