@@ -246,7 +246,16 @@ export function drawBoxplot(container, data, options = {}) {
       }
     }
 
-    // Median line
+    // Median line — white outline for visibility against hatched patterns
+    g.append('line')
+      .attr('class', 'median-outline')
+      .attr('x1', xScale(s.median))
+      .attr('x2', xScale(s.median))
+      .attr('y1', boxY)
+      .attr('y2', boxY + boxH)
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 4)
+      .style('pointer-events', 'none');
     g.append('line')
       .attr('class', 'median')
       .attr('x1', xScale(s.median))
