@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>16.4 - Green's Theorem | MTH 310</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/white.min.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root {
+    --accent-blue: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-amber: #e09f3e;
+    --accent-purple: #6c3483; --fg: #222222; --bg: #ffffff;
+}
+.reveal { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; font-size: 30px; color: var(--fg); }
+.reveal .slides section { text-align: left; }
+.reveal .slides > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides > section > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides section::-webkit-scrollbar { width: 6px; }
+.reveal .slides section::-webkit-scrollbar-track { background: transparent; }
+.reveal .slides section::-webkit-scrollbar-thumb { background: rgba(0,119,182,0.2); border-radius: 3px; }
+.reveal .slides section::-webkit-scrollbar-thumb:hover { background: rgba(0,119,182,0.4); }
+.reveal .slides > section::after, .reveal .slides > section > section::after {
+    content: ''; display: block; height: 0; clear: both; }
+.reveal h1,.reveal h2,.reveal h3 { text-transform: none; font-weight: 600; }
+.reveal h1 { font-size: 2.2em; color: var(--accent-blue); }
+.reveal h2 { font-size: 1.35em; color: var(--accent-blue); border-bottom: 2px solid rgba(0,119,182,0.25);
+    padding-bottom: 0.2em; margin-bottom: 0.4em; margin-top: 0; }
+.reveal h3 { font-size: 1.1em; color: var(--accent-green); margin: 0.2em 0; }
+.reveal p { margin: 0.3em 0; line-height: 1.4; }
+.reveal li { margin-bottom: 0.15em; line-height: 1.35; }
+.reveal ul,.reveal ol { margin-left: 0.5em; }
+.title-slide { text-align: center !important; }
+.title-slide h1 { font-size: 2.8em; margin-bottom: 0.1em; }
+.title-slide .subtitle { font-size: 1.4em; color: #b07d00; }
+.title-slide .course-info { font-size: 0.85em; color: #595959; margin-top: 2em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-blue);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.theorem-box { background: #fdf6ec; border-left-color: var(--accent-amber); }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.solution { background: #fffdf5; border-left: 4px solid var(--accent-amber);
+    border-radius: 8px; padding: 0.4em 0.8em; margin-top: 0.3em; color: #7a5c00; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7;
+    border-radius: 8px; padding: 0.5em 0.8em; margin: 0.4em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #666; margin: 0.3em 0; font-size: 0.85em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red);
+    border-radius: 10px; padding: 1em 1.5em; text-align: center; margin: 1em 0; }
+.hw-box h3 { color: var(--accent-red); margin: 0 0 0.3em 0; }
+.two-col { display: flex; gap: 1.2em; align-items: flex-start; }
+.two-col > * { flex: 1; }
+.fig-container { text-align: center; margin: 0.3em 0; }
+.fig-container img { max-height: 60vh; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    cursor: zoom-in; transition: opacity 0.15s; }
+.fig-container img:hover { opacity: 0.8; }
+.fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
+.fig-link { display: inline-block; }
+.textbook-fig img { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; }
+.plotly-lazy-thumb { cursor: pointer; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+.plotly-lazy-thumb:hover { opacity: 0.92; outline: 2px solid #0077b6; outline-offset: 2px; }
+#plotly-lightbox { display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+    justify-content:center; align-items:center; cursor:default; }
+#plotly-lightbox.active { display:flex; }
+#plotly-lightbox .plb-close { position:fixed; top:14px; left:20px;
+    font-size:2.2em; color:#fff; background:rgba(0,0,0,0.55);
+    border:1px solid rgba(255,255,255,0.4); border-radius:6px;
+    padding:2px 14px; cursor:pointer; z-index:10001; line-height:1; }
+#plotly-lightbox .plb-close:hover { color:#e09f3e; background:rgba(0,0,0,0.75); }
+#plotly-lightbox .plb-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+#plotly-lightbox .plb-content { width:92vw; height:85vh; }
+#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; }
+/* Lightbox overlay */
+#lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
+    cursor: zoom-out; backdrop-filter: blur(4px); }
+#lightbox.active { display: flex; }
+#lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5); object-fit: contain; background: white; }
+#lightbox .lb-caption { position: absolute; bottom: 1.5em; left: 50%;
+    transform: translateX(-50%); color: #fff; font-size: 0.55em;
+    background: rgba(0,0,0,0.7); padding: 0.3em 1em; border-radius: 4px; }
+#lightbox .lb-close { position: absolute; top: 0.8em; right: 1.2em;
+    color: #fff; font-size: 1.5em; cursor: pointer; transition: color 0.15s;
+    background: none; border: none; padding: 0.2em 0.5em; }
+#lightbox .lb-close:hover { color: #e09f3e; }
+#lightbox .lb-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.interactive-link { color: var(--accent-blue); text-decoration: none; font-size: 0.9em; }
+.interactive-link:hover { text-decoration: underline; }
+.desmos-container { text-align: center; margin: 0.3em auto; }
+.desmos-container iframe { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    border: 1px solid #ddd; }
+.desmos-label { font-size: 0.65em; color: var(--accent-blue); margin-top: 0.2em; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.4em;
+    color: var(--accent-blue); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+.desmos-fullscreen { background: none; border: 1px solid var(--accent-blue); border-radius: 4px;
+    color: var(--accent-blue); font-size: 1.1em; cursor: pointer; padding: 0.1em 0.4em;
+    opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-fullscreen:hover { opacity: 1; background: rgba(0,119,182,0.1); }
+aside.notes { display: none; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 0.5em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.3em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.75em; color: var(--accent-blue);
+    text-align: center; margin-bottom: 0.1em; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 18vh; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+.small { font-size: 0.8em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-blue);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600;
+    font-size: 16px; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+table { border-collapse: collapse; font-size: 0.8em; margin: 0.5em 0; }
+th, td { padding: 0.2em 0.6em; border-bottom: 1px solid #ddd; }
+th { color: var(--accent-blue); }
+.reveal .progress { color: var(--accent-blue); }
+.reveal .slide-number { color: #767676; font-size: 0.5em; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+</style>
+</head>
+<body data-section="Section_16p4">
+<a href="#" class="skip-link" onclick="Reveal.next();return false;">Skip to first slide</a>
+<div class="reveal">
+<div class="slides">
+<section class="title-slide" data-background-gradient="radial-gradient(circle at 30% 50%, #e8f4f8 0%, #f8f9fa 70%)">
+  <h1>16.4</h1>
+  <p class="subtitle">Green's Theorem</p>
+  <hr style="border-color:rgba(0,212,255,0.3);width:60%;margin:1em auto;" aria-hidden="true">
+  <p class="course-info">MTH 310 &mdash; Calculus III<br>  Vector Calculus</p>
+</section>
+
+<section id="line-integrals-meet-double-integrals">
+<h2>Line Integrals Meet Double Integrals</h2>
+<div class="fragment" data-editor-line="17"><p>In 16.3, conservative fields gave us \(\oint_C \vec{F}\cdot d\vec{r} = 0\) for every closed curve. But what if \(\vec{F}\) is <strong>not</strong> conservative?</p></div>
+<div class="fragment" data-editor-line="19"><p>Green's Theorem answers this: the line integral around a closed curve equals a <strong>double integral</strong> over the enclosed region.</p>
+<p>\[\text{(integral around boundary)} = \text{(integral over interior)}\]</p></div>
+<div class="fragment" data-editor-line="22"><p>This is a higher-dimensional FTC: just as \(\int_a^b f'(x)\,dx = f(b) - f(a)\) relates an interval integral to boundary values, Green's Theorem relates a region integral to a boundary integral.</p></div>
+<aside class="notes">This is the first of the “big three” integral theorems (Green's, Stokes', Divergence). Each trades a boundary integral for an interior integral in one higher dimension.</aside>
+</section>
+
+<section id="positive-orientation">
+<h2>Positive Orientation</h2>
+<div class="defn-box fragment" data-editor-line="31">
+  <div class="defn-title">Positive Orientation</div>
+  <p>A simple closed curve \(C\) is <strong>positively oriented</strong> if, as you traverse it, the enclosed region \(D\) stays on your <strong>left</strong>. In the plane: <strong>counterclockwise</strong>.</p>
+</div>
+<div class="fig-container fragment" data-editor-line="35">
+  <a href="figures/positive_orientation.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/positive_orientation.png"><img src="figures/positive_orientation.png" alt="Two closed curves enclosing a shaded region D. The left curve has counterclockwise arrows (positive). The right curve has clockwise arrows (negative)." style="max-height:60vh;"></a>
+</div>
+<div class="fragment" data-editor-line="37"><p>Clockwise traversal is negative orientation: \(\oint_{-C} \vec{F}\cdot d\vec{r} = -\oint_C \vec{F}\cdot d\vec{r}\).</p></div>
+<div class="key-point fragment" data-editor-line="39"><p>Green's Theorem requires <strong>positive (CCW) orientation</strong>. If the curve is CW, negate.</p></div>
+</section>
+
+<section id="micro-circulation-what-does-local-rotation-look-like">
+<h2>Micro-Circulation: What Does Local Rotation Look Like?</h2>
+<div class="fragment" data-editor-line="46"><p>Imagine placing a tiny paddle wheel at a point in a vector field. Does it spin?</p></div>
+<div class="fig-container fragment" data-editor-line="48">
+  <a href="figures/vorticity.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/vorticity.png"><img src="figures/vorticity.png" alt="Three panels each showing four arrows arranged around a central point. Left (blue): arrows swirl counterclockwise, labeled positive curl. Center (red): arrows swirl clockwise, labeled negative curl. Right (green): all arrows point right uniformly, labeled zero curl." style="max-height:60vh;"></a>
+</div>
+<div class="fragment" data-editor-line="50"><p>Look at how the arrows change across the box:</p>
+<ul>
+<li>\(Q\) <strong>increases</strong> left-to-right (\(Q_x > 0\)): the right side pushes up more than the left \(\to\) CCW spin</li>
+<li>\(P\) <strong>increases</strong> bottom-to-top (\(P_y > 0\)): the top pushes right more than the bottom \(\to\) CW spin</li>
+</ul></div>
+<div class="fragment" data-editor-line="56"><p>The net rotation is the competition between these: \(Q_x - P_y\).</p>
+<ul>
+<li>\(Q_x - P_y > 0\): net CCW rotation (positive curl)</li>
+<li>\(Q_x - P_y < 0\): net CW rotation (negative curl)</li>
+<li>\(Q_x - P_y = 0\): no net rotation (conservative!)</li>
+</ul></div>
+<div class="key-point fragment" data-editor-line="63"><p>The <strong>2D curl</strong> \(Q_x - P_y\) measures local counterclockwise rotation &mdash; the micro-circulation per unit area. It's exactly the quantity from the cross-partials test: zero curl \(=\) conservative.</p></div>
+</section>
+
+<section id="making-it-precise-circulation-on-a-tiny-rectangle">
+<h2>Making It Precise: Circulation on a Tiny Rectangle</h2>
+<div class="fragment" data-editor-line="70"><p>Center a tiny rectangle at \((x,y)\) and compute \(\oint \vec{F}\cdot d\vec{r}\) around it (CCW):</p></div>
+<div class="fig-container fragment" data-editor-line="72">
+  <a href="figures/centered_rectangle.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/centered_rectangle.png"><img src="figures/centered_rectangle.png" alt="A small rectangle centered at (x,y). Each edge is labeled with its contribution to the circulation: bottom gives P at y minus Delta y over 2 times Delta x, top gives minus P at y plus Delta y over 2 times Delta x, right gives Q at x plus Delta x over 2 times Delta y, left gives minus Q at x minus Delta x over 2 times Delta y. Dimension labels Delta x and Delta y are inside the rectangle." style="max-height:60vh;"></a>
+</div>
+<div class="fragment" data-editor-line="74"><p><strong>Horizontal edges</strong> (top and bottom) contribute:</p>
+<p>\[P\!\left(x,\, y - \frac{\Delta y}{2}\right)\Delta x - P\!\left(x,\, y + \frac{\Delta y}{2}\right)\Delta x \;\approx\; -\frac{\partial P}{\partial y}\,\Delta y\,\Delta x\]</p></div>
+<div class="fragment" data-editor-line="77"><p><strong>Vertical edges</strong> (right and left) contribute:</p>
+<p>\[Q\!\left(x + \frac{\Delta x}{2},\, y\right)\Delta y - Q\!\left(x - \frac{\Delta x}{2},\, y\right)\Delta y \;\approx\; \frac{\partial Q}{\partial x}\,\Delta x\,\Delta y\]</p></div>
+<div class="fragment" data-editor-line="80"><p><strong>Total circulation</strong> \(\approx \left(\dfrac{\partial Q}{\partial x} - \dfrac{\partial P}{\partial y}\right)\Delta A\)</p></div>
+<div class="key-point fragment" data-editor-line="82"><p>The circulation per unit area around a tiny rectangle is \(Q_x - P_y\). This is the <strong>2D curl</strong> &mdash; it measures local counterclockwise rotation.</p></div>
+</section>
+
+<section id="why-green-s-theorem-works-cancellation">
+<h2>Why Green's Theorem Works: Cancellation</h2>
+<div class="fragment" data-editor-line="89"><p>Tile the whole region with tiny rectangles. Each has micro-circulation \((Q_x - P_y) \Delta A\).</p></div>
+<div class="fragment" data-editor-line="91"><div class="two-col">
+  <div><div class="fig-container">
+  <a href="figures/patch_cancellation.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/patch_cancellation.png"><img src="figures/patch_cancellation.png" alt="A grid of small rectangles tiled inside a region. Each cell has a small CCW circulation arrow. Blue boundary arrows show the surviving outer circulation. One interior shared edge is highlighted in red with opposing arrows labeled cancel." style="max-height:60vh;"></a>
+</div></div>
+  <div><div class="fragment" data-editor-line="0"><p><strong>Key insight:</strong> Adjacent cells share an edge, traversed in <strong>opposite directions</strong>. These cancel!</p></div>
+<div class="fragment" data-editor-line="2"><p>What survives? Only the <strong>outer boundary</strong> &mdash; edges not shared with a neighbor.</p></div>
+<div class="fragment" data-editor-line="4"><p>\[\sum \text{micro} \;\to\; \iint_D (Q_x - P_y)\,dA\]</p>
+<p>\[= \oint_C P\,dx + Q\,dy\]</p></div></div>
+</div></div>
+<div class="key-point fragment" data-editor-line="102"><p>The interior cancels, leaving only the boundary circulation. That's Green's Theorem: macro = sum of micro.</p></div>
+<aside class="notes">Tiny paddle wheels spinning inside \(D\). Their net effect is the circulation around the outside.</aside>
+</section>
+
+<section id="green-s-theorem">
+<h2>Green's Theorem</h2>
+<div class="defn-box theorem-box fragment" data-editor-line="111">
+  <div class="defn-title">Theorem: Green's Theorem</div>
+  <p>Let \(C\) be a positively oriented, piecewise-smooth, simple closed curve bounding a region \(D\). If \(P\) and \(Q\) have continuous partial derivatives on an open region containing \(D\), then</p>
+<p>\[\boxed{\oint_C P\,dx + Q\,dy = \iint_D \left(\frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right)\,dA}\]</p>
+</div>
+<div class="fragment" data-editor-line="116"><p><strong>In words:</strong> circulation around boundary \(=\) total curl over interior.</p></div>
+<div class="fragment" data-editor-line="118"><p><strong>When the curl is constant</strong> (say \(Q_x - P_y = k\)), the integral is just \(k \cdot \text{Area}(D)\).</p></div>
+<div class="fragment" data-editor-line="120"><p><strong>Quick Check:</strong> For \(\oint_C (3y)\,dx + (5x)\,dy\): \(P = 3y\), \(Q = 5x\), so \(Q_x - P_y = 5 - 3 = 2\). By Green's: \(\oint = \iint_D 2\,dA = 2\cdot\text{Area}(D)\). When the curl is constant, the double integral is just the constant times the area!</p></div>
+<div class="key-point fragment" data-editor-line="122"><p>Green's Theorem converts a line integral (hard) into a double integral (often easier), or vice versa.</p></div>
+</section>
+
+<section id="example-1-verify-green-s-theorem">
+<h2>Example 1: Verify Green's Theorem</h2>
+<div class="fragment" data-editor-line="131"><p><strong>Example 1.</strong> Evaluate \(\oint_C xy\,dx + x^2\,dy\) where \(C\) is the rectangle \((0,0) \to (3,0) \to (3,1) \to (0,1)\) (CCW). Verify both sides.</p></div>
+<div class="fragment" data-editor-line="133"><p class="work-prompt">Compute \(Q_x - P_y\) and integrate over the rectangle. Then verify by computing the line integral along all four edges.</p></div>
+<div class="fragment" data-editor-line="135"><p><strong>Right side:</strong> \(P = xy\), \(Q = x^2\). \(Q_x - P_y = 2x - x = x\).</p>
+<p>\[\iint_D x\,dA = \int_0^1\int_0^3 x\,dx\,dy = \frac{9}{2}\]</p></div>
+<div class="fragment" data-editor-line="138"><p><strong>Left side:</strong> Four edges &mdash; \(C_1\): \(0\), \(C_2\): \(\int_0^1 9\,dy = 9\), \(C_3\): \(\int_3^0 x\,dx = -\frac{9}{2}\), \(C_4\): \(0\).</p>
+<p>Total: \(0 + 9 - \frac{9}{2} + 0 = \frac{9}{2}\) \checkmark</p></div>
+<div class="key-point fragment" data-editor-line="142"><p>Both sides give \(\frac{9}{2}\). The double integral was one line; the line integral took four pieces.</p></div>
+</section>
+
+<section id="example-2-symmetry-shortcut">
+<h2>Example 2: Symmetry Shortcut</h2>
+<div class="example-box fragment" data-editor-line="149">
+  <div class="example-title">Example 2</div>
+  <p>Use Green's Theorem to evaluate \(\oint_C y^4\,dx + 2xy^3\,dy\) where \(C\) is the ellipse \(x^2 + 2y^2 = 2\) (CCW).</p>
+</div>
+<div class="fragment" data-editor-line="153"><p class="work-prompt">Compute \(Q_x - P_y\). Before integrating, check: is the integrand odd or even on a symmetric region?</p></div>
+<div class="fragment" data-editor-line="155"><p>\(P = y^4\), \(Q = 2xy^3\).   \(Q_x - P_y = 2y^3 - 4y^3 = -2y^3\).</p></div>
+<div class="fragment" data-editor-line="157"><p>The region \(D\) (ellipse) is symmetric about the \(x\)-axis, and \(-2y^3\) is <strong>odd</strong> in \(y\).</p></div>
+<div class="fragment" data-editor-line="159"><p>Odd integrand on a \(y\)-symmetric region \(\Rightarrow \iint_D (-2y^3)\,dA = 0\).</p></div>
+<div class="key-point fragment" data-editor-line="161"><p>Always check for symmetry before integrating! Odd function on a symmetric domain = zero.</p></div>
+</section>
+
+<section id="example-3-green-s-theorem-throws-away-the-hard-parts">
+<h2>Example 3: Green's Theorem Throws Away the Hard Parts</h2>
+<div class="example-box fragment" data-editor-line="168">
+  <div class="example-title">Example 3</div>
+  <p>Evaluate \(\oint_C (e^x + y^2)\,dx + (e^y + x^2)\,dy\) where \(C\) is the boundary of the region between \(y = x^2\) and \(y = x\) (CCW).</p>
+</div>
+<div class="fragment" data-editor-line="172"><p class="work-prompt">Compute \(Q_x - P_y\). Find where \(y = x^2\) and \(y = x\) intersect. Set up and evaluate the double integral.</p></div>
+<div class="fragment" data-editor-line="174"><p>\(Q_x - P_y = 2x - 2y\). (The \(e^x\) and \(e^y\) vanish!)</p></div>
+<div class="fragment" data-editor-line="176"><p><strong>Region:</strong> \(y = x^2\) and \(y = x\) intersect at \(x = 0\) and \(x = 1\).</p>
+<p>\[\int_0^1\int_{x^2}^x (2x-2y)\,dy\,dx\]</p></div>
+<div class="fragment" data-editor-line="179"><p>Inner: \([2xy - y^2]_{x^2}^x = x^2 - 2x^3 + x^4\).   Outer: \(\frac{1}{3} - \frac{1}{2} + \frac{1}{5} = \frac{1}{30}\).</p></div>
+<div class="key-point fragment" data-editor-line="181"><p>The \(e^x\) and \(e^y\) terms vanished in the curl. Green's Theorem threw away the hard parts.</p></div>
+</section>
+
+<section id="computing-area-with-green-s-theorem">
+<h2>Computing Area with Green's Theorem</h2>
+<div class="fragment" data-editor-line="188"><p>If we choose \(P\) and \(Q\) so that \(Q_x - P_y = 1\), then \(\oint P\,dx + Q\,dy = \text{Area}(D)\).</p></div>
+<div class="fragment" data-editor-line="190"><p>The cleanest choice: \(P = -y/2\), \(Q = x/2\), giving</p>
+<p>\[\boxed{\text{Area}(D) = \frac{1}{2}\oint_C x\,dy - y\,dx}\]</p>
+<p>This computes area from a boundary parameterization alone &mdash; no double integral.</p></div>
+</section>
+
+<section id="example-4-area-of-an-ellipse">
+<h2>Example 4: Area of an Ellipse</h2>
+<div class="example-box fragment" data-editor-line="200">
+  <div class="example-title">Example 4</div>
+  <p>Use the Green's Theorem area formula to find the area enclosed by the ellipse \(\dfrac{x^2}{9} + \dfrac{y^2}{4} = 1\).</p>
+</div>
+<div class="fragment" data-editor-line="204"><p class="work-prompt">Parameterize the ellipse: \(x = 3\cos t\), \(y = 2\sin t\), \(0 \leq t \leq 2\pi\). Compute \(dx\) and \(dy\), then apply \(A = \frac{1}{2}\oint x\,dy - y\,dx\).</p></div>
+<div class="fragment" data-editor-line="206"><p><strong>Parameterize:</strong> \(x = 3\cos t\), \(y = 2\sin t\), \(0 \leq t \leq 2\pi\).</p>
+<p>\(dx = -3\sin t\,dt\),   \(dy = 2\cos t\,dt\).</p></div>
+<div class="fragment" data-editor-line="210"><p><strong>Apply the area formula:</strong></p>
+<p>\[A = \frac{1}{2}\int_0^{2\pi}\bigl[(3\cos t)(2\cos t) - (2\sin t)(-3\sin t)\bigr]\,dt = \frac{1}{2}\int_0^{2\pi} 6(\cos^2 t + \sin^2 t)\,dt\]</p></div>
+<div class="fragment" data-editor-line="213"><p>\[= \frac{1}{2}\int_0^{2\pi} 6\,dt = \frac{1}{2}\cdot 6 \cdot 2\pi = \boxed{6\pi}\]</p></div>
+<div class="key-point fragment" data-editor-line="215"><p>For a general ellipse \(\frac{x^2}{a^2} + \frac{y^2}{b^2} = 1\), this gives \(\pi ab\). Here \(a = 3\), \(b = 2\), so area \(= 6\pi\).</p></div>
+</section>
+
+<section id="green-s-theorem-explains-conservative-fields">
+<h2>Green's Theorem Explains Conservative Fields</h2>
+<div class="fragment" data-editor-line="222"><p>Green's Theorem finally proves the “hard direction” of the cross-partials test from 16.3.</p></div>
+<div class="fragment" data-editor-line="224"><p>If \(P_y = Q_x\) everywhere on a simply-connected region \(D\), then for <strong>any</strong> closed curve \(C\) inside \(D\):</p>
+<p>\[\oint_C P\,dx + Q\,dy = \iint_D \underbrace{(Q_x - P_y)}_{= 0}\,dA = 0\]</p>
+<p>So \(\vec{F}\) is path-independent, hence conservative.</p></div>
+<div class="fragment" data-editor-line="228"><p><strong>Famous counterexample:</strong> \(\vec{F} = \left\langle \dfrac{-y}{x^2+y^2},\; \dfrac{x}{x^2+y^2}\right\rangle\) has \(P_y = Q_x\) everywhere except the origin, yet \(\oint \vec{F}\cdot d\vec{r} = 2\pi\) around any circle enclosing the origin. Green's Theorem doesn't apply because the hole breaks simple connectivity.</p></div>
+<div class="key-point fragment" data-editor-line="230"><p>Simply connected + \(P_y = Q_x\) \(\Rightarrow\) conservative. The hole in the domain is what allows \(P_y = Q_x\) without conservative.</p></div>
+</section>
+
+<section id="section-16-4-summary">
+<h2>Section 16.4 Summary</h2>
+<div class="summary-grid">
+<div class="defn-box"><div class="defn-title">Green's Theorem</div><p class="small">\(\oint_C P\,dx + Q\,dy = \iint_D (Q_x - P_y)\,dA\). Boundary circulation = total interior curl.</p></div>
+<div class="defn-box"><div class="defn-title">Why It Works</div><p class="small">Tile \(D\) with tiny rectangles. Each has micro-circulation \((Q_x - P_y) \Delta A\). Interior edges cancel; only the boundary survives.</p></div>
+<div class="defn-box"><div class="defn-title">2D Curl</div><p class="small">\(Q_x - P_y\) measures local CCW rotation. Zero curl \(\Leftrightarrow\) conservative (on simply-connected domains).</p></div>
+<div class="defn-box"><div class="defn-title">Area Formula</div><p class="small">\(\text{Area}(D) = \frac{1}{2}\oint_C x\,dy - y\,dx\). Area from boundary alone.</p></div>
+</div>
+<div class="key-point fragment" data-editor-line="244"><p><strong>Next:</strong> Section 16.5 &mdash; <strong>curl</strong> and <strong>divergence</strong> as 3D operators. Section 16.8 gives <strong>Stokes' Theorem</strong> &mdash; the 3D version of Green's.</p></div>
+</section>
+
+<section>
+<h2>Homework</h2>
+<div class="hw-box"><h3>Section 16.4</h3>
+<p style="font-size:1.3em;color:var(--accent-amber);">1, 3, 5, 9, 11, 15, 21</p>
+</div>
+<div class="key-point fragment" style="margin-top:1.5em;"><strong>Next time:</strong> Section 16.5 &mdash; Curl and Divergence</div>
+</section>
+</div>
+</div>
+<!-- Lightbox overlay -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged figure" tabindex="-1">
+  <button class="lb-close" aria-label="Close lightbox">&times;</button>
+  <img src="" alt="">
+  <div class="lb-caption"></div>
+</div>
+<!-- Plotly fullscreen overlay -->
+<div id="plotly-lightbox" role="dialog" aria-modal="true" aria-label="Expanded interactive figure">
+  <button class="plb-close" aria-label="Close">&times;</button>
+  <div class="plb-content"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<script>
+Reveal.initialize({
+    hash: true, slideNumber: 'c/t', progress: true, center: false,
+    transition: 'slide', width: 1280, height: 800, margin: 0.04,
+    // Allow mouse wheel to scroll overflowing slide content instead of advancing
+    mouseWheel: false,
+    plugins: [RevealNotes]
+});
+// ── Scoped MathJax: only typeset the current slide, not the whole document ──
+function typesetCurrentSlide() {
+    var slide = Reveal.getCurrentSlide();
+    if (slide && MathJax?.typesetPromise) {
+        MathJax.typesetPromise([slide]).catch(function(){});
+    }
+}
+// ── Iframe cleanup: pause Desmos/embedded iframes on non-visible slides ──
+function manageIframes(event) {
+    // Pause iframes on the previous slide
+    if (event.previousSlide) {
+        event.previousSlide.querySelectorAll('iframe[data-src-active]').forEach(function(iframe) {
+            iframe.setAttribute('data-src-paused', iframe.src);
+            iframe.src = 'about:blank';
+        });
+    }
+    // Restore iframes on the current slide
+    if (event.currentSlide) {
+        event.currentSlide.querySelectorAll('iframe[data-src-paused]').forEach(function(iframe) {
+            iframe.src = iframe.getAttribute('data-src-paused');
+            iframe.removeAttribute('data-src-paused');
+        });
+    }
+}
+// Mark all Desmos/embedded iframes for management
+document.querySelectorAll('.desmos-container iframe').forEach(function(iframe) {
+    iframe.setAttribute('data-src-active', '1');
+});
+Reveal.on('slidechanged', (event) => {
+    typesetCurrentSlide();
+    manageIframes(event);
+    // Reset scroll position on the new slide so it starts at the top
+    if (event.currentSlide) event.currentSlide.scrollTop = 0;
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealSlideChanged', indexh: event.indexh, indexv: event.indexv }, '*');
+        }
+    } catch (e) {}
+});
+// Fragment auto-scroll: configurable via meta.fragment_scroll in content.yaml
+// Value is the max fraction down the slide viewport (0.0=top, 1.0=bottom)
+var FRAG_SCROLL_TARGET = 0.67;
+function findScrollContainer(el) {
+    var section = el.closest('section');
+    while (section) {
+        if (section.scrollHeight > section.clientHeight + 1) return section;
+        var parent = section.parentElement?.closest('section, .slides, .reveal');
+        if (!parent || parent === section) break;
+        section = parent;
+    }
+    return null;
+}
+function scrollToFragment(frag, direction) {
+    var container = findScrollContainer(frag);
+    if (!container) return;
+    var fragRect = frag.getBoundingClientRect();
+    var containerRect = container.getBoundingClientRect();
+    // Reveal.js scales slides via CSS transform — account for the scale factor
+    var scale = containerRect.height / container.clientHeight || 1;
+    // Convert screen-space positions to unscaled slide-space
+    var fragBottom = (fragRect.bottom - containerRect.top) / scale + container.scrollTop;
+    var fragTop = (fragRect.top - containerRect.top) / scale + container.scrollTop;
+    var targetLine = container.clientHeight * FRAG_SCROLL_TARGET;
+    if (direction === 'forward') {
+        // Scroll so the fragment's bottom is at the target line
+        var desiredScrollTop = fragBottom - targetLine;
+        if (desiredScrollTop > container.scrollTop) {
+            container.scrollTo({ top: desiredScrollTop, behavior: 'smooth' });
+        }
+    } else {
+        // Scrolling backward: find the previous visible fragment and scroll to it
+        // If the fragment's top is above the viewport, scroll up to show it
+        var desiredScrollTop = fragTop - targetLine * 0.5;
+        if (desiredScrollTop < container.scrollTop) {
+            container.scrollTo({ top: Math.max(0, desiredScrollTop), behavior: 'smooth' });
+        }
+    }
+}
+// Add spacer to scrollable slides so the last fragment can scroll up to the target line
+Reveal.on('ready', () => {
+    var slideH = Reveal.getConfig().height || 800;
+    var spacerH = Math.round((1 - FRAG_SCROLL_TARGET) * slideH);
+    document.querySelectorAll('.reveal .slides > section, .reveal .slides > section > section').forEach(function(s) {
+        if (s.querySelector('.fragment')) {
+            var spacer = document.createElement('div');
+            spacer.style.height = spacerH + 'px';
+            spacer.style.pointerEvents = 'none';
+            spacer.setAttribute('aria-hidden', 'true');
+            s.appendChild(spacer);
+        }
+    });
+});
+function _notifyParentFragment() {
+    // Read data-editor-line from the last visible fragment in the current slide.
+    // Works for both fragmentshown and fragmenthidden events.
+    try {
+        if (!window.parent || window.parent === window) return;
+        var s = Reveal.getState();
+        var slideEl = Reveal.getCurrentSlide();
+        var editorLine = null;
+        if (slideEl) {
+            var visibleFrags = slideEl.querySelectorAll('.fragment.visible[data-editor-line]');
+            if (visibleFrags.length > 0) {
+                var ln = parseInt(visibleFrags[visibleFrags.length - 1].dataset.editorLine, 10);
+                if (!isNaN(ln)) editorLine = ln;
+            }
+        }
+        window.parent.postMessage({
+            type: 'revealFragmentChanged',
+            indexh: s.indexh, indexv: s.indexv, indexf: s.indexf,
+            editorLine: editorLine
+        }, '*');
+    } catch(e) {}
+}
+Reveal.on('fragmentshown', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('fragmenthidden', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    // Scroll back to the previous fragment or top of slide
+    var prev = event.fragment.previousElementSibling;
+    while (prev && !prev.classList.contains('fragment')) {
+        prev = prev.previousElementSibling;
+    }
+    var target = prev || event.fragment.closest('section')?.querySelector('h2') || event.fragment;
+    setTimeout(function() { scrollToFragment(target, 'backward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('ready', () => {
+    typesetCurrentSlide();
+    // Tell the CourseKit editor that Reveal is initialized so it can sync the fragment
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealReady' }, '*');
+        }
+    } catch(e) {}
+});
+
+// ── Plotly lightbox (iframe approach — zero WebGL until opened) ──
+(function() {
+    var plb = document.getElementById('plotly-lightbox');
+    if (!plb) return;
+    var plbClose = plb.querySelector('.plb-close');
+    var plbContent = plb.querySelector('.plb-content');
+    var triggerImg = null;
+    var currentBlobUrl = null;
+
+    function openPlotlyLightbox(blobUrl) {
+        // Revoke any previous blob URL
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); }
+        currentBlobUrl = blobUrl;
+        var iframe = plbContent.querySelector('iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:80vh;border:none;background:#fff;';
+            plbContent.appendChild(iframe);
+        }
+        iframe.src = blobUrl;
+        plb.classList.add('active');
+        plbClose.focus();
+    }
+
+    function closePlotlyLightbox() {
+        var iframe = plbContent.querySelector('iframe');
+        if (iframe) iframe.src = '';   // Unloads WebGL context immediately
+        plb.classList.remove('active');
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+        if (triggerImg) { triggerImg.focus(); triggerImg = null; }
+    }
+
+    document.addEventListener('click', function(e) {
+        var img = e.target.closest('img[data-plotly-src]');
+        if (!img) return;
+        e.stopPropagation();
+        triggerImg = img;
+        // The companion .html is a bare Plotly div fragment (no CDN script).
+        // Fetch it and wrap in a complete page so it renders in the iframe.
+        fetch(img.dataset.plotlySrc)
+            .then(function(r) { return r.text(); })
+            .then(function(fragment) {
+                var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+                    '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"><\/script>' +
+                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;' +
+                    'display:flex;justify-content:center;align-items:center;width:100vw;height:100vh;}' +
+                    '.js-plotly-plot,.plotly-graph-div{width:100%!important;height:100%!important;}</style>' +
+                    '</head><body>' + fragment + '</body></html>';
+                var blob = new Blob([html], {type: 'text/html'});
+                openPlotlyLightbox(URL.createObjectURL(blob));
+            })
+            .catch(function() {
+                // Fallback: open in new tab
+                window.open(img.dataset.plotlySrc, '_blank');
+            });
+    });
+
+    plbClose.addEventListener('click', closePlotlyLightbox);
+    plb.addEventListener('click', function(e) { if (e.target === plb) closePlotlyLightbox(); });
+
+    // Capture-phase Escape so Reveal.js doesn't grab it first
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape' || !plb.classList.contains('active')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closePlotlyLightbox();
+    }, true);
+
+    // Desmos/GeoGebra fullscreen: reuse lightbox with direct URL (no fetch/wrap needed)
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.desmos-fullscreen');
+        if (!btn) return;
+        e.stopPropagation();
+        var url = btn.dataset.src;
+        if (!url) return;
+        var iframe = plbContent.querySelector('iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:100%;border:none;background:#fff;border-radius:6px;';
+            plbContent.appendChild(iframe);
+        }
+        iframe.style.height = '100%';
+        iframe.src = url;
+        iframe.setAttribute('allowfullscreen', '');
+        plb.classList.add('active');
+        plbClose.focus();
+    });
+})();
+
+// ── Lightbox for figures (accessible: focus trap, focus return) ──
+(function() {
+    const lb = document.getElementById('lightbox');
+    const lbImg = lb.querySelector('img');
+    const lbCap = lb.querySelector('.lb-caption');
+    const lbClose = lb.querySelector('.lb-close');
+    var triggerEl = null;
+
+    function openLightbox(src, alt, caption) {
+        lbImg.src = src;
+        lbImg.alt = alt;
+        lbCap.textContent = caption || alt;
+        lb.classList.add('active');
+        lbClose.focus();
+    }
+
+    function closeLightbox() {
+        lb.classList.remove('active');
+        lbImg.src = '';
+        if (triggerEl) { triggerEl.focus(); triggerEl = null; }
+    }
+
+    // Open lightbox on figure click (prevent default link navigation)
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.fig-link');
+        if (!link) return;
+        e.preventDefault();
+        e.stopPropagation();
+        triggerEl = link;
+        var src = link.getAttribute('data-src');
+        var alt = link.querySelector('img')?.alt || '';
+        var caption = link.closest('.fig-container')?.querySelector('.fig-caption')?.textContent || '';
+        openLightbox(src, alt, caption);
+    });
+
+    // Close on click anywhere on overlay
+    lb.addEventListener('click', function() { closeLightbox(); });
+
+    // Prevent closing when clicking the image itself (let user right-click → open in tab)
+    lbImg.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    // Close on Escape; trap Tab within lightbox
+    document.addEventListener('keydown', function(e) {
+        if (!lb.classList.contains('active')) return;
+        if (e.key === 'Escape') { closeLightbox(); }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            lbClose.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>

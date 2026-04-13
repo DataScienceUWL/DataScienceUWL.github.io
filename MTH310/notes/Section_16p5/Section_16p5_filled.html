@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 16.5: Curl and Divergence | MTH 310</title>
+<style>
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #e09f3e;
+    --bg: #ffffff; --fg: #1a1a1a;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; max-width: 900px;
+    margin: 0 auto; padding: 1em 2em; color: var(--fg); background: var(--bg);
+    font-size: 1.05rem; line-height: 1.6; }
+h1 { font-size: 1.8em; color: var(--accent-cyan); border-bottom: 3px solid var(--accent-cyan);
+    padding-bottom: 0.2em; }
+h2 { font-size: 1.4em; color: var(--accent-cyan); margin-top: 1.5em;
+    border-bottom: 1px solid #ddd; padding-bottom: 0.15em; }
+h3 { font-size: 1.1em; margin: 0.5em 0 0.2em 0; }
+h4 { font-size: 1em; color: var(--accent-cyan); margin: 0.3em 0; }
+p { margin: 0.5em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 1em 0; }
+.course-info { color: #666; font-size: 0.9em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-cyan);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.defn-box h3, .defn-box .defn-title { color: var(--accent-red); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box h3, .theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.example-box h3, .example-box .example-title { color: var(--accent-green); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.solution { border: 1px solid #ddd; border-radius: 4px; margin: 0.5em 0; }
+.solution summary { padding: 0.5em 0.8em; cursor: pointer; font-weight: 600;
+    color: #8a6200; background: #fffdf5; border-radius: 4px; }
+.solution > div, .solution > p, .solution > ul, .solution > ol {
+    padding: 0.5em 1em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 4px;
+    padding: 0.8em 1em; margin: 0.8em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #595959; margin: 0.5em 0; font-size: 0.9em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red); border-radius: 6px;
+    padding: 0.8em 1.2em; text-align: center; margin: 1em 0; font-size: 1.1em; }
+.desmos-container { text-align: center; margin: 1em 0; }
+.desmos-container figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.desmos-container iframe { border: 1px solid #ddd; border-radius: 6px; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.2em;
+    color: var(--accent-cyan); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+.desmos-fullscreen { background: none; border: 1px solid var(--accent-cyan); border-radius: 4px;
+    color: var(--accent-cyan); font-size: 1em; cursor: pointer; padding: 0.15em 0.5em;
+    opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-fullscreen:hover { opacity: 1; background: rgba(0,119,182,0.1); }
+figure { margin: 0.8em 0; text-align: center; }
+figure img { max-width: 100%; height: auto; max-height: 500px; border-radius: 4px; }
+figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 4px; border: 1px solid #ddd; }
+.plotly-figure { border-radius: 4px; overflow: hidden; margin: 0.5em 0; }
+.plotly-figure .js-plotly-plot { width: 100% !important; height: 100% !important; }
+.plotly-figure .plotly-graph-div { width: 100% !important; height: 100% !important; }
+.plotly-figure .modebar-container { position: absolute !important; top: 2px !important; right: 2px !important; }
+.plotly-alt { margin-top: 0.3em; font-size: 0.85em; color: #666; }
+.plotly-alt summary { cursor: pointer; color: var(--accent-cyan); }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 1em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.5em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 200px; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.8em; color: #666; }
+table { border-collapse: collapse; margin: 0.5em 0; }
+th, td { padding: 0.3em 0.8em; border: 1px solid #ddd; text-align: center; }
+th { background: #f0f7ff; color: var(--accent-cyan); }
+.small { font-size: 0.85em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+a { color: var(--accent-cyan); }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media (max-width: 600px) {
+    body { padding: 0.5em 1em; }
+    .summary-grid { grid-template-columns: 1fr; }
+}
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <h1>Section 16.5: Curl and Divergence</h1>
+  <p class="course-info">MTH 310 &mdash; Calculus III | Vector Calculus</p>
+</header>
+<hr aria-hidden="true">
+
+<section id="curl-measuring-rotation-in-3d" data-source-line="15" aria-label="Curl: Measuring Rotation in 3D">
+  <h2>Curl: Measuring Rotation in 3D</h2>
+  <div><p>In 16.4, the 2D curl \(Q_x - P_y\) measured local rotation. In 3D, we need a <strong>vector</strong> to capture the axis and rate of rotation.</p></div>
+<section class="defn-box" role="region" aria-label="Curl of a Vector Field">
+  <h3 class="defn-title">Curl of a Vector Field</h3>
+  <p>\[\text{curl}\;\vec{F} = \nabla \times \vec{F} = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \\[4pt] \frac{\partial}{\partial x} & \frac{\partial}{\partial y} & \frac{\partial}{\partial z} \\[6pt] P & Q & R \end{vmatrix}\]</p>
+</section>
+<div><p><strong>Expand by cofactors</strong> (just like a \(3\times 3\) determinant):</p>
+<p>\[= \vec{i}\!\left(\frac{\partial R}{\partial y} - \frac{\partial Q}{\partial z}\right) - \vec{j}\!\left(\frac{\partial R}{\partial x} - \frac{\partial P}{\partial z}\right) + \vec{k}\!\left(\frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right)\]</p></div>
+<div><p>Notice: the \(\vec{k}\)-component is \(Q_x - P_y\) &mdash; the 2D curl from Green's Theorem.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Curl is a vector: its <strong>direction</strong> is the axis of rotation (right-hand rule), its <strong>magnitude</strong> is how fast the field spins. Use the determinant to get the signs right.</p></aside>
+</section>
+
+<section id="example-1-computing-curl" data-source-line="33" aria-label="Example 1: Computing Curl">
+  <h2>Example 1: Computing Curl</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Find \(\nabla \times \vec{F}\) for \(\vec{F}(x,y,z) = \langle x^2yz,\; xy^2z,\; xyz^2 \rangle\).</p>
+</section>
+<p class="work-prompt">Set up the determinant with \(P = x^2yz\), \(Q = xy^2z\), \(R = xyz^2\) and expand along the first row. Watch the sign on \(\vec{j}\).</p>
+<div><p><strong>\(\vec{i}\):</strong> \(\frac{\partial}{\partial y}(xyz^2) - \frac{\partial}{\partial z}(xy^2z) = xz^2 - xy^2\)</p></div>
+<div><p><strong>\(\vec{j}\):</strong> \(-\!\left[\frac{\partial}{\partial x}(xyz^2) - \frac{\partial}{\partial z}(x^2yz)\right] = -(yz^2 - x^2y) = x^2y - yz^2\)</p></div>
+<div><p><strong>\(\vec{k}\):</strong> \(\frac{\partial}{\partial x}(xy^2z) - \frac{\partial}{\partial y}(x^2yz) = y^2z - x^2z\)</p></div>
+<div><p>\[\nabla \times \vec{F} = \langle x(z^2 - y^2),\; y(x^2 - z^2),\; z(y^2 - x^2) \rangle\]</p></div>
+</section>
+
+<section id="what-does-curl-mean-physically" data-source-line="54" aria-label="What Does Curl Mean Physically?">
+  <h2>What Does Curl Mean Physically?</h2>
+  <figure>
+  <img src="figures/curl_interpretation.png" alt="Two vector fields side by side. Left: a rotation field with arrows circling counterclockwise, labeled nonzero curl, with a spinning paddle wheel at center. Right: a radial outward field with arrows pointing away from origin, labeled zero curl, with a stationary paddle wheel." style="max-width:100%; max-height:500px;">
+</figure>
+<div><p><strong>Paddle wheel test:</strong> Place a tiny paddle wheel in the flow.</p>
+<ul>
+<li>curl \(\vec{F} \neq \vec{0}\): the paddle wheel <strong>spins</strong>. Direction of curl = axis of rotation.</li>
+<li>curl \(\vec{F} = \vec{0}\): no spinning \(\to\) <strong>irrotational</strong></li>
+</ul></div>
+<div><p><strong>Example:</strong> \(\vec{F} = \langle -y, x, 0 \rangle\) (rotation in \(xy\)-plane): \(\nabla \times \vec{F} = \langle 0, 0, 2 \rangle\). Curl points in \(+z\) (CCW from above), magnitude 2.</p></div>
+<div><p><strong>Example:</strong> \(\vec{F} = \langle yz, xz, xy \rangle\): \(\nabla \times \vec{F} = \vec{0}\). No rotation \(\to\) conservative (potential: \(f = xyz\)).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Zero curl = no rotation = conservative (on simply connected domains). Nonzero curl = the field has local spinning.</p></aside>
+</section>
+
+<section id="divergence-measuring-expansion" data-source-line="73" aria-label="Divergence: Measuring Expansion">
+  <h2>Divergence: Measuring Expansion</h2>
+  <section class="defn-box" role="region" aria-label="Divergence of a Vector Field">
+  <h3 class="defn-title">Divergence of a Vector Field</h3>
+  <p>\[\text{div}\;\vec{F} = \nabla \cdot \vec{F} = \frac{\partial P}{\partial x} + \frac{\partial Q}{\partial y} + \frac{\partial R}{\partial z}\]</p>
+</section>
+<div><p>Much simpler than curl: differentiate each component with respect to its “own” variable and add.</p></div>
+<div><p><strong>Output types</strong> (remember dot vs cross):</p>
+<ul>
+<li>\(\nabla \cdot \vec{F}\) (dot \(\to\) scalar): divergence is a <strong>number</strong> at each point</li>
+<li>\(\nabla \times \vec{F}\) (cross \(\to\) vector): curl is a <strong>vector</strong> at each point</li>
+</ul></div>
+</section>
+
+<section id="example-2-computing-divergence" data-source-line="90" aria-label="Example 2: Computing Divergence">
+  <h2>Example 2: Computing Divergence</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Find \(\nabla \cdot \vec{F}\) for \(\vec{F}(x,y,z) = \langle e^x\sin y,\; e^x\cos y,\; z^2 \rangle\).</p>
+</section>
+<p class="work-prompt">Compute \(P_x + Q_y + R_z\).</p>
+<div><p>\[P_x = e^x\sin y, \qquad Q_y = -e^x\sin y, \qquad R_z = 2z\]</p></div>
+<div><p>\[\nabla \cdot \vec{F} = e^x\sin y - e^x\sin y + 2z = 2z\]</p>
+<p>The first two terms cancel! Divergence depends only on \(z\): zero at \(z = 0\), positive above (expansion), negative below (compression).</p></div>
+</section>
+
+<section id="what-does-divergence-mean-physically" data-source-line="109" aria-label="What Does Divergence Mean Physically?">
+  <h2>What Does Divergence Mean Physically?</h2>
+  <figure>
+  <img src="figures/div_interpretation.png" alt="Three vector field diagrams. Left: arrows spreading outward from a point, labeled div F greater than 0 (source). Center: arrows converging inward, labeled div F less than 0 (sink). Right: parallel arrows with equal spacing, labeled div F equals 0 (incompressible)." style="max-width:100%; max-height:500px;">
+</figure>
+<div><p>Think of \(\vec{F}\) as fluid flow:</p>
+<ul>
+<li>\(\nabla \cdot \vec{F} > 0\): <strong>source</strong> &mdash; more flows out than in (expansion)</li>
+<li>\(\nabla \cdot \vec{F} < 0\): <strong>sink</strong> &mdash; more flows in than out (compression)</li>
+<li>\(\nabla \cdot \vec{F} = 0\): <strong>incompressible</strong> &mdash; what flows in equals what flows out</li>
+</ul></div>
+<div><p><strong>Example:</strong> \(\vec{F} = \langle x, y, z \rangle\): \(\nabla \cdot \vec{F} = 3\). Constant positive divergence everywhere &mdash; uniform expansion (like an explosion).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Divergence = “flux density.” Positive = source, negative = sink, zero = incompressible.</p></aside>
+</section>
+
+<section id="conservative-test-in-3d-and-two-key-identities" data-source-line="127" aria-label="Conservative Test in 3D and Two Key Identities">
+  <h2>Conservative Test in 3D and Two Key Identities</h2>
+  <section class="defn-box theorem-box" role="region" aria-label="Theorem: Curl Test for Conservative Fields">
+  <h3 class="defn-title">Theorem: Curl Test for Conservative Fields</h3>
+  <p>On an open, simply connected region: \(\vec{F}\) is conservative \(\iff\) \(\nabla \times \vec{F} = \vec{0}\).</p>
+</section>
+<div><p>This generalizes \(P_y = Q_x\) to 3D &mdash; curl \(= \vec{0}\) means <strong>all three</strong> cross-partial pairs match.</p></div>
+<div><p><strong>Two identities</strong> (both from Clairaut's Theorem &mdash; mixed partials cancel in pairs):</p>
+<p>\[\nabla \times (\nabla f) = \vec{0} \qquad\text{and}\qquad \nabla \cdot (\nabla \times \vec{F}) = 0\]</p>
+<ul>
+<li>“Curl of a gradient is always zero” &mdash; every conservative field is irrotational</li>
+<li>“Div of a curl is always zero” &mdash; useful test: if \(\nabla \cdot \vec{G} \neq 0\), then \(\vec{G}\) cannot be a curl</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The sequence: scalar \(\xrightarrow{\nabla}\) vector \(\xrightarrow{\nabla\times}\) vector \(\xrightarrow{\nabla\cdot}\) scalar. Applying two consecutive operators always gives zero.</p></aside>
+</section>
+
+<section id="example-3-test-with-curl-then-find-the-potential" data-source-line="149" aria-label="Example 3: Test with Curl, Then Find the Potential">
+  <h2>Example 3: Test with Curl, Then Find the Potential</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Determine whether \(\vec{F} = \langle y^2z^3,\; 2xyz^3,\; 3xy^2z^2 \rangle\) is conservative. If so, find \(f\).</p>
+</section>
+<p class="work-prompt">Compute \(\nabla \times \vec{F}\). If it's \(\vec{0}\), integrate to find \(f\).</p>
+<div><p><strong>Curl test:</strong></p>
+<p>\(\vec{i}\): \(6xyz^2 - 6xyz^2 = 0\).   \(\vec{j}\): \(-(3y^2z^2 - 3y^2z^2) = 0\).   \(\vec{k}\): \(2yz^3 - 2yz^3 = 0\).</p>
+<p>\(\nabla \times \vec{F} = \vec{0}\) \checkmark \(\;\Rightarrow\) conservative.</p></div>
+<div><p><strong>Find \(f\):</strong> \(f_x = y^2z^3 \;\Rightarrow\; f = xy^2z^3 + g(y,z)\).</p></div>
+<div><p>\(f_y = 2xyz^3 + g_y = 2xyz^3 \;\Rightarrow\; g_y = 0\), so \(g = h(z)\).</p></div>
+<div><p>\(f_z = 3xy^2z^2 + h'(z) = 3xy^2z^2 \;\Rightarrow\; h'(z) = 0\).</p></div>
+<div><p>\[\boxed{f(x,y,z) = xy^2z^3}\]</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>3D potential: (1) curl test, (2) integrate \(f_x\), (3) match \(f_y\) to find \(g(y,z)\), (4) match \(f_z\) to pin down any remaining function.</p></aside>
+</section>
+
+<section id="section-16-5-summary" data-source-line="175" aria-label="Section 16.5 Summary">
+  <h2>Section 16.5 Summary</h2>
+  <div class="summary-grid">
+<section class="defn-box" role="region" aria-label="Curl"><h3 class="defn-title">Curl</h3><p>\(\nabla \times \vec{F}\): use the \(3\times 3\) determinant. Measures <strong>rotation</strong>. Direction = axis, magnitude = rate of spin.</p></section>
+<section class="defn-box" role="region" aria-label="Divergence"><h3 class="defn-title">Divergence</h3><p>\(\nabla \cdot \vec{F} = P_x + Q_y + R_z\). Measures <strong>expansion</strong>. Source (\(>0\)), sink (\(<0\)), incompressible (\(=0\)).</p></section>
+<section class="defn-box" role="region" aria-label="Conservative Test"><h3 class="defn-title">Conservative Test</h3><p>\(\vec{F}\) conservative \(\iff\) \(\nabla \times \vec{F} = \vec{0}\) (on simply connected domains). Generalizes \(P_y = Q_x\).</p></section>
+<section class="defn-box" role="region" aria-label="Key Identities"><h3 class="defn-title">Key Identities</h3><p>\(\nabla \times (\nabla f) = \vec{0}\) and \(\nabla \cdot (\nabla \times \vec{F}) = 0\). Two consecutive operators always give zero.</p></section>
+</div>
+<aside class="key-point" role="note" aria-label="Key point"><p><strong>Next:</strong> Section 16.6 &mdash; parametric surfaces and surface area, leading to surface integrals, Stokes' Theorem, and the Divergence Theorem.</p></aside>
+</section>
+
+<section aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 16.5:</strong> 1, 3, 5, 7, 9, 11, 15, 17, 19, 21--24, 39</div>
+</section>
+</main>
+<script>
+// Scroll observer: notify parent when visible section changes (for editor sync)
+(function() {
+    if (!window.parent || window.parent === window) return;
+    var sections = document.querySelectorAll('main > section[data-source-line]');
+    if (!sections.length) return;
+    var currentLine = null;
+    var scrollTimer = null;
+    function onScroll() {
+        if (scrollTimer) clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(updateVisibleSection, 80);
+    }
+    function updateVisibleSection() {
+        var viewTop = window.innerHeight * 0.3;
+        var best = null;
+        for (var i = 0; i < sections.length; i++) {
+            var rect = sections[i].getBoundingClientRect();
+            if (rect.top <= viewTop && rect.bottom > 0) best = sections[i];
+        }
+        if (best) {
+            var line = parseInt(best.dataset.sourceLine, 10);
+            if (!isNaN(line) && line !== currentLine) {
+                currentLine = line;
+                window.parent.postMessage({ type: 'htmlSectionChanged', sourceLine: line }, '*');
+            }
+        }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    // Also listen for goToSection messages from parent
+    window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'goToSection' && e.data.sourceLine != null) {
+            for (var i = 0; i < sections.length; i++) {
+                if (parseInt(sections[i].dataset.sourceLine, 10) === e.data.sourceLine) {
+                    sections[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    break;
+                }
+            }
+        }
+    });
+})();
+</script>
+</body>
+</html>
