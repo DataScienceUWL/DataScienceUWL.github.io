@@ -420,7 +420,7 @@ export function drawBoxplot(container, data, options = {}) {
       if (meanVal != null) {
         const mx = xScale(meanVal);
         const my = bandY + bandH / 2;
-        const ds = Math.max(7, boxH * 0.3); // diamond half-size, min 7px
+        const ds = Math.max(7, boxH * 0.5); // diamond half-size = box half-height
         g.append('path')
           .attr('class', 'mean-marker')
           .attr('d', `M${mx},${my - ds} L${mx + ds},${my} L${mx},${my + ds} L${mx - ds},${my} Z`)
