@@ -184,10 +184,9 @@ export function drawBoxplot(container, data, options = {}) {
     ? rawColors.map(c => ({ stroke: c, fill: c + '30' }))
     : [{ stroke: IMS_BLUE, fill: BOX_FILL }];
 
-  // Inject pattern defs for grouped boxplots (secondary visual cue beyond color)
-  const patterns = isGrouped
-    ? ensurePatterns(/** @type {SVGSVGElement} */ (frame.svg), rawColors)
-    : [];
+  // Boxplots skip patterns — y-axis labels identify groups, and patterns
+  // obscure the median line and mean diamond.
+  const patterns = [];
 
   for (let gi = 0; gi < groupNames.length; gi++) {
     const name = groupNames[gi];

@@ -263,10 +263,19 @@ const PATTERN_DEFS = [
     },
   },
   {
-    id: 'vert',
+    id: 'checker',
     create: (defs, color, idx) => {
-      const p = _mkPattern(defs, `sl-pat-vert-${idx}`, 6, 6);
-      _line(p, 3, 0, 3, 6, color, 1.5);
+      const ns = 'http://www.w3.org/2000/svg';
+      const p = _mkPattern(defs, `sl-pat-checker-${idx}`, 6, 6);
+      const r1 = document.createElementNS(ns, 'rect');
+      r1.setAttribute('width', '3'); r1.setAttribute('height', '3');
+      r1.setAttribute('fill', color); r1.setAttribute('opacity', '0.5');
+      p.appendChild(r1);
+      const r2 = document.createElementNS(ns, 'rect');
+      r2.setAttribute('x', '3'); r2.setAttribute('y', '3');
+      r2.setAttribute('width', '3'); r2.setAttribute('height', '3');
+      r2.setAttribute('fill', color); r2.setAttribute('opacity', '0.5');
+      p.appendChild(r2);
     },
   },
 ];
