@@ -420,13 +420,13 @@ export function drawBoxplot(container, data, options = {}) {
       if (meanVal != null) {
         const mx = xScale(meanVal);
         const my = bandY + bandH / 2;
-        const ds = boxH * 0.22; // diamond half-size
+        const ds = Math.max(7, boxH * 0.3); // diamond half-size, min 7px
         g.append('path')
           .attr('class', 'mean-marker')
           .attr('d', `M${mx},${my - ds} L${mx + ds},${my} L${mx},${my + ds} L${mx - ds},${my} Z`)
           .attr('fill', '#F05133')
           .attr('stroke', '#fff')
-          .attr('stroke-width', 1)
+          .attr('stroke-width', 1.5)
           .attr('aria-label', `Mean: ${meanVal.toFixed(2)}`);
 
         // Hit zone for tooltip
