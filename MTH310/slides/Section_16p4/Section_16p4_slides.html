@@ -180,149 +180,153 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <div class="key-point fragment" data-editor-line="68"><p>Green's Theorem requires <strong>positive (CCW) orientation</strong>. If the curve is CW, negate.</p></div>
 </section>
 
-<section id="micro-circulation-what-does-local-rotation-look-like">
-<h2>Micro-Circulation: What Does Local Rotation Look Like?</h2>
-<div class="fragment" data-editor-line="75"><p>Imagine placing a tiny paddle wheel at a point in a vector field. Does it spin?</p></div>
-<div class="fig-container fragment" data-editor-line="77">
+<section id="green-s-theorem">
+<h2>Green's Theorem</h2>
+<div class="defn-box theorem-box fragment" data-editor-line="75">
+  <div class="defn-title">Theorem: Green's Theorem</div>
+  <p>Let \(C\) be a positively oriented, piecewise-smooth, simple closed curve bounding a region \(D\). If \(P\) and \(Q\) have continuous partial derivatives on an open region containing \(D\), then</p>
+<p>\[\boxed{\oint_C P\,dx + Q\,dy = \iint_D \left(\frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right)\,dA}\]</p>
+</div>
+<div class="fragment" data-editor-line="80"><p><strong>In words:</strong> circulation around boundary \(=\) total curl over interior.</p></div>
+<div class="fragment" data-editor-line="82"><p><strong>When the curl is constant</strong> (say \(Q_x - P_y = k\)), the integral is just \(k \cdot \text{Area}(D)\).</p></div>
+<div class="fragment" data-editor-line="84"><p><strong>Quick Check:</strong> For \(\oint_C (3y)\,dx + (5x)\,dy\): \(P = 3y\), \(Q = 5x\), so \(Q_x - P_y = 5 - 3 = 2\). By Green's: \(\oint = \iint_D 2\,dA = 2\cdot\text{Area}(D)\). When the curl is constant, the double integral is just the constant times the area!</p></div>
+<div class="key-point fragment" data-editor-line="86"><p>Green's Theorem converts a line integral (hard) into a double integral (often easier), or vice versa. Next: <strong>why</strong> does it work?</p></div>
+</section>
+
+<section id="why-green-s-theorem-works-cancellation">
+<h2>Why Green's Theorem Works: Cancellation</h2>
+<div class="fragment" data-editor-line="93"><p>To see why, break \(D\) into tiny pieces.</p></div>
+<div class="fragment" data-editor-line="95"><div class="two-col">
+  <div><div class="fig-container">
+  <a href="figures/patch_cancellation.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/patch_cancellation.png"><img src="figures/patch_cancellation.png" alt="A grid of small rectangles tiled inside a region. Each cell has a small CCW circulation arrow. Blue boundary arrows show the surviving outer circulation. One interior shared edge is highlighted in red with opposing arrows labeled cancel." style="max-height:60vh;"></a>
+</div></div>
+  <div><div class="fragment" data-editor-line="0"><p><strong>Tile \(D\)</strong> with tiny rectangles. Traverse each cell CCW and call its line integral the <strong>micro-circulation</strong> \(\Delta\Gamma\).</p></div>
+<div class="fragment" data-editor-line="2"><p><strong>Interior edges cancel.</strong> Every shared edge is traversed in opposite directions by adjacent cells \(\to\) the two contributions sum to zero.</p></div>
+<div class="fragment" data-editor-line="4"><p><strong>Only the outer boundary \(C\) survives:</strong></p>
+<p>\[\oint_C \vec{F}\cdot d\vec{r} \;=\; \sum_{\text{cells}} \Delta\Gamma\]</p></div></div>
+</div></div>
+<div class="key-point fragment" data-editor-line="106"><p>The boundary circulation equals the <strong>sum of the micro-circulations</strong> inside. Next question: what is \(\Delta\Gamma\) on a single tiny cell?</p></div>
+<aside class="notes">Tiny paddle wheels spinning inside \(D\). Their net effect is the circulation around the outside.</aside>
+</section>
+
+<section id="what-does-one-cell-s-circulation-look-like">
+<h2>What Does One Cell's Circulation Look Like?</h2>
+<div class="fragment" data-editor-line="115"><p>Imagine placing a tiny paddle wheel at a point in a vector field. Does it spin?</p></div>
+<div class="fig-container fragment" data-editor-line="117">
   <a href="figures/vorticity.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/vorticity.png"><img src="figures/vorticity.png" alt="Three panels each showing four arrows arranged around a central point. Left (blue): arrows swirl counterclockwise, labeled positive curl. Center (red): arrows swirl clockwise, labeled negative curl. Right (green): all arrows point right uniformly, labeled zero curl." style="max-height:60vh;"></a>
 </div>
-<div class="fragment" data-editor-line="79"><p>Look at how the arrows change across the box:</p>
+<div class="fragment" data-editor-line="119"><p>Look at how the arrows change across the box:</p>
 <ul>
 <li>\(Q\) <strong>increases</strong> left-to-right (\(Q_x > 0\)): the right side pushes up more than the left \(\to\) CCW spin</li>
 <li>\(P\) <strong>increases</strong> bottom-to-top (\(P_y > 0\)): the top pushes right more than the bottom \(\to\) CW spin</li>
 </ul></div>
-<div class="fragment" data-editor-line="85"><p>The net rotation is the competition between these: \(Q_x - P_y\).</p>
+<div class="fragment" data-editor-line="125"><p>The net rotation is the competition between these: \(Q_x - P_y\).</p>
 <ul>
 <li>\(Q_x - P_y > 0\): net CCW rotation (positive curl)</li>
 <li>\(Q_x - P_y < 0\): net CW rotation (negative curl)</li>
 <li>\(Q_x - P_y = 0\): no net rotation (conservative!)</li>
 </ul></div>
-<div class="key-point fragment" data-editor-line="92"><p>The <strong>2D curl</strong> \(Q_x - P_y\) measures local counterclockwise rotation &mdash; the micro-circulation per unit area. It's exactly the quantity from the cross-partials test: zero curl \(=\) conservative.</p></div>
+<div class="key-point fragment" data-editor-line="132"><p>The <strong>2D curl</strong> \(Q_x - P_y\) measures local counterclockwise rotation. It's the same quantity from the cross-partials test: zero curl \(=\) conservative.</p></div>
 </section>
 
 <section id="making-it-precise-circulation-on-a-tiny-rectangle">
 <h2>Making It Precise: Circulation on a Tiny Rectangle</h2>
-<div class="fragment" data-editor-line="99"><p>Center a tiny rectangle at \((x,y)\) and compute \(\oint \vec{F}\cdot d\vec{r}\) around it (CCW):</p></div>
-<div class="fig-container fragment" data-editor-line="101">
+<div class="fragment" data-editor-line="139"><p>Center a tiny rectangle at \((x,y)\) and compute \(\oint \vec{F}\cdot d\vec{r}\) around it (CCW):</p></div>
+<div class="fig-container fragment" data-editor-line="141">
   <a href="figures/centered_rectangle.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/centered_rectangle.png"><img src="figures/centered_rectangle.png" alt="A small rectangle centered at (x,y). Each edge is labeled with its contribution to the circulation: bottom gives P at y minus Delta y over 2 times Delta x, top gives minus P at y plus Delta y over 2 times Delta x, right gives Q at x plus Delta x over 2 times Delta y, left gives minus Q at x minus Delta x over 2 times Delta y. Dimension labels Delta x and Delta y are inside the rectangle." style="max-height:60vh;"></a>
 </div>
-<div class="fragment" data-editor-line="103"><p><strong>Horizontal edges</strong> (top and bottom) contribute:</p>
+<div class="fragment" data-editor-line="143"><p><strong>Horizontal edges</strong> (top and bottom) contribute:</p>
 <p>\[P\!\left(x,\, y - \frac{\Delta y}{2}\right)\Delta x - P\!\left(x,\, y + \frac{\Delta y}{2}\right)\Delta x \;\approx\; -\frac{\partial P}{\partial y}\,\Delta y\,\Delta x\]</p></div>
-<div class="fragment" data-editor-line="106"><p><strong>Vertical edges</strong> (right and left) contribute:</p>
+<div class="fragment" data-editor-line="146"><p><strong>Vertical edges</strong> (right and left) contribute:</p>
 <p>\[Q\!\left(x + \frac{\Delta x}{2},\, y\right)\Delta y - Q\!\left(x - \frac{\Delta x}{2},\, y\right)\Delta y \;\approx\; \frac{\partial Q}{\partial x}\,\Delta x\,\Delta y\]</p></div>
-<div class="fragment" data-editor-line="109"><p><strong>Total circulation</strong> \(\approx \left(\dfrac{\partial Q}{\partial x} - \dfrac{\partial P}{\partial y}\right)\Delta A\)</p></div>
-<div class="key-point fragment" data-editor-line="111"><p>The circulation per unit area around a tiny rectangle is \(Q_x - P_y\). This is the <strong>2D curl</strong> &mdash; it measures local counterclockwise rotation.</p></div>
-</section>
-
-<section id="why-green-s-theorem-works-cancellation">
-<h2>Why Green's Theorem Works: Cancellation</h2>
-<div class="fragment" data-editor-line="118"><p>Tile the whole region with tiny rectangles. Each has micro-circulation \((Q_x - P_y) \Delta A\).</p></div>
-<div class="fragment" data-editor-line="120"><div class="two-col">
-  <div><div class="fig-container">
-  <a href="figures/patch_cancellation.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/patch_cancellation.png"><img src="figures/patch_cancellation.png" alt="A grid of small rectangles tiled inside a region. Each cell has a small CCW circulation arrow. Blue boundary arrows show the surviving outer circulation. One interior shared edge is highlighted in red with opposing arrows labeled cancel." style="max-height:60vh;"></a>
-</div></div>
-  <div><div class="fragment" data-editor-line="0"><p><strong>Key insight:</strong> Adjacent cells share an edge, traversed in <strong>opposite directions</strong>. These cancel!</p></div>
-<div class="fragment" data-editor-line="2"><p>What survives? Only the <strong>outer boundary</strong> &mdash; edges not shared with a neighbor.</p></div>
-<div class="fragment" data-editor-line="4"><p>\[\sum \text{micro} \;\to\; \iint_D (Q_x - P_y)\,dA\]</p>
-<p>\[= \oint_C P\,dx + Q\,dy\]</p></div></div>
-</div></div>
-<div class="key-point fragment" data-editor-line="131"><p>The interior cancels, leaving only the boundary circulation. That's Green's Theorem: macro = sum of micro.</p></div>
-<aside class="notes">Tiny paddle wheels spinning inside \(D\). Their net effect is the circulation around the outside.</aside>
-</section>
-
-<section id="green-s-theorem">
-<h2>Green's Theorem</h2>
-<div class="defn-box theorem-box fragment" data-editor-line="140">
-  <div class="defn-title">Theorem: Green's Theorem</div>
-  <p>Let \(C\) be a positively oriented, piecewise-smooth, simple closed curve bounding a region \(D\). If \(P\) and \(Q\) have continuous partial derivatives on an open region containing \(D\), then</p>
-<p>\[\boxed{\oint_C P\,dx + Q\,dy = \iint_D \left(\frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right)\,dA}\]</p>
-</div>
-<div class="fragment" data-editor-line="145"><p><strong>In words:</strong> circulation around boundary \(=\) total curl over interior.</p></div>
-<div class="fragment" data-editor-line="147"><p><strong>When the curl is constant</strong> (say \(Q_x - P_y = k\)), the integral is just \(k \cdot \text{Area}(D)\).</p></div>
-<div class="fragment" data-editor-line="149"><p><strong>Quick Check:</strong> For \(\oint_C (3y)\,dx + (5x)\,dy\): \(P = 3y\), \(Q = 5x\), so \(Q_x - P_y = 5 - 3 = 2\). By Green's: \(\oint = \iint_D 2\,dA = 2\cdot\text{Area}(D)\). When the curl is constant, the double integral is just the constant times the area!</p></div>
-<div class="key-point fragment" data-editor-line="151"><p>Green's Theorem converts a line integral (hard) into a double integral (often easier), or vice versa.</p></div>
+<div class="fragment" data-editor-line="149"><p><strong>One cell's micro-circulation:</strong></p>
+<p>\[\Delta\Gamma \;\approx\; \left(\frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right)\Delta A\]</p></div>
+<div class="fragment" data-editor-line="152"><p><strong>Plug into cancellation and take \(\Delta A \to 0\):</strong></p>
+<p>\[\oint_C \vec{F}\cdot d\vec{r} \;=\; \sum_{\text{cells}}\Delta\Gamma \;\approx\; \sum_{\text{cells}}(Q_x - P_y)\,\Delta A \;\longrightarrow\; \iint_D (Q_x - P_y)\,dA\]</p>
+<p>That's Green's Theorem. \(\checkmark\)</p></div>
+<div class="key-point fragment" data-editor-line="156"><p>Each tiny cell circulates by \((Q_x - P_y) \Delta A\). Sum over all cells: interiors cancel, the boundary survives, and the sum becomes the double integral of the 2D curl.</p></div>
 </section>
 
 <section id="example-1-verify-green-s-theorem">
 <h2>Example 1: Verify Green's Theorem</h2>
-<div class="fragment" data-editor-line="160"><p><strong>Example 1.</strong> Evaluate \(\oint_C xy\,dx + x^2\,dy\) where \(C\) is the rectangle \((0,0) \to (3,0) \to (3,1) \to (0,1)\) (CCW). Verify both sides.</p></div>
-<div class="fragment" data-editor-line="162"><p class="work-prompt">Compute \(Q_x - P_y\) and integrate over the rectangle. Then verify by computing the line integral along all four edges.</p></div>
-<div class="fragment" data-editor-line="164"><p><strong>Right side:</strong> \(P = xy\), \(Q = x^2\). \(Q_x - P_y = 2x - x = x\).</p>
+<div class="fragment" data-editor-line="165"><p><strong>Example 1.</strong> Evaluate \(\oint_C xy\,dx + x^2\,dy\) where \(C\) is the rectangle \((0,0) \to (3,0) \to (3,1) \to (0,1)\) (CCW). Verify both sides.</p></div>
+<div class="fragment" data-editor-line="167"><p class="work-prompt">Compute \(Q_x - P_y\) and integrate over the rectangle. Then verify by computing the line integral along all four edges.</p></div>
+<div class="fragment" data-editor-line="169"><p><strong>Right side:</strong> \(P = xy\), \(Q = x^2\). \(Q_x - P_y = 2x - x = x\).</p>
 <p>\[\iint_D x\,dA = \int_0^1\int_0^3 x\,dx\,dy = \frac{9}{2}\]</p></div>
-<div class="fragment" data-editor-line="167"><p><strong>Left side:</strong> Four edges &mdash; \(C_1\): \(0\), \(C_2\): \(\int_0^1 9\,dy = 9\), \(C_3\): \(\int_3^0 x\,dx = -\frac{9}{2}\), \(C_4\): \(0\).</p>
-<p>Total: \(0 + 9 - \frac{9}{2} + 0 = \frac{9}{2}\) \checkmark</p></div>
-<div class="key-point fragment" data-editor-line="171"><p>Both sides give \(\frac{9}{2}\). The double integral was one line; the line integral took four pieces.</p></div>
+<div class="fragment" data-editor-line="172"><p><strong>Left side:</strong> Four edges &mdash; \(C_1\): \(0\), \(C_2\): \(\int_0^1 9\,dy = 9\), \(C_3\): \(\int_3^0 x\,dx = -\frac{9}{2}\), \(C_4\): \(0\).</p>
+<p>Total: \(0 + 9 - \frac{9}{2} + 0 = \frac{9}{2}\;\checkmark\)</p></div>
+<div class="key-point fragment" data-editor-line="176"><p>Both sides give \(\frac{9}{2}\). The double integral was one line; the line integral took four pieces.</p></div>
 </section>
 
 <section id="example-2-symmetry-shortcut">
 <h2>Example 2: Symmetry Shortcut</h2>
-<div class="example-box fragment" data-editor-line="178">
+<div class="example-box fragment" data-editor-line="183">
   <div class="example-title">Example 2</div>
   <p>Use Green's Theorem to evaluate \(\oint_C y^4\,dx + 2xy^3\,dy\) where \(C\) is the ellipse \(x^2 + 2y^2 = 2\) (CCW).</p>
 </div>
-<div class="fragment" data-editor-line="182"><p class="work-prompt">Compute \(Q_x - P_y\). Before integrating, check: is the integrand odd or even on a symmetric region?</p></div>
-<div class="fragment" data-editor-line="184"><p>\(P = y^4\), \(Q = 2xy^3\).   \(Q_x - P_y = 2y^3 - 4y^3 = -2y^3\).</p></div>
-<div class="fragment" data-editor-line="186"><p>The region \(D\) (ellipse) is symmetric about the \(x\)-axis, and \(-2y^3\) is <strong>odd</strong> in \(y\).</p></div>
-<div class="fragment" data-editor-line="188"><p>Odd integrand on a \(y\)-symmetric region \(\Rightarrow \iint_D (-2y^3)\,dA = 0\).</p></div>
-<div class="key-point fragment" data-editor-line="190"><p>Always check for symmetry before integrating! Odd function on a symmetric domain = zero.</p></div>
+<div class="fragment" data-editor-line="187"><p class="work-prompt">Compute \(Q_x - P_y\). Before integrating, check: is the integrand odd or even on a symmetric region?</p></div>
+<div class="fragment" data-editor-line="189"><p>\(P = y^4\), \(Q = 2xy^3\).   \(Q_x - P_y = 2y^3 - 4y^3 = -2y^3\).</p></div>
+<div class="fragment" data-editor-line="191"><p>The region \(D\) (ellipse) is symmetric about the \(x\)-axis, and \(-2y^3\) is <strong>odd</strong> in \(y\).</p></div>
+<div class="fragment" data-editor-line="193"><p>Odd integrand on a \(y\)-symmetric region \(\Rightarrow \iint_D (-2y^3)\,dA = 0\).</p></div>
+<div class="key-point fragment" data-editor-line="195"><p>Always check for symmetry before integrating! Odd function on a symmetric domain = zero.</p></div>
 </section>
 
 <section id="example-3-green-s-theorem-throws-away-the-hard-parts">
 <h2>Example 3: Green's Theorem Throws Away the Hard Parts</h2>
-<div class="example-box fragment" data-editor-line="197">
+<div class="example-box fragment" data-editor-line="202">
   <div class="example-title">Example 3</div>
   <p>Evaluate \(\oint_C (e^x + y^2)\,dx + (e^y + x^2)\,dy\) where \(C\) is the boundary of the region between \(y = x^2\) and \(y = x\) (CCW).</p>
 </div>
-<div class="fragment" data-editor-line="201"><p class="work-prompt">Compute \(Q_x - P_y\). Find where \(y = x^2\) and \(y = x\) intersect. Set up and evaluate the double integral.</p></div>
-<div class="fragment" data-editor-line="203"><p>\(Q_x - P_y = 2x - 2y\). (The \(e^x\) and \(e^y\) vanish!)</p></div>
-<div class="fragment" data-editor-line="205"><p><strong>Region:</strong> \(y = x^2\) and \(y = x\) intersect at \(x = 0\) and \(x = 1\).</p>
+<div class="fragment" data-editor-line="206"><p class="work-prompt">Compute \(Q_x - P_y\). Find where \(y = x^2\) and \(y = x\) intersect. Set up and evaluate the double integral.</p></div>
+<div class="fragment" data-editor-line="208"><p>\(Q_x - P_y = 2x - 2y\). (The \(e^x\) and \(e^y\) vanish!)</p></div>
+<div class="fragment" data-editor-line="210"><p><strong>Region:</strong> \(y = x^2\) and \(y = x\) intersect at \(x = 0\) and \(x = 1\).</p>
 <p>\[\int_0^1\int_{x^2}^x (2x-2y)\,dy\,dx\]</p></div>
-<div class="fragment" data-editor-line="208"><p>Inner: \([2xy - y^2]_{x^2}^x = x^2 - 2x^3 + x^4\).   Outer: \(\frac{1}{3} - \frac{1}{2} + \frac{1}{5} = \frac{1}{30}\).</p></div>
-<div class="key-point fragment" data-editor-line="210"><p>The \(e^x\) and \(e^y\) terms vanished in the curl. Green's Theorem threw away the hard parts.</p></div>
+<div class="fragment" data-editor-line="213"><p>Inner: \([2xy - y^2]_{x^2}^x = x^2 - 2x^3 + x^4\).   Outer: \(\frac{1}{3} - \frac{1}{2} + \frac{1}{5} = \frac{1}{30}\).</p></div>
+<div class="key-point fragment" data-editor-line="215"><p>The \(e^x\) and \(e^y\) terms vanished in the curl. Green's Theorem threw away the hard parts.</p></div>
 </section>
 
 <section id="computing-area-with-green-s-theorem">
 <h2>Computing Area with Green's Theorem</h2>
-<div class="fragment" data-editor-line="217"><p>If we choose \(P\) and \(Q\) so that \(Q_x - P_y = 1\), then \(\oint P\,dx + Q\,dy = \text{Area}(D)\).</p></div>
-<div class="fragment" data-editor-line="219"><p>The cleanest choice: \(P = -y/2\), \(Q = x/2\), giving</p>
+<div class="fragment" data-editor-line="222"><p>If we choose \(P\) and \(Q\) so that \(Q_x - P_y = 1\), then \(\oint P\,dx + Q\,dy = \text{Area}(D)\).</p></div>
+<div class="fragment" data-editor-line="224"><p>The cleanest choice: \(P = -y/2\), \(Q = x/2\), giving</p>
 <p>\[\boxed{\text{Area}(D) = \frac{1}{2}\oint_C x\,dy - y\,dx}\]</p>
 <p>This computes area from a boundary parameterization alone &mdash; no double integral.</p></div>
 </section>
 
 <section id="example-4-area-of-an-ellipse">
 <h2>Example 4: Area of an Ellipse</h2>
-<div class="example-box fragment" data-editor-line="229">
+<div class="example-box fragment" data-editor-line="234">
   <div class="example-title">Example 4</div>
   <p>Use the Green's Theorem area formula to find the area enclosed by the ellipse \(\dfrac{x^2}{9} + \dfrac{y^2}{4} = 1\).</p>
 </div>
-<div class="fragment" data-editor-line="233"><p class="work-prompt">Parameterize the ellipse: \(x = 3\cos t\), \(y = 2\sin t\), \(0 \leq t \leq 2\pi\). Compute \(dx\) and \(dy\), then apply \(A = \frac{1}{2}\oint x\,dy - y\,dx\).</p></div>
-<div class="fragment" data-editor-line="235"><p><strong>Parameterize:</strong> \(x = 3\cos t\), \(y = 2\sin t\), \(0 \leq t \leq 2\pi\).</p>
+<div class="fragment" data-editor-line="238"><p class="work-prompt">Parameterize the ellipse: \(x = 3\cos t\), \(y = 2\sin t\), \(0 \leq t \leq 2\pi\). Compute \(dx\) and \(dy\), then apply \(A = \frac{1}{2}\oint x\,dy - y\,dx\).</p></div>
+<div class="fragment" data-editor-line="240"><p><strong>Parameterize:</strong> \(x = 3\cos t\), \(y = 2\sin t\), \(0 \leq t \leq 2\pi\).</p>
 <p>\(dx = -3\sin t\,dt\),   \(dy = 2\cos t\,dt\).</p></div>
-<div class="fragment" data-editor-line="239"><p><strong>Apply the area formula:</strong></p>
+<div class="fragment" data-editor-line="244"><p><strong>Apply the area formula:</strong></p>
 <p>\[A = \frac{1}{2}\int_0^{2\pi}\bigl[(3\cos t)(2\cos t) - (2\sin t)(-3\sin t)\bigr]\,dt = \frac{1}{2}\int_0^{2\pi} 6(\cos^2 t + \sin^2 t)\,dt\]</p></div>
-<div class="fragment" data-editor-line="242"><p>\[= \frac{1}{2}\int_0^{2\pi} 6\,dt = \frac{1}{2}\cdot 6 \cdot 2\pi = \boxed{6\pi}\]</p></div>
-<div class="key-point fragment" data-editor-line="244"><p>For a general ellipse \(\frac{x^2}{a^2} + \frac{y^2}{b^2} = 1\), this gives \(\pi ab\). Here \(a = 3\), \(b = 2\), so area \(= 6\pi\).</p></div>
+<div class="fragment" data-editor-line="247"><p>\[= \frac{1}{2}\int_0^{2\pi} 6\,dt = \frac{1}{2}\cdot 6 \cdot 2\pi = \boxed{6\pi}\]</p></div>
+<div class="key-point fragment" data-editor-line="249"><p>For a general ellipse \(\frac{x^2}{a^2} + \frac{y^2}{b^2} = 1\), this gives \(\pi ab\). Here \(a = 3\), \(b = 2\), so area \(= 6\pi\).</p></div>
 </section>
 
 <section id="green-s-theorem-explains-conservative-fields">
 <h2>Green's Theorem Explains Conservative Fields</h2>
-<div class="fragment" data-editor-line="251"><p>Green's Theorem finally proves the “hard direction” of the cross-partials test from 16.3.</p></div>
-<div class="fragment" data-editor-line="253"><p>If \(P_y = Q_x\) everywhere on a simply-connected region \(D\), then for <strong>any</strong> closed curve \(C\) inside \(D\):</p>
+<div class="fragment" data-editor-line="256"><p>Green's Theorem finally proves the “hard direction” of the cross-partials test from 16.3.</p></div>
+<div class="fragment" data-editor-line="258"><p>If \(P_y = Q_x\) everywhere on a simply-connected region \(D\), then for <strong>any</strong> closed curve \(C\) inside \(D\):</p>
 <p>\[\oint_C P\,dx + Q\,dy = \iint_D \underbrace{(Q_x - P_y)}_{= 0}\,dA = 0\]</p>
 <p>So \(\vec{F}\) is path-independent, hence conservative.</p></div>
-<div class="fragment" data-editor-line="257"><p><strong>Famous counterexample:</strong> \(\vec{F} = \left\langle \dfrac{-y}{x^2+y^2},\; \dfrac{x}{x^2+y^2}\right\rangle\) has \(P_y = Q_x\) everywhere except the origin, yet \(\oint \vec{F}\cdot d\vec{r} = 2\pi\) around any circle enclosing the origin. Green's Theorem doesn't apply because the hole breaks simple connectivity.</p></div>
-<div class="key-point fragment" data-editor-line="259"><p>Simply connected + \(P_y = Q_x\) \(\Rightarrow\) conservative. The hole in the domain is what allows \(P_y = Q_x\) without conservative.</p></div>
+<div class="fragment" data-editor-line="262"><p><strong>Famous counterexample:</strong> \(\vec{F} = \left\langle \dfrac{-y}{x^2+y^2},\; \dfrac{x}{x^2+y^2}\right\rangle\) has \(P_y = Q_x\) everywhere except the origin, yet \(\oint \vec{F}\cdot d\vec{r} = 2\pi\) around any circle enclosing the origin. Green's Theorem doesn't apply because the hole breaks simple connectivity.</p></div>
+<div class="key-point fragment" data-editor-line="264"><p>Simply connected + \(P_y = Q_x\) \(\Rightarrow\) conservative. The hole in the domain is what allows \(P_y = Q_x\) without conservative.</p></div>
 </section>
 
 <section id="section-16-4-summary">
 <h2>Section 16.4 Summary</h2>
 <div class="summary-grid">
 <div class="defn-box"><div class="defn-title">Green's Theorem</div><p class="small">\(\oint_C P\,dx + Q\,dy = \iint_D (Q_x - P_y)\,dA\). Boundary circulation = total interior curl.</p></div>
-<div class="defn-box"><div class="defn-title">Why It Works</div><p class="small">Tile \(D\) with tiny rectangles. Each has micro-circulation \((Q_x - P_y) \Delta A\). Interior edges cancel; only the boundary survives.</p></div>
+<div class="defn-box"><div class="defn-title">Why It Works</div><p class="small">Tile \(D\) with tiny rectangles. Interior edges cancel; only the boundary survives. Each cell contributes \((Q_x - P_y) \Delta A\).</p></div>
 <div class="defn-box"><div class="defn-title">2D Curl</div><p class="small">\(Q_x - P_y\) measures local CCW rotation. Zero curl \(\Leftrightarrow\) conservative (on simply-connected domains).</p></div>
 <div class="defn-box"><div class="defn-title">Area Formula</div><p class="small">\(\text{Area}(D) = \frac{1}{2}\oint_C x\,dy - y\,dx\). Area from boundary alone.</p></div>
 </div>
-<div class="key-point fragment" data-editor-line="273"><p><strong>Next:</strong> Section 16.5 &mdash; <strong>curl</strong> and <strong>divergence</strong> as 3D operators. Section 16.8 gives <strong>Stokes' Theorem</strong> &mdash; the 3D version of Green's.</p></div>
+<div class="key-point fragment" data-editor-line="278"><p><strong>Next:</strong> Section 16.5 &mdash; <strong>curl</strong> and <strong>divergence</strong> as 3D operators. Section 16.8 gives <strong>Stokes' Theorem</strong> &mdash; the 3D version of Green's.</p></div>
 </section>
 
 <section>

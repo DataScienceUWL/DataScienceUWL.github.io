@@ -72,8 +72,8 @@
     padding:2px 14px; cursor:pointer; z-index:10001; line-height:1; }
 #plotly-lightbox .plb-close:hover { color:#e09f3e; background:rgba(0,0,0,0.75); }
 #plotly-lightbox .plb-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
-#plotly-lightbox .plb-content { width:92vw; height:85vh; }
-#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; }
+#plotly-lightbox .plb-content { width:92vw; height:88vh; position:relative; }
+#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; pointer-events:auto; }
 /* Lightbox overlay */
 #lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
     background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
@@ -98,6 +98,10 @@
 .desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.4em;
     color: var(--accent-blue); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
 .desmos-open-tab:hover { opacity: 1; }
+.desmos-fullscreen { background: none; border: 1px solid var(--accent-blue); border-radius: 4px;
+    color: var(--accent-blue); font-size: 1.1em; cursor: pointer; padding: 0.1em 0.4em;
+    opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-fullscreen:hover { opacity: 1; background: rgba(0,119,182,0.1); }
 aside.notes { display: none; }
 .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
 .image-grid { display: flex; gap: 0.5em; align-items: flex-start; }
@@ -150,15 +154,15 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 
 <section id="polar-rectangles-and-the-area-element">
 <h2>Polar Rectangles and the Area Element</h2>
-<div class="fragment" data-editor-line="37"><p>In Cartesian coordinates, we chop the plane into small rectangles of area \(\Delta A = \Delta x \, \Delta y\).</p>
+<div class="fragment" data-editor-line="37"><p>In Cartesian coordinates, we chop the plane into small rectangles of area \(\Delta A = \Delta x   \Delta y\).</p>
 <p>In polar coordinates, we chop the plane into <strong>polar rectangles</strong>: regions bounded by two radii and two arcs.</p></div>
 <div class="fig-container fragment" data-editor-line="41">
   <a href="figures/polar_rectangle.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/polar_rectangle.png"><img src="figures/polar_rectangle.png" alt="A polar coordinate grid showing concentric circles at different radii and radial lines at different angles, forming polar rectangles. One polar rectangle is highlighted and labeled, showing it is bounded by r = r1 and r = r2 on the sides and theta = theta1 and theta = theta2 on the arcs. The highlighted rectangle is wider at larger r than at smaller r." style="max-height:60vh;"></a>
 </div>
 <div class="fragment" data-editor-line="43"><p>A polar rectangle with \(r\) from \(r_i\) to \(r_i + \Delta r\) and \(\theta\) from \(\theta_j\) to \(\theta_j + \Delta\theta\) has area:</p>
 <p>\[\Delta A_i \approx r_i \, \Delta r \, \Delta\theta\]</p></div>
-<div class="fragment" data-editor-line="46"><p>The key insight: polar rectangles are <strong>wider</strong> at larger \(r\). The factor of \(r\) accounts for this stretching. A small \(\Delta r \, \Delta\theta\) box near \(r = 10\) covers more area than the same box near \(r = 1\).</p></div>
-<div class="key-point fragment" data-editor-line="48"><p>In polar coordinates, \(dA = r \, dr \, d\theta\) &mdash; <strong>not</strong> just \(dr \, d\theta\). The extra \(r\) is essential.</p></div>
+<div class="fragment" data-editor-line="46"><p>The key insight: polar rectangles are <strong>wider</strong> at larger \(r\). The factor of \(r\) accounts for this stretching. A small \(\Delta r   \Delta\theta\) box near \(r = 10\) covers more area than the same box near \(r = 1\).</p></div>
+<div class="key-point fragment" data-editor-line="48"><p>In polar coordinates, \(dA = r   dr   d\theta\) &mdash; <strong>not</strong> just \(dr   d\theta\). The extra \(r\) is essential.</p></div>
 </section>
 
 <section id="the-polar-double-integral">
@@ -171,11 +175,11 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <div class="fragment" data-editor-line="61"><p><strong>Three things change</strong> when converting to polar:</p>
 <ol>
 <li>Replace \(x\) with \(r\cos\theta\) and \(y\) with \(r\sin\theta\)</li>
-<li>Replace \(dA\) with \(r \, dr \, d\theta\) (don't forget the \(r\)!)</li>
+<li>Replace \(dA\) with \(r   dr   d\theta\) (don't forget the \(r\)!)</li>
 <li>Replace the Cartesian bounds with polar bounds</li>
 </ol></div>
-<div class="key-point fragment" data-editor-line="69"><p>The most common mistake is forgetting the extra \(r\) in \(dA = r \, dr \, d\theta\). Write it down every time.</p></div>
-<aside class="notes">Emphasize: the inner integral is always with respect to \(r\) (from \(h_1(\theta)\) to \(h_2(\theta)\)), and the outer integral is with respect to \(\theta\) (from \(\alpha\) to \(\beta\)). The variable \(r\) plays the role of the ``inner variable'' just like \(y\) did in Cartesian.</aside>
+<div class="key-point fragment" data-editor-line="69"><p>The most common mistake is forgetting the extra \(r\) in \(dA = r   dr   d\theta\). Write it down every time.</p></div>
+<aside class="notes">Emphasize: the inner integral is always with respect to \(r\) (from \(h_1(\theta)\) to \(h_2(\theta)\)), and the outer integral is with respect to \(\theta\) (from \(\alpha\) to \(\beta\)). The variable \(r\) plays the role of the “inner variable” just like \(y\) did in Cartesian.</aside>
 </section>
 
 <section id="quick-check-convert-to-polar">
@@ -186,7 +190,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <p><em>What replaces \(x^2 + y^2\)? What replaces \(dA\)? What are the bounds?</em></p></div>
 <div class="fragment" data-editor-line="86"><p class="work-prompt">Use \(x^2 + y^2 = r^2\) and \(dA = r\,dr\,d\theta\). The unit disk is \(0 \leq r \leq 1\), \(0 \leq \theta \leq 2\pi\).</p></div>
 <div class="fragment" data-editor-line="88"><p>\(x^2 + y^2 = r^2\), so the integrand becomes \(r^2\).</p></div>
-<div class="fragment" data-editor-line="90"><p>\(dA = r \, dr \, d\theta\), so the full integral is:</p>
+<div class="fragment" data-editor-line="90"><p>\(dA = r   dr   d\theta\), so the full integral is:</p>
 <p>\[\int_0^{2\pi} \int_0^1 r^2 \cdot r \, dr \, d\theta = \int_0^{2\pi} \int_0^1 r^3 \, dr \, d\theta\]</p></div>
 <div class="key-point fragment" data-editor-line="93"><p>Notice how \(r^2\) from the function and \(r\) from the area element combine to give \(r^3\). The integrand is now a simple power of \(r\) &mdash; polar made this easy!</p></div>
 </section>
@@ -197,111 +201,111 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
   <div class="example-title">Example 1</div>
   <p>Find the area in Quadrant I enclosed by the graph of \(r = 4\cos\theta\).</p>
 </div>
-<div class="fragment" data-editor-line="104"><p>First, what does \(r = 4\cos\theta\) look like? Multiply both sides by \(r\): \(r^2 = 4r\cos\theta\), so \(x^2 + y^2 = 4x\), which gives \((x-2)^2 + y^2 = 4\). It's a <strong>circle of radius 2 centered at \((2, 0)\)</strong>.</p></div>
-<div class="fig-container fragment" data-editor-line="106">
+<div class="fragment" data-editor-line="104"><p class="work-prompt">Area = \(\iint_R 1   dA\) in polar. What does \(r = 4\cos\theta\) look like? Where does it start and end? What are the bounds on \(r\) and \(\theta\)?</p></div>
+<div class="fragment" data-editor-line="107"><p>First, what does \(r = 4\cos\theta\) look like? Multiply both sides by \(r\): \(r^2 = 4r\cos\theta\), so \(x^2 + y^2 = 4x\), which gives \((x-2)^2 + y^2 = 4\). It's a <strong>circle of radius 2 centered at \((2, 0)\)</strong>.</p></div>
+<div class="fig-container fragment" data-editor-line="109">
   <a href="figures/r_4cos_theta.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/r_4cos_theta.png"><img src="figures/r_4cos_theta.png" alt="The curve r equals 4 cosine theta plotted in Cartesian coordinates, tracing a full circle of radius 2 centered at (2,0). The portion in Quadrant I (theta from 0 to pi over 2) is shaded blue. Key points are labeled: the rightmost point (4,0), the center at (2,0), and the origin where the curve closes at theta equals pi over 2. A sample radius arrow shows r equals 4 cosine theta at an intermediate angle. The integral setup for area in Quadrant I is shown." style="max-height:60vh;"></a>
 </div>
-<div class="fragment" data-editor-line="108"><p class="work-prompt">Area = \(\iint_R 1 \, dA\) in polar. The curve starts at \(\theta = 0\) (where \(r = 4\)) and returns to the origin at \(\theta = \pi/2\) (where \(r = 0\)). Inner bounds: \(0 \leq r \leq 4\cos\theta\).</p></div>
-<div class="fragment" data-editor-line="110"><p><strong>Write the area formula:</strong></p>
+<div class="fragment" data-editor-line="112"><p><strong>Write the area formula:</strong></p>
 <p>\[A = \int_\alpha^\beta \int_0^{h(\theta)} r \, dr \, d\theta\]</p></div>
-<div class="fragment" data-editor-line="113"><p><strong>Substitute</strong> the bounds \(\theta = 0\) to \(\theta = \pi/2\) and \(r = 0\) to \(r = 4\cos\theta\):</p>
+<div class="fragment" data-editor-line="115"><p><strong>Substitute</strong> the bounds \(\theta = 0\) to \(\theta = \pi/2\) and \(r = 0\) to \(r = 4\cos\theta\):</p>
 <p>\[A = \int_0^{\pi/2} \int_0^{4\cos\theta} r \, dr \, d\theta\]</p></div>
-<div class="fragment" data-editor-line="116"><p><strong>Evaluate the inner integral:</strong></p>
+<div class="fragment" data-editor-line="118"><p><strong>Evaluate the inner integral:</strong></p>
 <p>\[A = \int_0^{\pi/2} \left[\frac{r^2}{2}\right]_0^{4\cos\theta} d\theta = \int_0^{\pi/2} \frac{16\cos^2\theta}{2} \, d\theta = \int_0^{\pi/2} 8\cos^2\theta \, d\theta\]</p></div>
-<div class="fragment" data-editor-line="119"><p><strong>Use the half-angle identity</strong> \(\cos^2\theta = \frac{1 + \cos 2\theta}{2}\):</p>
+<div class="fragment" data-editor-line="121"><p><strong>Use the half-angle identity</strong> \(\cos^2\theta = \frac{1 + \cos 2\theta}{2}\):</p>
 <p>\[A = \int_0^{\pi/2} 4(1 + \cos 2\theta) \, d\theta = \left[4\theta + 2\sin 2\theta\right]_0^{\pi/2} = 4 \cdot \frac{\pi}{2} + 0 = 2\pi\]</p></div>
-<div class="key-point fragment" data-editor-line="122"><p>\(A = 2\pi\). This is half the area of a circle of radius 2, which makes sense &mdash; QI contains the top half of the circle.</p></div>
+<div class="key-point fragment" data-editor-line="124"><p>\(A = 2\pi\). This is half the area of a circle of radius 2, which makes sense &mdash; QI contains the top half of the circle.</p></div>
 <aside class="notes">Point out that \(r = 4\cos\theta\) traces the full circle as \(\theta\) goes from \(0\) to \(\pi\). In QI, \(\theta\) only runs from \(0\) to \(\pi/2\), giving half the circle. Draw the curve on the board or show the figure.</aside>
 </section>
 
 <section id="example-2-volume-of-a-hemisphere">
 <h2>Example 2: Volume of a Hemisphere</h2>
-<div class="example-box fragment" data-editor-line="131">
+<div class="example-box fragment" data-editor-line="133">
   <div class="example-title">Example 2</div>
-  <p>Evaluate \(\displaystyle\iint_R \sqrt{4 - x^2 - y^2} \, dA\) where \(R = \{(x,y) \mid x^2 + y^2 \leq 4, \; x \geq 0\}\).</p>
+  <p>Evaluate \(\displaystyle\iint_R \sqrt{4 - x^2 - y^2}   dA\) where \(R = \{(x,y) \mid x^2 + y^2 \leq 4, \; x \geq 0\}\).</p>
 </div>
-<div class="fragment" data-editor-line="135"><p>The integrand \(z = \sqrt{4 - x^2 - y^2}\) is the <strong>top half of the sphere</strong> \(x^2 + y^2 + z^2 = 4\) (radius 2). The region \(R\) is a <strong>semicircle</strong> (right half of the disk of radius 2).</p></div>
-<div class="fig-container fragment" data-editor-line="137">
+<div class="fragment" data-editor-line="137"><p class="work-prompt">Convert to polar: \(\sqrt{4 - x^2 - y^2} = \sqrt{4 - r^2}\). What geometric shape is \(R\)? What are the polar bounds on \(r\) and \(\theta\)?</p></div>
+<div class="fragment" data-editor-line="140"><p>The integrand \(z = \sqrt{4 - x^2 - y^2}\) is the <strong>top half of the sphere</strong> \(x^2 + y^2 + z^2 = 4\) (radius 2). The region \(R\) is a <strong>semicircle</strong> (right half of the disk of radius 2).</p></div>
+<div class="fig-container fragment" data-editor-line="142">
   <a href="figures/semicircle_region.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/semicircle_region.png"><img src="figures/semicircle_region.png" alt="The right semicircle region R where x is greater than or equal to 0 and x squared plus y squared is less than or equal to 4. The shaded region is the right half of the disk of radius 2. Polar coordinate overlays show theta sweeping from negative pi over 2 to pi over 2 and r from 0 to 2. The bounds are labeled in a box: r from 0 to 2, theta from negative pi over 2 to pi over 2." style="max-height:60vh;"></a>
 </div>
-<div class="fragment" data-editor-line="139"><p class="work-prompt">Convert to polar: \(\sqrt{4 - x^2 - y^2} = \sqrt{4 - r^2}\). The semicircle where \(x \geq 0\) has \(-\pi/2 \leq \theta \leq \pi/2\) and \(0 \leq r \leq 2\).</p></div>
-<div class="fragment" data-editor-line="141"><p><strong>Write the conversion:</strong></p>
+<div class="fragment" data-editor-line="145"><p><strong>Write the conversion:</strong></p>
 <p>\[f = \sqrt{4 - r^2}, \quad dA = r \, dr \, d\theta\]</p>
 <p><strong>Polar bounds:</strong> \(-\frac{\pi}{2} \leq \theta \leq \frac{\pi}{2}\), \(\quad 0 \leq r \leq 2\).</p></div>
-<div class="fragment" data-editor-line="146"><p><strong>Set up the integral:</strong></p>
+<div class="fragment" data-editor-line="150"><p><strong>Set up the integral:</strong></p>
 <p>\[\int_{-\pi/2}^{\pi/2} \int_0^2 \sqrt{4 - r^2} \; r \, dr \, d\theta\]</p></div>
-<div class="fragment" data-editor-line="149"><p><strong>Inner integral</strong> (use \(u = 4 - r^2\), \(du = -2r\,dr\)):</p>
+<div class="fragment" data-editor-line="153"><p><strong>Inner integral</strong> (use \(u = 4 - r^2\), \(du = -2r\,dr\)):</p>
 <p>\[\int_0^2 r\sqrt{4 - r^2} \, dr = \left[-\frac{1}{3}(4 - r^2)^{3/2}\right]_0^2 = 0 - \left(-\frac{8}{3}\right) = \frac{8}{3}\]</p></div>
-<div class="fragment" data-editor-line="152"><p><strong>Outer integral:</strong></p>
+<div class="fragment" data-editor-line="156"><p><strong>Outer integral:</strong></p>
 <p>\[\int_{-\pi/2}^{\pi/2} \frac{8}{3} \, d\theta = \frac{8}{3} \cdot \pi = \frac{8\pi}{3}\]</p></div>
-<div class="key-point fragment" data-editor-line="155"><p>\(V = \dfrac{8\pi}{3}\). This is the volume of half a hemisphere &mdash; one quarter of the full sphere \(\frac{4}{3}\pi(2)^3 = \frac{32\pi}{3}\). Check: \(\frac{1}{4} \cdot \frac{32\pi}{3} = \frac{8\pi}{3}\). \checkmark</p></div>
-<aside class="notes">Point out the \(u\)-substitution trick: the extra \(r\) from \(dA\) is exactly what makes \(\sqrt{4-r^2} \cdot r \, dr\) integrate cleanly. Without polar coordinates, this integral would require a trig substitution. Also note the geometric check at the end &mdash; students should always sanity-check volumes.</aside>
+<div class="key-point fragment" data-editor-line="159"><p>\(V = \dfrac{8\pi}{3}\). This is the volume of half a hemisphere &mdash; one quarter of the full sphere \(\frac{4}{3}\pi(2)^3 = \frac{32\pi}{3}\). Check: \(\frac{1}{4} \cdot \frac{32\pi}{3} = \frac{8\pi}{3}\;\checkmark\)</p></div>
+<aside class="notes">Point out the \(u\)-substitution trick: the extra \(r\) from \(dA\) is exactly what makes \(\sqrt{4-r^2} \cdot r   dr\) integrate cleanly. Without polar coordinates, this integral would require a trig substitution. Also note the geometric check at the end &mdash; students should always sanity-check volumes.</aside>
 </section>
 
 <section id="quick-check-sketch-a-polar-region">
 <h2>Quick Check: Sketch a Polar Region</h2>
-<div class="fragment" data-editor-line="164"><p><em>Sketch the region described by \(1 \leq r \leq 2\) and \(0 \leq \theta \leq \pi/4\). What shape is it?</em></p></div>
-<div class="fragment" data-editor-line="166"><p class="work-prompt">Mark the radii \(r = 1\) and \(r = 2\) and the angles \(\theta = 0\) and \(\theta = \pi/4\). Shade the region between them.</p></div>
-<div class="fragment" data-editor-line="168"><p>It's a <strong>polar rectangle</strong> (annular sector) &mdash; the region between two concentric circles, cut by two radial lines. It looks like a thick slice of a ring.</p></div>
-<div class="fig-container fragment" data-editor-line="170">
+<div class="fragment" data-editor-line="168"><p><em>Sketch the region described by \(1 \leq r \leq 2\) and \(0 \leq \theta \leq \pi/4\). What shape is it?</em></p></div>
+<div class="fragment" data-editor-line="170"><p class="work-prompt">Mark the radii \(r = 1\) and \(r = 2\) and the angles \(\theta = 0\) and \(\theta = \pi/4\). Shade the region between them.</p></div>
+<div class="fragment" data-editor-line="172"><p>It's a <strong>polar rectangle</strong> (annular sector) &mdash; the region between two concentric circles, cut by two radial lines. It looks like a thick slice of a ring.</p></div>
+<div class="fig-container fragment" data-editor-line="174">
   <a href="figures/annular_sector.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/annular_sector.png"><img src="figures/annular_sector.png" alt="An annular sector (thick pie slice) in the first quadrant, bounded by the inner circle r equals 1 in red, the outer circle r equals 2 in blue, and the radial lines theta equals 0 (along positive x-axis) and theta equals pi over 4. The region is shaded blue. The angle pi over 4 is marked with an arc. The integral setup is shown in the upper right." style="max-height:60vh;"></a>
 </div>
-<div class="fragment" data-editor-line="172"><p>If we wanted to integrate \(f(x,y)\) over this region:</p>
+<div class="fragment" data-editor-line="176"><p>If we wanted to integrate \(f(x,y)\) over this region:</p>
 <p>\[\int_0^{\pi/4} \int_1^2 f(r\cos\theta, \, r\sin\theta) \; r \, dr \, d\theta\]</p></div>
-<div class="key-point fragment" data-editor-line="175"><p>Polar rectangles have <strong>constant bounds</strong> for both \(r\) and \(\theta\) &mdash; making the integral especially simple to set up.</p></div>
+<div class="key-point fragment" data-editor-line="179"><p>Polar rectangles have <strong>constant bounds</strong> for both \(r\) and \(\theta\) &mdash; making the integral especially simple to set up.</p></div>
 </section>
 
 <section id="example-3-area-of-the-lima-c-c-on">
 <h2>Example 3: Area of the Lima\c{c}on \(r = 4 + 3\cos\theta\)</h2>
-<div class="example-box fragment" data-editor-line="182">
+<div class="example-box fragment" data-editor-line="186">
   <div class="example-title">Example 3</div>
   <p>Find the area enclosed by \(r = 4 + 3\cos\theta\).</p>
 </div>
-<div class="fragment" data-editor-line="186"><p>Since \(4 > 3\), this is a lima\c{c}on <strong>without an inner loop</strong> &mdash; it's a slightly flattened, egg-shaped curve. The curve is traced once as \(\theta\) goes from \(0\) to \(2\pi\).</p></div>
-<div class="fig-container fragment" data-editor-line="188">
+<div class="fragment" data-editor-line="190"><p>Since \(4 > 3\), this is a lima\c{c}on <strong>without an inner loop</strong> &mdash; it's a slightly flattened, egg-shaped curve. The curve is traced once as \(\theta\) goes from \(0\) to \(2\pi\).</p></div>
+<div class="fig-container fragment" data-editor-line="192">
   <a href="figures/cardioid.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/cardioid.png"><img src="figures/cardioid.png" alt="The limaçon r equals 4 plus 3 cosine theta plotted in polar coordinates, with the enclosed area shaded. The curve reaches its maximum radius r equals 7 at theta equals 0 on the right, minimum r equals 1 at theta equals pi on the left (the dimple), and r equals 4 at theta equals pi over 2 at the top. The area formula as an iterated polar integral is shown at the bottom." style="max-height:60vh;"></a>
 </div>
-<div class="fragment" data-editor-line="190"><p class="work-prompt">Area = \(\int_0^{2\pi} \int_0^{4 + 3\cos\theta} r \, dr \, d\theta\). Evaluate the inner integral first, then use the identity \(\cos^2\theta = \frac{1 + \cos 2\theta}{2}\).</p></div>
-<div class="fragment" data-editor-line="192"><p><strong>Write the area integral:</strong></p>
+<div class="fragment" data-editor-line="194"><p class="work-prompt">Area = \(\int_0^{2\pi} \int_0^{4 + 3\cos\theta} r   dr   d\theta\). Evaluate the inner integral first, then use the identity \(\cos^2\theta = \frac{1 + \cos 2\theta}{2}\).</p></div>
+<div class="fragment" data-editor-line="196"><p><strong>Write the area integral:</strong></p>
 <p>\[A = \int_0^{2\pi} \int_0^{4+3\cos\theta} r \, dr \, d\theta\]</p></div>
-<div class="fragment" data-editor-line="195"><p><strong>Evaluate the inner integral:</strong></p>
+<div class="fragment" data-editor-line="199"><p><strong>Evaluate the inner integral:</strong></p>
 <p>\[A = \int_0^{2\pi} \frac{(4 + 3\cos\theta)^2}{2} \, d\theta = \frac{1}{2}\int_0^{2\pi} (16 + 24\cos\theta + 9\cos^2\theta) \, d\theta\]</p></div>
-<div class="fragment" data-editor-line="198"><p><strong>Integrate each term:</strong></p>
+<div class="fragment" data-editor-line="202"><p><strong>Integrate each term:</strong></p>
 <p>\[\frac{1}{2}\left[16\theta + 24\sin\theta + 9 \cdot \frac{\theta + \frac{1}{2}\sin 2\theta}{1}\right]_0^{2\pi}\]</p>
-<p>Over a full period: \(\int_0^{2\pi} \cos\theta \, d\theta = 0\) and \(\int_0^{2\pi} \cos^2\theta \, d\theta = \pi\).</p></div>
-<div class="fragment" data-editor-line="203"><p><strong>Simplify:</strong></p>
+<p>Over a full period: \(\int_0^{2\pi} \cos\theta   d\theta = 0\) and \(\int_0^{2\pi} \cos^2\theta   d\theta = \pi\).</p></div>
+<div class="fragment" data-editor-line="207"><p><strong>Simplify:</strong></p>
 <p>\[A = \frac{1}{2}\left(16 \cdot 2\pi + 0 + 9\pi\right) = \frac{1}{2}(32\pi + 9\pi) = \frac{41\pi}{2}\]</p></div>
-<div class="key-point fragment" data-editor-line="206"><p>\(A = \dfrac{41\pi}{2}\). For any curve \(r = f(\theta)\) traced once over \([\alpha, \beta]\), the area formula is \(A = \frac{1}{2}\int_\alpha^\beta [f(\theta)]^2 \, d\theta\) &mdash; which is exactly what you get from evaluating the inner \(r\)-integral.</p></div>
-<aside class="notes">Remind students they may have seen the area formula \(A = \frac{1}{2}\int r^2 \, d\theta\) in Calc II. That formula is a special case of the polar double integral with the inner integral already evaluated. The double integral approach is more general.</aside>
+<div class="key-point fragment" data-editor-line="210"><p>\(A = \dfrac{41\pi}{2}\). For any curve \(r = f(\theta)\) traced once over \([\alpha, \beta]\), the area formula is \(A = \frac{1}{2}\int_\alpha^\beta [f(\theta)]^2   d\theta\) &mdash; which is exactly what you get from evaluating the inner \(r\)-integral.</p></div>
+<aside class="notes">Remind students they may have seen the area formula \(A = \frac{1}{2}\int r^2   d\theta\) in Calc II. That formula is a special case of the polar double integral with the inner integral already evaluated. The double integral approach is more general.</aside>
 </section>
 
 <section id="example-4-volume-inside-a-sphere-and-outside-a-cylinder">
 <h2>Example 4: Volume Inside a Sphere and Outside a Cylinder</h2>
-<div class="example-box fragment" data-editor-line="215">
+<div class="example-box fragment" data-editor-line="219">
   <div class="example-title">Example 4</div>
   <p>Find the volume of the solid inside the sphere \(x^2 + y^2 + z^2 = 16\) and outside the cylinder \(x^2 + y^2 = 4\).</p>
 </div>
-<div class="fig-container fragment" data-editor-line="219">
+<div class="fragment" data-editor-line="223"><p class="work-prompt">Use symmetry (double the top half). Convert to polar. What are the bounds on \(r\)? On \(\theta\)? Don't forget \(dA = r\,dr\,d\theta\).</p></div>
+<div class="fig-container fragment" data-editor-line="226">
   <img src="figures/sphere_minus_cylinder.png" alt="A 3D visualization of the solid inside the sphere x squared plus y squared plus z squared equals 16 (shown as a transparent blue sphere of radius 4) and outside the cylinder x squared plus y squared equals 4 (shown as a red transparent cylinder of radius 2). The region of interest between the two surfaces is colored green-amber, forming a dome-shaped annular solid. The inner circle r equals 2 and outer circle r equals 4 are marked at z equals 0." class="plotly-lazy-thumb" data-plotly-src="figures/sphere_minus_cylinder.html" style="max-height:60vh;" title="Click to interact">
 </div>
-<div class="fragment" data-editor-line="221"><p><strong>Set up:</strong> By symmetry, compute the volume above the \(xy\)-plane and double it.</p>
+<div class="fragment" data-editor-line="229"><p><strong>Set up:</strong> By symmetry, compute the volume above the \(xy\)-plane and double it.</p>
 <p>Above the \(xy\)-plane, \(z = \sqrt{16 - x^2 - y^2} = \sqrt{16 - r^2}\).</p>
 <p>The region in the \(xy\)-plane: outside the cylinder means \(r \geq 2\); inside the sphere means \(r \leq 4\).</p></div>
-<div class="fragment" data-editor-line="227"><p class="work-prompt">Use \(V = 2\int_0^{2\pi}\int_2^4 \sqrt{16 - r^2} \; r \, dr \, d\theta\). The inner integral uses \(u = 16 - r^2\).</p></div>
-<div class="fragment" data-editor-line="229"><p><strong>Write the integral:</strong></p>
+<div class="fragment" data-editor-line="235"><p><strong>Write the integral:</strong></p>
 <p>\[V = 2\int_0^{2\pi} \int_2^4 \sqrt{16 - r^2} \; r \, dr \, d\theta\]</p></div>
-<div class="fragment" data-editor-line="232"><p><strong>Inner integral</strong> (use \(u = 16 - r^2\), \(du = -2r\,dr\)):</p>
+<div class="fragment" data-editor-line="238"><p><strong>Inner integral</strong> (use \(u = 16 - r^2\), \(du = -2r\,dr\)):</p>
 <p>When \(r = 2\): \(u = 12\). When \(r = 4\): \(u = 0\).</p>
 <p>\[\int_2^4 r\sqrt{16 - r^2} \, dr = \left[-\frac{1}{3}(16 - r^2)^{3/2}\right]_2^4 = -\frac{1}{3}(0) + \frac{1}{3}(12)^{3/2} = \frac{12\sqrt{12}}{3} = \frac{24\sqrt{3}}{3} = 8\sqrt{3}\]</p></div>
-<div class="fragment" data-editor-line="238"><p><strong>Outer integral:</strong></p>
+<div class="fragment" data-editor-line="244"><p><strong>Outer integral:</strong></p>
 <p>\[V = 2 \int_0^{2\pi} 8\sqrt{3} \, d\theta = 2 \cdot 8\sqrt{3} \cdot 2\pi = 32\sqrt{3}\,\pi\]</p></div>
-<div class="key-point fragment" data-editor-line="241"><p>\(V = 32\sqrt{3}\,\pi\). The symmetry argument (double the top half) saved us from dealing with \(z = \pm\sqrt{16-r^2}\) separately. Always look for symmetry in volume problems!</p></div>
+<div class="key-point fragment" data-editor-line="247"><p>\(V = 32\sqrt{3} \pi\). The symmetry argument (double the top half) saved us from dealing with \(z = \pm\sqrt{16-r^2}\) separately. Always look for symmetry in volume problems!</p></div>
 <aside class="notes">Some students may worry about whether \(r\) can actually reach 4. At \(r = 4\), \(z = \sqrt{16 - 16} = 0\), which is exactly the equator of the sphere. So the sphere's shadow on the \(xy\)-plane extends to \(r = 4\). The annular region \(2 \leq r \leq 4\) is correct.</aside>
 </section>
 
 <section id="when-to-use-polar-coordinates">
 <h2>When to Use Polar Coordinates</h2>
-<div class="fragment" data-editor-line="250"><p>How do you know when to switch to polar? Here are the telltale signs:</p>
+<div class="fragment" data-editor-line="256"><p>How do you know when to switch to polar? Here are the telltale signs:</p>
 <table>
 <tr><th><strong>Clue</strong></th><th><strong>Example</strong></th></tr>
 <tr><td>Region is a disk, annulus, or sector</td><td>\(x^2 + y^2 \leq 9\)</td></tr>
@@ -310,26 +314,26 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <tr><td>Boundary is a polar curve</td><td>\(r = 1 + \cos\theta\)</td></tr>
 <tr><td>Square-root bounds like \(\sqrt{a^2 - x^2}\)</td><td>Semicircle or quarter-circle region</td></tr>
 </table></div>
-<div class="fragment" data-editor-line="264"><p><strong>Conversion checklist:</strong></p>
+<div class="fragment" data-editor-line="270"><p><strong>Conversion checklist:</strong></p>
 <ol>
 <li>Replace \(x = r\cos\theta\), \(y = r\sin\theta\), \(x^2 + y^2 = r^2\)</li>
 <li>Replace \(dA = dy\,dx\) with \(r\,dr\,d\theta\) (<strong>don't forget the \(r\)!</strong>)</li>
 <li>Determine polar bounds for \(r\) and \(\theta\)</li>
 <li>Evaluate (inner \(r\) first, then outer \(\theta\))</li>
 </ol></div>
-<div class="key-point fragment" data-editor-line="272"><p>Not every integral is easier in polar. If the region is a rectangle or the integrand involves \(x\) and \(y\) separately (not in \(x^2+y^2\) combinations), Cartesian may be simpler.</p></div>
+<div class="key-point fragment" data-editor-line="278"><p>Not every integral is easier in polar. If the region is a rectangle or the integrand involves \(x\) and \(y\) separately (not in \(x^2+y^2\) combinations), Cartesian may be simpler.</p></div>
 </section>
 
 <section id="section-15-3-summary">
 <h2>Section 15.3 Summary</h2>
 <div class="summary-grid">
-<div class="defn-box"><div class="defn-title">Area Element</div><p class="small">\(dA = r \, dr \, d\theta\) &mdash; the extra \(r\) accounts for polar rectangles being wider at larger radii.</p></div>
+<div class="defn-box"><div class="defn-title">Area Element</div><p class="small">\(dA = r   dr   d\theta\) &mdash; the extra \(r\) accounts for polar rectangles being wider at larger radii.</p></div>
 <div class="defn-box"><div class="defn-title">The Formula</div><p class="small">\(\displaystyle\iint_R f(x,y)\,dA = \int_\alpha^\beta \int_{h_1(\theta)}^{h_2(\theta)} f(r\cos\theta, r\sin\theta)\;r\,dr\,d\theta\)</p></div>
 <div class="defn-box"><div class="defn-title">Key Substitutions</div><p class="small">\(x = r\cos\theta\), \(y = r\sin\theta\), \(x^2+y^2 = r^2\)</p></div>
 <div class="defn-box"><div class="defn-title">When to Use Polar</div><p class="small">Circular regions, \(x^2+y^2\) in bounds or integrand, polar curves</p></div>
 <div class="defn-box"><div class="defn-title">Common Mistake</div><p class="small">Forgetting the \(r\) in \(r\,dr\,d\theta\). Write it every time!</p></div>
 </div>
-<div class="key-point fragment" data-editor-line="287"><p><strong>Coming up next:</strong> Section 15.5 &mdash; Surface Area. We'll use double integrals to compute the area of curved surfaces in 3D!</p></div>
+<div class="key-point fragment" data-editor-line="293"><p><strong>Coming up next:</strong> Section 15.5 &mdash; Surface Area. We'll use double integrals to compute the area of curved surfaces in 3D!</p></div>
 </section>
 
 <section>
@@ -580,6 +584,25 @@ Reveal.on('ready', () => {
         e.stopImmediatePropagation();
         closePlotlyLightbox();
     }, true);
+
+    // Desmos/GeoGebra fullscreen: reuse lightbox with direct URL (no fetch/wrap needed)
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.desmos-fullscreen');
+        if (!btn) return;
+        e.stopPropagation();
+        var url = btn.dataset.src;
+        if (!url) return;
+        // Remove any existing iframe (may have stale Plotly styles)
+        var old = plbContent.querySelector('iframe');
+        if (old) old.remove();
+        var iframe = document.createElement('iframe');
+        iframe.style.cssText = 'width:100%;height:100%;border:none;background:#fff;border-radius:6px;';
+        iframe.src = url;
+        iframe.setAttribute('allowfullscreen', '');
+        plbContent.appendChild(iframe);
+        plb.classList.add('active');
+        plbClose.focus();
+    });
 })();
 
 // ── Lightbox for figures (accessible: focus trap, focus return) ──

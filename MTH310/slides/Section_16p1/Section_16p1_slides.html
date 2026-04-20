@@ -72,8 +72,8 @@
     padding:2px 14px; cursor:pointer; z-index:10001; line-height:1; }
 #plotly-lightbox .plb-close:hover { color:#e09f3e; background:rgba(0,0,0,0.75); }
 #plotly-lightbox .plb-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
-#plotly-lightbox .plb-content { width:92vw; height:85vh; }
-#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; }
+#plotly-lightbox .plb-content { width:92vw; height:88vh; position:relative; }
+#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; pointer-events:auto; }
 /* Lightbox overlay */
 #lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
     background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
@@ -187,7 +187,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <section id="exploring-2d-vector-fields">
 <h2>Exploring 2D Vector Fields</h2>
 <div class="desmos-container fragment" data-editor-line="72">
-  <iframe src="https://www.geogebra.org/material/iframe/id/cXgNb58T" width="480" height="380" style="border:0" title="2D Vector Field Plotter (GeoGebra)" allowfullscreen loading="lazy"></iframe>
+  <iframe src="https://www.geogebra.org/material/iframe/id/cXgNb58T" style="border:0;width:100%;height:380px" title="2D Vector Field Plotter (GeoGebra)" allowfullscreen loading="lazy"></iframe>
   <div class="desmos-label"><button class="desmos-fullscreen" data-src="https://www.geogebra.org/material/iframe/id/cXgNb58T" title="Expand to full screen">&#x26F6;</button> <a href="https://www.geogebra.org/material/iframe/id/cXgNb58T" target="_blank" rel="noopener" class="desmos-open-tab" title="Open in new tab">&#x2197;</a></div>
 </div>
 <div class="fragment" data-editor-line="78"><p><strong>Radial field:</strong> \(\langle x, y \rangle\) &mdash; every arrow points away from the origin. A <strong>source</strong>.</p></div>
@@ -200,7 +200,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <section id="vector-fields-in-3d">
 <h2>Vector Fields in 3D</h2>
 <div class="desmos-container fragment" data-editor-line="93">
-  <iframe src="https://www.geogebra.org/m/u3xregNW" width="480" height="380" style="border:0" title="3D Vector Field Plotter (GeoGebra)" allowfullscreen loading="lazy"></iframe>
+  <iframe src="https://www.geogebra.org/m/u3xregNW" style="border:0;width:100%;height:380px" title="3D Vector Field Plotter (GeoGebra)" allowfullscreen loading="lazy"></iframe>
   <div class="desmos-label"><button class="desmos-fullscreen" data-src="https://www.geogebra.org/m/u3xregNW" title="Expand to full screen">&#x26F6;</button> <a href="https://www.geogebra.org/m/u3xregNW" target="_blank" rel="noopener" class="desmos-open-tab" title="Open in new tab">&#x2197;</a></div>
 </div>
 <div class="fragment" data-editor-line="95"><p><strong>Try it:</strong> \(\langle x, y, -z \rangle\) &mdash; a “fountain” field. Water flows outward from the center and falls back down.</p></div>
@@ -236,7 +236,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <p>\[f(x,y) = x^2 y + 3x + g(y)\]</p></div>
 <div class="fragment" data-editor-line="137"><p><strong>Match \(f_y\):</strong> \(\;\;f_y = x^2 + g'(y) = x^2 - 4y \;\;\Rightarrow\;\; g'(y) = -4y \;\;\Rightarrow\;\; g(y) = -2y^2\)</p></div>
 <div class="fragment" data-editor-line="139"><p>\[\boxed{f(x,y) = x^2 y + 3x - 2y^2}\]</p>
-<p><strong>Check:</strong> \(\nabla f = \langle 2xy + 3,\; x^2 - 4y \rangle = \vec{F}\). \checkmark</p></div>
+<p><strong>Check:</strong> \(\nabla f = \langle 2xy + 3,\; x^2 - 4y \rangle = \vec{F}\;\checkmark\)</p></div>
 <div class="key-point fragment" data-editor-line="142"><p>To find a potential function: integrate one component, then match the other to determine the leftover function.</p></div>
 </section>
 
@@ -516,15 +516,14 @@ Reveal.on('ready', () => {
         e.stopPropagation();
         var url = btn.dataset.src;
         if (!url) return;
-        var iframe = plbContent.querySelector('iframe');
-        if (!iframe) {
-            iframe = document.createElement('iframe');
-            iframe.style.cssText = 'width:100%;height:100%;border:none;background:#fff;border-radius:6px;';
-            plbContent.appendChild(iframe);
-        }
-        iframe.style.height = '100%';
+        // Remove any existing iframe (may have stale Plotly styles)
+        var old = plbContent.querySelector('iframe');
+        if (old) old.remove();
+        var iframe = document.createElement('iframe');
+        iframe.style.cssText = 'width:100%;height:100%;border:none;background:#fff;border-radius:6px;';
         iframe.src = url;
         iframe.setAttribute('allowfullscreen', '');
+        plbContent.appendChild(iframe);
         plb.classList.add('active');
         plbClose.focus();
     });

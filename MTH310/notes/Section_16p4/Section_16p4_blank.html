@@ -155,8 +155,36 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p>Green's Theorem requires <strong>positive (CCW) orientation</strong>. If the curve is CW, negate.</p></aside>
 </section>
 
-<section id="micro-circulation-what-does-local-rotation-look-like" data-source-line="73" aria-label="Micro-Circulation: What Does Local Rotation Look Like?">
-  <h2>Micro-Circulation: What Does Local Rotation Look Like?</h2>
+<section id="green-s-theorem" data-source-line="73" aria-label="Green's Theorem">
+  <h2>Green's Theorem</h2>
+  <section class="defn-box theorem-box" role="region" aria-label="Theorem: Green's Theorem">
+  <h3 class="defn-title">Theorem: Green's Theorem</h3>
+  <p>Let \(C\) be a positively oriented, piecewise-smooth, simple closed curve bounding a region \(D\). If \(P\) and \(Q\) have continuous partial derivatives on an open region containing \(D\), then</p>
+<p>\[\boxed{\oint_C P\,dx + Q\,dy = \iint_D \left(\frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right)\,dA}\]</p>
+</section>
+<div><p><strong>In words:</strong> circulation around boundary \(=\) total curl over interior.</p></div>
+<div><p><strong>When the curl is constant</strong> (say \(Q_x - P_y = k\)), the integral is just \(k \cdot \text{Area}(D)\).</p></div>
+<div><p><strong>Quick Check:</strong> For \(\oint_C (3y)\,dx + (5x)\,dy\): \(P = 3y\), \(Q = 5x\), so \(Q_x - P_y = 5 - 3 = 2\). By Green's: \(\oint = \iint_D 2\,dA = 2\cdot\text{Area}(D)\). When the curl is constant, the double integral is just the constant times the area!</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Green's Theorem converts a line integral (hard) into a double integral (often easier), or vice versa. Next: <strong>why</strong> does it work?</p></aside>
+</section>
+
+<section id="why-green-s-theorem-works-cancellation" data-source-line="91" aria-label="Why Green's Theorem Works: Cancellation">
+  <h2>Why Green's Theorem Works: Cancellation</h2>
+  <div><p>To see why, break \(D\) into tiny pieces.</p></div>
+<div class="two-col-print">
+  <div><figure>
+  <img src="figures/patch_cancellation.png" alt="A grid of small rectangles tiled inside a region. Each cell has a small CCW circulation arrow. Blue boundary arrows show the surviving outer circulation. One interior shared edge is highlighted in red with opposing arrows labeled cancel.">
+</figure></div>
+  <div><div><p><strong>Tile \(D\)</strong> with tiny rectangles. Traverse each cell CCW and call its line integral the <strong>micro-circulation</strong> \(\Delta\Gamma\).</p></div>
+<div><p><strong>Interior edges cancel.</strong> Every shared edge is traversed in opposite directions by adjacent cells \(\to\) the two contributions sum to zero.</p></div>
+<div><p><strong>Only the outer boundary \(C\) survives:</strong></p>
+<p>\[\oint_C \vec{F}\cdot d\vec{r} \;=\; \sum_{\text{cells}} \Delta\Gamma\]</p></div></div>
+</div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The boundary circulation equals the <strong>sum of the micro-circulations</strong> inside. Next question: what is \(\Delta\Gamma\) on a single tiny cell?</p></aside>
+</section>
+
+<section id="what-does-one-cell-s-circulation-look-like" data-source-line="113" aria-label="What Does One Cell's Circulation Look Like?">
+  <h2>What Does One Cell's Circulation Look Like?</h2>
   <div><p>Imagine placing a tiny paddle wheel at a point in a vector field. Does it spin?</p></div>
 <figure>
   <img src="figures/vorticity.png" alt="Three panels each showing four arrows arranged around a central point. Left (blue): arrows swirl counterclockwise, labeled positive curl. Center (red): arrows swirl clockwise, labeled negative curl. Right (green): all arrows point right uniformly, labeled zero curl.">
@@ -172,10 +200,10 @@ window.MathJax = {
 <li>\(Q_x - P_y < 0\): net CW rotation (negative curl)</li>
 <li>\(Q_x - P_y = 0\): no net rotation (conservative!)</li>
 </ul></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>The <strong>2D curl</strong> \(Q_x - P_y\) measures local counterclockwise rotation &mdash; the micro-circulation per unit area. It's exactly the quantity from the cross-partials test: zero curl \(=\) conservative.</p></aside>
+<aside class="key-point" role="note" aria-label="Key point"><p>The <strong>2D curl</strong> \(Q_x - P_y\) measures local counterclockwise rotation. It's the same quantity from the cross-partials test: zero curl \(=\) conservative.</p></aside>
 </section>
 
-<section id="making-it-precise-circulation-on-a-tiny-rectangle" data-source-line="97" aria-label="Making It Precise: Circulation on a Tiny Rectangle">
+<section id="making-it-precise-circulation-on-a-tiny-rectangle" data-source-line="137" aria-label="Making It Precise: Circulation on a Tiny Rectangle">
   <h2>Making It Precise: Circulation on a Tiny Rectangle</h2>
   <div><p>Center a tiny rectangle at \((x,y)\) and compute \(\oint \vec{F}\cdot d\vec{r}\) around it (CCW):</p></div>
 <figure>
@@ -185,41 +213,17 @@ window.MathJax = {
 <p>\[P\!\left(x,\, y - \frac{\Delta y}{2}\right)\Delta x - P\!\left(x,\, y + \frac{\Delta y}{2}\right)\Delta x \;\approx\; -\frac{\partial P}{\partial y}\,\Delta y\,\Delta x\]</p></div>
 <div><p><strong>Vertical edges</strong> (right and left) contribute:</p>
 <p>\[Q\!\left(x + \frac{\Delta x}{2},\, y\right)\Delta y - Q\!\left(x - \frac{\Delta x}{2},\, y\right)\Delta y \;\approx\; \frac{\partial Q}{\partial x}\,\Delta x\,\Delta y\]</p></div>
-<div><p><strong>Total circulation</strong> \(\approx \left(\dfrac{\partial Q}{\partial x} - \dfrac{\partial P}{\partial y}\right)\Delta A\)</p></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>The circulation per unit area around a tiny rectangle is \(Q_x - P_y\). This is the <strong>2D curl</strong> &mdash; it measures local counterclockwise rotation.</p></aside>
-</section>
-
-<section id="why-green-s-theorem-works-cancellation" data-source-line="116" aria-label="Why Green's Theorem Works: Cancellation">
-  <h2>Why Green's Theorem Works: Cancellation</h2>
-  <div><p>Tile the whole region with tiny rectangles. Each has micro-circulation \((Q_x - P_y) \Delta A\).</p></div>
-<div class="two-col-print">
-  <div><figure>
-  <img src="figures/patch_cancellation.png" alt="A grid of small rectangles tiled inside a region. Each cell has a small CCW circulation arrow. Blue boundary arrows show the surviving outer circulation. One interior shared edge is highlighted in red with opposing arrows labeled cancel.">
-</figure></div>
-  <div><div><p><strong>Key insight:</strong> Adjacent cells share an edge, traversed in <strong>opposite directions</strong>. These cancel!</p></div>
-<div><p>What survives? Only the <strong>outer boundary</strong> &mdash; edges not shared with a neighbor.</p></div>
-<div><p>\[\sum \text{micro} \;\to\; \iint_D (Q_x - P_y)\,dA\]</p>
-<p>\[= \oint_C P\,dx + Q\,dy\]</p></div></div>
-</div>
-<aside class="key-point" role="note" aria-label="Key point"><p>The interior cancels, leaving only the boundary circulation. That's Green's Theorem: macro = sum of micro.</p></aside>
-</section>
-
-<section id="green-s-theorem" data-source-line="138" aria-label="Green's Theorem">
-  <h2>Green's Theorem</h2>
-  <section class="defn-box theorem-box" role="region" aria-label="Theorem: Green's Theorem">
-  <h3 class="defn-title">Theorem: Green's Theorem</h3>
-  <p>Let \(C\) be a positively oriented, piecewise-smooth, simple closed curve bounding a region \(D\). If \(P\) and \(Q\) have continuous partial derivatives on an open region containing \(D\), then</p>
-<p>\[\boxed{\oint_C P\,dx + Q\,dy = \iint_D \left(\frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right)\,dA}\]</p>
-</section>
-<div><p><strong>In words:</strong> circulation around boundary \(=\) total curl over interior.</p></div>
-<div><p><strong>When the curl is constant</strong> (say \(Q_x - P_y = k\)), the integral is just \(k \cdot \text{Area}(D)\).</p></div>
-<div><p><strong>Quick Check:</strong> For \(\oint_C (3y)\,dx + (5x)\,dy\): \(P = 3y\), \(Q = 5x\), so \(Q_x - P_y = 5 - 3 = 2\). By Green's: \(\oint = \iint_D 2\,dA = 2\cdot\text{Area}(D)\). When the curl is constant, the double integral is just the constant times the area!</p></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>Green's Theorem converts a line integral (hard) into a double integral (often easier), or vice versa.</p></aside>
+<div><p><strong>One cell's micro-circulation:</strong></p>
+<p>\[\Delta\Gamma \;\approx\; \left(\frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right)\Delta A\]</p></div>
+<div><p><strong>Plug into cancellation and take \(\Delta A \to 0\):</strong></p>
+<p>\[\oint_C \vec{F}\cdot d\vec{r} \;=\; \sum_{\text{cells}}\Delta\Gamma \;\approx\; \sum_{\text{cells}}(Q_x - P_y)\,\Delta A \;\longrightarrow\; \iint_D (Q_x - P_y)\,dA\]</p>
+<p>That's Green's Theorem. \(\checkmark\)</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Each tiny cell circulates by \((Q_x - P_y) \Delta A\). Sum over all cells: interiors cancel, the boundary survives, and the sum becomes the double integral of the 2D curl.</p></aside>
 </section>
 
 <div class="pagebreak" aria-hidden="true"></div>
 
-<section id="example-1-verify-green-s-theorem" data-source-line="158" aria-label="Example 1: Verify Green's Theorem">
+<section id="example-1-verify-green-s-theorem" data-source-line="163" aria-label="Example 1: Verify Green's Theorem">
   <h2>Example 1: Verify Green's Theorem</h2>
   <div><p><strong>Example 1.</strong> Evaluate \(\oint_C xy\,dx + x^2\,dy\) where \(C\) is the rectangle \((0,0) \to (3,0) \to (3,1) \to (0,1)\) (CCW). Verify both sides.</p></div>
 <div class="blank-space" role="region" aria-label="Student workspace: Compute $Q_x - P_y$ and integrate over the rectangle. Then verify by computing the line integral along all four edges." style="min-height:5.5in;">
@@ -227,7 +231,7 @@ window.MathJax = {
 </div>
 </section>
 
-<section id="example-2-symmetry-shortcut" class="example-group" data-source-line="176" aria-label="Example 2: Symmetry Shortcut">
+<section id="example-2-symmetry-shortcut" class="example-group" data-source-line="181" aria-label="Example 2: Symmetry Shortcut">
   <h2>Example 2: Symmetry Shortcut</h2>
   <section class="example-box" role="region" aria-label="Example 2">
   <h3 class="example-title">Example 2</h3>
@@ -238,7 +242,7 @@ window.MathJax = {
 </div>
 </section>
 
-<section id="example-3-green-s-theorem-throws-away-the-hard-parts" class="example-group" data-source-line="195" aria-label="Example 3: Green's Theorem Throws Away the Hard Parts">
+<section id="example-3-green-s-theorem-throws-away-the-hard-parts" class="example-group" data-source-line="200" aria-label="Example 3: Green's Theorem Throws Away the Hard Parts">
   <h2>Example 3: Green's Theorem Throws Away the Hard Parts</h2>
   <section class="example-box" role="region" aria-label="Example 3">
   <h3 class="example-title">Example 3</h3>
@@ -249,7 +253,7 @@ window.MathJax = {
 </div>
 </section>
 
-<section id="computing-area-with-green-s-theorem" data-source-line="215" aria-label="Computing Area with Green's Theorem">
+<section id="computing-area-with-green-s-theorem" data-source-line="220" aria-label="Computing Area with Green's Theorem">
   <h2>Computing Area with Green's Theorem</h2>
   <div><p>If we choose \(P\) and \(Q\) so that \(Q_x - P_y = 1\), then \(\oint P\,dx + Q\,dy = \text{Area}(D)\).</p></div>
 <div><p>The cleanest choice: \(P = -y/2\), \(Q = x/2\), giving</p>
@@ -257,7 +261,7 @@ window.MathJax = {
 <p>This computes area from a boundary parameterization alone &mdash; no double integral.</p></div>
 </section>
 
-<section id="example-4-area-of-an-ellipse" class="example-group" data-source-line="227" aria-label="Example 4: Area of an Ellipse">
+<section id="example-4-area-of-an-ellipse" class="example-group" data-source-line="232" aria-label="Example 4: Area of an Ellipse">
   <h2>Example 4: Area of an Ellipse</h2>
   <section class="example-box" role="region" aria-label="Example 4">
   <h3 class="example-title">Example 4</h3>
@@ -268,7 +272,7 @@ window.MathJax = {
 </div>
 </section>
 
-<section id="green-s-theorem-explains-conservative-fields" data-source-line="249" aria-label="Green's Theorem Explains Conservative Fields">
+<section id="green-s-theorem-explains-conservative-fields" data-source-line="254" aria-label="Green's Theorem Explains Conservative Fields">
   <h2>Green's Theorem Explains Conservative Fields</h2>
   <div><p>Green's Theorem finally proves the “hard direction” of the cross-partials test from 16.3.</p></div>
 <div><p>If \(P_y = Q_x\) everywhere on a simply-connected region \(D\), then for <strong>any</strong> closed curve \(C\) inside \(D\):</p>
