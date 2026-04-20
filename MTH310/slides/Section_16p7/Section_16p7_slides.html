@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>16.7 - Surface Integrals | MTH 310</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/white.min.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root {
+    --accent-blue: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-amber: #e09f3e;
+    --accent-purple: #6c3483; --fg: #222222; --bg: #ffffff;
+}
+.reveal { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; font-size: 30px; color: var(--fg); }
+.reveal .slides section { text-align: left; }
+.reveal .slides > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides > section > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides section::-webkit-scrollbar { width: 6px; }
+.reveal .slides section::-webkit-scrollbar-track { background: transparent; }
+.reveal .slides section::-webkit-scrollbar-thumb { background: rgba(0,119,182,0.2); border-radius: 3px; }
+.reveal .slides section::-webkit-scrollbar-thumb:hover { background: rgba(0,119,182,0.4); }
+.reveal .slides > section::after, .reveal .slides > section > section::after {
+    content: ''; display: block; height: 0; clear: both; }
+.reveal h1,.reveal h2,.reveal h3 { text-transform: none; font-weight: 600; }
+.reveal h1 { font-size: 2.2em; color: var(--accent-blue); }
+.reveal h2 { font-size: 1.35em; color: var(--accent-blue); border-bottom: 2px solid rgba(0,119,182,0.25);
+    padding-bottom: 0.2em; margin-bottom: 0.4em; margin-top: 0; }
+.reveal h3 { font-size: 1.1em; color: var(--accent-green); margin: 0.2em 0; }
+.reveal p { margin: 0.3em 0; line-height: 1.4; }
+.reveal li { margin-bottom: 0.15em; line-height: 1.35; }
+.reveal ul,.reveal ol { margin-left: 0.5em; }
+.title-slide { text-align: center !important; }
+.title-slide h1 { font-size: 2.8em; margin-bottom: 0.1em; }
+.title-slide .subtitle { font-size: 1.4em; color: #b07d00; }
+.title-slide .course-info { font-size: 0.85em; color: #595959; margin-top: 2em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-blue);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.theorem-box { background: #fdf6ec; border-left-color: var(--accent-amber); }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.solution { background: #fffdf5; border-left: 4px solid var(--accent-amber);
+    border-radius: 8px; padding: 0.4em 0.8em; margin-top: 0.3em; color: #7a5c00; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7;
+    border-radius: 8px; padding: 0.5em 0.8em; margin: 0.4em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #666; margin: 0.3em 0; font-size: 0.85em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red);
+    border-radius: 10px; padding: 1em 1.5em; text-align: center; margin: 1em 0; }
+.hw-box h3 { color: var(--accent-red); margin: 0 0 0.3em 0; }
+.two-col { display: flex; gap: 1.2em; align-items: flex-start; }
+.two-col > * { flex: 1; }
+.fig-container { text-align: center; margin: 0.3em 0; }
+.fig-container img { max-height: 60vh; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    cursor: zoom-in; transition: opacity 0.15s; }
+.fig-container img:hover { opacity: 0.8; }
+.fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
+.fig-link { display: inline-block; }
+.textbook-fig img { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; }
+.plotly-lazy-thumb { cursor: pointer; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+.plotly-lazy-thumb:hover { opacity: 0.92; outline: 2px solid #0077b6; outline-offset: 2px; }
+#plotly-lightbox { display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+    justify-content:center; align-items:center; cursor:default; }
+#plotly-lightbox.active { display:flex; }
+#plotly-lightbox .plb-close { position:fixed; top:14px; left:20px;
+    font-size:2.2em; color:#fff; background:rgba(0,0,0,0.55);
+    border:1px solid rgba(255,255,255,0.4); border-radius:6px;
+    padding:2px 14px; cursor:pointer; z-index:10001; line-height:1; }
+#plotly-lightbox .plb-close:hover { color:#e09f3e; background:rgba(0,0,0,0.75); }
+#plotly-lightbox .plb-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+#plotly-lightbox .plb-content { width:92vw; height:88vh; position:relative; }
+#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; pointer-events:auto; }
+/* Lightbox overlay */
+#lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
+    cursor: zoom-out; backdrop-filter: blur(4px); }
+#lightbox.active { display: flex; }
+#lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5); object-fit: contain; background: white; }
+#lightbox .lb-caption { position: absolute; bottom: 1.5em; left: 50%;
+    transform: translateX(-50%); color: #fff; font-size: 0.55em;
+    background: rgba(0,0,0,0.7); padding: 0.3em 1em; border-radius: 4px; }
+#lightbox .lb-close { position: absolute; top: 0.8em; right: 1.2em;
+    color: #fff; font-size: 1.5em; cursor: pointer; transition: color 0.15s;
+    background: none; border: none; padding: 0.2em 0.5em; }
+#lightbox .lb-close:hover { color: #e09f3e; }
+#lightbox .lb-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.interactive-link { color: var(--accent-blue); text-decoration: none; font-size: 0.9em; }
+.interactive-link:hover { text-decoration: underline; }
+.desmos-container { text-align: center; margin: 0.3em auto; }
+.desmos-container iframe { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    border: 1px solid #ddd; }
+.desmos-label { font-size: 0.65em; color: var(--accent-blue); margin-top: 0.2em; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.4em;
+    color: var(--accent-blue); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+.desmos-fullscreen { background: none; border: 1px solid var(--accent-blue); border-radius: 4px;
+    color: var(--accent-blue); font-size: 1.1em; cursor: pointer; padding: 0.1em 0.4em;
+    opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-fullscreen:hover { opacity: 1; background: rgba(0,119,182,0.1); }
+aside.notes { display: none; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 0.5em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.3em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.75em; color: var(--accent-blue);
+    text-align: center; margin-bottom: 0.1em; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 18vh; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+.small { font-size: 0.8em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-blue);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600;
+    font-size: 16px; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+table { border-collapse: collapse; font-size: 0.8em; margin: 0.5em 0; }
+th, td { padding: 0.2em 0.6em; border-bottom: 1px solid #ddd; }
+th { color: var(--accent-blue); }
+.reveal .progress { color: var(--accent-blue); }
+.reveal .slide-number { color: #767676; font-size: 0.5em; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+</style>
+</head>
+<body data-section="Section_16p7">
+<a href="#" class="skip-link" onclick="Reveal.next();return false;">Skip to first slide</a>
+<div class="reveal">
+<div class="slides">
+<section class="title-slide" data-background-gradient="radial-gradient(circle at 30% 50%, #e8f4f8 0%, #f8f9fa 70%)">
+  <h1>16.7</h1>
+  <p class="subtitle">Surface Integrals</p>
+  <hr style="border-color:rgba(0,212,255,0.3);width:60%;margin:1em auto;" aria-hidden="true">
+  <p class="course-info">MTH 310 &mdash; Calculus III<br>  Vector Calculus</p>
+</section>
+
+<section id="surface-integrals-two-flavors-in-parallel">
+<h2>Surface Integrals: Two Flavors in Parallel</h2>
+<div class="fragment" data-editor-line="17"><p>In Section 16.2 we defined <strong>two kinds</strong> of line integrals &mdash; one for scalar functions, one for vector fields. Now we lift each of them up a dimension.</p>
+<table>
+<tr><th></th><th><strong>Scalar version</strong></th><th><strong>Vector version</strong></th></tr>
+<tr><td><strong>Line integral</strong> (1D object)</td><td>\(\displaystyle\int_C f\,ds\)</td><td>\(\displaystyle\int_C \vec{F}\cdot d\vec{r} = \int_C \vec{F}\cdot\vec{T}\,ds\)</td></tr>
+<tr><td><em>weighted by</em></td><td>arc length \(ds\)</td><td><strong>tangent</strong> component \(\vec{F}\cdot\vec{T}\)</td></tr>
+<tr><td><em>measures</em></td><td>total of \(f\) along \(C\)</td><td>flow <strong>along</strong> \(C\) (work)</td></tr>
+<tr><td><strong>Surface integral</strong> (2D object)</td><td>\(\displaystyle\iint_S f\,dS\)</td><td>\(\displaystyle\iint_S \vec{F}\cdot d\vec{S} = \iint_S \vec{F}\cdot\vec{n}\,dS\)</td></tr>
+<tr><td><em>weighted by</em></td><td>surface area \(dS\)</td><td><strong>normal</strong> component \(\vec{F}\cdot\vec{n}\)</td></tr>
+<tr><td><em>measures</em></td><td>total of \(f\) over \(S\)</td><td>flow <strong>through</strong> \(S\) (<strong>flux</strong>)</td></tr>
+</table></div>
+<div class="fragment" data-editor-line="30"><p><strong>The shift:</strong> for curves, “flow” meant <em>tangential</em> (along the curve). For surfaces, “flow” means <em>perpendicular</em> (through the surface). That's why flux uses \(\vec{n}\) instead of \(\vec{T}\).</p></div>
+<div class="key-point fragment" data-editor-line="32"><p>Each line integral from 16.2 has a surface-integral twin. Scalar \(\leftrightarrow\) scalar (\(ds \to dS\)); vector (work) \(\leftrightarrow\) vector (flux) (\(\vec{T}\to \vec{n}\)).</p></div>
+<aside class="notes">Put this table on the board in a corner for the whole section &mdash; students can always map back from “where are we now” to the line-integral version they already know.</aside>
+</section>
+
+<section id="scalar-surface-integrals-the-idea">
+<h2>Scalar Surface Integrals: The Idea</h2>
+<div class="fragment" data-editor-line="41"><p>Imagine a thin metal sheet shaped like a surface \(S\), with density \(\rho(x,y,z)\) at each point. The <strong>total mass</strong> is:</p>
+<p>\[\text{mass} = \iint_S \rho(x,y,z)\,dS\]</p>
+<p>More generally, \(\iint_S f(x,y,z)\,dS\) adds up the values of \(f\) over the surface, weighted by area.</p></div>
+<div class="fragment" data-editor-line="47"><p><strong>Riemann-sum construction</strong> (same recipe as every integral so far):</p>
+<ol>
+<li><strong>Chop</strong> \(S\) into small patches \(\Delta S_i\)</li>
+<li><strong>Sample</strong> a point \((x_i^*, y_i^*, z_i^*)\) on each patch</li>
+<li><strong>Sum</strong>: \(\displaystyle\sum_i f(x_i^*, y_i^*, z_i^*) \Delta S_i\)</li>
+<li><strong>Limit</strong> as the patches shrink: \(\displaystyle\iint_S f\,dS = \lim \sum_i f(x_i^*, y_i^*, z_i^*) \Delta S_i\)</li>
+</ol></div>
+<div class="fragment" data-editor-line="55"><p><strong>Parallel with line integrals:</strong></p>
+<ul>
+<li>\(\int_C f\,ds\): chop \(C\) into arcs, multiply by \(f\), sum arc-length-weighted values.</li>
+<li>\(\iint_S f\,dS\): chop \(S\) into patches, multiply by \(f\), sum area-weighted values.</li>
+</ul></div>
+<div class="key-point fragment" data-editor-line="62"><p>\(\iint_S f\,dS\) is the surface analog of \(\int_C f\,ds\). Replace “arc-length element \(ds\)” with “surface-area element \(dS\)” &mdash; everything else is the same.</p></div>
+</section>
+
+<section id="computing-from-a-parametrization">
+<h2>Computing \(\iint_S f\,dS\) from a Parametrization</h2>
+<div class="fragment" data-editor-line="69"><p>From Section 16.6, if \(S\) is parametrized by \(\vec{r}(u,v)\) over domain \(D\), then</p>
+<p>\[dS = |\vec{r}_u \times \vec{r}_v|\,dA.\]</p></div>
+<div class="defn-box fragment" data-editor-line="72">
+  <div class="defn-title">Scalar Surface Integral (Parametric Form)</div>
+  <p>\[\iint_S f(x,y,z)\,dS = \iint_D f\!\left(\vec{r}(u,v)\right)\;|\vec{r}_u \times \vec{r}_v|\;dA\]</p>
+</div>
+<div class="fragment" data-editor-line="77"><p><strong>Side by side with the line-integral formula:</strong></p></div>
+<div class="fragment" data-editor-line="79"><div class="two-col">
+  <div><div><p><strong>Line integral (16.2):</strong></p>
+<p>\[\int_C f\,ds = \int_a^b f\!\left(\vec{r}(t)\right)\,|\vec{r}\,'(t)|\;dt\]</p>
+<p>Chop a 1D parameter interval; “speed” \(|\vec{r} '(t)|\) converts \(dt\) to \(ds\).</p></div></div>
+  <div><div><p><strong>Surface integral (16.7):</strong></p>
+<p>\[\iint_S f\,dS = \iint_D f\!\left(\vec{r}(u,v)\right)\,|\vec{r}_u \times \vec{r}_v|\;dA\]</p>
+<p>Chop a 2D parameter region; “stretch factor” \(|\vec{r}_u\times\vec{r}_v|\) converts \(dA\) to \(dS\).</p></div></div>
+</div></div>
+<div class="key-point fragment" data-editor-line="93"><p>Recipe: (1) parametrize \(S\) as \(\vec{r}(u,v)\), (2) compute \(|\vec{r}_u \times \vec{r}_v|\), (3) substitute into a double integral over \(D\). Exactly like a line integral, one dimension up.</p></div>
+<aside class="notes">The cross-product magnitude plays the role of \(|\vec{r} '(t)|\). Students who internalize this analogy can derive the formula instead of memorizing it.</aside>
+</section>
+
+<section id="special-case-surface-integral-over-a-graph">
+<h2>Special Case: Surface Integral over a Graph \(z = g(x,y)\)</h2>
+<div class="fragment" data-editor-line="102"><p>When \(S\) is a graph \(z = g(x,y)\), parametrize with \(x\) and \(y\) directly: \(\vec{r}(x,y) = \langle x,\,y,\,g(x,y)\rangle\).</p></div>
+<div class="fragment" data-editor-line="104"><p><strong>Recall from 16.6:</strong></p>
+<p>\[|\vec{r}_x \times \vec{r}_y| = \sqrt{g_x^2 + g_y^2 + 1}\]</p></div>
+<div class="fragment" data-editor-line="107"><p>So the scalar surface integral becomes:</p>
+<p>\[\iint_S f(x,y,z)\,dS = \iint_D f\!\left(x,\,y,\,g(x,y)\right)\sqrt{g_x^2 + g_y^2 + 1}\;\,dA\]</p>
+<p>where \(D\) is the projection of \(S\) onto the \(xy\)-plane.</p></div>
+<div class="fragment" data-editor-line="111"><p>If \(f \equiv 1\), this reduces to the <strong>surface-area formula</strong> from Section 15.6:</p>
+<p>\[\text{Area}(S) = \iint_D \sqrt{g_x^2 + g_y^2 + 1}\;dA\]</p>
+<p>Scalar surface integrals include surface area as a special case &mdash; just as \(\int_C 1\,ds\) gives arc length.</p></div>
+<div class="key-point fragment" data-editor-line="115"><p>For graphs \(z = g(x,y)\): replace \(dS\) with \(\sqrt{g_x^2 + g_y^2 + 1}\,dA\) and substitute \(z = g(x,y)\) into \(f\). Most textbook problems fit this shape.</p></div>
+</section>
+
+<section id="example-1-scalar-surface-integral-over-a-graph">
+<h2>Example 1: Scalar Surface Integral over a Graph</h2>
+<div class="example-box fragment" data-editor-line="122">
+  <div class="example-title">Example 1</div>
+  <p>Evaluate \(\displaystyle\iint_S y\,dS\), where \(S\) is the surface \(z = x + y^2\) over the rectangle \(0 \le x \le 1\), \(0 \le y \le 2\).</p>
+</div>
+<div class="fragment" data-editor-line="126"><p class="work-prompt">Identify \(g(x,y)\), compute \(g_x\) and \(g_y\), then set up the integral using the graph formula.</p></div>
+<div class="fragment" data-editor-line="128"><p><strong>Identify</strong> \(g(x,y) = x + y^2\), so \(g_x = 1\) and \(g_y = 2y\).</p></div>
+<div class="fragment" data-editor-line="130"><p><strong>Area element:</strong></p>
+<p>\[\sqrt{g_x^2 + g_y^2 + 1} = \sqrt{1 + 4y^2 + 1} = \sqrt{2 + 4y^2}\]</p></div>
+<div class="fragment" data-editor-line="133"><p><strong>Set up</strong> (integrand has no \(x\), so the \(x\)-integral is trivial):</p>
+<p>\[\iint_S y\,dS = \int_0^2\!\!\int_0^1 y\sqrt{2 + 4y^2}\;dx\,dy = \int_0^2 y\sqrt{2 + 4y^2}\;dy\]</p></div>
+<div class="fragment" data-editor-line="136"><p><strong>Substitute</strong> \(u = 2 + 4y^2\), \(du = 8y\,dy\):</p>
+<p>\[= \frac{1}{8}\int_2^{18}\!\sqrt{u}\;du = \frac{1}{12}\!\left(18^{3/2} - 2^{3/2}\right) = \frac{1}{12}\!\left(54\sqrt{2} - 2\sqrt{2}\right) = \frac{13\sqrt{2}}{3}\]</p></div>
+<div class="key-point fragment" data-editor-line="139"><p>Recipe: substitute \(z = g(x,y)\) into \(f\), multiply by \(\sqrt{g_x^2+g_y^2+1}\), and integrate over the projection \(D\).</p></div>
+<aside class="notes">Both the integrand and area element are independent of \(x\), so the \(x\)-integral evaluates to the width of the \(x\)-interval. Point this out &mdash; students should always scan for simplifications before grinding.</aside>
+</section>
+
+<section id="quick-check-set-up-a-scalar-surface-integral">
+<h2>Quick Check: Set Up a Scalar Surface Integral</h2>
+<div class="fragment" data-editor-line="148"><p><em>Set up (but do not evaluate) \(\displaystyle\iint_S (x^2 + z)\,dS\) where \(S\) is the part of the plane \(z = 4 - 2x\) over the rectangle \(0 \le x \le 2\), \(0 \le y \le 3\).</em></p></div>
+<div class="fragment" data-editor-line="150"><p class="work-prompt">Find \(g(x,y)\), compute \(g_x\) and \(g_y\), write \(\sqrt{g_x^2 + g_y^2 + 1}\), substitute \(z = g(x,y)\) into \(f\), then write the double integral.</p></div>
+<div class="fragment" data-editor-line="152"><p>\(g(x,y) = 4 - 2x\), so \(g_x = -2\), \(g_y = 0\).</p></div>
+<div class="fragment" data-editor-line="154"><p>\(\sqrt{(-2)^2 + 0^2 + 1} = \sqrt{5}\) (constant, since the plane has constant slope).</p></div>
+<div class="fragment" data-editor-line="156"><p>Substitute \(z = 4 - 2x\) into \(f\):   \(f(x,y,g(x,y)) = x^2 + (4 - 2x)\).</p></div>
+<div class="fragment" data-editor-line="158"><p><strong>Set up:</strong></p>
+<p>\[\iint_S (x^2+z)\,dS = \sqrt{5}\int_0^3\!\!\int_0^2 (x^2 - 2x + 4)\;dx\,dy\]</p></div>
+<div class="key-point fragment" data-editor-line="161"><p>Three steps every time: (1) area element \(\sqrt{g_x^2+g_y^2+1}\); (2) substitute \(z = g(x,y)\) into \(f\); (3) write the double integral over \(D\).</p></div>
+</section>
+
+<section id="example-2-scalar-surface-integral-on-a-sphere">
+<h2>Example 2: Scalar Surface Integral on a Sphere</h2>
+<div class="example-box fragment" data-editor-line="168">
+  <div class="example-title">Example 2</div>
+  <p>Evaluate \(\displaystyle\iint_S y^2\,dS\) where \(S\) is the part of the sphere \(x^2+y^2+z^2 = 4\) that lies inside the cylinder \(x^2+y^2 = 1\) and above the \(xy\)-plane.</p>
+</div>
+<div class="fragment" data-editor-line="172"><p class="work-prompt">Parametrize the sphere using spherical coordinates with \(\rho = 2\): \(\vec{r}(\theta,\phi) = \langle 2\sin\phi\cos\theta,\; 2\sin\phi\sin\theta,\; 2\cos\phi \rangle\). What are the bounds on \(\phi\)?</p></div>
+<div class="fragment" data-editor-line="174"><p><strong>Parametrize:</strong> \(\vec{r}(\theta,\phi) = \langle 2\sin\phi\cos\theta,\; 2\sin\phi\sin\theta,\; 2\cos\phi \rangle\).</p>
+<p>For a sphere of radius \(R=2\): \(|\vec{r}_\phi \times \vec{r}_\theta| = R^2\sin\phi = 4\sin\phi\).</p></div>
+<div class="fragment" data-editor-line="178"><p><strong>Bounds:</strong> “Inside the cylinder \(x^2+y^2 = 1\)” means \(4\sin^2\phi \le 1\), so \(\sin\phi \le \tfrac{1}{2}\), i.e. \(0 \le \phi \le \tfrac{\pi}{6}\). Full rotation: \(0 \le \theta \le 2\pi\).</p></div>
+<div class="fragment" data-editor-line="180"><p><strong>Set up</strong> (note \(y = 2\sin\phi\sin\theta\)):</p>
+<p>\[\iint_S y^2\,dS = \int_0^{2\pi}\!\!\int_0^{\pi/6}\!(2\sin\phi\sin\theta)^2\cdot 4\sin\phi\;d\phi\,d\theta = 16\!\int_0^{2\pi}\!\!\sin^2\theta\,d\theta\int_0^{\pi/6}\!\!\sin^3\phi\;d\phi\]</p></div>
+<div class="fragment" data-editor-line="183"><p><strong>Evaluate.</strong> \(\int_0^{2\pi}\sin^2\theta\,d\theta = \pi\). For \(\int\sin^3\phi\,d\phi\), write \(\sin^3\phi = (1-\cos^2\phi)\sin\phi\) and use \(u = \cos\phi\):</p>
+<p>\[\int_0^{\pi/6}\!\sin^3\phi\,d\phi = \left[-\cos\phi + \tfrac{\cos^3\phi}{3}\right]_0^{\pi/6} = \tfrac{2}{3} - \tfrac{3\sqrt{3}}{8}\]</p>
+<p>so \(\displaystyle\iint_S y^2\,dS = 16\pi\!\left(\tfrac{2}{3} - \tfrac{3\sqrt{3}}{8}\right) = \pi\!\left(\tfrac{32}{3} - 6\sqrt{3}\right)\).</p></div>
+<div class="key-point fragment" data-editor-line="187"><p>For spheres: spherical parametrization gives \(dS = R^2\sin\phi\,d\phi\,d\theta\). The cylindrical constraint determines the \(\phi\)-bounds &mdash; draw a cross-section to see why.</p></div>
+<aside class="notes">The bound \(\phi \le \pi/6\) comes from where the cylinder cuts the sphere. Sketch a cross-section: the cylinder of radius 1 intersects a sphere of radius 2 at \(\phi = \pi/6\) from the north pole.</aside>
+</section>
+
+<section id="oriented-surfaces-bridge-to-flux">
+<h2>Oriented Surfaces (Bridge to Flux)</h2>
+<div class="fragment" data-editor-line="196"><p>Before we can define flux, we need to pick a <strong>direction</strong> at every point of the surface &mdash; an orientation.</p></div>
+<div class="fig-container fragment" data-editor-line="198">
+  <img src="figures/oriented_surface.png" alt="Two-panel figure. Left panel: a smooth wavy surface with several pairs of unit normal vectors at sample points; red arrows point upward and green arrows point downward, illustrating the two consistent choices of unit normal on an orientable surface. Right panel: a Mobius strip in purple, a classic non-orientable surface with only one side." class="plotly-lazy-thumb" data-plotly-src="figures/oriented_surface.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="200"><p>An <strong>orientable surface</strong> has two distinct sides. At each point there are two unit normals, \(\vec{n}\) and \(-\vec{n}\). Choosing one consistently over all of \(S\) gives an <strong>orientation</strong>.</p></div>
+<div class="fragment" data-editor-line="202"><p><strong>Standard conventions:</strong></p>
+<ul>
+<li><strong>Closed surfaces</strong> (sphere, torus, cube): <em>outward</em> normal is positive.</li>
+<li><strong>Graphs</strong> \(z = g(x,y)\): <em>upward</em> normal is positive.</li>
+<li>Every problem statement tells you which orientation to use.</li>
+</ul></div>
+<div class="fragment" data-editor-line="209"><p>Not every surface is orientable &mdash; the <strong>Möbius strip</strong> has only one side. But every surface we will integrate over in this course is orientable.</p></div>
+<div class="key-point fragment" data-editor-line="211"><p>An orientation is a consistent choice of unit normal. For flux integrals the orientation <em>determines the sign</em> of the answer: reverse the orientation and the flux changes sign.</p></div>
+<aside class="notes">Pass around a paper Möbius strip if you have one. Students find it fun. Stress that all course examples are orientable &mdash; we are not going to integrate over a Möbius strip.</aside>
+</section>
+
+<section id="unit-normals-for-the-two-most-common-surfaces">
+<h2>Unit Normals for the Two Most Common Surfaces</h2>
+<div class="fragment" data-editor-line="220"><p>For flux we need the unit normal \(\vec{n}\). Two parametrizations cover almost every problem.</p></div>
+<div class="fragment" data-editor-line="222"><div class="two-col">
+  <div><div><p><strong>Graph</strong> \(z = g(x,y)\), \(\;\vec{r}(x,y) = \langle x, y, g(x,y)\rangle\):</p>
+<p>\[\vec{r}_x\times\vec{r}_y = \langle -g_x,\,-g_y,\,1\rangle\]</p>
+<p>\[\vec{n}_{\text{up}} = \frac{\langle -g_x,\,-g_y,\,1\rangle}{\sqrt{g_x^2+g_y^2+1}}\]</p>
+<p>The \(+1\) in the third slot means this vector points upward (so it <em>is</em> the positive orientation).</p></div></div>
+  <div><div><p><strong>Sphere</strong> of radius \(R\), spherical parametrization.</p>
+<p>First, the <strong>easy-to-remember outward unit normal</strong>:</p>
+<p>\[\vec{n}_{\text{out}} = \frac{\langle x,y,z\rangle}{R} = \hat{r}\]</p>
+<p>(just the position vector, normalized.) Then the cross product factors cleanly as</p>
+<p>\[\vec{r}_\phi\times\vec{r}_\theta = R^2\sin\phi\;\hat{r}.\]</p>
+<p>Since \(\sin\phi \geq 0\), this points outward automatically.</p></div></div>
+</div></div>
+<div class="fragment" data-editor-line="239"><p>To <strong>reverse</strong> either orientation, multiply by \(-1\) (or swap the order of the cross product).</p></div>
+<div class="key-point fragment" data-editor-line="241"><p>Graphs: \(\vec{r}_x\times\vec{r}_y = \langle -g_x,-g_y,1\rangle\) points up. Spheres: \(\vec{r}_\phi\times\vec{r}_\theta\) points out. Both match the standard positive orientation.</p></div>
+<aside class="notes">Tie it to Section 15.5: we used \(\langle -g_x,-g_y,1\rangle\) back then too. Same vector, now with a name.</aside>
+</section>
+
+<section id="flux-definition-and-parametric-formula">
+<h2>Flux: Definition and Parametric Formula</h2>
+<div class="fragment" data-editor-line="250"><p>Now the big idea: <strong>how much</strong> of a vector field \(\vec{F}\) flows <em>through</em> a surface.</p></div>
+<div class="fig-container fragment" data-editor-line="252">
+  <img src="figures/flux_visualization.png" alt="A smooth surface with a vector field of red arrows piercing through it. At one marked point, the field vector F is shown in black, decomposed into two components: a gray tangential piece lying along the surface that does not contribute to flux, and a red normal piece perpendicular to the surface that is the contribution to flux. Below the figure, a scalar-style figure shows the same surface with a heat-map coloring representing the value of f across the surface." class="plotly-lazy-thumb" data-plotly-src="figures/flux_visualization.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="254"><p>At each point, only the piece of \(\vec{F}\) <strong>perpendicular</strong> to \(S\) passes through &mdash; that piece is \(\vec{F}\cdot\vec{n}\).</p></div>
+<div class="defn-box fragment" data-editor-line="256">
+  <div class="defn-title">Flux of \(\vec{F}\) across an Oriented Surface \(S\)</div>
+  <p>\[\iint_S \vec{F}\cdot d\vec{S} \;=\; \iint_S \vec{F}\cdot\vec{n}\;dS\]</p>
+</div>
+<div class="fragment" data-editor-line="260"><p><strong>Parametric formula.</strong> Since \(\vec{n}\,dS = (\vec{r}_u \times \vec{r}_v)\,dA\), the \(|\cdot|\) on the cross product cancels the \(|\cdot|\) in the denominator of \(\vec{n}\):</p></div>
+<div class="defn-box theorem-box fragment" data-editor-line="262">
+  <div class="defn-title">Theorem: Flux via a Parametrization</div>
+  <p>\[\iint_S \vec{F}\cdot d\vec{S} = \iint_D \vec{F}\!\left(\vec{r}(u,v)\right)\cdot(\vec{r}_u \times \vec{r}_v)\,dA\]</p>
+</div>
+<div class="fragment" data-editor-line="266"><p>Use the cross product <em>itself</em> &mdash; not its magnitude. Order matters: \(\vec{r}_u\times\vec{r}_v\) vs. \(\vec{r}_v\times\vec{r}_u\) gives opposite orientations.</p></div>
+<div class="fragment" data-editor-line="269"><p><strong>Side by side with work:</strong></p></div>
+<div class="fragment" data-editor-line="271"><div class="two-col">
+  <div><div><p><strong>Work (16.2):</strong> \(\displaystyle\int_C \vec{F}\cdot d\vec{r} = \int_a^b \vec{F}(\vec{r}(t))\cdot \vec{r} '(t)\,dt\)</p>
+<p>Dot \(\vec{F}\) with the <strong>tangent</strong> vector.</p></div></div>
+  <div><div><p><strong>Flux (16.7):</strong> \(\displaystyle\iint_S \vec{F}\cdot d\vec{S} = \iint_D \vec{F}(\vec{r})\cdot (\vec{r}_u\times\vec{r}_v)\,dA\)</p>
+<p>Dot \(\vec{F}\) with the (scaled) <strong>normal</strong> vector.</p></div></div>
+</div></div>
+<div class="key-point fragment" data-editor-line="282"><p>Flux measures flow <strong>through</strong> \(S\) the way work measures flow <strong>along</strong> \(C\). Dot \(\vec{F}\) with \(\vec{r}_u\times\vec{r}_v\) (no magnitude, no square root).</p></div>
+</section>
+
+<section id="flux-through-a-graph">
+<h2>Flux through a Graph \(z = g(x,y)\)</h2>
+<div class="fragment" data-editor-line="289"><p>Plug \(\vec{r}_x\times\vec{r}_y = \langle -g_x, -g_y, 1\rangle\) into the parametric flux formula.</p></div>
+<div class="fragment" data-editor-line="291"><p>If \(\vec{F} = \langle P, Q, R\rangle\), then</p>
+<p>\[\vec{F}\cdot(\vec{r}_x\times\vec{r}_y) = -P\,g_x - Q\,g_y + R\]</p>
+<p>(with \(P,Q,R\) evaluated at \((x,y,g(x,y))\)).</p></div>
+<div class="fragment" data-editor-line="295"><p><strong>Upward orientation</strong> (positive):</p>
+<p>\[\iint_S \vec{F}\cdot d\vec{S} = \iint_D \!\left(-P\,g_x - Q\,g_y + R\right)\,dA.\]</p></div>
+<div class="fragment" data-editor-line="298"><p><strong>Downward orientation:</strong> flip the sign.</p>
+<p>\[\iint_S \vec{F}\cdot d\vec{S} = \iint_D \!\left(P\,g_x + Q\,g_y - R\right)\,dA.\]</p></div>
+<div class="fragment" data-editor-line="301"><p><strong>No square root.</strong> The magnitude from \(dS\) cancels the denominator of \(\vec{n}\). This is the single most useful formula in the section.</p></div>
+<div class="key-point fragment" data-editor-line="303"><p>Flux through a graph: \(\iint_D(-Pg_x - Qg_y + R)\,dA\) (upward). Flip sign for downward. Compare with the scalar version, which <em>did</em> need \(\sqrt{g_x^2+g_y^2+1}\).</p></div>
+<aside class="notes">Box this formula on the board. Students reference it over and over in examples 3&ndash;5 and on the exam.</aside>
+</section>
+
+<section id="quick-check-identify-the-flux-setup">
+<h2>Quick Check: Identify the Flux Setup</h2>
+<div class="fragment" data-editor-line="312"><p><em>\(\vec{F}(x,y,z) = \langle 0, 0, z\rangle\) and \(S\) is the part of the paraboloid \(z = 1 - x^2 - y^2\) above the \(xy\)-plane, with upward orientation. Write \(\vec{F}\cdot(\vec{r}_x\times\vec{r}_y)\) as a function of \(x\) and \(y\).</em></p></div>
+<div class="fragment" data-editor-line="314"><p class="work-prompt">Find \(g(x,y)\), form \(\langle -g_x,-g_y,1\rangle\), substitute \(z = g(x,y)\) into \(\vec{F}\), then dot.</p></div>
+<div class="fragment" data-editor-line="316"><p>\(g(x,y) = 1 - x^2 - y^2\), so \(g_x = -2x\), \(g_y = -2y\).</p></div>
+<div class="fragment" data-editor-line="318"><p>\(\vec{r}_x\times\vec{r}_y = \langle 2x, 2y, 1\rangle\).</p></div>
+<div class="fragment" data-editor-line="320"><p>Substitute \(z = 1 - x^2 - y^2\) into \(\vec{F}\):</p>
+<p>\[\vec{F}\cdot(\vec{r}_x\times\vec{r}_y) = \langle 0,\,0,\,1-x^2-y^2\rangle\cdot\langle 2x, 2y, 1\rangle = 1 - x^2 - y^2.\]</p></div>
+<div class="key-point fragment" data-editor-line="323"><p>When \(\vec{F}\) has only a \(z\)-component, the flux integrand collapses to \(R\) evaluated on \(S\) &mdash; the \(-Pg_x-Qg_y\) piece vanishes.</p></div>
+</section>
+
+<section id="example-3-flux-across-a-plane">
+<h2>Example 3: Flux across a Plane</h2>
+<div class="example-box fragment" data-editor-line="330">
+  <div class="example-title">Example 3</div>
+  <p>Find the flux of \(\vec{F}(x,y,z) = \langle x, 2y, 3z\rangle\) upward through the triangular portion of the plane \(2x + y + 2z = 6\) in the first octant.</p>
+</div>
+<div class="fragment" data-editor-line="334"><p class="work-prompt">Solve for \(z = g(x,y)\), find \(g_x\) and \(g_y\), apply the upward-graph flux formula, and find the domain in the \(xy\)-plane.</p></div>
+<div class="fragment" data-editor-line="336"><p><strong>Solve for</strong> \(z = g(x,y) = 3 - x - \tfrac{1}{2}y\), so \(g_x = -1\), \(g_y = -\tfrac{1}{2}\).</p></div>
+<div class="fragment" data-editor-line="338"><p><strong>Integrand</strong> (upward orientation):</p>
+<p>\[-Pg_x - Qg_y + R = -x(-1) - 2y(-\tfrac{1}{2}) + 3(3-x-\tfrac{1}{2}y) = 9 - 2x - \tfrac{1}{2}y.\]</p></div>
+<div class="fragment" data-editor-line="341"><p><strong>Domain.</strong> First octant + \(z\ge 0\) \(\Rightarrow\) \(x\ge 0\), \(y\ge 0\), \(y\le 6 - 2x\) (so \(x\le 3\)).</p>
+<p>\[\iint_S \vec{F}\cdot d\vec{S} = \int_0^3\!\!\int_0^{6-2x}\!(9 - 2x - \tfrac{1}{2}y)\,dy\,dx\]</p></div>
+<div class="fragment" data-editor-line="344"><p><strong>Inner integral:</strong></p>
+<p>\(\displaystyle\int_0^{6-2x}(9-2x-\tfrac{1}{2}y)\,dy = (9-2x)(6-2x) - \tfrac{1}{4}(6-2x)^2 = \tfrac{3}{2}(6-2x)(5-x).\)</p></div>
+<div class="fragment" data-editor-line="347"><p><strong>Outer integral:</strong></p>
+<p>\[\tfrac{3}{2}\!\int_0^3 (6-2x)(5-x)\,dx = \tfrac{3}{2}\!\int_0^3(30 - 16x + 2x^2)\,dx = \tfrac{3}{2}\!\left[30x - 8x^2 + \tfrac{2}{3}x^3\right]_0^3 = \tfrac{3}{2}(36) = 54.\]</p></div>
+<div class="key-point fragment" data-editor-line="350"><p>Flux of \(\vec{F}\) upward through the triangle is \(\boxed{54}\). A plane is the easiest graph case &mdash; \(g_x\), \(g_y\) are constants.</p></div>
+</section>
+
+<section id="example-4-flux-across-the-unit-sphere">
+<h2>Example 4: Flux across the Unit Sphere</h2>
+<div class="example-box fragment" data-editor-line="357">
+  <div class="example-title">Example 4</div>
+  <p>Find the flux of \(\vec{F}(x,y,z) = \langle z, y, x\rangle\) outward across the unit sphere \(x^2+y^2+z^2 = 1\).</p>
+</div>
+<div class="fragment" data-editor-line="361"><p class="work-prompt">Use spherical parametrization with \(R = 1\). Recall \(\vec{r}_\phi\times\vec{r}_\theta = \sin\phi \langle\sin\phi\cos\theta, \sin\phi\sin\theta, \cos\phi\rangle\) points outward.</p></div>
+<div class="fragment" data-editor-line="363"><p><strong>Parametrize:</strong> \(\vec{r}(\theta,\phi) = \langle\sin\phi\cos\theta, \sin\phi\sin\theta, \cos\phi\rangle\), \; \(0\le\theta\le 2\pi\), \; \(0\le\phi\le\pi\).</p>
+<p>\(\vec{r}_\phi\times\vec{r}_\theta = \sin\phi \langle\sin\phi\cos\theta, \sin\phi\sin\theta, \cos\phi\rangle\).</p></div>
+<div class="fragment" data-editor-line="367"><p><strong>Evaluate \(\vec{F}\) on the sphere:</strong></p>
+<p>\[\vec{F}(\vec{r}) = \langle\cos\phi,\;\sin\phi\sin\theta,\;\sin\phi\cos\theta\rangle.\]</p></div>
+<div class="fragment" data-editor-line="370"><p><strong>Dot product:</strong></p>
+<p>\[\vec{F}\cdot(\vec{r}_\phi\times\vec{r}_\theta) = \sin\phi\!\left[\underbrace{2\sin\phi\cos\phi\cos\theta}_{\text{vanishes in }\theta} + \sin^2\phi\sin^2\theta\right].\]</p></div>
+<div class="fragment" data-editor-line="373"><p><strong>Integrate.</strong> The \(\cos\theta\) term integrates to \(0\) over \([0,2\pi]\):</p>
+<p>\[\iint_S \vec{F}\cdot d\vec{S} = \int_0^{2\pi}\!\!\sin^2\theta\,d\theta\int_0^{\pi}\!\!\sin^3\phi\,d\phi = \pi\cdot\tfrac{4}{3} = \tfrac{4\pi}{3}.\]</p></div>
+<div class="key-point fragment" data-editor-line="376"><p>Only the \(y\)-component of \(\vec{F}\) contributed &mdash; the other two cancelled by symmetry. Always scan for symmetry <em>before</em> grinding through an integral.</p></div>
+<aside class="notes">Let students stare at the symmetry argument. The \(\vec{F} = \langle z, 0, x\rangle\) piece flips sign under \((x,z)\to(-x,-z)\) while the sphere is invariant &mdash; so the integral over the sphere is zero.</aside>
+</section>
+
+<section id="example-5-flux-on-a-cone-downward-orientation">
+<h2>Example 5: Flux on a Cone (Downward Orientation)</h2>
+<div class="example-box fragment" data-editor-line="385">
+  <div class="example-title">Example 5</div>
+  <p>Evaluate \(\displaystyle\iint_S \vec{F}\cdot d\vec{S}\) where \(\vec{F}(x,y,z) = \langle -x, -y, z^3\rangle\) and \(S\) is the part of the cone \(z = \sqrt{x^2+y^2}\) between \(z = 1\) and \(z = 3\), with <strong>downward</strong> orientation.</p>
+</div>
+<div class="fragment" data-editor-line="389"><p class="work-prompt">Use \(g(x,y) = \sqrt{x^2+y^2}\) and the <em>downward</em> graph formula \(\iint_D(Pg_x+Qg_y-R)\,dA\). The domain is the annulus \(1\le r\le 3\) in polar.</p></div>
+<div class="fragment" data-editor-line="391"><p><strong>Partial derivatives:</strong></p>
+<p>\[g(x,y) = \sqrt{x^2+y^2},\quad g_x = \tfrac{x}{\sqrt{x^2+y^2}},\quad g_y = \tfrac{y}{\sqrt{x^2+y^2}}.\]</p></div>
+<div class="fragment" data-editor-line="394"><p><strong>Downward integrand:</strong></p>
+<p>\[Pg_x + Qg_y - R = -\tfrac{x^2}{\sqrt{x^2+y^2}} - \tfrac{y^2}{\sqrt{x^2+y^2}} - (x^2+y^2)^{3/2} = -\sqrt{x^2+y^2} - (x^2+y^2)^{3/2}.\]</p></div>
+<div class="fragment" data-editor-line="397"><p><strong>Domain</strong> (polar): \(1\le\sqrt{x^2+y^2}\le 3\) gives \(1\le r\le 3\), \(0\le\theta\le 2\pi\). Integrand becomes \(-r - r^3\), \(dA = r\,dr\,d\theta\):</p>
+<p>\[\int_0^{2\pi}\!\!\int_1^3 (-r - r^3)\,r\,dr\,d\theta = -2\pi\!\int_1^3(r^2 + r^4)\,dr = -2\pi\!\left[\tfrac{r^3}{3} + \tfrac{r^5}{5}\right]_1^3.\]</p></div>
+<div class="fragment" data-editor-line="400"><p><strong>Evaluate:</strong></p>
+<p>\[\left[\tfrac{r^3}{3}+\tfrac{r^5}{5}\right]_1^3 = \left(9 + \tfrac{243}{5}\right) - \left(\tfrac{1}{3}+\tfrac{1}{5}\right) = \tfrac{288}{5} - \tfrac{8}{15} = \tfrac{856}{15},\quad \text{flux} = -\tfrac{1712\pi}{15}.\]</p></div>
+<div class="key-point fragment" data-editor-line="403"><p>Negative flux: the net flow is in the <em>upward</em> direction, opposite the chosen downward normal. Upward orientation would give \(+\tfrac{1712\pi}{15}\).</p></div>
+<aside class="notes">Emphasize the sign interpretation. The flux is genuinely positive “up,” and the negative sign is just a bookkeeping consequence of our choice of \(\vec{n}\).</aside>
+</section>
+
+<section id="quick-check-does-orientation-matter">
+<h2>Quick Check: Does Orientation Matter?</h2>
+<div class="fragment" data-editor-line="412"><p><em>If the flux of \(\vec{F}\) through a surface \(S\) with upward orientation is \(12\), what is the flux with downward orientation?</em></p></div>
+<div class="fragment" data-editor-line="414"><p class="work-prompt">Think about how flipping \(\vec{n}\) changes the flux integrand.</p></div>
+<div class="fragment" data-editor-line="416"><p>Flipping the orientation replaces \(\vec{n}\) with \(-\vec{n}\):</p>
+<p>\[\iint_S\vec{F}\cdot(-\vec{n})\,dS = -\iint_S\vec{F}\cdot\vec{n}\,dS = -12.\]</p></div>
+<div class="fragment" data-editor-line="419"><p><strong>Downward flux \(= -12\).</strong> The magnitude is the same; only the sign flips.</p></div>
+<div class="key-point fragment" data-editor-line="421"><p>Reversing a surface's orientation <em>negates</em> the flux. That's why every problem statement specifies the orientation &mdash; it fixes the sign of the answer.</p></div>
+</section>
+
+<section id="application-heat-flow-across-a-surface">
+<h2>Application: Heat Flow across a Surface</h2>
+<div class="fragment" data-editor-line="428"><p>If the temperature in a solid is \(u(x,y,z)\), the <strong>heat-flow vector</strong> is</p>
+<p>\[\vec{F} = -K\,\nabla u \qquad (K > 0,\; \text{thermal conductivity}).\]</p>
+<p>Heat flows from hot to cold &mdash; opposite the gradient.</p></div>
+<div class="fragment" data-editor-line="432"><p>The <strong>rate of heat flow</strong> across a surface \(S\) is</p>
+<p>\[\text{rate} = \iint_S \vec{F}\cdot d\vec{S} = -K\!\iint_S \nabla u\cdot d\vec{S}.\]</p></div>
+<div class="example-box fragment" data-editor-line="435">
+  <div class="example-title">Example 6</div>
+  <p>Temperature inside a ball: \(u = C/r\) where \(r = \sqrt{x^2+y^2+z^2}\). Find the rate of heat flow across the sphere \(S\) of radius \(a\).</p>
+</div>
+<div class="fragment" data-editor-line="439"><p class="work-prompt">Compute \(\nabla u\), form \(\vec{F} = -K\nabla u\), then dot with the outward normal \(\vec{n} = \tfrac{1}{a}\langle x,y,z\rangle\) on the sphere \(r = a\).</p></div>
+<div class="fragment" data-editor-line="441"><p><strong>Gradient.</strong> \(u = C\,r^{-1}\), so \(\nabla u = -\tfrac{C}{r^3}\langle x,y,z\rangle\) and \(\vec{F} = -K\nabla u = \tfrac{KC}{r^3}\langle x,y,z\rangle\).</p></div>
+<div class="fragment" data-editor-line="443"><p><strong>On the sphere</strong> \(r = a\): \(\vec{F} = \tfrac{KC}{a^3}\langle x,y,z\rangle\), and \(\vec{F}\cdot\vec{n} = \tfrac{KC}{a^4}(x^2+y^2+z^2) = \tfrac{KC}{a^4}\cdot a^2 = \tfrac{KC}{a^2}\) (a constant on \(S\)).</p></div>
+<div class="fragment" data-editor-line="445"><p><strong>Total heat flow:</strong></p>
+<p>\[\iint_S\vec{F}\cdot d\vec{S} = \tfrac{KC}{a^2}\cdot \text{Area}(S) = \tfrac{KC}{a^2}\cdot 4\pi a^2 = 4\pi KC.\]</p>
+<p>Independent of the radius \(a\)!</p></div>
+<div class="key-point fragment" data-editor-line="449"><p>Heat flow rate is \(4\pi KC\), <em>not</em> depending on \(a\). Surface area grows as \(a^2\); the inverse-square gradient decays as \(1/a^2\). They cancel. Physically: in steady state, whatever heat leaves a small sphere must leave any larger enclosing sphere.</p></div>
+<aside class="notes">Foreshadow the Divergence Theorem (16.9): that cancellation is what “divergence-free outside the source” means. We'll come back to it.</aside>
+</section>
+
+<section id="section-16-7-summary">
+<h2>Section 16.7 Summary</h2>
+<div class="summary-grid">
+<div class="defn-box"><div class="defn-title">Two flavors, in parallel</div><p class="small">Every line integral from 16.2 has a surface-integral twin. Scalar: \(\int_C f\,ds\leftrightarrow \iint_S f\,dS\). Vector: \(\int_C \vec{F}\cdot d\vec{r}\leftrightarrow \iint_S \vec{F}\cdot d\vec{S}\) (work \(\leftrightarrow\) flux).</p></div>
+<div class="defn-box"><div class="defn-title">Scalar Surface Integral</div><p class="small">\(\displaystyle\iint_S f\,dS = \iint_D f(\vec{r}) |\vec{r}_u\times\vec{r}_v|\,dA\). Graph: \(\iint_D f\sqrt{g_x^2+g_y^2+1}\,dA\). Special case \(f = 1\) gives surface area.</p></div>
+<div class="defn-box"><div class="defn-title">Orientation</div><p class="small">Consistent choice of unit normal \(\vec{n}\). Closed surfaces: outward. Graphs: upward. Reversing \(\vec{n}\) negates flux.</p></div>
+<div class="defn-box"><div class="defn-title">Flux (Vector Surface Integral)</div><p class="small">\(\displaystyle\iint_S\vec{F}\cdot d\vec{S} = \iint_D \vec{F}\cdot(\vec{r}_u\times\vec{r}_v)\,dA\). Graph upward: \(\iint_D(-Pg_x-Qg_y+R)\,dA\). No square root!</p></div>
+<div class="defn-box"><div class="defn-title">Looking ahead</div><p class="small">Section 16.8: <strong>Stokes' Theorem</strong> ties the flux of \(\nabla\times\vec{F}\) through \(S\) to a line integral around \(\partial S\) &mdash; the 3D sibling of Green's Theorem.</p></div>
+</div>
+</section>
+
+<section>
+<h2>Homework</h2>
+<div class="hw-box"><h3>Section 16.7</h3>
+<p style="font-size:1.3em;color:var(--accent-amber);">5, 7, 9, 11, 13, 15, 17, 21, 23, 25, 27, 29, 43</p>
+</div>
+<div class="key-point fragment" style="margin-top:1.5em;"><strong>Next time:</strong> Section 16.8 &mdash; Stokes' Theorem</div>
+</section>
+</div>
+</div>
+<!-- Lightbox overlay -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged figure" tabindex="-1">
+  <button class="lb-close" aria-label="Close lightbox">&times;</button>
+  <img src="" alt="">
+  <div class="lb-caption"></div>
+</div>
+<!-- Plotly fullscreen overlay -->
+<div id="plotly-lightbox" role="dialog" aria-modal="true" aria-label="Expanded interactive figure">
+  <button class="plb-close" aria-label="Close">&times;</button>
+  <div class="plb-content"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<script>
+Reveal.initialize({
+    hash: true, slideNumber: 'c/t', progress: true, center: false,
+    transition: 'slide', width: 1280, height: 800, margin: 0.04,
+    // Allow mouse wheel to scroll overflowing slide content instead of advancing
+    mouseWheel: false,
+    plugins: [RevealNotes]
+});
+// ── Scoped MathJax: only typeset the current slide, not the whole document ──
+function typesetCurrentSlide() {
+    var slide = Reveal.getCurrentSlide();
+    if (slide && MathJax?.typesetPromise) {
+        MathJax.typesetPromise([slide]).catch(function(){});
+    }
+}
+// ── Iframe cleanup: pause Desmos/embedded iframes on non-visible slides ──
+function manageIframes(event) {
+    // Pause iframes on the previous slide
+    if (event.previousSlide) {
+        event.previousSlide.querySelectorAll('iframe[data-src-active]').forEach(function(iframe) {
+            iframe.setAttribute('data-src-paused', iframe.src);
+            iframe.src = 'about:blank';
+        });
+    }
+    // Restore iframes on the current slide
+    if (event.currentSlide) {
+        event.currentSlide.querySelectorAll('iframe[data-src-paused]').forEach(function(iframe) {
+            iframe.src = iframe.getAttribute('data-src-paused');
+            iframe.removeAttribute('data-src-paused');
+        });
+    }
+}
+// Mark all Desmos/embedded iframes for management
+document.querySelectorAll('.desmos-container iframe').forEach(function(iframe) {
+    iframe.setAttribute('data-src-active', '1');
+});
+Reveal.on('slidechanged', (event) => {
+    typesetCurrentSlide();
+    manageIframes(event);
+    // Reset scroll position on the new slide so it starts at the top
+    if (event.currentSlide) event.currentSlide.scrollTop = 0;
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealSlideChanged', indexh: event.indexh, indexv: event.indexv }, '*');
+        }
+    } catch (e) {}
+});
+// Fragment auto-scroll: configurable via meta.fragment_scroll in content.yaml
+// Value is the max fraction down the slide viewport (0.0=top, 1.0=bottom)
+var FRAG_SCROLL_TARGET = 0.67;
+function findScrollContainer(el) {
+    var section = el.closest('section');
+    while (section) {
+        if (section.scrollHeight > section.clientHeight + 1) return section;
+        var parent = section.parentElement?.closest('section, .slides, .reveal');
+        if (!parent || parent === section) break;
+        section = parent;
+    }
+    return null;
+}
+function scrollToFragment(frag, direction) {
+    var container = findScrollContainer(frag);
+    if (!container) return;
+    var fragRect = frag.getBoundingClientRect();
+    var containerRect = container.getBoundingClientRect();
+    // Reveal.js scales slides via CSS transform — account for the scale factor
+    var scale = containerRect.height / container.clientHeight || 1;
+    // Convert screen-space positions to unscaled slide-space
+    var fragBottom = (fragRect.bottom - containerRect.top) / scale + container.scrollTop;
+    var fragTop = (fragRect.top - containerRect.top) / scale + container.scrollTop;
+    var targetLine = container.clientHeight * FRAG_SCROLL_TARGET;
+    if (direction === 'forward') {
+        // Scroll so the fragment's bottom is at the target line
+        var desiredScrollTop = fragBottom - targetLine;
+        if (desiredScrollTop > container.scrollTop) {
+            container.scrollTo({ top: desiredScrollTop, behavior: 'smooth' });
+        }
+    } else {
+        // Scrolling backward: find the previous visible fragment and scroll to it
+        // If the fragment's top is above the viewport, scroll up to show it
+        var desiredScrollTop = fragTop - targetLine * 0.5;
+        if (desiredScrollTop < container.scrollTop) {
+            container.scrollTo({ top: Math.max(0, desiredScrollTop), behavior: 'smooth' });
+        }
+    }
+}
+// Add spacer to scrollable slides so the last fragment can scroll up to the target line
+Reveal.on('ready', () => {
+    var slideH = Reveal.getConfig().height || 800;
+    var spacerH = Math.round((1 - FRAG_SCROLL_TARGET) * slideH);
+    document.querySelectorAll('.reveal .slides > section, .reveal .slides > section > section').forEach(function(s) {
+        if (s.querySelector('.fragment')) {
+            var spacer = document.createElement('div');
+            spacer.style.height = spacerH + 'px';
+            spacer.style.pointerEvents = 'none';
+            spacer.setAttribute('aria-hidden', 'true');
+            s.appendChild(spacer);
+        }
+    });
+});
+function _notifyParentFragment() {
+    // Read data-editor-line from the last visible fragment in the current slide.
+    // Works for both fragmentshown and fragmenthidden events.
+    try {
+        if (!window.parent || window.parent === window) return;
+        var s = Reveal.getState();
+        var slideEl = Reveal.getCurrentSlide();
+        var editorLine = null;
+        if (slideEl) {
+            var visibleFrags = slideEl.querySelectorAll('.fragment.visible[data-editor-line]');
+            if (visibleFrags.length > 0) {
+                var ln = parseInt(visibleFrags[visibleFrags.length - 1].dataset.editorLine, 10);
+                if (!isNaN(ln)) editorLine = ln;
+            }
+        }
+        window.parent.postMessage({
+            type: 'revealFragmentChanged',
+            indexh: s.indexh, indexv: s.indexv, indexf: s.indexf,
+            editorLine: editorLine
+        }, '*');
+    } catch(e) {}
+}
+Reveal.on('fragmentshown', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('fragmenthidden', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    // Scroll back to the previous fragment or top of slide
+    var prev = event.fragment.previousElementSibling;
+    while (prev && !prev.classList.contains('fragment')) {
+        prev = prev.previousElementSibling;
+    }
+    var target = prev || event.fragment.closest('section')?.querySelector('h2') || event.fragment;
+    setTimeout(function() { scrollToFragment(target, 'backward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('ready', () => {
+    typesetCurrentSlide();
+    // Tell the CourseKit editor that Reveal is initialized so it can sync the fragment
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealReady' }, '*');
+        }
+    } catch(e) {}
+});
+
+// ── Plotly lightbox (iframe approach — zero WebGL until opened) ──
+(function() {
+    var plb = document.getElementById('plotly-lightbox');
+    if (!plb) return;
+    var plbClose = plb.querySelector('.plb-close');
+    var plbContent = plb.querySelector('.plb-content');
+    var triggerImg = null;
+    var currentBlobUrl = null;
+
+    function openPlotlyLightbox(blobUrl) {
+        // Revoke any previous blob URL
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); }
+        currentBlobUrl = blobUrl;
+        var iframe = plbContent.querySelector('iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:80vh;border:none;background:#fff;';
+            plbContent.appendChild(iframe);
+        }
+        iframe.src = blobUrl;
+        plb.classList.add('active');
+        plbClose.focus();
+    }
+
+    function closePlotlyLightbox() {
+        var iframe = plbContent.querySelector('iframe');
+        if (iframe) iframe.src = '';   // Unloads WebGL context immediately
+        plb.classList.remove('active');
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+        if (triggerImg) { triggerImg.focus(); triggerImg = null; }
+    }
+
+    document.addEventListener('click', function(e) {
+        var img = e.target.closest('img[data-plotly-src]');
+        if (!img) return;
+        e.stopPropagation();
+        triggerImg = img;
+        // The companion .html is a bare Plotly div fragment (no CDN script).
+        // Fetch it and wrap in a complete page so it renders in the iframe.
+        fetch(img.dataset.plotlySrc)
+            .then(function(r) { return r.text(); })
+            .then(function(fragment) {
+                var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+                    '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"><\/script>' +
+                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;' +
+                    'display:flex;justify-content:center;align-items:center;width:100vw;height:100vh;}' +
+                    '.js-plotly-plot,.plotly-graph-div{width:100%!important;height:100%!important;}</style>' +
+                    '</head><body>' + fragment + '</body></html>';
+                var blob = new Blob([html], {type: 'text/html'});
+                openPlotlyLightbox(URL.createObjectURL(blob));
+            })
+            .catch(function() {
+                // Fallback: open in new tab
+                window.open(img.dataset.plotlySrc, '_blank');
+            });
+    });
+
+    plbClose.addEventListener('click', closePlotlyLightbox);
+    plb.addEventListener('click', function(e) { if (e.target === plb) closePlotlyLightbox(); });
+
+    // Capture-phase Escape so Reveal.js doesn't grab it first
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape' || !plb.classList.contains('active')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closePlotlyLightbox();
+    }, true);
+
+    // Desmos/GeoGebra fullscreen: reuse lightbox with direct URL (no fetch/wrap needed)
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.desmos-fullscreen');
+        if (!btn) return;
+        e.stopPropagation();
+        var url = btn.dataset.src;
+        if (!url) return;
+        // Remove any existing iframe (may have stale Plotly styles)
+        var old = plbContent.querySelector('iframe');
+        if (old) old.remove();
+        var iframe = document.createElement('iframe');
+        iframe.style.cssText = 'width:100%;height:100%;border:none;background:#fff;border-radius:6px;';
+        iframe.src = url;
+        iframe.setAttribute('allowfullscreen', '');
+        plbContent.appendChild(iframe);
+        plb.classList.add('active');
+        plbClose.focus();
+    });
+})();
+
+// ── Lightbox for figures (accessible: focus trap, focus return) ──
+(function() {
+    const lb = document.getElementById('lightbox');
+    const lbImg = lb.querySelector('img');
+    const lbCap = lb.querySelector('.lb-caption');
+    const lbClose = lb.querySelector('.lb-close');
+    var triggerEl = null;
+
+    function openLightbox(src, alt, caption) {
+        lbImg.src = src;
+        lbImg.alt = alt;
+        lbCap.textContent = caption || alt;
+        lb.classList.add('active');
+        lbClose.focus();
+    }
+
+    function closeLightbox() {
+        lb.classList.remove('active');
+        lbImg.src = '';
+        if (triggerEl) { triggerEl.focus(); triggerEl = null; }
+    }
+
+    // Open lightbox on figure click (prevent default link navigation)
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.fig-link');
+        if (!link) return;
+        e.preventDefault();
+        e.stopPropagation();
+        triggerEl = link;
+        var src = link.getAttribute('data-src');
+        var alt = link.querySelector('img')?.alt || '';
+        var caption = link.closest('.fig-container')?.querySelector('.fig-caption')?.textContent || '';
+        openLightbox(src, alt, caption);
+    });
+
+    // Close on click anywhere on overlay
+    lb.addEventListener('click', function() { closeLightbox(); });
+
+    // Prevent closing when clicking the image itself (let user right-click → open in tab)
+    lbImg.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    // Close on Escape; trap Tab within lightbox
+    document.addEventListener('keydown', function(e) {
+        if (!lb.classList.contains('active')) return;
+        if (e.key === 'Escape') { closeLightbox(); }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            lbClose.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>

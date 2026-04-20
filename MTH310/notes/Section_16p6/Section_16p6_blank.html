@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 16.6: Parametric Surfaces and Their Areas &mdash; Handout</title>
+<style>
+@page { size: letter; margin: 0.4in 0.5in; }
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #b5850e;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    max-width: 7.5in; margin: 0 auto; padding: 0.3em;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.35; }
+.handout-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left h1 { font-size: 1.3em; color: var(--accent-cyan); margin: 0; }
+.header-left p { margin: 0.05em 0; color: #666; font-size: 0.85em; }
+.header-right { text-align: right; font-size: 0.85em; color: #333; }
+hr { border: none; border-top: 2px solid var(--accent-cyan); margin: 0.3em 0; }
+h2 { font-size: 1.1em; color: var(--accent-cyan); margin: 0.4em 0 0.15em 0;
+    border-bottom: 1px solid #ccc; padding-bottom: 0.05em; }
+h3, h4 { font-size: 0.95em; margin: 0.15em 0; }
+p { margin: 0.15em 0; }
+.defn-box { background: #f0f7ff; border-left: 3px solid var(--accent-cyan);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 3px solid var(--accent-green);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
+    padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
+.blank-space { margin: 0.2em 0; position: relative;
+    border: none; border-top: 1px dashed #ccc; box-sizing: border-box; }
+.blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
+    color: #767676; font-style: italic; }
+.hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
+    padding: 0.3em 0.8em; text-align: center; margin: 0.5em 0; }
+.desmos-link { background: #f0f7ff; border-radius: 3px; padding: 0.2em 0.5em;
+    margin: 0.3em 0; font-size: 0.8em; }
+.desmos-link a { color: var(--accent-cyan); word-break: break-all; }
+.two-col-print { display: flex; gap: 0.6em; align-items: flex-start; }
+.two-col-print > * { flex: 1; }
+figure { margin: 0.1em 0; text-align: center; }
+figure img { max-width: 100%; max-height: 3.0in; }
+figcaption { font-size: 0.7em; color: #666; margin-top: 0.05em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 2px; border: 1px solid #ddd; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.image-grid { display: flex; gap: 0.4em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.2em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.8em; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 1.5in; max-width: 100%; }
+.image-grid .grid-cell.textbook-fig img { padding: 2px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+table { border-collapse: collapse; font-size: 0.85em; margin: 0.15em auto; }
+th, td { padding: 0.1em 0.4em; border: 1px solid #ccc; text-align: center; }
+th { background: #f0f7ff; }
+.small { font-size: 0.8em; }
+ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
+li { margin-bottom: 0.05em; }
+.pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
+.homework-section { page-break-before: auto; }
+.defn-box, .example-box, .key-point, .blank-space, .theorem-box { page-break-inside: avoid; break-inside: avoid; }
+main > section { page-break-inside: auto; }
+main > section.example-group { page-break-inside: avoid; break-inside: avoid; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media print {
+    body { padding: 0; max-width: none; }
+    .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    a[href^="http"]::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="#"]::after { content: none; }
+    figure img { max-height: 2.8in; }
+    .skip-link { display: none; }
+}
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// Pagination is handled entirely by CSS:
+//   .pagebreak            → page-break-before: always
+//   .example-group        → page-break-inside: avoid
+//   .defn-box, .key-point → page-break-inside: avoid
+// Workspaces use their declared min-height only — no JS expansion.
+// This produces dense, predictable handouts.
+</script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <div class="handout-header">
+    <div class="header-left">
+      <h1>Section 16.6: Parametric Surfaces and Their Areas</h1>
+      <p>Vector Calculus</p>
+    </div>
+    <div class="header-right">
+      <p>MTH 310<br>Calculus III</p>
+    </div>
+  </div>
+</header>
+<hr aria-hidden="true">
+
+<section id="from-parametric-curves-to-parametric-surfaces" data-source-line="15" aria-label="From Parametric Curves to Parametric Surfaces">
+  <h2>From Parametric Curves to Parametric Surfaces</h2>
+  <div><p>In Chapter 13 we parameterized <strong>curves</strong> in space with one parameter:</p>
+<p>\[\vec{r}(t) = \langle x(t),\; y(t),\; z(t) \rangle, \quad a \leq t \leq b\]</p>
+<p>One parameter traces out a one-dimensional object (a curve).</p></div>
+<div><p>To describe a <strong>surface</strong> (a two-dimensional object in \(\mathbb{R}^3\)), we need <strong>two parameters</strong>:</p></div>
+<section class="defn-box" role="region" aria-label="Parametric Surface">
+  <h3 class="defn-title">Parametric Surface</h3>
+  <p>A <strong>parametric surface</strong> \(S\) is defined by a vector function</p>
+<p>\[\vec{r}(u,v) = \langle x(u,v),\; y(u,v),\; z(u,v) \rangle\]</p>
+<p>where \((u,v)\) varies over a parameter domain \(D \subseteq \mathbb{R}^2\).</p>
+</section>
+<figure>
+  <img src="figures/param_mapping.png" alt="Two panels side by side. Left panel shows a flat square parameter domain D in the uv-plane with vertical blue lines (u-curves) and horizontal red lines (v-curves) forming a regular grid. An arrow labeled r(u,v) points from the left panel to the right panel. Right panel shows a curved saddle-shaped surface in 3D with the same blue and red grid mapped onto it, illustrating how the flat parameter domain gets bent into a curved surface in three dimensions.">
+</figure>
+<div><p>As \((u,v)\) ranges over \(D\), the function \(\vec{r}\) <strong>bends the flat rectangle</strong> into the curved surface \(S\). The grid lines go along for the ride &mdash; the blue \(u\)-curves and red \(v\)-curves on \(S\) are the images of the grid lines in \(D\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>One parameter \(\to\) curve. Two parameters \(\to\) surface. Think of \(\vec{r}(u,v)\) as wrapping a flat sheet of paper (the domain \(D\)) around an object in space.</p></aside>
+</section>
+
+<section id="example-1-the-unit-sphere" class="example-group" data-source-line="41" aria-label="Example 1: The Unit Sphere">
+  <h2>Example 1: The Unit Sphere</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Find a parametric representation for the unit sphere \(x^2 + y^2 + z^2 = 1\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Use spherical coordinates with $\rho = 1$. What are $x$, $y$, $z$ in terms of $\phi$ and $\theta$?" style="min-height:2.5in;">
+  <div class="blank-prompt">Use spherical coordinates with \(\rho = 1\). What are \(x\), \(y\), \(z\) in terms of \(\phi\) and \(\theta\)?</div>
+</div>
+</section>
+
+<section id="example-2-identify-the-surface" class="example-group" data-source-line="71" aria-label="Example 2: Identify the Surface">
+  <h2>Example 2: Identify the Surface</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Describe and sketch the surface with parametric equations</p>
+<p>\[\vec{r}(u,v) = \langle u,\; 3\cos v,\; 3\sin v \rangle\]</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: For a fixed $u$, what does the point $(u, 3\cos v, 3\sin v)$ trace as $v$ varies? What shape has $y^2 + z^2 = \text{const}$?" style="min-height:2.5in;">
+  <div class="blank-prompt">For a fixed \(u\), what does the point \((u, 3\cos v, 3\sin v)\) trace as \(v\) varies? What shape has \(y^2 + z^2 = \text{const}\)?</div>
+</div>
+</section>
+
+<section id="quick-check-match-the-parameterization" data-source-line="101" aria-label="Quick Check: Match the Parameterization">
+  <h2>Quick Check: Match the Parameterization</h2>
+  <div><p><em>What surface does each parameterization describe?</em></p>
+<ol>
+<li>\(\vec{r}(u,v) = \langle u\cos v,\; u\sin v,\; u \rangle\),   \(u \geq 0\), \(\;0 \leq v \leq 2\pi\)</li>
+<li>\(\vec{r}(u,v) = \langle u,\; v,\; 4 - u^2 - v^2 \rangle\)</li>
+</ol></div>
+<div class="blank-space" role="region" aria-label="Student workspace: For (1): eliminate the parameter to find $x^2 + y^2 = ?$. For (2): what is $z$ in terms of $x$ and $y$?" style="min-height:2in;">
+  <div class="blank-prompt">For (1): eliminate the parameter to find \(x^2 + y^2 = ?\). For (2): what is \(z\) in terms of \(x\) and \(y\)?</div>
+</div>
+</section>
+
+<section id="surfaces-of-revolution" class="example-group" data-source-line="121" aria-label="Surfaces of Revolution">
+  <h2>Surfaces of Revolution</h2>
+  <div><p>Many surfaces arise by rotating a curve around an axis. The rotation angle becomes the second parameter.</p></div>
+<div><p><strong>Step 1: the generating curve.</strong> Take the curve \(y = f(x)\) in the \(xy\)-plane, \(a \leq x \leq b\).</p></div>
+<div><p><strong>Step 2: rotate about the \(x\)-axis.</strong> At each fixed \(x\), the cross-section is a <strong>circle of radius \(|f(x)|\)</strong> in the \(yz\)-plane, parameterized by angle \(\theta\):</p>
+<p>\[y = f(x)\cos\theta, \qquad z = f(x)\sin\theta\]</p></div>
+<div><p><strong>Step 3: assemble the full parameterization.</strong></p>
+<p>\[\vec{r}(x, \theta) = \langle x,\; f(x)\cos\theta,\; f(x)\sin\theta \rangle, \quad a \leq x \leq b, \;\; 0 \leq \theta \leq 2\pi\]</p></div>
+<section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Give parametric equations for the surface obtained by rotating \(y = x(1-x)\), \(0 \leq x \leq 1\), about the \(x\)-axis.</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Use the formula above with $f(x) = x(1-x)$." style="min-height:1.5in;">
+  <div class="blank-prompt">Use the formula above with \(f(x) = x(1-x)\).</div>
+</div>
+</section>
+
+<section id="tangent-vectors-to-a-parametric-surface" data-source-line="151" aria-label="Tangent Vectors to a Parametric Surface">
+  <h2>Tangent Vectors to a Parametric Surface</h2>
+  <figure>
+  <img src="figures/tangent_patch.png" alt="A smooth paraboloid surface shown in light gray with a small amber parallelogram patch at a point. Two tangent vectors originate from the point: a red vector r_u along the u-direction and a blue vector r_v along the v-direction. A purple normal vector n equals r_u cross r_v points away from the surface, perpendicular to the tangent plane.">
+  <figcaption><a href="figures/tangent_patch.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
+<div><p>In Section 15.5, we found the surface area correction factor for graphs \(z = f(x,y)\) by taking tangent vectors and computing their cross product. Now we generalize to <strong>any</strong> parametric surface.</p></div>
+<div><p><strong>Tangent vectors:</strong> At any point \(\vec{r}(u_0, v_0)\), differentiate with respect to each parameter:</p>
+<p>\[\vec{r}_u = \frac{\partial \vec{r}}{\partial u} = \left\langle \frac{\partial x}{\partial u},\; \frac{\partial y}{\partial u},\; \frac{\partial z}{\partial u} \right\rangle \qquad \vec{r}_v = \frac{\partial \vec{r}}{\partial v} = \left\langle \frac{\partial x}{\partial v},\; \frac{\partial y}{\partial v},\; \frac{\partial z}{\partial v} \right\rangle\]</p></div>
+<div><p>\(\vec{r}_u\) is tangent to the \(u\)-curve (hold \(v\) fixed, vary \(u\)).</p>
+<p>\(\vec{r}_v\) is tangent to the \(v\)-curve (hold \(u\) fixed, vary \(v\)).</p></div>
+<div><p><strong>Normal vector:</strong> If \(\vec{r}_u \times \vec{r}_v \neq \vec{0}\),</p>
+<p>\[\vec{n} = \vec{r}_u \times \vec{r}_v\]</p>
+<p>is <strong>normal to the surface</strong> at that point (perpendicular to both tangent directions).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\vec{r}_u\) and \(\vec{r}_v\) span the tangent plane. Their cross product \(\vec{r}_u \times \vec{r}_v\) gives a normal vector. This is exactly the same idea as Section 15.5, but now for general parameterizations.</p></aside>
+</section>
+
+<section id="surface-area-of-a-parametric-surface" data-source-line="175" aria-label="Surface Area of a Parametric Surface">
+  <h2>Surface Area of a Parametric Surface</h2>
+  <div><p>Same strategy as Section 15.5: approximate each small surface patch by a parallelogram.</p></div>
+<figure>
+  <img src="figures/area_riemann.png" alt="Two panels side by side illustrating the Riemann-sum derivation of the surface area formula. Left panel: the flat parameter domain D is tiled with a six-by-six grid of small rectangles; one cell is highlighted in amber. An arrow labeled r(u,v) connects to the right panel. Right panel: the corresponding curved surface S is tiled with small curvilinear cells that are approximately parallelograms; the cell corresponding to the highlighted rectangle is filled in amber, with two tangent-vector edges r_u times Delta u (red) and r_v times Delta v (blue) marking two sides.">
+  <figcaption><a href="figures/area_riemann.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
+<div><p><strong>Tile \(D\)</strong> with rectangles of size \(\Delta u \times \Delta v\). Under \(\vec{r}\), each rectangle maps to a small patch on \(S\) approximately shaped like a parallelogram.</p></div>
+<div><p><strong>Patch sides:</strong> \(\vec{r}_u \Delta u\) and \(\vec{r}_v \Delta v\). Patch area:</p>
+<p>\[\Delta S \approx |\vec{r}_u\,\Delta u \times \vec{r}_v\,\Delta v| = |\vec{r}_u \times \vec{r}_v| \, \Delta u\, \Delta v\]</p></div>
+<div><p><strong>Sum and take the limit \(\Delta u, \Delta v \to 0\):</strong></p></div>
+<section class="defn-box" role="region" aria-label="Surface Area of a Parametric Surface">
+  <h3 class="defn-title">Surface Area of a Parametric Surface</h3>
+  <p>If \(S\) is given by \(\vec{r}(u,v)\) for \((u,v) \in D\), and \(\vec{r}\) is smooth, then</p>
+<p>\[A(S) = \iint_D |\vec{r}_u \times \vec{r}_v| \, dA\]</p>
+</section>
+<aside class="key-point" role="note" aria-label="Key point"><p>Surface area \(=\) \(\displaystyle\iint_D |\vec{r}_u \times \vec{r}_v|  dA\). The cross product magnitude is the “correction factor” for how much the parameterization stretches the flat domain into the curved surface.</p></aside>
+</section>
+
+<section id="quick-check-compute-the-normal-vector" data-source-line="200" aria-label="Quick Check: Compute the Normal Vector">
+  <h2>Quick Check: Compute the Normal Vector</h2>
+  <div><p><em>For the cylinder \(\vec{r}(u,v) = \langle u,\; 3\cos v,\; 3\sin v \rangle\), find \(\vec{r}_u\), \(\vec{r}_v\), and \(\vec{r}_u \times \vec{r}_v\).</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Differentiate each component with respect to $u$, then with respect to $v$. Then compute the cross product." style="min-height:2.5in;">
+  <div class="blank-prompt">Differentiate each component with respect to \(u\), then with respect to \(v\). Then compute the cross product.</div>
+</div>
+</section>
+
+<section id="example-4-surface-area-of-a-sphere" class="example-group" data-source-line="221" aria-label="Example 4: Surface Area of a Sphere">
+  <h2>Example 4: Surface Area of a Sphere</h2>
+  <section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>Use the parametric representation to find the surface area of a sphere of radius \(R\).</p>
+</section>
+<div><p><strong>Parameterization:</strong> \(\vec{r}(\theta,\phi) = \langle R\sin\phi\cos\theta,\; R\sin\phi\sin\theta,\; R\cos\phi \rangle\),   \(0 \leq \phi \leq \pi\), \(\;0 \leq \theta \leq 2\pi\).</p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Compute $\vec{r}_\theta$, $\vec{r}_\phi$, their cross product, and its magnitude. Then integrate over the parameter domain." style="min-height:3in;">
+  <div class="blank-prompt">Compute \(\vec{r}_\theta\), \(\vec{r}_\phi\), their cross product, and its magnitude. Then integrate over the parameter domain.</div>
+</div>
+</section>
+
+<section id="example-5-surface-area-of-a-cone" class="example-group" data-source-line="256" aria-label="Example 5: Surface Area of a Cone">
+  <h2>Example 5: Surface Area of a Cone</h2>
+  <section class="example-box" role="region" aria-label="Example 5">
+  <h3 class="example-title">Example 5</h3>
+  <p>Find the surface area of the cone \(z = \sqrt{x^2 + y^2}\) below \(z = 3\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Parameterize using $r$ (radius) and $\theta$. Write $\vec{r}(r,\theta) = \langle r\cos\theta, r\sin\theta, r\rangle$. Then find $|\vec{r}_r \times \vec{r}_\theta|$ and integrate." style="min-height:3.5in;">
+  <div class="blank-prompt">Parameterize using \(r\) (radius) and \(\theta\). Write \(\vec{r}(r,\theta) = \langle r\cos\theta, r\sin\theta, r\rangle\). Then find \(|\vec{r}_r \times \vec{r}_\theta|\) and integrate.</div>
+</div>
+</section>
+
+<section id="special-case-graphs-revisited" data-source-line="284" aria-label="Special Case: Graphs $z = f(x,y)$ Revisited">
+  <h2>Special Case: Graphs \(z = f(x,y)\) Revisited</h2>
+  <div><p>Let's verify that the parametric formula recovers our Section 15.5 result.</p></div>
+<div><p><strong>Parameterization of a graph:</strong> \(\vec{r}(x,y) = \langle x,\; y,\; f(x,y) \rangle\)</p></div>
+<div><p><strong>Tangent vectors:</strong></p>
+<p>\[\vec{r}_x = \langle 1,\; 0,\; f_x \rangle \qquad \vec{r}_y = \langle 0,\; 1,\; f_y \rangle\]</p></div>
+<div><p><strong>Cross product:</strong></p>
+<p>\[\vec{r}_x \times \vec{r}_y = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \\ 1 & 0 & f_x \\ 0 & 1 & f_y \end{vmatrix} = \langle -f_x,\; -f_y,\; 1 \rangle\]</p></div>
+<div><p>\[|\vec{r}_x \times \vec{r}_y| = \sqrt{f_x^2 + f_y^2 + 1}\]</p></div>
+<div><p>So the parametric surface area formula gives:</p>
+<p>\[A(S) = \iint_D |\vec{r}_x \times \vec{r}_y|\, dA = \iint_D \sqrt{f_x^2 + f_y^2 + 1}\, dA\]</p>
+<p>This is <strong>exactly</strong> the formula from Section 15.5!</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The graph formula \(\sqrt{f_x^2 + f_y^2 + 1}\) is the special case of \(|\vec{r}_u \times \vec{r}_v|\) when \(u = x\), \(v = y\). The parametric formula is more general &mdash; it handles surfaces that can't be written as graphs (spheres, tori, etc.).</p></aside>
+</section>
+
+<section id="quick-check-compute-the-correction-factor" data-source-line="310" aria-label="Quick Check: Compute the Correction Factor">
+  <h2>Quick Check: Compute the Correction Factor</h2>
+  <div><p><em>For the paraboloid \(\vec{r}(r,\theta) = \langle r\cos\theta,\; r\sin\theta,\; r^2 \rangle\), \(0 \leq r \leq 2\), find \(|\vec{r}_r \times \vec{r}_\theta|\).</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Find $\vec{r}_r$ and $\vec{r}_\theta$, compute the cross product, then take the magnitude." style="min-height:2.5in;">
+  <div class="blank-prompt">Find \(\vec{r}_r\) and \(\vec{r}_\theta\), compute the cross product, then take the magnitude.</div>
+</div>
+</section>
+
+<section id="example-6-surface-area-of-a-helicoid" class="example-group" data-source-line="327" aria-label="Example 6: Surface Area of a Helicoid">
+  <h2>Example 6: Surface Area of a Helicoid</h2>
+  <section class="example-box" role="region" aria-label="Example 6">
+  <h3 class="example-title">Example 6</h3>
+  <p>Find the surface area of the helicoid \(\vec{r}(u,v) = \langle u\cos v,\; u\sin v,\; v \rangle\) for \(0 \leq u \leq 1\), \(0 \leq v \leq 2\pi\).</p>
+</section>
+<figure>
+  <img src="figures/helicoid.png" alt="A helicoid surface that spirals upward like a ramp or corkscrew, colored from blue at the bottom to red at the top. The green boundary curve at u equals 1 traces a helix. A dashed black line marks the central z-axis.">
+  <figcaption><a href="figures/helicoid.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
+<div class="blank-space" role="region" aria-label="Student workspace: Compute $\vec{r}_u$, $\vec{r}_v$, then $|\vec{r}_u \times \vec{r}_v|$, and set up the double integral." style="min-height:2.5in;">
+  <div class="blank-prompt">Compute \(\vec{r}_u\), \(\vec{r}_v\), then \(|\vec{r}_u \times \vec{r}_v|\), and set up the double integral.</div>
+</div>
+</section>
+
+<section class="homework-section" aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 16.6:</strong> 1, 3, 5, 7, 9, 13--18, 19, 21, 23, 25, 33, 35, 39, 41, 43, 45, 47, 49</div>
+</section>
+</main>
+<script>
+// Scroll observer: notify parent when visible section changes (for editor sync)
+(function() {
+    if (!window.parent || window.parent === window) return;
+    var sections = document.querySelectorAll('main > section[data-source-line]');
+    if (!sections.length) return;
+    var currentLine = null;
+    var scrollTimer = null;
+    function onScroll() {
+        if (scrollTimer) clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(updateVisibleSection, 80);
+    }
+    function updateVisibleSection() {
+        var viewTop = window.innerHeight * 0.3;
+        var best = null;
+        for (var i = 0; i < sections.length; i++) {
+            var rect = sections[i].getBoundingClientRect();
+            if (rect.top <= viewTop && rect.bottom > 0) best = sections[i];
+        }
+        if (best) {
+            var line = parseInt(best.dataset.sourceLine, 10);
+            if (!isNaN(line) && line !== currentLine) {
+                currentLine = line;
+                window.parent.postMessage({ type: 'htmlSectionChanged', sourceLine: line }, '*');
+            }
+        }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'goToSection' && e.data.sourceLine != null) {
+            for (var i = 0; i < sections.length; i++) {
+                if (parseInt(sections[i].dataset.sourceLine, 10) === e.data.sourceLine) {
+                    sections[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    break;
+                }
+            }
+        }
+    });
+})();
+</script>
+</body>
+</html>

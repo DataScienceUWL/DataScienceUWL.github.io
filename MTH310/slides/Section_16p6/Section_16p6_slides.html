@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>16.6 - Parametric Surfaces and Their Areas | MTH 310</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/white.min.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root {
+    --accent-blue: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-amber: #e09f3e;
+    --accent-purple: #6c3483; --fg: #222222; --bg: #ffffff;
+}
+.reveal { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; font-size: 30px; color: var(--fg); }
+.reveal .slides section { text-align: left; }
+.reveal .slides > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides > section > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides section::-webkit-scrollbar { width: 6px; }
+.reveal .slides section::-webkit-scrollbar-track { background: transparent; }
+.reveal .slides section::-webkit-scrollbar-thumb { background: rgba(0,119,182,0.2); border-radius: 3px; }
+.reveal .slides section::-webkit-scrollbar-thumb:hover { background: rgba(0,119,182,0.4); }
+.reveal .slides > section::after, .reveal .slides > section > section::after {
+    content: ''; display: block; height: 0; clear: both; }
+.reveal h1,.reveal h2,.reveal h3 { text-transform: none; font-weight: 600; }
+.reveal h1 { font-size: 2.2em; color: var(--accent-blue); }
+.reveal h2 { font-size: 1.35em; color: var(--accent-blue); border-bottom: 2px solid rgba(0,119,182,0.25);
+    padding-bottom: 0.2em; margin-bottom: 0.4em; margin-top: 0; }
+.reveal h3 { font-size: 1.1em; color: var(--accent-green); margin: 0.2em 0; }
+.reveal p { margin: 0.3em 0; line-height: 1.4; }
+.reveal li { margin-bottom: 0.15em; line-height: 1.35; }
+.reveal ul,.reveal ol { margin-left: 0.5em; }
+.title-slide { text-align: center !important; }
+.title-slide h1 { font-size: 2.8em; margin-bottom: 0.1em; }
+.title-slide .subtitle { font-size: 1.4em; color: #b07d00; }
+.title-slide .course-info { font-size: 0.85em; color: #595959; margin-top: 2em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-blue);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.theorem-box { background: #fdf6ec; border-left-color: var(--accent-amber); }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.solution { background: #fffdf5; border-left: 4px solid var(--accent-amber);
+    border-radius: 8px; padding: 0.4em 0.8em; margin-top: 0.3em; color: #7a5c00; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7;
+    border-radius: 8px; padding: 0.5em 0.8em; margin: 0.4em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #666; margin: 0.3em 0; font-size: 0.85em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red);
+    border-radius: 10px; padding: 1em 1.5em; text-align: center; margin: 1em 0; }
+.hw-box h3 { color: var(--accent-red); margin: 0 0 0.3em 0; }
+.two-col { display: flex; gap: 1.2em; align-items: flex-start; }
+.two-col > * { flex: 1; }
+.fig-container { text-align: center; margin: 0.3em 0; }
+.fig-container img { max-height: 60vh; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    cursor: zoom-in; transition: opacity 0.15s; }
+.fig-container img:hover { opacity: 0.8; }
+.fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
+.fig-link { display: inline-block; }
+.textbook-fig img { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; }
+.plotly-lazy-thumb { cursor: pointer; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+.plotly-lazy-thumb:hover { opacity: 0.92; outline: 2px solid #0077b6; outline-offset: 2px; }
+#plotly-lightbox { display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+    justify-content:center; align-items:center; cursor:default; }
+#plotly-lightbox.active { display:flex; }
+#plotly-lightbox .plb-close { position:fixed; top:14px; left:20px;
+    font-size:2.2em; color:#fff; background:rgba(0,0,0,0.55);
+    border:1px solid rgba(255,255,255,0.4); border-radius:6px;
+    padding:2px 14px; cursor:pointer; z-index:10001; line-height:1; }
+#plotly-lightbox .plb-close:hover { color:#e09f3e; background:rgba(0,0,0,0.75); }
+#plotly-lightbox .plb-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+#plotly-lightbox .plb-content { width:92vw; height:88vh; position:relative; }
+#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; pointer-events:auto; }
+/* Lightbox overlay */
+#lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
+    cursor: zoom-out; backdrop-filter: blur(4px); }
+#lightbox.active { display: flex; }
+#lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5); object-fit: contain; background: white; }
+#lightbox .lb-caption { position: absolute; bottom: 1.5em; left: 50%;
+    transform: translateX(-50%); color: #fff; font-size: 0.55em;
+    background: rgba(0,0,0,0.7); padding: 0.3em 1em; border-radius: 4px; }
+#lightbox .lb-close { position: absolute; top: 0.8em; right: 1.2em;
+    color: #fff; font-size: 1.5em; cursor: pointer; transition: color 0.15s;
+    background: none; border: none; padding: 0.2em 0.5em; }
+#lightbox .lb-close:hover { color: #e09f3e; }
+#lightbox .lb-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.interactive-link { color: var(--accent-blue); text-decoration: none; font-size: 0.9em; }
+.interactive-link:hover { text-decoration: underline; }
+.desmos-container { text-align: center; margin: 0.3em auto; }
+.desmos-container iframe { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    border: 1px solid #ddd; }
+.desmos-label { font-size: 0.65em; color: var(--accent-blue); margin-top: 0.2em; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.4em;
+    color: var(--accent-blue); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+.desmos-fullscreen { background: none; border: 1px solid var(--accent-blue); border-radius: 4px;
+    color: var(--accent-blue); font-size: 1.1em; cursor: pointer; padding: 0.1em 0.4em;
+    opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-fullscreen:hover { opacity: 1; background: rgba(0,119,182,0.1); }
+aside.notes { display: none; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 0.5em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.3em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.75em; color: var(--accent-blue);
+    text-align: center; margin-bottom: 0.1em; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 18vh; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+.small { font-size: 0.8em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-blue);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600;
+    font-size: 16px; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+table { border-collapse: collapse; font-size: 0.8em; margin: 0.5em 0; }
+th, td { padding: 0.2em 0.6em; border-bottom: 1px solid #ddd; }
+th { color: var(--accent-blue); }
+.reveal .progress { color: var(--accent-blue); }
+.reveal .slide-number { color: #767676; font-size: 0.5em; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+</style>
+</head>
+<body data-section="Section_16p6">
+<a href="#" class="skip-link" onclick="Reveal.next();return false;">Skip to first slide</a>
+<div class="reveal">
+<div class="slides">
+<section class="title-slide" data-background-gradient="radial-gradient(circle at 30% 50%, #e8f4f8 0%, #f8f9fa 70%)">
+  <h1>16.6</h1>
+  <p class="subtitle">Parametric Surfaces and Their Areas</p>
+  <hr style="border-color:rgba(0,212,255,0.3);width:60%;margin:1em auto;" aria-hidden="true">
+  <p class="course-info">MTH 310 &mdash; Calculus III<br>  Vector Calculus</p>
+</section>
+
+<section id="from-parametric-curves-to-parametric-surfaces">
+<h2>From Parametric Curves to Parametric Surfaces</h2>
+<div class="fragment" data-editor-line="17"><p>In Chapter 13 we parameterized <strong>curves</strong> in space with one parameter:</p>
+<p>\[\vec{r}(t) = \langle x(t),\; y(t),\; z(t) \rangle, \quad a \leq t \leq b\]</p>
+<p>One parameter traces out a one-dimensional object (a curve).</p></div>
+<div class="fragment" data-editor-line="22"><p>To describe a <strong>surface</strong> (a two-dimensional object in \(\mathbb{R}^3\)), we need <strong>two parameters</strong>:</p></div>
+<div class="defn-box fragment" data-editor-line="24">
+  <div class="defn-title">Parametric Surface</div>
+  <p>A <strong>parametric surface</strong> \(S\) is defined by a vector function</p>
+<p>\[\vec{r}(u,v) = \langle x(u,v),\; y(u,v),\; z(u,v) \rangle\]</p>
+<p>where \((u,v)\) varies over a parameter domain \(D \subseteq \mathbb{R}^2\).</p>
+</div>
+<div class="fig-container fragment" data-editor-line="30">
+  <a href="figures/param_mapping.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/param_mapping.png"><img src="figures/param_mapping.png" alt="Two panels side by side. Left panel shows a flat square parameter domain D in the uv-plane with vertical blue lines (u-curves) and horizontal red lines (v-curves) forming a regular grid. An arrow labeled r(u,v) points from the left panel to the right panel. Right panel shows a curved saddle-shaped surface in 3D with the same blue and red grid mapped onto it, illustrating how the flat parameter domain gets bent into a curved surface in three dimensions." style="max-height:60vh;"></a>
+</div>
+<div class="fragment" data-editor-line="32"><p>As \((u,v)\) ranges over \(D\), the function \(\vec{r}\) <strong>bends the flat rectangle</strong> into the curved surface \(S\). The grid lines go along for the ride &mdash; the blue \(u\)-curves and red \(v\)-curves on \(S\) are the images of the grid lines in \(D\).</p></div>
+<div class="key-point fragment" data-editor-line="34"><p>One parameter \(\to\) curve. Two parameters \(\to\) surface. Think of \(\vec{r}(u,v)\) as wrapping a flat sheet of paper (the domain \(D\)) around an object in space.</p></div>
+<aside class="notes">Draw the analogy explicitly: \(\vec{r}(t)\) takes an interval and bends it into a curve; \(\vec{r}(u,v)\) takes a flat rectangle and bends it into a surface. Like wrapping paper around a gift.</aside>
+</section>
+
+<section id="example-1-the-unit-sphere">
+<h2>Example 1: The Unit Sphere</h2>
+<div class="example-box fragment" data-editor-line="43">
+  <div class="example-title">Example 1</div>
+  <p>Find a parametric representation for the unit sphere \(x^2 + y^2 + z^2 = 1\).</p>
+</div>
+<div class="fragment" data-editor-line="47"><p class="work-prompt">Use spherical coordinates with \(\rho = 1\). What are \(x\), \(y\), \(z\) in terms of \(\phi\) and \(\theta\)?</p></div>
+<div class="fragment" data-editor-line="49"><p><strong>Reuse spherical coordinates from Section 15.8</strong> with \(\rho = 1\):</p>
+<p>\[x = \sin\phi\cos\theta, \quad y = \sin\phi\sin\theta, \quad z = \cos\phi\]</p></div>
+<div class="fragment" data-editor-line="52"><p><strong>Parametric representation:</strong></p>
+<p>\[\vec{r}(\theta,\phi) = \langle \sin\phi\cos\theta,\; \sin\phi\sin\theta,\; \cos\phi \rangle\]</p>
+<p>with \(0 \leq \phi \leq \pi\) and \(0 \leq \theta \leq 2\pi\).</p></div>
+<div class="fig-container fragment" data-editor-line="56">
+  <img src="figures/sphere_grid.png" alt="The unit sphere x squared plus y squared plus z squared equals 1, shown as a translucent blue surface. Red circles of latitude and green semicircles of longitude form a coordinate grid on the surface, illustrating how the parameters phi and theta map onto the sphere." class="plotly-lazy-thumb" data-plotly-src="figures/sphere_grid.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="58"><p>The grid curves are:</p>
+<ul>
+<li>Fix \(\phi = \phi_0\): circles of latitude (horizontal circles at height \(z = \cos\phi_0\))</li>
+<li>Fix \(\theta = \theta_0\): semicircles of longitude (meridians from pole to pole)</li>
+</ul></div>
+<div class="key-point fragment" data-editor-line="64"><p>Same angle conventions as 15.8 spherical coordinates: \(\phi\) runs \(0\) to \(\pi\) (polar angle from north pole), \(\theta\) runs \(0\) to \(2\pi\) (azimuthal around \(z\)-axis). No new naming to learn.</p></div>
+<aside class="notes">Rotate the Plotly figure live. Emphasize \(\phi \in [0, \pi]\) (not \(2\pi\)) &mdash; a common student mistake.</aside>
+</section>
+
+<section id="example-2-identify-the-surface">
+<h2>Example 2: Identify the Surface</h2>
+<div class="example-box fragment" data-editor-line="73">
+  <div class="example-title">Example 2</div>
+  <p>Describe and sketch the surface with parametric equations</p>
+<p>\[\vec{r}(u,v) = \langle u,\; 3\cos v,\; 3\sin v \rangle\]</p>
+</div>
+<div class="fragment" data-editor-line="78"><p class="work-prompt">For a fixed \(u\), what does the point \((u, 3\cos v, 3\sin v)\) trace as \(v\) varies? What shape has \(y^2 + z^2 = \text{const}\)?</p></div>
+<div class="fragment" data-editor-line="80"><p><strong>Fix \(u = u_0\):</strong> The point traces \((u_0, 3\cos v, 3\sin v)\) &mdash; a circle of radius 3 in the plane \(x = u_0\).</p></div>
+<div class="fragment" data-editor-line="82"><p><strong>Eliminate the parameter:</strong> \(y^2 + z^2 = 9\cos^2 v + 9\sin^2 v = 9\)</p>
+<p>This is a <strong>circular cylinder</strong> of radius 3 centered on the <strong>\(x\)-axis</strong>.</p></div>
+<div class="fig-container fragment" data-editor-line="86">
+  <img src="figures/cylinder_surface.png" alt="A circular cylinder of radius 3 centered on the x-axis, shown as a translucent green surface. Red circles show cross-sections perpendicular to the x-axis. Blue horizontal lines run along the length of the cylinder parallel to the x-axis." class="plotly-lazy-thumb" data-plotly-src="figures/cylinder_surface.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="88"><p>The grid curves are:</p>
+<ul>
+<li>Fix \(u\): circles of radius 3 perpendicular to the \(x\)-axis (red)</li>
+<li>Fix \(v\): horizontal lines running along the \(x\)-axis direction (blue)</li>
+</ul></div>
+<div class="key-point fragment" data-editor-line="94"><p>Strategy: fix one parameter and see what the other traces, or eliminate both parameters to find a Cartesian equation. Either approach reveals the shape.</p></div>
+<aside class="notes">Note this is an \(x\)-axis cylinder, not the \(z\)-axis ones from 15.7. The parameter placement determines the axis of symmetry.</aside>
+</section>
+
+<section id="quick-check-match-the-parameterization">
+<h2>Quick Check: Match the Parameterization</h2>
+<div class="fragment" data-editor-line="103"><p><em>What surface does each parameterization describe?</em></p>
+<ol>
+<li>\(\vec{r}(u,v) = \langle u\cos v,\; u\sin v,\; u \rangle\),   \(u \geq 0\), \(\;0 \leq v \leq 2\pi\)</li>
+<li>\(\vec{r}(u,v) = \langle u,\; v,\; 4 - u^2 - v^2 \rangle\)</li>
+</ol></div>
+<div class="fragment" data-editor-line="110"><p class="work-prompt">For (1): eliminate the parameter to find \(x^2 + y^2 = ?\). For (2): what is \(z\) in terms of \(x\) and \(y\)?</p></div>
+<div class="fragment" data-editor-line="112"><p><strong>(1)</strong> \(x = u\cos v\), \(y = u\sin v\), \(z = u\). Then \(x^2 + y^2 = u^2 = z^2\), so \(z = \sqrt{x^2+y^2}\). This is a <strong>cone</strong> opening upward.</p></div>
+<div class="fragment" data-editor-line="114"><p><strong>(2)</strong> \(x = u\), \(y = v\), \(z = 4 - u^2 - v^2 = 4 - x^2 - y^2\). This is the <strong>paraboloid</strong> \(z = 4 - x^2 - y^2\) (the parameters are just \(x\) and \(y\)).</p></div>
+<div class="key-point fragment" data-editor-line="116"><p>When \(u = x\) and \(v = y\), the parameterization reduces to the graph \(z = f(x,y)\). More interesting parameterizations use polar, cylindrical, or spherical-style coordinates.</p></div>
+</section>
+
+<section id="surfaces-of-revolution">
+<h2>Surfaces of Revolution</h2>
+<div class="fragment" data-editor-line="123"><p>Many surfaces arise by rotating a curve around an axis. The rotation angle becomes the second parameter.</p></div>
+<div class="fragment" data-editor-line="125"><p><strong>Step 1: the generating curve.</strong> Take the curve \(y = f(x)\) in the \(xy\)-plane, \(a \leq x \leq b\).</p></div>
+<div class="fragment" data-editor-line="127"><p><strong>Step 2: rotate about the \(x\)-axis.</strong> At each fixed \(x\), the cross-section is a <strong>circle of radius \(|f(x)|\)</strong> in the \(yz\)-plane, parameterized by angle \(\theta\):</p>
+<p>\[y = f(x)\cos\theta, \qquad z = f(x)\sin\theta\]</p></div>
+<div class="fragment" data-editor-line="130"><p><strong>Step 3: assemble the full parameterization.</strong></p>
+<p>\[\vec{r}(x, \theta) = \langle x,\; f(x)\cos\theta,\; f(x)\sin\theta \rangle, \quad a \leq x \leq b, \;\; 0 \leq \theta \leq 2\pi\]</p></div>
+<div class="example-box fragment" data-editor-line="133">
+  <div class="example-title">Example 3</div>
+  <p>Give parametric equations for the surface obtained by rotating \(y = x(1-x)\), \(0 \leq x \leq 1\), about the \(x\)-axis.</p>
+</div>
+<div class="fragment" data-editor-line="137"><p class="work-prompt">Use the formula above with \(f(x) = x(1-x)\).</p></div>
+<div class="fragment" data-editor-line="139"><p>\[\vec{r}(x, \theta) = \langle x,\; x(1-x)\cos\theta,\; x(1-x)\sin\theta \rangle\]</p>
+<p>with \(0 \leq x \leq 1\) and \(0 \leq \theta \leq 2\pi\).</p></div>
+<div class="fig-container fragment" data-editor-line="142">
+  <img src="figures/surface_of_revolution.png" alt="The surface of revolution obtained by rotating the parabola y equals x times 1 minus x about the x-axis, for x from 0 to 1. The surface is a smooth bump shape, widest at x equals one-half. The generating curve is shown in red. Amber circles show cross-sections." class="plotly-lazy-thumb" data-plotly-src="figures/surface_of_revolution.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="key-point fragment" data-editor-line="144"><p>For rotation about the \(x\)-axis: replace \(y\) with \(f(x)\cos\theta\) and add \(z = f(x)\sin\theta\). For rotation about the \(y\)- or \(z\)-axis, swap the roles accordingly.</p></div>
+<aside class="notes">\(y = x(1-x)\) is non-negative on \([0,1]\), so no absolute value is needed. Widest point at \(x = 1/2\) with radius \(1/4\).</aside>
+</section>
+
+<section id="tangent-vectors-to-a-parametric-surface">
+<h2>Tangent Vectors to a Parametric Surface</h2>
+<div class="fig-container fragment" data-editor-line="153">
+  <img src="figures/tangent_patch.png" alt="A smooth paraboloid surface shown in light gray with a small amber parallelogram patch at a point. Two tangent vectors originate from the point: a red vector r_u along the u-direction and a blue vector r_v along the v-direction. A purple normal vector n equals r_u cross r_v points away from the surface, perpendicular to the tangent plane." class="plotly-lazy-thumb" data-plotly-src="figures/tangent_patch.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="155"><p>In Section 15.5, we found the surface area correction factor for graphs \(z = f(x,y)\) by taking tangent vectors and computing their cross product. Now we generalize to <strong>any</strong> parametric surface.</p></div>
+<div class="fragment" data-editor-line="157"><p><strong>Tangent vectors:</strong> At any point \(\vec{r}(u_0, v_0)\), differentiate with respect to each parameter:</p>
+<p>\[\vec{r}_u = \frac{\partial \vec{r}}{\partial u} = \left\langle \frac{\partial x}{\partial u},\; \frac{\partial y}{\partial u},\; \frac{\partial z}{\partial u} \right\rangle \qquad \vec{r}_v = \frac{\partial \vec{r}}{\partial v} = \left\langle \frac{\partial x}{\partial v},\; \frac{\partial y}{\partial v},\; \frac{\partial z}{\partial v} \right\rangle\]</p></div>
+<div class="fragment" data-editor-line="160"><p>\(\vec{r}_u\) is tangent to the \(u\)-curve (hold \(v\) fixed, vary \(u\)).</p>
+<p>\(\vec{r}_v\) is tangent to the \(v\)-curve (hold \(u\) fixed, vary \(v\)).</p></div>
+<div class="fragment" data-editor-line="164"><p><strong>Normal vector:</strong> If \(\vec{r}_u \times \vec{r}_v \neq \vec{0}\),</p>
+<p>\[\vec{n} = \vec{r}_u \times \vec{r}_v\]</p>
+<p>is <strong>normal to the surface</strong> at that point (perpendicular to both tangent directions).</p></div>
+<div class="key-point fragment" data-editor-line="168"><p>\(\vec{r}_u\) and \(\vec{r}_v\) span the tangent plane. Their cross product \(\vec{r}_u \times \vec{r}_v\) gives a normal vector. This is exactly the same idea as Section 15.5, but now for general parameterizations.</p></div>
+<aside class="notes">Back to 15.5: there we had \(\vec{r}(x,y) = \langle x, y, f(x,y)\rangle\), so \(\vec{r}_x = \langle 1,0,f_x\rangle\) and \(\vec{r}_y = \langle 0,1,f_y\rangle\), giving \(\vec{r}_x \times \vec{r}_y = \langle -f_x, -f_y, 1\rangle\). Same machinery, more general setting.</aside>
+</section>
+
+<section id="surface-area-of-a-parametric-surface">
+<h2>Surface Area of a Parametric Surface</h2>
+<div class="fragment" data-editor-line="177"><p>Same strategy as Section 15.5: approximate each small surface patch by a parallelogram.</p></div>
+<div class="fig-container fragment" data-editor-line="179">
+  <img src="figures/area_riemann.png" alt="Two panels side by side illustrating the Riemann-sum derivation of the surface area formula. Left panel: the flat parameter domain D is tiled with a six-by-six grid of small rectangles; one cell is highlighted in amber. An arrow labeled r(u,v) connects to the right panel. Right panel: the corresponding curved surface S is tiled with small curvilinear cells that are approximately parallelograms; the cell corresponding to the highlighted rectangle is filled in amber, with two tangent-vector edges r_u times Delta u (red) and r_v times Delta v (blue) marking two sides." class="plotly-lazy-thumb" data-plotly-src="figures/area_riemann.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="181"><p><strong>Tile \(D\)</strong> with rectangles of size \(\Delta u \times \Delta v\). Under \(\vec{r}\), each rectangle maps to a small patch on \(S\) approximately shaped like a parallelogram.</p></div>
+<div class="fragment" data-editor-line="183"><p><strong>Patch sides:</strong> \(\vec{r}_u \Delta u\) and \(\vec{r}_v \Delta v\). Patch area:</p>
+<p>\[\Delta S \approx |\vec{r}_u\,\Delta u \times \vec{r}_v\,\Delta v| = |\vec{r}_u \times \vec{r}_v| \, \Delta u\, \Delta v\]</p></div>
+<div class="fragment" data-editor-line="186"><p><strong>Sum and take the limit \(\Delta u, \Delta v \to 0\):</strong></p></div>
+<div class="defn-box fragment" data-editor-line="188">
+  <div class="defn-title">Surface Area of a Parametric Surface</div>
+  <p>If \(S\) is given by \(\vec{r}(u,v)\) for \((u,v) \in D\), and \(\vec{r}\) is smooth, then</p>
+<p>\[A(S) = \iint_D |\vec{r}_u \times \vec{r}_v| \, dA\]</p>
+</div>
+<div class="key-point fragment" data-editor-line="193"><p>Surface area \(=\) \(\displaystyle\iint_D |\vec{r}_u \times \vec{r}_v|  dA\). The cross product magnitude is the “correction factor” for how much the parameterization stretches the flat domain into the curved surface.</p></div>
+<aside class="notes">This is the SAME formula as 15.5, just with \(u,v\) instead of \(x,y\). The graph case is a special case; the parametric formula is the generalization.</aside>
+</section>
+
+<section id="quick-check-compute-the-normal-vector">
+<h2>Quick Check: Compute the Normal Vector</h2>
+<div class="fragment" data-editor-line="202"><p><em>For the cylinder \(\vec{r}(u,v) = \langle u,\; 3\cos v,\; 3\sin v \rangle\), find \(\vec{r}_u\), \(\vec{r}_v\), and \(\vec{r}_u \times \vec{r}_v\).</em></p></div>
+<div class="fragment" data-editor-line="204"><p class="work-prompt">Differentiate each component with respect to \(u\), then with respect to \(v\). Then compute the cross product.</p></div>
+<div class="fragment" data-editor-line="206"><p>\(\vec{r}_u = \langle 1, 0, 0 \rangle\)   (tangent along the \(x\)-axis)</p></div>
+<div class="fragment" data-editor-line="208"><p>\(\vec{r}_v = \langle 0, -3\sin v, 3\cos v \rangle\)   (tangent around the circle)</p></div>
+<div class="fragment" data-editor-line="210"><p>\(\vec{r}_u \times \vec{r}_v = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \\ 1 & 0 & 0 \\ 0 & -3\sin v & 3\cos v \end{vmatrix} = \langle 0, -3\cos v, -3\sin v \rangle\)</p></div>
+<div class="fragment" data-editor-line="212"><p>\(|\vec{r}_u \times \vec{r}_v| = \sqrt{0 + 9\cos^2 v + 9\sin^2 v} = 3\)</p>
+<p>The correction factor is constant! That makes sense &mdash; a cylinder has no curvature in the \(u\)-direction.</p></div>
+<div class="key-point fragment" data-editor-line="216"><p>For simple surfaces (planes, cylinders), \(|\vec{r}_u \times \vec{r}_v|\) is often constant, which makes the surface area integral easy.</p></div>
+</section>
+
+<section id="example-4-surface-area-of-a-sphere">
+<h2>Example 4: Surface Area of a Sphere</h2>
+<div class="example-box fragment" data-editor-line="223">
+  <div class="example-title">Example 4</div>
+  <p>Use the parametric representation to find the surface area of a sphere of radius \(R\).</p>
+</div>
+<div class="fragment" data-editor-line="227"><p><strong>Parameterization:</strong> \(\vec{r}(\theta,\phi) = \langle R\sin\phi\cos\theta,\; R\sin\phi\sin\theta,\; R\cos\phi \rangle\),   \(0 \leq \phi \leq \pi\), \(\;0 \leq \theta \leq 2\pi\).</p></div>
+<div class="fragment" data-editor-line="229"><p class="work-prompt">Compute \(\vec{r}_\theta\), \(\vec{r}_\phi\), their cross product, and its magnitude. Then integrate over the parameter domain.</p></div>
+<div class="fragment" data-editor-line="231"><p><strong>Tangent vectors:</strong></p>
+<p>\[\vec{r}_\theta = \langle -R\sin\phi\sin\theta,\; R\sin\phi\cos\theta,\; 0 \rangle\]</p>
+<p>\[\vec{r}_\phi = \langle R\cos\phi\cos\theta,\; R\cos\phi\sin\theta,\; -R\sin\phi \rangle\]</p></div>
+<div class="fragment" data-editor-line="235"><p><strong>Cross product:</strong></p>
+<p>\[\vec{r}_\theta \times \vec{r}_\phi = \langle -R^2\sin^2\!\phi\cos\theta,\; -R^2\sin^2\!\phi\sin\theta,\; -R^2\sin\phi\cos\phi \rangle\]</p></div>
+<div class="fragment" data-editor-line="238"><p>\[|\vec{r}_\theta \times \vec{r}_\phi| = R^2\sqrt{\sin^4\!\phi\cos^2\!\theta + \sin^4\!\phi\sin^2\!\theta + \sin^2\!\phi\cos^2\!\phi}\]</p>
+<p>\[= R^2\sqrt{\sin^4\!\phi + \sin^2\!\phi\cos^2\!\phi} = R^2\sqrt{\sin^2\!\phi(\sin^2\!\phi + \cos^2\!\phi)} = R^2\sin\phi\]</p>
+<p>(since \(\sin\phi \geq 0\) for \(0 \leq \phi \leq \pi\)).</p></div>
+</section>
+
+<section>
+<h2>Example 4: Surface Area of a Sphere</h2>
+<div class="fragment" data-editor-line="244"><p><strong>Integrate:</strong></p>
+<p>\[A = \iint_D |\vec{r}_\theta \times \vec{r}_\phi| \, dA = \int_0^{2\pi} \int_0^{\pi} R^2 \sin\phi \, d\phi \, d\theta\]</p></div>
+<div class="fragment" data-editor-line="247"><p>\[= R^2 \int_0^{2\pi} \left[-\cos\phi\right]_0^{\pi} d\theta = R^2 \int_0^{2\pi} 2 \, d\theta = 4\pi R^2\]</p></div>
+<div class="key-point fragment" data-editor-line="249"><p>We recover \(A = 4\pi R^2\) using the parametric surface area formula. The factor \(R^2\sin\phi\) is the <strong>2D surface version</strong> of the familiar \(\rho^2\sin\phi\) volume element from Section 15.8. Same angular stretching, one dimension lower.</p></div>
+<aside class="notes">The surface element \(dS = R^2\sin\phi\,d\phi\,d\theta\) is exactly \(\rho^2\sin\phi\,d\phi\,d\theta\) with \(\rho = R\) held constant &mdash; no \(d\rho\) because we're on a 2D sphere, not integrating through 3D space.</aside>
+</section>
+
+<section id="example-5-surface-area-of-a-cone">
+<h2>Example 5: Surface Area of a Cone</h2>
+<div class="example-box fragment" data-editor-line="258">
+  <div class="example-title">Example 5</div>
+  <p>Find the surface area of the cone \(z = \sqrt{x^2 + y^2}\) below \(z = 3\).</p>
+</div>
+<div class="fragment" data-editor-line="262"><p class="work-prompt">Parameterize using \(r\) (radius) and \(\theta\). Write \(\vec{r}(r,\theta) = \langle r\cos\theta, r\sin\theta, r\rangle\). Then find \(|\vec{r}_r \times \vec{r}_\theta|\) and integrate.</p></div>
+<div class="fig-container fragment" data-editor-line="264">
+  <img src="figures/cone_surface.png" alt="A cone z equals the square root of x squared plus y squared, from the apex at the origin up to z equals 3. Red horizontal circles show cross-sections at various heights. Blue lines run from the apex along the surface." class="plotly-lazy-thumb" data-plotly-src="figures/cone_surface.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="266"><p><strong>Parameterization:</strong> \(\vec{r}(r,\theta) = \langle r\cos\theta,\; r\sin\theta,\; r \rangle\),   \(0 \leq r \leq 3\), \(\;0 \leq \theta \leq 2\pi\).</p></div>
+<div class="fragment" data-editor-line="268"><p><strong>Tangent vectors:</strong></p>
+<p>\[\vec{r}_r = \langle \cos\theta,\; \sin\theta,\; 1 \rangle \qquad \vec{r}_\theta = \langle -r\sin\theta,\; r\cos\theta,\; 0 \rangle\]</p></div>
+<div class="fragment" data-editor-line="271"><p><strong>Cross product and magnitude:</strong></p>
+<p>\[\vec{r}_r \times \vec{r}_\theta = \langle -r\cos\theta,\; -r\sin\theta,\; r \rangle, \qquad |\vec{r}_r \times \vec{r}_\theta| = r\sqrt{2}.\]</p></div>
+<div class="fragment" data-editor-line="274"><p><strong>Integrate:</strong></p>
+<p>\[A = \int_0^{2\pi}\!\int_0^{3} r\sqrt{2}\, dr\, d\theta = \sqrt{2}\cdot\frac{9}{2}\cdot 2\pi = 9\pi\sqrt{2}.\]</p></div>
+<div class="fragment" data-editor-line="277"><p><strong>Geometric sanity check:</strong> lateral surface of a cone \(= \pi \cdot r_{\text{base}} \cdot \ell\) where \(\ell\) is the slant height. Here \(r_{\text{base}} = 3\) and \(\ell = 3\sqrt{2}\) (since the cone makes a \(45^\circ\) angle), giving \(\pi \cdot 3 \cdot 3\sqrt{2} = 9\pi\sqrt{2}\;\checkmark\)</p></div>
+<div class="key-point fragment" data-editor-line="279"><p>The cone's correction factor \(\sqrt{2}\) reflects the \(45^\circ\) surface angle. The extra \(r\) comes from the polar parameterization &mdash; same role as the \(r\) in \(r\,dr\,d\theta\).</p></div>
+</section>
+
+<section id="special-case-graphs-revisited">
+<h2>Special Case: Graphs \(z = f(x,y)\) Revisited</h2>
+<div class="fragment" data-editor-line="286"><p>Let's verify that the parametric formula recovers our Section 15.5 result.</p></div>
+<div class="fragment" data-editor-line="288"><p><strong>Parameterization of a graph:</strong> \(\vec{r}(x,y) = \langle x,\; y,\; f(x,y) \rangle\)</p></div>
+<div class="fragment" data-editor-line="290"><p><strong>Tangent vectors:</strong></p>
+<p>\[\vec{r}_x = \langle 1,\; 0,\; f_x \rangle \qquad \vec{r}_y = \langle 0,\; 1,\; f_y \rangle\]</p></div>
+<div class="fragment" data-editor-line="293"><p><strong>Cross product:</strong></p>
+<p>\[\vec{r}_x \times \vec{r}_y = \begin{vmatrix} \vec{i} & \vec{j} & \vec{k} \\ 1 & 0 & f_x \\ 0 & 1 & f_y \end{vmatrix} = \langle -f_x,\; -f_y,\; 1 \rangle\]</p></div>
+<div class="fragment" data-editor-line="296"><p>\[|\vec{r}_x \times \vec{r}_y| = \sqrt{f_x^2 + f_y^2 + 1}\]</p></div>
+<div class="fragment" data-editor-line="298"><p>So the parametric surface area formula gives:</p>
+<p>\[A(S) = \iint_D |\vec{r}_x \times \vec{r}_y|\, dA = \iint_D \sqrt{f_x^2 + f_y^2 + 1}\, dA\]</p>
+<p>This is <strong>exactly</strong> the formula from Section 15.5!</p></div>
+<div class="key-point fragment" data-editor-line="303"><p>The graph formula \(\sqrt{f_x^2 + f_y^2 + 1}\) is the special case of \(|\vec{r}_u \times \vec{r}_v|\) when \(u = x\), \(v = y\). The parametric formula is more general &mdash; it handles surfaces that can't be written as graphs (spheres, tori, etc.).</p></div>
+<aside class="notes">“Closing the loop” moment. Students see that 15.5 wasn't wasted effort &mdash; it was the motivating special case. Now we have a formula that works for ANY surface, not just graphs.</aside>
+</section>
+
+<section id="quick-check-compute-the-correction-factor">
+<h2>Quick Check: Compute the Correction Factor</h2>
+<div class="fragment" data-editor-line="312"><p><em>For the paraboloid \(\vec{r}(r,\theta) = \langle r\cos\theta,\; r\sin\theta,\; r^2 \rangle\), \(0 \leq r \leq 2\), find \(|\vec{r}_r \times \vec{r}_\theta|\).</em></p></div>
+<div class="fragment" data-editor-line="314"><p class="work-prompt">Find \(\vec{r}_r\) and \(\vec{r}_\theta\), compute the cross product, then take the magnitude.</p></div>
+<div class="fragment" data-editor-line="316"><p>\(\vec{r}_r = \langle \cos\theta,\; \sin\theta,\; 2r \rangle\),   \(\vec{r}_\theta = \langle -r\sin\theta,\; r\cos\theta,\; 0 \rangle\)</p></div>
+<div class="fragment" data-editor-line="318"><p>\(\vec{r}_r \times \vec{r}_\theta = \langle -2r^2\cos\theta,\; -2r^2\sin\theta,\; r \rangle\)</p></div>
+<div class="fragment" data-editor-line="320"><p>\(|\vec{r}_r \times \vec{r}_\theta| = \sqrt{4r^4\cos^2\!\theta + 4r^4\sin^2\!\theta + r^2} = \sqrt{4r^4 + r^2} = r\sqrt{4r^2 + 1}\)</p></div>
+<div class="key-point fragment" data-editor-line="322"><p>Compare to the graph approach: \(z = x^2 + y^2\) gives \(\sqrt{4x^2 + 4y^2 + 1} = \sqrt{4r^2 + 1}\). The parametric version picks up an extra \(r\) &mdash; the polar stretching already built into the parameterization, doing the same job as the \(r\) in \(r\,dr\,d\theta\).</p></div>
+</section>
+
+<section id="example-6-surface-area-of-a-helicoid">
+<h2>Example 6: Surface Area of a Helicoid</h2>
+<div class="example-box fragment" data-editor-line="329">
+  <div class="example-title">Example 6</div>
+  <p>Find the surface area of the helicoid \(\vec{r}(u,v) = \langle u\cos v,\; u\sin v,\; v \rangle\) for \(0 \leq u \leq 1\), \(0 \leq v \leq 2\pi\).</p>
+</div>
+<div class="fig-container fragment" data-editor-line="333">
+  <img src="figures/helicoid.png" alt="A helicoid surface that spirals upward like a ramp or corkscrew, colored from blue at the bottom to red at the top. The green boundary curve at u equals 1 traces a helix. A dashed black line marks the central z-axis." class="plotly-lazy-thumb" data-plotly-src="figures/helicoid.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="335"><p class="work-prompt">Compute \(\vec{r}_u\), \(\vec{r}_v\), then \(|\vec{r}_u \times \vec{r}_v|\), and set up the double integral.</p></div>
+<div class="fragment" data-editor-line="337"><p><strong>Tangent vectors:</strong></p>
+<p>\[\vec{r}_u = \langle \cos v,\; \sin v,\; 0 \rangle \qquad \vec{r}_v = \langle -u\sin v,\; u\cos v,\; 1 \rangle\]</p></div>
+<div class="fragment" data-editor-line="340"><p><strong>Cross product:</strong></p>
+<p>\[\vec{r}_u \times \vec{r}_v = \langle \sin v,\; -\cos v,\; u \rangle \qquad |\vec{r}_u \times \vec{r}_v| = \sqrt{1 + u^2}.\]</p></div>
+<div class="fragment" data-editor-line="343"><p><strong>Integrate:</strong></p>
+<p>\[A = \int_0^{2\pi}\!\int_0^{1} \sqrt{1+u^2}\, du\, dv = 2\pi \int_0^1 \sqrt{1+u^2}\, du.\]</p></div>
+<div class="fragment" data-editor-line="346"><p>For \(\int \sqrt{1+u^2}\,du\), use the hyperbolic substitution \(u = \sinh t\) (or tables) to get:</p>
+<p>\[\int \sqrt{1+u^2}\,du = \frac{1}{2}\left[u\sqrt{1+u^2} + \ln(u+\sqrt{1+u^2})\right]\]</p>
+<p>Evaluating from \(0\) to \(1\):</p>
+<p>\[A = 2\pi \cdot \frac{1}{2}\left[\sqrt{2} + \ln(1+\sqrt{2})\right] = \pi\left[\sqrt{2} + \ln(1+\sqrt{2})\right]\]</p></div>
+<div class="key-point fragment" data-editor-line="351"><p>The helicoid is a “spiral ramp” &mdash; one of the classic minimal surfaces. Even though it twists through space, the area computation follows the same recipe: parameterize, cross product, integrate.</p></div>
+</section>
+
+<section id="section-16-6-summary">
+<h2>Section 16.6 Summary</h2>
+<div class="summary-grid">
+<div class="defn-box"><div class="defn-title">Parametric Surface</div><p class="small">\(\vec{r}(u,v) = \langle x(u,v), y(u,v), z(u,v) \rangle\) for \((u,v) \in D\). Two parameters describe a surface just as one parameter describes a curve.</p></div>
+<div class="defn-box"><div class="defn-title">Key Parameterizations</div><p class="small">Sphere: \(\langle R\sin\phi\cos\theta, R\sin\phi\sin\theta, R\cos\phi \rangle\). Cylinder: \(\langle u, a\cos v, a\sin v \rangle\). Cone: \(\langle r\cos\theta, r\sin\theta, r \rangle\). Graph: \(\langle x, y, f(x,y) \rangle\).</p></div>
+<div class="defn-box"><div class="defn-title">Tangent \& Normal Vectors</div><p class="small">\(\vec{r}_u\) and \(\vec{r}_v\) are tangent to the surface. \(\vec{r}_u \times \vec{r}_v\) is normal to the surface. This generalizes \(\langle -f_x, -f_y, 1 \rangle\) from Section 15.5.</p></div>
+<div class="defn-box"><div class="defn-title">Surface Area</div><p class="small">\(A(S) = \displaystyle\iint_D |\vec{r}_u \times \vec{r}_v|  dA\). The cross product magnitude is the correction factor for how the parameterization stretches the flat domain \(D\) into the curved surface.</p></div>
+<div class="defn-box"><div class="defn-title">Looking Ahead</div><p class="small">Section 16.7 uses \(\vec{r}_u \times \vec{r}_v\) to define <strong>surface integrals</strong> &mdash; integrating a function over a surface and computing flux of a vector field through a surface.</p></div>
+</div>
+</section>
+
+<section>
+<h2>Homework</h2>
+<div class="hw-box"><h3>Section 16.6</h3>
+<p style="font-size:1.3em;color:var(--accent-amber);">1, 3, 5, 7, 9, 13--18, 19, 21, 23, 25, 33, 35, 39, 41, 43, 45, 47, 49</p>
+</div>
+<div class="key-point fragment" style="margin-top:1.5em;"><strong>Next time:</strong> Section 16.7 &mdash; Surface Integrals</div>
+</section>
+</div>
+</div>
+<!-- Lightbox overlay -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged figure" tabindex="-1">
+  <button class="lb-close" aria-label="Close lightbox">&times;</button>
+  <img src="" alt="">
+  <div class="lb-caption"></div>
+</div>
+<!-- Plotly fullscreen overlay -->
+<div id="plotly-lightbox" role="dialog" aria-modal="true" aria-label="Expanded interactive figure">
+  <button class="plb-close" aria-label="Close">&times;</button>
+  <div class="plb-content"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<script>
+Reveal.initialize({
+    hash: true, slideNumber: 'c/t', progress: true, center: false,
+    transition: 'slide', width: 1280, height: 800, margin: 0.04,
+    // Allow mouse wheel to scroll overflowing slide content instead of advancing
+    mouseWheel: false,
+    plugins: [RevealNotes]
+});
+// ── Scoped MathJax: only typeset the current slide, not the whole document ──
+function typesetCurrentSlide() {
+    var slide = Reveal.getCurrentSlide();
+    if (slide && MathJax?.typesetPromise) {
+        MathJax.typesetPromise([slide]).catch(function(){});
+    }
+}
+// ── Iframe cleanup: pause Desmos/embedded iframes on non-visible slides ──
+function manageIframes(event) {
+    // Pause iframes on the previous slide
+    if (event.previousSlide) {
+        event.previousSlide.querySelectorAll('iframe[data-src-active]').forEach(function(iframe) {
+            iframe.setAttribute('data-src-paused', iframe.src);
+            iframe.src = 'about:blank';
+        });
+    }
+    // Restore iframes on the current slide
+    if (event.currentSlide) {
+        event.currentSlide.querySelectorAll('iframe[data-src-paused]').forEach(function(iframe) {
+            iframe.src = iframe.getAttribute('data-src-paused');
+            iframe.removeAttribute('data-src-paused');
+        });
+    }
+}
+// Mark all Desmos/embedded iframes for management
+document.querySelectorAll('.desmos-container iframe').forEach(function(iframe) {
+    iframe.setAttribute('data-src-active', '1');
+});
+Reveal.on('slidechanged', (event) => {
+    typesetCurrentSlide();
+    manageIframes(event);
+    // Reset scroll position on the new slide so it starts at the top
+    if (event.currentSlide) event.currentSlide.scrollTop = 0;
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealSlideChanged', indexh: event.indexh, indexv: event.indexv }, '*');
+        }
+    } catch (e) {}
+});
+// Fragment auto-scroll: configurable via meta.fragment_scroll in content.yaml
+// Value is the max fraction down the slide viewport (0.0=top, 1.0=bottom)
+var FRAG_SCROLL_TARGET = 0.67;
+function findScrollContainer(el) {
+    var section = el.closest('section');
+    while (section) {
+        if (section.scrollHeight > section.clientHeight + 1) return section;
+        var parent = section.parentElement?.closest('section, .slides, .reveal');
+        if (!parent || parent === section) break;
+        section = parent;
+    }
+    return null;
+}
+function scrollToFragment(frag, direction) {
+    var container = findScrollContainer(frag);
+    if (!container) return;
+    var fragRect = frag.getBoundingClientRect();
+    var containerRect = container.getBoundingClientRect();
+    // Reveal.js scales slides via CSS transform — account for the scale factor
+    var scale = containerRect.height / container.clientHeight || 1;
+    // Convert screen-space positions to unscaled slide-space
+    var fragBottom = (fragRect.bottom - containerRect.top) / scale + container.scrollTop;
+    var fragTop = (fragRect.top - containerRect.top) / scale + container.scrollTop;
+    var targetLine = container.clientHeight * FRAG_SCROLL_TARGET;
+    if (direction === 'forward') {
+        // Scroll so the fragment's bottom is at the target line
+        var desiredScrollTop = fragBottom - targetLine;
+        if (desiredScrollTop > container.scrollTop) {
+            container.scrollTo({ top: desiredScrollTop, behavior: 'smooth' });
+        }
+    } else {
+        // Scrolling backward: find the previous visible fragment and scroll to it
+        // If the fragment's top is above the viewport, scroll up to show it
+        var desiredScrollTop = fragTop - targetLine * 0.5;
+        if (desiredScrollTop < container.scrollTop) {
+            container.scrollTo({ top: Math.max(0, desiredScrollTop), behavior: 'smooth' });
+        }
+    }
+}
+// Add spacer to scrollable slides so the last fragment can scroll up to the target line
+Reveal.on('ready', () => {
+    var slideH = Reveal.getConfig().height || 800;
+    var spacerH = Math.round((1 - FRAG_SCROLL_TARGET) * slideH);
+    document.querySelectorAll('.reveal .slides > section, .reveal .slides > section > section').forEach(function(s) {
+        if (s.querySelector('.fragment')) {
+            var spacer = document.createElement('div');
+            spacer.style.height = spacerH + 'px';
+            spacer.style.pointerEvents = 'none';
+            spacer.setAttribute('aria-hidden', 'true');
+            s.appendChild(spacer);
+        }
+    });
+});
+function _notifyParentFragment() {
+    // Read data-editor-line from the last visible fragment in the current slide.
+    // Works for both fragmentshown and fragmenthidden events.
+    try {
+        if (!window.parent || window.parent === window) return;
+        var s = Reveal.getState();
+        var slideEl = Reveal.getCurrentSlide();
+        var editorLine = null;
+        if (slideEl) {
+            var visibleFrags = slideEl.querySelectorAll('.fragment.visible[data-editor-line]');
+            if (visibleFrags.length > 0) {
+                var ln = parseInt(visibleFrags[visibleFrags.length - 1].dataset.editorLine, 10);
+                if (!isNaN(ln)) editorLine = ln;
+            }
+        }
+        window.parent.postMessage({
+            type: 'revealFragmentChanged',
+            indexh: s.indexh, indexv: s.indexv, indexf: s.indexf,
+            editorLine: editorLine
+        }, '*');
+    } catch(e) {}
+}
+Reveal.on('fragmentshown', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('fragmenthidden', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    // Scroll back to the previous fragment or top of slide
+    var prev = event.fragment.previousElementSibling;
+    while (prev && !prev.classList.contains('fragment')) {
+        prev = prev.previousElementSibling;
+    }
+    var target = prev || event.fragment.closest('section')?.querySelector('h2') || event.fragment;
+    setTimeout(function() { scrollToFragment(target, 'backward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('ready', () => {
+    typesetCurrentSlide();
+    // Tell the CourseKit editor that Reveal is initialized so it can sync the fragment
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealReady' }, '*');
+        }
+    } catch(e) {}
+});
+
+// ── Plotly lightbox (iframe approach — zero WebGL until opened) ──
+(function() {
+    var plb = document.getElementById('plotly-lightbox');
+    if (!plb) return;
+    var plbClose = plb.querySelector('.plb-close');
+    var plbContent = plb.querySelector('.plb-content');
+    var triggerImg = null;
+    var currentBlobUrl = null;
+
+    function openPlotlyLightbox(blobUrl) {
+        // Revoke any previous blob URL
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); }
+        currentBlobUrl = blobUrl;
+        var iframe = plbContent.querySelector('iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:80vh;border:none;background:#fff;';
+            plbContent.appendChild(iframe);
+        }
+        iframe.src = blobUrl;
+        plb.classList.add('active');
+        plbClose.focus();
+    }
+
+    function closePlotlyLightbox() {
+        var iframe = plbContent.querySelector('iframe');
+        if (iframe) iframe.src = '';   // Unloads WebGL context immediately
+        plb.classList.remove('active');
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+        if (triggerImg) { triggerImg.focus(); triggerImg = null; }
+    }
+
+    document.addEventListener('click', function(e) {
+        var img = e.target.closest('img[data-plotly-src]');
+        if (!img) return;
+        e.stopPropagation();
+        triggerImg = img;
+        // The companion .html is a bare Plotly div fragment (no CDN script).
+        // Fetch it and wrap in a complete page so it renders in the iframe.
+        fetch(img.dataset.plotlySrc)
+            .then(function(r) { return r.text(); })
+            .then(function(fragment) {
+                var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+                    '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"><\/script>' +
+                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;' +
+                    'display:flex;justify-content:center;align-items:center;width:100vw;height:100vh;}' +
+                    '.js-plotly-plot,.plotly-graph-div{width:100%!important;height:100%!important;}</style>' +
+                    '</head><body>' + fragment + '</body></html>';
+                var blob = new Blob([html], {type: 'text/html'});
+                openPlotlyLightbox(URL.createObjectURL(blob));
+            })
+            .catch(function() {
+                // Fallback: open in new tab
+                window.open(img.dataset.plotlySrc, '_blank');
+            });
+    });
+
+    plbClose.addEventListener('click', closePlotlyLightbox);
+    plb.addEventListener('click', function(e) { if (e.target === plb) closePlotlyLightbox(); });
+
+    // Capture-phase Escape so Reveal.js doesn't grab it first
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape' || !plb.classList.contains('active')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closePlotlyLightbox();
+    }, true);
+
+    // Desmos/GeoGebra fullscreen: reuse lightbox with direct URL (no fetch/wrap needed)
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.desmos-fullscreen');
+        if (!btn) return;
+        e.stopPropagation();
+        var url = btn.dataset.src;
+        if (!url) return;
+        // Remove any existing iframe (may have stale Plotly styles)
+        var old = plbContent.querySelector('iframe');
+        if (old) old.remove();
+        var iframe = document.createElement('iframe');
+        iframe.style.cssText = 'width:100%;height:100%;border:none;background:#fff;border-radius:6px;';
+        iframe.src = url;
+        iframe.setAttribute('allowfullscreen', '');
+        plbContent.appendChild(iframe);
+        plb.classList.add('active');
+        plbClose.focus();
+    });
+})();
+
+// ── Lightbox for figures (accessible: focus trap, focus return) ──
+(function() {
+    const lb = document.getElementById('lightbox');
+    const lbImg = lb.querySelector('img');
+    const lbCap = lb.querySelector('.lb-caption');
+    const lbClose = lb.querySelector('.lb-close');
+    var triggerEl = null;
+
+    function openLightbox(src, alt, caption) {
+        lbImg.src = src;
+        lbImg.alt = alt;
+        lbCap.textContent = caption || alt;
+        lb.classList.add('active');
+        lbClose.focus();
+    }
+
+    function closeLightbox() {
+        lb.classList.remove('active');
+        lbImg.src = '';
+        if (triggerEl) { triggerEl.focus(); triggerEl = null; }
+    }
+
+    // Open lightbox on figure click (prevent default link navigation)
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.fig-link');
+        if (!link) return;
+        e.preventDefault();
+        e.stopPropagation();
+        triggerEl = link;
+        var src = link.getAttribute('data-src');
+        var alt = link.querySelector('img')?.alt || '';
+        var caption = link.closest('.fig-container')?.querySelector('.fig-caption')?.textContent || '';
+        openLightbox(src, alt, caption);
+    });
+
+    // Close on click anywhere on overlay
+    lb.addEventListener('click', function() { closeLightbox(); });
+
+    // Prevent closing when clicking the image itself (let user right-click → open in tab)
+    lbImg.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    // Close on Escape; trap Tab within lightbox
+    document.addEventListener('keydown', function(e) {
+        if (!lb.classList.contains('active')) return;
+        if (e.key === 'Escape') { closeLightbox(); }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            lbClose.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>

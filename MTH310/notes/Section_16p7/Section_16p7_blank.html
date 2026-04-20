@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 16.7: Surface Integrals &mdash; Handout</title>
+<style>
+@page { size: letter; margin: 0.4in 0.5in; }
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #b5850e;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    max-width: 7.5in; margin: 0 auto; padding: 0.3em;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.35; }
+.handout-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left h1 { font-size: 1.3em; color: var(--accent-cyan); margin: 0; }
+.header-left p { margin: 0.05em 0; color: #666; font-size: 0.85em; }
+.header-right { text-align: right; font-size: 0.85em; color: #333; }
+hr { border: none; border-top: 2px solid var(--accent-cyan); margin: 0.3em 0; }
+h2 { font-size: 1.1em; color: var(--accent-cyan); margin: 0.4em 0 0.15em 0;
+    border-bottom: 1px solid #ccc; padding-bottom: 0.05em; }
+h3, h4 { font-size: 0.95em; margin: 0.15em 0; }
+p { margin: 0.15em 0; }
+.defn-box { background: #f0f7ff; border-left: 3px solid var(--accent-cyan);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 3px solid var(--accent-green);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
+    padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
+.blank-space { margin: 0.2em 0; position: relative;
+    border: none; border-top: 1px dashed #ccc; box-sizing: border-box; }
+.blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
+    color: #767676; font-style: italic; }
+.hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
+    padding: 0.3em 0.8em; text-align: center; margin: 0.5em 0; }
+.desmos-link { background: #f0f7ff; border-radius: 3px; padding: 0.2em 0.5em;
+    margin: 0.3em 0; font-size: 0.8em; }
+.desmos-link a { color: var(--accent-cyan); word-break: break-all; }
+.two-col-print { display: flex; gap: 0.6em; align-items: flex-start; }
+.two-col-print > * { flex: 1; }
+figure { margin: 0.1em 0; text-align: center; }
+figure img { max-width: 100%; max-height: 3.0in; }
+figcaption { font-size: 0.7em; color: #666; margin-top: 0.05em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 2px; border: 1px solid #ddd; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.image-grid { display: flex; gap: 0.4em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.2em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.8em; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 1.5in; max-width: 100%; }
+.image-grid .grid-cell.textbook-fig img { padding: 2px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+table { border-collapse: collapse; font-size: 0.85em; margin: 0.15em auto; }
+th, td { padding: 0.1em 0.4em; border: 1px solid #ccc; text-align: center; }
+th { background: #f0f7ff; }
+.small { font-size: 0.8em; }
+ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
+li { margin-bottom: 0.05em; }
+.pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
+.homework-section { page-break-before: auto; }
+.defn-box, .example-box, .key-point, .blank-space, .theorem-box { page-break-inside: avoid; break-inside: avoid; }
+main > section { page-break-inside: auto; }
+main > section.example-group { page-break-inside: avoid; break-inside: avoid; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media print {
+    body { padding: 0; max-width: none; }
+    .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    a[href^="http"]::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="#"]::after { content: none; }
+    figure img { max-height: 2.8in; }
+    .skip-link { display: none; }
+}
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// Pagination is handled entirely by CSS:
+//   .pagebreak            → page-break-before: always
+//   .example-group        → page-break-inside: avoid
+//   .defn-box, .key-point → page-break-inside: avoid
+// Workspaces use their declared min-height only — no JS expansion.
+// This produces dense, predictable handouts.
+</script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <div class="handout-header">
+    <div class="header-left">
+      <h1>Section 16.7: Surface Integrals</h1>
+      <p>Vector Calculus</p>
+    </div>
+    <div class="header-right">
+      <p>MTH 310<br>Calculus III</p>
+    </div>
+  </div>
+</header>
+<hr aria-hidden="true">
+
+<section id="surface-integrals-two-flavors-in-parallel" data-source-line="15" aria-label="Surface Integrals: Two Flavors in Parallel">
+  <h2>Surface Integrals: Two Flavors in Parallel</h2>
+  <div><p>In Section 16.2 we defined <strong>two kinds</strong> of line integrals &mdash; one for scalar functions, one for vector fields. Now we lift each of them up a dimension.</p>
+<table>
+<tr><th></th><th><strong>Scalar version</strong></th><th><strong>Vector version</strong></th></tr>
+<tr><td><strong>Line integral</strong> (1D object)</td><td>\(\displaystyle\int_C f\,ds\)</td><td>\(\displaystyle\int_C \vec{F}\cdot d\vec{r} = \int_C \vec{F}\cdot\vec{T}\,ds\)</td></tr>
+<tr><td><em>weighted by</em></td><td>arc length \(ds\)</td><td><strong>tangent</strong> component \(\vec{F}\cdot\vec{T}\)</td></tr>
+<tr><td><em>measures</em></td><td>total of \(f\) along \(C\)</td><td>flow <strong>along</strong> \(C\) (work)</td></tr>
+<tr><td><strong>Surface integral</strong> (2D object)</td><td>\(\displaystyle\iint_S f\,dS\)</td><td>\(\displaystyle\iint_S \vec{F}\cdot d\vec{S} = \iint_S \vec{F}\cdot\vec{n}\,dS\)</td></tr>
+<tr><td><em>weighted by</em></td><td>surface area \(dS\)</td><td><strong>normal</strong> component \(\vec{F}\cdot\vec{n}\)</td></tr>
+<tr><td><em>measures</em></td><td>total of \(f\) over \(S\)</td><td>flow <strong>through</strong> \(S\) (<strong>flux</strong>)</td></tr>
+</table></div>
+<div><p><strong>The shift:</strong> for curves, “flow” meant <em>tangential</em> (along the curve). For surfaces, “flow” means <em>perpendicular</em> (through the surface). That's why flux uses \(\vec{n}\) instead of \(\vec{T}\).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Each line integral from 16.2 has a surface-integral twin. Scalar \(\leftrightarrow\) scalar (\(ds \to dS\)); vector (work) \(\leftrightarrow\) vector (flux) (\(\vec{T}\to \vec{n}\)).</p></aside>
+</section>
+
+<section id="scalar-surface-integrals-the-idea" data-source-line="39" aria-label="Scalar Surface Integrals: The Idea">
+  <h2>Scalar Surface Integrals: The Idea</h2>
+  <div><p>Imagine a thin metal sheet shaped like a surface \(S\), with density \(\rho(x,y,z)\) at each point. The <strong>total mass</strong> is:</p>
+<p>\[\text{mass} = \iint_S \rho(x,y,z)\,dS\]</p>
+<p>More generally, \(\iint_S f(x,y,z)\,dS\) adds up the values of \(f\) over the surface, weighted by area.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>\(\iint_S f\,dS\) is the surface analog of \(\int_C f\,ds\). Replace “arc-length element \(ds\)” with “surface-area element \(dS\)” &mdash; everything else is the same.</p></aside>
+</section>
+
+<section id="computing-from-a-parametrization" data-source-line="67" aria-label="Computing $\iint_S f\,dS$ from a Parametrization">
+  <h2>Computing \(\iint_S f\,dS\) from a Parametrization</h2>
+  <div><p>From Section 16.6, if \(S\) is parametrized by \(\vec{r}(u,v)\) over domain \(D\), then</p>
+<p>\[dS = |\vec{r}_u \times \vec{r}_v|\,dA.\]</p></div>
+<section class="defn-box" role="region" aria-label="Scalar Surface Integral (Parametric Form)">
+  <h3 class="defn-title">Scalar Surface Integral (Parametric Form)</h3>
+  <p>\[\iint_S f(x,y,z)\,dS = \iint_D f\!\left(\vec{r}(u,v)\right)\;|\vec{r}_u \times \vec{r}_v|\;dA\]</p>
+</section>
+<aside class="key-point" role="note" aria-label="Key point"><p>Recipe: (1) parametrize \(S\) as \(\vec{r}(u,v)\), (2) compute \(|\vec{r}_u \times \vec{r}_v|\), (3) substitute into a double integral over \(D\). Exactly like a line integral, one dimension up.</p></aside>
+</section>
+
+<section id="special-case-surface-integral-over-a-graph" data-source-line="100" aria-label="Special Case: Surface Integral over a Graph $z = g(x,y)$">
+  <h2>Special Case: Surface Integral over a Graph \(z = g(x,y)\)</h2>
+  <div><p>When \(S\) is a graph \(z = g(x,y)\), parametrize with \(x\) and \(y\) directly: \(\vec{r}(x,y) = \langle x,\,y,\,g(x,y)\rangle\).</p></div>
+<div><p><strong>Recall from 16.6:</strong></p>
+<p>\[|\vec{r}_x \times \vec{r}_y| = \sqrt{g_x^2 + g_y^2 + 1}\]</p></div>
+<div><p>So the scalar surface integral becomes:</p>
+<p>\[\iint_S f(x,y,z)\,dS = \iint_D f\!\left(x,\,y,\,g(x,y)\right)\sqrt{g_x^2 + g_y^2 + 1}\;\,dA\]</p>
+<p>where \(D\) is the projection of \(S\) onto the \(xy\)-plane.</p></div>
+<div><p>If \(f \equiv 1\), this reduces to the <strong>surface-area formula</strong> from Section 15.6:</p>
+<p>\[\text{Area}(S) = \iint_D \sqrt{g_x^2 + g_y^2 + 1}\;dA\]</p>
+<p>Scalar surface integrals include surface area as a special case &mdash; just as \(\int_C 1\,ds\) gives arc length.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>For graphs \(z = g(x,y)\): replace \(dS\) with \(\sqrt{g_x^2 + g_y^2 + 1}\,dA\) and substitute \(z = g(x,y)\) into \(f\). Most textbook problems fit this shape.</p></aside>
+</section>
+
+<section id="example-1-scalar-surface-integral-over-a-graph" class="example-group" data-source-line="120" aria-label="Example 1: Scalar Surface Integral over a Graph">
+  <h2>Example 1: Scalar Surface Integral over a Graph</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Evaluate \(\displaystyle\iint_S y\,dS\), where \(S\) is the surface \(z = x + y^2\) over the rectangle \(0 \le x \le 1\), \(0 \le y \le 2\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Identify $g(x,y)$, compute $g_x$ and $g_y$, then set up the integral using the graph formula." style="min-height:3in;">
+  <div class="blank-prompt">Identify \(g(x,y)\), compute \(g_x\) and \(g_y\), then set up the integral using the graph formula.</div>
+</div>
+</section>
+
+<section id="quick-check-set-up-a-scalar-surface-integral" data-source-line="146" aria-label="Quick Check: Set Up a Scalar Surface Integral">
+  <h2>Quick Check: Set Up a Scalar Surface Integral</h2>
+  <div><p><em>Set up (but do not evaluate) \(\displaystyle\iint_S (x^2 + z)\,dS\) where \(S\) is the part of the plane \(z = 4 - 2x\) over the rectangle \(0 \le x \le 2\), \(0 \le y \le 3\).</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Find $g(x,y)$, compute $g_x$ and $g_y$, write $\sqrt{g_x^2 + g_y^2 + 1}$, substitute $z = g(x,y)$ into $f$, then write the double integral." style="min-height:2.5in;">
+  <div class="blank-prompt">Find \(g(x,y)\), compute \(g_x\) and \(g_y\), write \(\sqrt{g_x^2 + g_y^2 + 1}\), substitute \(z = g(x,y)\) into \(f\), then write the double integral.</div>
+</div>
+</section>
+
+<section id="example-2-scalar-surface-integral-on-a-sphere" class="example-group" data-source-line="166" aria-label="Example 2: Scalar Surface Integral on a Sphere">
+  <h2>Example 2: Scalar Surface Integral on a Sphere</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Evaluate \(\displaystyle\iint_S y^2\,dS\) where \(S\) is the part of the sphere \(x^2+y^2+z^2 = 4\) that lies inside the cylinder \(x^2+y^2 = 1\) and above the \(xy\)-plane.</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Parametrize the sphere using spherical coordinates with $\rho = 2$: $\vec{r}(\theta,\phi) = \langle 2\sin\phi\cos\theta,\; 2\sin\phi\sin\theta,\; 2\cos\phi \rangle$. What are the bounds on $\phi$?" style="min-height:3.5in;">
+  <div class="blank-prompt">Parametrize the sphere using spherical coordinates with \(\rho = 2\): \(\vec{r}(\theta,\phi) = \langle 2\sin\phi\cos\theta,\; 2\sin\phi\sin\theta,\; 2\cos\phi \rangle\). What are the bounds on \(\phi\)?</div>
+</div>
+</section>
+
+<section id="oriented-surfaces-bridge-to-flux" data-source-line="194" aria-label="Oriented Surfaces (Bridge to Flux)">
+  <h2>Oriented Surfaces (Bridge to Flux)</h2>
+  <div><p>Before we can define flux, we need to pick a <strong>direction</strong> at every point of the surface &mdash; an orientation.</p></div>
+<figure>
+  <img src="figures/oriented_surface.png" alt="Two-panel figure. Left panel: a smooth wavy surface with several pairs of unit normal vectors at sample points; red arrows point upward and green arrows point downward, illustrating the two consistent choices of unit normal on an orientable surface. Right panel: a Mobius strip in purple, a classic non-orientable surface with only one side.">
+  <figcaption><a href="figures/oriented_surface.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
+<div><p>An <strong>orientable surface</strong> has two distinct sides. At each point there are two unit normals, \(\vec{n}\) and \(-\vec{n}\). Choosing one consistently over all of \(S\) gives an <strong>orientation</strong>.</p></div>
+<div><p><strong>Standard conventions:</strong></p>
+<ul>
+<li><strong>Closed surfaces</strong> (sphere, torus, cube): <em>outward</em> normal is positive.</li>
+<li><strong>Graphs</strong> \(z = g(x,y)\): <em>upward</em> normal is positive.</li>
+<li>Every problem statement tells you which orientation to use.</li>
+</ul></div>
+<div><p>Not every surface is orientable &mdash; the <strong>Möbius strip</strong> has only one side. But every surface we will integrate over in this course is orientable.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>An orientation is a consistent choice of unit normal. For flux integrals the orientation <em>determines the sign</em> of the answer: reverse the orientation and the flux changes sign.</p></aside>
+</section>
+
+<section id="unit-normals-for-the-two-most-common-surfaces" data-source-line="218" aria-label="Unit Normals for the Two Most Common Surfaces">
+  <h2>Unit Normals for the Two Most Common Surfaces</h2>
+  <div><p>For flux we need the unit normal \(\vec{n}\). Two parametrizations cover almost every problem.</p></div>
+<div class="two-col-print">
+  <div><div><p><strong>Graph</strong> \(z = g(x,y)\), \(\;\vec{r}(x,y) = \langle x, y, g(x,y)\rangle\):</p>
+<p>\[\vec{r}_x\times\vec{r}_y = \langle -g_x,\,-g_y,\,1\rangle\]</p>
+<p>\[\vec{n}_{\text{up}} = \frac{\langle -g_x,\,-g_y,\,1\rangle}{\sqrt{g_x^2+g_y^2+1}}\]</p>
+<p>The \(+1\) in the third slot means this vector points upward (so it <em>is</em> the positive orientation).</p></div></div>
+  <div><div><p><strong>Sphere</strong> of radius \(R\), spherical parametrization.</p>
+<p>First, the <strong>easy-to-remember outward unit normal</strong>:</p>
+<p>\[\vec{n}_{\text{out}} = \frac{\langle x,y,z\rangle}{R} = \hat{r}\]</p>
+<p>(just the position vector, normalized.) Then the cross product factors cleanly as</p>
+<p>\[\vec{r}_\phi\times\vec{r}_\theta = R^2\sin\phi\;\hat{r}.\]</p>
+<p>Since \(\sin\phi \geq 0\), this points outward automatically.</p></div></div>
+</div>
+<div><p>To <strong>reverse</strong> either orientation, multiply by \(-1\) (or swap the order of the cross product).</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Graphs: \(\vec{r}_x\times\vec{r}_y = \langle -g_x,-g_y,1\rangle\) points up. Spheres: \(\vec{r}_\phi\times\vec{r}_\theta\) points out. Both match the standard positive orientation.</p></aside>
+</section>
+
+<section id="flux-definition-and-parametric-formula" data-source-line="248" aria-label="Flux: Definition and Parametric Formula">
+  <h2>Flux: Definition and Parametric Formula</h2>
+  <div><p>Now the big idea: <strong>how much</strong> of a vector field \(\vec{F}\) flows <em>through</em> a surface.</p></div>
+<figure>
+  <img src="figures/flux_visualization.png" alt="A smooth surface with a vector field of red arrows piercing through it. At one marked point, the field vector F is shown in black, decomposed into two components: a gray tangential piece lying along the surface that does not contribute to flux, and a red normal piece perpendicular to the surface that is the contribution to flux. Below the figure, a scalar-style figure shows the same surface with a heat-map coloring representing the value of f across the surface.">
+  <figcaption><a href="figures/flux_visualization.html" target="_blank" class="interactive-link">Interactive version</a></figcaption>
+</figure>
+<div><p>At each point, only the piece of \(\vec{F}\) <strong>perpendicular</strong> to \(S\) passes through &mdash; that piece is \(\vec{F}\cdot\vec{n}\).</p></div>
+<section class="defn-box" role="region" aria-label="Flux of $\vec{F}$ across an Oriented Surface $S$">
+  <h3 class="defn-title">Flux of \(\vec{F}\) across an Oriented Surface \(S\)</h3>
+  <p>\[\iint_S \vec{F}\cdot d\vec{S} \;=\; \iint_S \vec{F}\cdot\vec{n}\;dS\]</p>
+</section>
+<div><p><strong>Parametric formula.</strong> Since \(\vec{n}\,dS = (\vec{r}_u \times \vec{r}_v)\,dA\), the \(|\cdot|\) on the cross product cancels the \(|\cdot|\) in the denominator of \(\vec{n}\):</p></div>
+<section class="defn-box theorem-box" role="region" aria-label="Theorem: Flux via a Parametrization">
+  <h3 class="defn-title">Theorem: Flux via a Parametrization</h3>
+  <p>\[\iint_S \vec{F}\cdot d\vec{S} = \iint_D \vec{F}\!\left(\vec{r}(u,v)\right)\cdot(\vec{r}_u \times \vec{r}_v)\,dA\]</p>
+</section>
+<div><p>Use the cross product <em>itself</em> &mdash; not its magnitude. Order matters: \(\vec{r}_u\times\vec{r}_v\) vs. \(\vec{r}_v\times\vec{r}_u\) gives opposite orientations.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Flux measures flow <strong>through</strong> \(S\) the way work measures flow <strong>along</strong> \(C\). Dot \(\vec{F}\) with \(\vec{r}_u\times\vec{r}_v\) (no magnitude, no square root).</p></aside>
+</section>
+
+<section id="flux-through-a-graph" data-source-line="287" aria-label="Flux through a Graph $z = g(x,y)$">
+  <h2>Flux through a Graph \(z = g(x,y)\)</h2>
+  <div><p>Plug \(\vec{r}_x\times\vec{r}_y = \langle -g_x, -g_y, 1\rangle\) into the parametric flux formula.</p></div>
+<div><p>If \(\vec{F} = \langle P, Q, R\rangle\), then</p>
+<p>\[\vec{F}\cdot(\vec{r}_x\times\vec{r}_y) = -P\,g_x - Q\,g_y + R\]</p>
+<p>(with \(P,Q,R\) evaluated at \((x,y,g(x,y))\)).</p></div>
+<div><p><strong>Upward orientation</strong> (positive):</p>
+<p>\[\iint_S \vec{F}\cdot d\vec{S} = \iint_D \!\left(-P\,g_x - Q\,g_y + R\right)\,dA.\]</p></div>
+<div><p><strong>Downward orientation:</strong> flip the sign.</p>
+<p>\[\iint_S \vec{F}\cdot d\vec{S} = \iint_D \!\left(P\,g_x + Q\,g_y - R\right)\,dA.\]</p></div>
+<div><p><strong>No square root.</strong> The magnitude from \(dS\) cancels the denominator of \(\vec{n}\). This is the single most useful formula in the section.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Flux through a graph: \(\iint_D(-Pg_x - Qg_y + R)\,dA\) (upward). Flip sign for downward. Compare with the scalar version, which <em>did</em> need \(\sqrt{g_x^2+g_y^2+1}\).</p></aside>
+</section>
+
+<section id="quick-check-identify-the-flux-setup" data-source-line="310" aria-label="Quick Check: Identify the Flux Setup">
+  <h2>Quick Check: Identify the Flux Setup</h2>
+  <div><p><em>\(\vec{F}(x,y,z) = \langle 0, 0, z\rangle\) and \(S\) is the part of the paraboloid \(z = 1 - x^2 - y^2\) above the \(xy\)-plane, with upward orientation. Write \(\vec{F}\cdot(\vec{r}_x\times\vec{r}_y)\) as a function of \(x\) and \(y\).</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Find $g(x,y)$, form $\langle -g_x,-g_y,1\rangle$, substitute $z = g(x,y)$ into $\vec{F}$, then dot." style="min-height:2in;">
+  <div class="blank-prompt">Find \(g(x,y)\), form \(\langle -g_x,-g_y,1\rangle\), substitute \(z = g(x,y)\) into \(\vec{F}\), then dot.</div>
+</div>
+</section>
+
+<section id="example-3-flux-across-a-plane" class="example-group" data-source-line="328" aria-label="Example 3: Flux across a Plane">
+  <h2>Example 3: Flux across a Plane</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Find the flux of \(\vec{F}(x,y,z) = \langle x, 2y, 3z\rangle\) upward through the triangular portion of the plane \(2x + y + 2z = 6\) in the first octant.</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Solve for $z = g(x,y)$, find $g_x$ and $g_y$, apply the upward-graph flux formula, and find the domain in the $xy$-plane." style="min-height:3in;">
+  <div class="blank-prompt">Solve for \(z = g(x,y)\), find \(g_x\) and \(g_y\), apply the upward-graph flux formula, and find the domain in the \(xy\)-plane.</div>
+</div>
+</section>
+
+<section id="example-4-flux-across-the-unit-sphere" class="example-group" data-source-line="355" aria-label="Example 4: Flux across the Unit Sphere">
+  <h2>Example 4: Flux across the Unit Sphere</h2>
+  <section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>Find the flux of \(\vec{F}(x,y,z) = \langle z, y, x\rangle\) outward across the unit sphere \(x^2+y^2+z^2 = 1\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Use spherical parametrization with $R = 1$. Recall $\vec{r}_\phi\times\vec{r}_\theta = \sin\phi \langle\sin\phi\cos\theta, \sin\phi\sin\theta, \cos\phi\rangle$ points outward." style="min-height:3.5in;">
+  <div class="blank-prompt">Use spherical parametrization with \(R = 1\). Recall \(\vec{r}_\phi\times\vec{r}_\theta = \sin\phi \langle\sin\phi\cos\theta, \sin\phi\sin\theta, \cos\phi\rangle\) points outward.</div>
+</div>
+</section>
+
+<section id="example-5-flux-on-a-cone-downward-orientation" class="example-group" data-source-line="383" aria-label="Example 5: Flux on a Cone (Downward Orientation)">
+  <h2>Example 5: Flux on a Cone (Downward Orientation)</h2>
+  <section class="example-box" role="region" aria-label="Example 5">
+  <h3 class="example-title">Example 5</h3>
+  <p>Evaluate \(\displaystyle\iint_S \vec{F}\cdot d\vec{S}\) where \(\vec{F}(x,y,z) = \langle -x, -y, z^3\rangle\) and \(S\) is the part of the cone \(z = \sqrt{x^2+y^2}\) between \(z = 1\) and \(z = 3\), with <strong>downward</strong> orientation.</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Use $g(x,y) = \sqrt{x^2+y^2}$ and the *downward* graph formula $\iint_D(Pg_x+Qg_y-R)\,dA$. The domain is the annulus $1\le r\le 3$ in polar." style="min-height:3.5in;">
+  <div class="blank-prompt">Use \(g(x,y) = \sqrt{x^2+y^2}\) and the <em>downward</em> graph formula \(\iint_D(Pg_x+Qg_y-R)\,dA\). The domain is the annulus \(1\le r\le 3\) in polar.</div>
+</div>
+</section>
+
+<section id="quick-check-does-orientation-matter" data-source-line="410" aria-label="Quick Check: Does Orientation Matter?">
+  <h2>Quick Check: Does Orientation Matter?</h2>
+  <div><p><em>If the flux of \(\vec{F}\) through a surface \(S\) with upward orientation is \(12\), what is the flux with downward orientation?</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Think about how flipping $\vec{n}$ changes the flux integrand." style="min-height:1.5in;">
+  <div class="blank-prompt">Think about how flipping \(\vec{n}\) changes the flux integrand.</div>
+</div>
+</section>
+
+<section id="application-heat-flow-across-a-surface" class="example-group" data-source-line="426" aria-label="Application: Heat Flow across a Surface">
+  <h2>Application: Heat Flow across a Surface</h2>
+  <div><p>If the temperature in a solid is \(u(x,y,z)\), the <strong>heat-flow vector</strong> is</p>
+<p>\[\vec{F} = -K\,\nabla u \qquad (K > 0,\; \text{thermal conductivity}).\]</p>
+<p>Heat flows from hot to cold &mdash; opposite the gradient.</p></div>
+<div><p>The <strong>rate of heat flow</strong> across a surface \(S\) is</p>
+<p>\[\text{rate} = \iint_S \vec{F}\cdot d\vec{S} = -K\!\iint_S \nabla u\cdot d\vec{S}.\]</p></div>
+<section class="example-box" role="region" aria-label="Example 6">
+  <h3 class="example-title">Example 6</h3>
+  <p>Temperature inside a ball: \(u = C/r\) where \(r = \sqrt{x^2+y^2+z^2}\). Find the rate of heat flow across the sphere \(S\) of radius \(a\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Compute $\nabla u$, form $\vec{F} = -K\nabla u$, then dot with the outward normal $\vec{n} = \tfrac{1}{a}\langle x,y,z\rangle$ on the sphere $r = a$." style="min-height:3in;">
+  <div class="blank-prompt">Compute \(\nabla u\), form \(\vec{F} = -K\nabla u\), then dot with the outward normal \(\vec{n} = \tfrac{1}{a}\langle x,y,z\rangle\) on the sphere \(r = a\).</div>
+</div>
+</section>
+
+<section class="homework-section" aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 16.7:</strong> 5, 7, 9, 11, 13, 15, 17, 21, 23, 25, 27, 29, 43</div>
+</section>
+</main>
+<script>
+// Scroll observer: notify parent when visible section changes (for editor sync)
+(function() {
+    if (!window.parent || window.parent === window) return;
+    var sections = document.querySelectorAll('main > section[data-source-line]');
+    if (!sections.length) return;
+    var currentLine = null;
+    var scrollTimer = null;
+    function onScroll() {
+        if (scrollTimer) clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(updateVisibleSection, 80);
+    }
+    function updateVisibleSection() {
+        var viewTop = window.innerHeight * 0.3;
+        var best = null;
+        for (var i = 0; i < sections.length; i++) {
+            var rect = sections[i].getBoundingClientRect();
+            if (rect.top <= viewTop && rect.bottom > 0) best = sections[i];
+        }
+        if (best) {
+            var line = parseInt(best.dataset.sourceLine, 10);
+            if (!isNaN(line) && line !== currentLine) {
+                currentLine = line;
+                window.parent.postMessage({ type: 'htmlSectionChanged', sourceLine: line }, '*');
+            }
+        }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'goToSection' && e.data.sourceLine != null) {
+            for (var i = 0; i < sections.length; i++) {
+                if (parseInt(sections[i].dataset.sourceLine, 10) === e.data.sourceLine) {
+                    sections[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    break;
+                }
+            }
+        }
+    });
+})();
+</script>
+</body>
+</html>
