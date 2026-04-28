@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>16.9 - The Divergence Theorem | MTH 310</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/white.min.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root {
+    --accent-blue: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-amber: #e09f3e;
+    --accent-purple: #6c3483; --fg: #222222; --bg: #ffffff;
+}
+.reveal { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; font-size: 30px; color: var(--fg); }
+.reveal .slides section { text-align: left; }
+.reveal .slides > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides > section > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides section::-webkit-scrollbar { width: 6px; }
+.reveal .slides section::-webkit-scrollbar-track { background: transparent; }
+.reveal .slides section::-webkit-scrollbar-thumb { background: rgba(0,119,182,0.2); border-radius: 3px; }
+.reveal .slides section::-webkit-scrollbar-thumb:hover { background: rgba(0,119,182,0.4); }
+.reveal .slides > section::after, .reveal .slides > section > section::after {
+    content: ''; display: block; height: 0; clear: both; }
+.reveal h1,.reveal h2,.reveal h3 { text-transform: none; font-weight: 600; }
+.reveal h1 { font-size: 2.2em; color: var(--accent-blue); }
+.reveal h2 { font-size: 1.35em; color: var(--accent-blue); border-bottom: 2px solid rgba(0,119,182,0.25);
+    padding-bottom: 0.2em; margin-bottom: 0.4em; margin-top: 0; }
+.reveal h3 { font-size: 1.1em; color: var(--accent-green); margin: 0.2em 0; }
+.reveal p { margin: 0.3em 0; line-height: 1.4; }
+.reveal li { margin-bottom: 0.15em; line-height: 1.35; }
+.reveal ul,.reveal ol { margin-left: 0.5em; }
+.title-slide { text-align: center !important; }
+.title-slide h1 { font-size: 2.8em; margin-bottom: 0.1em; }
+.title-slide .subtitle { font-size: 1.4em; color: #b07d00; }
+.title-slide .course-info { font-size: 0.85em; color: #595959; margin-top: 2em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-blue);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.theorem-box { background: #fdf6ec; border-left-color: var(--accent-amber); }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.solution { background: #fffdf5; border-left: 4px solid var(--accent-amber);
+    border-radius: 8px; padding: 0.4em 0.8em; margin-top: 0.3em; color: #7a5c00; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7;
+    border-radius: 8px; padding: 0.5em 0.8em; margin: 0.4em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #666; margin: 0.3em 0; font-size: 0.85em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red);
+    border-radius: 10px; padding: 1em 1.5em; text-align: center; margin: 1em 0; }
+.hw-box h3 { color: var(--accent-red); margin: 0 0 0.3em 0; }
+.two-col { display: flex; gap: 1.2em; align-items: flex-start; }
+.two-col > * { flex: 1; }
+.fig-container { text-align: center; margin: 0.3em 0; }
+.fig-container img { max-height: 60vh; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    cursor: zoom-in; transition: opacity 0.15s; }
+.fig-container img:hover { opacity: 0.8; }
+.fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
+.fig-link { display: inline-block; }
+.textbook-fig img { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; }
+.plotly-lazy-thumb { cursor: pointer; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+.plotly-lazy-thumb:hover { opacity: 0.92; outline: 2px solid #0077b6; outline-offset: 2px; }
+#plotly-lightbox { display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+    justify-content:center; align-items:center; cursor:default; }
+#plotly-lightbox.active { display:flex; }
+#plotly-lightbox .plb-close { position:fixed; top:14px; left:20px;
+    font-size:2.2em; color:#fff; background:rgba(0,0,0,0.55);
+    border:1px solid rgba(255,255,255,0.4); border-radius:6px;
+    padding:2px 14px; cursor:pointer; z-index:10001; line-height:1; }
+#plotly-lightbox .plb-close:hover { color:#e09f3e; background:rgba(0,0,0,0.75); }
+#plotly-lightbox .plb-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+#plotly-lightbox .plb-content { width:92vw; height:88vh; position:relative; }
+#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; pointer-events:auto; }
+/* Lightbox overlay */
+#lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
+    cursor: zoom-out; backdrop-filter: blur(4px); }
+#lightbox.active { display: flex; }
+#lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5); object-fit: contain; background: white; }
+#lightbox .lb-caption { position: absolute; bottom: 1.5em; left: 50%;
+    transform: translateX(-50%); color: #fff; font-size: 0.55em;
+    background: rgba(0,0,0,0.7); padding: 0.3em 1em; border-radius: 4px; }
+#lightbox .lb-close { position: absolute; top: 0.8em; right: 1.2em;
+    color: #fff; font-size: 1.5em; cursor: pointer; transition: color 0.15s;
+    background: none; border: none; padding: 0.2em 0.5em; }
+#lightbox .lb-close:hover { color: #e09f3e; }
+#lightbox .lb-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.interactive-link { color: var(--accent-blue); text-decoration: none; font-size: 0.9em; }
+.interactive-link:hover { text-decoration: underline; }
+.desmos-container { text-align: center; margin: 0.3em auto; }
+.desmos-container iframe { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    border: 1px solid #ddd; }
+.desmos-label { font-size: 0.65em; color: var(--accent-blue); margin-top: 0.2em; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.4em;
+    color: var(--accent-blue); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+.desmos-fullscreen { background: none; border: 1px solid var(--accent-blue); border-radius: 4px;
+    color: var(--accent-blue); font-size: 1.1em; cursor: pointer; padding: 0.1em 0.4em;
+    opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-fullscreen:hover { opacity: 1; background: rgba(0,119,182,0.1); }
+aside.notes { display: none; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 0.5em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.3em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.75em; color: var(--accent-blue);
+    text-align: center; margin-bottom: 0.1em; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 18vh; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+.small { font-size: 0.8em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-blue);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600;
+    font-size: 16px; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+table { border-collapse: collapse; font-size: 0.8em; margin: 0.5em 0; }
+th, td { padding: 0.2em 0.6em; border-bottom: 1px solid #ddd; }
+th { color: var(--accent-blue); }
+.reveal .progress { color: var(--accent-blue); }
+.reveal .slide-number { color: #767676; font-size: 0.5em; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+</style>
+</head>
+<body data-section="Section_16p9">
+<a href="#" class="skip-link" onclick="Reveal.next();return false;">Skip to first slide</a>
+<div class="reveal">
+<div class="slides">
+<section class="title-slide" data-background-gradient="radial-gradient(circle at 30% 50%, #e8f4f8 0%, #f8f9fa 70%)">
+  <h1>16.9</h1>
+  <p class="subtitle">The Divergence Theorem</p>
+  <hr style="border-color:rgba(0,212,255,0.3);width:60%;margin:1em auto;" aria-hidden="true">
+  <p class="course-info">MTH 310 &mdash; Calculus III<br>  Vector Calculus</p>
+</section>
+
+<section id="one-last-theorem-in-the-family">
+<h2>One Last Theorem in the Family</h2>
+<div class="fragment" data-editor-line="17"><p>We've built a chain of theorems throughout this course, each relating a <strong>boundary integral</strong> to an <strong>interior integral</strong>:</p></div>
+<div class="fragment" data-editor-line="20"><ul>
+<li><strong>FTC</strong> (Calc I): \(\displaystyle\int_a^b f'(x)\,dx = f(b) - f(a)\)</li>
+<li><strong>FTC for Line Integrals</strong> (16.3): \(\displaystyle\int_C \nabla f\cdot d\vec{r} = f(B) - f(A)\)</li>
+<li><strong>Green's Theorem</strong> (16.4): \(\displaystyle\oint_C \vec{F}\cdot d\vec{r} = \iint_D \!\left(Q_x - P_y\right)dA\)</li>
+<li><strong>Stokes' Theorem</strong> (16.8): \(\displaystyle\oint_C \vec{F}\cdot d\vec{r} = \iint_S \mathrm{curl} \vec{F}\cdot d\vec{S}\)</li>
+</ul></div>
+<div class="fragment" data-editor-line="28"><p>Today: the <strong>Divergence Theorem</strong>, connecting a surface integral (flux <em>through</em> a closed surface) to a triple integral (divergence over the enclosed solid). It is the 3D analogue of Green's Theorem in <em>flux form</em>.</p></div>
+<div class="key-point fragment" data-editor-line="30"><p>Every major theorem in Chapter 16 has the same shape: \(\displaystyle\int_{\text{boundary}} (\text{something}) = \int_{\text{interior}}(\text{derivative of something})\). The Divergence Theorem is the final version.</p></div>
+<aside class="notes">Draw the progression on the board: 0D boundary (two points, FTC) \(\to\) 1D boundary (curve, Green's/Stokes') \(\to\) 2D boundary (surface, Divergence). Students should feel the dimension ladder explicitly.</aside>
+</section>
+
+<section id="the-divergence-theorem">
+<h2>The Divergence Theorem</h2>
+<div class="defn-box theorem-box fragment" data-editor-line="39">
+  <div class="defn-title">Theorem: The Divergence Theorem (Gauss's Theorem)</div>
+  <p>Let \(E\) be a simple solid region, and let \(S\) be its boundary surface, oriented outward. Let \(\vec{F}\) be a vector field whose components have continuous partial derivatives on an open region containing \(E\). Then</p>
+<p>\[\boxed{\iint_S \vec{F}\cdot d\vec{S} \;=\; \iiint_E \mathrm{div}\,\vec{F}\; dV.}\]</p>
+</div>
+<div class="fragment" data-editor-line="44"><p>In components, with \(\vec{F} = \langle P, Q, R\rangle\):</p>
+<p>\[\iint_S \vec{F}\cdot d\vec{S} = \iiint_E \!\left(\frac{\partial P}{\partial x} + \frac{\partial Q}{\partial y} + \frac{\partial R}{\partial z}\right) dV.\]</p></div>
+<div class="fragment" data-editor-line="47"><p><strong>Reading the two sides:</strong></p>
+<ul>
+<li><strong>Left:</strong> total flux of \(\vec{F}\) outward through the closed surface \(S\).</li>
+<li><strong>Right:</strong> total divergence of \(\vec{F}\) throughout the solid \(E\).</li>
+</ul></div>
+<div class="key-point fragment" data-editor-line="53"><p>Flux <em>through the boundary</em> \(=\) total source strength <em>inside</em>. If \(\mathrm{div} \vec{F} > 0\) inside \(E\), net outward flux (source). If \(\mathrm{div} \vec{F} < 0\), net inward flux (sink).</p></div>
+</section>
+
+<section id="physical-interpretation-sources-and-sinks">
+<h2>Physical Interpretation: Sources and Sinks</h2>
+<div class="fragment" data-editor-line="60"><p>Think of \(\vec{F}\) as the velocity field of a fluid. The Divergence Theorem says net outflow \(=\) total internal source strength:</p>
+<p>\[\underbrace{\iint_S \vec{F}\cdot d\vec{S}}_{\text{net flow out through }S} \;=\; \underbrace{\iiint_E \mathrm{div}\,\vec{F}\; dV}_{\text{total source/sink inside }E}.\]</p></div>
+<div class="fig-container fragment" data-editor-line="63">
+  <a href="figures/source_sink_diagram.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/source_sink_diagram.png"><img src="figures/source_sink_diagram.png" alt="Three panels showing two-dimensional vector fields inside bounded circular regions. Left panel: arrows radiating outward from the center with positive divergence, representing a fluid source; the boundary circle has net outward flux. Middle panel: arrows pointing inward toward the center with negative divergence, representing a sink; net inward flux. Right panel: arrows circulating tangentially around the center with zero divergence, representing incompressible flow; zero net flux through the boundary." style="max-height:60vh;"></a>
+</div>
+<div class="fragment" data-editor-line="66"><p><strong>Source</strong> (\(\mathrm{div} \vec{F} > 0\)): fluid is created inside \(E\) &mdash; more leaves through \(S\) than enters. Faucet.</p></div>
+<div class="fragment" data-editor-line="68"><p><strong>Sink</strong> (\(\mathrm{div} \vec{F} < 0\)): fluid is absorbed inside \(E\) &mdash; more enters than leaves. Drain.</p></div>
+<div class="fragment" data-editor-line="70"><p><strong>Incompressible flow</strong> (\(\mathrm{div} \vec{F} = 0\) everywhere): whatever flows in must flow out, so \(\displaystyle\iint_S \vec{F}\cdot d\vec{S} = 0\).</p></div>
+<div class="fragment" data-editor-line="72"><p><strong>In physics:</strong></p>
+<ul>
+<li><strong>Gauss's law:</strong> \(\mathrm{div} \vec{E} = \rho/\varepsilon_0\). Charge is the source of the electric flux.</li>
+<li><strong>Heat flow:</strong> net heat flux out of a region \(=\) total heat generated inside.</li>
+</ul></div>
+<div class="key-point fragment" data-editor-line="79"><p>Divergence is the <em>local expansion rate</em> of the field. The theorem sums all those local expansions to produce the net boundary outflow.</p></div>
+<aside class="notes">Faucet/drain analogy works well. Seal a room, run the faucet: positive divergence inside means outward pressure on the walls (the boundary surface). Gauss's law is the canonical physics application.</aside>
+</section>
+
+<section id="connection-to-green-s-theorem-flux-form">
+<h2>Connection to Green's Theorem (Flux Form)</h2>
+<div class="fragment" data-editor-line="88"><p>Recall the <strong>flux form of Green's Theorem</strong> (16.4):</p>
+<p>\[\oint_C \vec{F}\cdot\vec{n}\,ds = \iint_D \mathrm{div}\,\vec{F}\,dA \qquad (\vec{F} = \langle P,Q\rangle,\; \text{2D}).\]</p></div>
+<div class="fragment" data-editor-line="91"><p>The Divergence Theorem is the <strong>same statement, one dimension up</strong>:</p></div>
+<div class="fragment" data-editor-line="94"><div class="two-col">
+  <div><div><p><strong>Green's (2D flux form)</strong></p>
+<ul>
+<li>Boundary: closed curve \(C\)</li>
+<li>Interior: flat region \(D\)</li>
+<li>LHS: \(\oint_C \vec{F}\cdot\vec{n}\,ds\) (line integral)</li>
+<li>RHS: \(\iint_D (P_x + Q_y)\,dA\)</li>
+</ul></div></div>
+  <div><div><p><strong>Divergence Theorem (3D)</strong></p>
+<ul>
+<li>Boundary: closed surface \(S\)</li>
+<li>Interior: solid region \(E\)</li>
+<li>LHS: \(\iint_S \vec{F}\cdot d\vec{S}\) (surface integral)</li>
+<li>RHS: \(\iiint_E (P_x + Q_y + R_z)\,dV\)</li>
+</ul></div></div>
+</div></div>
+<div class="key-point fragment" data-editor-line="113"><p>Green's (flux form) <em>is</em> the 2D Divergence Theorem. Every theorem in Chapter 16 follows one pattern: integral over boundary \(=\) integral of a derivative over interior.</p></div>
+</section>
+
+<section id="quick-check-compute-the-divergence">
+<h2>Quick Check: Compute the Divergence</h2>
+<div class="fragment" data-editor-line="120"><p><em>Compute \(\mathrm{div} \vec{F}\) for each field:</em></p>
+<ol>
+<li>\(\vec{F} = \langle x^2, xy, z\rangle\)</li>
+<li>\(\vec{F} = \langle x^3 + y^3,\; y^3 + z^3,\; z^3 + x^3\rangle\)</li>
+<li>\(\vec{F} = \langle yz, xz, xy\rangle\)</li>
+</ol></div>
+<div class="fragment" data-editor-line="127"><p class="work-prompt">Recall: \(\mathrm{div} \vec{F} = P_x + Q_y + R_z\).</p></div>
+<div class="fragment" data-editor-line="129"><p><strong>(1)</strong> \(P_x = 2x\), \(Q_y = x\), \(R_z = 1\), so \(\mathrm{div} \vec{F} = 3x + 1\).</p></div>
+<div class="fragment" data-editor-line="131"><p><strong>(2)</strong> \(P_x = 3x^2\), \(Q_y = 3y^2\), \(R_z = 3z^2\), so \(\mathrm{div} \vec{F} = 3(x^2+y^2+z^2)\).</p></div>
+<div class="fragment" data-editor-line="133"><p><strong>(3)</strong> \(P_x = 0\), \(Q_y = 0\), \(R_z = 0\), so \(\mathrm{div} \vec{F} = 0\). This field is <strong>incompressible</strong>.</p></div>
+<div class="key-point fragment" data-editor-line="135"><p>Differentiate each component with respect to its “own” variable and add. Incompressible fields have zero net flux through any closed surface.</p></div>
+</section>
+
+<section id="example-1-flux-through-a-paraboloid-region">
+<h2>Example 1: Flux Through a Paraboloid Region</h2>
+<div class="example-box fragment" data-editor-line="142">
+  <div class="example-title">Example 1</div>
+  <p>Use the Divergence Theorem to find the flux of \(\vec{F} = \langle x^2, xy, z\rangle\) outward through the closed surface \(S\) bounding the solid \(E\) below \(z = 4 - x^2 - y^2\) and above \(z = 0\).</p>
+</div>
+<div class="fragment" data-editor-line="146"><p class="work-prompt">Computing the flux directly is painful: the boundary \(S\) has <em>two</em> pieces (paraboloid cap + flat disk below), each needing its own parametrization. Use the Divergence Theorem to replace it with one triple integral over \(E\). Cylindrical coordinates work here.</p></div>
+<div class="fig-container fragment" data-editor-line="148">
+  <img src="figures/divergence_paraboloid.png" alt="A three-dimensional plot showing the solid region E bounded above by the downward-opening paraboloid z = 4 minus x squared minus y squared (a bowl shape with vertex at (0,0,4)) and below by the disk at z = 0. Red arrows on the paraboloid surface indicate the outward-pointing normal vectors, and a few arrows on the bottom disk point downward to indicate its outward orientation." class="plotly-lazy-thumb" data-plotly-src="figures/divergence_paraboloid.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="150"><p><strong>Step 1: divergence.</strong> \(\mathrm{div} \vec{F} = 2x + x + 1 = 3x + 1\).</p></div>
+<div class="fragment" data-editor-line="152"><p><strong>Step 2: bounds in cylindrical coordinates.</strong> The paraboloid meets \(z=0\) on \(x^2+y^2 = 4\), so \(0\le r \le 2\), \(0\le\theta\le 2\pi\), and \(0\le z \le 4 - r^2\). With \(x = r\cos\theta\):</p>
+<p>\[\iiint_E (3x+1)\,dV = \int_0^{2\pi}\!\!\int_0^2\!\!\int_0^{4-r^2}\!(3r\cos\theta + 1)\,r\,dz\,dr\,d\theta.\]</p></div>
+<div class="fragment" data-editor-line="155"><p><strong>Step 3: \(z\)-integral.</strong></p>
+<p>\[\int_0^{4-r^2}(3r\cos\theta + 1)\,r\,dz = (3r^2\cos\theta + r)(4 - r^2).\]</p></div>
+</section>
+
+<section>
+<h2>Example 1: Flux Through a Paraboloid Region</h2>
+<div class="fragment" data-editor-line="160"><p><strong>Step 4: \(\theta\)-integral kills the \(\cos\theta\) term.</strong> Since \(\int_0^{2\pi}\cos\theta\,d\theta = 0\), only the \(r(4-r^2)\) piece survives:</p>
+<p>\[\int_0^{2\pi}\!\!\int_0^2 r(4-r^2)\,dr\,d\theta = 2\pi\int_0^2 (4r - r^3)\,dr.\]</p></div>
+<div class="fragment" data-editor-line="163"><p><strong>Step 5: \(r\)-integral.</strong></p>
+<p>\[2\pi\left[2r^2 - \tfrac{r^4}{4}\right]_0^2 = 2\pi(8 - 4) = \boxed{8\pi}.\]</p></div>
+<div class="key-point fragment" data-editor-line="166"><p>One triple integral replaced TWO separate surface integrals (paraboloid cap + disk). The \(\cos\theta\) factor dropped out by symmetry &mdash; always scan for these before grinding.</p></div>
+<aside class="notes">Emphasize the two gains: (1) one integral instead of two, (2) the \(\theta\)-symmetry kills the \(3r\cos\theta\) term automatically. This is why the Divergence Theorem is a <em>strategic</em> tool, not just a statement.</aside>
+</section>
+
+<section id="quick-check-which-side-is-easier">
+<h2>Quick Check: Which Side Is Easier?</h2>
+<div class="fragment" data-editor-line="175"><p><em>For each scenario, decide which side of the Divergence Theorem is easier to compute.</em></p>
+<ol>
+<li>\(\vec{F} = \langle x, y, z\rangle\), \(S\) is a complicated surface enclosing a solid of known volume.</li>
+<li>\(\mathrm{div} \vec{F}\) is a messy expression, but \(S\) is a single simple surface.</li>
+<li>\(\vec{F} = \langle xz^2, x^2 y, y^2 z\rangle\), \(E\) is the unit cube \([0,1]^3\).</li>
+</ol></div>
+<div class="fragment" data-editor-line="182"><p class="work-prompt">Ask: is the divergence simple? Is the surface a single piece? Is the volume easy to compute?</p></div>
+<div class="fragment" data-editor-line="184"><p><strong>(1)</strong> <strong>Volume side.</strong> \(\mathrm{div} \vec{F} = 3\) is constant, so \(\iiint_E 3\,dV = 3\cdot\mathrm{Vol}(E)\). Trivial.</p></div>
+<div class="fragment" data-editor-line="186"><p><strong>(2)</strong> <strong>Surface side</strong> directly &mdash; don't integrate a messy divergence.</p></div>
+<div class="fragment" data-editor-line="188"><p><strong>(3)</strong> <strong>Volume side.</strong> \(\mathrm{div} \vec{F} = z^2 + x^2 + y^2\) integrates cleanly over the cube:</p>
+<p>\[\int_0^1\!\!\int_0^1\!\!\int_0^1 (x^2+y^2+z^2)\,dz\,dy\,dx = 3\cdot\tfrac{1}{3} = 1.\]</p></div>
+<div class="key-point fragment" data-editor-line="191"><p>Divergence Theorem \(=\) computational shortcut. Simple divergence or simple volume \(\Rightarrow\) use the triple integral. Simple surface with complicated divergence \(\Rightarrow\) use the surface integral.</p></div>
+</section>
+
+<section id="example-2-flux-through-a-sphere">
+<h2>Example 2: Flux Through a Sphere</h2>
+<div class="example-box fragment" data-editor-line="198">
+  <div class="example-title">Example 2</div>
+  <p>Use the Divergence Theorem to find the flux of \(\vec{F} = \langle x^3 + y^3,\; y^3 + z^3,\; z^3 + x^3\rangle\) outward through the sphere \(S\) of radius \(2\) centered at the origin.</p>
+</div>
+<div class="fragment" data-editor-line="202"><p class="work-prompt">The divergence is \(3(x^2+y^2+z^2) = 3\rho^2\) in spherical coordinates &mdash; a gift. Set up the triple integral over the ball.</p></div>
+<div class="fragment" data-editor-line="204"><p><strong>Divergence.</strong> \(\mathrm{div} \vec{F} = 3x^2 + 3y^2 + 3z^2 = 3\rho^2\).</p></div>
+<div class="fragment" data-editor-line="206"><p><strong>Spherical integral</strong> over the ball \(0\le\rho\le 2\), \(0\le\phi\le\pi\), \(0\le\theta\le 2\pi\), with \(dV = \rho^2\sin\phi\,d\rho\,d\phi\,d\theta\):</p>
+<p>\[\iiint_E 3\rho^2\,dV = \int_0^{2\pi}\!\!\int_0^{\pi}\!\!\int_0^2 3\rho^4\sin\phi\,d\rho\,d\phi\,d\theta.\]</p></div>
+<div class="fragment" data-editor-line="209"><p><strong>Evaluate</strong> (integral separates):</p>
+<p>\[= 3\cdot 2\pi \cdot \bigl[-\cos\phi\bigr]_0^\pi \cdot \tfrac{32}{5} = 3\cdot 2\pi\cdot 2\cdot \tfrac{32}{5} = \boxed{\tfrac{384\pi}{5}}.\]</p></div>
+<div class="key-point fragment" data-editor-line="212"><p>The divergence just <em>happened to be</em> \(3\rho^2\) in the right coordinates. The surface-integral route would force a nasty dot product with \(\vec{r}_\phi\times\vec{r}_\theta\) for every cubic term.</p></div>
+<aside class="notes">Emphasize the coordinate match: \(x^2+y^2+z^2 = \rho^2\) is the spherical payoff. Whenever \(\vec{F}\) is radial-ish and \(S\) is a sphere, the Divergence Theorem flattens everything.</aside>
+</section>
+
+<section id="example-3-flux-through-a-cube">
+<h2>Example 3: Flux Through a Cube</h2>
+<div class="example-box fragment" data-editor-line="221">
+  <div class="example-title">Example 3</div>
+  <p>Find the flux of \(\vec{F} = \langle xy, y^2, yz\rangle\) outward through the surface of the cube \([0,1]^3\).</p>
+</div>
+<div class="fragment" data-editor-line="225"><p class="work-prompt">The cube has SIX faces. Direct computation means six separate surface integrals, each with its own outward normal. Use the Divergence Theorem.</p></div>
+<div class="fragment" data-editor-line="227"><p><strong>Divergence.</strong> \(\mathrm{div} \vec{F} = y + 2y + y = 4y\).</p></div>
+<div class="fragment" data-editor-line="229"><p><strong>Triple integral</strong> (independent of \(x\) and \(z\)):</p>
+<p>\[\iiint_E 4y\,dV = \int_0^1\!\!\int_0^1\!\!\int_0^1 4y\,dz\,dy\,dx = \int_0^1\!\!\int_0^1 4y\,dy\,dx = \int_0^1 2\,dx = \boxed{2}.\]</p></div>
+<div class="key-point fragment" data-editor-line="232"><p>One triple integral replaced <strong>six</strong> surface integrals. Whenever the surface has many pieces but the solid is simple, the Divergence Theorem is the clear winner.</p></div>
+<aside class="notes">Ask students to imagine doing this as six separate face-integrals. The \(\pm\vec{i}, \pm\vec{j}, \pm\vec{k}\) normals, the six slicing plane integrals &mdash; it's brutal without the theorem.</aside>
+</section>
+
+<section id="quick-check-the-radial-field-through-a-sphere">
+<h2>Quick Check: The Radial Field Through a Sphere</h2>
+<div class="fragment" data-editor-line="241"><p><em>Let \(\vec{F} = \langle x, y, z\rangle\) and \(S\) be the unit sphere. Find \(\displaystyle\iint_S \vec{F}\cdot d\vec{S}\) without parametrizing anything.</em></p></div>
+<div class="fragment" data-editor-line="243"><p class="work-prompt">Compute \(\mathrm{div} \vec{F}\). If it's a constant \(c\), the flux is just \(c\cdot\mathrm{Vol}(E)\).</p></div>
+<div class="fragment" data-editor-line="245"><p>\(\mathrm{div} \vec{F} = 1 + 1 + 1 = 3\).</p></div>
+<div class="fragment" data-editor-line="247"><p>\[\iint_S \vec{F}\cdot d\vec{S} = \iiint_E 3\,dV = 3\cdot \tfrac{4}{3}\pi\cdot 1^3 = \boxed{4\pi}.\]</p></div>
+<div class="key-point fragment" data-editor-line="249"><p>Constant divergence \(c\) \(\Rightarrow\) flux \(= c\cdot\mathrm{Vol}(E)\) for any closed surface. For the radial field \(\vec{F} = \langle x,y,z\rangle\) on any closed surface, flux \(= 3\cdot\mathrm{Vol}\).</p></div>
+</section>
+
+<section id="when-not-to-use-the-divergence-theorem">
+<h2>When NOT to Use the Divergence Theorem</h2>
+<div class="fragment" data-editor-line="256"><p>The theorem requires a <strong>closed</strong> surface enclosing a solid with \(\vec{F}\) smooth throughout. Common pitfalls:</p></div>
+<div class="fragment" data-editor-line="258"><p><strong>1. Open surface.</strong> E.g., a hemisphere with no disk on the bottom. <em>Fix:</em> add the missing piece, apply the theorem to the closed surface, subtract the flux through the added piece.</p></div>
+<div class="fragment" data-editor-line="260"><p><strong>2. Singularity inside \(E\).</strong> E.g., \(\vec{F} = \vec{r}/|\vec{r}|^3\) with the origin inside. <em>Fix:</em> cut out a small sphere around the singularity and treat the region as topologically a shell.</p></div>
+<div class="fragment" data-editor-line="262"><p><strong>3. Non-simple regions</strong> (cavities or holes). <em>Fix:</em> decompose into simple pieces.</p></div>
+<div class="key-point fragment" data-editor-line="264"><p>Checklist before applying the theorem: (i) Is \(S\) closed? (ii) Is \(\vec{F}\) smooth throughout \(E\)? (iii) Is \(S\) oriented <em>outward</em>? Failure on any one means the theorem needs adaptation.</p></div>
+</section>
+
+<section id="the-big-picture-four-theorems-one-pattern">
+<h2>The Big Picture: Four Theorems, One Pattern</h2>
+<div class="fragment" data-editor-line="271"><p>Every major theorem in vector calculus is a version of:</p>
+<p>\[\int_{\text{boundary}} (\text{something}) \;=\; \int_{\text{interior}} (\text{derivative of something}).\]</p></div>
+<div class="fig-container fragment" data-editor-line="274">
+  <a href="figures/theorem_hierarchy.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/theorem_hierarchy.png"><img src="figures/theorem_hierarchy.png" alt="A flowchart diagram of the four great integral theorems: FTC, Green's Theorem, Stokes' Theorem, and Divergence Theorem. Each is shown as a colored box with its name and dimensions, arranged left to right by increasing dimension. Arrows connect them to indicate the progression from 1D to higher dimensions. Below the diagram, a banner summarizes the unifying principle: integral over the boundary equals integral of the derivative over the interior." style="max-height:60vh;"></a>
+</div>
+<div class="fragment" data-editor-line="277"><div class="two-col">
+  <div><div><p><strong>FTC</strong> (Calc I, 0D\(\to\)1D)</p>
+<ul>
+<li>Boundary: \(\{a, b\}\)</li>
+<li>Interior: \([a, b]\)</li>
+<li>Derivative: \(f'\)</li>
+</ul>
+<p><strong>Green's</strong> (16.4, 1D\(\to\)2D)</p>
+<ul>
+<li>Boundary: curve \(C\)</li>
+<li>Interior: region \(D\)</li>
+<li>Derivative: 2D curl or div</li>
+</ul></div></div>
+  <div><div><p><strong>Stokes'</strong> (16.8, 1D\(\to\)2D in 3D)</p>
+<ul>
+<li>Boundary: space curve \(C\)</li>
+<li>Interior: surface \(S\)</li>
+<li>Derivative: 3D curl</li>
+</ul>
+<p><strong>Divergence</strong> (16.9, 2D\(\to\)3D)</p>
+<ul>
+<li>Boundary: closed surface \(S\)</li>
+<li>Interior: solid \(E\)</li>
+<li>Derivative: 3D div</li>
+</ul></div></div>
+</div></div>
+<div class="key-point fragment" data-editor-line="308"><p>FTC, Green's, Stokes', Divergence are not four separate theorems &mdash; they are the <em>same theorem</em> in different dimensions.</p></div>
+<aside class="notes">This is the single most important conceptual slide of the entire course. Pause here. Let the pattern land before moving on to the decision tree.</aside>
+</section>
+
+<section id="which-theorem-a-decision-tree">
+<h2>Which Theorem? A Decision Tree</h2>
+<div class="fragment" data-editor-line="317"><p><strong>Decision tree for integrals in Chapter 16:</strong></p>
+<ol>
+<li>\(\vec{F}\) conservative? \(\Rightarrow\) <strong>FTC for line integrals</strong>: find \(f\), evaluate at endpoints.</li>
+<li>Line integral around a closed curve in the plane? \(\Rightarrow\) <strong>Green's</strong>.</li>
+<li>Line integral around a closed curve in 3D? \(\Rightarrow\) <strong>Stokes'</strong>.</li>
+<li>Flux through a closed surface in 3D? \(\Rightarrow\) <strong>Divergence</strong>.</li>
+</ol></div>
+<div class="example-box fragment" data-editor-line="325">
+  <div class="example-title">Example 4</div>
+  <p>Match each integral to the theorem that simplifies it:</p>
+<ul>
+<li>[(a)] \(\displaystyle\iint_S \vec{F}\cdot d\vec{S}\), \(S\) the closed surface of a cylinder, with \(\mathrm{div} \vec{F} = 5\).</li>
+<li>[(b)] \(\displaystyle\oint_C \vec{F}\cdot d\vec{r}\), \(C\) the boundary of a triangle in space.</li>
+<li>[(c)] \(\displaystyle\int_C \nabla f\cdot d\vec{r}\) from \((0,0)\) to \((3,4)\).</li>
+</ul>
+</div>
+<div class="fragment" data-editor-line="334"><p class="work-prompt">Map each integral to one of the four theorems.</p></div>
+<div class="fragment" data-editor-line="336"><p><strong>(a)</strong> Flux through a closed surface \(\Rightarrow\) <strong>Divergence</strong>: \(\displaystyle\iint_S \vec{F}\cdot d\vec{S} = \iiint_E 5\,dV = 5\cdot\mathrm{Vol}(\text{cyl})\).</p></div>
+<div class="fragment" data-editor-line="338"><p><strong>(b)</strong> Closed curve in 3D \(\Rightarrow\) <strong>Stokes'</strong>: \(\displaystyle\oint_C \vec{F}\cdot d\vec{r} = \iint_S \mathrm{curl} \vec{F}\cdot d\vec{S}\).</p></div>
+<div class="fragment" data-editor-line="340"><p><strong>(c)</strong> Integrand is \(\nabla f\) \(\Rightarrow\) <strong>FTC for line integrals</strong>: \(\displaystyle\int_C \nabla f\cdot d\vec{r} = f(3,4) - f(0,0)\).</p></div>
+<div class="key-point fragment" data-editor-line="342"><p>Recognizing which theorem to apply is the single highest-leverage skill for the final exam. Read the integrand and the domain (open/closed? 1D/2D/3D?) and match.</p></div>
+</section>
+
+<section id="chapter-16-summary-the-story-of-the-course">
+<h2>Chapter 16 Summary: The Story of the Course</h2>
+<div class="summary-grid">
+<div class="defn-box"><div class="defn-title">Vector Fields (16.1)</div><p class="small">\(\vec{F} = \langle P,Q,R\rangle\). Conservative \(\Leftrightarrow\) \(\vec{F} = \nabla f\) on a simply connected region \(\Leftrightarrow\) \(\mathrm{curl} \vec{F} = \vec{0}\).</p></div>
+<div class="defn-box"><div class="defn-title">Line Integrals (16.2&ndash;16.3)</div><p class="small">\(\int_C \vec{F}\cdot d\vec{r} = \int_a^b \vec{F}(\vec{r}(t))\cdot\vec{r} '(t)\,dt\). FTLI: \(\int_C \nabla f\cdot d\vec{r} = f(B)-f(A)\).</p></div>
+<div class="defn-box"><div class="defn-title">Green's Theorem (16.4)</div><p class="small">\(\oint_C P\,dx + Q\,dy = \iint_D (Q_x - P_y)\,dA\). Converts 2D line integrals to double integrals.</p></div>
+<div class="defn-box"><div class="defn-title">Surface Integrals (16.6&ndash;16.7)</div><p class="small">Scalar: \(\iint_S f\,dS = \iint_D f |\vec{r}_u\times\vec{r}_v|\,dA\).   Flux: \(\iint_S \vec{F}\cdot d\vec{S} = \iint_D \vec{F}\cdot(\vec{r}_u\times\vec{r}_v)\,dA\).</p></div>
+<div class="defn-box"><div class="defn-title">Stokes' (16.8)</div><p class="small">\(\oint_C \vec{F}\cdot d\vec{r} = \iint_S \mathrm{curl} \vec{F}\cdot d\vec{S}\). Circulation around boundary \(=\) flux of curl through the surface.</p></div>
+<div class="defn-box"><div class="defn-title">Divergence (16.9)</div><p class="small">\(\iint_S \vec{F}\cdot d\vec{S} = \iiint_E \mathrm{div} \vec{F}\,dV\). Flux through closed surface \(=\) total source strength inside.</p></div>
+<div class="defn-box"><div class="defn-title">The Deepest Idea</div><p class="small">\(\displaystyle\int_{\partial\Omega} \omega = \int_\Omega d\omega\) &mdash; integral of something over a boundary equals integral of its derivative over the interior. FTC \(\to\) Green's \(\to\) Stokes' \(\to\) Divergence are all one theorem at different dimensions. Congratulations &mdash; you've seen the whole story.</p></div>
+</div>
+<aside class="notes">Let students appreciate how far they've come. You can show the generalized Stokes' theorem \(\int_{\partial\Omega}\omega = \int_\Omega d\omega\) as a teaser for differential forms, but emphasize that the concrete theorems they have learned are the real content.</aside>
+</section>
+
+<section>
+<h2>Homework</h2>
+<div class="hw-box"><h3>Section 16.9</h3>
+<p style="font-size:1.3em;color:var(--accent-amber);">1, 3, 5, 7, 11</p>
+</div>
+<div class="key-point fragment" style="margin-top:1.5em;"><strong>Next time:</strong> Section Final Review</div>
+</section>
+</div>
+</div>
+<!-- Lightbox overlay -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged figure" tabindex="-1">
+  <button class="lb-close" aria-label="Close lightbox">&times;</button>
+  <img src="" alt="">
+  <div class="lb-caption"></div>
+</div>
+<!-- Plotly fullscreen overlay -->
+<div id="plotly-lightbox" role="dialog" aria-modal="true" aria-label="Expanded interactive figure">
+  <button class="plb-close" aria-label="Close">&times;</button>
+  <div class="plb-content"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<script>
+Reveal.initialize({
+    hash: true, slideNumber: 'c/t', progress: true, center: false,
+    transition: 'slide', width: 1280, height: 800, margin: 0.04,
+    // Allow mouse wheel to scroll overflowing slide content instead of advancing
+    mouseWheel: false,
+    plugins: [RevealNotes]
+});
+// ── Scoped MathJax: only typeset the current slide, not the whole document ──
+function typesetCurrentSlide() {
+    var slide = Reveal.getCurrentSlide();
+    if (slide && MathJax?.typesetPromise) {
+        MathJax.typesetPromise([slide]).catch(function(){});
+    }
+}
+// ── Iframe cleanup: pause Desmos/embedded iframes on non-visible slides ──
+function manageIframes(event) {
+    // Pause iframes on the previous slide
+    if (event.previousSlide) {
+        event.previousSlide.querySelectorAll('iframe[data-src-active]').forEach(function(iframe) {
+            iframe.setAttribute('data-src-paused', iframe.src);
+            iframe.src = 'about:blank';
+        });
+    }
+    // Restore iframes on the current slide
+    if (event.currentSlide) {
+        event.currentSlide.querySelectorAll('iframe[data-src-paused]').forEach(function(iframe) {
+            iframe.src = iframe.getAttribute('data-src-paused');
+            iframe.removeAttribute('data-src-paused');
+        });
+    }
+}
+// Mark all Desmos/embedded iframes for management
+document.querySelectorAll('.desmos-container iframe').forEach(function(iframe) {
+    iframe.setAttribute('data-src-active', '1');
+});
+Reveal.on('slidechanged', (event) => {
+    typesetCurrentSlide();
+    manageIframes(event);
+    // Reset scroll position on the new slide so it starts at the top
+    if (event.currentSlide) event.currentSlide.scrollTop = 0;
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealSlideChanged', indexh: event.indexh, indexv: event.indexv }, '*');
+        }
+    } catch (e) {}
+});
+// Fragment auto-scroll: configurable via meta.fragment_scroll in content.yaml
+// Value is the max fraction down the slide viewport (0.0=top, 1.0=bottom)
+var FRAG_SCROLL_TARGET = 0.67;
+function findScrollContainer(el) {
+    var section = el.closest('section');
+    while (section) {
+        if (section.scrollHeight > section.clientHeight + 1) return section;
+        var parent = section.parentElement?.closest('section, .slides, .reveal');
+        if (!parent || parent === section) break;
+        section = parent;
+    }
+    return null;
+}
+function scrollToFragment(frag, direction) {
+    var container = findScrollContainer(frag);
+    if (!container) return;
+    var fragRect = frag.getBoundingClientRect();
+    var containerRect = container.getBoundingClientRect();
+    // Reveal.js scales slides via CSS transform — account for the scale factor
+    var scale = containerRect.height / container.clientHeight || 1;
+    // Convert screen-space positions to unscaled slide-space
+    var fragBottom = (fragRect.bottom - containerRect.top) / scale + container.scrollTop;
+    var fragTop = (fragRect.top - containerRect.top) / scale + container.scrollTop;
+    var targetLine = container.clientHeight * FRAG_SCROLL_TARGET;
+    if (direction === 'forward') {
+        // Scroll so the fragment's bottom is at the target line
+        var desiredScrollTop = fragBottom - targetLine;
+        if (desiredScrollTop > container.scrollTop) {
+            container.scrollTo({ top: desiredScrollTop, behavior: 'smooth' });
+        }
+    } else {
+        // Scrolling backward: find the previous visible fragment and scroll to it
+        // If the fragment's top is above the viewport, scroll up to show it
+        var desiredScrollTop = fragTop - targetLine * 0.5;
+        if (desiredScrollTop < container.scrollTop) {
+            container.scrollTo({ top: Math.max(0, desiredScrollTop), behavior: 'smooth' });
+        }
+    }
+}
+// Add spacer to scrollable slides so the last fragment can scroll up to the target line
+Reveal.on('ready', () => {
+    var slideH = Reveal.getConfig().height || 800;
+    var spacerH = Math.round((1 - FRAG_SCROLL_TARGET) * slideH);
+    document.querySelectorAll('.reveal .slides > section, .reveal .slides > section > section').forEach(function(s) {
+        if (s.querySelector('.fragment')) {
+            var spacer = document.createElement('div');
+            spacer.style.height = spacerH + 'px';
+            spacer.style.pointerEvents = 'none';
+            spacer.setAttribute('aria-hidden', 'true');
+            s.appendChild(spacer);
+        }
+    });
+});
+function _notifyParentFragment() {
+    // Read data-editor-line from the last visible fragment in the current slide.
+    // Works for both fragmentshown and fragmenthidden events.
+    try {
+        if (!window.parent || window.parent === window) return;
+        var s = Reveal.getState();
+        var slideEl = Reveal.getCurrentSlide();
+        var editorLine = null;
+        if (slideEl) {
+            var visibleFrags = slideEl.querySelectorAll('.fragment.visible[data-editor-line]');
+            if (visibleFrags.length > 0) {
+                var ln = parseInt(visibleFrags[visibleFrags.length - 1].dataset.editorLine, 10);
+                if (!isNaN(ln)) editorLine = ln;
+            }
+        }
+        window.parent.postMessage({
+            type: 'revealFragmentChanged',
+            indexh: s.indexh, indexv: s.indexv, indexf: s.indexf,
+            editorLine: editorLine
+        }, '*');
+    } catch(e) {}
+}
+Reveal.on('fragmentshown', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('fragmenthidden', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    // Scroll back to the previous fragment or top of slide
+    var prev = event.fragment.previousElementSibling;
+    while (prev && !prev.classList.contains('fragment')) {
+        prev = prev.previousElementSibling;
+    }
+    var target = prev || event.fragment.closest('section')?.querySelector('h2') || event.fragment;
+    setTimeout(function() { scrollToFragment(target, 'backward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('ready', () => {
+    typesetCurrentSlide();
+    // Tell the CourseKit editor that Reveal is initialized so it can sync the fragment
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealReady' }, '*');
+        }
+    } catch(e) {}
+});
+
+// ── Plotly lightbox (iframe approach — zero WebGL until opened) ──
+(function() {
+    var plb = document.getElementById('plotly-lightbox');
+    if (!plb) return;
+    var plbClose = plb.querySelector('.plb-close');
+    var plbContent = plb.querySelector('.plb-content');
+    var triggerImg = null;
+    var currentBlobUrl = null;
+
+    function openPlotlyLightbox(blobUrl) {
+        // Revoke any previous blob URL
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); }
+        currentBlobUrl = blobUrl;
+        var iframe = plbContent.querySelector('iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:80vh;border:none;background:#fff;';
+            plbContent.appendChild(iframe);
+        }
+        iframe.src = blobUrl;
+        plb.classList.add('active');
+        plbClose.focus();
+    }
+
+    function closePlotlyLightbox() {
+        var iframe = plbContent.querySelector('iframe');
+        if (iframe) iframe.src = '';   // Unloads WebGL context immediately
+        plb.classList.remove('active');
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+        if (triggerImg) { triggerImg.focus(); triggerImg = null; }
+    }
+
+    document.addEventListener('click', function(e) {
+        var img = e.target.closest('img[data-plotly-src]');
+        if (!img) return;
+        e.stopPropagation();
+        triggerImg = img;
+        // The companion .html is a bare Plotly div fragment (no CDN script).
+        // Fetch it and wrap in a complete page so it renders in the iframe.
+        fetch(img.dataset.plotlySrc)
+            .then(function(r) { return r.text(); })
+            .then(function(fragment) {
+                var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+                    '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"><\/script>' +
+                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;' +
+                    'display:flex;justify-content:center;align-items:center;width:100vw;height:100vh;}' +
+                    '.js-plotly-plot,.plotly-graph-div{width:100%!important;height:100%!important;}</style>' +
+                    '</head><body>' + fragment + '</body></html>';
+                var blob = new Blob([html], {type: 'text/html'});
+                openPlotlyLightbox(URL.createObjectURL(blob));
+            })
+            .catch(function() {
+                // Fallback: open in new tab
+                window.open(img.dataset.plotlySrc, '_blank');
+            });
+    });
+
+    plbClose.addEventListener('click', closePlotlyLightbox);
+    plb.addEventListener('click', function(e) { if (e.target === plb) closePlotlyLightbox(); });
+
+    // Capture-phase Escape so Reveal.js doesn't grab it first
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape' || !plb.classList.contains('active')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closePlotlyLightbox();
+    }, true);
+
+    // Desmos/GeoGebra fullscreen: reuse lightbox with direct URL (no fetch/wrap needed)
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.desmos-fullscreen');
+        if (!btn) return;
+        e.stopPropagation();
+        var url = btn.dataset.src;
+        if (!url) return;
+        // Remove any existing iframe (may have stale Plotly styles)
+        var old = plbContent.querySelector('iframe');
+        if (old) old.remove();
+        var iframe = document.createElement('iframe');
+        iframe.style.cssText = 'width:100%;height:100%;border:none;background:#fff;border-radius:6px;';
+        iframe.src = url;
+        iframe.setAttribute('allowfullscreen', '');
+        plbContent.appendChild(iframe);
+        plb.classList.add('active');
+        plbClose.focus();
+    });
+})();
+
+// ── Lightbox for figures (accessible: focus trap, focus return) ──
+(function() {
+    const lb = document.getElementById('lightbox');
+    const lbImg = lb.querySelector('img');
+    const lbCap = lb.querySelector('.lb-caption');
+    const lbClose = lb.querySelector('.lb-close');
+    var triggerEl = null;
+
+    function openLightbox(src, alt, caption) {
+        lbImg.src = src;
+        lbImg.alt = alt;
+        lbCap.textContent = caption || alt;
+        lb.classList.add('active');
+        lbClose.focus();
+    }
+
+    function closeLightbox() {
+        lb.classList.remove('active');
+        lbImg.src = '';
+        if (triggerEl) { triggerEl.focus(); triggerEl = null; }
+    }
+
+    // Open lightbox on figure click (prevent default link navigation)
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.fig-link');
+        if (!link) return;
+        e.preventDefault();
+        e.stopPropagation();
+        triggerEl = link;
+        var src = link.getAttribute('data-src');
+        var alt = link.querySelector('img')?.alt || '';
+        var caption = link.closest('.fig-container')?.querySelector('.fig-caption')?.textContent || '';
+        openLightbox(src, alt, caption);
+    });
+
+    // Close on click anywhere on overlay
+    lb.addEventListener('click', function() { closeLightbox(); });
+
+    // Prevent closing when clicking the image itself (let user right-click → open in tab)
+    lbImg.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    // Close on Escape; trap Tab within lightbox
+    document.addEventListener('keydown', function(e) {
+        if (!lb.classList.contains('active')) return;
+        if (e.key === 'Escape') { closeLightbox(); }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            lbClose.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>

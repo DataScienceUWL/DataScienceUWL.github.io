@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>16.8 - Stokes' Theorem | MTH 310</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/white.min.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root {
+    --accent-blue: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-amber: #e09f3e;
+    --accent-purple: #6c3483; --fg: #222222; --bg: #ffffff;
+}
+.reveal { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; font-size: 30px; color: var(--fg); }
+.reveal .slides section { text-align: left; }
+.reveal .slides > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides > section > section { overflow-y: auto; max-height: 100%; }
+.reveal .slides section::-webkit-scrollbar { width: 6px; }
+.reveal .slides section::-webkit-scrollbar-track { background: transparent; }
+.reveal .slides section::-webkit-scrollbar-thumb { background: rgba(0,119,182,0.2); border-radius: 3px; }
+.reveal .slides section::-webkit-scrollbar-thumb:hover { background: rgba(0,119,182,0.4); }
+.reveal .slides > section::after, .reveal .slides > section > section::after {
+    content: ''; display: block; height: 0; clear: both; }
+.reveal h1,.reveal h2,.reveal h3 { text-transform: none; font-weight: 600; }
+.reveal h1 { font-size: 2.2em; color: var(--accent-blue); }
+.reveal h2 { font-size: 1.35em; color: var(--accent-blue); border-bottom: 2px solid rgba(0,119,182,0.25);
+    padding-bottom: 0.2em; margin-bottom: 0.4em; margin-top: 0; }
+.reveal h3 { font-size: 1.1em; color: var(--accent-green); margin: 0.2em 0; }
+.reveal p { margin: 0.3em 0; line-height: 1.4; }
+.reveal li { margin-bottom: 0.15em; line-height: 1.35; }
+.reveal ul,.reveal ol { margin-left: 0.5em; }
+.title-slide { text-align: center !important; }
+.title-slide h1 { font-size: 2.8em; margin-bottom: 0.1em; }
+.title-slide .subtitle { font-size: 1.4em; color: #b07d00; }
+.title-slide .course-info { font-size: 0.85em; color: #595959; margin-top: 2em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-blue);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.theorem-box { background: #fdf6ec; border-left-color: var(--accent-amber); }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 8px; padding: 0.5em 1em; margin: 0.4em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.95em; margin-bottom: 0.1em; }
+.solution { background: #fffdf5; border-left: 4px solid var(--accent-amber);
+    border-radius: 8px; padding: 0.4em 0.8em; margin-top: 0.3em; color: #7a5c00; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7;
+    border-radius: 8px; padding: 0.5em 0.8em; margin: 0.4em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #666; margin: 0.3em 0; font-size: 0.85em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red);
+    border-radius: 10px; padding: 1em 1.5em; text-align: center; margin: 1em 0; }
+.hw-box h3 { color: var(--accent-red); margin: 0 0 0.3em 0; }
+.two-col { display: flex; gap: 1.2em; align-items: flex-start; }
+.two-col > * { flex: 1; }
+.fig-container { text-align: center; margin: 0.3em 0; }
+.fig-container img { max-height: 60vh; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    cursor: zoom-in; transition: opacity 0.15s; }
+.fig-container img:hover { opacity: 0.8; }
+.fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
+.fig-link { display: inline-block; }
+.textbook-fig img { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; }
+.plotly-lazy-thumb { cursor: pointer; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+.plotly-lazy-thumb:hover { opacity: 0.92; outline: 2px solid #0077b6; outline-offset: 2px; }
+#plotly-lightbox { display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+    justify-content:center; align-items:center; cursor:default; }
+#plotly-lightbox.active { display:flex; }
+#plotly-lightbox .plb-close { position:fixed; top:14px; left:20px;
+    font-size:2.2em; color:#fff; background:rgba(0,0,0,0.55);
+    border:1px solid rgba(255,255,255,0.4); border-radius:6px;
+    padding:2px 14px; cursor:pointer; z-index:10001; line-height:1; }
+#plotly-lightbox .plb-close:hover { color:#e09f3e; background:rgba(0,0,0,0.75); }
+#plotly-lightbox .plb-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+#plotly-lightbox .plb-content { width:92vw; height:88vh; position:relative; }
+#plotly-lightbox .plb-content iframe { width:100%; height:100%; border:none; background:#fff; border-radius:6px; pointer-events:auto; }
+/* Lightbox overlay */
+#lightbox { display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
+    cursor: zoom-out; backdrop-filter: blur(4px); }
+#lightbox.active { display: flex; }
+#lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5); object-fit: contain; background: white; }
+#lightbox .lb-caption { position: absolute; bottom: 1.5em; left: 50%;
+    transform: translateX(-50%); color: #fff; font-size: 0.55em;
+    background: rgba(0,0,0,0.7); padding: 0.3em 1em; border-radius: 4px; }
+#lightbox .lb-close { position: absolute; top: 0.8em; right: 1.2em;
+    color: #fff; font-size: 1.5em; cursor: pointer; transition: color 0.15s;
+    background: none; border: none; padding: 0.2em 0.5em; }
+#lightbox .lb-close:hover { color: #e09f3e; }
+#lightbox .lb-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.interactive-link { color: var(--accent-blue); text-decoration: none; font-size: 0.9em; }
+.interactive-link:hover { text-decoration: underline; }
+.desmos-container { text-align: center; margin: 0.3em auto; }
+.desmos-container iframe { border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    border: 1px solid #ddd; }
+.desmos-label { font-size: 0.65em; color: var(--accent-blue); margin-top: 0.2em; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.4em;
+    color: var(--accent-blue); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+.desmos-fullscreen { background: none; border: 1px solid var(--accent-blue); border-radius: 4px;
+    color: var(--accent-blue); font-size: 1.1em; cursor: pointer; padding: 0.1em 0.4em;
+    opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-fullscreen:hover { opacity: 1; background: rgba(0,119,182,0.1); }
+aside.notes { display: none; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 0.5em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.3em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.75em; color: var(--accent-blue);
+    text-align: center; margin-bottom: 0.1em; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 18vh; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+.small { font-size: 0.8em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-blue);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600;
+    font-size: 16px; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+table { border-collapse: collapse; font-size: 0.8em; margin: 0.5em 0; }
+th, td { padding: 0.2em 0.6em; border-bottom: 1px solid #ddd; }
+th { color: var(--accent-blue); }
+.reveal .progress { color: var(--accent-blue); }
+.reveal .slide-number { color: #767676; font-size: 0.5em; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+</style>
+</head>
+<body data-section="Section_16p8">
+<a href="#" class="skip-link" onclick="Reveal.next();return false;">Skip to first slide</a>
+<div class="reveal">
+<div class="slides">
+<section class="title-slide" data-background-gradient="radial-gradient(circle at 30% 50%, #e8f4f8 0%, #f8f9fa 70%)">
+  <h1>16.8</h1>
+  <p class="subtitle">Stokes' Theorem</p>
+  <hr style="border-color:rgba(0,212,255,0.3);width:60%;margin:1em auto;" aria-hidden="true">
+  <p class="course-info">MTH 310 &mdash; Calculus III<br>  Vector Calculus</p>
+</section>
+
+<section id="the-big-picture-green-s-theorem-in-3d">
+<h2>The Big Picture: Green's Theorem in 3D</h2>
+<div class="fragment" data-editor-line="17"><p>In Section 16.4, <strong>Green's Theorem</strong> connected a line integral around a <strong>flat</strong> closed curve to a double integral over the flat region it bounds:</p>
+<p>\[\oint_C P\,dx + Q\,dy = \iint_D \left(\frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right) dA\]</p></div>
+<div class="fragment" data-editor-line="20"><p><strong>Stokes' Theorem</strong> generalizes this: replace the flat region by <em>any</em> oriented surface \(S\) in 3D, and replace \(C\) by the (possibly non-planar) boundary curve of \(S\).</p></div>
+<div class="fig-container fragment" data-editor-line="22">
+  <img src="figures/green_to_stokes.png" alt="Two-panel figure. Left panel: a flat region D in the xy-plane bounded by a closed curve C, traversed counterclockwise, illustrating the setting of Green's Theorem. Right panel: a curved surface S floating in three-dimensional space, bounded by a space curve C with direction arrows, and a normal vector n pointing outward from the surface, illustrating the setting of Stokes' Theorem." class="plotly-lazy-thumb" data-plotly-src="figures/green_to_stokes.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="24"><p>Think of the flat disk being <strong>lifted and bent</strong> into a curved surface like a soap film stretched across a bent wire. The curve \(C\) is the wire; \(S\) is the film.</p></div>
+<div class="key-point fragment" data-editor-line="26"><p>Green's Theorem is the flat special case of Stokes' Theorem. Stokes' works for any oriented surface in \(\mathbb{R}^3\) whose boundary is a piecewise-smooth closed curve.</p></div>
+<aside class="notes">Draw a flat region in the \(xy\)-plane first, then push it up into a bowl or dome. The boundary curve lifts along with it. This physical picture anchors everything that follows.</aside>
+</section>
+
+<section id="stokes-theorem">
+<h2>Stokes' Theorem</h2>
+<div class="defn-box theorem-box fragment" data-editor-line="35">
+  <div class="defn-title">Theorem: Stokes' Theorem</div>
+  <p>Let \(S\) be an oriented, piecewise-smooth surface bounded by a simple, closed, piecewise-smooth boundary curve \(C\) with <strong>positive orientation</strong>. Let \(\vec{F}\) be a vector field whose components have continuous partial derivatives on an open region containing \(S\). Then</p>
+<p>\[\boxed{\int_C \vec{F} \cdot d\vec{r} \;=\; \iint_S \mathrm{curl}\,\vec{F} \cdot d\vec{S}.}\]</p>
+</div>
+<div class="fragment" data-editor-line="40"><p>In words: the <strong>circulation</strong> of \(\vec{F}\) around the boundary curve equals the <strong>flux of curl \(\vec{F}\)</strong> through the surface.</p></div>
+<div class="fragment" data-editor-line="42"><p><strong>Reading each piece:</strong></p>
+<ul>
+<li>\(\displaystyle\int_C \vec{F}\cdot d\vec{r}\) &mdash; line integral around the boundary (work / circulation)</li>
+<li>\(\mathrm{curl} \vec{F} = \nabla\times\vec{F}\) &mdash; measures local rotation of the field</li>
+<li>\(\displaystyle\iint_S \mathrm{curl} \vec{F}\cdot d\vec{S}\) &mdash; total curl flux through \(S\)</li>
+</ul></div>
+<div class="key-point fragment" data-editor-line="49"><p>Stokes': <em>line integral around the edge</em> \(=\) <em>surface integral of the curl over the interior</em>. Exactly the same template as Green's, one dimension lifted.</p></div>
+</section>
+
+<section id="orientation-the-right-hand-rule">
+<h2>Orientation: The Right-Hand Rule</h2>
+<div class="fragment" data-editor-line="56"><p>For Stokes' Theorem to work, the orientations of \(C\) and \(S\) must be <strong>compatible</strong>.</p></div>
+<div class="fig-container fragment" data-editor-line="58">
+  <img src="figures/right_hand_rule.png" alt="An interactive 3D figure of a curved blue dome-shaped surface S in space. A red closed boundary curve C runs along its lower edge, with arrows indicating counterclockwise traversal as viewed from above. A bold purple arrow labeled n points upward from the dome, representing the outward unit normal. A small red label marks a right hand icon showing the thumb aligned with n and the fingers curling in the direction of C, illustrating the right-hand rule connecting the orientation of C to the orientation of S." class="plotly-lazy-thumb" data-plotly-src="figures/right_hand_rule.html" style="max-height:60vh;" title="Click to interact">
+</div>
+<div class="fragment" data-editor-line="60"><p><strong>Right-hand rule:</strong> curl the fingers of your <strong>right hand</strong> in the direction of travel along \(C\); your <strong>thumb</strong> points in the direction of the surface normal \(\vec{n}\).</p></div>
+<div class="fragment" data-editor-line="62"><p>Equivalently: walk along \(C\) in the positive direction with your head pointing along \(\vec{n}\) &mdash; the surface is on your <strong>left</strong>.</p></div>
+<div class="fragment" data-editor-line="64"><p><strong>Shortcut for graphs.</strong> If \(S\) is oriented <strong>upward</strong> (normal points up), then \(C\) is traversed <strong>counterclockwise</strong> when viewed from above.</p></div>
+<div class="key-point fragment" data-editor-line="66"><p>The right-hand rule ties \(C\)'s direction to \(S\)'s normal. Getting it backward flips the sign of the answer &mdash; always double-check before computing.</p></div>
+<aside class="notes">Have students physically do the right-hand rule. If the surface is oriented downward, the curve is clockwise from above. This is the single most common source of sign errors in the section.</aside>
+</section>
+
+<section id="green-s-theorem-is-a-special-case-of-stokes">
+<h2>Green's Theorem Is a Special Case of Stokes'</h2>
+<div class="fragment" data-editor-line="75"><p>Take \(S\) = a flat region \(D\) in the \(xy\)-plane, oriented upward (\(\vec{n} = \vec{k}\)), with \(\vec{F} = \langle P, Q, 0\rangle\) (no \(z\)-component, components independent of \(z\)).</p></div>
+<div class="fragment" data-editor-line="77"><p><strong>Curl:</strong> Since \(P, Q\) don't depend on \(z\),</p>
+<p>\[\mathrm{curl}\,\vec{F} = \left\langle 0,\; 0,\; \frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right\rangle.\]</p></div>
+<div class="fragment" data-editor-line="80"><p><strong>Flux through the flat disk:</strong></p>
+<p>\[\iint_S \mathrm{curl}\,\vec{F}\cdot d\vec{S} = \iint_D \langle 0,\,0,\,Q_x - P_y\rangle\cdot\langle 0,\,0,\,1\rangle\,dA = \iint_D (Q_x - P_y)\,dA.\]</p></div>
+<div class="fragment" data-editor-line="83"><p>And Stokes' gives</p>
+<p>\[\oint_C P\,dx + Q\,dy = \iint_D (Q_x - P_y)\,dA,\]</p>
+<p>which is exactly <strong>Green's Theorem</strong>.</p></div>
+<div class="key-point fragment" data-editor-line="87"><p>Green's (flat \(xy\)-plane) is Stokes' restricted to a horizontal disk. Stokes' opens the same trick up to any oriented surface whose boundary is a simple closed curve.</p></div>
+</section>
+
+<section id="quick-check-identify-the-pieces">
+<h2>Quick Check: Identify the Pieces</h2>
+<div class="fragment" data-editor-line="94"><p><em>Let \(S\) be the part of the paraboloid \(z = 9 - x^2 - y^2\) above the \(xy\)-plane, oriented upward. What is the boundary curve \(C\)?</em></p></div>
+<div class="fragment" data-editor-line="96"><p class="work-prompt">Set \(z = 0\) in the equation of the surface. What shape do you get, and what is its orientation?</p></div>
+<div class="fragment" data-editor-line="98"><p>Setting \(z = 0\):   \(0 = 9 - x^2 - y^2 \;\Rightarrow\; x^2 + y^2 = 9\). The boundary \(C\) is the <strong>circle of radius \(3\)</strong> in the \(xy\)-plane.</p></div>
+<div class="fragment" data-editor-line="100"><p>Since \(S\) is oriented upward, the right-hand rule gives <strong>counterclockwise</strong> (from above):</p>
+<p>\[\vec{r}(t) = \langle 3\cos t,\; 3\sin t,\; 0\rangle, \qquad 0 \le t \le 2\pi.\]</p></div>
+<div class="key-point fragment" data-editor-line="103"><p>Three things to identify for every Stokes' problem: the boundary \(C\), its orientation (from the right-hand rule), and a parametrization.</p></div>
+</section>
+
+<section id="example-1-line-integral-via-stokes-theorem">
+<h2>Example 1: Line Integral via Stokes' Theorem</h2>
+<div class="example-box fragment" data-editor-line="110">
+  <div class="example-title">Example 1</div>
+  <p>Let \(\vec{F}(x,y,z) = \langle 2y\cos z,\; e^x\sin z,\; x\,e^y\rangle\), and let \(C\) be the circle \(x^2+y^2=9\) in the plane \(z=0\), oriented counterclockwise. Evaluate \(\displaystyle\int_C \vec{F}\cdot d\vec{r}\).</p>
+</div>
+<div class="fragment" data-editor-line="114"><p class="work-prompt">Direct parametrization of \(C\) gives a messy \(e^{3\sin t}\) term. Use Stokes' with the simplest surface bounded by \(C\) &mdash; the flat disk in the \(xy\)-plane.</p></div>
+<div class="fragment" data-editor-line="116"><p><strong>Parametrize \(C\).</strong> \(\vec{r}(t) = \langle 3\cos t, 3\sin t, 0\rangle\), \(\vec{r} '(t) = \langle -3\sin t, 3\cos t, 0\rangle\).</p></div>
+<div class="fragment" data-editor-line="118"><p>On \(C\) we have \(z=0\), so \(\cos z = 1\), \(\sin z = 0\), and</p>
+<p>\[\vec{F}(\vec{r}(t)) = \langle 2(3\sin t)(1),\; e^{3\cos t}(0),\; 3\cos t\,e^{3\sin t}\rangle = \langle 6\sin t,\; 0,\; 3\cos t\,e^{3\sin t}\rangle.\]</p></div>
+<div class="fragment" data-editor-line="121"><p><strong>Dot product</strong> (the \(e^{3\sin t}\) term multiplies the zero third component of \(\vec{r} '\), so it drops out):</p>
+<p>\[\vec{F}\cdot\vec{r}\,'(t) = (6\sin t)(-3\sin t) + 0 + 0 = -18\sin^2 t.\]</p></div>
+<div class="fragment" data-editor-line="124"><p><strong>Integrate:</strong></p>
+<p>\[\int_C \vec{F}\cdot d\vec{r} = \int_0^{2\pi} -18\sin^2 t\,dt = -18\cdot\pi = \boxed{-18\pi}.\]</p></div>
+<div class="key-point fragment" data-editor-line="127"><p>The nasty-looking \(e^{3\sin t}\) and \(e^x\sin z\) terms evaporate as soon as we set \(z=0\) on \(C\). Stokes' didn't do the work here &mdash; but recognizing that \(C\) is in the \(xy\)-plane simplified \(\vec{F}\) dramatically.</p></div>
+<aside class="notes">This example sets up the "pick the easier side" idea. In later examples we'll use Stokes' to swap sides explicitly; here the line-integral side is already easy because \(C\) is flat.</aside>
+</section>
+
+<section id="the-power-of-stokes-choose-the-easier-side">
+<h2>The Power of Stokes': Choose the Easier Side</h2>
+<div class="fragment" data-editor-line="136"><p>Stokes' gives us a <strong>choice</strong>: compute the line integral side or the surface integral side &mdash; whichever is simpler.</p></div>
+<div class="fragment" data-editor-line="139"><div class="two-col">
+  <div><div><p><strong>Compute the line integral when\ldots</strong></p>
+<ul>
+<li>\(C\) has a simple parametrization (circle, line segment)</li>
+<li>\(\vec{F}\) simplifies on \(C\) (e.g., \(z = 0\) kills exponentials)</li>
+<li>\(C\) is a single curve, not many pieces</li>
+</ul></div></div>
+  <div><div><p><strong>Compute the surface integral when\ldots</strong></p>
+<ul>
+<li>\(\mathrm{curl} \vec{F}\) is simple</li>
+<li>\(S\) has a clean normal (plane, paraboloid, graph)</li>
+<li>\(C\) has multiple pieces (triangle of edges, etc.)</li>
+</ul></div></div>
+</div></div>
+<div class="fragment" data-editor-line="156"><p><strong>Bonus freedom:</strong> the same curve \(C\) bounds <em>many</em> surfaces. Pick the surface that makes \(\iint_S \mathrm{curl} \vec{F}\cdot d\vec{S}\) easiest.</p></div>
+<div class="key-point fragment" data-editor-line="158"><p>Stokes' is a <strong>computational tool</strong>: convert a hard integral into an easy one. The surface integral depends only on the curl and the boundary \(C\), not on which surface filling you pick.</p></div>
+</section>
+
+<section id="example-2-line-integral-via-stokes">
+<h2>Example 2: Line Integral via Stokes'</h2>
+<div class="example-box fragment" data-editor-line="165">
+  <div class="example-title">Example 2</div>
+  <p>Evaluate \(\displaystyle\int_C \vec{F}\cdot d\vec{r}\) where \(\vec{F} = \langle 1,\; x+yz,\; xy - \sqrt{z}\rangle\) and \(C\) is the triangular boundary of the part of the plane \(3x + 2y + z = 1\) in the first octant, oriented counterclockwise from above.</p>
+</div>
+<div class="fragment" data-editor-line="169"><p class="work-prompt">Computing the line integral directly means three separate segment integrals &mdash; painful. Use Stokes' with \(S\) = the triangular piece of the plane. Compute curl first.</p></div>
+<div class="fragment" data-editor-line="171"><p><strong>Step 1: Compute curl \(\vec{F}\).</strong></p>
+<p>\[\mathrm{curl}\,\vec{F} = \langle (xy-\sqrt{z})_y - (x+yz)_z,\; (1)_z - (xy-\sqrt{z})_x,\; (x+yz)_x - (1)_y\rangle\]</p>
+<p>\[= \langle x - y,\; -y,\; 1\rangle.\]</p></div>
+<div class="fragment" data-editor-line="175"><p><strong>Step 2: Set up the surface.</strong> \(S\): \(z = g(x,y) = 1 - 3x - 2y\) over the triangle \(D = \{x\ge 0,\;y\ge 0,\;3x+2y\le 1\}\). Upward: \(d\vec{S} = \langle -g_x, -g_y, 1\rangle\,dA = \langle 3, 2, 1\rangle\,dA\).</p></div>
+<div class="fragment" data-editor-line="177"><p><strong>Step 3: Dot product.</strong></p>
+<p>\[\mathrm{curl}\,\vec{F}\cdot\langle 3,2,1\rangle = 3(x-y) + 2(-y) + 1 = 3x - 5y + 1.\]</p></div>
+</section>
+
+<section>
+<h2>Example 2: Line Integral via Stokes'</h2>
+<div class="fragment" data-editor-line="182"><p><strong>Step 4: Integrate over the triangle.</strong> For fixed \(x \in [0, 1/3]\), \(y\) runs \(0\) to \((1-3x)/2\):</p>
+<p>\[\int_0^{(1-3x)/2}(3x - 5y + 1)\,dy = \left[(3x+1)y - \tfrac{5}{2}y^2\right]_0^{(1-3x)/2} = (3x+1)\tfrac{1-3x}{2} - \tfrac{5}{8}(1-3x)^2.\]</p></div>
+<div class="fragment" data-editor-line="185"><p>Simplify by letting \(a = 1-3x\) so \(3x+1 = 2-a\):</p>
+<p>\[= \tfrac{(2-a)a}{2} - \tfrac{5a^2}{8} = \tfrac{4a(2-a) - 5a^2}{8} = \tfrac{8a - 9a^2}{8}.\]</p></div>
+<div class="fragment" data-editor-line="188"><p><strong>Outer integral</strong> with \(a = 1-3x\), \(da = -3\,dx\):</p>
+<p>\[\int_0^{1/3}\frac{8a - 9a^2}{8}\,dx = \frac{1}{24}\int_0^1 (8a - 9a^2)\,da = \frac{1}{24}\bigl[4a^2 - 3a^3\bigr]_0^1 = \frac{4 - 3}{24} = \boxed{\tfrac{1}{24}}.\]</p></div>
+<div class="key-point fragment" data-editor-line="191"><p>Three line segments \(\to\) one surface integral on a flat plane. When the boundary has multiple pieces but the curl and surface are simple, Stokes' saves huge effort.</p></div>
+</section>
+
+<section id="quick-check-compute-the-curl">
+<h2>Quick Check: Compute the Curl</h2>
+<div class="fragment" data-editor-line="198"><p><em>Let \(\vec{F} = \langle yz,\; xz,\; xy\rangle\). Compute \(\mathrm{curl} \vec{F}\).</em></p></div>
+<div class="fragment" data-editor-line="200"><p class="work-prompt">Formula: \(\mathrm{curl} \vec{F} = \langle R_y - Q_z,\; P_z - R_x,\; Q_x - P_y\rangle\) where \(\vec{F} = \langle P,Q,R\rangle\).</p></div>
+<div class="fragment" data-editor-line="202"><p>\(P = yz\), \(Q = xz\), \(R = xy\):</p>
+<p>\[\mathrm{curl}\,\vec{F} = \langle x-x,\; y-y,\; z-z\rangle = \vec{0}.\]</p></div>
+<div class="fragment" data-editor-line="205"><p>The curl is zero, so \(\vec{F}\) is <strong>irrotational</strong>. By Stokes' Theorem,</p>
+<p>\[\oint_C \vec{F}\cdot d\vec{r} = \iint_S \vec{0}\cdot d\vec{S} = 0 \qquad\text{for any closed curve $C$.}\]</p></div>
+<div class="key-point fragment" data-editor-line="208"><p>\(\mathrm{curl} \vec{F} = \vec{0}\) on a simply connected region \(\Rightarrow\) every closed-loop line integral vanishes. This is how Stokes' delivers the 3D version of “conservative \(\Leftrightarrow\) zero circulation.”</p></div>
+</section>
+
+<section id="stokes-and-conservative-fields-3d">
+<h2>Stokes' and Conservative Fields (3D)</h2>
+<div class="fragment" data-editor-line="215"><p>Stokes' finally <strong>proves</strong> the conservative-field theorem we stated without proof in Section 16.5.</p></div>
+<div class="fragment" data-editor-line="217"><p><strong>Recall (16.5):</strong> if \(\vec{F} = \nabla f\), then \(\mathrm{curl}(\nabla f) = \vec{0}\).</p>
+<p><strong>Converse (stated, not proved before):</strong> if \(\mathrm{curl} \vec{F} = \vec{0}\) on a <em>simply connected</em> region, then \(\vec{F}\) is conservative.</p></div>
+<div class="fragment" data-editor-line="221"><p><strong>Proof via Stokes'.</strong> If \(\mathrm{curl} \vec{F} = \vec{0}\) throughout the region and \(C\) is any closed curve bounding a surface \(S\) in that region:</p>
+<p>\[\oint_C \vec{F}\cdot d\vec{r} = \iint_S \mathrm{curl}\,\vec{F}\cdot d\vec{S} = \iint_S \vec{0}\cdot d\vec{S} = 0.\]</p>
+<p>Every closed-loop integral is zero, so \(\vec{F}\) is path-independent &mdash; i.e., conservative.</p></div>
+<div class="fragment" data-editor-line="225"><p><strong>The full 3D equivalence</strong> on a simply connected domain:</p>
+<p>\[\vec{F}\text{ conservative}\;\Longleftrightarrow\;\mathrm{curl}\,\vec{F} = \vec{0}\;\Longleftrightarrow\;\oint_C \vec{F}\cdot d\vec{r} = 0\text{ for all closed }C.\]</p></div>
+<div class="key-point fragment" data-editor-line="228"><p>“Simply connected” in 3D means every closed curve bounds some surface inside the region. That's what lets Stokes' close the loop back to a conservative potential.</p></div>
+<aside class="notes">This closes the open question from 16.5. The hypothesis “simply connected” mirrors the 2D hypothesis in Green's/Q4-on-the-quiz version.</aside>
+</section>
+
+<section id="example-3-choosing-a-better-surface">
+<h2>Example 3: Choosing a Better Surface</h2>
+<div class="example-box fragment" data-editor-line="237">
+  <div class="example-title">Example 3</div>
+  <p>Evaluate \(\displaystyle\oint_C \vec{F}\cdot d\vec{r}\) where \(\vec{F} = \langle -y^2,\; x,\; z^2\rangle\) and \(C\) is the intersection of the plane \(y+z = 2\) with the cylinder \(x^2+y^2 = 1\), oriented counterclockwise from above.</p>
+</div>
+<div class="fragment" data-editor-line="241"><p class="work-prompt">\(C\) is a tilted ellipse &mdash; parametrizing it directly is awkward. Use Stokes' with \(S\) = the flat piece of the plane inside the cylinder.</p></div>
+<div class="fragment" data-editor-line="243"><p><strong>Curl.</strong> \(\mathrm{curl} \vec{F} = \langle 0,  0,  1-(-2y)\rangle = \langle 0,  0,  1+2y\rangle\).</p></div>
+<div class="fragment" data-editor-line="245"><p><strong>Surface.</strong> \(z = g(x,y) = 2 - y\) over the disk \(D: x^2+y^2 \le 1\). Upward: \(d\vec{S} = \langle 0, 1, 1\rangle\,dA\).</p></div>
+<div class="fragment" data-editor-line="247"><p><strong>Dot product.</strong></p>
+<p>\[\mathrm{curl}\,\vec{F}\cdot\langle 0,1,1\rangle = 0 + 0 + (1+2y) = 1 + 2y.\]</p></div>
+<div class="fragment" data-editor-line="250"><p><strong>Integrate</strong> over the unit disk. By symmetry, \(\iint_D 2y\,dA = 0\) (odd in \(y\) on a symmetric disk), leaving</p>
+<p>\[\iint_D (1 + 2y)\,dA = \iint_D 1\,dA = \mathrm{Area}(D) = \pi \cdot 1^2 = \boxed{\pi}.\]</p></div>
+<div class="key-point fragment" data-editor-line="253"><p>Two wins: (1) flat-plane surface made the integral trivial, (2) odd-function symmetry killed the \(2y\) term. \(C\) also bounds a cylindrical piece and a cap of a sphere &mdash; any of them would give the same \(\pi\), but the plane is fastest.</p></div>
+<aside class="notes">Emphasize that the theorem allows ANY surface with boundary \(C\). Here the plane is fastest; the cylinder piece or a hemisphere would also work but demand harder integrals.</aside>
+</section>
+
+<section id="quick-check-flat-disk-shortcut">
+<h2>Quick Check: Flat-Disk Shortcut</h2>
+<div class="fragment" data-editor-line="262"><p><em>Let \(\vec{F} = \langle z, x, y\rangle\) and \(C\) = unit circle in the \(xy\)-plane, counterclockwise. Evaluate \(\displaystyle\oint_C \vec{F}\cdot d\vec{r}\).</em></p></div>
+<div class="fragment" data-editor-line="264"><p class="work-prompt">Use Stokes' with \(S\) = unit disk in the \(xy\)-plane. Only the \(\vec{k}\)-component of the curl survives the dot with \(\vec{n} = \vec{k}\).</p></div>
+<div class="fragment" data-editor-line="266"><p>\(\mathrm{curl} \vec{F} = \langle 1, 1, 1\rangle\).</p>
+<p><em>(Check: \(R_y - Q_z = 1 - 0 = 1\), \(P_z - R_x = 1 - 0 = 1\), \(Q_x - P_y = 1 - 0 = 1\).)</em></p></div>
+<div class="fragment" data-editor-line="270"><p>On \(S\) (flat disk, \(\vec{n} = \vec{k}\)):</p>
+<p>\[\iint_S \mathrm{curl}\,\vec{F}\cdot d\vec{S} = \iint_D \langle 1,1,1\rangle\cdot\langle 0,0,1\rangle\,dA = \iint_D 1\,dA = \pi.\]</p></div>
+<div class="key-point fragment" data-editor-line="273"><p>When \(C\) lies in a coordinate plane, pick the flat disk. Only one component of curl matters &mdash; the one parallel to the normal. This is literally the Green's-Theorem integrand.</p></div>
+</section>
+
+<section id="example-4-surface-integral-via-line-integral">
+<h2>Example 4: Surface Integral via Line Integral</h2>
+<div class="example-box fragment" data-editor-line="280">
+  <div class="example-title">Example 4</div>
+  <p>Evaluate \(\displaystyle\iint_S \mathrm{curl} \vec{F}\cdot d\vec{S}\) where \(\vec{F} = \langle xz,\; yz,\; xy\rangle\) and \(S\) is the part of the sphere \(x^2+y^2+z^2 = 4\) inside the cylinder \(x^2+y^2 = 1\) with \(z\ge 0\), oriented upward.</p>
+</div>
+<div class="fragment" data-editor-line="284"><p class="work-prompt">The surface is a complicated spherical cap. But its boundary is a simple circle. Use Stokes' in the reverse direction: compute the line integral instead.</p></div>
+<div class="fragment" data-editor-line="286"><p><strong>Boundary.</strong> \(C\): \(x^2+y^2 = 1\) at height \(z = \sqrt{4-1} = \sqrt{3}\).</p>
+<p>\[\vec{r}(t) = \langle\cos t,\;\sin t,\;\sqrt{3}\rangle,\quad \vec{r}\,'(t) = \langle -\sin t,\;\cos t,\; 0\rangle,\quad 0\le t\le 2\pi.\]</p></div>
+<div class="fragment" data-editor-line="289"><p><strong>\(\vec{F}\) on \(C\).</strong> \(\vec{F}(\vec{r}(t)) = \langle \sqrt{3}\cos t,\;\sqrt{3}\sin t,\;\cos t\sin t\rangle\).</p></div>
+<div class="fragment" data-editor-line="291"><p><strong>Dot product</strong> (the \(z\)-component of \(\vec{F}\) multiplies the zero \(z\)-component of \(\vec{r} '\) and drops out):</p>
+<p>\[\vec{F}\cdot\vec{r}\,' = -\sqrt{3}\sin t\cos t + \sqrt{3}\sin t\cos t + 0 = 0.\]</p></div>
+<div class="fragment" data-editor-line="294"><p>\[\iint_S \mathrm{curl}\,\vec{F}\cdot d\vec{S} = \int_C \vec{F}\cdot d\vec{r} = \int_0^{2\pi} 0\,dt = \boxed{0}.\]</p></div>
+<div class="key-point fragment" data-editor-line="296"><p>Stokes' in reverse: a painful-looking surface integral collapsed to a two-line computation on a circle. Always check both sides before committing to a calculation.</p></div>
+</section>
+
+<section id="physical-interpretation-circulation-and-curl">
+<h2>Physical Interpretation: Circulation and Curl</h2>
+<div class="fragment" data-editor-line="304"><p>Stokes' has a clean fluid-flow interpretation.</p></div>
+<div class="fragment" data-editor-line="306"><p><strong>Left side:</strong> \(\displaystyle\oint_C \vec{F}\cdot d\vec{r}\) is the <strong>circulation</strong> of \(\vec{F}\) around \(C\) &mdash; the net tendency of the flow to follow the curve.</p></div>
+<div class="fragment" data-editor-line="308"><p><strong>Right side:</strong> \(\displaystyle\iint_S \mathrm{curl} \vec{F}\cdot d\vec{S}\) sums the <strong>local rotation</strong> across \(S\). The curl at each point measures how a tiny paddlewheel there would spin.</p></div>
+<div class="fragment" data-editor-line="310"><p><strong>Stokes' says:</strong> total circulation around the boundary \(=\) sum of all tiny local rotations inside. The paddlewheel spinning adds up to the bulk circulation.</p></div>
+<div class="key-point fragment" data-editor-line="313"><p><strong>Curl \(=\) microscopic circulation density.</strong> Stokes' integrates that local density over \(S\) to produce the macroscopic circulation around \(C\).</p></div>
+<aside class="notes">If time permits, demo with a water-wheel analogy: many tiny wheels scattered across \(S\), each spinning according to curl. Total rotation equals the big paddle going around the edge.</aside>
+</section>
+
+<section id="section-16-8-summary">
+<h2>Section 16.8 Summary</h2>
+<div class="summary-grid">
+<div class="defn-box"><div class="defn-title">Stokes' Theorem</div><p class="small">\(\displaystyle\int_C \vec{F}\cdot d\vec{r} = \iint_S \mathrm{curl} \vec{F}\cdot d\vec{S}\). Circulation around the boundary \(=\) flux of curl through the surface.</p></div>
+<div class="defn-box"><div class="defn-title">Green's \(\Rightarrow\) Stokes'</div><p class="small">When \(S\) is a flat region in the \(xy\)-plane with \(\vec{F} = \langle P,Q,0\rangle\), Stokes' collapses to Green's Theorem \(\oint_C P\,dx+Q\,dy = \iint_D(Q_x - P_y)\,dA\).</p></div>
+<div class="defn-box"><div class="defn-title">Orientation</div><p class="small">Right-hand rule: curl fingers along \(C\) in its direction of travel, thumb points along \(\vec{n}\). Reversing either flips the sign.</p></div>
+<div class="defn-box"><div class="defn-title">Computational Strategy</div><p class="small">Pick whichever side is easier. Any surface with boundary \(C\) gives the same flux &mdash; choose the simplest one (usually a flat disk or plane piece).</p></div>
+<div class="defn-box"><div class="defn-title">Conservative Fields</div><p class="small">\(\mathrm{curl} \vec{F} = \vec{0}\) on a simply connected region \(\Rightarrow\) every closed-loop integral of \(\vec{F}\) is zero \(\Rightarrow\) \(\vec{F}\) is conservative. This is the proof we deferred from 16.5.</p></div>
+<div class="defn-box"><div class="defn-title">Looking Ahead</div><p class="small">Section 16.9 &mdash; the <strong>Divergence Theorem</strong>: flux out of a <em>closed</em> surface \(=\) triple integral of divergence over the enclosed volume. The last of the three great integral theorems.</p></div>
+</div>
+</section>
+
+<section>
+<h2>Homework</h2>
+<div class="hw-box"><h3>Section 16.8</h3>
+<p style="font-size:1.3em;color:var(--accent-amber);">1, 3, 5, 7, 9, 13, 17, 19</p>
+</div>
+<div class="key-point fragment" style="margin-top:1.5em;"><strong>Next time:</strong> Section 16.9 &mdash; The Divergence Theorem</div>
+</section>
+</div>
+</div>
+<!-- Lightbox overlay -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged figure" tabindex="-1">
+  <button class="lb-close" aria-label="Close lightbox">&times;</button>
+  <img src="" alt="">
+  <div class="lb-caption"></div>
+</div>
+<!-- Plotly fullscreen overlay -->
+<div id="plotly-lightbox" role="dialog" aria-modal="true" aria-label="Expanded interactive figure">
+  <button class="plb-close" aria-label="Close">&times;</button>
+  <div class="plb-content"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<script>
+Reveal.initialize({
+    hash: true, slideNumber: 'c/t', progress: true, center: false,
+    transition: 'slide', width: 1280, height: 800, margin: 0.04,
+    // Allow mouse wheel to scroll overflowing slide content instead of advancing
+    mouseWheel: false,
+    plugins: [RevealNotes]
+});
+// ── Scoped MathJax: only typeset the current slide, not the whole document ──
+function typesetCurrentSlide() {
+    var slide = Reveal.getCurrentSlide();
+    if (slide && MathJax?.typesetPromise) {
+        MathJax.typesetPromise([slide]).catch(function(){});
+    }
+}
+// ── Iframe cleanup: pause Desmos/embedded iframes on non-visible slides ──
+function manageIframes(event) {
+    // Pause iframes on the previous slide
+    if (event.previousSlide) {
+        event.previousSlide.querySelectorAll('iframe[data-src-active]').forEach(function(iframe) {
+            iframe.setAttribute('data-src-paused', iframe.src);
+            iframe.src = 'about:blank';
+        });
+    }
+    // Restore iframes on the current slide
+    if (event.currentSlide) {
+        event.currentSlide.querySelectorAll('iframe[data-src-paused]').forEach(function(iframe) {
+            iframe.src = iframe.getAttribute('data-src-paused');
+            iframe.removeAttribute('data-src-paused');
+        });
+    }
+}
+// Mark all Desmos/embedded iframes for management
+document.querySelectorAll('.desmos-container iframe').forEach(function(iframe) {
+    iframe.setAttribute('data-src-active', '1');
+});
+Reveal.on('slidechanged', (event) => {
+    typesetCurrentSlide();
+    manageIframes(event);
+    // Reset scroll position on the new slide so it starts at the top
+    if (event.currentSlide) event.currentSlide.scrollTop = 0;
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealSlideChanged', indexh: event.indexh, indexv: event.indexv }, '*');
+        }
+    } catch (e) {}
+});
+// Fragment auto-scroll: configurable via meta.fragment_scroll in content.yaml
+// Value is the max fraction down the slide viewport (0.0=top, 1.0=bottom)
+var FRAG_SCROLL_TARGET = 0.67;
+function findScrollContainer(el) {
+    var section = el.closest('section');
+    while (section) {
+        if (section.scrollHeight > section.clientHeight + 1) return section;
+        var parent = section.parentElement?.closest('section, .slides, .reveal');
+        if (!parent || parent === section) break;
+        section = parent;
+    }
+    return null;
+}
+function scrollToFragment(frag, direction) {
+    var container = findScrollContainer(frag);
+    if (!container) return;
+    var fragRect = frag.getBoundingClientRect();
+    var containerRect = container.getBoundingClientRect();
+    // Reveal.js scales slides via CSS transform — account for the scale factor
+    var scale = containerRect.height / container.clientHeight || 1;
+    // Convert screen-space positions to unscaled slide-space
+    var fragBottom = (fragRect.bottom - containerRect.top) / scale + container.scrollTop;
+    var fragTop = (fragRect.top - containerRect.top) / scale + container.scrollTop;
+    var targetLine = container.clientHeight * FRAG_SCROLL_TARGET;
+    if (direction === 'forward') {
+        // Scroll so the fragment's bottom is at the target line
+        var desiredScrollTop = fragBottom - targetLine;
+        if (desiredScrollTop > container.scrollTop) {
+            container.scrollTo({ top: desiredScrollTop, behavior: 'smooth' });
+        }
+    } else {
+        // Scrolling backward: find the previous visible fragment and scroll to it
+        // If the fragment's top is above the viewport, scroll up to show it
+        var desiredScrollTop = fragTop - targetLine * 0.5;
+        if (desiredScrollTop < container.scrollTop) {
+            container.scrollTo({ top: Math.max(0, desiredScrollTop), behavior: 'smooth' });
+        }
+    }
+}
+// Add spacer to scrollable slides so the last fragment can scroll up to the target line
+Reveal.on('ready', () => {
+    var slideH = Reveal.getConfig().height || 800;
+    var spacerH = Math.round((1 - FRAG_SCROLL_TARGET) * slideH);
+    document.querySelectorAll('.reveal .slides > section, .reveal .slides > section > section').forEach(function(s) {
+        if (s.querySelector('.fragment')) {
+            var spacer = document.createElement('div');
+            spacer.style.height = spacerH + 'px';
+            spacer.style.pointerEvents = 'none';
+            spacer.setAttribute('aria-hidden', 'true');
+            s.appendChild(spacer);
+        }
+    });
+});
+function _notifyParentFragment() {
+    // Read data-editor-line from the last visible fragment in the current slide.
+    // Works for both fragmentshown and fragmenthidden events.
+    try {
+        if (!window.parent || window.parent === window) return;
+        var s = Reveal.getState();
+        var slideEl = Reveal.getCurrentSlide();
+        var editorLine = null;
+        if (slideEl) {
+            var visibleFrags = slideEl.querySelectorAll('.fragment.visible[data-editor-line]');
+            if (visibleFrags.length > 0) {
+                var ln = parseInt(visibleFrags[visibleFrags.length - 1].dataset.editorLine, 10);
+                if (!isNaN(ln)) editorLine = ln;
+            }
+        }
+        window.parent.postMessage({
+            type: 'revealFragmentChanged',
+            indexh: s.indexh, indexv: s.indexv, indexf: s.indexf,
+            editorLine: editorLine
+        }, '*');
+    } catch(e) {}
+}
+Reveal.on('fragmentshown', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    setTimeout(function() { scrollToFragment(event.fragment, 'forward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('fragmenthidden', (event) => {
+    typesetCurrentSlide();
+    if (!event.fragment) return;
+    // Scroll back to the previous fragment or top of slide
+    var prev = event.fragment.previousElementSibling;
+    while (prev && !prev.classList.contains('fragment')) {
+        prev = prev.previousElementSibling;
+    }
+    var target = prev || event.fragment.closest('section')?.querySelector('h2') || event.fragment;
+    setTimeout(function() { scrollToFragment(target, 'backward'); }, 80);
+    _notifyParentFragment();
+});
+Reveal.on('ready', () => {
+    typesetCurrentSlide();
+    // Tell the CourseKit editor that Reveal is initialized so it can sync the fragment
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'revealReady' }, '*');
+        }
+    } catch(e) {}
+});
+
+// ── Plotly lightbox (iframe approach — zero WebGL until opened) ──
+(function() {
+    var plb = document.getElementById('plotly-lightbox');
+    if (!plb) return;
+    var plbClose = plb.querySelector('.plb-close');
+    var plbContent = plb.querySelector('.plb-content');
+    var triggerImg = null;
+    var currentBlobUrl = null;
+
+    function openPlotlyLightbox(blobUrl) {
+        // Revoke any previous blob URL
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); }
+        currentBlobUrl = blobUrl;
+        var iframe = plbContent.querySelector('iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:80vh;border:none;background:#fff;';
+            plbContent.appendChild(iframe);
+        }
+        iframe.src = blobUrl;
+        plb.classList.add('active');
+        plbClose.focus();
+    }
+
+    function closePlotlyLightbox() {
+        var iframe = plbContent.querySelector('iframe');
+        if (iframe) iframe.src = '';   // Unloads WebGL context immediately
+        plb.classList.remove('active');
+        if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+        if (triggerImg) { triggerImg.focus(); triggerImg = null; }
+    }
+
+    document.addEventListener('click', function(e) {
+        var img = e.target.closest('img[data-plotly-src]');
+        if (!img) return;
+        e.stopPropagation();
+        triggerImg = img;
+        // The companion .html is a bare Plotly div fragment (no CDN script).
+        // Fetch it and wrap in a complete page so it renders in the iframe.
+        fetch(img.dataset.plotlySrc)
+            .then(function(r) { return r.text(); })
+            .then(function(fragment) {
+                var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+                    '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"><\/script>' +
+                    '<style>body{margin:0;padding:0;background:#fff;overflow:hidden;' +
+                    'display:flex;justify-content:center;align-items:center;width:100vw;height:100vh;}' +
+                    '.js-plotly-plot,.plotly-graph-div{width:100%!important;height:100%!important;}</style>' +
+                    '</head><body>' + fragment + '</body></html>';
+                var blob = new Blob([html], {type: 'text/html'});
+                openPlotlyLightbox(URL.createObjectURL(blob));
+            })
+            .catch(function() {
+                // Fallback: open in new tab
+                window.open(img.dataset.plotlySrc, '_blank');
+            });
+    });
+
+    plbClose.addEventListener('click', closePlotlyLightbox);
+    plb.addEventListener('click', function(e) { if (e.target === plb) closePlotlyLightbox(); });
+
+    // Capture-phase Escape so Reveal.js doesn't grab it first
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape' || !plb.classList.contains('active')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closePlotlyLightbox();
+    }, true);
+
+    // Desmos/GeoGebra fullscreen: reuse lightbox with direct URL (no fetch/wrap needed)
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.desmos-fullscreen');
+        if (!btn) return;
+        e.stopPropagation();
+        var url = btn.dataset.src;
+        if (!url) return;
+        // Remove any existing iframe (may have stale Plotly styles)
+        var old = plbContent.querySelector('iframe');
+        if (old) old.remove();
+        var iframe = document.createElement('iframe');
+        iframe.style.cssText = 'width:100%;height:100%;border:none;background:#fff;border-radius:6px;';
+        iframe.src = url;
+        iframe.setAttribute('allowfullscreen', '');
+        plbContent.appendChild(iframe);
+        plb.classList.add('active');
+        plbClose.focus();
+    });
+})();
+
+// ── Lightbox for figures (accessible: focus trap, focus return) ──
+(function() {
+    const lb = document.getElementById('lightbox');
+    const lbImg = lb.querySelector('img');
+    const lbCap = lb.querySelector('.lb-caption');
+    const lbClose = lb.querySelector('.lb-close');
+    var triggerEl = null;
+
+    function openLightbox(src, alt, caption) {
+        lbImg.src = src;
+        lbImg.alt = alt;
+        lbCap.textContent = caption || alt;
+        lb.classList.add('active');
+        lbClose.focus();
+    }
+
+    function closeLightbox() {
+        lb.classList.remove('active');
+        lbImg.src = '';
+        if (triggerEl) { triggerEl.focus(); triggerEl = null; }
+    }
+
+    // Open lightbox on figure click (prevent default link navigation)
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.fig-link');
+        if (!link) return;
+        e.preventDefault();
+        e.stopPropagation();
+        triggerEl = link;
+        var src = link.getAttribute('data-src');
+        var alt = link.querySelector('img')?.alt || '';
+        var caption = link.closest('.fig-container')?.querySelector('.fig-caption')?.textContent || '';
+        openLightbox(src, alt, caption);
+    });
+
+    // Close on click anywhere on overlay
+    lb.addEventListener('click', function() { closeLightbox(); });
+
+    // Prevent closing when clicking the image itself (let user right-click → open in tab)
+    lbImg.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    // Close on Escape; trap Tab within lightbox
+    document.addEventListener('keydown', function(e) {
+        if (!lb.classList.contains('active')) return;
+        if (e.key === 'Escape') { closeLightbox(); }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            lbClose.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>

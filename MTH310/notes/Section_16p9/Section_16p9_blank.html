@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 16.9: The Divergence Theorem &mdash; Handout</title>
+<style>
+@page { size: letter; margin: 0.4in 0.5in; }
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #b5850e;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    max-width: 7.5in; margin: 0 auto; padding: 0.3em;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.35; }
+.handout-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left h1 { font-size: 1.3em; color: var(--accent-cyan); margin: 0; }
+.header-left p { margin: 0.05em 0; color: #666; font-size: 0.85em; }
+.header-right { text-align: right; font-size: 0.85em; color: #333; }
+hr { border: none; border-top: 2px solid var(--accent-cyan); margin: 0.3em 0; }
+h2 { font-size: 1.1em; color: var(--accent-cyan); margin: 0.4em 0 0.15em 0;
+    border-bottom: 1px solid #ccc; padding-bottom: 0.05em; }
+h3, h4 { font-size: 0.95em; margin: 0.15em 0; }
+p { margin: 0.15em 0; }
+.defn-box { background: #f0f7ff; border-left: 3px solid var(--accent-cyan);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.defn-box .defn-title { color: var(--accent-red); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 3px solid var(--accent-green);
+    border-radius: 3px; padding: 0.2em 0.5em; margin: 0.2em 0; }
+.example-box .example-title { color: var(--accent-green); font-weight: 700; font-size: 0.9em;
+    margin-bottom: 0.05em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 3px;
+    padding: 0.2em 0.5em; margin: 0.2em 0; text-align: center; }
+.blank-space { margin: 0.2em 0; position: relative;
+    border: none; border-top: 1px dashed #ccc; box-sizing: border-box; }
+.blank-prompt { position: absolute; top: 0.2em; left: 0.4em; font-size: 0.7em;
+    color: #767676; font-style: italic; }
+.hw-box { border: 2px solid var(--accent-red); border-radius: 4px;
+    padding: 0.3em 0.8em; text-align: center; margin: 0.5em 0; }
+.desmos-link { background: #f0f7ff; border-radius: 3px; padding: 0.2em 0.5em;
+    margin: 0.3em 0; font-size: 0.8em; }
+.desmos-link a { color: var(--accent-cyan); word-break: break-all; }
+.two-col-print { display: flex; gap: 0.6em; align-items: flex-start; }
+.two-col-print > * { flex: 1; }
+figure { margin: 0.1em 0; text-align: center; }
+figure img { max-width: 100%; max-height: 3.0in; }
+figcaption { font-size: 0.7em; color: #666; margin-top: 0.05em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 2px; border: 1px solid #ddd; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.image-grid { display: flex; gap: 0.4em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.2em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; font-size: 0.8em; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 1.5in; max-width: 100%; }
+.image-grid .grid-cell.textbook-fig img { padding: 2px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.6em; color: #666; }
+table { border-collapse: collapse; font-size: 0.85em; margin: 0.15em auto; }
+th, td { padding: 0.1em 0.4em; border: 1px solid #ccc; text-align: center; }
+th { background: #f0f7ff; }
+.small { font-size: 0.8em; }
+ul, ol { margin: 0.1em 0 0.1em 1.2em; padding: 0; }
+li { margin-bottom: 0.05em; }
+.pagebreak { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
+.homework-section { page-break-before: auto; }
+.defn-box, .example-box, .key-point, .blank-space, .theorem-box { page-break-inside: avoid; break-inside: avoid; }
+main > section { page-break-inside: auto; }
+main > section.example-group { page-break-inside: avoid; break-inside: avoid; }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media print {
+    body { padding: 0; max-width: none; }
+    .blank-space { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    a[href^="http"]::after { content: " [" attr(href) "]"; font-size: 0.65em; color: #999; }
+    a[href^="#"]::after { content: none; }
+    figure img { max-height: 2.8in; }
+    .skip-link { display: none; }
+}
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script>
+// Pagination is handled entirely by CSS:
+//   .pagebreak            → page-break-before: always
+//   .example-group        → page-break-inside: avoid
+//   .defn-box, .key-point → page-break-inside: avoid
+// Workspaces use their declared min-height only — no JS expansion.
+// This produces dense, predictable handouts.
+</script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <div class="handout-header">
+    <div class="header-left">
+      <h1>Section 16.9: The Divergence Theorem</h1>
+      <p>Vector Calculus</p>
+    </div>
+    <div class="header-right">
+      <p>MTH 310<br>Calculus III</p>
+    </div>
+  </div>
+</header>
+<hr aria-hidden="true">
+
+<section id="one-last-theorem-in-the-family" data-source-line="15" aria-label="One Last Theorem in the Family">
+  <h2>One Last Theorem in the Family</h2>
+  <div><p>We've built a chain of theorems throughout this course, each relating a <strong>boundary integral</strong> to an <strong>interior integral</strong>:</p></div>
+<div><p>Today: the <strong>Divergence Theorem</strong>, connecting a surface integral (flux <em>through</em> a closed surface) to a triple integral (divergence over the enclosed solid). It is the 3D analogue of Green's Theorem in <em>flux form</em>.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Every major theorem in Chapter 16 has the same shape: \(\displaystyle\int_{\text{boundary}} (\text{something}) = \int_{\text{interior}}(\text{derivative of something})\). The Divergence Theorem is the final version.</p></aside>
+</section>
+
+<section id="the-divergence-theorem" data-source-line="37" aria-label="The Divergence Theorem">
+  <h2>The Divergence Theorem</h2>
+  <section class="defn-box theorem-box" role="region" aria-label="Theorem: The Divergence Theorem (Gauss's Theorem)">
+  <h3 class="defn-title">Theorem: The Divergence Theorem (Gauss's Theorem)</h3>
+  <p>Let \(E\) be a simple solid region, and let \(S\) be its boundary surface, oriented outward. Let \(\vec{F}\) be a vector field whose components have continuous partial derivatives on an open region containing \(E\). Then</p>
+<p>\[\boxed{\iint_S \vec{F}\cdot d\vec{S} \;=\; \iiint_E \mathrm{div}\,\vec{F}\; dV.}\]</p>
+</section>
+<div><p>In components, with \(\vec{F} = \langle P, Q, R\rangle\):</p>
+<p>\[\iint_S \vec{F}\cdot d\vec{S} = \iiint_E \!\left(\frac{\partial P}{\partial x} + \frac{\partial Q}{\partial y} + \frac{\partial R}{\partial z}\right) dV.\]</p></div>
+<div><p><strong>Reading the two sides:</strong></p>
+<ul>
+<li><strong>Left:</strong> total flux of \(\vec{F}\) outward through the closed surface \(S\).</li>
+<li><strong>Right:</strong> total divergence of \(\vec{F}\) throughout the solid \(E\).</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Flux <em>through the boundary</em> \(=\) total source strength <em>inside</em>. If \(\mathrm{div} \vec{F} > 0\) inside \(E\), net outward flux (source). If \(\mathrm{div} \vec{F} < 0\), net inward flux (sink).</p></aside>
+</section>
+
+<section id="physical-interpretation-sources-and-sinks" data-source-line="58" aria-label="Physical Interpretation: Sources and Sinks">
+  <h2>Physical Interpretation: Sources and Sinks</h2>
+  <div><p>Think of \(\vec{F}\) as the velocity field of a fluid. The Divergence Theorem says net outflow \(=\) total internal source strength:</p>
+<p>\[\underbrace{\iint_S \vec{F}\cdot d\vec{S}}_{\text{net flow out through }S} \;=\; \underbrace{\iiint_E \mathrm{div}\,\vec{F}\; dV}_{\text{total source/sink inside }E}.\]</p></div>
+<figure>
+  <img src="figures/source_sink_diagram.png" alt="Three panels showing two-dimensional vector fields inside bounded circular regions. Left panel: arrows radiating outward from the center with positive divergence, representing a fluid source; the boundary circle has net outward flux. Middle panel: arrows pointing inward toward the center with negative divergence, representing a sink; net inward flux. Right panel: arrows circulating tangentially around the center with zero divergence, representing incompressible flow; zero net flux through the boundary.">
+</figure>
+<aside class="key-point" role="note" aria-label="Key point"><p>Divergence is the <em>local expansion rate</em> of the field. The theorem sums all those local expansions to produce the net boundary outflow.</p></aside>
+</section>
+
+<section id="connection-to-green-s-theorem-flux-form" data-source-line="86" aria-label="Connection to Green's Theorem (Flux Form)">
+  <h2>Connection to Green's Theorem (Flux Form)</h2>
+  <div><p>Recall the <strong>flux form of Green's Theorem</strong> (16.4):</p>
+<p>\[\oint_C \vec{F}\cdot\vec{n}\,ds = \iint_D \mathrm{div}\,\vec{F}\,dA \qquad (\vec{F} = \langle P,Q\rangle,\; \text{2D}).\]</p></div>
+<div><p>The Divergence Theorem is the <strong>same statement, one dimension up</strong>:</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Green's (flux form) <em>is</em> the 2D Divergence Theorem. Every theorem in Chapter 16 follows one pattern: integral over boundary \(=\) integral of a derivative over interior.</p></aside>
+</section>
+
+<section id="quick-check-compute-the-divergence" data-source-line="118" aria-label="Quick Check: Compute the Divergence">
+  <h2>Quick Check: Compute the Divergence</h2>
+  <div><p><em>Compute \(\mathrm{div} \vec{F}\) for each field:</em></p>
+<ol>
+<li>\(\vec{F} = \langle x^2, xy, z\rangle\)</li>
+<li>\(\vec{F} = \langle x^3 + y^3,\; y^3 + z^3,\; z^3 + x^3\rangle\)</li>
+<li>\(\vec{F} = \langle yz, xz, xy\rangle\)</li>
+</ol></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Recall: $\mathrm{div} \vec{F} = P_x + Q_y + R_z$." style="min-height:2in;">
+  <div class="blank-prompt">Recall: \(\mathrm{div} \vec{F} = P_x + Q_y + R_z\).</div>
+</div>
+</section>
+
+<section id="example-1-flux-through-a-paraboloid-region" class="example-group" data-source-line="140" aria-label="Example 1: Flux Through a Paraboloid Region">
+  <h2>Example 1: Flux Through a Paraboloid Region</h2>
+  <section class="example-box" role="region" aria-label="Example 1">
+  <h3 class="example-title">Example 1</h3>
+  <p>Use the Divergence Theorem to find the flux of \(\vec{F} = \langle x^2, xy, z\rangle\) outward through the closed surface \(S\) bounding the solid \(E\) below \(z = 4 - x^2 - y^2\) and above \(z = 0\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Computing the flux directly is painful: the boundary $S$ has *two* pieces (paraboloid cap + flat disk below), each needing its own parametrization. Use the Divergence Theorem to replace it with one triple integral over $E$. Cylindrical coordinates work here." style="min-height:3.5in;">
+  <div class="blank-prompt">Computing the flux directly is painful: the boundary \(S\) has <em>two</em> pieces (paraboloid cap + flat disk below), each needing its own parametrization. Use the Divergence Theorem to replace it with one triple integral over \(E\). Cylindrical coordinates work here.</div>
+</div>
+</section>
+
+<section id="quick-check-which-side-is-easier" data-source-line="173" aria-label="Quick Check: Which Side Is Easier?">
+  <h2>Quick Check: Which Side Is Easier?</h2>
+  <div><p><em>For each scenario, decide which side of the Divergence Theorem is easier to compute.</em></p>
+<ol>
+<li>\(\vec{F} = \langle x, y, z\rangle\), \(S\) is a complicated surface enclosing a solid of known volume.</li>
+<li>\(\mathrm{div} \vec{F}\) is a messy expression, but \(S\) is a single simple surface.</li>
+<li>\(\vec{F} = \langle xz^2, x^2 y, y^2 z\rangle\), \(E\) is the unit cube \([0,1]^3\).</li>
+</ol></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Ask: is the divergence simple? Is the surface a single piece? Is the volume easy to compute?" style="min-height:2in;">
+  <div class="blank-prompt">Ask: is the divergence simple? Is the surface a single piece? Is the volume easy to compute?</div>
+</div>
+</section>
+
+<section id="example-2-flux-through-a-sphere" class="example-group" data-source-line="196" aria-label="Example 2: Flux Through a Sphere">
+  <h2>Example 2: Flux Through a Sphere</h2>
+  <section class="example-box" role="region" aria-label="Example 2">
+  <h3 class="example-title">Example 2</h3>
+  <p>Use the Divergence Theorem to find the flux of \(\vec{F} = \langle x^3 + y^3,\; y^3 + z^3,\; z^3 + x^3\rangle\) outward through the sphere \(S\) of radius \(2\) centered at the origin.</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: The divergence is $3(x^2+y^2+z^2) = 3\rho^2$ in spherical coordinates &mdash; a gift. Set up the triple integral over the ball." style="min-height:3in;">
+  <div class="blank-prompt">The divergence is \(3(x^2+y^2+z^2) = 3\rho^2\) in spherical coordinates &mdash; a gift. Set up the triple integral over the ball.</div>
+</div>
+</section>
+
+<section id="example-3-flux-through-a-cube" class="example-group" data-source-line="219" aria-label="Example 3: Flux Through a Cube">
+  <h2>Example 3: Flux Through a Cube</h2>
+  <section class="example-box" role="region" aria-label="Example 3">
+  <h3 class="example-title">Example 3</h3>
+  <p>Find the flux of \(\vec{F} = \langle xy, y^2, yz\rangle\) outward through the surface of the cube \([0,1]^3\).</p>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: The cube has SIX faces. Direct computation means six separate surface integrals, each with its own outward normal. Use the Divergence Theorem." style="min-height:2.5in;">
+  <div class="blank-prompt">The cube has SIX faces. Direct computation means six separate surface integrals, each with its own outward normal. Use the Divergence Theorem.</div>
+</div>
+</section>
+
+<section id="quick-check-the-radial-field-through-a-sphere" data-source-line="239" aria-label="Quick Check: The Radial Field Through a Sphere">
+  <h2>Quick Check: The Radial Field Through a Sphere</h2>
+  <div><p><em>Let \(\vec{F} = \langle x, y, z\rangle\) and \(S\) be the unit sphere. Find \(\displaystyle\iint_S \vec{F}\cdot d\vec{S}\) without parametrizing anything.</em></p></div>
+<div class="blank-space" role="region" aria-label="Student workspace: Compute $\mathrm{div} \vec{F}$. If it's a constant $c$, the flux is just $c\cdot\mathrm{Vol}(E)$." style="min-height:2in;">
+  <div class="blank-prompt">Compute \(\mathrm{div} \vec{F}\). If it's a constant \(c\), the flux is just \(c\cdot\mathrm{Vol}(E)\).</div>
+</div>
+</section>
+
+<section id="when-not-to-use-the-divergence-theorem" data-source-line="254" aria-label="When NOT to Use the Divergence Theorem">
+  <h2>When NOT to Use the Divergence Theorem</h2>
+  <div><p>The theorem requires a <strong>closed</strong> surface enclosing a solid with \(\vec{F}\) smooth throughout. Common pitfalls:</p></div>
+<div><p><strong>1. Open surface.</strong> E.g., a hemisphere with no disk on the bottom. <em>Fix:</em> add the missing piece, apply the theorem to the closed surface, subtract the flux through the added piece.</p></div>
+<div><p><strong>2. Singularity inside \(E\).</strong> E.g., \(\vec{F} = \vec{r}/|\vec{r}|^3\) with the origin inside. <em>Fix:</em> cut out a small sphere around the singularity and treat the region as topologically a shell.</p></div>
+<div><p><strong>3. Non-simple regions</strong> (cavities or holes). <em>Fix:</em> decompose into simple pieces.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Checklist before applying the theorem: (i) Is \(S\) closed? (ii) Is \(\vec{F}\) smooth throughout \(E\)? (iii) Is \(S\) oriented <em>outward</em>? Failure on any one means the theorem needs adaptation.</p></aside>
+</section>
+
+<section id="the-big-picture-four-theorems-one-pattern" data-source-line="269" aria-label="The Big Picture: Four Theorems, One Pattern">
+  <h2>The Big Picture: Four Theorems, One Pattern</h2>
+  <div><p>Every major theorem in vector calculus is a version of:</p>
+<p>\[\int_{\text{boundary}} (\text{something}) \;=\; \int_{\text{interior}} (\text{derivative of something}).\]</p></div>
+<figure>
+  <img src="figures/theorem_hierarchy.png" alt="A flowchart diagram of the four great integral theorems: FTC, Green's Theorem, Stokes' Theorem, and Divergence Theorem. Each is shown as a colored box with its name and dimensions, arranged left to right by increasing dimension. Arrows connect them to indicate the progression from 1D to higher dimensions. Below the diagram, a banner summarizes the unifying principle: integral over the boundary equals integral of the derivative over the interior.">
+</figure>
+<aside class="key-point" role="note" aria-label="Key point"><p>FTC, Green's, Stokes', Divergence are not four separate theorems &mdash; they are the <em>same theorem</em> in different dimensions.</p></aside>
+</section>
+
+<section id="which-theorem-a-decision-tree" class="example-group" data-source-line="315" aria-label="Which Theorem? A Decision Tree">
+  <h2>Which Theorem? A Decision Tree</h2>
+  <div><p><strong>Decision tree for integrals in Chapter 16:</strong></p>
+<ol>
+<li>\(\vec{F}\) conservative? \(\Rightarrow\) <strong>FTC for line integrals</strong>: find \(f\), evaluate at endpoints.</li>
+<li>Line integral around a closed curve in the plane? \(\Rightarrow\) <strong>Green's</strong>.</li>
+<li>Line integral around a closed curve in 3D? \(\Rightarrow\) <strong>Stokes'</strong>.</li>
+<li>Flux through a closed surface in 3D? \(\Rightarrow\) <strong>Divergence</strong>.</li>
+</ol></div>
+<section class="example-box" role="region" aria-label="Example 4">
+  <h3 class="example-title">Example 4</h3>
+  <p>Match each integral to the theorem that simplifies it:</p>
+<ul>
+<li>[(a)] \(\displaystyle\iint_S \vec{F}\cdot d\vec{S}\), \(S\) the closed surface of a cylinder, with \(\mathrm{div} \vec{F} = 5\).</li>
+<li>[(b)] \(\displaystyle\oint_C \vec{F}\cdot d\vec{r}\), \(C\) the boundary of a triangle in space.</li>
+<li>[(c)] \(\displaystyle\int_C \nabla f\cdot d\vec{r}\) from \((0,0)\) to \((3,4)\).</li>
+</ul>
+</section>
+<div class="blank-space" role="region" aria-label="Student workspace: Map each integral to one of the four theorems." style="min-height:2in;">
+  <div class="blank-prompt">Map each integral to one of the four theorems.</div>
+</div>
+</section>
+
+<section class="homework-section" aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Section 16.9:</strong> 1, 3, 5, 7, 11</div>
+</section>
+</main>
+<script>
+// Scroll observer: notify parent when visible section changes (for editor sync)
+(function() {
+    if (!window.parent || window.parent === window) return;
+    var sections = document.querySelectorAll('main > section[data-source-line]');
+    if (!sections.length) return;
+    var currentLine = null;
+    var scrollTimer = null;
+    function onScroll() {
+        if (scrollTimer) clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(updateVisibleSection, 80);
+    }
+    function updateVisibleSection() {
+        var viewTop = window.innerHeight * 0.3;
+        var best = null;
+        for (var i = 0; i < sections.length; i++) {
+            var rect = sections[i].getBoundingClientRect();
+            if (rect.top <= viewTop && rect.bottom > 0) best = sections[i];
+        }
+        if (best) {
+            var line = parseInt(best.dataset.sourceLine, 10);
+            if (!isNaN(line) && line !== currentLine) {
+                currentLine = line;
+                window.parent.postMessage({ type: 'htmlSectionChanged', sourceLine: line }, '*');
+            }
+        }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'goToSection' && e.data.sourceLine != null) {
+            for (var i = 0; i < sections.length; i++) {
+                if (parseInt(sections[i].dataset.sourceLine, 10) === e.data.sourceLine) {
+                    sections[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    break;
+                }
+            }
+        }
+    });
+})();
+</script>
+</body>
+</html>
