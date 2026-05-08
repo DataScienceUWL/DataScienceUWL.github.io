@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz 10 - Surface Integrals, Stokes' Theorem, Divergence Theorem (Spring 2026)</title>
+
+  <!-- MathJax 3 Configuration with custom macros -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['\\(','\\)']],
+        displayMath: [['\\[','\\]']],
+        processEscapes: true,
+        packages: {'[+]': ['ams', 'boldsymbol']},
+        macros: {
+          vec: ['{\\mathbf{#1}}', 1],
+          avec: ['{\\overrightarrow{#1}}', 1],
+          myvec: ['{\\overset{\\rightharpoonup}{#1}}', 1],
+          ds: '{\\displaystyle}',
+          ra: '{\\rightarrow}',
+          R: '{\\mathbb{R}}',
+          C: '{\\mathbb{C}}',
+          threevecl: ['{\\langle #1, #2, #3 \\rangle}', 3],
+          twovecl: ['{\\langle #1, #2 \\rangle}', 2],
+          pp: ['{\\frac{\\partial #1}{\\partial #2}}', 2],
+          threevec: ['{\\begin{bmatrix} #1 \\\\ #2 \\\\ #3 \\end{bmatrix}}', 3],
+          twovec: ['{\\begin{bmatrix} #1 \\\\ #2 \\end{bmatrix}}', 2],
+          fourvec: ['{\\begin{bmatrix} #1 \\\\ #2 \\\\ #3 \\\\ #4 \\end{bmatrix}}', 4]
+        }
+      },
+      options: {
+        renderActions: {
+          addMenu: []
+        }
+      },
+      startup: {
+        ready: function() {
+          MathJax.startup.defaultReady();
+        }
+      }
+    };
+  </script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+
+  <link rel="stylesheet" href="accessible.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-nav">Skip to main content</a>
+  <main id="main-content" role="main">
+<header class="quiz-header" role="banner">
+  <h1 class="doc-header">
+    <span class="quiz-title">Quiz 10</span>
+    <span class="course-info">MTH 310</span>
+  </h1>
+  <p class="quiz-instructions"><strong>Instructions.</strong> (15 points) Sections 16.7, 16.8, 16.9. Show relevant work for full credit.</p>
+</header>
+<section class="question" role="region" aria-label="Question 1">
+  <div class="question-header">
+    <span class="question-number">Question 1</span>
+    <span class="points-badge">[3 pts]</span>
+  </div>
+<p>Compute <span class="math inline">\(\displaystyle\iint_S
+z\,dS\)</span> where <span class="math inline">\(S\)</span> is the
+cylindrical surface <span class="math inline">\(x^2 + y^2 = 1\)</span>,
+<span class="math inline">\(0 \le z \le 2\)</span>.</p>
+<div class="solution handwritten">
+<p>Parametrize the cylinder by <span
+class="math inline">\(\mathbf{r}(\theta, z) = \langle\cos\theta,\;
+\sin\theta,\; z\rangle\)</span> for <span class="math inline">\(0 \le
+\theta \le 2\pi\)</span>, <span class="math inline">\(0 \le z \le
+2\)</span>. Then <span class="math display">\[\mathbf{r}_\theta =
+\langle -\sin\theta,\, \cos\theta,\, 0\rangle, \quad \mathbf{r}_z =
+\langle 0,\, 0,\, 1\rangle, \quad \mathbf{r}_\theta\times\mathbf{r}_z =
+\langle\cos\theta,\, \sin\theta,\, 0\rangle,\]</span> so <span
+class="math inline">\(|\mathbf{r}_\theta\times\mathbf{r}_z| =
+1\)</span>. Therefore <span class="math display">\[\iint_S z\,dS =
+\int_0^{2\pi}\!\!\int_0^2 z\cdot 1\,dz\,d\theta = 2\pi\cdot 2 =
+\boxed{4\pi}.\]</span></p>
+</div>
+</section>
+<section class="question" role="region" aria-label="Question 2">
+  <div class="question-header">
+    <span class="question-number">Question 2</span>
+    <span class="points-badge">[3 pts]</span>
+  </div>
+<p>Compute <span class="math inline">\(\displaystyle\iint_S
+\mathbf{F}\cdot d\mathbf{S}\)</span> where <span
+class="math inline">\(\mathbf{F}(x,y,z) = \langle 0,\; 0,\;
+z\rangle\)</span> and <span class="math inline">\(S\)</span> is the part
+of the paraboloid <span class="math inline">\(z = 4 - x^2 - y^2\)</span>
+lying above the <span class="math inline">\(xy\)</span>-plane, oriented
+<em>upward</em>.</p>
+<div class="solution handwritten">
+<p>The surface is the graph <span class="math inline">\(z = g(x,y) = 4 -
+x^2 - y^2\)</span> over the disk <span class="math inline">\(D: x^2 +
+y^2 \le 4\)</span>. For an upward-oriented graph, <span
+class="math display">\[d\mathbf{S} = \langle -g_x,\; -g_y,\;
+1\rangle\,dA = \langle 2x,\; 2y,\; 1\rangle\,dA, \qquad \mathbf{F}\cdot
+d\mathbf{S} = z\,dA = (4 - x^2 - y^2)\,dA.\]</span> In polar: <span
+class="math display">\[\iint_S \mathbf{F}\cdot d\mathbf{S} =
+\int_0^{2\pi}\!\!\int_0^2 (4 - r^2)\,r\,dr\,d\theta = 2\pi(8 - 4) =
+\boxed{8\pi}.\]</span></p>
+</div>
+</section>
+<div class="page-break" role="separator"></div>
+<section class="question" role="region" aria-label="Question 3">
+  <div class="question-header">
+    <span class="question-number">Question 3</span>
+    <span class="points-badge">[3 pts]</span>
+  </div>
+<p>Let <span class="math inline">\(\mathbf{F}(x,y,z) = \langle z^2,\;
+2x,\; -y^3\rangle\)</span> and let <span
+class="math inline">\(C\)</span> be the unit circle <span
+class="math inline">\(x^2 + y^2 = 1\)</span> in the plane <span
+class="math inline">\(z = 0\)</span>, oriented
+<strong>clockwise</strong> when viewed from above. Use Stokes’ Theorem
+to compute <span class="math inline">\(\displaystyle\oint_C
+\mathbf{F}\cdot d\mathbf{r}\)</span>.</p>
+<div class="solution handwritten">
+<p><strong>Choose a surface and orient it.</strong> Take <span
+class="math inline">\(S\)</span> to be the unit disk <span
+class="math inline">\(\{x^2+y^2\le 1,\, z=0\}\)</span>. Because <span
+class="math inline">\(C\)</span> is traversed <strong>clockwise</strong>
+viewed from above, the right-hand rule forces the surface normal to
+point <strong>downward</strong>: <span class="math inline">\(d\mathbf{S}
+= \langle 0, 0, -1\rangle\,dA\)</span>.</p>
+<p><strong>Compute the curl.</strong> <span
+class="math display">\[\nabla\times\mathbf{F} = \langle (-y^3)_y -
+(2x)_z,\; (z^2)_z - (-y^3)_x,\; (2x)_x - (z^2)_y\rangle = \langle
+-3y^2,\; 2z,\; 2\rangle.\]</span> On <span
+class="math inline">\(S\)</span> (<span
+class="math inline">\(z=0\)</span>): <span
+class="math inline">\(\nabla\times\mathbf{F} = \langle -3y^2,\; 0,\;
+2\rangle\)</span>.</p>
+<p><strong>Apply Stokes’.</strong> <span class="math display">\[\oint_C
+\mathbf{F}\cdot d\mathbf{r} = \iint_S (\nabla\times\mathbf{F})\cdot
+d\mathbf{S} = \iint_S (2)(-1)\,dA = -2\cdot\mathrm{Area}(S) =
+\boxed{-2\pi}.\]</span></p>
+</div>
+</section>
+<section class="question" role="region" aria-label="Question 4">
+  <div class="question-header">
+    <span class="question-number">Question 4</span>
+    <span class="points-badge">[3 pts]</span>
+  </div>
+<p>Let <span class="math inline">\(\mathbf{F}(x,y,z) = \langle xz^2,\;
+y^3,\; x^2 z\rangle\)</span> and let <span
+class="math inline">\(S\)</span> be the unit sphere <span
+class="math inline">\(x^2 + y^2 + z^2 = 1\)</span> with outward
+orientation. Use the Divergence Theorem to compute <span
+class="math inline">\(\displaystyle\iint_S \mathbf{F}\cdot
+d\mathbf{S}\)</span>.</p>
+<div class="solution handwritten">
+<p><span class="math inline">\(\nabla\cdot\mathbf{F} = z^2 + 3y^2 +
+x^2\)</span>. With <span class="math inline">\(E\)</span> the closed
+unit ball, <span class="math display">\[\iint_S \mathbf{F}\cdot
+d\mathbf{S} = \iiint_E (x^2 + 3y^2 + z^2)\,dV.\]</span></p>
+<p><strong>Symmetry shortcut.</strong> By the symmetry of the unit ball,
+<span class="math inline">\(\iiint_E x^2\,dV = \iiint_E y^2\,dV =
+\iiint_E z^2\,dV\)</span>. Their sum equals <span
+class="math display">\[\iiint_E (x^2+y^2+z^2)\,dV = \iiint_E \rho^2\,dV
+= \int_0^{2\pi}\!\!\int_0^\pi\!\!\int_0^1
+\rho^4\sin\phi\,d\rho\,d\phi\,d\theta = 2\pi\cdot 2\cdot\tfrac{1}{5} =
+\tfrac{4\pi}{5},\]</span> so each integral equals <span
+class="math inline">\(\tfrac{1}{3}\cdot\tfrac{4\pi}{5} =
+\tfrac{4\pi}{15}\)</span>.</p>
+<p>Therefore <span class="math display">\[\iiint_E (x^2 + 3y^2 +
+z^2)\,dV = (1 + 3 + 1)\cdot\tfrac{4\pi}{15} =
+\boxed{\tfrac{4\pi}{3}}.\]</span></p>
+</div>
+</section>
+<div class="page-break" role="separator"></div>
+<section class="question" role="region" aria-label="Question 5">
+  <div class="question-header">
+    <span class="question-number">Question 5</span>
+    <span class="points-badge">[3 pts]</span>
+  </div>
+<p>For each of the following, identify the single <em>best</em> method
+for evaluation: <strong>direct parametrization</strong>,
+<strong>FTLI</strong>, <strong>Green’s Theorem</strong>, <strong>Stokes’
+Theorem</strong>, or the <strong>Divergence Theorem</strong>. Give a
+one-sentence reason. (You do not need to evaluate any of them.)</p>
+<p>(a) <span class="math inline">\(\displaystyle\oint_C \mathbf{F}\cdot
+d\mathbf{r}\)</span> where <span class="math inline">\(\mathbf{F} =
+\langle xy,\; e^{x^2},\; z\rangle\)</span> and <span
+class="math inline">\(C\)</span> is the triangle with vertices <span
+class="math inline">\((1,0,0)\)</span>, <span
+class="math inline">\((0,1,0)\)</span>, <span
+class="math inline">\((0,0,1)\)</span> traversed once.</p>
+<p>(b) <span class="math inline">\(\displaystyle\iint_S \mathbf{F}\cdot
+d\mathbf{S}\)</span> where <span class="math inline">\(\mathbf{F} =
+\langle x + e^y,\; y + \sin z,\; z\rangle\)</span> and <span
+class="math inline">\(S\)</span> is the boundary of the cube <span
+class="math inline">\([0,1]^3\)</span> with outward orientation.</p>
+<p>(c) <span class="math inline">\(\displaystyle\int_C \mathbf{F}\cdot
+d\mathbf{r}\)</span> where <span class="math inline">\(\mathbf{F} =
+\langle 2x,\; 2y,\; 2z\rangle\)</span> and <span
+class="math inline">\(C\)</span> is any smooth path from <span
+class="math inline">\((0,0,0)\)</span> to <span
+class="math inline">\((1,2,3)\)</span>.</p>
+<div class="solution handwritten">
+<p><strong>(a) Stokes’ Theorem.</strong> <span
+class="math inline">\(C\)</span> is a closed curve in 3D, and direct
+parametrization is awkward (three segments, integrand contains <span
+class="math inline">\(e^{x^2}\)</span> which has no elementary
+antiderivative). Replace with the curl flux through the flat triangular
+surface <span class="math inline">\(S\)</span> whose boundary is <span
+class="math inline">\(C\)</span>.</p>
+<p><strong>(b) Divergence Theorem.</strong> <span
+class="math inline">\(S\)</span> is a closed surface bounding a solid,
+and <span class="math inline">\(\nabla\cdot\mathbf{F} = 1 + 1 + 1 =
+3\)</span> is simple, so <span class="math inline">\(\iiint_E 3\,dV =
+3\cdot\mathrm{Vol} = 3\)</span> is far easier than computing flux
+through six faces.</p>
+<p><strong>(c) FTLI.</strong> <span class="math inline">\(\mathbf{F} =
+\nabla(x^2 + y^2 + z^2)\)</span> is conservative, so <span
+class="math inline">\(\int_C \mathbf{F}\cdot d\mathbf{r} = f(1,2,3) -
+f(0,0,0) = 14\)</span> no matter what <span
+class="math inline">\(C\)</span> is.</p>
+</div>
+</section>
+
+  </main>
+</body>
+</html>
