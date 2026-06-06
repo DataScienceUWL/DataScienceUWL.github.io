@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Apply – Introduction to Statistics: A Simulation-First Approach</title>
+<title>27&nbsp; Type II Error and Power – Introduction to Statistics: A Simulation-First Approach</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -30,8 +30,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../chapters/chisq-gof.html" rel="next">
-<link href="../chapters/hypothesis-tests-means.html" rel="prev">
+<link href="../chapters/statistical-power.html" rel="next">
+<link href="../chapters/normal-distribution.html" rel="prev">
 <link href="../images/favicon.svg" rel="icon" type="image/svg+xml">
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -42,6 +42,9 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap-f03065a6f98f3af1895f9ddc03f03f29.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -69,6 +72,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -81,7 +113,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-iv.html">Apply</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-v.html">Foundations</a></li><li class="breadcrumb-item"><a href="../chapters/type-ii-error.html"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -244,13 +276,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../parts/part-iv.html" class="sidebar-item-text sidebar-link active">
+            <a href="../parts/part-iv.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Apply</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../chapters/chisq-gof.html" class="sidebar-item-text sidebar-link">
@@ -299,11 +331,11 @@ ul.task-list li input[type="checkbox"] {
       <div class="sidebar-item-container"> 
             <a href="../parts/part-v.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Foundations</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../chapters/probability-rules.html" class="sidebar-item-text sidebar-link">
@@ -336,7 +368,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../chapters/type-ii-error.html" class="sidebar-item-text sidebar-link">
+  <a href="../chapters/type-ii-error.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></span></a>
   </div>
 </li>
@@ -388,15 +420,29 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-error-recap" id="toc-sec-error-recap" class="nav-link active" data-scroll-target="#sec-error-recap"><span class="header-section-number">27.1</span> Recap: the two error types</a></li>
+  <li><a href="#sec-visualizing-type-ii" id="toc-sec-visualizing-type-ii" class="nav-link" data-scroll-target="#sec-visualizing-type-ii"><span class="header-section-number">27.2</span> Visualizing Type II error</a></li>
+  <li><a href="#sec-factors-type-ii" id="toc-sec-factors-type-ii" class="nav-link" data-scroll-target="#sec-factors-type-ii"><span class="header-section-number">27.3</span> Factors that affect the Type II error rate</a></li>
+  <li><a href="#sec-practical-significance-revisited" id="toc-sec-practical-significance-revisited" class="nav-link" data-scroll-target="#sec-practical-significance-revisited"><span class="header-section-number">27.4</span> Practical vs.&nbsp;statistical discernibility revisited</a></li>
+  <li><a href="#sec-ch26-review" id="toc-sec-ch26-review" class="nav-link" data-scroll-target="#sec-ch26-review"><span class="header-section-number">27.5</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">27.5.1</span> Summary</a></li>
+  </ul></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">27.6</span> Exercises</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-v.html">Foundations</a></li><li class="breadcrumb-item"><a href="../chapters/type-ii-error.html"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Apply</h1>
+<h1 class="title"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></h1>
 </div>
 
 
@@ -413,9 +459,285 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>You now have the full inference toolkit — simulation-based and formula-based. In this part, we apply that toolkit to new data types and richer questions: testing categorical distributions with chi-square, comparing multiple groups with ANOVA, and modeling relationships with correlation and linear regression.</p>
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>Extended Content.</strong> This chapter extends beyond UWL’s core STAT 145 curriculum. It is included for completeness and for instructors who wish to cover additional topics. Content is in draft form.</p>
+</div>
+</div>
+</div>
+<div class="chapterintro">
+<p>In the chapter on decision errors we met the two ways a hypothesis test can go wrong and named their probabilities <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span>. The Type I error rate <span class="math inline">\(\alpha\)</span> is ours to choose; the Type II error rate <span class="math inline">\(\beta\)</span> is not — it depends on the unknown truth. This chapter takes a closer look at <span class="math inline">\(\beta\)</span>: we use simulation to <em>see</em> how often a real effect goes undetected, examine the factors that drive the Type II error rate, and connect these ideas to the <strong>power</strong> of a study. This material extends beyond the core STAT 145 sequence and is intended for readers who want to go deeper.</p>
+</div>
+<div class="statlens">
+<p><strong>StatLens tools for this chapter</strong>: Use the randomization test simulators to explore Type II error. Run tests with small sample sizes or small effect sizes and notice how often the test fails to reject <span class="math inline">\(H_0\)</span> — those are Type II errors in action.</p>
+<p><a href="https://datascienceuwl.github.io/statlens/simulate/randomization-diff-means/" target="_blank">Launch Randomization Test: Difference in Means</a></p>
+</div>
+<section id="sec-error-recap" class="level2" data-number="27.1">
+<h2 data-number="27.1" class="anchored" data-anchor-id="sec-error-recap"><span class="header-section-number">27.1</span> Recap: the two error types</h2>
+<p>Recall from the chapter on decision errors:</p>
+<ul>
+<li>A <strong>Type I error</strong> rejects a true <span class="math inline">\(H_0\)</span>; its probability is the discernibility level <span class="math inline">\(\alpha\)</span>, which we choose.</li>
+<li>A <strong>Type II error</strong> fails to reject <span class="math inline">\(H_0\)</span> when <span class="math inline">\(H_A\)</span> is true; its probability is <span class="math inline">\(\beta\)</span>.</li>
+</ul>
+<p>We can set <span class="math inline">\(\alpha\)</span> directly, but <span class="math inline">\(\beta\)</span> depends on the effect size, the sample size, and the variability in the data. The rest of this chapter studies what determines <span class="math inline">\(\beta\)</span> — and how to drive it down.</p>
+</section>
+<section id="sec-visualizing-type-ii" class="level2" data-number="27.2">
+<h2 data-number="27.2" class="anchored" data-anchor-id="sec-visualizing-type-ii"><span class="header-section-number">27.2</span> Visualizing Type II error</h2>
+<div class="original">
+<p>The most effective way to build intuition about Type II error is to think about what happens when there <em>is</em> a real effect but our test fails to detect it. Simulation makes this concrete.</p>
+<section id="a-simulation-thought-experiment" class="level3" data-number="27.2.1">
+<h3 data-number="27.2.1" class="anchored" data-anchor-id="a-simulation-thought-experiment"><span class="header-section-number">27.2.1</span> A simulation thought experiment</h3>
+<p>Imagine the following scenario. A tutoring program truly raises students’ exam scores by an average of 5 points (on a 100-point scale). The standard deviation of exam scores in the population is 15 points. A researcher recruits <span class="math inline">\(n = 20\)</span> students, has them go through the tutoring program, and compares their scores to the known population mean using a one-sample <span class="math inline">\(t\)</span>-test at <span class="math inline">\(\alpha = 0.05\)</span>.</p>
+<p>Here is what might happen:</p>
+<ul>
+<li><strong>The truth</strong>: <span class="math inline">\(\mu = 75\)</span> (population mean with tutoring), while <span class="math inline">\(\mu_0 = 70\)</span> (the null hypothesis value without tutoring). The real effect is <span class="math inline">\(\mu - \mu_0 = 5\)</span> points.</li>
+<li><strong>One simulated study</strong>: The researcher collects 20 scores. Due to natural variability, the sample mean might be <span class="math inline">\(\bar{x} = 73.2\)</span> with <span class="math inline">\(s = 14.8\)</span>. The test statistic is:</li>
+</ul>
+<p><span class="math display">\[t = \frac{73.2 - 70}{14.8 / \sqrt{20}} = \frac{3.2}{3.31} = 0.97\]</span></p>
+<p>The p-value for this test is about 0.17 — not discernible at <span class="math inline">\(\alpha = 0.05\)</span>. The researcher fails to reject <span class="math inline">\(H_0\)</span>, even though the tutoring program really does work. This is a Type II error.</p>
+<ul>
+<li><strong>Another simulated study</strong>: A different random sample of 20 students happens to include several who benefited greatly from tutoring. The sample mean is <span class="math inline">\(\bar{x} = 76.8\)</span> with <span class="math inline">\(s = 13.5\)</span>. Now:</li>
+</ul>
+<p><span class="math display">\[t = \frac{76.8 - 70}{13.5 / \sqrt{20}} = \frac{6.8}{3.02} = 2.25\]</span></p>
+<p>The p-value is about 0.018 — discernible at <span class="math inline">\(\alpha = 0.05\)</span>. This time the researcher correctly rejects <span class="math inline">\(H_0\)</span>. This is a correct decision.</p>
+</section>
+<section id="what-happens-across-many-studies" class="level3" data-number="27.2.2">
+<h3 data-number="27.2.2" class="anchored" data-anchor-id="what-happens-across-many-studies"><span class="header-section-number">27.2.2</span> What happens across many studies?</h3>
+<p>If we repeated this experiment 1,000 times — each time drawing a fresh sample of 20 students from a population where the true effect is 5 points — we would find that roughly 340 of those experiments reject <span class="math inline">\(H_0\)</span> and roughly 660 do not. That means:</p>
+<ul>
+<li>About 34% of the time, we correctly detect the real effect.</li>
+<li>About 66% of the time, we commit a Type II error.</li>
+</ul>
+<p>The Type II error rate is <span class="math inline">\(\beta \approx 0.66\)</span> — alarmingly high! Nearly two-thirds of studies with this design would miss the real effect. This is not because the effect doesn’t exist; it’s because the sample size is too small relative to the effect size and variability.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-type-ii-sim" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A dot plot showing the results of 1,000 simulated hypothesis tests. About 340 dots are colored green (reject H-null, correct decision) and about 660 dots are colored red (fail to reject H-null, Type II error). The green dots tend to have larger sample means, while the red dots cluster closer to the null hypothesis value.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-type-ii-sim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="type-ii-error_files/figure-html/fig-type-ii-sim-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;27.1: Visualization of 1,000 simulated hypothesis tests when the true effect is 5 points. Each dot represents one simulated study. The green dots are studies that correctly rejected H_0 (correct decisions), and the red dots are studies that failed to reject H_0 (Type II errors)."><img src="type-ii-error_files/figure-html/fig-type-ii-sim-1.png" class="img-fluid figure-img" alt="A dot plot showing the results of 1,000 simulated hypothesis tests. About 340 dots are colored green (reject H-null, correct decision) and about 660 dots are colored red (fail to reject H-null, Type II error). The green dots tend to have larger sample means, while the red dots cluster closer to the null hypothesis value." width="2100"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-type-ii-sim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;27.1: Visualization of 1,000 simulated hypothesis tests when the true effect is 5 points. Each dot represents one simulated study. The green dots are studies that correctly rejected <span class="math inline">\(H_0\)</span> (correct decisions), and the red dots are studies that failed to reject <span class="math inline">\(H_0\)</span> (Type II errors).
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="guidedpractice">
+<p>In the tutoring program simulation above, what would happen to the Type II error rate if the researcher increased the sample size from 20 to 100 students? Would <span class="math inline">\(\beta\)</span> increase, decrease, or stay the same?</p>
+<details>
+<summary>
+Show answer
+</summary>
+The Type II error rate would decrease substantially. With 100 students instead of 20, the standard error drops from <span class="math inline">\(15/\sqrt{20} = 3.35\)</span> to <span class="math inline">\(15/\sqrt{100} = 1.50\)</span>. The test becomes much more precise, making it easier to distinguish the true mean of 75 from the null value of 70. In fact, with <span class="math inline">\(n = 100\)</span>, the power would be about 94%, meaning <span class="math inline">\(\beta \approx 0.06\)</span> — the test would miss the real effect only about 6% of the time.
+</details>
+</div>
+</section>
+</div>
+<div class="original">
+<div class="statlens">
+<p><strong>StatLens: Power Simulation Tool.</strong> Use the Power Simulation Tool to explore Type II error visually. Set the true effect size, sample size, discernibility level, and population variability, then run 1,000 simulated experiments. Watch how the proportion of studies that reject <span class="math inline">\(H_0\)</span> changes as you adjust each parameter. The simulations that fail to reject <span class="math inline">\(H_0\)</span> represent Type II errors.</p>
+</div>
+</div>
+</section>
+<section id="sec-factors-type-ii" class="level2" data-number="27.3">
+<h2 data-number="27.3" class="anchored" data-anchor-id="sec-factors-type-ii"><span class="header-section-number">27.3</span> Factors that affect the Type II error rate</h2>
+<div class="original">
+<p>Four key factors determine how likely a study is to commit a Type II error:</p>
+<section id="effect-size" class="level3" data-number="27.3.1">
+<h3 data-number="27.3.1" class="anchored" data-anchor-id="effect-size"><span class="header-section-number">27.3.1</span> 1. Effect size</h3>
+<p>The <strong>effect size</strong> is the magnitude of the difference between the true parameter value and the null hypothesis value. Larger effects are easier to detect.</p>
+<ul>
+<li>If a tutoring program raises scores by 20 points, almost any reasonable study will detect it.</li>
+<li>If a tutoring program raises scores by 2 points, you need a very large or very precise study to detect it.</li>
+</ul>
+<p>Intuitively, a large effect “sticks out” from the noise, while a small effect can easily be hidden by random variability.</p>
+</section>
+<section id="sample-size" class="level3" data-number="27.3.2">
+<h3 data-number="27.3.2" class="anchored" data-anchor-id="sample-size"><span class="header-section-number">27.3.2</span> 2. Sample size</h3>
+<p>Larger samples provide more precise estimates and smaller standard errors. The standard error of the sample mean is <span class="math inline">\(SE = \sigma / \sqrt{n}\)</span>, which decreases as <span class="math inline">\(n\)</span> increases. A smaller standard error means the sampling distribution is narrower, making it easier to distinguish the true effect from zero.</p>
+<div class="important">
+<p><strong>More data, fewer missed effects.</strong> Increasing the sample size is the most common way to reduce the Type II error rate. This is why large clinical trials with thousands of participants are more likely to detect treatment effects than small pilot studies.</p>
+</div>
+</section>
+<section id="population-variability-sigma" class="level3" data-number="27.3.3">
+<h3 data-number="27.3.3" class="anchored" data-anchor-id="population-variability-sigma"><span class="header-section-number">27.3.3</span> 3. Population variability (<span class="math inline">\(\sigma\)</span>)</h3>
+<p>When individual observations are highly variable, it is harder to estimate the population mean precisely. The standard error depends directly on <span class="math inline">\(\sigma\)</span>: high variability means a wide sampling distribution, which makes it harder to distinguish <span class="math inline">\(H_A\)</span> from <span class="math inline">\(H_0\)</span>.</p>
+<p>For example, if exam scores range from 20 to 100 with <span class="math inline">\(\sigma = 25\)</span>, it is much harder to detect a 5-point effect than if scores range from 60 to 80 with <span class="math inline">\(\sigma = 5\)</span>.</p>
+<div class="guidedpractice">
+<p>A researcher is studying whether a dietary supplement improves reaction time. She can either recruit participants from the general population (where reaction times are highly variable) or from a group of trained athletes (where reaction times are more consistent). Which group would give her study a lower Type II error rate, assuming the supplement has the same true effect in both populations?</p>
+<details>
+<summary>
+Show answer
+</summary>
+The group of trained athletes would give a lower Type II error rate because their reaction times are less variable (smaller <span class="math inline">\(\sigma\)</span>). A smaller <span class="math inline">\(\sigma\)</span> leads to a smaller standard error, making it easier to detect the true effect of the supplement.
+</details>
+</div>
+</section>
+<section id="discernibility-level-alpha" class="level3" data-number="27.3.4">
+<h3 data-number="27.3.4" class="anchored" data-anchor-id="discernibility-level-alpha"><span class="header-section-number">27.3.4</span> 4. Discernibility level (<span class="math inline">\(\alpha\)</span>)</h3>
+<p>As we discussed in <a href="decision-errors.html#sec-tradeoff" class="quarto-xref"><span>Section 8.5</span></a>, a smaller <span class="math inline">\(\alpha\)</span> makes the test more conservative — it demands stronger evidence before rejecting <span class="math inline">\(H_0\)</span>. This directly increases <span class="math inline">\(\beta\)</span> because the rejection region shrinks.</p>
+<p>The table below summarizes these four factors:</p>
+<div id="tbl-factors-beta" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-factors-beta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;27.1: How each factor affects the Type II error rate.
+</figcaption>
+<div aria-describedby="tbl-factors-beta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 31%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Factor</th>
+<th style="text-align: left;">Change</th>
+<th style="text-align: left;">Effect on <span class="math inline">\(\beta\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Effect size</td>
+<td style="text-align: left;">Larger effect</td>
+<td style="text-align: left;"><span class="math inline">\(\beta\)</span> decreases</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sample size (<span class="math inline">\(n\)</span>)</td>
+<td style="text-align: left;">Larger <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\beta\)</span> decreases</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Population variability (<span class="math inline">\(\sigma\)</span>)</td>
+<td style="text-align: left;">Larger <span class="math inline">\(\sigma\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\beta\)</span> increases</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Discernibility level (<span class="math inline">\(\alpha\)</span>)</td>
+<td style="text-align: left;">Smaller <span class="math inline">\(\alpha\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\beta\)</span> increases</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<div class="workedexample">
+<p>A researcher plans a two-sample <span class="math inline">\(t\)</span>-test to compare a new therapy to a standard therapy. She knows from pilot data that the standard deviation of patient outcomes is about <span class="math inline">\(\sigma = 12\)</span>. She is hoping to detect a difference of at least 4 points between the two therapies. Her initial plan calls for 30 patients per group with <span class="math inline">\(\alpha = 0.05\)</span>.</p>
+<p>The standard error for the difference in means is approximately:</p>
+<p><span class="math display">\[SE = \sqrt{\frac{12^2}{30} + \frac{12^2}{30}} = \sqrt{\frac{144}{30} + \frac{144}{30}} = \sqrt{9.6} = 3.10\]</span></p>
+<p>The rejection boundary for a two-sided test is approximately <span class="math inline">\(1.96 \times SE = 1.96 \times 3.10 = 6.07\)</span>. Since the true effect is only 4 points — smaller than the rejection boundary of 6.07 — the study will more often than not fail to detect the effect. The Type II error rate will be high.</p>
+<p>What could she change to reduce the Type II error rate?</p>
+<hr>
+<p>She has several options: (1) increase the sample size to reduce the standard error, (2) try to reduce variability through better measurement or a more homogeneous study population, or (3) increase <span class="math inline">\(\alpha\)</span> to 0.10 (though this increases the Type I error rate). The most practical option is usually to increase the sample size.</p>
+</div>
+</section>
+</div>
+</section>
+<section id="sec-practical-significance-revisited" class="level2" data-number="27.4">
+<h2 data-number="27.4" class="anchored" data-anchor-id="sec-practical-significance-revisited"><span class="header-section-number">27.4</span> Practical vs.&nbsp;statistical discernibility revisited</h2>
+<div class="original">
+<p>The concepts of Type I and Type II error are closely connected to the distinction between <strong>statistical discernibility</strong> and <strong>practical importance</strong> that we first encountered in earlier chapters.</p>
+<p><strong>Statistical discernibility</strong> means the data provide enough evidence to reject <span class="math inline">\(H_0\)</span> at our chosen <span class="math inline">\(\alpha\)</span> level. It says: “The effect is probably not zero.”</p>
+<p><strong>Practical importance</strong> means the effect is large enough to matter in the real world. It says: “The effect is big enough to be useful.”</p>
+<p>These are different questions, and they can give different answers:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 35%">
+<col style="width: 32%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Scenario</th>
+<th style="text-align: left;">Statistically discernible?</th>
+<th style="text-align: left;">Practically important?</th>
+<th style="text-align: left;">What happened?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Large effect, large <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">Ideal outcome</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Large effect, small <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;">Possibly not</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">Type II error risk — effect exists but may be missed</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Small effect, large <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">“Discernible but trivial” — very large studies can detect tiny, unimportant effects</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Small effect, small <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">No news</td>
+</tr>
+</tbody>
+</table>
+<p>The lower-left cell is the Type II error danger zone: a real, important effect exists, but the study is too small to detect it. The upper-right cell represents a different problem: a large study that detects a trivially small effect that has no practical importance.</p>
+<div class="workedexample">
+<p>A study with 50,000 participants finds that a new teaching method raises test scores by 0.3 points on a 100-point scale, with <span class="math inline">\(p = 0.002\)</span>. Is this result practically important?</p>
+<hr>
+<p>The result is statistically discernible (<span class="math inline">\(p = 0.002 &lt; 0.05\)</span>), meaning we have strong evidence that the effect is not zero. However, a 0.3-point improvement on a 100-point scale is almost certainly too small to matter in practice. No school would adopt a new teaching method for a gain of one-third of a point. This is a case of statistical discernibility without practical importance — the study was so large that it detected a real but trivially small effect.</p>
+</div>
+<div class="important">
+<p><strong>Statistical discernibility is not the same as practical importance.</strong> A statistically discernible result tells you the effect is probably real, but it does not tell you the effect is important. Always consider the <em>size</em> of the effect, not just whether it is statistically discernible.</p>
+</div>
+<div class="guidedpractice">
+<p>A small pilot study with 12 participants finds that a new exercise program reduces resting heart rate by 8 beats per minute, but the result is not statistically discernible (<span class="math inline">\(p = 0.09\)</span>). Does this mean the exercise program doesn’t work?</p>
+<details>
+<summary>
+Show answer
+</summary>
+Not necessarily. An 8 bpm reduction in resting heart rate is a clinically meaningful effect. The study may simply have been too small to detect it — this is a potential Type II error. The non-discernible result means we don’t have enough evidence to be confident the effect is real, but it doesn’t prove the program is ineffective. A larger study with more participants would be warranted.
+</details>
+</div>
+</div>
+</section>
+<section id="sec-ch26-review" class="level2" data-number="27.5">
+<h2 data-number="27.5" class="anchored" data-anchor-id="sec-ch26-review"><span class="header-section-number">27.5</span> Chapter review</h2>
+<section id="summary" class="level3 original" data-number="27.5.1">
+<h3 data-number="27.5.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">27.5.1</span> Summary</h3>
+<p>This chapter looked closely at the Type II error rate <span class="math inline">\(\beta\)</span> and the power of a test. Simulation shows that a study with a small sample, a small true effect, or high variability can fail to detect a real effect a large fraction of the time. Four factors govern <span class="math inline">\(\beta\)</span>: the <strong>effect size</strong> (larger effects are easier to detect), the <strong>sample size</strong> (more data lowers <span class="math inline">\(\beta\)</span>), the <strong>population variability</strong> (more variability raises <span class="math inline">\(\beta\)</span>), and the <strong>discernibility level</strong> (a smaller <span class="math inline">\(\alpha\)</span> raises <span class="math inline">\(\beta\)</span>). Finally, statistical discernibility and practical importance are not the same: a very large study can detect a trivially small effect, while a small study can miss an important one.</p>
+</section>
+</section>
+<section id="exercises" class="level2 exercises" data-number="27.6">
+<h2 class="exercises anchored" data-number="27.6" data-anchor-id="exercises"><span class="header-section-number">27.6</span> Exercises</h2>
+<p>Answers to odd-numbered exercises are provided inline.</p>
+<!-- Generated by build_textbook_exercises.py — DO NOT EDIT -->
+<!-- Sources: _14-ex-foundations-errors -->
+<ol type="1">
+<li><strong>Which is higher?</strong> In each part below, there is a value of interest and two scenarios: (i) and (ii). For each part, report if the value of interest is larger under scenario (i), scenario (ii), or whether the value is equal under the scenarios.</li>
+</ol>
+<ol type="a">
+<li><p>The standard error of <span class="math inline">\(\hat{p}\)</span> when (i)&nbsp;<span class="math inline">\(n = 125\)</span> or (ii)&nbsp;<span class="math inline">\(n = 500\)</span>.</p></li>
+<li><p>The margin of error of a confidence interval when the confidence level is (i)&nbsp;90% or (ii)&nbsp;80%.</p></li>
+<li><p>The p-value for a Z-statistic of 2.5 calculated based on a (i)&nbsp;sample with <span class="math inline">\(n = 500\)</span> or based on a (ii)&nbsp;sample with <span class="math inline">\(n = 1000\)</span>.</p></li>
+<li><p>The probability of making a Type II error when the alternative hypothesis is true and the discernibility level is (i)&nbsp;0.05 or (ii)&nbsp;0.10. </p></li>
+</ol>
+<ol start="2" type="1">
+<li><strong>Same observation, different sample size.</strong> Suppose you conduct a hypothesis test based on a sample where the sample size is <span class="math inline">\(n = 50\)</span>, and arrive at a p-value of 0.08. You then refer back to your notes and discover that you made a careless mistake, the sample size should have been <span class="math inline">\(n = 500\)</span>. Will your p-value increase, decrease, or stay the same? Explain. </li>
+</ol>
+<ol start="3" type="1">
+<li><strong>Practical importance vs.&nbsp;statistical discernibility.</strong> Determine whether the following statement is true or false, and explain your reasoning: “With large sample sizes, even small differences between the null value and the observed point estimate can be statistically discernible.” </li>
+</ol>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -837,13 +1159,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../chapters/hypothesis-tests-means.html" class="pagination-link" aria-label="Hypothesis Tests for Means">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Hypothesis Tests for Means</span></span>
+      <a href="../chapters/normal-distribution.html" class="pagination-link" aria-label="Normal Distribution">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Normal Distribution</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../chapters/chisq-gof.html" class="pagination-link" aria-label="Chi-Square Goodness of Fit">
-        <span class="nav-page-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Chi-Square Goodness of Fit</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../chapters/statistical-power.html" class="pagination-link" aria-label="Statistical Power">
+        <span class="nav-page-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Statistical Power</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
@@ -861,6 +1183,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

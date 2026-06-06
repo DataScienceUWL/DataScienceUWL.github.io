@@ -1,0 +1,2065 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>12&nbsp; Inference for Proportions – Introduction to Statistics: A Simulation-First Approach</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/ci-for-means.html" rel="next">
+<link href="../chapters/normal-approximation.html" rel="prev">
+<link href="../images/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-f03065a6f98f3af1895f9ddc03f03f29.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-iii.html">Calculate</a></li><li class="breadcrumb-item"><a href="../chapters/inference-proportions.html"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Inference for Proportions</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Introduction to Statistics: A Simulation-First Approach</a> 
+        <div class="sidebar-tools-main">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-i.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explore</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/intro-to-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction to Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/study-design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Data Collection and Study Design</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/data-visualization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Exploring Categorical Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/describing-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Exploring Quantitative Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/relationships.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Relationships Between Variables</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-ii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulate</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sampling-variability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Sampling Variability</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/randomization-tests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Randomization Tests</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/decision-errors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Decision Errors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/bootstrap-ci.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Bootstrap Confidence Intervals</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sampling-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Sampling Distributions via Simulation</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Calculate</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/normal-approximation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Normal Approximation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/inference-proportions.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Inference for Proportions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ci-for-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Confidence Intervals for Means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/hypothesis-tests-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Hypothesis Tests for Means</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Apply</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chisq-gof.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Chi-Square Goodness of Fit</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chisq-independence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Chi-Square Test of Independence</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Analysis of Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Multiple Comparisons</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Correlation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/linear-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Linear Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/prediction-model-fit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Prediction and Model Fit</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-v.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundations</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/probability-rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Probability Rules</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/random-variables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Random Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/expected-value.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Expected Value and Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/binomial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Binomial Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/normal-distribution.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Normal Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/type-ii-error.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/statistical-power.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Statistical Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sample-size.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Sample Size Planning</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/datasets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Datasets</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/statlens-guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">StatLens Quick Reference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/tables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Statistical Tables</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-normal-approx-prop" id="toc-sec-normal-approx-prop" class="nav-link active" data-scroll-target="#sec-normal-approx-prop"><span class="header-section-number">12.1</span> Normal approximation for proportions</a>
+  <ul class="collapse">
+  <li><a href="#the-sampling-distribution-of-hatp" id="toc-the-sampling-distribution-of-hatp" class="nav-link" data-scroll-target="#the-sampling-distribution-of-hatp"><span class="header-section-number">12.1.1</span> The sampling distribution of <span class="math inline">\(\hat{p}\)</span></a></li>
+  <li><a href="#the-standard-error-of-hatp" id="toc-the-standard-error-of-hatp" class="nav-link" data-scroll-target="#the-standard-error-of-hatp"><span class="header-section-number">12.1.2</span> The standard error of <span class="math inline">\(\hat{p}\)</span></a></li>
+  </ul></li>
+  <li><a href="#sec-ci-one-prop" id="toc-sec-ci-one-prop" class="nav-link" data-scroll-target="#sec-ci-one-prop"><span class="header-section-number">12.2</span> Confidence interval for a single proportion</a>
+  <ul class="collapse">
+  <li><a href="#the-formula" id="toc-the-formula" class="nav-link" data-scroll-target="#the-formula"><span class="header-section-number">12.2.1</span> The formula</a></li>
+  <li><a href="#worked-example-payday-loan-regulation" id="toc-worked-example-payday-loan-regulation" class="nav-link" data-scroll-target="#worked-example-payday-loan-regulation"><span class="header-section-number">12.2.2</span> Worked example: Payday loan regulation</a></li>
+  <li><a href="#changing-the-confidence-level" id="toc-changing-the-confidence-level" class="nav-link" data-scroll-target="#changing-the-confidence-level"><span class="header-section-number">12.2.3</span> Changing the confidence level</a></li>
+  </ul></li>
+  <li><a href="#sec-ht-one-prop" id="toc-sec-ht-one-prop" class="nav-link" data-scroll-target="#sec-ht-one-prop"><span class="header-section-number">12.3</span> Hypothesis test for a single proportion</a>
+  <ul class="collapse">
+  <li><a href="#the-z-test-for-a-proportion" id="toc-the-z-test-for-a-proportion" class="nav-link" data-scroll-target="#the-z-test-for-a-proportion"><span class="header-section-number">12.3.1</span> The Z test for a proportion</a></li>
+  <li><a href="#worked-example-support-for-credit-checks" id="toc-worked-example-support-for-credit-checks" class="nav-link" data-scroll-target="#worked-example-support-for-credit-checks"><span class="header-section-number">12.3.2</span> Worked example: Support for credit checks</a></li>
+  <li><a href="#when-conditions-fail" id="toc-when-conditions-fail" class="nav-link" data-scroll-target="#when-conditions-fail"><span class="header-section-number">12.3.3</span> When conditions fail</a></li>
+  </ul></li>
+  <li><a href="#sec-diff-two-props" id="toc-sec-diff-two-props" class="nav-link" data-scroll-target="#sec-diff-two-props"><span class="header-section-number">12.4</span> Difference of two proportions</a>
+  <ul class="collapse">
+  <li><a href="#the-parameter-and-point-estimate" id="toc-the-parameter-and-point-estimate" class="nav-link" data-scroll-target="#the-parameter-and-point-estimate"><span class="header-section-number">12.4.1</span> The parameter and point estimate</a></li>
+  <li><a href="#confidence-interval-for-a-difference-in-proportions" id="toc-confidence-interval-for-a-difference-in-proportions" class="nav-link" data-scroll-target="#confidence-interval-for-a-difference-in-proportions"><span class="header-section-number">12.4.2</span> Confidence interval for a difference in proportions</a></li>
+  <li><a href="#hypothesis-test-for-a-difference-in-proportions" id="toc-hypothesis-test-for-a-difference-in-proportions" class="nav-link" data-scroll-target="#hypothesis-test-for-a-difference-in-proportions"><span class="header-section-number">12.4.3</span> Hypothesis test for a difference in proportions</a></li>
+  <li><a href="#why-pool-for-hypothesis-tests-but-not-for-confidence-intervals" id="toc-why-pool-for-hypothesis-tests-but-not-for-confidence-intervals" class="nav-link" data-scroll-target="#why-pool-for-hypothesis-tests-but-not-for-confidence-intervals"><span class="header-section-number">12.4.4</span> Why pool for hypothesis tests but not for confidence intervals?</a></li>
+  </ul></li>
+  <li><a href="#sec-sim-vs-normal-prop" id="toc-sec-sim-vs-normal-prop" class="nav-link" data-scroll-target="#sec-sim-vs-normal-prop"><span class="header-section-number">12.5</span> Comparing simulation-based and normal-based methods</a></li>
+  <li><a href="#sec-ch13-review" id="toc-sec-ch13-review" class="nav-link" data-scroll-target="#sec-ch13-review"><span class="header-section-number">12.6</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">12.6.1</span> Summary</a></li>
+  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">12.6.2</span> Key terms</a></li>
+  </ul></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">12.7</span> Exercises</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-iii.html">Calculate</a></li><li class="breadcrumb-item"><a href="../chapters/inference-proportions.html"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Inference for Proportions</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Inference for Proportions</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-simple callout-warning no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>Draft Chapter.</strong> This chapter is part of UWL’s STAT 145 curriculum and is under active development. Content is substantially complete but may undergo revisions. Feedback welcome.</p>
+</div>
+</div>
+</div>
+<div class="chapterintro">
+<p>In earlier chapters, we used simulation-based methods to draw conclusions about population proportions. In the randomization tests and bootstrap confidence intervals chapters, we built randomization distributions and bootstrap confidence intervals; in the normal approximation chapter, we learned that the normal distribution provides a mathematical model for these sampling distributions when certain conditions are met. In this chapter, we bring everything together for proportions. We develop normal-based confidence intervals and hypothesis tests for a single proportion and for the difference between two proportions. Throughout, we compare these formula-based results to the simulation-based results from earlier chapters, reinforcing the idea that these are two routes to the same destination.</p>
+</div>
+<div class="statlens">
+<p><strong>StatLens tools for this chapter</strong>: Use the <strong>Bootstrap CI for One Proportion</strong> and <strong>Permutation Test Simulator</strong> alongside the formula-based methods in this chapter to see both approaches side by side.</p>
+<p><a href="https://datascienceuwl.github.io/statlens/simulate/bootstrap-prop/" target="_blank">Launch Bootstrap CI Tool</a></p>
+</div>
+<section id="sec-normal-approx-prop" class="level2" data-number="12.1">
+<h2 data-number="12.1" class="anchored" data-anchor-id="sec-normal-approx-prop"><span class="header-section-number">12.1</span> Normal approximation for proportions</h2>
+<section id="the-sampling-distribution-of-hatp" class="level3" data-number="12.1.1">
+<h3 data-number="12.1.1" class="anchored" data-anchor-id="the-sampling-distribution-of-hatp"><span class="header-section-number">12.1.1</span> The sampling distribution of <span class="math inline">\(\hat{p}\)</span></h3>
+<p>In the normal approximation chapter, we saw that the Central Limit Theorem guarantees that the sampling distribution of <span class="math inline">\(\hat{p}\)</span> is approximately normal when certain conditions are met. Let’s state these conditions precisely.</p>
+<div class="important">
+<p><strong>Sampling distribution of <span class="math inline">\(\hat{p}\)</span>.</strong></p>
+<p>The sampling distribution of the sample proportion <span class="math inline">\(\hat{p}\)</span>, based on a sample of size <span class="math inline">\(n\)</span> from a population with true proportion <span class="math inline">\(p\)</span>, is approximately normal when:</p>
+<ol type="1">
+<li><strong>Independence.</strong> The observations are independent (e.g., from a simple random sample).</li>
+<li><strong>Success-failure condition.</strong> We expect to see at least 10 successes and 10 failures: <span class="math inline">\(np \geq 10\)</span> and <span class="math inline">\(n(1-p) \geq 10\)</span>.</li>
+</ol>
+<p>When these conditions are met, the sampling distribution is approximately:</p>
+<p><span class="math display">\[\hat{p} \sim N\!\left(p,\ \sqrt{\frac{p(1-p)}{n}}\right)\]</span></p>
+</div>
+<div class="definition">
+<p>The <strong>success-failure condition</strong> requires that the expected number of successes (<span class="math inline">\(np\)</span>) and the expected number of failures (<span class="math inline">\(n(1-p)\)</span>) are both at least 10. This ensures the sampling distribution of <span class="math inline">\(\hat{p}\)</span> is not too skewed for the normal approximation to work well.</p>
+</div>
+<div class="workedexample">
+<p>A medical consultant facilitated 62 liver transplant surgeries, with 3 complications. Under the null hypothesis that the true complication rate is <span class="math inline">\(p_0 = 0.10\)</span>, is it appropriate to use the normal approximation?</p>
+<hr>
+<p>Check the success-failure condition using <span class="math inline">\(p_0 = 0.10\)</span>:</p>
+<ul>
+<li>Expected successes (complications): <span class="math inline">\(np_0 = 62 \times 0.10 = 6.2\)</span></li>
+<li>Expected failures: <span class="math inline">\(n(1-p_0) = 62 \times 0.90 = 55.8\)</span></li>
+</ul>
+<p>The expected number of successes (6.2) is less than 10. The <strong>success-failure condition is not met</strong>, so the normal approximation should not be used here. A simulation-based approach (such as the parametric bootstrap from the bootstrap confidence intervals chapter) would be more appropriate.</p>
+</div>
+<div class="guidedpractice">
+<p>A poll surveys 826 randomly selected payday loan borrowers and finds that 51% support a new regulation. Check whether the normal approximation can be used to model <span class="math inline">\(\hat{p}\)</span> for a hypothesis test with <span class="math inline">\(H_0: p = 0.50\)</span>.</p>
+<details>
+<summary>
+Show answer
+</summary>
+Check the success-failure condition using <span class="math inline">\(p_0 = 0.50\)</span>: <span class="math inline">\(np_0 = 826 \times 0.50 = 413\)</span> and <span class="math inline">\(n(1-p_0) = 826 \times 0.50 = 413\)</span>. Both are well above 10, so the success-failure condition is met. Combined with the random sample (independence), the normal approximation is appropriate.
+</details>
+</div>
+</section>
+<section id="the-standard-error-of-hatp" class="level3" data-number="12.1.2">
+<h3 data-number="12.1.2" class="anchored" data-anchor-id="the-standard-error-of-hatp"><span class="header-section-number">12.1.2</span> The standard error of <span class="math inline">\(\hat{p}\)</span></h3>
+<div class="important">
+<p><strong>Standard error of <span class="math inline">\(\hat{p}\)</span>.</strong></p>
+<p>When conditions are met, the variability of <span class="math inline">\(\hat{p}\)</span> is described by:</p>
+<p><span class="math display">\[SE(\hat{p}) = \sqrt{\frac{p(1-p)}{n}}\]</span></p>
+<p>Since we rarely know the true <span class="math inline">\(p\)</span>:</p>
+<ul>
+<li><strong>For confidence intervals</strong>, use <span class="math inline">\(\hat{p}\)</span> as the best guess: <span class="math inline">\(SE = \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}\)</span></li>
+<li><strong>For hypothesis tests</strong>, use <span class="math inline">\(p_0\)</span> (the value from <span class="math inline">\(H_0\)</span>): <span class="math inline">\(SE = \sqrt{\frac{p_0(1-p_0)}{n}}\)</span></li>
+</ul>
+</div>
+<div class="guidedpractice">
+<p>Consider polls of size 300 where approximately 2/3 of voters support legalized marijuana. Calculate the standard error of <span class="math inline">\(\hat{p}\)</span>.</p>
+<details>
+<summary>
+Show answer
+</summary>
+Using <span class="math inline">\(p \approx 2/3\)</span>: <span class="math inline">\(SE = \sqrt{\frac{(2/3)(1/3)}{300}} = \sqrt{\frac{2/9}{300}} = \sqrt{0.000741} = 0.027\)</span>.
+</details>
+</div>
+</section>
+</section>
+<section id="sec-ci-one-prop" class="level2" data-number="12.2">
+<h2 data-number="12.2" class="anchored" data-anchor-id="sec-ci-one-prop"><span class="header-section-number">12.2</span> Confidence interval for a single proportion</h2>
+<section id="the-formula" class="level3" data-number="12.2.1">
+<h3 data-number="12.2.1" class="anchored" data-anchor-id="the-formula"><span class="header-section-number">12.2.1</span> The formula</h3>
+<div class="important">
+<p><strong>Confidence interval for a single proportion <span class="math inline">\(p\)</span>.</strong></p>
+<p><span class="math display">\[\hat{p} \pm z^* \times \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}\]</span></p>
+<p>where <span class="math inline">\(z^*\)</span> is the critical value for the desired confidence level (e.g., <span class="math inline">\(z^* = 1.96\)</span> for 95%).</p>
+<p><strong>Steps:</strong></p>
+<ol type="1">
+<li>Check conditions: independence and success-failure using <span class="math inline">\(\hat{p}\)</span>.</li>
+<li>Compute <span class="math inline">\(SE\)</span> using <span class="math inline">\(\hat{p}\)</span>.</li>
+<li>Apply the confidence interval formula.</li>
+</ol>
+</div>
+</section>
+<section id="worked-example-payday-loan-regulation" class="level3" data-number="12.2.2">
+<h3 data-number="12.2.2" class="anchored" data-anchor-id="worked-example-payday-loan-regulation"><span class="header-section-number">12.2.2</span> Worked example: Payday loan regulation</h3>
+<div class="workedexample">
+<p>A simple random sample of 826 payday loan borrowers was surveyed, and 70% supported new regulations on payday lenders. Construct a 95% confidence interval for the true proportion who support the regulations.</p>
+<hr>
+<p><strong>Step 1: Check conditions.</strong></p>
+<ul>
+<li><em>Independence.</em> The data are a random sample.</li>
+<li><em>Success-failure condition.</em> Using <span class="math inline">\(\hat{p} = 0.70\)</span>: <span class="math inline">\(n\hat{p} = 826 \times 0.70 = 578\)</span> and <span class="math inline">\(n(1-\hat{p}) = 826 \times 0.30 = 248\)</span>. Both are well above 10.</li>
+</ul>
+<p><strong>Step 2: Compute SE.</strong></p>
+<p><span class="math display">\[SE = \sqrt{\frac{0.70 \times 0.30}{826}} = \sqrt{\frac{0.21}{826}} = \sqrt{0.000254} = 0.016\]</span></p>
+<p><strong>Step 3: Construct the interval.</strong></p>
+<p><span class="math display">\[0.70 \pm 1.96 \times 0.016 = 0.70 \pm 0.031 = (0.669, 0.731)\]</span></p>
+<p>We are 95% confident that between 66.9% and 73.1% of all payday loan borrowers support the new regulation.</p>
+</div>
+</section>
+<section id="changing-the-confidence-level" class="level3" data-number="12.2.3">
+<h3 data-number="12.2.3" class="anchored" data-anchor-id="changing-the-confidence-level"><span class="header-section-number">12.2.3</span> Changing the confidence level</h3>
+<p>The confidence level is controlled by the choice of <span class="math inline">\(z^*\)</span>:</p>
+<table class="table-striped caption-top table">
+<caption>Critical values for common confidence levels.</caption>
+<thead>
+<tr class="header">
+<th>Confidence level</th>
+<th><span class="math inline">\(z^*\)</span></th>
+<th>Interval width</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>90%</td>
+<td>1.645</td>
+<td>Narrower</td>
+</tr>
+<tr class="even">
+<td>95%</td>
+<td>1.960</td>
+<td>Moderate</td>
+</tr>
+<tr class="odd">
+<td>99%</td>
+<td>2.576</td>
+<td>Wider</td>
+</tr>
+</tbody>
+</table>
+<p>Higher confidence requires a wider interval – we must cast a wider net to be more confident we have captured the true parameter.</p>
+<div class="guidedpractice">
+<p>Using the payday loan data (<span class="math inline">\(\hat{p} = 0.70\)</span>, <span class="math inline">\(n = 826\)</span>, <span class="math inline">\(SE = 0.016\)</span>), construct a 99% confidence interval.</p>
+<details>
+<summary>
+Show answer
+</summary>
+Using <span class="math inline">\(z^* = 2.576\)</span>: <span class="math inline">\(0.70 \pm 2.576 \times 0.016 = 0.70 \pm 0.041 = (0.659, 0.741)\)</span>. The 99% interval is wider than the 95% interval, as expected.
+</details>
+</div>
+<div class="guidedpractice">
+<p>A study on stent surgery found a point estimate of 0.090 (the difference in stroke rates) with <span class="math inline">\(SE = 0.028\)</span>. Construct a 90% confidence interval.</p>
+<details>
+<summary>
+Show answer
+</summary>
+Using <span class="math inline">\(z^* = 1.645\)</span>: <span class="math inline">\(0.090 \pm 1.645 \times 0.028 = 0.090 \pm 0.046 = (0.044, 0.136)\)</span>. We are 90% confident that stent implantation increases the 30-day stroke rate by between 4.4% and 13.6%.
+</details>
+</div>
+<div class="important">
+<p><strong>General confidence interval formula.</strong> If a point estimate follows a normal model with standard error <span class="math inline">\(SE\)</span>, then a confidence interval for the population parameter is:</p>
+<p><span class="math display">\[\text{point estimate} \pm z^* \times SE\]</span></p>
+<p>where <span class="math inline">\(z^*\)</span> corresponds to the chosen confidence level.</p>
+</div>
+</section>
+</section>
+<section id="sec-ht-one-prop" class="level2" data-number="12.3">
+<h2 data-number="12.3" class="anchored" data-anchor-id="sec-ht-one-prop"><span class="header-section-number">12.3</span> Hypothesis test for a single proportion</h2>
+<section id="the-z-test-for-a-proportion" class="level3" data-number="12.3.1">
+<h3 data-number="12.3.1" class="anchored" data-anchor-id="the-z-test-for-a-proportion"><span class="header-section-number">12.3.1</span> The Z test for a proportion</h3>
+<div class="important">
+<p><strong>The test statistic for a single proportion is a Z.</strong></p>
+<p><span class="math display">\[Z = \frac{\hat{p} - p_0}{\sqrt{p_0(1 - p_0) / n}}\]</span></p>
+<p>where <span class="math inline">\(\hat{p}\)</span> is the sample proportion and <span class="math inline">\(p_0\)</span> is the hypothesized proportion from <span class="math inline">\(H_0\)</span>.</p>
+<p>When <span class="math inline">\(H_0\)</span> is true and conditions are met, <span class="math inline">\(Z\)</span> follows a standard normal distribution <span class="math inline">\(N(0, 1)\)</span>.</p>
+<p><strong>Conditions:</strong></p>
+<ul>
+<li>Independent observations</li>
+<li><span class="math inline">\(np_0 \geq 10\)</span> and <span class="math inline">\(n(1 - p_0) \geq 10\)</span></li>
+</ul>
+</div>
+<p>Note that for hypothesis tests, the standard error is computed using <span class="math inline">\(p_0\)</span> (not <span class="math inline">\(\hat{p}\)</span>), because we are evaluating the data under the assumption that <span class="math inline">\(H_0\)</span> is true.</p>
+</section>
+<section id="worked-example-support-for-credit-checks" class="level3" data-number="12.3.2">
+<h3 data-number="12.3.2" class="anchored" data-anchor-id="worked-example-support-for-credit-checks"><span class="header-section-number">12.3.2</span> Worked example: Support for credit checks</h3>
+<div class="workedexample">
+<p>From a random sample of 826 payday loan borrowers, 51% said they would support a regulation requiring lenders to pull credit reports. Is there convincing evidence that a majority (more than 50%) of borrowers support this regulation?</p>
+<hr>
+<p><strong>Step 1: State hypotheses.</strong></p>
+<ul>
+<li><span class="math inline">\(H_0\)</span>: <span class="math inline">\(p = 0.50\)</span> (no majority support)</li>
+<li><span class="math inline">\(H_A\)</span>: <span class="math inline">\(p &gt; 0.50\)</span> (majority support)</li>
+</ul>
+<p>This is a one-sided test.</p>
+<p><strong>Step 2: Check conditions.</strong></p>
+<ul>
+<li><em>Independence.</em> Random sample.</li>
+<li><em>Success-failure.</em> Using <span class="math inline">\(p_0 = 0.50\)</span>: <span class="math inline">\(np_0 = 826 \times 0.50 = 413\)</span> and <span class="math inline">\(n(1-p_0) = 413\)</span>. Both <span class="math inline">\(\geq 10\)</span>.</li>
+</ul>
+<p><strong>Step 3: Compute the test statistic and p-value.</strong></p>
+<p><span class="math display">\[SE = \sqrt{\frac{0.50 \times 0.50}{826}} = \sqrt{\frac{0.25}{826}} = 0.017\]</span></p>
+<p><span class="math display">\[Z = \frac{0.51 - 0.50}{0.017} = \frac{0.01}{0.017} = 0.59\]</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-normal-right-tail-z059" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A standard normal distribution curve with the area to the right of Z equals 0.59 shaded. This shaded area represents the p-value for the one-sided test.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-normal-right-tail-z059-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="inference-proportions_files/figure-html/fig-normal-right-tail-z059-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;12.1: A standard normal curve with the area to the right of Z = 0.59 shaded, representing the one-sided p-value."><img src="inference-proportions_files/figure-html/fig-normal-right-tail-z059-1.png" class="img-fluid figure-img" alt="A standard normal distribution curve with the area to the right of Z equals 0.59 shaded. This shaded area represents the p-value for the one-sided test." width="2100"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-normal-right-tail-z059-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;12.1: A standard normal curve with the area to the right of <span class="math inline">\(Z = 0.59\)</span> shaded, representing the one-sided p-value.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The area to the right of <span class="math inline">\(Z = 0.59\)</span> is 0.278.</p>
+<p><strong>Step 4: Conclusion.</strong> The p-value of 0.278 is much larger than <span class="math inline">\(\alpha = 0.05\)</span>, so we fail to reject <span class="math inline">\(H_0\)</span>. The poll does not provide convincing evidence that a majority of payday loan borrowers support the regulation requiring credit checks.</p>
+</div>
+<div class="guidedpractice">
+<p>A candidate claims that more than 60% of voters in a district support her. A random sample of 500 voters finds <span class="math inline">\(\hat{p} = 0.64\)</span>. Test the claim at <span class="math inline">\(\alpha = 0.05\)</span>.</p>
+<details>
+<summary>
+Show answer
+</summary>
+Hypotheses: <span class="math inline">\(H_0: p = 0.60\)</span>, <span class="math inline">\(H_A: p &gt; 0.60\)</span>. Success-failure: <span class="math inline">\(500(0.60) = 300\)</span> and <span class="math inline">\(500(0.40) = 200\)</span>, both <span class="math inline">\(\geq 10\)</span>. <span class="math inline">\(SE = \sqrt{0.60 \times 0.40 / 500} = \sqrt{0.000480} = 0.0219\)</span>. <span class="math inline">\(Z = (0.64 - 0.60)/0.0219 = 1.83\)</span>. The right-tail area is 0.034. Since <span class="math inline">\(0.034 &lt; 0.05\)</span>, we reject <span class="math inline">\(H_0\)</span>. There is sufficient evidence that more than 60% of voters support the candidate.
+</details>
+</div>
+</section>
+<section id="when-conditions-fail" class="level3" data-number="12.3.3">
+<h3 data-number="12.3.3" class="anchored" data-anchor-id="when-conditions-fail"><span class="header-section-number">12.3.3</span> When conditions fail</h3>
+<div class="caution">
+<p>When the success-failure condition is not met, the normal model can underestimate the variability of <span class="math inline">\(\hat{p}\)</span>, leading to inaccurate p-values and confidence intervals. In these cases, use simulation-based methods:</p>
+<ul>
+<li><strong>Bootstrap hypothesis test</strong>: Simulate samples under <span class="math inline">\(H_0\)</span> by drawing from a population with proportion <span class="math inline">\(p_0\)</span> (the parametric bootstrap from the bootstrap confidence intervals chapter).</li>
+<li><strong>Bootstrap confidence interval</strong>: Resample from the original data to estimate the variability of <span class="math inline">\(\hat{p}\)</span>.</li>
+</ul>
+</div>
+</section>
+</section>
+<section id="sec-diff-two-props" class="level2" data-number="12.4">
+<h2 data-number="12.4" class="anchored" data-anchor-id="sec-diff-two-props"><span class="header-section-number">12.4</span> Difference of two proportions</h2>
+<section id="the-parameter-and-point-estimate" class="level3" data-number="12.4.1">
+<h3 data-number="12.4.1" class="anchored" data-anchor-id="the-parameter-and-point-estimate"><span class="header-section-number">12.4.1</span> The parameter and point estimate</h3>
+<p>When comparing two groups, the parameter of interest is the difference in population proportions: <span class="math inline">\(p_1 - p_2\)</span>. The point estimate is <span class="math inline">\(\hat{p}_1 - \hat{p}_2\)</span>.</p>
+</section>
+<section id="confidence-interval-for-a-difference-in-proportions" class="level3" data-number="12.4.2">
+<h3 data-number="12.4.2" class="anchored" data-anchor-id="confidence-interval-for-a-difference-in-proportions"><span class="header-section-number">12.4.2</span> Confidence interval for a difference in proportions</h3>
+<div class="important">
+<p><strong>Confidence interval for <span class="math inline">\(p_1 - p_2\)</span>.</strong></p>
+<p><span class="math display">\[(\hat{p}_1 - \hat{p}_2) \pm z^* \times \sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}\]</span></p>
+<p><strong>Conditions:</strong></p>
+<ol type="1">
+<li><strong>Independence (extended).</strong> Observations are independent within and between groups.</li>
+<li><strong>Success-failure condition (each group separately).</strong> <span class="math inline">\(n_1\hat{p}_1 \geq 10\)</span>, <span class="math inline">\(n_1(1-\hat{p}_1) \geq 10\)</span>, <span class="math inline">\(n_2\hat{p}_2 \geq 10\)</span>, and <span class="math inline">\(n_2(1-\hat{p}_2) \geq 10\)</span>.</li>
+</ol>
+</div>
+<div class="workedexample">
+<p>In a CPR study, patients who had a heart attack were randomly assigned to receive a blood thinner (treatment) or not (control). The survival rates after 24 hours:</p>
+<table class="table-striped caption-top table">
+<caption>CPR study results.</caption>
+<thead>
+<tr class="header">
+<th>Group</th>
+<th><span class="math inline">\(n\)</span></th>
+<th>Survived</th>
+<th><span class="math inline">\(\hat{p}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Treatment</td>
+<td>50</td>
+<td>14</td>
+<td>0.280</td>
+</tr>
+<tr class="even">
+<td>Control</td>
+<td>40</td>
+<td>11</td>
+<td>0.275</td>
+</tr>
+</tbody>
+</table>
+<p>Construct a 90% confidence interval for the difference in survival rates, <span class="math inline">\(p_T - p_C\)</span>.</p>
+<hr>
+<p><strong>Check conditions.</strong></p>
+<ul>
+<li><em>Independence.</em> Patients were randomly assigned, so groups are independent.</li>
+<li><em>Success-failure.</em> Treatment: <span class="math inline">\(50(0.28) = 14 \geq 10\)</span> and <span class="math inline">\(50(0.72) = 36 \geq 10\)</span>. Control: <span class="math inline">\(40(0.275) = 11 \geq 10\)</span> and <span class="math inline">\(40(0.725) = 29 \geq 10\)</span>. All conditions met.</li>
+</ul>
+<p><strong>Compute the interval.</strong></p>
+<p><span class="math display">\[\hat{p}_T - \hat{p}_C = 0.280 - 0.275 = 0.005\]</span></p>
+<p><span class="math display">\[SE = \sqrt{\frac{0.280(0.720)}{50} + \frac{0.275(0.725)}{40}} = \sqrt{\frac{0.2016}{50} + \frac{0.1994}{40}} = \sqrt{0.004032 + 0.004985} = \sqrt{0.009017} = 0.095\]</span></p>
+<p>Using <span class="math inline">\(z^* = 1.645\)</span> for 90% confidence:</p>
+<p><span class="math display">\[0.005 \pm 1.645 \times 0.095 = 0.005 \pm 0.156 = (-0.151, 0.161)\]</span></p>
+<p>We are 90% confident that the difference in 24-hour survival rates is between <span class="math inline">\(-15.1\%\)</span> and <span class="math inline">\(+16.1\%\)</span>. Because the interval contains 0, we cannot conclude that the blood thinner affects survival rates.</p>
+</div>
+</section>
+<section id="hypothesis-test-for-a-difference-in-proportions" class="level3" data-number="12.4.3">
+<h3 data-number="12.4.3" class="anchored" data-anchor-id="hypothesis-test-for-a-difference-in-proportions"><span class="header-section-number">12.4.3</span> Hypothesis test for a difference in proportions</h3>
+<div class="important">
+<p><strong>The test statistic for comparing two proportions is a Z.</strong></p>
+<p><span class="math display">\[Z = \frac{(\hat{p}_1 - \hat{p}_2) - 0}{\sqrt{\hat{p}_{pool}(1 - \hat{p}_{pool})\left(\frac{1}{n_1} + \frac{1}{n_2}\right)}}\]</span></p>
+<p>where the <strong>pooled proportion</strong> is:</p>
+<p><span class="math display">\[\hat{p}_{pool} = \frac{\text{total successes in both groups}}{\text{total sample size}} = \frac{x_1 + x_2}{n_1 + n_2}\]</span></p>
+<p>When <span class="math inline">\(H_0\)</span> is true (<span class="math inline">\(p_1 = p_2\)</span>), both groups share the same population proportion, so we pool the data to get a single best estimate.</p>
+<p><strong>Conditions:</strong></p>
+<ul>
+<li>Independence within and between groups.</li>
+<li><span class="math inline">\(n_1\hat{p}_{pool} \geq 10\)</span>, <span class="math inline">\(n_1(1-\hat{p}_{pool}) \geq 10\)</span>, <span class="math inline">\(n_2\hat{p}_{pool} \geq 10\)</span>, <span class="math inline">\(n_2(1-\hat{p}_{pool}) \geq 10\)</span>.</li>
+</ul>
+</div>
+<div class="workedexample">
+<p>Does the blood thinner improve 24-hour survival after CPR? Using the data from the previous example (treatment: 14/50 survived; control: 11/40 survived), test at <span class="math inline">\(\alpha = 0.05\)</span>.</p>
+<hr>
+<p><strong>Step 1: State hypotheses.</strong></p>
+<ul>
+<li><span class="math inline">\(H_0\)</span>: <span class="math inline">\(p_T - p_C = 0\)</span> (the blood thinner has no effect)</li>
+<li><span class="math inline">\(H_A\)</span>: <span class="math inline">\(p_T - p_C \neq 0\)</span> (the blood thinner has some effect)</li>
+</ul>
+<p><strong>Step 2: Check conditions.</strong></p>
+<p>The pooled proportion is <span class="math inline">\(\hat{p}_{pool} = \frac{14 + 11}{50 + 40} = \frac{25}{90} = 0.278\)</span>. Check:</p>
+<ul>
+<li><span class="math inline">\(50(0.278) = 13.9 \geq 10\)</span>, <span class="math inline">\(50(0.722) = 36.1 \geq 10\)</span></li>
+<li><span class="math inline">\(40(0.278) = 11.1 \geq 10\)</span>, <span class="math inline">\(40(0.722) = 28.9 \geq 10\)</span></li>
+</ul>
+<p>Conditions are met.</p>
+<p><strong>Step 3: Compute the test statistic and p-value.</strong></p>
+<p><span class="math display">\[SE = \sqrt{0.278(0.722)\left(\frac{1}{50} + \frac{1}{40}\right)} = \sqrt{0.2007 \times 0.045} = \sqrt{0.009032} = 0.095\]</span></p>
+<p><span class="math display">\[Z = \frac{0.005 - 0}{0.095} = 0.05\]</span></p>
+<p>The two-sided p-value for <span class="math inline">\(Z = 0.05\)</span> is <span class="math inline">\(2 \times P(Z &gt; 0.05) = 2 \times 0.480 = 0.960\)</span>.</p>
+<p><strong>Step 4: Conclusion.</strong> The p-value of 0.960 is far larger than 0.05. We fail to reject <span class="math inline">\(H_0\)</span>. There is no evidence that the blood thinner affects 24-hour survival rates.</p>
+</div>
+</section>
+<section id="why-pool-for-hypothesis-tests-but-not-for-confidence-intervals" class="level3" data-number="12.4.4">
+<h3 data-number="12.4.4" class="anchored" data-anchor-id="why-pool-for-hypothesis-tests-but-not-for-confidence-intervals"><span class="header-section-number">12.4.4</span> Why pool for hypothesis tests but not for confidence intervals?</h3>
+<div class="original">
+<p>You may have noticed a subtle difference:</p>
+<ul>
+<li><strong>Hypothesis tests</strong> use the <strong>pooled proportion</strong> <span class="math inline">\(\hat{p}_{pool}\)</span> in the standard error. This is because under <span class="math inline">\(H_0\)</span>, we assume <span class="math inline">\(p_1 = p_2\)</span>, so the best estimate of this common proportion comes from combining both samples.</li>
+<li><strong>Confidence intervals</strong> use the <strong>individual sample proportions</strong> <span class="math inline">\(\hat{p}_1\)</span> and <span class="math inline">\(\hat{p}_2\)</span> separately. We are not assuming the proportions are equal – we are estimating how different they are.</li>
+</ul>
+<p>This distinction applies only to proportions. When we turn to means in the next chapters, we will instead use separate sample standard deviations in both tests and confidence intervals.</p>
+</div>
+</section>
+</section>
+<section id="sec-sim-vs-normal-prop" class="level2" data-number="12.5">
+<h2 data-number="12.5" class="anchored" data-anchor-id="sec-sim-vs-normal-prop"><span class="header-section-number">12.5</span> Comparing simulation-based and normal-based methods</h2>
+<div class="original">
+<p>Throughout this course, we have developed two parallel approaches to inference:</p>
+<table class="table-striped caption-top table">
+<caption>Comparison of simulation-based and normal approximation approaches.</caption>
+<colgroup>
+<col style="width: 19%">
+<col style="width: 36%">
+<col style="width: 44%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Simulation-based</th>
+<th>Normal approximation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Requires conditions?</strong></td>
+<td>Minimal (mainly independence)</td>
+<td>Independence + success-failure</td>
+</tr>
+<tr class="even">
+<td><strong>Small samples?</strong></td>
+<td>Works well</td>
+<td>May be inaccurate</td>
+</tr>
+<tr class="odd">
+<td><strong>Computational cost</strong></td>
+<td>Higher (needs many simulations)</td>
+<td>Lower (one formula)</td>
+</tr>
+<tr class="even">
+<td><strong>Conceptual clarity</strong></td>
+<td>High (directly simulates the process)</td>
+<td>Moderate (requires distribution theory)</td>
+</tr>
+<tr class="odd">
+<td><strong>Precision</strong></td>
+<td>Approximate (varies by number of simulations)</td>
+<td>Approximate (varies by how well conditions hold)</td>
+</tr>
+</tbody>
+</table>
+<section id="an-example-comparison" class="level3" data-number="12.5.1">
+<h3 data-number="12.5.1" class="anchored" data-anchor-id="an-example-comparison"><span class="header-section-number">12.5.1</span> An example comparison</h3>
+<p>Consider the opportunity cost study from the randomization tests chapter. The observed difference in proportions was 0.20 (<span class="math inline">\(\hat{p}_T - \hat{p}_C\)</span>), and we wanted to test <span class="math inline">\(H_0: p_T - p_C = 0\)</span>.</p>
+<p><strong>Randomization test (the randomization tests chapter):</strong> We shuffled the group labels 10,000 times. The p-value was approximately 0.006.</p>
+<p><strong>Normal approximation (this chapter):</strong> Using <span class="math inline">\(SE = 0.078\)</span> and <span class="math inline">\(Z = 0.20 / 0.078 = 2.56\)</span>, the p-value was 0.005.</p>
+<p>Both methods give essentially the same answer and the same conclusion. This is reassuring and typical when conditions are met.</p>
+</section>
+<section id="when-do-they-disagree" class="level3" data-number="12.5.2">
+<h3 data-number="12.5.2" class="anchored" data-anchor-id="when-do-they-disagree"><span class="header-section-number">12.5.2</span> When do they disagree?</h3>
+<p>The methods can give different answers when:</p>
+<ol type="1">
+<li><strong>The success-failure condition fails.</strong> The normal approximation may undercount the probability in the tails, leading to p-values that are too small. The simulation approach remains valid.</li>
+<li><strong>The sampling distribution is noticeably skewed.</strong> The normal model is symmetric by definition, while the true sampling distribution of <span class="math inline">\(\hat{p}\)</span> near 0 or 1 is skewed.</li>
+</ol>
+<p>The medical consultant example illustrates this: with only 6.2 expected complications, the normal model gave a p-value of 0.085, while the simulation gave 0.122 – nearly 45% higher. The simulation-based p-value is more trustworthy in this case.</p>
+</section>
+<section id="practical-recommendation" class="level3" data-number="12.5.3">
+<h3 data-number="12.5.3" class="anchored" data-anchor-id="practical-recommendation"><span class="header-section-number">12.5.3</span> Practical recommendation</h3>
+<ul>
+<li><strong>When conditions are met</strong>: Both methods work. Use the normal approximation for its simplicity, or use simulation for its conceptual directness.</li>
+<li><strong>When conditions are borderline or not met</strong>: Use simulation. The bootstrap and randomization approaches make fewer assumptions and are more reliable in these settings.</li>
+<li><strong>Always check conditions first.</strong> The success-failure condition is a simple, quick check that helps you decide which approach to use.</li>
+</ul>
+</section>
+</div>
+</section>
+<section id="sec-ch13-review" class="level2" data-number="12.6">
+<h2 data-number="12.6" class="anchored" data-anchor-id="sec-ch13-review"><span class="header-section-number">12.6</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="12.6.1">
+<h3 data-number="12.6.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">12.6.1</span> Summary</h3>
+<p>This chapter developed normal-based inference methods for proportions:</p>
+<ul>
+<li><strong>Success-failure condition.</strong> The normal approximation for <span class="math inline">\(\hat{p}\)</span> requires at least 10 expected successes and 10 expected failures. For confidence intervals, check with <span class="math inline">\(\hat{p}\)</span>; for hypothesis tests, check with <span class="math inline">\(p_0\)</span>.</li>
+<li><strong>CI for one proportion</strong>: <span class="math inline">\(\hat{p} \pm z^* \times \sqrt{\hat{p}(1-\hat{p})/n}\)</span>. Use <span class="math inline">\(\hat{p}\)</span> in the SE.</li>
+<li><strong>Hypothesis test for one proportion</strong>: <span class="math inline">\(Z = \frac{\hat{p} - p_0}{\sqrt{p_0(1-p_0)/n}}\)</span>. Use <span class="math inline">\(p_0\)</span> in the SE.</li>
+<li><strong>CI for difference of proportions</strong>: <span class="math inline">\((\hat{p}_1 - \hat{p}_2) \pm z^* \times SE\)</span>, where <span class="math inline">\(SE\)</span> uses separate sample proportions.</li>
+<li><strong>Hypothesis test for difference of proportions</strong>: <span class="math inline">\(Z = \frac{\hat{p}_1 - \hat{p}_2}{SE}\)</span>, where <span class="math inline">\(SE\)</span> uses the <strong>pooled proportion</strong> <span class="math inline">\(\hat{p}_{pool}\)</span>.</li>
+<li><strong>Confidence level</strong> is controlled by <span class="math inline">\(z^*\)</span>: higher confidence means wider intervals.</li>
+<li><strong>When conditions fail</strong> (especially the success-failure condition), use simulation-based methods from the randomization tests and bootstrap confidence intervals chapters instead.</li>
+<li><strong>Normal-based and simulation-based methods agree</strong> when conditions are met and can give different answers when conditions are violated.</li>
+</ul>
+</section>
+<section id="key-terms" class="level3" data-number="12.6.2">
+<h3 data-number="12.6.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">12.6.2</span> Key terms</h3>
+<p>Success-failure condition, standard error of <span class="math inline">\(\hat{p}\)</span>, Z test for a proportion, pooled proportion, confidence interval for a proportion, confidence interval for a difference of proportions, margin of error, critical value (<span class="math inline">\(z^*\)</span>), confidence level.</p>
+</section>
+</section>
+<section id="exercises" class="level2 exercises" data-number="12.7">
+<h2 class="exercises anchored" data-number="12.7" data-anchor-id="exercises"><span class="header-section-number">12.7</span> Exercises</h2>
+<p>Answers to odd-numbered exercises are provided inline.</p>
+<!-- Generated by build_textbook_exercises.py — DO NOT EDIT -->
+<!-- Sources: _16-ex-inference-one-prop, _17-ex-inference-two-props -->
+<ol type="1">
+<li><strong>Do aliens exist?</strong> In May 2021, YouGov asked 4,839 adult Great Britain residents whether they think aliens exist, and if so, if they have or have not visited Earth. You want to evaluate if more than a quarter (25%) of Great Britain adults think aliens don’t exist. In the survey 22% responded “I think they exist, and have visited Earth”, 28% responded “I think they exist, but have not visited Earth”, 29% responded “I don’t think they exist”, and 22% responded “Don’t know”. A friend of yours offers to help you with setting up the hypothesis test and comes up with the following hypotheses. Indicate any errors you see.</li>
+</ol>
+<p><span class="math inline">\(H_0: \hat{p} = 0.29 \quad \quad H_A: \hat{p} &gt; 0.29\)</span> </p>
+<ol start="2" type="1">
+<li><strong>Married at 25.</strong> A study suggests that the 25% of 25 year-olds have gotten married. You believe that this is incorrect and decide to collect your own sample for a hypothesis test. From a random sample of 776 25 year-olds, you find that 24% of them are married. A friend of yours offers to help you with setting up the hypothesis test and comes up with the following hypotheses. Indicate any errors you see.</li>
+</ol>
+<p><span class="math inline">\(H_0: \hat{p} = 0.24 \quad \quad H_A: \hat{p} \neq 0.24\)</span> </p>
+<ol start="3" type="1">
+<li><strong>Defund the police.</strong> A Survey USA poll conducted in Seattle, WA in May 2021 reports that of the 650 respondents (adults living in this area), 159 support proposals to defund police departments. <span class="citation" data-cites="data:defundpolice">(<a href="#ref-data:defundpolice" role="doc-biblioref">Survey USA 2021</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>A journalist writing a news story on the poll results wants to use the headline “More than 1 in 5 adults living in Seattle support proposals to defund police departments.” You caution the journalist that they should first conduct a hypothesis test to see if the poll data provide convincing evidence for this claim Write the hypotheses for this test.</p></li>
+<li><p>Calculate the proportion of Seattle adults in the sample who support proposals to defund police departments.</p></li>
+<li><p>Describe a setup for a simulation that would be appropriate in this situation and how the p-value can be calculated using the simulation results.</p></li>
+<li><p>The histogram below shows the distribution of 1,000 <span class="math inline">\(\hat{p}_{sim}\)</span>s under the null hypothesis. Estimate the p-value using the plot and use it to evaluate the hypotheses.</p></li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-3-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="inference-proportions_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="2100"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="4" type="1">
+<li><strong>Assisted reproduction.</strong> Assisted Reproductive Technology (ART) is a collection of techniques that help facilitate pregnancy (e.g., in vitro fertilization). The 2018 ART Fertility Clinic Success Rates Report published by the Centers for Disease Control and Prevention reports that ART has been successful in leading to a live birth in 48.8% of cases where the patient is under 35 years old. <span class="citation" data-cites="web:art2018">(<a href="#ref-web:art2018" role="doc-biblioref">CDC 2018</a>)</span> A new fertility clinic claims that their success rate is higher than average for this age group. A random sample of 30 of their patients yielded a success rate of 60%. A consumer watchdog group would like to determine if the data provides strong evidence to support the company’s claim.</li>
+</ol>
+<ol type="a">
+<li><p>Write the hypotheses to test if the success rate for ART at this clinic is discernibly higher than the success rate reported by the CDC.</p></li>
+<li><p>Describe a setup for a simulation that would be appropriate in this situation and how the p-value can be calculated using the simulation results.</p></li>
+<li><p>The histogram below shows the distribution of 1,000 <span class="math inline">\(\hat{p}_{sim}\)</span>s under the null hypothesis. Estimate the p-value using the plot and use it to evaluate the hypotheses.</p></li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-4-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="inference-proportions_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="2100"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="4" type="a">
+<li>After performing this analysis, the consumer group releases the following news headline: “Infertility clinic falsely advertises better success rates”. Comment on the appropriateness of this statement. </li>
+</ol>
+<ol start="5" type="1">
+<li><strong>If I fits, I sits, simulated null hypothesis.</strong> A citizen science project on which type of enclosed spaces cats are most likely to sit in compared (among other options) two different spaces taped to the ground. The first was a square, and the second was a shape known as <a href="https://en.wikipedia.org/wiki/Illusory_contours#Kanizsa_figures">Kanizsa square illusion</a>. When comparing the two options given to 7 cats, 5 chose the square, and 2 chose the Kanizsa square illusion. We are interested to know whether these data provide convincing evidence that cats prefer one of the shapes over the other. <span class="citation" data-cites="Smith:2021">(<a href="#ref-Smith:2021" role="doc-biblioref">Smith, Chouinard, and Byosiere 2021</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>What are the null and alternative hypotheses for evaluating whether these data provide convincing evidence that cats have preference for one of the shapes</p></li>
+<li><p>A null hypothesis simulation (with 1,000 draws) was run, and the resulting null distribution is displayed in the histogram below. Find the p-value using this distribution and conclude the hypothesis test in the context of the problem.</p></li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-5-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="inference-proportions_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="2100"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="6" type="1">
+<li><strong>Legalization of marijuana, simulated null hypothesis.</strong> The 2022 General Social Survey asked a random sample of 1,207 US adults: “Do you think the use of marijuana should be made legal, or not?” 65.3% of the respondents said it should be made legal. <span class="citation" data-cites="data:gssgrass">(<a href="#ref-data:gssgrass" role="doc-biblioref">NORC 2022</a>)</span> Consider a scenario where, in order to become legal, 55% (or more) of voters must approve.</li>
+</ol>
+<ol type="a">
+<li><p>What are the null and alternative hypotheses for evaluating whether these data provide convincing evidence that, if voted on, marijuana would be legalized in the US.</p></li>
+<li><p>A null hypothesis simulation (with 1,000 draws) was run, and the resulting null distribution is displayed in the histogram below. Find the p-value using this distribution and conclude the hypothesis test in the context of the problem.</p></li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-6-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="inference-proportions_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="2100"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="7" type="1">
+<li><strong>If I fits, I sits, standard errors.</strong> The results of a study on the type of enclosed spaces cats are most likely to sit in show that 5 out of 7 cats chose a square taped to the ground over a shape known as <a href="https://en.wikipedia.org/wiki/Illusory_contours#Kanizsa_figures">Kanizsa square illusion</a>, which was preferred by the remaining 2 cats. To evaluate whether these data provide convincing evidence that cats prefer one of the shapes over the other, we set <span class="math inline">\(H_0: p = 0.5\)</span>, where <span class="math inline">\(p\)</span> is the population proportion of cats who prefer square over the Kanizsa square illusion and <span class="math inline">\(H_A: p \neq 0.5\)</span>, which suggests some preference, without specifying which shape is more preferred. <span class="citation" data-cites="Smith:2021">(<a href="#ref-Smith:2021" role="doc-biblioref">Smith, Chouinard, and Byosiere 2021</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>Using the mathematical model, calculate the standard error of the sample proportion in repeated samples of size 7.</p></li>
+<li><p>A null hypothesis simulation (with 1,000 draws) was run, and the resulting null distribution is displayed in the histogram below. This distribution shows the variability of the sample proportion in samples of size 7 when 50% of cats prefer the square shape over the Kanizsa square illusion. What is the approximate standard error of the sample proportion based on this distribution?</p></li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-7-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="inference-proportions_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="2100"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="3" type="a">
+<li><p>Do the mathematical model and simulated draws yield similar standard errors?</p></li>
+<li><p>In order to approach the problem using the mathematical model, is the success-failure condition met for this study? Explain.</p></li>
+<li><p>What features of the null distribution shown above tells us that the mathematical model should probably not be used?</p></li>
+</ol>
+<ol start="8" type="1">
+<li><strong>Legalization of marijuana, standard errors.</strong> According to the 2022 General Social Survey, in a random sample of 1,207 US adults, 65.3% think marijuana should be made legal. <span class="citation" data-cites="data:gssgrass">(<a href="#ref-data:gssgrass" role="doc-biblioref">NORC 2022</a>)</span> Consider a scenario where, in order to become legal, 55% (or more) of voters must approve.</li>
+</ol>
+<ol type="a">
+<li><p>Calculate the standard error of the sample proportion using the mathematical model.</p></li>
+<li><p>1,000 sample proportions from samples of size 1,207 were drawn from a null distribution where 55% of voters approve legalizing marijuana. The distribution of these proportions is shown in the histogram below. Approximate the standard error of the sample proportion based on this distribution.</p></li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-8-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="inference-proportions_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="2100"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="3" type="a">
+<li><p>Do the mathematical model and simulated draws yield similar standard errors?</p></li>
+<li><p>In this setting (to test whether the true underlying population proportion is greater than 0.55), would there be a strong reason to choose the mathematical model over the simulated null hypothesis (or vice versa)? </p></li>
+</ol>
+<ol start="9" type="1">
+<li><strong>Statistics and employment, describe the bootstrap.</strong> A large university knows that about 70% of the full-time students are employed at least 5 hours per week. The members of the Statistics Department wonder if the same proportion of their students work at least 5 hours per week. They randomly sample 25 majors and find that 15 of the students work 5 or more hours each week.</li>
+</ol>
+<p>Two sampling distributions are created to describe the variability in the proportion of statistics majors who work at least 5 hours per week. The null hypothesis simulation imposes a true population proportion of <span class="math inline">\(p = 0.7\)</span> while the data bootstrap resamples from the actual data (which has 60% of the observations who work at least 5 hours per week).</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-9-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="inference-proportions_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>The sampling was done under two different settings to generate each of the distributions shown above. Describe the two different settings.</p></li>
+<li><p>Where are each of the two distributions centered? How do their centers compare?</p></li>
+<li><p>Estimate the standard error of the simulated proportions based on each distribution. Are the two standard errors you estimate roughly equal?</p></li>
+<li><p>Describe the shapes of the two distributions. Are they roughly the same?</p></li>
+</ol>
+<ol start="10" type="1">
+<li><strong>National Health Plan, simulated null hypothesis.</strong> A Kaiser Family Foundation poll for a random sample of US adults in 2019 found that 79% of Democrats, 55% of Independents, and 24% of Republicans supported a generic “National Health Plan”. There were 347 Democrats, 298 Republicans, and 617 Independents surveyed. <span class="citation" data-cites="data:KFF2019nathealthplan">(<a href="#ref-data:KFF2019nathealthplan" role="doc-biblioref">Kaiser Family Foundation 2019</a>)</span></li>
+</ol>
+<p>A political pundit on TV claims that a majority of Independents support a National Health Plan. Do these data provide strong evidence to support this type of statement? One approach to assessing the question of whether a majority of Independents support a National Health Plan is to simulate 1,000 draws from a null hypothesis with <span class="math inline">\(p = 0.5\)</span> as the proportion of Independents in support.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-10-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="inference-proportions_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="2100"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>The histogram above displays 1000 values of what?</p></li>
+<li><p>Is the observed proportion of Independents consistent with the null hypothesis simulated proportions under the setting where <span class="math inline">\(p=0.5?\)</span></p></li>
+<li><p>In order to test the claim that “a majority of Independents support a National Health Plan” what are the null and alternative hypotheses?</p></li>
+<li><p>Using the simulated null hypothesis distribution, find the p-value and conclude the hypothesis test in the context of the problem.</p></li>
+</ol>
+<ol start="11" type="1">
+<li><strong>Statistics and employment, use the bootstrap.</strong> In a large university where 70% of the full-time students are employed at least 5 hours per week, the members of the Statistics Department wonder if the same proportion of their students work at least 5 hours per week. They randomly sample 25 majors and find that 15 of the students work 5 or more hours each week.</li>
+</ol>
+<p>Two sampling distributions are created to describe the variability in the proportion of statistics majors who work at least 5 hours per week. The null hypothesis distribution imposes a true population proportion of <span class="math inline">\(p=0.7\)</span> while the data bootstrap resamples from the actual data (which has 60% of the observations who work at least 5 hours per week).</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-11-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="inference-proportions_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>Which distribution should be used to test whether the proportion of all statistics majors who work at least 5 hours per week is 70%? And which distribution should be used to find a confidence interval for the true poportion of statistics majors who work at least 5 hours per week?</p></li>
+<li><p>Using the appropriate histogram, test the claim that 70% of statistics majors, like their peers, work at least 5 hours per week. State the null and alternative hypotheses, find the p-value, and conclude the test in the context of the problem.</p></li>
+<li><p>Using the appropriate histogram, find a 98% bootstrap percentile confidence interval for the true proportion of statistics majors who work at least 5 hours per week. Interpret the confidence interval in the context of the problem.</p></li>
+<li><p>Using the appropriate historgram, find a 98% bootstrap SE confidence interval for the true proportion of statistics majors who work at least 5 hours per week. Interpret the confidence interval in the context of the problem. </p></li>
+</ol>
+<ol start="12" type="1">
+<li><strong>CLT for proportions.</strong> Define the term “sampling distribution” of the sample proportion, and describe how the shape, center, and spread of the sampling distribution change as the sample size increases when <span class="math inline">\(p = 0.1\)</span>. </li>
+</ol>
+<ol start="13" type="1">
+<li><strong>Vegetarian college students.</strong> Suppose that 8% of college students are vegetarians. Determine if the following statements are true or false, and explain your reasoning.</li>
+</ol>
+<ol type="a">
+<li><p>The distribution of the sample proportions of vegetarians in random samples of size 60 is approximately normal since <span class="math inline">\(n \ge 30\)</span>.</p></li>
+<li><p>The distribution of the sample proportions of vegetarian college students in random samples of size 50 is right skewed.</p></li>
+<li><p>A random sample of 125 college students where 12% are vegetarians would be considered unusual.</p></li>
+<li><p>A random sample of 250 college students where 12% are vegetarians would be considered unusual.</p></li>
+<li><p>The standard error would be reduced by one-half if we increased the sample size from 125 to&nbsp;250. </p></li>
+</ol>
+<ol start="14" type="1">
+<li><strong>Young Americans, American dream.</strong> About 77% of young adults think they can achieve the American dream. Determine if the following statements are true or false, and explain your reasoning. <span class="citation" data-cites="news:youngAmericans1">(<a href="#ref-news:youngAmericans1" role="doc-biblioref">Vaughn 2011</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>The distribution of sample proportions of young Americans who think they can achieve the American dream in random samples of size 20 is left skewed.</p></li>
+<li><p>The distribution of sample proportions of young Americans who think they can achieve the American dream in random samples of size 40 is approximately normal since <span class="math inline">\(n \ge 30\)</span>.</p></li>
+<li><p>A random sample of 60 young Americans where 85% think they can achieve the American dream would be considered unusual.</p></li>
+<li><p>A random sample of 120 young Americans where 85% think they can achieve the American dream would be considered unusual. </p></li>
+</ol>
+<ol start="15" type="1">
+<li><strong>Orange tabbies.</strong> Suppose that 90% of orange tabby cats are male. Determine if the following statements are true or false, and explain your reasoning.</li>
+</ol>
+<ol type="a">
+<li><p>The distribution of sample proportions of random samples of size 30 is left skewed.</p></li>
+<li><p>Using a sample size that is 4 times as large will reduce the standard error of the sample proportion by one-half.</p></li>
+<li><p>The distribution of sample proportions of random samples of size 140 is approximately normal.</p></li>
+<li><p>The distribution of sample proportions of random samples of size 280 is approximately normal.</p></li>
+</ol>
+<ol start="16" type="1">
+<li><strong>Young Americans, starting a family.</strong> About 25% of young Americans have delayed starting a family due to the continued economic slump. Determine if the following statements are true or false, and explain your reasoning. <span class="citation" data-cites="news:youngAmericans2">(<a href="#ref-news:youngAmericans2" role="doc-biblioref">Demos 2011</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>The distribution of sample proportions of young Americans who have delayed starting a family due to the continued economic slump in random samples of size 12 is right skewed.</p></li>
+<li><p>In order for the distribution of sample proportions of young Americans who have delayed starting a family due to the continued economic slump to be approximately normal, we need random samples where the sample size is at least 40.</p></li>
+<li><p>A random sample of 50 young Americans where 20% have delayed starting a family due to the continued economic slump would be considered unusual.</p></li>
+<li><p>A random sample of 150 young Americans where 20% have delayed starting a family due to the continued economic slump would be considered unusual.</p></li>
+<li><p>Tripling the sample size will reduce the standard error of the sample proportion by one-third. </p></li>
+</ol>
+<ol start="17" type="1">
+<li><strong>Sex equality.</strong> The General Social Survey asked a random sample of 1,390 Americans the following question: “On the whole, do you think it should or should not be the government’s responsibility to promote equality between men and women?” 82% of the respondents said it “should be”. At a 95% confidence level, this sample has 2% margin of error. Based on this information, determine if the following statements are true or false, and explain your reasoning. <span class="citation" data-cites="data:gsssexeq">(<a href="#ref-data:gsssexeq" role="doc-biblioref">NORC 2016</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>We are 95% confident that 80% to 84% of Americans in this sample think it’s the government’s responsibility to promote equality between men and women.</p></li>
+<li><p>We are 95% confident that 80% to 84% of all Americans think it’s the government’s responsibility to promote equality between men and women.</p></li>
+<li><p>If we considered many random samples of 1,390 Americans, and we calculated 95% confidence intervals for each, 95% of these intervals would include the true population proportion of Americans who think it’s the government’s responsibility to promote equality between men and women.</p></li>
+<li><p>In order to decrease the margin of error to 1%, we would need to quadruple (multiply by 4) the sample size.</p></li>
+<li><p>Based on this confidence interval, there is sufficient evidence to conclude that a majority of Americans think it’s the government’s responsibility to promote equality between men and women. </p></li>
+</ol>
+<ol start="18" type="1">
+<li><strong>Elderly drivers.</strong> A Marist Poll report states that 66% of American adults think licensed drivers should be required to retake their road test once they reach 65 years of age, based on a random sample of 1,018 American adults. They also report a margin of error was 3% at the 95% confidence level. <span class="citation" data-cites="data:elderlyDriving">(<a href="#ref-data:elderlyDriving" role="doc-biblioref">Poll 2011</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>Verify the margin of error reported by The Marist Poll using a mathematical model.</p></li>
+<li><p>Based on a 95% confidence interval, does the poll provide convincing evidence that <em>more than</em> two thirds of the population think that licensed drivers should be required to retake their road test once they turn 65? </p></li>
+</ol>
+<ol start="19" type="1">
+<li><strong>Fireworks on July 4</strong><span class="math inline">\(^{\text{th}}\)</span>. A local news outlet reported that 56% of 600 randomly sampled Kansas residents planned to set off fireworks on July&nbsp;<span class="math inline">\(4^{th}\)</span>. Determine the margin of error for the 56% point estimate using a 95% confidence level using a mathematical model. <span class="citation" data-cites="data:july4">(<a href="#ref-data:july4" role="doc-biblioref">Survey USA 2012</a>)</span></li>
+</ol>
+<ol start="20" type="1">
+<li><strong>Proof of COVID-19 vaccination.</strong> In the US, businesses and schools shut down due to the COVID-19 pandemic in March 2020, and a vaccine became publicly available for the first time in April 2021. That month, a Gallup poll surveyed a random sample of 3,731 US adults, asking how they felt about the COVID-19 vaccine requirement for air travel. The poll found that 57% said they would favor it. <span class="citation" data-cites="data:gallupcovidvaccine">(<a href="#ref-data:gallupcovidvaccine" role="doc-biblioref">Gallup 2021b</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>Describe the population parameter of interest. What is the value of the point estimate of this parameter?</p></li>
+<li><p>Check if the conditions required for constructing a confidence interval using a mathematical model based on these data are met.</p></li>
+<li><p>Construct a 95% confidence interval for the proportion of US adults who favor requiring proof of COVID-19 vaccination for travel by airplane.</p></li>
+<li><p>Without doing any calculations, describe what would happen to the confidence interval if we decided to use a higher confidence level.</p></li>
+<li><p>Without doing any calculations, describe what would happen to the confidence interval if we used a larger sample. </p></li>
+</ol>
+<ol start="21" type="1">
+<li><strong>Study abroad.</strong> A survey on 1,509 high school seniors who took the SAT and who completed an optional web survey shows that 55% of high school seniors are fairly certain that they will participate in a study abroad program in college. <span class="citation" data-cites="data:studyAbroad">(<a href="#ref-data:studyAbroad" role="doc-biblioref">American Council on Education 2008</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>Is this sample a representative sample from the population of all high school seniors in the US? Explain your reasoning.</p></li>
+<li><p>Suppose the conditions for inference are met, regardless of your answer to part (a). Using a mathematical model, construct a 90% confidence interval for the proportion of high school seniors (of those who took the SAT) who are fairly certain they will participate in a study abroad program in college, and interpret this interval in context.</p></li>
+<li><p>What does “90% confidence” mean?</p></li>
+<li><p>Based on this interval, would it be appropriate to claim that the majority of high school seniors are fairly certain that they will participate in a study abroad program in college? </p></li>
+</ol>
+<ol start="22" type="1">
+<li><strong>Legalization of marijuana, mathematical interval.</strong> The General Social Survey asked a random sample of 1,563 US adults: “Do you think the use of marijuana should be made legal, or not?” 60% of the respondents said it should be made legal. <span class="citation" data-cites="data:gssgrass">(<a href="#ref-data:gssgrass" role="doc-biblioref">NORC 2022</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>Is 60% a sample statistic or a population parameter? Explain.</p></li>
+<li><p>Using a mathematical model, construct a 95% confidence interval for the proportion of US adults who think marijuana should be made legal, and interpret it in the context of the data.</p></li>
+<li><p>A critic points out that this 95% confidence interval is only accurate if the statistic follows a normal distribution, or if the normal model is a good approximation. Do the technical conditions hold for these data? Explain.</p></li>
+<li><p>A news piece on this survey’s findings states, “Majority of US adults think marijuana should be legalized.” Based on your confidence interval, is the news piece’s statement justified?</p></li>
+</ol>
+<ol start="23" type="1">
+<li><strong>National Health Plan, mathematical inference.</strong> A Kaiser Family Foundation poll for a random sample of US adults in 2019 found that 79% of Democrats, 55% of Independents, and 24% of Republicans supported a generic “National Health Plan”. There were 347 Democrats, 298 Republicans, and 617 Independents surveyed. <span class="citation" data-cites="data:KFF2019nathealthplan">(<a href="#ref-data:KFF2019nathealthplan" role="doc-biblioref">Kaiser Family Foundation 2019</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>A political pundit on TV claims that a majority of Independents support a National Health Plan. Do these data provide strong evidence to support this type of statement? Your response should use a mathematical model.</p></li>
+<li><p>Would you expect a confidence interval for the proportion of Independents who oppose the public option plan to include 0.5? Explain. </p></li>
+</ol>
+<ol start="24" type="1">
+<li><strong>Is college worth it?</strong> Among a simple random sample of 331 American adults who do not have a four-year college degree and are not currently enrolled in school, 48% said they decided not to go to college because they could not afford school. <span class="citation" data-cites="data:collegeWorthIt">(<a href="#ref-data:collegeWorthIt" role="doc-biblioref">Pew Research Center 2011</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>A newspaper article states that only a minority of the Americans who decide not to go to college do so because they cannot afford it and uses the point estimate from this survey as evidence. Conduct a hypothesis test to determine if these data provide strong evidence supporting this statement.</p></li>
+<li><p>Would you expect a confidence interval for the proportion of American adults who decide not to go to college because they cannot afford it to include 0.5? Explain. </p></li>
+</ol>
+<ol start="25" type="1">
+<li><strong>Taste test.</strong> Some people claim that they can tell the difference between a diet soda and a regular soda in the first sip. A researcher wanting to test this claim randomly sampled 80 such people. He then filled 80 plain white cups with soda, half diet and half regular through random assignment, and asked each person to take one sip from their cup and identify the soda as diet or regular. 53 participants correctly identified the soda.</li>
+</ol>
+<ol type="a">
+<li><p>Do these data provide strong evidence that these people are able to detect the difference between diet and regular soda, in other words, are the results discernibly better than just random guessing? Your response should use a mathematical model.</p></li>
+<li><p>Interpret the p-value in this context. </p></li>
+</ol>
+<ol start="26" type="1">
+<li><strong>Will the coronavirus bring the world closer together?</strong> In early 2020 the COVID-19 pandemic arrived in the US; by December 2020 the first COVID-19 vaccine was available. An April 2021 YouGov poll asked 4,265 UK adults whether they think the coronavirus bring the world closer together or leave us further apart. 12% of the respondents said it will bring the world closer together. 37% said it would leave us further apart, 39% said it won’t make a difference and the remainder didn’t have an opinion on the matter. <span class="citation" data-cites="data:yougovcovid">(<a href="#ref-data:yougovcovid" role="doc-biblioref">YouGov 2021</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>Calculate, using a mathematical model, a 90% confidence interval for the proportion of UK adults who think the coronavirus will bring the world closer together, and interpret the interval in context.</p></li>
+<li><p>Suppose we wanted the margin of error for the 90% confidence level to be about 0.5%. How large of a sample size would you recommend for the poll?</p></li>
+</ol>
+<ol start="27" type="1">
+<li><strong>Quality control.</strong> As part of a quality control process for computer chips, an engineer at a factory randomly samples 212 chips during a week of production to test the current rate of chips with severe defects. She finds that 27 of the chips are defective.</li>
+</ol>
+<ol type="a">
+<li><p>What population is under consideration in the dataset?</p></li>
+<li><p>What parameter is being estimated?</p></li>
+<li><p>What is the point estimate for the parameter?</p></li>
+<li><p>What is the name of the statistic that can be used to measure the uncertainty of the point estimate?</p></li>
+<li><p>Compute the value of the statistic from part (d) using a mathematical model.</p></li>
+<li><p>The historical rate of defects is 10%. Should the engineer be surprised by the observed rate of defects during the current week?</p></li>
+<li><p>Suppose the true population value was found to be 10%. If we use this proportion to recompute the value in part&nbsp;(d) using <span class="math inline">\(p = 0.1\)</span> instead of <span class="math inline">\(\hat{p}\)</span>, how much does the resulting value of the statistic change? </p></li>
+</ol>
+<ol start="28" type="1">
+<li><strong>Nearsighted children.</strong> Nearsightedness (myopia) is a common vision condition in which you can see near objects clearly, but farther away objects blurry. It is believed that nearsightedness affects about 8% of all children. In a random sample of 194 children, 21 are nearsighted. Using a mathematical model, conduct a hypothesis test for the following question: do these data provide evidence that the 8% value is inaccurate? </li>
+</ol>
+<ol start="29" type="1">
+<li><strong>Website registration.</strong> A website is trying to increase registration for first-time visitors, exposing 1% of these visitors to a new site design. Of 752 randomly sampled visitors over a month who saw the new design, 64 registered.</li>
+</ol>
+<ol type="a">
+<li><p>Check the conditions for constructing a confidence interval for the proportion of first-time visitors of the site who would register under the new design using a mathematical model.</p></li>
+<li><p>Compute the standard error which would describe the variability os the point estimate associated with repeated samples of size 752.</p></li>
+<li><p>Construct and interpret a 90% confidence interval for the fraction of first-time visitors of the site who would register under the new design (assuming stable behaviors by new visitors over time). </p></li>
+</ol>
+<ol start="30" type="1">
+<li><strong>Coupons driving visits.</strong> A store randomly samples 603 shoppers over the course of a year and finds that 142 of them made their visit because of a coupon they’d received in the mail. Using a mathematical model, construct a 95% confidence interval for the fraction of all shoppers during the year whose visit was because of a coupon they’d received in the mail. </li>
+</ol>
+<ol start="31" type="1">
+<li><strong>Disaggregating Asian American tobacco use, hypothesis testing.</strong> Understanding cultural differences in tobacco use across different demographic groups can lead to improved health care education and treatment. A recent study disaggregated tobacco use across Asian American ethnic groups including Asian-Indian (n = 4,373), Chinese (n = 4,736), and Filipino (n = 4,912), in comparison to non-Hispanic Whites (n = 275,025). The number of current smokers in each group was reported as Asian-Indian (n = 223), Chinese (n = 279), Filipino (n = 609), and non-Hispanic Whites (n = 50,880). <span class="citation" data-cites="Rao:2021">(<a href="#ref-Rao:2021" role="doc-biblioref">Rao et al. 2021</a>)</span></li>
+</ol>
+<p>To determine whether the proportion of Asian-Indian Americans who are current smokers is different from the proportion of Chinese Americans who are smokers, a randomization simulation was performed.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-12-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="inference-proportions_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="2100"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>In both words and symbols provide the parameter and statistic of interest for this study. Do you know the numerical value of either the parameter or statistic of interest? If so, provide the numerical value.</p></li>
+<li><p>The histogram above provides the sampling distribution (under randomization) for <span class="math inline">\(\hat{p}_{Asian-Indian} - \hat{p}_{Chinese}\)</span> under repeated null randomizations (<span class="math inline">\(\hat{p}\)</span> is the proportion in the sample who are current smokers). Estimate the standard error of <span class="math inline">\(\hat{p}_{Asian-Indian} - \hat{p}_{Chinese}\)</span> based on the randomization histogram.</p></li>
+<li><p>Consider the hypothesis test to determine if there is a difference in proportion of Asian-Indian Americans as compared to Chinese Americans who are current smokers. Write out the null and alternative hypotheses, estimate a p-value using the randomization histogram, and conclude the test in the context of the problem. </p></li>
+</ol>
+<ol start="32" type="1">
+<li><strong>Malaria vaccine effectiveness, hypothesis test.</strong> With no currently licensed vaccines to inhibit malaria, good news was welcomed with a recent study reporting long-awaited vaccine success for children in Burkina Faso. With 450 children randomized to either one of two different doses of the malaria vaccine or a control vaccine, 89 of 292 malaria vaccine and 106 out of 147 control vaccine children contracted malaria within 12 months after the treatment. <span class="citation" data-cites="Datoo:2021">(<a href="#ref-Datoo:2021" role="doc-biblioref">Datoo et al. 2021</a>)</span></li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-13-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-12"><img src="inference-proportions_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="2100"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>In both words and symbols provide the parameter and statistic of interest for this study. Do you know the numerical value of either the parameter or statisic of interest? If so, provide the numerical value.</p></li>
+<li><p>The histogram above provides the sampling distribution (under randomization) for <span class="math inline">\(\hat{p}_{malaria} - \hat{p}_{control}\)</span> under repeated null randomizations (<span class="math inline">\(\hat{p}\)</span> is the proportion of children in the sample who contracted malaria). Estimate the standard error of <span class="math inline">\(\hat{p}_{malaria} - \hat{p}_{control}\)</span> based on the randomization histogram.</p></li>
+<li><p>Consider the hypothesis test constructed to show a lower proportion of children contracting malaria on the malaria vaccine as compared to the control vaccine. Write out the null and alternative hypotheses, estimate a p-value using the randomization histogram, and conclude the test in the context of the problem. </p></li>
+</ol>
+<ol start="33" type="1">
+<li><strong>Disaggregating Asian American tobacco use, confidence interval.</strong> Based on a study on the degree to which smoking practices differ across ethnic groups. a confidence interval for the difference in current smoking status for Filipino versus Chinese Americans is desired. <span class="citation" data-cites="Rao:2021">(<a href="#ref-Rao:2021" role="doc-biblioref">Rao et al. 2021</a>)</span></li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-14-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-13"><img src="inference-proportions_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="2100"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>Consider the bootstrap distribution of difference in sample proportions of current smokers (Filipino Americans minus Chinese Americans) in 1,000 bootstrap repetitions as above. Estimate the standard error of the difference in sample proportions, as seen in the histogram.</p></li>
+<li><p>Using the standard error from the bootstrap distribution, find a 95% bootstrap SE confidence interval for the true difference in proportion of current smokers (Filipino Americans minus Chinese Americans) in the population. Interpret the interval in the context of the problem.</p></li>
+<li><p>Using the entire bootstrap distribution, find a 95% bootstrap percentile confidence interval for the true difference in proportion of current smokers (Filipino Americans minus Chinese Americans) in the population. Interpret the interval in the context of the problem.</p></li>
+</ol>
+<ol start="34" type="1">
+<li><strong>Malaria vaccine effectiveness, confidence interval.</strong> With no currently licensed vaccines to inhibit malaria, good news was welcomed with a recent study reporting long-awaited vaccine success for children in Burkina Faso. With 450 children randomized to either one of two different doses of the malaria vaccine or a control vaccine, 89 of 292 malaria vaccine and 106 out of 147 control vaccine children contracted malaria within 12 months after the treatment. <span class="citation" data-cites="Datoo:2021">(<a href="#ref-Datoo:2021" role="doc-biblioref">Datoo et al. 2021</a>)</span></li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-15-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-14"><img src="inference-proportions_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="2100"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>Consider the bootstrap distribution of difference in sample proportions of children who contracted malaria (malaria vaccine minus control vaccine) in 1000 bootstrap repetitions as above. Estimate the standard error of the difference in sample proportions, as seen in the histogram.</p></li>
+<li><p>Using the standard error from the bootstrap distribution, find a 95% bootstrap SE confidence interval for the true difference in proportion of children who contract malaria (malaria vaccine minus control vaccine) in the population. Interpret the interval in the context of the problem.</p></li>
+<li><p>Using the entire bootstrap distribution, find a 95% bootstrap percentile confidence interval for the true difference in proportion of children who contract malaria (malaria vaccine minus control vaccine) in the population. Interpret the interval in the context of the problem. </p></li>
+</ol>
+<ol start="35" type="1">
+<li><strong>COVID-19 and degree completion.</strong> A 2021 Gallup poll surveyed 3,941 students pursuing a bachelor’s degree and 2,064 students pursuing an associate degree (students were not randomly selected but were weighted so as to represent a random selection of currently enrolled US college students). The poll found that 51% of the bachelor’s degree students and 44% of associate degree students said that the COVID-19 pandemic will negatively impact their ability to complete the degree. <span class="citation" data-cites="data:gallupcollegeimpact">(<a href="#ref-data:gallupcollegeimpact" role="doc-biblioref">Gallup 2021a</a>)</span></li>
+</ol>
+<p>Below are two histograms generated with different computational approaches (both use 1,000 repetitions) to research questions which could be asked of these data. One of the histograms can be used to do a randomization test on whether the proportions of bachelor’s and associate students who think the COVID-19 pandemic will negatively impact their ability to complete the degree. The other histogram is a bootstrap distribution used to quantify the difference in the proportions of bachelor’s and associate’s students who feel this way.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-16-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-15"><img src="inference-proportions_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" style="width:90.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>Are the center and standard error of the two graphs approximately the same? Explain.</p></li>
+<li><p>Write a research question that can be addressed using the histogram generated with computational method A.</p></li>
+<li><p>Write a research question that can addressed using the histogram generated with computational method B.</p></li>
+</ol>
+<ol start="36" type="1">
+<li><strong>Renewable energy.</strong> A 2021 Gallup poll surveyed 5,447 randomly sampled US adults who are Republican (or Republican leaning) and 7,962 who are Democrats (or Democrat leaning). 31% of Republicans and 81% of Democrats said “government regulations are necessary to encourage businesses and consumers to rely more on renewable energy sources”. <span class="citation" data-cites="data:gallupcollegeimpact">(<a href="#ref-data:gallupcollegeimpact" role="doc-biblioref">Gallup 2021a</a>)</span></li>
+</ol>
+<p>Below are two histograms generated with different computational approaches (both use 1,000 repetitions) to research questions which could be asked of these data. One of the histograms can be used to do a randomization test on whether the proportions of Republicans and Democrats who think government regulations are necessary to encourage businesses and consumers to rely more on renewable energy sources are different. The other histogram is a bootstrap distribution used to quantify the difference in the proportions of Republicans and Democrats who agree with this statement.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-17-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-16"><img src="inference-proportions_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" style="width:90.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>Are the center and standard error of the two graphs approximately the same? Explain.</p></li>
+<li><p>Write a research question that can addressed using the histogram generated with computational method A.</p></li>
+<li><p>Write a research question that can addressed using the histogram generated with computational method B. </p></li>
+</ol>
+<ol start="37" type="1">
+<li><strong>HIV in sub-Saharan Africa.</strong> In July 2008 the US National Institutes of Health announced that it was stopping a clinical study early because of unexpected results. The study population consisted of HIV-infected women in sub-Saharan Africa who had been given single dose Nevaripine (a treatment for HIV) while giving birth, to prevent transmission of HIV to the infant. The study was a randomized comparison of continued treatment of a woman (after successful childbirth) with Nevaripine vs Lopinavir, a second drug used to treat HIV. 240 women participated in the study; 120 were randomized to each of the two treatments. Twenty-four weeks after starting the study treatment, each woman was tested to determine if the HIV infection was becoming worse (an outcome called <em>virologic failure</em>). Twenty-six of the 120 women treated with Nevaripine experienced virologic failure, while 10 of the 120 women treated with the other drug experienced virologic failure. <span class="citation" data-cites="Lockman:2007">(<a href="#ref-Lockman:2007" role="doc-biblioref">Lockman et al. 2007</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>Create a two-way table presenting the results of this study.</p></li>
+<li><p>State appropriate hypotheses to test for difference in virologic failure rates between treatment groups.</p></li>
+<li><p>Complete the hypothesis test and state an appropriate conclusion. (Reminder: Verify any necessary conditions for the test.) </p></li>
+</ol>
+<ol start="38" type="1">
+<li><strong>Supercommuters.</strong> The fraction of workers who are considered “supercommuters”, because they commute more than 90 minutes to get to work, varies by state. Suppose the 1% of Nebraska residents and 6% of New York residents are supercommuters. Now suppose that we plan a study to survey 1000 people from each state, and we will compute the sample proportions <span class="math inline">\(\hat{p}_{NE}\)</span> for Nebraska and <span class="math inline">\(\hat{p}_{NY}\)</span> for New York.</li>
+</ol>
+<ol type="a">
+<li><p>What is the associated mean and standard deviation of <span class="math inline">\(\hat{p}_{NE}\)</span> in repeated samples of size 1000?</p></li>
+<li><p>What is the associated mean and standard deviation of <span class="math inline">\(\hat{p}_{NY}\)</span> in repeated samples of size 1000?</p></li>
+<li><p>Calculate and interpret the mean and standard deviation associated with the difference in sample proportions for the two groups, <span class="math inline">\(\hat{p}_{NY} - \hat{p}_{NE}\)</span> in repeated samples of 1000 in each group.</p></li>
+<li><p>How are the standard deviations from parts&nbsp;(a), (b), and&nbsp;(c) related? </p></li>
+</ol>
+<ol start="39" type="1">
+<li><strong>National Health Plan.</strong> A Kaiser Family Foundation poll for US adults in 2019 found that 79% of Democrats, 55% of Independents, and 24% of Republicans supported a generic “National Health Plan”. There were 347 Democrats, 298 Republicans, and 617 Independents surveyed. 79% of 347 Democrats and 55% of 617 Independents support a National Health Plan. <span class="citation" data-cites="data:KFF2019nathealthplan">(<a href="#ref-data:KFF2019nathealthplan" role="doc-biblioref">Kaiser Family Foundation 2019</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>Calculate a 95% confidence interval for the difference between the proportion of Democrats and Independents who support a National Health Plan <span class="math inline">\((p_{D} - p_{I})\)</span>, and interpret it in this context. We have already checked conditions for you.</p></li>
+<li><p>True or false: If we had picked a random Democrat and a random Independent at the time of this poll, it is more likely that the Democrat would support the National Health Plan than the Independent.</p></li>
+</ol>
+<ol start="40" type="1">
+<li><strong>Sleep deprivation, CA vs.&nbsp;OR, confidence interval.</strong> According to a report on sleep deprivation by the Centers for Disease Control and Prevention, the proportion of California residents who reported insufficient rest or sleep during each of the preceding 30 days is 8.0%, while this proportion is 8.8% for Oregon residents. These data are based on simple random samples of 11,545 California and 4,691 Oregon residents. Calculate a 95% confidence interval for the difference between the proportions of Californians and Oregonians who are sleep deprived and interpret it in context of the data. <span class="citation" data-cites="data:sleepCAandOR">(<a href="#ref-data:sleepCAandOR" role="doc-biblioref">CDC 2008</a>)</span> </li>
+</ol>
+<ol start="41" type="1">
+<li><strong>Gender pay gap in medicine.</strong> A study examined the average pay for men and women entering the workforce as doctors for 21 different positions. <span class="citation" data-cites="LoSassoMedicineGenderPayGap">(<a href="#ref-LoSassoMedicineGenderPayGap" role="doc-biblioref">Lo Sasso et al. 2011</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>If each gender was equally paid, then we would expect about half of those positions to have men paid more than women and women would be paid more than men in the other half of positions. Write appropriate hypotheses to test this scenario.</p></li>
+<li><p>Men were, on average, paid more in 19 of those 21 positions. Complete a hypothesis test using your hypotheses from part&nbsp;(a). </p></li>
+</ol>
+<ol start="42" type="1">
+<li><strong>Sleep deprivation, CA vs.&nbsp;OR, hypothesis test.</strong> A CDC report on sleep deprivation rates shows that the proportion of California residents who reported insufficient rest or sleep during each of the preceding 30 days is 8.0%, while this proportion is 8.8% for Oregon residents. These data are based on simple random samples of 11,545 California and 4,691 Oregon residents.</li>
+</ol>
+<ol type="a">
+<li><p>Conduct a hypothesis test to determine if these data provide strong evidence that the rate of sleep deprivation is different for the two states. (Reminder: Check conditions)</p></li>
+<li><p>It is possible the conclusion of the test in part (a) is incorrect. If this is the case, what type of error was made? </p></li>
+</ol>
+<ol start="43" type="1">
+<li><strong>Is yawning contagious?</strong> An experiment conducted by the MythBusters, a science entertainment TV program on the Discovery Channel, tested if a person can be subconsciously influenced into yawning if another person near them yawns. 50 people were randomly assigned to two groups: 34 to a group where a person near them yawned (treatment) and 16 to a group where there wasn’t a person yawning near them (control). The visualization below displays how many participants yawned in each group.</li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-18-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-17"><img src="inference-proportions_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="2100"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Suppose we are interested in estimating the difference in yawning rates between the control and treatment groups using a confidence interval. Explain why we cannot construct such an interval using the normal approximation. What might go wrong if we constructed the confidence interval despite this problem?</p>
+<ol start="44" type="1">
+<li><strong>Heart transplant success.</strong> The Stanford University Heart Transplant Study was conducted to determine whether an experimental heart transplant program increased lifespan. Each patient entering the program was officially designated a heart transplant candidate, meaning that he was gravely ill and might benefit from a new heart. Patients were randomly assigned into treatment and control groups. Patients in the treatment group received a transplant, and those in the control group did not. The visualization below displays how many patients survived and died in each group. <span class="citation" data-cites="Turnbull+Brown+Hu:1974">(<a href="#ref-Turnbull+Brown+Hu:1974" role="doc-biblioref">Turnbull, Brown, and Hu 1974</a>)</span></li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="inference-proportions_files/figure-html/unnamed-chunk-19-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-18"><img src="inference-proportions_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="2100"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Suppose we are interested in estimating the difference in survival rate between the control and treatment groups using a confidence interval. Explain why we cannot construct such an interval using the normal approximation. What might go wrong if we constructed the confidence interval despite this problem? </p>
+<ol start="45" type="1">
+<li><strong>Government shutdown.</strong> The United States federal government shutdown of 2018–2019 occurred from December 22, 2018 until January 25, 2019, a span of 35 days. A&nbsp;Survey USA poll of 614 randomly sampled Americans during this time period reported that 48% of those who make less than $40,000 per year and 55% of those who make $40,000 or more per year said the government shutdown has not at all affected them personally. A&nbsp;95% confidence interval for <span class="math inline">\((p_\text{$&lt;$40K} - p_\text{$\ge$40K})\)</span>, where <span class="math inline">\(p\)</span> is the proportion of those who said the government shutdown has not at all affected them personally, is (-0.16, 0.02). Based on this information, determine if the following statements are true or false, and explain your reasoning if you identify the statement as false. <span class="citation" data-cites="data:govtshuthown">(<a href="#ref-data:govtshuthown" role="doc-biblioref">Survey USA 2019</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>At the 5% discernibility level, the data provide convincing evidence of a real difference in the proportion who are not affected personally between Americans who make less than $40,000 annually and Americans who make $40,000 annually.</p></li>
+<li><p>We are 95% confident that 16% more to 2% fewer Americans who make less than $40,000 per year are not at all personally affected by the government shutdown compared to those who make $40,000 or more per year.</p></li>
+<li><p>A 90% confidence interval for <span class="math inline">\((p_\text{$&lt;$40K} - p_\text{$\ge$40K})\)</span> would be wider than the <span class="math inline">\((-0.16, 0.02)\)</span> interval.</p></li>
+<li><p>A 95% confidence interval for <span class="math inline">\((p_\text{$\ge$40K} - p_\text{$&lt;$40K})\)</span> is (-0.02, 0.16).</p></li>
+</ol>
+<ol start="46" type="1">
+<li><strong>Online harassment.</strong> A Pew Research poll asked US adults aged 18-29 and 30-49 whether they have personally experienced harassment online. A 95% confidence interval for the difference between the proportions of 18-29 year-olds and 30-49 year-olds who have personally experienced harassment online <span class="math inline">\((p_{18-29} - p_{30-49})\)</span> was calculated to be (0.115, 0.185). Based on this information, determine if the following statements are true or false, and explain your reasoning for each statement you identify as false. <span class="citation" data-cites="onlineharassment2021">(<a href="#ref-onlineharassment2021" role="doc-biblioref">Pew Research Center 2021</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>We are 95% confident that the true proportion of 18-29 year-olds who have personally experienced harassment online is 11.5% to 18.5% lower than the true proportion of 30-49 year-olds who have personally experienced harassment online.</p></li>
+<li><p>We are 95% confident that the true proportion of 18-29 year-olds who have personally experienced harassment online is 11.5% to 18.5% higher than the true proportion of 30-49 year-olds who have personally experienced harassment online.</p></li>
+<li><p>95% of random samples will produce 95% confidence intervals that include the true difference between the population proportions of 18-29 year-olds and 30-49 year-olds who have personally experienced harassment online.</p></li>
+<li><p>We can conclude that there is a discernible difference between the proportions of 18-29 year-olds and 30-49 year-olds who have personally experienced harassment online is too large to plausibly be due to chance, if in fact there is no difference between the two proportions.</p></li>
+<li><p>The 90% confidence interval for <span class="math inline">\((p_{18-29} - p_{30-49})\)</span> cannot be calculated with only the information given in this exercise. </p></li>
+</ol>
+<ol start="47" type="1">
+<li><strong>Decision errors and comparing proportions I.</strong> In the following research studies, conclusions were made based on the data provided. It is always possible that the analysis conclusion could be wrong, although we will almost never actually know if an error has been made or not. For each study conclusion, specify which of a Type I or Type II error could have been made, and state the error in the context of the problem.</li>
+</ol>
+<ol type="a">
+<li><p>The malaria vaccine was seen to be effective at lowering the rate of contracting malaria (when compared to the control vaccine).</p></li>
+<li><p>In the US population, Asian-Indian Americans and Chinese Americans are not observed to have different proportions of current smokers.</p></li>
+<li><p>There is no evidence to claim a difference in the proportion of Americans who are not affected personally by a government shutdown when comparing Americans who make less than $40,000 annually and Americans who make $40,000 annually. </p></li>
+</ol>
+<ol start="48" type="1">
+<li><strong>Decision errors and comparing proportions II.</strong> In the following research studies, conclusions were made based on the data provided. It is always possible that the analysis conclusion could be wrong, although we will almost never actually know if an error has been made or not. For each study conclusion, specify which of a Type I or Type II error could have been made, and state the error in the context of the problem.</li>
+</ol>
+<ol type="a">
+<li><p>Of registered voters in California, the proportion who report not knowing enough to voice an opinion on whether they support off shore drilling is different across those who have a college degree and those who do not.</p></li>
+<li><p>In comparing Californians and Oregonians, there is no evidence to support a difference in the proportion of each who are sleep deprived.</p></li>
+</ol>
+<ol start="49" type="1">
+<li><strong>Active learning.</strong> A teacher wanting to increase the active learning component of her course is concerned about student reactions to changes she is planning to make. She conducts a survey in her class, asking students whether they believe more active learning in the classroom (hands on exercises) instead of traditional lecture will helps improve their learning. She does this at the beginning and end of the semester and wants to evaluate whether students’ opinions have changed over the semester. Can she used the methods we learned in this chapter for this analysis? Explain your reasoning. </li>
+</ol>
+<ol start="50" type="1">
+<li><strong>An apple a day keeps the doctor away.</strong> A physical education teacher at a high school wanting to increase awareness on issues of nutrition and health asked her students at the beginning of the semester whether they believed the expression “an apple a day keeps the doctor away”. 40% of the students responded yes. Throughout the semester she started each class with a discussion of a study highlighting positive effects of eating more fruits and vegetables. She conducted the same apple-a-day survey at the end of the semester, and this time 60% of the students responded yes. Can she used a two-proportion method from this section for this analysis? Explain your reasoning. </li>
+</ol>
+<ol start="51" type="1">
+<li><strong>Malaria vaccine effectiveness, effect size.</strong> A randomized controlled trial on malaria vaccine effectiveness randomly assigned 450 children intro either one of two different doses of the malaria vaccine or a control vaccine. 89 of 292 malaria vaccine and 106 out of 147 control vaccine children contracted malaria within 12 months after the treatment. <span class="citation" data-cites="Datoo:2021">(<a href="#ref-Datoo:2021" role="doc-biblioref">Datoo et al. 2021</a>)</span></li>
+</ol>
+<p>Recall that in order to reject the null hypothesis that the two vaccines (malaria and control) are equivalent, we’d need the sample proportion to be about 2 standard errors below the hypothesized value of zero.</p>
+<p>Say that the true difference (in the population) is given as <span class="math inline">\(\delta,\)</span> the sample sizes are the same in both groups <span class="math inline">\((n_{malaria} = n_{control}),\)</span> and the true proportion who contract malaria on the control vaccine is <span class="math inline">\(p_{control} = 0.7.\)</span> If you ran your own study (in the future), how likely is it that you would get a difference in sample proportions that was sufficiently far from zero that you could reject under each of the conditions below. (<em>Hint:</em> Use the mathematical model.)</p>
+<ol type="a">
+<li><p><span class="math inline">\(\delta = -0.1\)</span> and <span class="math inline">\(n_{malaria} = n_{control} = 20\)</span></p></li>
+<li><p><span class="math inline">\(\delta = -0.4\)</span> and <span class="math inline">\(n_{malaria} = n_{control} = 20\)</span></p></li>
+<li><p><span class="math inline">\(\delta = -0.1\)</span> and <span class="math inline">\(n_{malaria} = n_{control} = 100\)</span></p></li>
+<li><p><span class="math inline">\(\delta = -0.4\)</span> and <span class="math inline">\(n_{malaria} = n_{control} = 100\)</span></p></li>
+<li><p>What can you conclude about values of <span class="math inline">\(\delta\)</span> and the sample size? </p></li>
+</ol>
+<ol start="52" type="1">
+<li><strong>Diabetes and unemployment.</strong> A Gallup poll surveyed Americans about their employment status and whether they have diabetes. The survey results indicate that 1.5% of the 47,774 employed (full or part time) and 2.5% of the 5,855 unemployed 18-29 year-olds have diabetes. <span class="citation" data-cites="data:employmentDiabetes">(<a href="#ref-data:employmentDiabetes" role="doc-biblioref">Gallup 2012</a>)</span></li>
+</ol>
+<ol type="a">
+<li><p>Create a two-way table presenting the results of this study.</p></li>
+<li><p>State appropriate hypotheses to test for difference in proportions of diabetes between employed and unemployed Americans.</p></li>
+<li><p>The sample difference is about 1%. If we completed the hypothesis test, we would find that the p-value is very small (about 0), meaning the difference is statistically discernible. Use this result to explain the difference between statistically discernible and practically important findings.</p></li>
+</ol>
+<details class="dataset-sources">
+<summary>
+Dataset sources
+</summary>
+<small><a href="http://openintrostat.github.io/openintro/reference/yawn.html"><code>yawn</code></a> (openintro) | <a href="http://openintrostat.github.io/openintro/reference/heart_transplant.html"><code>heart_transplant</code></a> (openintro)</small>
+</details>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-data:studyAbroad" class="csl-entry" role="listitem">
+American Council on Education. 2008. <span>“College-Bound Students’ Interests in Study Abroad and Other International Learning Activities.”</span> <a href="http://www.openintro.org/redirect.php?go=textbook-Interests_in_Study_Abroad_2008">http://www.openintro.org/redirect.php?go=textbook-Interests_in_Study_Abroad_2008</a>.
+</div>
+<div id="ref-data:sleepCAandOR" class="csl-entry" role="listitem">
+CDC. 2008. <span>“Perceived Insufficient Rest or Sleep Among Adults – United States, 2008.”</span> <a href="http://www.openintro.org/redirect.php?go=textbook-Perceived_Insufficient_Rest_or_Sleep_Among_Adults">http://www.openintro.org/redirect.php?go=textbook-Perceived_Insufficient_Rest_or_Sleep_Among_Adults</a>.
+</div>
+<div id="ref-web:art2018" class="csl-entry" role="listitem">
+———. 2018. <span>“2018 Assisted Reproductive Technology Fertility Clinic Success Rates Report.”</span> <a href="https://www.cdc.gov/art/pdf/2018-report/ART-2018-Clinic-Report-Full.pdf">https://www.cdc.gov/art/pdf/2018-report/ART-2018-Clinic-Report-Full.pdf</a>.
+</div>
+<div id="ref-Datoo:2021" class="csl-entry" role="listitem">
+Datoo, M. S., M. H. Natama, A. Somé, O. Traoré, T. Rouamba, D. Bellamy, P. Yameogo, et al. 2021. <span>“High Efficacy of a Low Dose Candidate Malaria Vaccine, R21 in 1 Adjuvant Matrix-m<span class="math inline">\(^{TM}\)</span>, with Seasonal Administration to Children in Burkina Faso.”</span> <em>The Lancet</em>. <a href="https://doi.org/10.1016/S0140-6736(21)00943-0">https://doi.org/10.1016/S0140-6736(21)00943-0</a>.
+</div>
+<div id="ref-news:youngAmericans2" class="csl-entry" role="listitem">
+Demos. 2011. <span>“The State of Young America: The Poll.”</span> <a href="http://www.openintro.org/redirect.php?go=textbook-young_americans_2011_extra">http://www.openintro.org/redirect.php?go=textbook-young_americans_2011_extra</a>.
+</div>
+<div id="ref-data:employmentDiabetes" class="csl-entry" role="listitem">
+Gallup. 2012. <a href="http://www.openintro.org/redirect.php?go=textbook-employed_americans_in_better_health_2012">http://www.openintro.org/redirect.php?go=textbook-employed_americans_in_better_health_2012</a>.
+</div>
+<div id="ref-data:gallupcollegeimpact" class="csl-entry" role="listitem">
+Gallup. 2021a. <span>“Half of College Students Say COVID-19 May Impact Completion.”</span> <a href="https://www.openintro.org/go?id=textbook-gallup-2021-covid-college-impact">https://www.openintro.org/go?id=textbook-gallup-2021-covid-college-impact</a>.
+</div>
+<div id="ref-data:gallupcovidvaccine" class="csl-entry" role="listitem">
+———. 2021b. <span>“U.s. Support for Vaccination Proof Varies by Activity, Data Collected in April 2021.”</span> <a href="https://www.openintro.org/go?id=textbook-gallup-2021-vaccine-proof">https://www.openintro.org/go?id=textbook-gallup-2021-vaccine-proof</a>.
+</div>
+<div id="ref-data:KFF2019nathealthplan" class="csl-entry" role="listitem">
+Kaiser Family Foundation. 2019. <a href="https://www.openintro.org/go?id=textbook-kff-2019-expand-aca-coverage">https://www.openintro.org/go?id=textbook-kff-2019-expand-aca-coverage</a>.
+</div>
+<div id="ref-LoSassoMedicineGenderPayGap" class="csl-entry" role="listitem">
+Lo Sasso, A. T., M. R. Richards, C. F. Chou, and S. E. Gerber. 2011. <span>“The $16,819 Pay Gap for Newly Trained Physicians: The Unexplained Trend of Men Earning More Than Women.”</span> <em>Health Affairs</em> 30 (2). <a href="https://doi.org/10.1377/hlthaff.2010.0597">https://doi.org/10.1377/hlthaff.2010.0597</a>.
+</div>
+<div id="ref-Lockman:2007" class="csl-entry" role="listitem">
+Lockman, S., R. L. Shapiro, L. M. Smeaton, C. Wester, I. Thior, L. Stevens, F. Chand, et al. 2007. <span>“Response to Antiretroviral Therapy After a Single, Peripartum Dose of Nevirapine.”</span> <em>New England Journal of Medicine</em> 356 (2): 135–47. <a href="https://doi.org/10.1056/NEJMoa062876">https://doi.org/10.1056/NEJMoa062876</a>.
+</div>
+<div id="ref-data:gsssexeq" class="csl-entry" role="listitem">
+NORC. 2016. <span>“Data Explorer - Government Resp to Promote Gender Equality.”</span> <a href="https://www.openintro.org/go?id=textbook-gssdataexplorer-marijuana-gender-equality">https://www.openintro.org/go?id=textbook-gssdataexplorer-marijuana-gender-equality</a>.
+</div>
+<div id="ref-data:gssgrass" class="csl-entry" role="listitem">
+———. 2022. <span>“Data Explorer - Should Marijuana Be Made Legal.”</span> <a href="https://www.openintro.org/go?id=textbook-gssdataexplorer-marijuana-legal">https://www.openintro.org/go?id=textbook-gssdataexplorer-marijuana-legal</a>.
+</div>
+<div id="ref-data:collegeWorthIt" class="csl-entry" role="listitem">
+Pew Research Center. 2011. <span>“Is College Worth It?, Data Collected March 15-29, 2011.”</span> <a href="http://www.openintro.org/redirect.php?go=textbook-college_worth_it_2011">http://www.openintro.org/redirect.php?go=textbook-college_worth_it_2011</a>.
+</div>
+<div id="ref-onlineharassment2021" class="csl-entry" role="listitem">
+———. 2021. <span>“The State of Online Harassment, Data Collected September 8 - 13, 2020.”</span> <a href="https://www.openintro.org/go?id=textbook-pew-2021-online-harassment">https://www.openintro.org/go?id=textbook-pew-2021-online-harassment</a>.
+</div>
+<div id="ref-data:elderlyDriving" class="csl-entry" role="listitem">
+Poll, Marist. 2011. <span>“Road Rules: Re-Testing Drivers at Age 65?, March 4, 2011.”</span> <a href="http://www.openintro.org/redirect.php?go=textbook-drivers_at_65_2011">http://www.openintro.org/redirect.php?go=textbook-drivers_at_65_2011</a>.
+</div>
+<div id="ref-Rao:2021" class="csl-entry" role="listitem">
+Rao, M., L. Bar, Y. Yu, M. Srinivasan, A. Mukherjea, J. Li, S. Chung, S. Venkatraman, S. Dan, and L. Palaniappan. 2021. <span>“Disaggregating Asian American Cigarette and Alternative Tobacco Product Use: Results from the National Health Interview Survey (NHIS) 2006–2018.”</span> <em>Journal of Racial and Ethnic Health Disparities</em>. <a href="https://doi.org/10.1007/s40615-021-01024-5">https://doi.org/10.1007/s40615-021-01024-5</a>.
+</div>
+<div id="ref-Smith:2021" class="csl-entry" role="listitem">
+Smith, G. E., P. A. Chouinard, and S. Byosiere. 2021. <span>“If i Fits i Sits: A Citizen Science Investigation into Illusory Contour Susceptibility in Domestic Cats (<span><em>Felis Silvestris Catus</em></span>).”</span> <em>Applied Animal Behaviour Science</em> 240. <a href="https://doi.org/10.1016/j.applanim.2021.105338">https://doi.org/10.1016/j.applanim.2021.105338</a>.
+</div>
+<div id="ref-data:july4" class="csl-entry" role="listitem">
+Survey USA. 2012. <span>“News Poll 19333, Data Collected on June 27, 2012.”</span> <a href="http://www.openintro.org/redirect.php?go=textbook-SurveyUSA_19333">http://www.openintro.org/redirect.php?go=textbook-SurveyUSA_19333</a>.
+</div>
+<div id="ref-data:govtshuthown" class="csl-entry" role="listitem">
+———. 2019. <a href="http://www.openintro.org/redirect.php?go=textbook-SurveyUSA_24568">http://www.openintro.org/redirect.php?go=textbook-SurveyUSA_24568</a>.
+</div>
+<div id="ref-data:defundpolice" class="csl-entry" role="listitem">
+———. 2021. <a href="https://www.openintro.org/go?id=textbook-surveyusa-2021-seattle-defund-police">https://www.openintro.org/go?id=textbook-surveyusa-2021-seattle-defund-police</a>.
+</div>
+<div id="ref-Turnbull+Brown+Hu:1974" class="csl-entry" role="listitem">
+Turnbull, B., B. Brown, and M. Hu. 1974. <span>“Survivorship of Heart Transplant Data.”</span> <em>Journal of the American Statistical Association</em> 69: 74–80. <a href="https://doi.org/10.1080/01621459.1974.10480130">https://doi.org/10.1080/01621459.1974.10480130</a>.
+</div>
+<div id="ref-news:youngAmericans1" class="csl-entry" role="listitem">
+Vaughn, A. 2011. <span>“Poll Finds Young Adults Optimistic, but Not about Money.”</span> <em>Los Angeles Times</em>. <a href="http://www.openintro.org/redirect.php?go=textbook-young_americans_2011">http://www.openintro.org/redirect.php?go=textbook-young_americans_2011</a>.
+</div>
+<div id="ref-data:yougovcovid" class="csl-entry" role="listitem">
+YouGov. 2021. <span>“Do You Think the Coronavirus Will End up Bringing the World Closer Together, or Leave Us Further Apart?”</span> <a href="https://www.openintro.org/go?id=textbook-yougov-2021-covid">https://www.openintro.org/go?id=textbook-yougov-2021-covid</a>.
+</div>
+</div>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/normal-approximation.html" class="pagination-link" aria-label="Normal Approximation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Normal Approximation</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/ci-for-means.html" class="pagination-link" aria-label="Confidence Intervals for Means">
+        <span class="nav-page-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Confidence Intervals for Means</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Introduction to Statistics: A Simulation-First Approach</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>. Built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>

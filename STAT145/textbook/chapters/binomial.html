@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>25&nbsp; Binomial Distribution – Introduction to Statistics: A Simulation-First Approach</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/normal-distribution.html" rel="next">
+<link href="../chapters/expected-value.html" rel="prev">
+<link href="../images/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-f03065a6f98f3af1895f9ddc03f03f29.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-v.html">Foundations</a></li><li class="breadcrumb-item"><a href="../chapters/binomial.html"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Binomial Distribution</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Introduction to Statistics: A Simulation-First Approach</a> 
+        <div class="sidebar-tools-main">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-i.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explore</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/intro-to-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction to Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/study-design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Data Collection and Study Design</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/data-visualization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Exploring Categorical Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/describing-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Exploring Quantitative Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/relationships.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Relationships Between Variables</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-ii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulate</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sampling-variability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Sampling Variability</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/randomization-tests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Randomization Tests</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/decision-errors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Decision Errors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/bootstrap-ci.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Bootstrap Confidence Intervals</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sampling-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Sampling Distributions via Simulation</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Calculate</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/normal-approximation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Normal Approximation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/inference-proportions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Inference for Proportions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ci-for-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Confidence Intervals for Means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/hypothesis-tests-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Hypothesis Tests for Means</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Apply</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chisq-gof.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Chi-Square Goodness of Fit</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chisq-independence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Chi-Square Test of Independence</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Analysis of Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Multiple Comparisons</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Correlation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/linear-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Linear Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/prediction-model-fit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Prediction and Model Fit</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-v.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/probability-rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Probability Rules</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/random-variables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Random Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/expected-value.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Expected Value and Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/binomial.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Binomial Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/normal-distribution.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Normal Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/type-ii-error.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/statistical-power.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Statistical Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sample-size.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Sample Size Planning</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/datasets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Datasets</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/statlens-guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">StatLens Quick Reference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/tables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Statistical Tables</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-binomial-conditions" id="toc-sec-binomial-conditions" class="nav-link active" data-scroll-target="#sec-binomial-conditions"><span class="header-section-number">25.1</span> The binomial setting</a>
+  <ul class="collapse">
+  <li><a href="#the-bernoulli-distribution-a-single-trial" id="toc-the-bernoulli-distribution-a-single-trial" class="nav-link" data-scroll-target="#the-bernoulli-distribution-a-single-trial"><span class="header-section-number">25.1.1</span> The Bernoulli distribution: a single trial</a></li>
+  </ul></li>
+  <li><a href="#sec-binomial-formula" id="toc-sec-binomial-formula" class="nav-link" data-scroll-target="#sec-binomial-formula"><span class="header-section-number">25.2</span> Computing binomial probabilities</a>
+  <ul class="collapse">
+  <li><a href="#building-the-formula" id="toc-building-the-formula" class="nav-link" data-scroll-target="#building-the-formula"><span class="header-section-number">25.2.1</span> Building the formula</a></li>
+  <li><a href="#the-binomial-coefficient" id="toc-the-binomial-coefficient" class="nav-link" data-scroll-target="#the-binomial-coefficient"><span class="header-section-number">25.2.2</span> The binomial coefficient</a></li>
+  <li><a href="#the-binomial-probability-formula" id="toc-the-binomial-probability-formula" class="nav-link" data-scroll-target="#the-binomial-probability-formula"><span class="header-section-number">25.2.3</span> The binomial probability formula</a></li>
+  <li><a href="#computing-binomial-probabilities-in-practice" id="toc-computing-binomial-probabilities-in-practice" class="nav-link" data-scroll-target="#computing-binomial-probabilities-in-practice"><span class="header-section-number">25.2.4</span> Computing binomial probabilities in practice</a></li>
+  </ul></li>
+  <li><a href="#sec-binomial-mean-sd" id="toc-sec-binomial-mean-sd" class="nav-link" data-scroll-target="#sec-binomial-mean-sd"><span class="header-section-number">25.3</span> Mean and standard deviation</a>
+  <ul class="collapse">
+  <li><a href="#simulation-perspective-does-the-formula-match-reality" id="toc-simulation-perspective-does-the-formula-match-reality" class="nav-link" data-scroll-target="#simulation-perspective-does-the-formula-match-reality"><span class="header-section-number">25.3.1</span> Simulation perspective: Does the formula match reality?</a></li>
+  </ul></li>
+  <li><a href="#sec-normal-approx-binomial" id="toc-sec-normal-approx-binomial" class="nav-link" data-scroll-target="#sec-normal-approx-binomial"><span class="header-section-number">25.4</span> Normal approximation to the binomial</a>
+  <ul class="collapse">
+  <li><a href="#connecting-to-inference" id="toc-connecting-to-inference" class="nav-link" data-scroll-target="#connecting-to-inference"><span class="header-section-number">25.4.1</span> Connecting to inference</a></li>
+  </ul></li>
+  <li><a href="#sec-ch17-review" id="toc-sec-ch17-review" class="nav-link" data-scroll-target="#sec-ch17-review"><span class="header-section-number">25.5</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">25.5.1</span> Summary</a></li>
+  </ul></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">25.6</span> Exercises</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-v.html">Foundations</a></li><li class="breadcrumb-item"><a href="../chapters/binomial.html"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Binomial Distribution</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Binomial Distribution</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-simple callout-warning no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>Draft Chapter.</strong> This chapter is part of UWL’s STAT 145 curriculum and is under active development. Content is substantially complete but may undergo revisions. Feedback welcome.</p>
+</div>
+</div>
+</div>
+<div class="chapterintro">
+<p>How many of 400 randomly sampled adults are left-handed? How many of 20 randomly selected parts from an assembly line are defective? These “count of successes” questions arise constantly in statistics and are answered by the <strong>binomial distribution</strong>. In this chapter, we identify the four conditions that define a binomial setting, develop the formula for computing binomial probabilities, derive the mean and standard deviation, and show how the normal distribution can approximate binomial probabilities when the sample size is large.</p>
+</div>
+<div class="statlens">
+<p><strong>StatLens tools for this chapter</strong>: Use the <strong>Binomial Distribution Calculator</strong> to compute binomial probabilities, visualize the distribution, and explore how changing <span class="math inline">\(n\)</span> and <span class="math inline">\(p\)</span> affects the shape.</p>
+<p><a href="https://datascienceuwl.github.io/statlens/distribution/binomial/" target="_blank">Launch Binomial Distribution Calculator</a></p>
+</div>
+<section id="sec-binomial-conditions" class="level2" data-number="25.1">
+<h2 data-number="25.1" class="anchored" data-anchor-id="sec-binomial-conditions"><span class="header-section-number">25.1</span> The binomial setting</h2>
+<p>The binomial distribution describes the number of successes in a fixed number of independent trials, where each trial has only two possible outcomes.</p>
+<div class="important">
+<p><strong>The four binomial conditions.</strong> A random variable <span class="math inline">\(X\)</span> follows a binomial distribution if:</p>
+<ol type="1">
+<li><strong>Fixed number of trials</strong>: The number of trials <span class="math inline">\(n\)</span> is fixed in advance.</li>
+<li><strong>Binary outcomes</strong>: Each trial results in one of two outcomes, which we label “success” and “failure.”</li>
+<li><strong>Independence</strong>: The trials are independent — the outcome of one trial does not affect the outcome of any other trial.</li>
+<li><strong>Constant probability</strong>: The probability of success <span class="math inline">\(p\)</span> is the same for every trial.</li>
+</ol>
+<p>If all four conditions are met, we say <span class="math inline">\(X\)</span> follows a binomial distribution with parameters <span class="math inline">\(n\)</span> and <span class="math inline">\(p\)</span>, written <span class="math inline">\(X \sim \text{Binomial}(n, p)\)</span>.</p>
+</div>
+<div class="workedexample">
+<p>A health insurance company found that 70% of the people they insure stay below their deductible in any given year. Consider a random sample of four individuals. Does the number who stay below their deductible follow a binomial distribution?</p>
+<ol type="1">
+<li><strong>Fixed <span class="math inline">\(n\)</span></strong>: Yes, <span class="math inline">\(n = 4\)</span> individuals.</li>
+<li><strong>Binary</strong>: Yes, each person either stays below the deductible (success) or exceeds it (failure).</li>
+<li><strong>Independence</strong>: Yes, because the sample is random from a large population.</li>
+<li><strong>Constant <span class="math inline">\(p\)</span></strong>: Yes, each person has a 70% chance of staying below the deductible.</li>
+</ol>
+<p>All four conditions are met, so <span class="math inline">\(X \sim \text{Binomial}(n = 4, p = 0.70)\)</span>.</p>
+</div>
+<div class="caution">
+<p>The labels “success” and “failure” are just conventions — a “success” does not have to be a good outcome. If we are counting defective parts, a “success” might be finding a defective part. The mathematical framework does not depend on which outcome we call a success, as long as we are consistent.</p>
+</div>
+<div class="guidedpractice">
+<p>The probability that a random smoker will develop a severe lung condition is about 0.3. If you have 4 friends who smoke, are the conditions for the binomial model satisfied?</p>
+<details>
+<summary>
+Show answer
+</summary>
+This is questionable. If the friends know each other, the independence condition may be violated. Acquaintances may have similar smoking habits or might influence each other. If, however, we could treat them as a random sample of smokers, the conditions would be approximately met.
+</details>
+</div>
+<section id="the-bernoulli-distribution-a-single-trial" class="level3" data-number="25.1.1">
+<h3 data-number="25.1.1" class="anchored" data-anchor-id="the-bernoulli-distribution-a-single-trial"><span class="header-section-number">25.1.1</span> The Bernoulli distribution: a single trial</h3>
+<p>A single trial with two outcomes is called a <strong>Bernoulli trial</strong>, and the resulting random variable is a <strong>Bernoulli random variable</strong>.</p>
+<div class="definition">
+<p>If <span class="math inline">\(X\)</span> is a random variable that takes value 1 with probability <span class="math inline">\(p\)</span> (success) and 0 with probability <span class="math inline">\(1 - p\)</span> (failure), then <span class="math inline">\(X\)</span> is a <strong>Bernoulli random variable</strong> with:</p>
+<p><span class="math display">\[\mu = p \qquad \sigma = \sqrt{p(1-p)}\]</span></p>
+</div>
+<p>A binomial random variable is simply the sum of <span class="math inline">\(n\)</span> independent Bernoulli random variables, each with the same probability <span class="math inline">\(p\)</span>.</p>
+</section>
+</section>
+<section id="sec-binomial-formula" class="level2" data-number="25.2">
+<h2 data-number="25.2" class="anchored" data-anchor-id="sec-binomial-formula"><span class="header-section-number">25.2</span> Computing binomial probabilities</h2>
+<section id="building-the-formula" class="level3" data-number="25.2.1">
+<h3 data-number="25.2.1" class="anchored" data-anchor-id="building-the-formula"><span class="header-section-number">25.2.1</span> Building the formula</h3>
+<p>Let’s find the probability that exactly 1 of 4 randomly selected insured individuals exceeds the deductible (so 3 “successes” — staying below — and 1 “failure”).</p>
+<p>Consider the specific scenario where person A exceeds and persons B, C, D do not:</p>
+<p><span class="math display">\[P(A = \text{exceed}, B = \text{not}, C = \text{not}, D = \text{not}) = (0.3)(0.7)(0.7)(0.7) = (0.7)^3(0.3)^1 = 0.103\]</span></p>
+<p>But there are four such scenarios — any one of the four people could be the one who exceeds. Each scenario has the same probability. So:</p>
+<p><span class="math display">\[P(\text{exactly 3 successes in 4 trials}) = 4 \times (0.7)^3(0.3)^1 = 0.412\]</span></p>
+<p>The general pattern is:</p>
+<p><span class="math display">\[P(X = k) = [\text{number of arrangements}] \times [\text{probability of one arrangement}]\]</span></p>
+</section>
+<section id="the-binomial-coefficient" class="level3" data-number="25.2.2">
+<h3 data-number="25.2.2" class="anchored" data-anchor-id="the-binomial-coefficient"><span class="header-section-number">25.2.2</span> The binomial coefficient</h3>
+<p>The number of ways to arrange <span class="math inline">\(k\)</span> successes in <span class="math inline">\(n\)</span> trials is given by the <strong>binomial coefficient</strong>:</p>
+<p><span class="math display">\[\binom{n}{k} = \frac{n!}{k!(n-k)!}\]</span></p>
+<p>read as “<span class="math inline">\(n\)</span> choose <span class="math inline">\(k\)</span>,” where <span class="math inline">\(n!\)</span> (read “<span class="math inline">\(n\)</span> factorial”) means <span class="math inline">\(n \times (n-1) \times \cdots \times 2 \times 1\)</span>, with the special case <span class="math inline">\(0! = 1\)</span>.</p>
+<p>For our example: <span class="math inline">\(\binom{4}{3} = \frac{4!}{3! \cdot 1!} = \frac{24}{6 \times 1} = 4\)</span>, confirming the four arrangements we identified.</p>
+</section>
+<section id="the-binomial-probability-formula" class="level3" data-number="25.2.3">
+<h3 data-number="25.2.3" class="anchored" data-anchor-id="the-binomial-probability-formula"><span class="header-section-number">25.2.3</span> The binomial probability formula</h3>
+<div class="important">
+<p><strong>Binomial probability formula.</strong> If <span class="math inline">\(X \sim \text{Binomial}(n, p)\)</span>, the probability of exactly <span class="math inline">\(k\)</span> successes is:</p>
+<p><span class="math display">\[P(X = k) = \binom{n}{k} p^k (1-p)^{n-k} = \frac{n!}{k!(n-k)!} \, p^k (1-p)^{n-k}\]</span></p>
+<p>for <span class="math inline">\(k = 0, 1, 2, \ldots, n\)</span>.</p>
+</div>
+<div class="workedexample">
+<p>What is the probability that 5 of 8 randomly selected insured individuals will not exceed the deductible?</p>
+<p>With <span class="math inline">\(n = 8\)</span>, <span class="math inline">\(k = 5\)</span>, and <span class="math inline">\(p = 0.70\)</span>:</p>
+<p><span class="math display">\[P(X = 5) = \binom{8}{5}(0.70)^5(0.30)^3\]</span></p>
+<p>Computing the binomial coefficient:</p>
+<p><span class="math display">\[\binom{8}{5} = \frac{8!}{5! \cdot 3!} = \frac{8 \times 7 \times 6}{3 \times 2 \times 1} = 56\]</span></p>
+<p>And the probability of a single arrangement: <span class="math inline">\((0.70)^5(0.30)^3 \approx 0.00454\)</span>.</p>
+<p><span class="math display">\[P(X = 5) = 56 \times 0.00454 \approx 0.254\]</span></p>
+</div>
+<div class="guidedpractice">
+<p>Suppose 4 friends who smoke can be treated as a random sample, with <span class="math inline">\(P(\text{severe lung condition}) = 0.3\)</span> for each. (a) What is the probability that none develop a severe lung condition? (b) What is the probability that exactly one does? (c) What is the probability that at most one does?</p>
+<details>
+<summary>
+Show answer
+</summary>
+<ol type="a">
+<li><span class="math inline">\(P(X = 0) = \binom{4}{0}(0.3)^0(0.7)^4 = 1 \times 1 \times 0.2401 = 0.2401\)</span>. (b) <span class="math inline">\(P(X = 1) = \binom{4}{1}(0.3)^1(0.7)^3 = 4 \times 0.3 \times 0.343 = 0.4116\)</span>. (c) <span class="math inline">\(P(X \leq 1) = P(X = 0) + P(X = 1) = 0.2401 + 0.4116 = 0.6517\)</span>.</li>
+</ol>
+</details>
+</div>
+<div class="guidedpractice">
+<p>What is the probability that at least 2 of the 4 smoking friends will develop a severe lung condition?</p>
+<details>
+<summary>
+Show answer
+</summary>
+Using the complement: <span class="math inline">\(P(X \geq 2) = 1 - P(X \leq 1) = 1 - 0.6517 = 0.3483\)</span>.
+</details>
+</div>
+</section>
+<section id="computing-binomial-probabilities-in-practice" class="level3 original" data-number="25.2.4">
+<h3 data-number="25.2.4" class="anchored" data-anchor-id="computing-binomial-probabilities-in-practice"><span class="header-section-number">25.2.4</span> Computing binomial probabilities in practice</h3>
+<p>For small values of <span class="math inline">\(n\)</span> and <span class="math inline">\(k\)</span>, the binomial formula can be computed by hand. For larger problems, use technology:</p>
+<ul>
+<li><strong>StatLens</strong>: The <a href="https://datascienceuwl.github.io/statlens/distribution/binomial/" target="_blank">Binomial Distribution calculator</a> computes probabilities and visualizes the distribution.</li>
+<li><strong>Calculator</strong>: Most graphing calculators have a <code>binompdf</code> and <code>binomcdf</code> function.</li>
+<li><strong>Software</strong>: Any statistical software can compute binomial probabilities. Look for functions named something like “binomial CDF” or “binomial probability.”</li>
+</ul>
+<p>For example, to find <span class="math inline">\(P(X \leq 42)\)</span> when <span class="math inline">\(X \sim \text{Binomial}(400, 0.15)\)</span>, computing 43 individual probabilities by hand would be impractical. Using the StatLens Binomial calculator with <span class="math inline">\(n = 400\)</span>, <span class="math inline">\(p = 0.15\)</span>, and <span class="math inline">\(P(X \leq 42)\)</span>, we get approximately 0.0054.</p>
+</section>
+</section>
+<section id="sec-binomial-mean-sd" class="level2" data-number="25.3">
+<h2 data-number="25.3" class="anchored" data-anchor-id="sec-binomial-mean-sd"><span class="header-section-number">25.3</span> Mean and standard deviation</h2>
+<div class="important">
+<p><strong>Mean and standard deviation of a binomial distribution.</strong> If <span class="math inline">\(X \sim \text{Binomial}(n, p)\)</span>, then:</p>
+<p><span class="math display">\[\mu = np \qquad \sigma = \sqrt{np(1-p)}\]</span></p>
+</div>
+<p>These formulas follow from the fact that a binomial random variable is the sum of <span class="math inline">\(n\)</span> independent Bernoulli random variables, each with mean <span class="math inline">\(p\)</span> and variance <span class="math inline">\(p(1-p)\)</span>.</p>
+<div class="workedexample">
+<p>If 40 individuals are randomly sampled and each has a 70% chance of staying below their insurance deductible, how many would you expect to stay below? What is the standard deviation?</p>
+<p><span class="math display">\[\mu = np = 40 \times 0.70 = 28\]</span></p>
+<p><span class="math display">\[\sigma = \sqrt{np(1-p)} = \sqrt{40 \times 0.70 \times 0.30} = \sqrt{8.4} \approx 2.9\]</span></p>
+<p>We expect about 28 individuals to stay below their deductible, give or take about 2.9. Using the rough “95% within 2 standard deviations” guideline, we would expect between about 22 and 34 individuals in most samples.</p>
+</div>
+<div class="guidedpractice">
+<p>Suppose 7 friends who smoke can be treated as a random sample, with <span class="math inline">\(p = 0.3\)</span> for developing a severe lung condition. How many would you expect to develop the condition? What is the standard deviation?</p>
+<details>
+<summary>
+Show answer
+</summary>
+<span class="math inline">\(\mu = np = 7 \times 0.3 = 2.1\)</span>. <span class="math inline">\(\sigma = \sqrt{7 \times 0.3 \times 0.7} = \sqrt{1.47} \approx 1.21\)</span>. You would expect about 2 of the 7 friends to develop a severe lung condition.
+</details>
+</div>
+<section id="simulation-perspective-does-the-formula-match-reality" class="level3 original" data-number="25.3.1">
+<h3 data-number="25.3.1" class="anchored" data-anchor-id="simulation-perspective-does-the-formula-match-reality"><span class="header-section-number">25.3.1</span> Simulation perspective: Does the formula match reality?</h3>
+<p>We can verify the binomial formulas using simulation. Consider <span class="math inline">\(X \sim \text{Binomial}(n = 20, p = 0.3)\)</span>:</p>
+<ul>
+<li><strong>Theory</strong>: <span class="math inline">\(\mu = 20 \times 0.3 = 6\)</span> and <span class="math inline">\(\sigma = \sqrt{20 \times 0.3 \times 0.7} = \sqrt{4.2} \approx 2.05\)</span></li>
+<li><strong>Simulation</strong>: Generate 10,000 binomial random samples, each with <span class="math inline">\(n = 20\)</span> and <span class="math inline">\(p = 0.3\)</span>. The sample mean of the 10,000 counts will be very close to 6, and the sample standard deviation will be very close to 2.05.</li>
+</ul>
+<p>This is another instance of the Law of Large Numbers: the simulated distribution converges to the theoretical distribution as we increase the number of simulations.</p>
+<div class="statlens">
+<p><strong>Try it in StatLens</strong>: Use the Binomial Distribution Explorer to set <span class="math inline">\(n = 20\)</span> and <span class="math inline">\(p = 0.3\)</span>. Simulate 1,000 binomial experiments and compare the histogram of results to the theoretical formula. As you increase the number of simulations, the histogram converges to the theoretical distribution.</p>
+</div>
+</section>
+</section>
+<section id="sec-normal-approx-binomial" class="level2" data-number="25.4">
+<h2 data-number="25.4" class="anchored" data-anchor-id="sec-normal-approx-binomial"><span class="header-section-number">25.4</span> Normal approximation to the binomial</h2>
+<p>The binomial formula can be cumbersome for large <span class="math inline">\(n\)</span>, especially when computing cumulative probabilities like <span class="math inline">\(P(X \leq 42)\)</span> for <span class="math inline">\(n = 400\)</span>. Fortunately, when <span class="math inline">\(n\)</span> is large enough, the binomial distribution is well approximated by the normal distribution.</p>
+<div class="workedexample">
+<p>Approximately 15% of the US population smokes cigarettes. A local government surveyed 400 randomly selected individuals and found only 42 smokers. If the true proportion is 0.15, what is the probability of observing 42 or fewer smokers?</p>
+<p>The exact answer requires summing 43 binomial probabilities, which gives <span class="math inline">\(P(X \leq 42) = 0.0054\)</span>.</p>
+</div>
+<p>As the sample size increases, the binomial distribution becomes increasingly bell-shaped and symmetric. This is illustrated in the figure below.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-binom-normal-approx" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Four histograms of binomial distributions with p = 0.10. For n = 10, the distribution is right-skewed. For n = 30, it is slightly skewed. For n = 100 and n = 300, the distribution is approximately symmetric and bell-shaped.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-binom-normal-approx-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="binomial_files/figure-html/fig-binom-normal-approx-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;25.1: Binomial distributions with p = 0.10 and sample sizes n = 10, 30, 100, and 300. As n increases, the distribution approaches a normal curve."><img src="binomial_files/figure-html/fig-binom-normal-approx-1.png" class="img-fluid figure-img" alt="Four histograms of binomial distributions with p = 0.10. For n = 10, the distribution is right-skewed. For n = 30, it is slightly skewed. For n = 100 and n = 300, the distribution is approximately symmetric and bell-shaped." width="2100"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-binom-normal-approx-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;25.1: Binomial distributions with <span class="math inline">\(p = 0.10\)</span> and sample sizes <span class="math inline">\(n = 10\)</span>, 30, 100, and 300. As <span class="math inline">\(n\)</span> increases, the distribution approaches a normal curve.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="important">
+<p><strong>Normal approximation to the binomial.</strong> The binomial distribution with parameters <span class="math inline">\(n\)</span> and <span class="math inline">\(p\)</span> is approximately normal when both <span class="math inline">\(np \geq 10\)</span> and <span class="math inline">\(n(1-p) \geq 10\)</span>. The approximating normal distribution has:</p>
+<p><span class="math display">\[\mu = np \qquad \sigma = \sqrt{np(1-p)}\]</span></p>
+</div>
+<div class="workedexample">
+<p>Use the normal approximation to estimate <span class="math inline">\(P(X \leq 42)\)</span> for <span class="math inline">\(X \sim \text{Binomial}(400, 0.15)\)</span>.</p>
+<p>First, check the conditions: <span class="math inline">\(np = 400 \times 0.15 = 60 \geq 10\)</span> and <span class="math inline">\(n(1-p) = 400 \times 0.85 = 340 \geq 10\)</span>. The normal approximation is appropriate.</p>
+<p>The approximating distribution is <span class="math inline">\(N(\mu = 60, \sigma = 7.14)\)</span>, where <span class="math inline">\(\sigma = \sqrt{400 \times 0.15 \times 0.85} = 7.14\)</span>.</p>
+<p>Compute the Z-score:</p>
+<p><span class="math display">\[Z = \frac{42 - 60}{7.14} = \frac{-18}{7.14} = -2.52\]</span></p>
+<p>Using the standard normal distribution: <span class="math inline">\(P(Z \leq -2.52) = 0.0059\)</span>.</p>
+<p>This is very close to the exact binomial probability of 0.0054.</p>
+</div>
+<div class="guidedpractice">
+<p>A coin is flipped 100 times. Use the normal approximation to find the probability of getting 60 or more heads.</p>
+<details>
+<summary>
+Show answer
+</summary>
+Check conditions: <span class="math inline">\(np = 100 \times 0.5 = 50 \geq 10\)</span> and <span class="math inline">\(n(1-p) = 50 \geq 10\)</span>. The approximation is appropriate. <span class="math inline">\(\mu = 50\)</span>, <span class="math inline">\(\sigma = \sqrt{100 \times 0.5 \times 0.5} = 5\)</span>. <span class="math inline">\(Z = (60 - 50)/5 = 2\)</span>. <span class="math inline">\(P(Z \geq 2) = 1 - 0.9772 = 0.0228\)</span>. There is about a 2.3% chance of getting 60 or more heads in 100 flips of a fair coin.
+</details>
+</div>
+<section id="connecting-to-inference" class="level3 original" data-number="25.4.1">
+<h3 data-number="25.4.1" class="anchored" data-anchor-id="connecting-to-inference"><span class="header-section-number">25.4.1</span> Connecting to inference</h3>
+<p>The normal approximation to the binomial is not just a computational shortcut — it is the theoretical basis for the inference methods we developed in Parts II and III. When we studied the sampling distribution of the sample proportion <span class="math inline">\(\hat{p}\)</span> in the sampling distributions chapter, we were implicitly using the fact that the count of successes <span class="math inline">\(X\)</span> in a sample of size <span class="math inline">\(n\)</span> follows a binomial distribution, and that this binomial distribution is approximately normal for large <span class="math inline">\(n\)</span>.</p>
+<p>Specifically, if <span class="math inline">\(X \sim \text{Binomial}(n, p)\)</span>, then <span class="math inline">\(\hat{p} = X/n\)</span>, and the normal approximation tells us:</p>
+<p><span class="math display">\[\hat{p} \approx N\left(p, \sqrt{\frac{p(1-p)}{n}}\right)\]</span></p>
+<p>This is exactly the result we used when constructing confidence intervals and performing hypothesis tests for proportions in the inference for proportions chapter. The theory developed in this chapter <em>explains</em> why those methods work.</p>
+</section>
+</section>
+<section id="sec-ch17-review" class="level2" data-number="25.5">
+<h2 data-number="25.5" class="anchored" data-anchor-id="sec-ch17-review"><span class="header-section-number">25.5</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="25.5.1">
+<h3 data-number="25.5.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">25.5.1</span> Summary</h3>
+<ul>
+<li>The <strong>binomial distribution</strong> counts the number of successes in <span class="math inline">\(n\)</span> independent trials, each with the same probability of success <span class="math inline">\(p\)</span>.</li>
+<li><strong>Four conditions</strong>: fixed <span class="math inline">\(n\)</span>, binary outcomes, independence, constant <span class="math inline">\(p\)</span>.</li>
+<li><strong>Binomial probability formula</strong>: <span class="math inline">\(P(X = k) = \binom{n}{k} p^k (1-p)^{n-k}\)</span></li>
+<li><strong>Mean and standard deviation</strong>: <span class="math inline">\(\mu = np\)</span> and <span class="math inline">\(\sigma = \sqrt{np(1-p)}\)</span>.</li>
+<li>When <span class="math inline">\(np \geq 10\)</span> and <span class="math inline">\(n(1-p) \geq 10\)</span>, the binomial distribution is well approximated by the normal distribution <span class="math inline">\(N(np, \sqrt{np(1-p)})\)</span>.</li>
+<li>The normal approximation to the binomial provides the theoretical justification for the inference methods on proportions from the inference for proportions chapter.</li>
+</ul>
+</section>
+</section>
+<section id="exercises" class="level2 exercises" data-number="25.6">
+<h2 class="exercises anchored" data-number="25.6" data-anchor-id="exercises"><span class="header-section-number">25.6</span> Exercises</h2>
+<!-- Generated by build_textbook_exercises.py — DO NOT EDIT -->
+<!-- Sources: _04-ex-binomial-distribution, _04-ex-review -->
+<ol type="1">
+<li><strong>Underage drinking, Part I.</strong> Data collected by the Substance Abuse and Mental Health Services Administration (SAMSHA) suggests that 69.7% of 18-20 year olds consumed alcoholic beverages in any given year.</li>
+</ol>
+<ol type="a">
+<li><p>Suppose a random sample of ten 18-20 year olds is taken. Is the use of the binomial distribution appropriate for calculating the probability that exactly six consumed alcoholic beverages? Explain.</p></li>
+<li><p>Calculate the probability that exactly 6 out of 10 randomly sampled 18- 20 year olds consumed an alcoholic drink.</p></li>
+<li><p>What is the probability that exactly four out of ten 18-20 year olds have <em>not</em> consumed an alcoholic beverage?</p></li>
+<li><p>What is the probability that at most 2 out of 5 randomly sampled 18-20 year olds have consumed alcoholic beverages?</p></li>
+<li><p>What is the probability that at least 1 out of 5 randomly sampled 18-20 year olds have consumed alcoholic beverages? </p></li>
+</ol>
+<ol start="2" type="1">
+<li><strong>Chickenpox, Part I.</strong> Boston Children’s Hospital estimates that 90% of Americans have had chickenpox by the time they reach adulthood.</li>
+</ol>
+<ol type="a">
+<li><p>Suppose we take a random sample of 100 American adults. Is the use of the binomial distribution appropriate for calculating the probability that exactly 97 out of 100 randomly sampled American adults had chickenpox during childhood? Explain.</p></li>
+<li><p>Calculate the probability that exactly 97 out of 100 randomly sampled American adults had chickenpox during childhood.</p></li>
+<li><p>What is the probability that exactly 3 out of a new sample of 100 American adults have <em>not</em> had chickenpox in their childhood?</p></li>
+<li><p>What is the probability that at least 1 out of 10 randomly sampled American adults have had chickenpox?</p></li>
+<li><p>What is the probability that at most 3 out of 10 randomly sampled American adults have <em>not</em> had chickenpox? </p></li>
+</ol>
+<ol start="3" type="1">
+<li><strong>Underage drinking, Part II.</strong> We learned in a previous exercise that about 70% of 18-20 year olds consumed alcoholic beverages in any given year. We now consider a random sample of fifty 18-20 year olds.</li>
+</ol>
+<ol type="a">
+<li><p>How many people would you expect to have consumed alcoholic beverages? And with what standard deviation?</p></li>
+<li><p>Would you be surprised if there were 45 or more people who have consumed alcoholic beverages?</p></li>
+<li><p>What is the probability that 45 or more people in this sample have consumed alcoholic beverages? How does this probability relate to your answer to part (b)? </p></li>
+</ol>
+<ol start="4" type="1">
+<li><strong>Chickenpox, Part II.</strong> We learned in a previous exercise that about 90% of American adults had chickenpox before adulthood. We now consider a random sample of 120 American adults.</li>
+</ol>
+<ol type="a">
+<li><p>How many people in this sample would you expect to have had chickenpox in their childhood? And with what standard deviation?</p></li>
+<li><p>Would you be surprised if there were 105 people who have had chickenpox in their childhood?</p></li>
+<li><p>What is the probability that 105 or fewer people in this sample have had chickenpox in their childhood? How does this probability relate to your answer to part (b)? </p></li>
+</ol>
+<ol start="5" type="1">
+<li><strong>Four-color spinner.</strong> A carnival booth has a four-color spinner divided into four equal sectors: red, blue, green, and yellow. You spin the wheel three times. Each spin is independent and each color has probability <span class="math inline">\(1/4\)</span> per spin. Calculate the probability of getting</li>
+</ol>
+<ol type="a">
+<li><p>at least one red in 3 spins.</p></li>
+<li><p>exactly 2 reds.</p></li>
+<li><p>exactly 1 blue.</p></li>
+<li><p>at most 2 greens. </p></li>
+</ol>
+<ol start="6" type="1">
+<li><strong>Arachnophobia.</strong> A Gallup Poll found that 7% of teenagers (ages 13 to 17) suffer from arachnophobia and are extremely afraid of spiders. At a summer camp there are 10 teenagers sleeping in each tent. Assume that these 10 teenagers are independent of each other.%</li>
+</ol>
+<ol type="a">
+<li><p>Calculate the probability that at least one of them suffers from arachnophobia.</p></li>
+<li><p>Calculate the probability that exactly 2 of them suffer from arachnophobia.</p></li>
+<li><p>Calculate the probability that at most 1 of them suffers from arachnophobia.</p></li>
+<li><p>If the camp counselor wants to make sure no more than 1 teenager in each tent is afraid of spiders, does it seem reasonable for him to randomly assign teenagers to tents? </p></li>
+</ol>
+<ol start="7" type="1">
+<li><strong>Eye color, Part II.</strong> a previous exercise introduces a husband and wife with brown eyes who have 0.75 probability of having children with brown eyes, 0.125 probability of having children with blue eyes, and 0.125 probability of having children with green eyes.</li>
+</ol>
+<ol type="a">
+<li><p>What is the probability that their first child will have green eyes and the second will not?</p></li>
+<li><p>What is the probability that exactly one of their two children will have green eyes?</p></li>
+<li><p>If they have six children, what is the probability that exactly two will have green eyes?</p></li>
+<li><p>If they have six children, what is the probability that at least one will have green eyes?</p></li>
+<li><p>What is the probability that the first green eyed child will be the <span class="math inline">\(4^{th}\)</span> child?</p></li>
+<li><p>Would it be considered unusual if only 2 out of their 6 children had brown eyes? </p></li>
+</ol>
+<ol start="8" type="1">
+<li><strong>Sickle cell anemia.</strong> Sickle cell anemia is a genetic blood disorder where red blood cells lose their flexibility and assume an abnormal, rigid, “sickle” shape, which results in a risk of various complications. If both parents are carriers of the disease, then a child has a 25% chance of having the disease, 50% chance of being a carrier, and 25% chance of neither having the disease nor being a carrier. If two parents who are carriers of the disease have 3 children, what is the probability that</li>
+</ol>
+<ol type="a">
+<li><p>two will have the disease?</p></li>
+<li><p>none will have the disease?</p></li>
+<li><p>at least one will neither have the disease nor be a carrier?</p></li>
+<li><p>the first child with the disease will the be <span class="math inline">\(3^{rd}\)</span> child? </p></li>
+</ol>
+<ol start="9" type="1">
+<li><strong>Playlist orderings.</strong> A music app has 8 different songs in a playlist and plays them in a random order with no repeats — every distinct ordering is equally likely.</li>
+</ol>
+<ol type="a">
+<li><p>How many distinct orderings of the 8 songs are possible?</p></li>
+<li><p>What is the probability that “Track 1” is played first?</p></li>
+<li><p>What is the probability that “Track 1” is played first AND “Track 2” is played last? </p></li>
+</ol>
+<ol start="10" type="1">
+<li><strong>Allergic campers in a cabin.</strong> At a summer camp, cabins hold 4 campers. Independently for each camper, the probability of being allergic to a particular plant is 0.15.</li>
+</ol>
+<ol type="a">
+<li><p>The orderings of (A = allergic, N = not allergic) for a cabin of 4 that have exactly 2 allergic campers are: AANN, ANAN, ANNA, NAAN, NANA, NNAA. How many distinct orderings is that?</p></li>
+<li><p>Compute the probability of one specific ordering with exactly 2 allergic campers (for example, AANN).</p></li>
+<li><p>Use the binomial formula to compute the probability that exactly 2 of the 4 campers are allergic.</p></li>
+<li><p>Multiplying your answers from (a) and (b) should give the answer to (c). Explain why this works.</p></li>
+</ol>
+<ol start="11" type="1">
+<li><strong>Airline overbooking.</strong> A regional airline runs flights on a small commuter plane with 50 seats. Historically, 7% of booked passengers do not show up, so the airline sells 54 tickets for each flight. Let <span class="math inline">\(X\)</span> be the number of ticketed passengers who actually show up, modeled as <span class="math inline">\(X \sim \text{Binomial}(n = 54, p = 0.93)\)</span>.</li>
+</ol>
+<ol type="a">
+<li><p>Find the mean <span class="math inline">\(\mu\)</span> of <span class="math inline">\(X\)</span>.</p></li>
+<li><p>Find the standard deviation <span class="math inline">\(\sigma\)</span> of <span class="math inline">\(X\)</span>.</p></li>
+<li><p>Using the normal approximation with continuity correction, estimate the probability the flight is overbooked, <span class="math inline">\(P(X &gt; 50)\)</span>.</p></li>
+<li><p>Interpret your answer to part (c) in plain language. </p></li>
+</ol>
+<ol start="12" type="1">
+<li><strong>Email campaign opens.</strong> A marketing team sends a promotional email to 8,000 independent recipients. Historically, each recipient opens the email with probability 0.12, and opens are independent. Let <span class="math inline">\(X\)</span> be the number of recipients who open the email, so <span class="math inline">\(X \sim \text{Binomial}(n = 8000, p = 0.12)\)</span>. The team wants the probability that at least 1,000 recipients open the email.</li>
+</ol>
+<ol type="a">
+<li><p>Compute <span class="math inline">\(\mu = E(X)\)</span> and <span class="math inline">\(\sigma = \text{SD}(X)\)</span>.</p></li>
+<li><p>Using the normal approximation with continuity correction, find the z-score corresponding to “at least 1,000 opens.”</p></li>
+<li><p>Approximate <span class="math inline">\(P(X \ge 1000)\)</span>.</p></li>
+<li><p>State the condition that makes the normal approximation appropriate here. </p></li>
+</ol>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/expected-value.html" class="pagination-link" aria-label="Expected Value and Variance">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Expected Value and Variance</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/normal-distribution.html" class="pagination-link" aria-label="Normal Distribution">
+        <span class="nav-page-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Normal Distribution</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Introduction to Statistics: A Simulation-First Approach</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>. Built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
