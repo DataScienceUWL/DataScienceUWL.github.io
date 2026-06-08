@@ -295,6 +295,8 @@ export function createBinAdjuster(parent, opts) {
  * @param {number[]} [opts.prevBinCounts]
  * @param {number[]} [opts.thresholds] - Explicit histogram thresholds
  * @param {number} [opts.numBins] - Bin count override (dotplot or histogram)
+ * @param {number} [opts.binWidth] - Locked bin width for dotplot (overrides numBins)
+ * @param {number} [opts.binOrigin] - Bin origin for dotplot grid alignment
  * @param {number} [opts.precision]
  * @param {'randomization'|'bootstrap'} [opts.pillMode]
  * @param {number} [opts.pValue] - Pre-computed p-value for pills
@@ -339,6 +341,8 @@ export function renderSimChart(container, stats, opts) {
       animate: false,
       domain: opts.domain,
       numBins: opts.numBins,
+      binWidth: opts.binWidth,
+      binOrigin: opts.binOrigin,
       highlightIndex: opts.highlightIndex ?? -1,
       highlightIndices: opts.highlightIndices,
       precision: opts.precision,

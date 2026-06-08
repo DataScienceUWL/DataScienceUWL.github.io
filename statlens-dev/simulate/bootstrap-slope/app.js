@@ -11,7 +11,7 @@ import { bootstrapCI } from '../../js/sim-engine.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
 import { computeBins } from '../../js/histogram.js';
 import { parseCSV } from '../../js/csv-parser.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initDataPanel, computeHighlights, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, flyDataStream, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType, createChartToggle, computeDomain } from '../../js/chart-defaults.js';
 
 // ─── DOM ───
@@ -23,6 +23,15 @@ const resetBtn = /** @type {HTMLButtonElement} */ (document.getElementById('rese
 const ciSelect = /** @type {HTMLSelectElement} */ (document.getElementById('ci-level'));
 const dataSummary = document.getElementById('data-summary');
 const dataPreview = document.getElementById('data-preview');
+
+// Mechanism strip elements
+const mechanismStrip = document.getElementById('mechanism-strip');
+const mechObservedPlot = document.getElementById('mech-observed-plot');
+const mechResamplePlot = document.getElementById('mech-resample-plot');
+const mechObservedSlope = document.getElementById('mech-observed-slope');
+const mechResampleSlope = document.getElementById('mech-resample-slope');
+const mechanismDescEl = document.getElementById('mechanism-description');
+const simTitleEl = document.getElementById('sim-title');
 
 const genBtns = /** @type {NodeListOf<HTMLButtonElement>} */ (
   document.querySelectorAll('.gen-btn'));
@@ -62,6 +71,7 @@ let bootLines = [];
 /** @type {(() => number)|null} */
 let rng = null;
 let seed = Math.random().toString(36).slice(2, 10);
+let mechanismInitialized = false;
 
 let observedSlope = 0;
 let observedIntercept = 0;
@@ -149,6 +159,21 @@ function showDataLoaded() {
   for (const btn of genBtns) btn.disabled = false;
   if (resultDiv) resultDiv.innerHTML = '<p class="hint">Data loaded. Click a generate button to begin.</p>';
 
+  // Populate mechanism strip observed scatterplot (stays hidden until first generate)
+  const mechMargin = { top: 8, right: 8, bottom: 28, left: 22 };
+  if (mechObservedPlot) {
+    mechObservedPlot.innerHTML = '';
+    drawScatterplot(mechObservedPlot, xData, yData, {
+      xLabel, yLabel,
+      titleText: 'Original Data',
+      id: 'mech-obs',
+      regression: { slope: observedSlope, intercept: observedIntercept },
+      margin: mechMargin,
+      minimal: true,
+    });
+  }
+  if (mechObservedSlope) mechObservedSlope.textContent = formatStat(observedSlope, dataPrecision);
+
   renderScatter();
 
   setPageTitle(baseTitle, currentSourceName, { n: xData.length });
@@ -192,6 +217,23 @@ function generateResamples(count) {
   const n = xData.length;
   const prevLength = allSlopes.length;
 
+  // Show mechanism strip on first generate
+  if (!mechanismInitialized && mechanismStrip) {
+    mechanismInitialized = true;
+    mechanismStrip.hidden = false;
+    initMechanismCollapse(mechanismStrip);
+  }
+
+  if (simTitleEl) {
+    simTitleEl.textContent = count === 1 ? 'This Resample' : 'Last Resample';
+  }
+
+  /** @type {number[]} */
+  let lastXBoot = [];
+  /** @type {number[]} */
+  let lastYBoot = [];
+  let lastReg = { slope: 0, intercept: 0 };
+
   for (let i = 0; i < count; i++) {
     /** @type {number[]} */
     const indices = [];
@@ -203,6 +245,43 @@ function generateResamples(count) {
     const reg = linreg(xBoot, yBoot);
     allSlopes.push(reg.slope);
     bootLines.push({ slope: reg.slope, intercept: reg.intercept });
+    lastXBoot = xBoot;
+    lastYBoot = yBoot;
+    lastReg = reg;
+  }
+
+  // Fire flying dots from observed → resample on +1
+  if (count === 1 && mechObservedPlot && mechResamplePlot) {
+    flyDataStream(mechObservedPlot, mechResamplePlot);
+  }
+
+  // Update mechanism strip with last resample (delayed on +1 to let dots land)
+  const mechMargin = { top: 8, right: 8, bottom: 28, left: 22 };
+  const updateMechanism = () => {
+    if (mechResamplePlot) {
+      mechResamplePlot.innerHTML = '';
+      drawScatterplot(mechResamplePlot, lastXBoot, lastYBoot, {
+        xLabel, yLabel,
+        titleText: count === 1 ? 'This Resample' : 'Last Resample',
+        id: 'mech-resample',
+        regression: lastReg,
+        margin: mechMargin,
+        minimal: true,
+      });
+    }
+    if (mechResampleSlope) {
+      mechResampleSlope.textContent = formatStat(lastReg.slope, dataPrecision);
+      mechResampleSlope.classList.toggle('highlight-last', count === 1);
+    }
+  };
+  if (count === 1) {
+    setTimeout(updateMechanism, 200);
+  } else {
+    updateMechanism();
+  }
+  if (mechanismDescEl) {
+    mechanismDescEl.textContent = `Resample ${n} (x, y) pairs with replacement, refit regression`;
+    mechanismDescEl.hidden = false;
   }
 
   const ciLevel = parseInt(ciSelect?.value ?? '95', 10);
@@ -235,7 +314,17 @@ function generateResamples(count) {
     { domain: hlDomain, thresholds: lockedThresholds });
 
   renderScatter();
-  renderHist(allSlopes, hlIndex, hlIndices, prevBinCounts, currentCI, hlDomain, lockedThresholds);
+
+  if (count === 1) {
+    setTimeout(() => {
+      renderHist(allSlopes, hlIndex, hlIndices, prevBinCounts, currentCI, hlDomain, lockedThresholds);
+      if (mechResampleSlope && histContainer) {
+        animateDropToChart(mechResampleSlope, histContainer);
+      }
+    }, 150);
+  } else {
+    renderHist(allSlopes, hlIndex, hlIndices, prevBinCounts, currentCI, hlDomain, lockedThresholds);
+  }
 
   if (resetBtn) resetBtn.hidden = false;
   announce(`Generated ${count} resample${count > 1 ? 's' : ''}. Total: ${allSlopes.length}`);
@@ -331,8 +420,10 @@ function resetSimulation() {
   allSlopes = [];
   bootLines = [];
   rng = null;
+  mechanismInitialized = false;
   seed = Math.random().toString(36).slice(2, 10);
   if (histContainer) histContainer.innerHTML = '';
   if (resultDiv) resultDiv.innerHTML = `<p class="placeholder">${getTabHintText(getActiveTabId(), 'run a simulation to see results')}</p>`;
   if (resetBtn) resetBtn.hidden = true;
+  if (mechanismStrip) mechanismStrip.hidden = true;
 }

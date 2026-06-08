@@ -29,6 +29,7 @@ import * as d3Selection from 'd3-selection';
  * @property {(params: Record<string, number>) => (p: number) => number} invFactory
  * @property {(params: Record<string, number>) => object} domainParams
  * @property {string} xSymbol - Symbol for x-axis (e.g., "x", "z", "t", "chi-sq", "F")
+ * @property {((params: Record<string, number>) => string)} [xSymbolFactory] - Dynamic symbol based on params
  */
 
 /**
@@ -110,6 +111,8 @@ export function initDistCalculator(config) {
   // --- State ---
   /** @type {ReturnType<typeof drawCurve>|null} */
   let curveState = null;
+  /** Current PDF function */
+  let currentPdf = null;
   /** Current CDF function */
   let currentCdf = null;
   /** Current inverse CDF function */
@@ -129,6 +132,33 @@ export function initDistCalculator(config) {
       if (r.checked) return /** @type {'left'|'right'|'both'} */ (r.value);
     }
     return 'left';
+  }
+
+  /** Get the current x-axis symbol, respecting dynamic xSymbolFactory if present. */
+  function getXSymbol() {
+    if (config.xSymbolFactory) return config.xSymbolFactory(getDistParams());
+    return config.xSymbol;
+  }
+
+  const inputXLabel = inputX?.closest('label');
+
+  /**
+   * Compute the Y endpoint for a leader line so it lands inside the shaded region.
+   * Returns the lower of: halfway between curve and baseline, or halfway between
+   * pillBottom and baseline.
+   * @param {number} dataX - X position in data space to sample the curve height
+   * @param {number} pillBottomY - Bottom edge of the pill in pixel space
+   * @returns {number} Y coordinate for leader endpoint
+   */
+  function leaderEndY(dataX, pillBottomY) {
+    if (!curveState) return pillBottomY + 30;
+    const { yScale } = curveState;
+    const baseline = curveState.frame.height;
+    const curveY = currentPdf ? yScale(currentPdf(dataX)) : baseline * 0.5;
+    return Math.max(
+      (curveY + baseline) / 2,      // halfway between curve and baseline
+      (pillBottomY + baseline) / 2   // halfway between pill bottom and baseline
+    );
   }
 
   // --- Snap-to-common-values during drag ---
@@ -191,10 +221,11 @@ export function initDistCalculator(config) {
       clearError(paramInputs[p.paramKey]);
     }
 
+    currentPdf = config.pdfFactory(params);
     currentCdf = config.cdfFactory(params);
     currentInv = config.invFactory(params);
     updateSnapPoints();
-    const pdfFn = config.pdfFactory(params);
+    const pdfFn = currentPdf;
     const domainParams = config.domainParams(params);
     const domain = computeDomain(config.type, domainParams);
 
@@ -208,12 +239,18 @@ export function initDistCalculator(config) {
     const tail = getTail();
     const shadeOpts = computeShadeOpts(tail);
 
+    const xSym = getXSymbol();
     curveState = drawCurve(chartContainer, pdfFn, domain, {
       id: `${config.type}-curve`,
-      xLabel: config.xSymbol,
+      xLabel: xSym,
       titleText: `${config.name} Distribution`,
       ...shadeOpts,
     });
+
+    // Update x-value input label to match current symbol
+    if (inputXLabel) {
+      inputXLabel.childNodes[0].textContent = xSym === 'z' ? 'z score ' : `${xSym} value `;
+    }
 
     addInteractiveLayer(tail);
     computeAndDisplay(tail);
@@ -499,6 +536,7 @@ export function initDistCalculator(config) {
     const labelText = prob.toFixed(4);
     const { charW: _pCharW, pad: _pPad, pillH } = pillDimensions('prob');
     const textWidth = labelText.length * _pCharW + _pPad;
+
     group.append('rect')
       .attr('class', isComplement ? 'prob-label-bg prob-complement-bg' : 'prob-label-bg')
       .attr('x', clampedX - textWidth / 2)
@@ -506,8 +544,8 @@ export function initDistCalculator(config) {
       .attr('width', textWidth)
       .attr('height', pillH)
       .attr('rx', 4)
-      .attr('fill', isComplement ? '#f5f5f5' : '#e8f4f8')
-      .attr('stroke', isComplement ? '#ccc' : '#569BBD')
+      .attr('fill', isComplement ? '#ffffff' : '#e8f4f8')
+      .attr('stroke', isComplement ? '#888' : '#569BBD')
       .attr('stroke-width', 1)
       .attr('cursor', 'pointer');
 
@@ -520,6 +558,19 @@ export function initDistCalculator(config) {
       .attr('fill', isComplement ? '#6B6B6B' : '#7B2D8E')
       .attr('cursor', 'pointer')
       .text(labelText);
+
+    // Dashed leader line from pill into the shaded region
+    const leaderTargetX = Math.max(4, Math.min(frame.width - 4, midPx));
+    const pillBottomY = labelY + pillH / 2 + 2;
+    const endY = leaderEndY(midX, pillBottomY);
+    group.append('line')
+      .attr('class', 'prob-leader')
+      .attr('x1', clampedX).attr('y1', labelY + pillH / 2 + 2)
+      .attr('x2', leaderTargetX).attr('y2', endY)
+      .attr('stroke', isComplement ? '#888' : '#569BBD')
+      .attr('stroke-width', 1)
+      .attr('stroke-dasharray', '3,2')
+      .style('pointer-events', 'none');
 
     // Click handler for both pill and text
     const clickHandler = async () => {
@@ -712,14 +763,18 @@ export function initDistCalculator(config) {
       const absX = Math.abs(newX);
       const tailProb = currentCdf(-absX);
       const centerProb = 1 - 2 * tailProb;
+      const { charW: _bCharW, pad: _bPad, pillH: _bPillH } = pillDimensions('prob');
 
       // Region midpoints: left tail, right tail, center
-      const centers = [
-        clampX(xScale((domLo + -absX) / 2)),   // left-of-both
-        clampX(xScale((absX + domHi) / 2)),     // right-of-both
-        clampX(xScale(0)),                       // center
+      const rawCenters = [
+        xScale((domLo + -absX) / 2),   // left-of-both
+        xScale((absX + domHi) / 2),     // right-of-both
+        xScale(0),                       // center (complement)
       ];
+      const centers = rawCenters.map(clampX);
       const probs = [tailProb, tailProb, centerProb];
+      const isComp = [false, false, true];
+      const pillY = frame.height * 0.6;
 
       probLabels.each(function(_, i) {
         const el = d3Selection.select(this);
@@ -727,19 +782,40 @@ export function initDistCalculator(config) {
       });
       probBgs.each(function(_, i) {
         const el = d3Selection.select(this);
-        const tw = probs[i].toFixed(4).length * 8.5 + 16;
+        const tw = probs[i].toFixed(4).length * _bCharW + _bPad;
         el.attr('x', centers[i] - tw / 2).attr('width', tw);
       });
+
+      // Update leader lines
+      annotations.selectAll('.prob-leader').remove();
+      const dataMids = [(domLo + -absX) / 2, (absX + domHi) / 2, 0];
+      const pillBottom = pillY + _bPillH / 2 + 2;
+      for (let i = 0; i < 3; i++) {
+        const targetX = Math.max(4, Math.min(frame.width - 4, rawCenters[i]));
+        annotations.append('line')
+          .attr('class', 'prob-leader')
+          .attr('x1', centers[i]).attr('y1', pillBottom)
+          .attr('x2', targetX).attr('y2', leaderEndY(dataMids[i], pillBottom))
+          .attr('stroke', isComp[i] ? '#888' : '#569BBD')
+          .attr('stroke-width', 1)
+          .attr('stroke-dasharray', '3,2')
+          .style('pointer-events', 'none');
+      }
     } else {
       const leftProb = currentCdf(newX);
       const critPx = xScale(newX);
+      const { charW: _dCharW, pad: _dPad, pillH: _dPillH } = pillDimensions('prob');
 
       // Region midpoints: left of crit, right of crit
-      const centers = [
-        clampX((xScale(domLo) + critPx) / 2),
-        clampX((critPx + xScale(domHi)) / 2),
+      const rawCenters = [
+        (xScale(domLo) + critPx) / 2,
+        (critPx + xScale(domHi)) / 2,
       ];
+      const centers = rawCenters.map(clampX);
       const probs = [leftProb, 1 - leftProb];
+
+      const isComp = [tail === 'right', tail === 'left'];
+      const pillY = frame.height * 0.6;
 
       probLabels.each(function(_, i) {
         const el = d3Selection.select(this);
@@ -747,9 +823,25 @@ export function initDistCalculator(config) {
       });
       probBgs.each(function(_, i) {
         const el = d3Selection.select(this);
-        const tw = probs[i].toFixed(4).length * 8.5 + 16;
+        const tw = probs[i].toFixed(4).length * _dCharW + _dPad;
         el.attr('x', centers[i] - tw / 2).attr('width', tw);
       });
+
+      // Update leader lines
+      annotations.selectAll('.prob-leader').remove();
+      const dataMids = [(domLo + newX) / 2, (newX + domHi) / 2];
+      const pillBottom = pillY + _dPillH / 2 + 2;
+      for (let i = 0; i < 2; i++) {
+        const targetX = Math.max(4, Math.min(frame.width - 4, rawCenters[i]));
+        annotations.append('line')
+          .attr('class', 'prob-leader')
+          .attr('x1', centers[i]).attr('y1', pillBottom)
+          .attr('x2', targetX).attr('y2', leaderEndY(dataMids[i], pillBottom))
+          .attr('stroke', isComp[i] ? '#888' : '#569BBD')
+          .attr('stroke-width', 1)
+          .attr('stroke-dasharray', '3,2')
+          .style('pointer-events', 'none');
+      }
     }
 
     // Sync both form inputs
@@ -797,17 +889,18 @@ export function initDistCalculator(config) {
     const x = parseFloat(inputX.value);
     if (!isFinite(x)) return;
 
+    const sym = getXSymbol();
     let resultText = '';
     if (tail === 'left') {
       const prob = currentCdf(x);
-      resultText = `P(${config.xSymbol} ≤ ${formatEditValue(x)}) = ${prob.toFixed(4)}`;
+      resultText = `P(${sym} ≤ ${formatEditValue(x)}) = ${prob.toFixed(4)}`;
     } else if (tail === 'right') {
       const prob = 1 - currentCdf(x);
-      resultText = `P(${config.xSymbol} ≥ ${formatEditValue(x)}) = ${prob.toFixed(4)}`;
+      resultText = `P(${sym} ≥ ${formatEditValue(x)}) = ${prob.toFixed(4)}`;
     } else {
       const absX = Math.abs(x);
       const prob = 2 * currentCdf(-absX);
-      resultText = `P(|${config.xSymbol}| ≥ ${formatEditValue(absX)}) = ${prob.toFixed(4)}`;
+      resultText = `P(|${sym}| ≥ ${formatEditValue(absX)}) = ${prob.toFixed(4)}`;
     }
 
     resultDiv.textContent = resultText;
