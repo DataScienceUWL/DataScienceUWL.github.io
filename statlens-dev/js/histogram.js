@@ -538,30 +538,27 @@ function renderBars(group, bins, xScale, yScale, innerHeight, isTail, animate, i
  */
 function renderOverlayLine(overlays, value, xScale, innerHeight, color, label, precision = 2, microLabel, dashed = false) {
   const x = xScale(value);
-  const w = xScale.range()[1];
   const line = overlays.append('line')
     .attr('x1', x).attr('x2', x)
-    .attr('y1', 14).attr('y2', innerHeight)
+    .attr('y1', 0).attr('y2', innerHeight)
     .attr('stroke', color)
     .attr('stroke-width', dashed ? 2 : 2.5)
     .attr('aria-label', `${label}: ${value}`);
   if (dashed) line.attr('stroke-dasharray', '6,3');
-  // Clamp label so it doesn't clip at chart edges
-  const anchor = x < w * 0.15 ? 'start' : x > w * 0.85 ? 'end' : 'middle';
-  const clampedX = Math.max(4, Math.min(w - 4, x));
   if (microLabel) {
+    // Combine symbol and value into one label (e.g. "μ = 10.08")
     overlays.append('text')
       .attr('class', 'overlay-value observed-label')
-      .attr('x', clampedX).attr('y', 10)
-      .attr('text-anchor', anchor)
+      .attr('x', x).attr('y', -6)
+      .attr('text-anchor', 'middle')
       .attr('fill', color)
       .attr('font-weight', 700)
       .text(`${microLabel} = ${value.toFixed(precision)}`);
   } else {
     overlays.append('text')
       .attr('class', 'overlay-value')
-      .attr('x', clampedX).attr('y', 10)
-      .attr('text-anchor', anchor)
+      .attr('x', x).attr('y', -4)
+      .attr('text-anchor', 'middle')
       .attr('fill', color)
       .text(value.toFixed(precision));
   }

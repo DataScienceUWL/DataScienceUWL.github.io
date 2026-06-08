@@ -187,13 +187,11 @@ export function onePropZ(successes, n, options = {}) {
  * @param {object} options
  * @param {'less'|'greater'|'two-sided'} [options.alternative='two-sided']
  * @param {number} [options.confLevel=0.95]
- * @param {number} [options.nullDiff=0] - Null hypothesis difference (μ₁ − μ₂ = nullDiff)
  * @returns {TwoMeanResult}
  */
 export function twoMeanT(group1, group2, options = {}) {
   const alternative = options.alternative ?? 'two-sided';
   const confLevel = options.confLevel ?? 0.95;
-  const nullDiff = options.nullDiff ?? 0;
 
   const n1 = group1.length, n2 = group2.length;
   const xbar1 = mean(group1), xbar2 = mean(group2);
@@ -201,7 +199,7 @@ export function twoMeanT(group1, group2, options = {}) {
   const diff = xbar1 - xbar2;
   const v1 = s1 * s1 / n1, v2 = s2 * s2 / n2;
   const se = Math.sqrt(v1 + v2);
-  const tStat = (diff - nullDiff) / se;
+  const tStat = diff / se;
 
   // Welch-Satterthwaite degrees of freedom
   const df = (v1 + v2) ** 2 / (v1 * v1 / (n1 - 1) + v2 * v2 / (n2 - 1));
@@ -235,12 +233,11 @@ export function twoMeanT(group1, group2, options = {}) {
 export function twoMeanTSummary(xbar1, s1, n1, xbar2, s2, n2, options = {}) {
   const alternative = options.alternative ?? 'two-sided';
   const confLevel = options.confLevel ?? 0.95;
-  const nullDiff = options.nullDiff ?? 0;
 
   const diff = xbar1 - xbar2;
   const v1 = s1 * s1 / n1, v2 = s2 * s2 / n2;
   const se = Math.sqrt(v1 + v2);
-  const tStat = (diff - nullDiff) / se;
+  const tStat = diff / se;
 
   const df = (v1 + v2) ** 2 / (v1 * v1 / (n1 - 1) + v2 * v2 / (n2 - 1));
 
@@ -362,20 +359,18 @@ export function pairedTSummary(dbar, sdVal, n, options = {}) {
  * @param {object} options
  * @param {'less'|'greater'|'two-sided'} [options.alternative='two-sided']
  * @param {number} [options.confLevel=0.95]
- * @param {number} [options.nullDiff=0] - Null hypothesis difference (p₁ − p₂ = nullDiff)
  * @returns {TwoPropResult}
  */
 export function twoPropZ(x1, n1, x2, n2, options = {}) {
   const alternative = options.alternative ?? 'two-sided';
   const confLevel = options.confLevel ?? 0.95;
-  const nullDiff = options.nullDiff ?? 0;
 
   const pHat1 = x1 / n1, pHat2 = x2 / n2;
   const diff = pHat1 - pHat2;
   const pooledP = (x1 + x2) / (n1 + n2);
   const sePooled = Math.sqrt(pooledP * (1 - pooledP) * (1 / n1 + 1 / n2));
   const se = Math.sqrt(pHat1 * (1 - pHat1) / n1 + pHat2 * (1 - pHat2) / n2);
-  const zStat = (diff - nullDiff) / sePooled;
+  const zStat = diff / sePooled;
 
   let pValue;
   if (alternative === 'less') {

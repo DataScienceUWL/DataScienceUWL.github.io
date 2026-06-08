@@ -9,7 +9,7 @@ import { createRng, shuffle } from '../../js/prng.js';
 import { cor, formatStat } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
 import { drawScatterplot } from '../../js/scatterplot.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, flyDataStream, createExpertToggle, getTabHintText, getActiveTabId, setPageTitle } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, getTabHintText, getActiveTabId, setPageTitle } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
 
 // ─── DOM elements ───
@@ -244,34 +244,22 @@ function generateSimulations(count) {
     lastR = r;
   }
 
-  // Fire flying dots from observed → shuffled on +1
-  if (count === 1 && mechObservedPlot && mechShuffledPlot) {
-    flyDataStream(mechObservedPlot, mechShuffledPlot);
+  // Update mechanism strip with last shuffle
+  if (mechShuffledPlot) {
+    mechShuffledPlot.innerHTML = '';
+    const sMargin = { top: 8, right: 8, bottom: 28, left: 22 };
+    drawScatterplot(mechShuffledPlot, xValues, lastShuffledY, {
+      xLabel, yLabel,
+      titleText: count === 1 ? 'This Shuffle' : 'Last Shuffle',
+      id: 'mech-shuf',
+      regression: computeRegression(xValues, lastShuffledY),
+      margin: sMargin,
+      minimal: true,
+    });
   }
-
-  // Update mechanism strip with last shuffle (delayed on +1 to let dots land)
-  const updateMechanism = () => {
-    if (mechShuffledPlot) {
-      mechShuffledPlot.innerHTML = '';
-      const sMargin = { top: 8, right: 8, bottom: 28, left: 22 };
-      drawScatterplot(mechShuffledPlot, xValues, lastShuffledY, {
-        xLabel, yLabel,
-        titleText: count === 1 ? 'This Shuffle' : 'Last Shuffle',
-        id: 'mech-shuf',
-        regression: computeRegression(xValues, lastShuffledY),
-        margin: sMargin,
-        minimal: true,
-      });
-    }
-    if (mechShuffledR) {
-      mechShuffledR.textContent = formatStat(lastR, 4);
-      mechShuffledR.classList.toggle('highlight-last', count === 1);
-    }
-  };
-  if (count === 1) {
-    setTimeout(updateMechanism, 200);
-  } else {
-    updateMechanism();
+  if (mechShuffledR) {
+    mechShuffledR.textContent = formatStat(lastR, 4);
+    mechShuffledR.classList.toggle('highlight-last', count === 1);
   }
   if (mechanismDescEl) {
     mechanismDescEl.textContent = 'Shuffle y-values, keeping x-values fixed';

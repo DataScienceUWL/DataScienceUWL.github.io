@@ -19,9 +19,6 @@ const CURVE_STROKE = '#569BBD';
 /** Shaded area fill (IMS blue at 50% opacity). */
 const SHADE_FILL = '#569BBD80';
 
-/** Light gray fill for the complement (non-shaded) area under the curve. */
-const COMPLEMENT_FILL = '#ededed';
-
 /** Purple for observed test statistic annotations. */
 const STAT_COLOR = '#7B2D8E';
 
@@ -148,21 +145,7 @@ export function drawCurve(container, pdfFn, domain, options = {}) {
   const dataGroup = d3Selection.select(frame.inner).select('.data');
   const overlays = d3Selection.select(frame.inner).select('.overlays');
 
-  // Draw full complement fill (light gray under entire curve, behind everything)
-  const fullAreaGen = d3Shape.area()
-    .x(d => xScale(d.x))
-    .y0(yScale(0))
-    .y1(d => yScale(d.y))
-    .curve(d3Shape.curveNatural);
-
-  overlays.append('path')
-    .datum(curveData)
-    .attr('class', 'complement-area')
-    .attr('d', fullAreaGen)
-    .attr('fill', COMPLEMENT_FILL)
-    .attr('stroke', 'none');
-
-  // Draw shading on top (blue tail areas over the gray)
+  // Draw shading first (behind curve)
   renderShading(overlays, curveData, xScale, yScale, { tail, critValue, critLow, critHigh });
 
   // Draw curve
@@ -415,38 +398,38 @@ export function addInferenceAnnotations(chart, opts) {
   } else {
     const isLeft = tail === 'left';
     const obsX = xScale(Math.max(domain[0], Math.min(domain[1], statValue)));
+    const tailWidth = isLeft ? obsX : (w - obsX);
+    const narrow = tailWidth < w * 0.25;
 
-    // Tail pill: centered in tail region, clamped
-    const tailMidX = isLeft ? obsX / 2 : (obsX + w) / 2;
-    const clampedTailX = Math.max(50, Math.min(w - 50, tailMidX));
-    _addPill(annotations, pText, clampedTailX, pillY, false);
-
-    // Complement pill: centered in body region, clamped
-    const bodyMidX = isLeft ? (obsX + w) / 2 : obsX / 2;
-    const clampedBodyX = Math.max(50, Math.min(w - 50, bodyMidX));
-    _addPill(annotations, compText, clampedBodyX, pillY, true);
-
-    // Leader lines — use pdfFn to find curve height at region midpoint
-    const tailDataMid = isLeft ? (domain[0] + statValue) / 2 : (statValue + domain[1]) / 2;
-    const bodyDataMid = isLeft ? (statValue + domain[1]) / 2 : (domain[0] + statValue) / 2;
-    const pillBottom = pillY + 14;
-
-    for (const [cx, targetMidPx, dataMid, color] of [
-      [clampedTailX, Math.max(4, Math.min(w - 4, tailMidX)), tailDataMid, CURVE_STROKE],
-      [clampedBodyX, Math.max(4, Math.min(w - 4, bodyMidX)), bodyDataMid, '#888'],
-    ]) {
-      // Smart Y: halfway between curve at midpoint and baseline, or halfway between pill and baseline
-      const curveY = pdfFn ? yScale(pdfFn(dataMid)) : h * 0.5;
-      const endY = Math.max((curveY + h) / 2, (pillBottom + h) / 2);
+    if (narrow) {
+      // Pill floats above the main region, with leader line to tail
+      const floatY = h * 0.3;
+      const pillX = isLeft
+        ? Math.max(60, Math.min(w * 0.35, obsX))
+        : Math.min(w - 40, Math.max(w * 0.78, obsX));
+      _addPill(annotations, pText, pillX, floatY, false);
+      const lineTargetX = Math.max(4, Math.min(w - 4, obsX));
       annotations.append('line')
         .attr('class', 'inf-annotation')
-        .attr('x1', cx).attr('y1', pillBottom)
-        .attr('x2', targetMidPx).attr('y2', endY)
-        .attr('stroke', color)
+        .attr('x1', pillX).attr('y1', floatY + 14)
+        .attr('x2', lineTargetX).attr('y2', h - 2)
+        .attr('stroke', CURVE_STROKE)
         .attr('stroke-width', 1)
         .attr('stroke-dasharray', '3,2')
         .style('pointer-events', 'none');
+    } else {
+      // Normal: pill centered in tail
+      const tailX = isLeft
+        ? Math.max(50, Math.min(obsX - 10, obsX / 2))
+        : Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2));
+      _addPill(annotations, pText, tailX, pillY, false);
     }
+
+    // Complement pill in the body
+    const bodyX = isLeft
+      ? Math.min(w - 50, Math.max(obsX + 10, (obsX + w) / 2))
+      : Math.max(50, Math.min(obsX - 10, obsX / 2));
+    _addPill(annotations, compText, bodyX, pillY, true);
   }
 }
 
@@ -469,8 +452,8 @@ function _addPill(group, text, cx, cy, isComplement) {
     .attr('width', textWidth)
     .attr('height', pillH)
     .attr('rx', 4)
-    .attr('fill', isComplement ? '#ffffff' : '#e8f4f8')
-    .attr('stroke', isComplement ? '#888' : CURVE_STROKE)
+    .attr('fill', isComplement ? '#f5f5f5' : '#e8f4f8')
+    .attr('stroke', isComplement ? '#ccc' : CURVE_STROKE)
     .attr('stroke-width', 1)
     .style('pointer-events', 'none');
   g.append('text')

@@ -63,7 +63,10 @@ initTabs({ hintTarget: resultDiv, hintAction: 'enter data to see results' });
 
 const dataPanel = initDataPanel({
   autoCollapse: true, stickyControls: true, showPreview: true,
-  datasetFilter: ds => ds.hasNumeric && ds.hasCategorical,
+  // ANOVA requires a grouping variable with 3+ levels and >=3 obs per group
+  // (REQ-024). 2-level datasets route to the two-sample t tool; single-record
+  // groups (e.g. urban_owner) are excluded. Fields come from datasets.json.
+  datasetFilter: ds => ds.hasNumeric && ds.hasCategorical && ds.groupLevels >= 3 && ds.minGroupN >= 3,
   onDataset: loadFromDataset,
   onText: loadFromParsed,
   onClear: clearData,

@@ -412,36 +412,6 @@ export function initSimPage(config) {
   const haGroup1 = document.getElementById('ha-group1');
   const haGroup2 = document.getElementById('ha-group2');
 
-  // Editable null value (expert-only, for paired/two-group means randomization)
-  const nullValueInput = /** @type {HTMLInputElement|null} */ (document.getElementById('null-value'));
-  const nullDisplayMirror = document.getElementById('null-display');
-
-  /** Get the null hypothesis value (δ₀). Returns 0 in standard mode or when input is absent. */
-  function getNullValue() {
-    if (!nullValueInput) return 0;
-    const val = parseFloat(nullValueInput.value);
-    return isFinite(val) ? val : 0;
-  }
-
-  // Sync null-display mirror and re-run when null value changes
-  if (nullValueInput) {
-    nullValueInput.addEventListener('input', () => {
-      if (nullDisplayMirror) nullDisplayMirror.textContent = nullValueInput.value || '0';
-      // Re-render chart + results if simulation has run
-      if (allStats.length > 0) {
-        const nullDiff = getNullValue();
-        const rawObserved = config.paired
-          ? mean(data2.map((v, i) => v - data1[i]))
-          : config.testStat(data1, data2);
-        const observedStat = rawObserved - nullDiff;
-        const direction = getDirection();
-        renderChart(allStats, null, observedStat, direction);
-        const { pValue, extremeCount } = permutationPValue(allStats, observedStat, direction);
-        displayRandomizationResults(allStats, observedStat, pValue, extremeCount, direction);
-      }
-    });
-  }
-
   // Success outcome selector (proportion tests)
   const successSelector = document.getElementById('success-selector');
   const successOutcomeSelect = /** @type {HTMLSelectElement} */ (document.getElementById('success-outcome'));
@@ -949,15 +919,21 @@ export function initSimPage(config) {
 
   // ─── Data panel (shared initDataPanel) ───
 
+  // Two-group difference-in-means tools (bootstrap-two-means, randomization-diff-means)
+  // require a grouping variable with EXACTLY 2 levels and >=3 obs per group (REQ-024).
+  // groupLevels/minGroupN are precomputed in data/datasets.json (see data/rebuild-index.js).
+  /** @param {any} ds */
+  const isTwoGroupMeans = ds => ds.type === 'randomization' && ds.groupLevels === 2 && ds.minGroupN >= 3;
+
   /** @param {any} ds */
   function simDatasetFilter(ds) {
     if (config.paired) return ds.type === 'paired';
     if (config.mode === 'bootstrap' && config.proportion && !config.twoGroup) return ds.type === 'bootstrap_prop';
     if (config.mode === 'bootstrap' && config.twoGroup && config.proportion) return ds.type === 'randomization_prop';
-    if (config.mode === 'bootstrap' && config.twoGroup) return ds.type === 'randomization';
+    if (config.mode === 'bootstrap' && config.twoGroup) return isTwoGroupMeans(ds);
     if (config.mode === 'bootstrap') return ds.hasNumeric === true && ds.hasCategorical !== true && ds.type !== 'regression' && ds.type !== 'paired';
     if (config.proportion) return ds.type === 'randomization_prop';
-    if (config.twoGroup) return ds.type === 'randomization';
+    if (config.twoGroup) return isTwoGroupMeans(ds);
     return ds.type === 'randomization' || ds.type === 'randomization_prop';
   }
 
@@ -1087,11 +1063,9 @@ export function initSimPage(config) {
       altDirectionBtn.dataset.value = vals[next];
       altDirectionBtn.textContent = labels[next];
       if (allStats.length > 0) {
-        const nullDiff = getNullValue();
-        const rawObserved = config.paired
+        const observedStat = config.paired
           ? mean(data2.map((v, i) => v - data1[i]))
           : config.testStat(data1, data2);
-        const observedStat = rawObserved - nullDiff;
         const direction = getDirection();
         renderChart(allStats, null, observedStat, direction);
         const { pValue, extremeCount } = permutationPValue(allStats, observedStat, direction);
@@ -1306,22 +1280,19 @@ export function initSimPage(config) {
     } else if (config.paired) {
       // ─── Paired randomization: sign-flip test ───
       const diffs = data2.map((v, i) => v - data1[i]);
-      const nullDiff = getNullValue();
-      // Center diffs around 0 under H₀: μ_d = δ₀
-      const centeredDiffs = nullDiff === 0 ? diffs : diffs.map(d => d - nullDiff);
-      const observedStat = mean(centeredDiffs);
+      const observedStat = mean(diffs);
       const direction = getDirection();
 
       /** @type {number[]} */ let lastFlipped = [];
       for (let i = 0; i < count; i++) {
-        const flipped = centeredDiffs.map(d => rng() < 0.5 ? d : -d);
+        const flipped = diffs.map(d => rng() < 0.5 ? d : -d);
         lastFlipped = flipped;
         allStats.push(mean(flipped));
       }
 
       // Show paired sign-flip mechanism
       lastResample = lastFlipped;
-      showPairedMechanism(centeredDiffs, lastFlipped, count === 1);
+      showPairedMechanism(diffs, lastFlipped, count === 1);
 
       // Highlights
       if (count === 1) {
@@ -1372,8 +1343,7 @@ export function initSimPage(config) {
       }
       announce(`Generated ${count} shuffle${count > 1 ? 's' : ''}. Total: ${allStats.length}`);
     } else {
-      const nullDiff = getNullValue();
-      const observedStat = config.testStat(data1, data2) - nullDiff;
+      const observedStat = config.testStat(data1, data2);
       const direction = getDirection();
 
       /** @type {number[]} */ let lastG1 = [];
@@ -2913,16 +2883,13 @@ export function initSimPage(config) {
   function displayRandomizationResults(stats, observedStat, pValue, extremeCount, direction) {
     const dirLabel = direction === 'both' ? 'two-sided'
       : direction === 'right' ? 'right-tail' : 'left-tail';
-    const nullDiff = getNullValue();
-    // Show the raw (unshifted) observed difference for display
-    const rawObserved = observedStat + nullDiff;
     let obsLabel;
     if (config.proportion) {
-      obsLabel = `p̂<sub>${group1Name}</sub> − p̂<sub>${group2Name}</sub> = <span class="observed-value">${formatStat(rawObserved, dataPrecision, 'proportion')}</span>`;
+      obsLabel = `p̂<sub>${group1Name}</sub> − p̂<sub>${group2Name}</sub> = <span class="observed-value">${formatStat(observedStat, dataPrecision, 'proportion')}</span>`;
     } else if (config.twoGroup) {
-      obsLabel = `<span class="x-bar">x</span><sub>${group1Name}</sub> − <span class="x-bar">x</span><sub>${group2Name}</sub> = <span class="observed-value">${formatStat(rawObserved, dataPrecision)}</span>`;
+      obsLabel = `<span class="x-bar">x</span><sub>${group1Name}</sub> − <span class="x-bar">x</span><sub>${group2Name}</sub> = <span class="observed-value">${formatStat(observedStat, dataPrecision)}</span>`;
     } else {
-      obsLabel = `<span class="observed-value">${formatStat(rawObserved, dataPrecision)}</span>`;
+      obsLabel = `<span class="observed-value">${formatStat(observedStat, dataPrecision)}</span>`;
     }
     // Plain-language interpretation
     let strength;
@@ -2932,9 +2899,7 @@ export function initSimPage(config) {
     else strength = 'little';
     const defaultNull = config.proportion
       ? 'no difference in population proportions'
-      : nullDiff === 0
-        ? 'no difference in population means'
-        : `a difference of ${formatStat(nullDiff, dataPrecision)} in population means`;
+      : 'no difference in population means';
     const nullDesc = datasetContext.nullClaim || defaultNull;
     const pFmt = formatStat(pValue, 0, 'pvalue');
     const pDisplay = pFmt.startsWith('p') ? pFmt : `p-value: ${pFmt}`;

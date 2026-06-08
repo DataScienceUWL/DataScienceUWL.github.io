@@ -176,7 +176,10 @@ const dataApi = initDataPanel({
   autoCollapse: true,
   stickyControls: true,
   showPreview: true,
-  datasetFilter: ds => ds.hasNumeric && ds.hasCategorical,
+  // Permutation F-test (ANOVA) requires a grouping variable with 3+ levels and
+  // >=3 obs per group (REQ-024). 2-level datasets give a degenerate (df1=1)
+  // F-test and belong in the two-means tools; single-record groups are excluded.
+  datasetFilter: ds => ds.hasNumeric && ds.hasCategorical && ds.groupLevels >= 3 && ds.minGroupN >= 3,
   onDataset: (ds) => {
     resetSimulation();
     currentSourceName = ds.name || '';

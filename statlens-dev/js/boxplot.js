@@ -184,9 +184,10 @@ export function drawBoxplot(container, data, options = {}) {
     ? rawColors.map(c => ({ stroke: c, fill: c + '30' }))
     : [{ stroke: IMS_BLUE, fill: BOX_FILL }];
 
-  // Boxplots skip patterns — y-axis labels identify groups, and patterns
-  // obscure the median line and mean diamond.
-  const patterns = [];
+  // Inject pattern defs for grouped boxplots (secondary visual cue beyond color)
+  const patterns = isGrouped
+    ? ensurePatterns(/** @type {SVGSVGElement} */ (frame.svg), rawColors)
+    : [];
 
   for (let gi = 0; gi < groupNames.length; gi++) {
     const name = groupNames[gi];
@@ -245,16 +246,7 @@ export function drawBoxplot(container, data, options = {}) {
       }
     }
 
-    // Median line — white outline for visibility against hatched patterns
-    g.append('line')
-      .attr('class', 'median-outline')
-      .attr('x1', xScale(s.median))
-      .attr('x2', xScale(s.median))
-      .attr('y1', boxY)
-      .attr('y2', boxY + boxH)
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 4)
-      .style('pointer-events', 'none');
+    // Median line
     g.append('line')
       .attr('class', 'median')
       .attr('x1', xScale(s.median))
@@ -428,13 +420,13 @@ export function drawBoxplot(container, data, options = {}) {
       if (meanVal != null) {
         const mx = xScale(meanVal);
         const my = bandY + bandH / 2;
-        const ds = Math.max(7, boxH * 0.5); // diamond half-size = box half-height
+        const ds = boxH * 0.22; // diamond half-size
         g.append('path')
           .attr('class', 'mean-marker')
           .attr('d', `M${mx},${my - ds} L${mx + ds},${my} L${mx},${my + ds} L${mx - ds},${my} Z`)
           .attr('fill', '#F05133')
           .attr('stroke', '#fff')
-          .attr('stroke-width', 1.5)
+          .attr('stroke-width', 1)
           .attr('aria-label', `Mean: ${meanVal.toFixed(2)}`);
 
         // Hit zone for tooltip

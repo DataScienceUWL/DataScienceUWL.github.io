@@ -700,26 +700,21 @@ function animateDotRevert(el, targetFill, targetRadius, duration) {
  */
 function renderObservedLine(overlays, value, xScale, innerHeight, precision = 2, label = 'observed') {
   const x = xScale(value);
-  const w = xScale.range()[1];
   overlays.append('line')
     .attr('x1', x)
     .attr('x2', x)
-    .attr('y1', 14)
+    .attr('y1', 0)
     .attr('y2', innerHeight)
     .attr('stroke', OBSERVED_COLOR)
     .attr('stroke-width', 2.5)
     .attr('aria-label', `${label}: ${value}`);
-  // Clamp label so it doesn't clip at chart edges
-  const labelText = `${label} = ${value.toFixed(precision)}`;
-  const anchor = x < w * 0.15 ? 'start' : x > w * 0.85 ? 'end' : 'middle';
-  const clampedX = Math.max(4, Math.min(w - 4, x));
   overlays.append('text')
     .attr('class', 'overlay-value observed-label')
-    .attr('x', clampedX).attr('y', 10)
-    .attr('text-anchor', anchor)
+    .attr('x', x).attr('y', -6)
+    .attr('text-anchor', 'middle')
     .attr('fill', OBSERVED_COLOR)
     .attr('font-weight', 700)
-    .text(labelText);
+    .text(`${label} = ${value.toFixed(precision)}`);
 }
 
 /** CI line color (dark pink — distinct from purple observed stat). */
