@@ -8,7 +8,7 @@
 import { createRng, shuffle } from '../../js/prng.js';
 import { chisqStat, formatStat } from '../../js/stats.js';
 import { computeBins } from '../../js/histogram.js';
-import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from '../../js/page-utils.js';
+import { announce, initTabs, initKeyboardShortcuts, initPlayPause, initMechanismCollapse, initDataPanel, computeHighlights, animateDropToChart, flyDataStream, createExpertToggle, updateTabHint, getActiveTabId, getTabHintText, setPageTitle } from '../../js/page-utils.js';
 import { renderSimChart, resolveChartType } from '../../js/chart-defaults.js';
 
 // ─── DOM elements ───
@@ -322,10 +322,22 @@ function generateSimulations(count) {
     lastChisq = chi2;
   }
 
-  if (mechShuffledTable && mechShuffledChisq) {
-    mechShuffledTable.innerHTML = renderTableHTML(lastShuffledTable, rowLabels, colLabels);
-    mechShuffledChisq.textContent = formatStat(lastChisq, 2);
-    mechShuffledChisq.classList.toggle('highlight-last', count === 1);
+  // Fire flying dots from observed → shuffled on +1
+  if (count === 1 && mechObservedTable && mechShuffledTable) {
+    flyDataStream(mechObservedTable, mechShuffledTable);
+  }
+
+  const updateChisqMechanism = () => {
+    if (mechShuffledTable && mechShuffledChisq) {
+      mechShuffledTable.innerHTML = renderTableHTML(lastShuffledTable, rowLabels, colLabels);
+      mechShuffledChisq.textContent = formatStat(lastChisq, 2);
+      mechShuffledChisq.classList.toggle('highlight-last', count === 1);
+    }
+  };
+  if (count === 1) {
+    setTimeout(updateChisqMechanism, 200);
+  } else {
+    updateChisqMechanism();
   }
   if (mechanismDescEl) {
     mechanismDescEl.textContent = 'Shuffle group labels, keeping outcomes fixed';

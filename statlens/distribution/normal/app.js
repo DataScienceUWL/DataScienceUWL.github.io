@@ -9,7 +9,8 @@ import('jstat').then(jstat => {
   initDistCalculator({
     name: 'Normal',
     type: 'normal',
-    xSymbol: 'x',
+    xSymbol: 'z',
+    xSymbolFactory: (p) => (p.mu === 0 && p.sigma === 1) ? 'z' : 'x',
     params: [
       { id: 'param-mu', label: 'Mean (μ)', paramKey: 'mu', defaultValue: 0 },
       { id: 'param-sigma', label: 'SD (σ)', paramKey: 'sigma', defaultValue: 1, min: 0.001, step: 'any' },

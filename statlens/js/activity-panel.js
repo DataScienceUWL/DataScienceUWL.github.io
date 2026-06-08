@@ -8,7 +8,7 @@
  *
  * Activity JSON params are injected as URL defaults (existing URL
  * params take precedence) so the calling URL can be simple:
- *   ?activity=ch08-bootstrap-explore.json
+ *   ?activity=bootstrap-explore.json
  */
 
 (function initActivityPanel() {

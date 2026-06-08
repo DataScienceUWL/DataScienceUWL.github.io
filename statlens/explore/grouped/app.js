@@ -561,7 +561,10 @@ function handleApply() {
 const dataPanel = initDataPanel({
   autoCollapse: true,
   showPreview: true,
-  datasetFilter: (/** @type {any} */ ds) => ds.hasNumeric && ds.hasCategorical,
+  // Grouped comparison needs a real grouping variable: 2+ levels with >=3 obs
+  // per group. Excludes datasets like urban_owner (52 single-record state
+  // "groups") that produce nonsense boxplots/stats (REQ-024).
+  datasetFilter: (/** @type {any} */ ds) => ds.hasNumeric && ds.hasCategorical && ds.groupLevels >= 2 && ds.minGroupN >= 3,
   onDataset: (ds) => {
     loadedDataset = ds;
     setupVariableSelectors(ds, ds.name ?? 'Dataset');
