@@ -106,3 +106,72 @@ export function pValue(z, tail) {
   if (tail === 'left') return normalCDF(z, 0, 1);
   return 2 * Math.min(normalCDF(z, 0, 1), 1 - normalCDF(z, 0, 1));
 }
+
+// ─── One-proportion test (used by the Decision Errors page) ──────────────────
+// A study draws n Bernoulli(pTrue) trials and runs a one-proportion z-test of
+// H0: p = p0 using the null standard error. Under H0 (pTrue = p0) the reject
+// rate ≈ α; under H1 it ≈ the analytic power below.
+
+/**
+ * Critical z value(s) on the standard normal.
+ * @param {number} alpha
+ * @param {Tail} tail
+ * @returns {{ zLow: number, zHigh: number }}
+ */
+export function zCritical(alpha, tail) {
+  if (tail === 'right') return { zLow: -Infinity, zHigh: normalInv(1 - alpha, 0, 1) };
+  if (tail === 'left') return { zLow: normalInv(alpha, 0, 1), zHigh: Infinity };
+  return { zLow: normalInv(alpha / 2, 0, 1), zHigh: normalInv(1 - alpha / 2, 0, 1) };
+}
+
+/**
+ * Run one proportion study: n Bernoulli(pTrue) trials, z-test against p0.
+ * @param {() => number} rng
+ * @param {number} pTrue  true success probability (= p0 under H0)
+ * @param {number} n
+ * @param {number} [p0=0.5]
+ * @returns {{ successes: number, phat: number, z: number }}
+ */
+export function proportionStudy(rng, pTrue, n, p0 = 0.5) {
+  let s = 0;
+  for (let i = 0; i < n; i++) if (rng() < pTrue) s++;
+  const phat = s / n;
+  const se0 = Math.sqrt(p0 * (1 - p0) / n);
+  return { successes: s, phat, z: (phat - p0) / se0 };
+}
+
+/**
+ * Is a z-statistic in the rejection region?
+ * @param {number} z
+ * @param {number} zLow
+ * @param {number} zHigh
+ * @param {Tail} tail
+ * @returns {boolean}
+ */
+export function isRejectZ(z, zLow, zHigh, tail) {
+  if (tail === 'right') return z >= zHigh;
+  if (tail === 'left') return z <= zLow;
+  return z <= zLow || z >= zHigh;
+}
+
+/**
+ * Analytic power of the normal-approximation one-proportion z-test.
+ * @param {{ alpha: number, n: number, pTrue: number, p0?: number }} p
+ * @param {Tail} tail
+ * @returns {{ power: number, beta: number }}
+ */
+export function analyticProportionPower(p, tail) {
+  const p0 = p.p0 ?? 0.5;
+  const se0 = Math.sqrt(p0 * (1 - p0) / p.n);
+  const se1 = Math.sqrt(p.pTrue * (1 - p.pTrue) / p.n) || 1e-12;
+  const { zLow, zHigh } = zCritical(p.alpha, tail);
+  let power;
+  if (tail === 'right') {
+    power = 1 - normalCDF(p0 + zHigh * se0, p.pTrue, se1);
+  } else if (tail === 'left') {
+    power = normalCDF(p0 + zLow * se0, p.pTrue, se1);
+  } else {
+    power = normalCDF(p0 + zLow * se0, p.pTrue, se1) + (1 - normalCDF(p0 + zHigh * se0, p.pTrue, se1));
+  }
+  return { power, beta: 1 - power };
+}

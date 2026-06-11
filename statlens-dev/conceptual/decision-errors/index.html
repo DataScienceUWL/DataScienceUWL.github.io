@@ -23,43 +23,30 @@
     }
     </script>
     <style>
-        .de-controls {
-            display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center;
-            margin: 0.75rem 0;
-        }
+        .truth-list { display: flex; flex-direction: column; gap: 0.3rem; margin: 0.5rem 0; }
+        .truth-list label { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; cursor: pointer; }
+        .truth-list input { accent-color: var(--ims-blue, #569BBD); flex: none; }
+        .de-controls { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; margin: 0.5rem 0; }
         .de-controls label { display: inline-flex; align-items: center; gap: 0.4rem; }
         .de-controls select { width: auto; }
-        .truth-toggle { display: inline-flex; gap: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-        .truth-toggle label {
-            padding: 0.4rem 0.8rem; cursor: pointer; margin: 0; gap: 0.35rem;
-            min-height: 44px; box-sizing: border-box;
-        }
-        .truth-toggle label:first-child { border-right: 1px solid var(--border); }
-        .truth-toggle input { accent-color: var(--ims-blue, #569BBD); }
-        #effect-size-wrap[hidden] { display: none; }
+        #true-rate-wrap[hidden] { display: none; }
+        #true-rate-wrap { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin: 0.25rem 0 0.5rem 1.7rem; }
+        #true-rate { width: 12rem; max-width: 60vw; }
+        #true-rate-val { font-family: var(--font-mono); font-weight: 700; min-width: 3.2rem; }
 
-        /* Scoreboard */
         .scoreboard { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0 0.5rem; }
-        .score-box {
-            flex: 1 1 160px; border: 1px solid var(--border); border-radius: 8px;
-            padding: 0.6rem 0.8rem; background: var(--ims-bg-soft, #f7f9fb);
-        }
+        .score-box { flex: 1 1 200px; border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.8rem; background: var(--ims-bg-soft, #f7f9fb); }
         .score-box .score-head { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--ims-gray-text); }
         .score-box .score-value { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
         .score-box .score-sub { font-size: 0.8rem; color: var(--ims-gray-text); }
         .swatch { width: 0.85rem; height: 0.85rem; border-radius: 50%; display: inline-block; flex: none; }
-        .swatch.hit { background: #0072B2; }
-        .swatch.miss { background: #fff; border: 2px solid #777; box-sizing: border-box; }
-        .swatch.alarm { background: #D55E00; border-radius: 2px; }
+        .swatch.hit { background: #0072B2; } .swatch.miss { background: #fff; border: 2px solid #777; box-sizing: border-box; } .swatch.alarm { background: #D55E00; border-radius: 2px; } .swatch.correct { background: #cfd8dc; }
 
-        /* Dot strip */
         .strip-wrap { border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; margin: 0.5rem 0; min-height: 90px; }
         .dot-strip { display: flex; flex-wrap: wrap; gap: 3px; align-content: flex-start; }
         .study-dot { width: 11px; height: 11px; display: inline-block; flex: none; line-height: 11px; text-align: center; font-size: 11px; }
-        .study-dot.hit  { background: #0072B2; border-radius: 50%; }
-        .study-dot.miss { background: #fff; border: 1.5px solid #777; border-radius: 50%; box-sizing: border-box; }
-        .study-dot.alarm { color: #D55E00; font-weight: 700; }
-        .study-dot.correct { background: #cfd8dc; border-radius: 50%; }
+        .study-dot.hit { background: #0072B2; border-radius: 50%; } .study-dot.miss { background: #fff; border: 1.5px solid #777; border-radius: 50%; box-sizing: border-box; }
+        .study-dot.alarm { color: #D55E00; font-weight: 700; } .study-dot.correct { background: #cfd8dc; border-radius: 50%; }
         .strip-note { font-size: 0.78rem; color: var(--ims-gray-text); margin-top: 0.4rem; }
         .de-interpret { margin-top: 0.75rem; line-height: 1.5; }
         .de-interpret .big { font-weight: 700; }
@@ -78,21 +65,20 @@
 
     <main>
         <h1>Decision Errors<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
-        <p>Each dot is one study. Set whether there's <em>really</em> an effect, then run many studies and watch how often they reach the right conclusion — and how often they make a mistake.</p>
+        <p>Each study tests whether a treatment really works — H₀: it does nothing (success rate p = 0.50) vs Hₐ: it works more than half the time. Choose what's <em>actually</em> true, run many studies, and watch how often the test reaches the right verdict — and how often it makes a Type I or Type II error.</p>
 
         <section id="settings" aria-label="Simulation settings">
+            <div class="truth-list" role="radiogroup" aria-label="What is actually true?">
+                <label><input type="radio" name="truth" value="none"> <span><strong>H₀ is true</strong> — the treatment does nothing (p = 0.50)</span></label>
+                <label><input type="radio" name="truth" value="effect" checked> <span><strong>Hₐ is true</strong> — it really works</span></label>
+            </div>
+            <div id="true-rate-wrap">
+                <label for="true-rate">In reality it works</label>
+                <input type="range" id="true-rate" min="50" max="95" step="1" value="65" aria-label="True success rate (percent)">
+                <span id="true-rate-val">65%</span>
+                <span>of the time</span>
+            </div>
             <div class="de-controls">
-                <span class="truth-toggle" role="radiogroup" aria-label="Is there really an effect?">
-                    <label><input type="radio" name="truth" value="effect" checked> Real effect</label>
-                    <label><input type="radio" name="truth" value="none"> No effect</label>
-                </span>
-                <label id="effect-size-wrap" for="effect-size">Effect size:
-                    <select id="effect-size">
-                        <option value="0.2">Small</option>
-                        <option value="0.5" selected>Medium</option>
-                        <option value="0.8">Large</option>
-                    </select>
-                </label>
                 <label for="sample-size">Sample size (n):
                     <select id="sample-size">
                         <option value="10">10</option>
@@ -100,6 +86,14 @@
                         <option value="30" selected>30</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
+                        <option value="200">200</option>
+                    </select>
+                </label>
+                <label for="alpha-select">Significance level (α):
+                    <select id="alpha-select">
+                        <option value="0.10">0.10</option>
+                        <option value="0.05" selected>0.05</option>
+                        <option value="0.01">0.01</option>
                     </select>
                 </label>
             </div>
@@ -122,7 +116,7 @@
                 <p class="strip-note" id="strip-note"></p>
             </div>
             <div id="result-summary" class="de-interpret">
-                <p class="placeholder">Choose a setup and click <strong>+100</strong> to run studies.</p>
+                <p class="placeholder">Choose what's true and click <strong>+100</strong> to run studies.</p>
             </div>
         </section>
 
@@ -131,7 +125,11 @@
 
     <dialog id="page-help" aria-label="Help">
         <h2>Decision Errors — Help</h2>
-        <p class="help-intro">Run many studies of the same situation and see how often a hypothesis test reaches the right verdict. When there's a real effect, a study can <strong>detect it</strong> or <strong>miss it</strong> (a Type II error). When there's no effect, a study can correctly stay quiet or raise a <strong>false alarm</strong> (a Type I error).</p>
+        <p class="help-intro">Each study draws a sample of n patients, finds the success rate, and runs a one-proportion test of H₀: p = 0.50 (the treatment does nothing) against Hₐ: p &gt; 0.50. A study can reach the right verdict or make one of two mistakes:</p>
+        <ul class="help-intro">
+            <li>When <strong>Hₐ is true</strong> (it really works): rejecting H₀ <strong>detects</strong> the effect; failing to reject is a <strong>Type II error</strong> (a miss).</li>
+            <li>When <strong>H₀ is true</strong> (it does nothing): rejecting H₀ is a <strong>Type I error</strong> (a false alarm); failing to reject is the correct call. The false-alarm rate stays near α.</li>
+        </ul>
         <dl>
             <dt><kbd>1</kbd></dt><dd>+1 study</dd>
             <dt><kbd>2</kbd></dt><dd>+100 studies</dd>
@@ -140,7 +138,7 @@
             <dt><kbd>Space</kbd></dt><dd>Play / Pause</dd>
             <dt><kbd>?</kbd></dt><dd>Show this help</dd>
         </dl>
-        <p class="help-intro">Want the dials (effect size, σ, α, the theory curves)? Open the <a href="../power-sim/">Power Lab</a> or the <a href="../../distribution/power/">Power &amp; Error Visualizer</a>.</p>
+        <p class="help-intro">Want the full dials (σ, the dance of the p-values, theory curves)? Open the <a href="../power-sim/">Power Lab</a> or the <a href="../../distribution/power/">Power &amp; Error Visualizer</a>.</p>
         <button type="button" autofocus>Close</button>
     </dialog>
 
