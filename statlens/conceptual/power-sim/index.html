@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Power Lab | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "jstat": "https://cdn.jsdelivr.net/npm/jstat@1/+esm"
+        }
+    }
+    </script>
+    <style>
+        .ps-controls { display: grid; grid-template-columns: auto 1fr 5rem; gap: 0.5rem 0.8rem; align-items: center; max-width: 560px; margin: 0.75rem 0; }
+        .ps-controls .row-label { font-size: 0.9rem; }
+        .ps-controls input[type="range"] { width: 100%; }
+        .ps-controls input[type="number"] { width: 5rem; }
+        .ps-tail { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin: 0.5rem 0; }
+        .ps-tail label { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 44px; }
+
+        .power-readout { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0 0.5rem; align-items: stretch; }
+        .readout-box { flex: 1 1 200px; border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.8rem; background: var(--ims-bg-soft, #f7f9fb); }
+        .readout-box .rb-head { font-size: 0.85rem; color: var(--ims-gray-text); }
+        .readout-box .rb-value { font-family: var(--font-mono); font-size: 1.7rem; font-weight: 700; }
+        .readout-box .rb-sub { font-size: 0.8rem; color: var(--ims-gray-text); }
+        .readout-box.theory { background: #eef4f8; }
+
+        .swatch { width: 0.85rem; height: 0.85rem; border-radius: 50%; display: inline-block; flex: none; vertical-align: middle; }
+        .swatch.hit { background: #0072B2; } .swatch.miss { background: #fff; border: 2px solid #777; box-sizing: border-box; } .swatch.alarm { background: #D55E00; border-radius: 2px; }
+
+        .strip-wrap { border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; margin: 0.5rem 0; min-height: 70px; }
+        .dot-strip { display: flex; flex-wrap: wrap; gap: 3px; align-content: flex-start; }
+        .study-dot { width: 11px; height: 11px; display: inline-block; flex: none; line-height: 11px; text-align: center; font-size: 11px; }
+        .study-dot.hit { background: #0072B2; border-radius: 50%; } .study-dot.miss { background: #fff; border: 1.5px solid #777; border-radius: 50%; box-sizing: border-box; }
+        .study-dot.alarm { color: #D55E00; font-weight: 700; } .study-dot.correct { background: #cfd8dc; border-radius: 50%; }
+        .strip-note { font-size: 0.78rem; color: var(--ims-gray-text); margin-top: 0.4rem; }
+
+        .dance-wrap { border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; margin: 1rem 0; }
+        .dance-wrap h2 { font-size: 1rem; margin: 0 0 0.25rem; }
+        .dance-wrap .dance-note { font-size: 0.8rem; color: var(--ims-gray-text); margin: 0.1rem 0 0.4rem; }
+        #dance-svg { width: 100%; height: 150px; display: block; }
+        .ps-interpret { margin-top: 0.5rem; line-height: 1.5; }
+        .ps-interpret .big { font-weight: 700; }
+        .theory-link { font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#settings">Skip to Settings</a>
+        <a href="#controls">Skip to Controls</a>
+        <a href="#chart">Skip to Results</a>
+    </nav>
+
+    <main>
+        <h1>Power Lab<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
+        <p>Run a study over and over and watch how often it reaches significance. The fraction that reject H₀ is the <strong>power</strong> — and it converges to the theoretical value as you run more studies. Set the effect size to 0 to watch the false-positive rate settle near α.</p>
+
+        <section id="settings" aria-label="Simulation settings">
+            <div class="ps-controls">
+                <span class="row-label">Effect size (δ = μ₁ − μ₀)</span>
+                <input type="range" id="slider-delta" min="-3" max="3" step="0.1" value="0.5" aria-label="Effect size delta">
+                <input type="number" id="input-delta" step="0.1" value="0.5" aria-label="Effect size delta value">
+
+                <span class="row-label">Std. deviation (σ)</span>
+                <input type="range" id="slider-sigma" min="0.1" max="10" step="0.1" value="1" aria-label="Standard deviation sigma">
+                <input type="number" id="input-sigma" step="0.1" value="1" aria-label="Standard deviation value">
+
+                <span class="row-label">Sample size (n)</span>
+                <input type="range" id="slider-n" min="2" max="200" step="1" value="30" aria-label="Sample size n">
+                <input type="number" id="input-n" step="1" value="30" aria-label="Sample size value">
+
+                <span class="row-label">Significance level (α)</span>
+                <input type="range" id="slider-alpha" min="0.001" max="0.2" step="0.001" value="0.05" aria-label="Significance level alpha">
+                <input type="number" id="input-alpha" step="0.001" value="0.05" aria-label="Significance level value">
+            </div>
+            <div class="ps-tail" role="radiogroup" aria-label="Test direction">
+                <span class="row-label">Test:</span>
+                <label><input type="radio" name="tail" value="right" checked> Right-tailed</label>
+                <label><input type="radio" name="tail" value="left"> Left-tailed</label>
+                <label><input type="radio" name="tail" value="both"> Two-tailed</label>
+            </div>
+            <p class="theory-link">See the matching theory curves in the <a id="theory-link" href="../../distribution/power/">Power &amp; Error Visualizer →</a></p>
+        </section>
+
+        <section id="controls" aria-label="Run studies">
+            <div class="generate-bar" role="group" aria-label="Run studies">
+                <button type="button" class="gen-btn" data-count="1">+1</button>
+                <button type="button" class="gen-btn" data-count="100">+100</button>
+                <button type="button" class="gen-btn" data-count="1000">+1000</button>
+                <button type="button" id="reset-btn" class="reset-btn" aria-label="Reset" title="Reset" hidden>&#x21BA;</button>
+                <span class="gen-label">Studies</span>
+            </div>
+        </section>
+
+        <section id="chart" aria-label="Results">
+            <div class="power-readout" id="power-readout"></div>
+            <div class="strip-wrap">
+                <div class="dot-strip" id="dot-strip" role="img" aria-label="No studies run yet."></div>
+                <p class="strip-note" id="strip-note"></p>
+            </div>
+
+            <div class="dance-wrap">
+                <h2>Dance of the p-values</h2>
+                <p class="dance-note">The 30 most recent studies. Each dot is one study's p-value; the dashed line is α. Points below the line reach significance — notice how wildly p bounces even when nothing about the setup changed.</p>
+                <svg id="dance-svg" role="img" aria-label="p-values of recent studies relative to the significance level"></svg>
+            </div>
+
+            <div id="result-summary" class="ps-interpret">
+                <p class="placeholder">Set the parameters and click <strong>+100</strong> to run studies.</p>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <dialog id="page-help" aria-label="Help">
+        <h2>Power Lab — Help</h2>
+        <p class="help-intro">This simulates a known-σ one-sample z-test (H₀: μ = 0 vs H₁: μ = δ), the same model as the <a href="../../distribution/power/">Power &amp; Error Visualizer</a>. Each study draws n observations, runs the test, and is tallied. The empirical reject-rate converges to the analytic power shown beside it. Set δ = 0 to see the Type I error rate (≈ α).</p>
+        <dl>
+            <dt><kbd>1</kbd></dt><dd>+1 study</dd>
+            <dt><kbd>2</kbd></dt><dd>+100 studies</dd>
+            <dt><kbd>3</kbd></dt><dd>+1000 studies</dd>
+            <dt><kbd>0</kbd></dt><dd>Reset</dd>
+            <dt><kbd>Space</kbd></dt><dd>Play / Pause</dd>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+        </dl>
+        <p class="help-intro">New to this? Start with the plainer <a href="../decision-errors/">Decision Errors</a> page.</p>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>

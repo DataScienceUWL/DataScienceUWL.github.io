@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Decision Errors | StatLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/style.css">
+    <meta name="theme-color" content="#569BBD">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icon-192.png">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "jstat": "https://cdn.jsdelivr.net/npm/jstat@1/+esm"
+        }
+    }
+    </script>
+    <style>
+        .truth-list { display: flex; flex-direction: column; gap: 0.3rem; margin: 0.5rem 0; }
+        .truth-list label { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; cursor: pointer; }
+        .truth-list input { accent-color: var(--ims-blue, #569BBD); flex: none; }
+        .de-controls { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; margin: 0.5rem 0; }
+        .de-controls label { display: inline-flex; align-items: center; gap: 0.4rem; }
+        .de-controls select { width: auto; }
+        #true-rate-wrap[hidden] { display: none; }
+        #true-rate-wrap { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin: 0.25rem 0 0.5rem 1.7rem; }
+        #true-rate { width: 12rem; max-width: 60vw; }
+        #true-rate-val { font-family: var(--font-mono); font-weight: 700; min-width: 3.2rem; }
+
+        .scoreboard { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0 0.5rem; }
+        .score-box { flex: 1 1 200px; border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.8rem; background: var(--ims-bg-soft, #f7f9fb); }
+        .score-box .score-head { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--ims-gray-text); }
+        .score-box .score-value { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+        .score-box .score-sub { font-size: 0.8rem; color: var(--ims-gray-text); }
+        .swatch { width: 0.85rem; height: 0.85rem; border-radius: 50%; display: inline-block; flex: none; }
+        .swatch.hit { background: #0072B2; } .swatch.miss { background: #fff; border: 2px solid #777; box-sizing: border-box; } .swatch.alarm { background: #D55E00; border-radius: 2px; } .swatch.correct { background: #cfd8dc; }
+
+        .strip-wrap { border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; margin: 0.5rem 0; min-height: 90px; }
+        .dot-strip { display: flex; flex-wrap: wrap; gap: 3px; align-content: flex-start; }
+        .study-dot { width: 11px; height: 11px; display: inline-block; flex: none; line-height: 11px; text-align: center; font-size: 11px; }
+        .study-dot.hit { background: #0072B2; border-radius: 50%; } .study-dot.miss { background: #fff; border: 1.5px solid #777; border-radius: 50%; box-sizing: border-box; }
+        .study-dot.alarm { color: #D55E00; font-weight: 700; } .study-dot.correct { background: #cfd8dc; border-radius: 50%; }
+        .strip-note { font-size: 0.78rem; color: var(--ims-gray-text); margin-top: 0.4rem; }
+        .de-interpret { margin-top: 0.75rem; line-height: 1.5; }
+        .de-interpret .big { font-weight: 700; }
+        @media (prefers-reduced-motion: no-preference) {
+            .study-dot { animation: dot-in 0.18s ease-out; }
+            @keyframes dot-in { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+        }
+    </style>
+</head>
+<body>
+    <nav class="skip-links" aria-label="Skip links">
+        <a href="#settings">Skip to Settings</a>
+        <a href="#controls">Skip to Controls</a>
+        <a href="#chart">Skip to Results</a>
+    </nav>
+
+    <main>
+        <h1>Decision Errors<span class="header-actions"><a class="home-btn" href="../../" aria-label="StatLens home"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2L2 9h3v7h4v-5h2v5h4V9h3L10 2z"/></svg><span class="home-text">StatLens</span></a> <button class="help-btn" aria-label="Help" title="Help">?</button> <button class="settings-btn" aria-label="Settings" title="Settings">⚙</button></span></h1>
+        <p>Each study tests whether a treatment really works — H₀: it does nothing (success rate p = 0.50) vs Hₐ: it works more than half the time. Choose what's <em>actually</em> true, run many studies, and watch how often the test reaches the right verdict — and how often it makes a Type I or Type II error.</p>
+
+        <section id="settings" aria-label="Simulation settings">
+            <div class="truth-list" role="radiogroup" aria-label="What is actually true?">
+                <label><input type="radio" name="truth" value="none"> <span><strong>H₀ is true</strong> — the treatment does nothing (p = 0.50)</span></label>
+                <label><input type="radio" name="truth" value="effect" checked> <span><strong>Hₐ is true</strong> — it really works</span></label>
+            </div>
+            <div id="true-rate-wrap">
+                <label for="true-rate">In reality it works</label>
+                <input type="range" id="true-rate" min="50" max="95" step="1" value="65" aria-label="True success rate (percent)">
+                <span id="true-rate-val">65%</span>
+                <span>of the time</span>
+            </div>
+            <div class="de-controls">
+                <label for="sample-size">Sample size (n):
+                    <select id="sample-size">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="30" selected>30</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                    </select>
+                </label>
+                <label for="alpha-select">Significance level (α):
+                    <select id="alpha-select">
+                        <option value="0.10">0.10</option>
+                        <option value="0.05" selected>0.05</option>
+                        <option value="0.01">0.01</option>
+                    </select>
+                </label>
+            </div>
+        </section>
+
+        <section id="controls" aria-label="Run studies">
+            <div class="generate-bar" role="group" aria-label="Run studies">
+                <button type="button" class="gen-btn" data-count="1">+1</button>
+                <button type="button" class="gen-btn" data-count="100">+100</button>
+                <button type="button" class="gen-btn" data-count="1000">+1000</button>
+                <button type="button" id="reset-btn" class="reset-btn" aria-label="Reset" title="Reset" hidden>&#x21BA;</button>
+                <span class="gen-label">Studies</span>
+            </div>
+        </section>
+
+        <section id="chart" aria-label="Results">
+            <div class="scoreboard" id="scoreboard"></div>
+            <div class="strip-wrap">
+                <div class="dot-strip" id="dot-strip" role="img" aria-label="No studies run yet."></div>
+                <p class="strip-note" id="strip-note"></p>
+            </div>
+            <div id="result-summary" class="de-interpret">
+                <p class="placeholder">Choose what's true and click <strong>+100</strong> to run studies.</p>
+            </div>
+        </section>
+
+        <div id="sr-announce" role="status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+    </main>
+
+    <dialog id="page-help" aria-label="Help">
+        <h2>Decision Errors — Help</h2>
+        <p class="help-intro">Each study draws a sample of n patients, finds the success rate, and runs a one-proportion test of H₀: p = 0.50 (the treatment does nothing) against Hₐ: p &gt; 0.50. A study can reach the right verdict or make one of two mistakes:</p>
+        <ul class="help-intro">
+            <li>When <strong>Hₐ is true</strong> (it really works): rejecting H₀ <strong>detects</strong> the effect; failing to reject is a <strong>Type II error</strong> (a miss).</li>
+            <li>When <strong>H₀ is true</strong> (it does nothing): rejecting H₀ is a <strong>Type I error</strong> (a false alarm); failing to reject is the correct call. The false-alarm rate stays near α.</li>
+        </ul>
+        <dl>
+            <dt><kbd>1</kbd></dt><dd>+1 study</dd>
+            <dt><kbd>2</kbd></dt><dd>+100 studies</dd>
+            <dt><kbd>3</kbd></dt><dd>+1000 studies</dd>
+            <dt><kbd>0</kbd></dt><dd>Reset</dd>
+            <dt><kbd>Space</kbd></dt><dd>Play / Pause</dd>
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+        </dl>
+        <p class="help-intro">Want the full dials (σ, the dance of the p-values, theory curves)? Open the <a href="../power-sim/">Power Lab</a> or the <a href="../../distribution/power/">Power &amp; Error Visualizer</a>.</p>
+        <button type="button" autofocus>Close</button>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../../sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                const t = document.createElement('div');
+                t.className = 'update-toast';
+                t.setAttribute('role', 'alert');
+                t.innerHTML = 'A new version is available <button onclick="location.reload()">Refresh</button>';
+                document.body.appendChild(t);
+            }
+        });
+    }
+    </script>
+    <script src="../../js/page-number.js"></script>
+</body>
+</html>
