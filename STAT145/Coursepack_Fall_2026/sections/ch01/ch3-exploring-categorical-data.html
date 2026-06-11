@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Experiments and Observational Studies – STAT 145 Course Pack</title>
+<title>Exploring Categorical Data – STAT 145 Course Pack</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -30,7 +30,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
-<link href="../../sections/ch02/sec2-01-categorical-data.html" rel="next">
+<link href="../../sections/ch01/ch4-exploring-quantitative-data.html" rel="next">
 <link href="../../sections/ch01/ch2-data-collection-and-study-design.html" rel="prev">
 <script src="../../site_libs/quarto-html/quarto.js"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
@@ -69,6 +69,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -81,7 +110,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../sections/ch01/ch1-introduction-to-data.html">Unit 1: Explore</a></li><li class="breadcrumb-item"><a href="../../sections/ch01/sec1-03-experiments.html"><span class="chapter-title">1.3 Experiments and Observational Studies</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../sections/ch01/ch1-introduction-to-data.html">Unit 1: Explore</a></li><li class="breadcrumb-item"><a href="../../sections/ch01/ch3-exploring-categorical-data.html"><span class="chapter-title">1.3 Exploring Categorical Data</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -132,7 +161,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../sections/ch01/sec1-03-experiments.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">1.3 Experiments and Observational Studies</span></a>
+  <a href="../../sections/ch01/ch3-exploring-categorical-data.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">1.3 Exploring Categorical Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/ch01/ch4-exploring-quantitative-data.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">1.4 Exploring Quantitative Data</span></a>
   </div>
 </li>
       </ul>
@@ -387,19 +421,19 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul class="collapse">
-  <li><a href="#association-and-causation" id="toc-association-and-causation" class="nav-link active" data-scroll-target="#association-and-causation">Association and causation</a></li>
-  <li><a href="#observational-studies-vs-experiments" id="toc-observational-studies-vs-experiments" class="nav-link" data-scroll-target="#observational-studies-vs-experiments">Observational studies vs experiments</a></li>
-  <li><a href="#randomized-experiments" id="toc-randomized-experiments" class="nav-link" data-scroll-target="#randomized-experiments">Randomized experiments</a></li>
-  <li><a href="#control-groups-placebos-and-blinding" id="toc-control-groups-placebos-and-blinding" class="nav-link" data-scroll-target="#control-groups-placebos-and-blinding">Control groups, placebos, and blinding</a></li>
+  <li><a href="#one-categorical-variable" id="toc-one-categorical-variable" class="nav-link active" data-scroll-target="#one-categorical-variable">One Categorical Variable</a></li>
+  <li><a href="#two-categorical-varaibles" id="toc-two-categorical-varaibles" class="nav-link" data-scroll-target="#two-categorical-varaibles">Two Categorical Varaibles</a></li>
+  <li><a href="#effective-data-visualization" id="toc-effective-data-visualization" class="nav-link" data-scroll-target="#effective-data-visualization">Effective Data Visualization</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../sections/ch01/ch1-introduction-to-data.html">Unit 1: Explore</a></li><li class="breadcrumb-item"><a href="../../sections/ch01/sec1-03-experiments.html"><span class="chapter-title">1.3 Experiments and Observational Studies</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../sections/ch01/ch1-introduction-to-data.html">Unit 1: Explore</a></li><li class="breadcrumb-item"><a href="../../sections/ch01/ch3-exploring-categorical-data.html"><span class="chapter-title">1.3 Exploring Categorical Data</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-title">1.3 Experiments and Observational Studies</span></h1>
+<h1 class="title"><span class="chapter-title">1.3 Exploring Categorical Data</span></h1>
 </div>
 
 
@@ -416,169 +450,273 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<div class="section-intro">
+<p>This chapter focuses on <strong>categorical data</strong> — variables whose values are categories or labels rather than numbers. We begin with visualizations for a single categorical variable (bar charts, pie charts, waffle charts), then move to tools for exploring the relationship between two categorical variables (contingency tables and stacked bar charts). We close with principles for creating effective, honest data visualizations.</p>
+</div>
 <section id="key-concepts" class="level3 concepts">
 <h3 class="anchored" data-anchor-id="key-concepts">Key Concepts</h3>
 <ul>
-<li>Identify potential confounding variables in a study</li>
-<li>Distinguish between an observational study and a randomized experiment</li>
-<li>Recognize that only randomized experiments can lead to claims of causation</li>
-<li>Distinguish between a randomized comparative experiment and a matched pairs experiment</li>
+<li>Display information from a categorical variable in a table or a graph</li>
+<li>Use information about a categorical variable to find and report a proportion, using correct notation</li>
+<li>Display information about a relationship between two categorical variables in a contingency table</li>
+<li>Use a contingency table to find proportions</li>
 </ul>
 </section>
+<section id="technology-for-chapter" class="level3">
+<h3 class="anchored" data-anchor-id="technology-for-chapter">Technology for Chapter</h3>
+<p><strong>StatLens</strong> Use the <a href="https://datascienceuwl.github.io/statlens/explore/one-cat/">One Categorical Variable</a> explorer for bar charts and pie charts. Use the <a href="https://datascienceuwl.github.io/statlens/explore/categorical/">Two Categorical Variables</a> explorer for contingency tables and stacked bar charts.</p>
+<p><strong>jamovi</strong> Use Analyses&gt;Exploration&gt;Descriptives for bar charts for one categorical variable. Use Analyses&gt;Frequencies&gt;Independent Samples for two cateogrical variables.</p>
+</section>
+<section id="one-categorical-variable" class="level2">
+<h2 class="anchored" data-anchor-id="one-categorical-variable">One Categorical Variable</h2>
+<div class="def-card">
+<p>The <em>proportion</em> (or <em>relative frequency</em>) in a category is found by dividing the number of cases in that category by the total number of cases.</p>
+</div>
+<p>When we want to summarize one categorical variable, we use a <em>proportion</em> which tells us what fraction of the sample is in each group. In this course, we will use <span class="math inline">\(p\)</span> to represent the population proportion, and <span class="math inline">\(\widehat{p}\)</span> (p-hat) to represent the sample proportion. The sample proportion is given by <span class="math display">\[
+\widehat{p} = \frac{x}{n}
+\]</span> where <span class="math inline">\(x\)</span> is the numberof cases in a given category and <span class="math inline">\(n\)</span> is the total number of cases.</p>
+<section id="numerical-displays" class="level3">
+<h3 class="anchored" data-anchor-id="numerical-displays">Numerical displays</h3>
+<div class="def-card">
+<p>A <em>frequency table</em> is a table that displays the count for each category.</p>
+</div>
+<div class="def-card">
+<p>A <em>relative frequency table</em> is a table that displays the proportion of the sample in each category.</p>
+</div>
+<p>A single categorical variable is often summarized using a <em>frequency table</em> to display the number of observations that fall into each category. An alternative to the frequency table is the <em>relative frequency table</em> which displays the proportion of the sample that is in each category.</p>
 <div class="example-box">
-<p><strong>Class Example 1.3.1: Hydration and Cognitive Development</strong></p>
-<p>Since 80% of human brain mass is attributed to water, it is plausible that dehydration may reduce cognitive function in children. (<em>Nature Reviews</em>, April 2021)</p>
+<p><strong>Class Example 1.3.1: Hair Color</strong></p>
+<p>The table below gives the frequency of hair color for a random sample of 55 UWL students. Find the proportions of students with each hair color and use them fill in the relative frequency column.</p>
+<table class="caption-top table">
+<caption>Frequency table for hair color.</caption>
+<colgroup>
+<col style="width: 15%">
+<col style="width: 22%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Frequency</strong></th>
+<th><strong>Relative Frequency</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Brown</td>
+<td>30</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Blonde</td>
+<td>14</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Red</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Black</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Colorful</td>
+<td>3</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><strong>Total</strong></td>
+<td>54</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="graphical-summaries" class="level3">
+<h3 class="anchored" data-anchor-id="graphical-summaries">Graphical summaries</h3>
+<div class="def-card">
+<p>A <em>bar chart</em> includes one bar for each category, and the height of the bar is the frequency the category appears.</p>
+</div>
+<div class="def-card">
+<p>In a <em>pie chart</em>, the proportions correspond to the areas of sectors of a circle.</p>
+</div>
+<p>The standard graphical summaries for a categorical variable are the <em>bar chart</em> and the <em>pie chart</em>. A bar chart is the most common way to display the distribution of a single categorical variable. Each category gets its own bar, and the height (or length) of the bar represents either the count or the proportion of observations in that category. A pie chart divides a circle into slices, where each slice represents a category and the size of the slice corresponds to the proportion of observations in that category.</p>
+<div class="example-box">
+<p><strong>Class Example 1.3.2: Hair Color revisited</strong></p>
+<p>Sketch a bar chart and a pie chart for the hair color of random sample of 55 UWL students.</p>
+<div class="workspace">
+
+</div>
+</div>
+<p>Pie charts can give a quick high-level overview, especially when a variable has only a few levels or when each level represents a simple fraction (one-half, one-quarter, etc.). However, bar charts are almost always easier to read because our eyes are better at comparing lengths than angles or areas.</p>
+</section>
+</section>
+<section id="two-categorical-varaibles" class="level2">
+<h2 class="anchored" data-anchor-id="two-categorical-varaibles">Two Categorical Varaibles</h2>
+<div class="def-card">
+<p>A <em>contingency table</em> summarizes the data for two categorical variables. The rows represent the levels of one variables, the columns represent the levels of the other.</p>
+</div>
+<p>Sometimes our goal is to examine whether there is a relationship between two categorical variables. To investigate these relationships, we use a <em>contingency table</em>, or <em>two-way table</em>. In a two-way table, the rows represent the groups of the first category, and the columns represent the groups of the second category. Each cell of the table contains the number of cases that are in both the row and the column category.</p>
+<div class="example-box">
+<p><strong>Class Example 1.3.3: Relationship status and class level</strong></p>
+<p>169 college students were asked about their relationship status and class year (lower=freshman/sophomore, upper=junior/senior). The results are given in the table.</p>
+<table class="caption-top table">
+<caption>Contingency table for relationship status and class year.</caption>
+<thead>
+<tr class="header">
+<th></th>
+<th style="text-align: center;"><strong>Upper</strong></th>
+<th style="text-align: center;"><strong>Lower</strong></th>
+<th style="text-align: center;"><strong>Total</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>In a relationship</td>
+<td style="text-align: center;">32</td>
+<td style="text-align: center;">10</td>
+<td style="text-align: center;">42</td>
+</tr>
+<tr class="even">
+<td>It’s complicated</td>
+<td style="text-align: center;">12</td>
+<td style="text-align: center;">7</td>
+<td style="text-align: center;">19</td>
+</tr>
+<tr class="odd">
+<td>Single</td>
+<td style="text-align: center;">63</td>
+<td style="text-align: center;">45</td>
+<td style="text-align: center;">108</td>
+</tr>
+<tr class="even">
+<td><strong>Total</strong></td>
+<td style="text-align: center;"><strong>107</strong></td>
+<td style="text-align: center;"><strong>62</strong></td>
+<td style="text-align: center;"><strong>169</strong></td>
+</tr>
+</tbody>
+</table>
 <ol type="a">
-<li>What is the explanatory variable?</li>
+<li>What proportion of students in this sample are in a relationship?</li>
 </ol>
 <div class="workspace">
 
 </div>
 <ol start="2" type="a">
-<li>What is the response variable?</li>
+<li>What proportion of lower class students in this sample are in a relationship?</li>
 </ol>
 <div class="workspace">
 
 </div>
 <ol start="3" type="a">
-<li>Describe a completely randomized experiment to test if this association is a causal association.</li>
+<li>What proportion of upper class students in this sample are in a relationship?</li>
 </ol>
 <div class="workspace">
 
 </div>
 <ol start="4" type="a">
-<li>Is the experiment you described ethical? Explain.</li>
+<li>Using <span class="math inline">\(\widehat{p}_U\)</span> to represent the proportion of upper class students in a relationship and <span class="math inline">\(\widehat{p}_L\)</span> to represent the proportion of lower class students in a relationship, find the difference in proportions <span class="math inline">\(\widehat{p}_U - \widehat{p}_L\)</span></li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="5" type="a">
+<li>What proportion of the people who are in a relationship in this sample are upper class students?</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="6" type="a">
+<li>What proportion of the people in this sample are upper class students and in a relationship?</li>
+</ol>
+<div class="workspace">
+
+</div>
+<ol start="7" type="a">
+<li>Answers c), e) and f) are all ways of representing upeer class students in a relationship. Why are they different numbers?</li>
 </ol>
 <div class="workspace">
 
 </div>
 </div>
-<div style="page-break-after: always;"></div>
-<section id="association-and-causation" class="level2">
-<h2 class="anchored" data-anchor-id="association-and-causation">Association and causation</h2>
-<div class="def-card">
-<p>Two variables are <em>associated</em> if values of one variable tend to be related to the values of the other variable.</p>
+<p>Congtingency tables can be displayed graphically using an extention of the bar chart. There are two common variants: a stacked bar chart and a side-by-side bar chart.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-two-cat-bar-ch3" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Stacked bar chart and side-by-side bar chart for the relationship status and class level data.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-two-cat-bar-ch3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/ch3-twocatbarplot.png" class="img-fluid figure-img" style="width:100.0%" alt="Stacked bar chart and side-by-side bar chart for the relationship status and class level data.">
 </div>
-<div class="def-card">
-<p>Two variables are <em>causally associated</em> if changing the value of one variable influences the value of the other variable.</p>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-two-cat-bar-ch3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4.1: Bar plots for relationship status and class level.
+</figcaption>
+</figure>
 </div>
-<!-- TODO: The PhD Comics image below is copyrighted (Jorge Cham, phdcomics.com).
-     Replace with an original illustration or rewrite this paragraph to remove the
-     image reference. Options: (1) find a CC-licensed alternative comic/image about
-     correlation vs causation, (2) create an original diagram, or (3) rewrite the
-     paragraph to work without an image. -->
-<p>A very common occurrence is when a research study finds a relationship between variables A and B, and before you know it, the media is reporting that variable A causes variable B. Fortunately, with a basic understanding of experimental design, you can easily determine whether we are only talking about an association between A and B, or if we can say that A causes B.</p>
-<!-- REMOVED: PhD Comics image (copyright Jorge Cham). Original reference:
-!["Piled Higher and Deeper" by Jorge Cham www.phdcomics.com](images/sec1-03phd.png)
--->
-</section>
-<section id="observational-studies-vs-experiments" class="level2">
-<h2 class="anchored" data-anchor-id="observational-studies-vs-experiments">Observational studies vs experiments</h2>
-<div class="def-card">
-<p>In an <em>experiment</em> the researcher actively controls one or more of the explanatory variables.</p>
 </div>
-<div class="def-card">
-<p>In an <em>observational study</em> the researcher simply observes the values as they naturally exist.</p>
-</div>
-<div class="def-card">
-<p>A <em>confounding variable</em> is a third variable that is associated with both the explanatory and response variable, but not necessarily of interest in the study.</p>
-</div>
-<p>In determining causation, the first thing we need to know is whether or not the researcher actively controlled the value of any variable. If the researcher is only observing what happened, the study is an <em>observational study</em>. In statistics, the word observational does not mean that the researcher is watching the participant do every part of the study. Instead, observational refers to the fact that the researcher takes a dataset and makes observations about the data in the set. If the researcher is actively involved with assigning different values of the explanatory variable to the participants, then the study is an <em>experiment</em>. Although you can conduct an experiment without randomization, the only way you can determine causation (as opposed to association) is through a randomized experiment.</p>
-</section>
-<section id="randomized-experiments" class="level2">
-<h2 class="anchored" data-anchor-id="randomized-experiments">Randomized experiments</h2>
-<div class="def-card">
-<p>In a <em>randomized experiment</em> the value of the explanatory variable for each unit is determined randomly, before the response variable is measured.</p>
-</div>
-<p>Although observational studies and non-randomized experiments can help us begin to notice relationships between variables, the only way we can state that one variable “causes” another is to use a <em>randomized experiment</em>. As with random sampling, there are a number of ways we can randomly assign treatments to study participants.</p>
-<div class="example-box">
-<p><strong>Class Example 1.3.2: Running shoe study background</strong></p>
-<p>To demonstrate the differences between some of the more commonly used experimental designs, consider the following study. A running shoe company wants to know if the type of shoe impacts the speed of runners. One aspect of the shoe that they are considering is the heel-toe drop, or the difference in height between the heel of the shoe to the toe of the shoe. Minimalist shoes reduce the heel-toe drop to 0 – 4 mm, whereas a more traditional shoe has an 8 – 12 mm heel-toe drop. This company wants to know if a lower heel-toe drop will cause runners to run more quickly, so they recruit 100 marathon runners of varying ability. For the study, the runner will run 5k, and their time will be used to establish their pace.</p>
-</div>
-<section id="randomized-comparative-design" class="level3">
-<h3 class="anchored" data-anchor-id="randomized-comparative-design">Randomized comparative design</h3>
-<div class="def-card">
-<p>In a <em>randomized comparative</em> design, we randomly assign cases to different treatment groups and then compare results on the response variable(s).</p>
-</div>
-<p>In a <em>randomized comparative design</em>, we take all the participants in the study and randomize them to a different treatment group.</p>
-<div style="page-break-after: always;"></div>
-</section>
-<section id="block-design" class="level3">
-<h3 class="anchored" data-anchor-id="block-design">Block design</h3>
-<div class="def-card">
-<p>In a <em>block</em> design, cases are first split into groups (called <em>blocks</em>), and within each group the value of the explanatory variable for each unit is determined randomly.</p>
-</div>
-<p>In a <em>block design</em>, we first group participants by some logical grouping that we think might have an impact on the response in addition to the variable we are studying.</p>
-<div class="workspace">
-
 </div>
 <div class="example-box">
-<p><strong>Class Example 1.3.3: Picking the blocking factor</strong></p>
-<p>Why might it make sense to group the runners into professionals vs amateurs?</p>
-<div class="workspace">
-
-</div>
-</div>
-</section>
-<section id="matched-pairs-design" class="level3">
-<h3 class="anchored" data-anchor-id="matched-pairs-design">Matched pairs design</h3>
-<div class="def-card">
-<p>In a <em>matched pairs</em> design, cases get both treatments (or cases are paired) and we examine differences in the response between the two treatments.</p>
-</div>
-<p>In a <em>matched pairs design</em>, each participant is assigned to each of two treatment settings, responses are measured for each treatment, and the differences in responses are computed for each participant. Because two measurements are obtained for each individual, the measurements are <em>dependent</em> upon each other. The two treatments often come in the form of “Before vs.&nbsp;After” or “Method A vs.&nbsp;Method B.” In the “Method A vs.&nbsp;Method B” type of pairing, it is important to randomize the order of the treatments to avoid a confounding <em>order effect</em>.</p>
-<div class="example-box">
-<p><strong>Class Example 1.3.4: Describing the matched pairs running shoe experiment</strong></p>
-<p>Thinking about the matched pairs design for the experiment about running shoes</p>
+<p><strong>Class Example 1.3.4: Handedness and occupation</strong></p>
+<p>In a study of handedness in occupations, 10 of 118 psychiatrists were left-handed, 26 of 148 architects were left-handed, 5 of 132 orthopedic surgeons were left-handed, and 16 of 105 lawyers were left-handed.</p>
 <ol type="a">
-<li>What are the variables in the study? Are they categorical or quantitative?</li>
+<li>Make a two-way table of this relationship.</li>
 </ol>
+<div class="workspace">
+
+</div>
+<div class="workspace">
+
+</div>
 <div class="workspace">
 
 </div>
 <ol start="2" type="a">
-<li>What are the explanatory and response variables?</li>
+<li>What proportion of the people in the sample are left-handed?</li>
 </ol>
 <div class="workspace">
 
 </div>
 <ol start="3" type="a">
-<li>Explain how the treatments would be assigned.</li>
+<li>What proportion of left-handed people are architects?</li>
 </ol>
 <div class="workspace">
 
 </div>
 <ol start="4" type="a">
-<li>Why might a matched pairs design be beneficial in this experiment?</li>
+<li>Is your answer in part c) the same or different than the proportion of architects who are left-handed?</li>
 </ol>
 <div class="workspace">
 
 </div>
 </div>
 </section>
+<section id="effective-data-visualization" class="level2">
+<h2 class="anchored" data-anchor-id="effective-data-visualization">Effective Data Visualization</h2>
+<p>Graphs can powerfully communicate ideas directly and quickly. However, there are times when a visualization conveys a message that is inaccurate or misleading. The following are guiding principles for creating clear, honest, and effective visualizations.</p>
+<ul>
+<li><p><em>Keep it simple</em>: Colors should be used purposefully and can be used to draw attention</p>
+<ul>
+<li>Colors used only for decoration can be distracting and can confuse readers</li>
+</ul></li>
+<li><p><em>Tell a story</em>: Include annotations (text, lines or labels that provide context beyond the raw data)</p></li>
+<li><p><em>Order matters</em>: The arrangement of categories in a bar chart can help or hinder understanding</p>
+<ul>
+<li>Alphabetical order is rarely the most informative choice</li>
+</ul></li>
+<li><p><em>Make labels readable</em></p></li>
+<li><p><em>Select meaningful colors</em>: Default or rainbow color schemes are not always the best choice</p></li>
+</ul>
 </section>
-<section id="control-groups-placebos-and-blinding" class="level2">
-<h2 class="anchored" data-anchor-id="control-groups-placebos-and-blinding">Control groups, placebos, and blinding</h2>
-<div class="def-card">
-<p>The <em>control group</em> does not receive a treatment.</p>
-</div>
-<div class="def-card">
-<p>A <em>placebo</em> is a fake treatment that is designed to look like the treatment but has no therapeutic value.</p>
-</div>
-<div class="def-card">
-<p>In a <em>single-blind</em> study, participants do not know if they are in the treatment or control group.</p>
-</div>
-<p>For an experiment, it is important to be able to determine if the treatment actually is making a difference, or if we are seeing results that would have happened regardless of the treatment. The purpose of a <em>control group</em> is to establish what we would expect to happen regardless of the treatment. Often times, in order to make sure that people adhere to the study guidelines, we use a <em>placebo</em> that is designed to look like the treatment.</p>
-<div class="def-card">
-<p>In a <em>double-blind</em> study, neither the participants nor the people interacting with the participants knows if they are in the treatment or control group.</p>
-</div>
-<p>The placebo makes it much easier to conduct <em>single-blinded</em> experiments or <em>double-blinded</em> experiments. Not all randomized experiments make use of control groups, placebos, or blinding; however, in studies involving humans, these techniques are often used to help make effective comparisons between groups.</p>
-<div class="example-box">
-<p><strong>Class Example 1.3.5: Depression and Prozac</strong></p>
-<p>Researchers at a prominent Midwestern university would like to determine if Prozac is effective in reducing depression as determined by patient responses to a questionnaire. The researchers recruited 50 individuals suffering from depression. Describe a completely randomized double-blind experiment using a placebo to test this association is a causal association.</p>
-<div class="workspace">
-
-</div>
-</div>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>This chapter introduced tools for exploring categorical data.</p>
+<p>-For a single categorical variable, <em>bar charts</em> are the primary visualization, with <em>pie charts</em> reserved for simple cases.</p>
+<p>-For two categorical variables, <em>contingency tables</em> organize counts, and stacked and side-by-side bar charts provide visual comparisons.</p>
+<p>-Effective visualizations follow principles of simplicity, purposeful use of color, meaningful ordering, and accessibility.</p>
 
 
 </section>
@@ -1008,8 +1146,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../../sections/ch02/sec2-01-categorical-data.html" class="pagination-link" aria-label="Categorical Variables">
-        <span class="nav-page-text"><span class="chapter-title">2.1 Categorical Variables</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../../sections/ch01/ch4-exploring-quantitative-data.html" class="pagination-link" aria-label="Exploring Quantitative Data">
+        <span class="nav-page-text"><span class="chapter-title">1.4 Exploring Quantitative Data</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
