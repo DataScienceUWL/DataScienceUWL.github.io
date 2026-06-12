@@ -5,7 +5,7 @@
  */
 
 import { parseCSV } from '../../js/csv-parser.js';
-import { announce } from '../../js/page-utils.js';
+import { announce, initHelp, suggestDesktop } from '../../js/page-utils.js';
 
 // ─── DOM references ──────────────────────────────────────────────────────────
 
@@ -55,36 +55,10 @@ let parsedTypes = [];
 /** @type {boolean} */
 let dataParsed = false;
 
-// ─── Help dialog (matches other pages) ───────────────────────────────────────
+// ─── Help + settings dialogs (shared wiring, matches other pages) ────────────
 
-const helpDialog = /** @type {HTMLDialogElement|null} */ (document.getElementById('page-help'));
-const helpBtn = document.querySelector('.help-btn');
-
-if (helpBtn && helpDialog) {
-    helpBtn.addEventListener('click', () => helpDialog.showModal());
-    helpDialog.querySelector('button')?.addEventListener('click', () => helpDialog.close());
-    helpDialog.addEventListener('click', (e) => {
-        if (e.target === helpDialog) helpDialog.close();
-    });
-}
-
-document.addEventListener('keydown', (e) => {
-    if (e.key === '?' && !isInputFocused()) {
-        e.preventDefault();
-        helpDialog?.showModal();
-    }
-});
-
-/**
- * Check if an input/textarea/select is currently focused.
- * @returns {boolean}
- */
-function isInputFocused() {
-    const el = document.activeElement;
-    if (!el) return false;
-    const tag = el.tagName;
-    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.getAttribute('contenteditable') === 'true';
-}
+initHelp();
+suggestDesktop();
 
 // ─── Parse logic ─────────────────────────────────────────────────────────────
 

@@ -145,18 +145,6 @@ export function isExtreme(v, observed, direction, nullCenter) {
 // ─── Chart type toggle ──────────────────────────────────────────────
 
 /**
- * Build HTML for chart type radio toggle buttons.
- * @param {Array<[string, string]>} types - [value, label] pairs
- * @param {string} selected - Currently selected value
- * @returns {string}
- */
-export function buildToggleHTML(types, selected) {
-  return types.map(([v, l]) =>
-    `<label class="chart-toggle-option"><input type="radio" name="chart-type" value="${v}"${v === selected ? ' checked' : ''}> ${l}</label>`
-  ).join('');
-}
-
-/**
  * Create and insert a chart type toggle (segmented control) before a container element.
  * Returns the element and a function to get/set the current chart type.
  *

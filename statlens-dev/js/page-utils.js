@@ -405,14 +405,36 @@ export function initKeyboardShortcuts(genBtns, resetBtn) {
 }
 
 /**
- * Flash the mechanism strip with a CSS animation class.
- * @param {HTMLElement|null} mechanismStrip
+ * Show a dismissible notice on small screens suggesting the desktop version.
+ * For tool pages (e.g. the Dataset Builder's spreadsheet table) that are
+ * impractical on a phone — preferred over forcing a cramped mobile layout.
+ * Dismissal is remembered for the session (per page).
+ * @param {string} [message] - Override the default notice text
  */
-export function flashMechanism(mechanismStrip) {
-  if (!mechanismStrip) return;
-  mechanismStrip.classList.remove('mechanism-flash');
-  void mechanismStrip.offsetWidth; // force reflow to restart animation
-  mechanismStrip.classList.add('mechanism-flash');
+export function suggestDesktop(message) {
+  if (window.innerWidth > 700) return;
+  const key = `statlens-desktop-suggest:${location.pathname}`;
+  try { if (sessionStorage.getItem(key)) return; } catch { /* private mode */ }
+
+  const note = document.createElement('div');
+  note.className = 'desktop-suggest';
+  note.setAttribute('role', 'note');
+  const text = document.createElement('p');
+  text.textContent = message
+    || 'This tool works best on a larger screen. For the full experience, open it on a laptop or desktop.';
+  const dismiss = document.createElement('button');
+  dismiss.type = 'button';
+  dismiss.className = 'desktop-suggest-dismiss';
+  dismiss.textContent = 'Got it';
+  dismiss.addEventListener('click', () => {
+    note.remove();
+    try { sessionStorage.setItem(key, '1'); } catch { /* private mode */ }
+  });
+  note.append(text, dismiss);
+
+  const h1 = document.querySelector('h1');
+  if (h1) h1.insertAdjacentElement('afterend', note);
+  else document.body.prepend(note);
 }
 
 /**

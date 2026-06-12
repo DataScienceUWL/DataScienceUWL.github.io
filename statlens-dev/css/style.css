@@ -142,18 +142,19 @@ main {
   gap: 0.3rem;
   margin-left: auto;
   text-decoration: none;
-  color: var(--ims-gray-text, #666);
+  /* Full opacity + #595959: 0.7 opacity over #666 computed to ~2.8:1
+     contrast, failing WCAG 1.4.3 on every page */
+  color: #595959;
   font-size: 0.75rem;
   font-weight: 700;
   font-family: var(--font-body);
   letter-spacing: 0.02em;
   flex-shrink: 0;
-  opacity: 0.7;
-  transition: opacity 0.15s;
+  transition: color 0.15s;
 }
 
 .site-brand:hover {
-  opacity: 1;
+  color: var(--text, #1a1a1a);
 }
 
 .site-brand svg {
@@ -1185,11 +1186,39 @@ input[aria-invalid="true"] {
   text-align: center;
 }
 
-/* Mechanism strip flash — disabled (was too stroby during auto-play).
-   Kept as class hook in case we want a subtler version later. */
-.mechanism-flash .mechanism-stat {
-  /* no-op — animation removed */
+/* Small-screen notice suggesting the desktop version (suggestDesktop) */
+.desktop-suggest {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--ims-blue, #569BBD);
+  border-left-width: 4px;
+  border-radius: 6px;
+  background: #eef5fa;
 }
+.desktop-suggest p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text, #1a1a1a);
+  flex: 1;
+}
+.desktop-suggest-dismiss {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--ims-dark, #114B5F);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ims-dark, #114B5F);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.desktop-suggest-dismiss:hover { background: #f0f7ff; }
+
 /* Observed statistic highlight — matches chart overlay line color */
 .observed-highlight,
 .observed-value {
@@ -1492,6 +1521,12 @@ input[aria-invalid="true"] {
   .sample-dot.chip-appear { animation: none; }
   .sample-dot.chip-source-flash { animation: none; }
   .sample-dot.chip-flip { animation: none; }
+  /* Kill inline JS transitions (prop bars, stat fades) set by sim-app.js
+     mechanism animations — !important here overrides element.style */
+  .mechanism-strip *, .mechanism-strip *::before, .mechanism-strip *::after {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 /* Contingency tables (chi-square page) */
@@ -2575,8 +2610,12 @@ body[data-mode="discover"] .present-only { display: none !important; }
 }
 .gate-choice:hover { background: #f0f7ff; }
 .gate-choice:focus-visible { outline: 2px solid var(--ims-blue); outline-offset: 2px; }
-.gate-choice.correct { background: #e3f0f8; border-color: #0072B2; }
-.gate-choice.incorrect { background: #fef0e6; border-color: #D55E00; }
+/* Correct/incorrect pair color with a ✓/✗ marker so the result is
+   never conveyed by hue alone (WCAG 1.4.1, CVD users) */
+.gate-choice.correct { background: #e3f0f8; border-color: #0072B2; border-width: 2px; }
+.gate-choice.correct::after { content: "✓"; margin-left: auto; font-weight: 700; color: #0072B2; }
+.gate-choice.incorrect { background: #fef0e6; border-color: #D55E00; border-style: dashed; border-width: 2px; }
+.gate-choice.incorrect::after { content: "✗"; margin-left: auto; font-weight: 700; color: #D55E00; }
 .gate-choice.disabled { pointer-events: none; opacity: 0.7; }
 .gate-feedback {
   padding: 0.4rem 0.8rem; border-radius: 4px; margin: 0.5rem 0;

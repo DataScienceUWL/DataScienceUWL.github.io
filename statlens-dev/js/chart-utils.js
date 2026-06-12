@@ -412,6 +412,9 @@ export function createChart(container, options = {}) {
   wrapper.style.position = 'relative';
   containerEl.appendChild(wrapper);
 
+  // Deliberately NO role="img" here: charts contain keyboard-focusable
+  // children (tabindex=0 tooltips), and role="img" would flatten the
+  // subtree out of the accessibility tree. aria-label alone is announced.
   const svg = d3Selection.select(wrapper).append('svg')
     .attr('aria-label', [titleText, descText].filter(Boolean).join(' — '))
     .attr('viewBox', `0 0 ${viewWidth} ${viewHeight}`)
