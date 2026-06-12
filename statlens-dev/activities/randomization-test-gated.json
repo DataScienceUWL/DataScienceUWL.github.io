@@ -1,0 +1,78 @@
+{
+  "title": "Randomization Test, Step by Step",
+  "tool": "simulate/randomization-diff-props",
+  "params": {
+    "dataset": "sex_discrimination",
+    "seed": "rtgated1",
+    "direction": "right"
+  },
+  "steps": [
+    {
+      "instruction": "In the 1970s, 48 bank supervisors were each given the same personnel file and asked whether the candidate should be promoted. The files were identical except for one thing: the name was male on 24 of them and female on the other 24. The results: **21 of 24** \"male\" files were promoted, but only **14 of 24** \"female\" files.",
+      "observe": "35 of the 48 candidates were promoted overall — but not equally across the two groups.",
+      "gate": {
+        "question": "How big is the gap between the two promotion rates?",
+        "choices": [
+          { "text": "About 7 percentage points (21/24 vs 14/24 — only 7 files apart)" },
+          { "text": "About 29 percentage points (87.5% vs 58.3%)", "correct": true },
+          { "text": "About 50 percentage points" }
+        ],
+        "feedback": "21/24 = 87.5% and 14/24 = 58.3%, a 29.2 percentage point difference. The question for the rest of this activity: could a gap that large happen just by chance?",
+        "retryFeedback": "Convert each count to a rate first: 21 out of 24, and 14 out of 24."
+      }
+    },
+    {
+      "instruction": "The skeptic's position — the *null hypothesis* — says sex had **no effect** on these decisions.",
+      "gate": {
+        "question": "If sex truly had no effect on promotions, what would that mean about these 48 files?",
+        "choices": [
+          { "text": "No one would be promoted" },
+          { "text": "Exactly 50% in each group would be promoted" },
+          { "text": "The same 35 people would have been promoted regardless of the name on the file", "correct": true },
+          { "text": "We would need more data to tell" }
+        ],
+        "feedback": "Under the null hypothesis the outcomes are fixed — the same 35 promotions would have happened either way. Only the group labels are random. That's exactly what shuffling simulates.",
+        "retryFeedback": "Think about what \"no effect\" means: the decision was already determined by the file's contents, not the name."
+      }
+    },
+    {
+      "instruction": "You're about to shuffle the group labels once — dealing the same 35 promotions randomly between \"male\" and \"female\" files. **Before you click anything**, commit to a prediction.",
+      "demo": {
+        "type": "card-shuffle",
+        "label": "Watch how one shuffle works",
+        "options": {
+          "group1": "Male", "group2": "Female",
+          "n1": 24, "n2": 24, "success1": 21, "success2": 14,
+          "successLabel": "Promoted", "failureLabel": "Not promoted"
+        }
+      },
+      "gate": {
+        "question": "How big do you expect the difference in promotion rates to be in one shuffle, if only chance is at work?",
+        "choices": [
+          { "text": "Around 29 points, like the observed difference", "feedback": "You've committed — now click **+1** and see where the shuffle actually lands." },
+          { "text": "Usually small, somewhere near 0", "feedback": "You've committed — now click **+1** and see where the shuffle actually lands." },
+          { "text": "Exactly 0 every time", "feedback": "You've committed — now click **+1** and see. (Watch whether chance alone produces *exactly* zero.)" }
+        ]
+      },
+      "observe": "Click **+1** a few times. Watch the mechanism strip deal the same promotions into new groups, and watch where each shuffled difference lands on the chart."
+    },
+    {
+      "instruction": "One shuffle is one data point. Click **+100**, then **+1000**, to see what chance alone typically produces.",
+      "observe": "The null distribution piles up — where is its center? Now find the red line marking the observed difference (29.2 pp).",
+      "gate": {
+        "question": "Look at the histogram. Where does the observed difference fall?",
+        "choices": [
+          { "text": "In the middle of the distribution — it looks typical for chance" },
+          { "text": "Out in the tail — very few shuffles produced a difference this large", "correct": true },
+          { "text": "I can't tell from the histogram" }
+        ],
+        "feedback": "The observed 29.2 pp gap sits far in the right tail. The p-value (shown in the results panel) is the fraction of shuffles at least that extreme — and it's small.",
+        "retryFeedback": "Compare the red line's position to where most of the dots piled up. Is 29.2 pp common among the shuffles?"
+      }
+    },
+    {
+      "instruction": "Time to conclude. The p-value in the results panel tells you how often chance alone produced a difference as large as the one observed.",
+      "reveal": "Because differences of 29.2 pp or more almost never occur when promotions are shuffled randomly, chance is not a plausible explanation. The data provide convincing evidence that sex influenced the promotion decisions. Note the logic: we didn't prove discrimination directly — we ruled out the skeptic's \"just luck\" explanation."
+    }
+  ]
+}

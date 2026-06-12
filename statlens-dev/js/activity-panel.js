@@ -108,8 +108,92 @@
   }
 
   /**
+   * Current activity mode: 'discover' (gates block) or 'present' (gates render
+   * as discussion prompts). URL ?mode= wins; falls back to the data-mode body
+   * attribute set by applySettings(); defaults to discover.
+   * (Plain script — can't import settings.js, so read the published state.)
+   */
+  function getMode() {
+    const urlMode = new URLSearchParams(location.search).get('mode');
+    if (urlMode === 'present' || urlMode === 'discover') return urlMode;
+    const bodyMode = document.body.getAttribute('data-mode');
+    if (bodyMode === 'present' || bodyMode === 'discover') return bodyMode;
+    return 'discover';
+  }
+
+  /**
+   * Demo registry — named, self-contained animated illustrations that steps
+   * can open in a popup via `"demo": { "type": "...", ... }`.
+   * Allowlist only: activity JSON can be hosted anywhere, so the type must
+   * map to a known local module (never a path from the JSON).
+   */
+  const DEMOS = {
+    'card-shuffle': 'js/demos/card-shuffle.js',
+  };
+
+  /** Resolve a repo-root-relative path the same way activity URLs resolve. */
+  function rootPath(rel) {
+    const link = document.querySelector('link[rel="stylesheet"][href*="style.css"]');
+    const prefix = link ? (link.getAttribute('href') || '').replace(/css\/style\.css$/, '') : '/';
+    return new URL(prefix + rel, location.href).href;
+  }
+
+  /**
+   * Open a demo in a modal dialog and play it.
+   * @param {{ type: string, label?: string, options?: object }} demo
+   */
+  async function openDemo(demo) {
+    const modulePath = DEMOS[demo.type];
+    if (!modulePath) { console.warn(`Activity demo: unknown type "${demo.type}"`); return; }
+
+    const dialog = document.createElement('dialog');
+    dialog.className = 'activity-demo-dialog';
+    dialog.setAttribute('aria-label', demo.label || 'Demonstration');
+    dialog.innerHTML = `
+      <div class="demo-stage"><p class="demo-loading">Loading…</p></div>
+      <div class="demo-actions">
+        <button type="button" class="demo-play-btn">▶ Play again</button>
+        <button type="button" class="demo-close-btn">Close</button>
+      </div>
+    `;
+    document.body.appendChild(dialog);
+    dialog.addEventListener('close', () => dialog.remove());
+    dialog.querySelector('.demo-close-btn')?.addEventListener('click', () => dialog.close());
+    dialog.showModal();
+
+    try {
+      const mod = await import(rootPath(modulePath));
+      const stage = /** @type {HTMLElement} */ (dialog.querySelector('.demo-stage'));
+      const instance = mod.mount(stage, demo.options || {});
+      dialog.addEventListener('close', () => instance.destroy());
+      dialog.querySelector('.demo-play-btn')?.addEventListener('click', () => instance.play());
+      // Let the mounted layout paint before the first play
+      setTimeout(() => instance.play(), 400);
+    } catch (err) {
+      console.warn('Activity demo: failed to load', err);
+      const stage = dialog.querySelector('.demo-stage');
+      if (stage) stage.innerHTML = '<p>Sorry — this demonstration could not be loaded.</p>';
+    }
+  }
+
+  /**
+   * @typedef {object} GateChoice
+   * @property {string} text
+   * @property {boolean} [correct] - Mark exactly the right answer(s). If NO
+   *   choice is marked correct, the gate is a *prediction* gate: any committed
+   *   answer unlocks the step (committing is what does the pedagogical work).
+   * @property {string} [feedback] - Per-choice feedback (overrides gate-level)
+   *
+   * @typedef {object} GateSpec
+   * @property {string} question
+   * @property {GateChoice[]} choices
+   * @property {string} [feedback] - Shown after a passing commit
+   * @property {string} [retryFeedback] - Shown after an incorrect pick (check gates)
+   */
+
+  /**
    * Build and insert the activity panel into the DOM.
-   * @param {{ title: string, steps: Array<{instruction: string, observe?: string, reveal?: string}> }} activity
+   * @param {{ title: string, steps: Array<{instruction: string, observe?: string, reveal?: string, gate?: GateSpec, demo?: {type: string, label?: string, options?: object}}> }} activity
    */
   function renderPanel(activity) {
     const steps = activity.steps || [];
@@ -118,6 +202,9 @@
     let currentStep = 0;
     /** @type {Set<number>} */
     const revealed = new Set();
+    /** @type {Map<number, {chosen: number, passed: boolean}>} */
+    const gateState = new Map();
+    const present = getMode() === 'present';
 
     // Mark body so CSS can adjust layout
     document.body.setAttribute('data-activity', 'true');
@@ -140,21 +227,100 @@
     const sheetBackdrop = document.createElement('div');
     sheetBackdrop.className = 'activity-sheet-backdrop';
 
+    /**
+     * Render a gate block for the current step.
+     * Discovery: choice buttons; commit unlocks (prediction) or
+     * retry-until-correct (check). Presentation: discussion prompt, no blocking.
+     * @param {GateSpec} gate
+     */
+    function gateHtml(gate) {
+      const state = gateState.get(currentStep);
+      const isPrediction = !gate.choices.some(c => c.correct);
+
+      if (present) {
+        return `
+          <div class="gate-question activity-gate" data-present="true">
+            <p class="activity-gate-label">Ask your class:</p>
+            <p>${md(gate.question)}</p>
+            <ul class="activity-gate-discuss">
+              ${gate.choices.map(c => `<li>${md(c.text)}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+
+      const buttons = gate.choices.map((c, i) => {
+        let cls = 'gate-choice';
+        let disabled = '';
+        if (state) {
+          if (state.passed) {
+            disabled = 'disabled';
+            if (state.chosen === i) cls += isPrediction ? ' committed' : ' correct';
+          } else if (state.chosen === i) {
+            cls += ' incorrect';
+          }
+        }
+        return `<button type="button" class="${cls}" data-choice="${i}" ${disabled}>${md(c.text)}</button>`;
+      }).join('');
+
+      let feedback = '';
+      if (state) {
+        const choice = gate.choices[state.chosen];
+        if (state.passed) {
+          const text = choice.feedback || gate.feedback;
+          if (text) feedback = `<div class="gate-feedback success">${md(text)}</div>`;
+        } else {
+          const text = choice.feedback || gate.retryFeedback || 'Not quite — try again.';
+          feedback = `<div class="gate-feedback retry">${md(text)}</div>`;
+        }
+      }
+
+      return `
+        <div class="gate-question activity-gate">
+          <p>${md(gate.question)}</p>
+          <div class="gate-choices">${buttons}</div>
+          <div class="activity-gate-feedback" role="status" aria-live="polite">${feedback}</div>
+        </div>
+      `;
+    }
+
+    /** @param {number} choiceIdx */
+    function commitGate(choiceIdx) {
+      const gate = steps[currentStep].gate;
+      if (!gate) return;
+      const isPrediction = !gate.choices.some(c => c.correct);
+      const passed = isPrediction || !!gate.choices[choiceIdx].correct;
+      gateState.set(currentStep, { chosen: choiceIdx, passed });
+      render();
+    }
+
+    /** End the activity: strip activity/mode params, reload as the bare tool. */
+    function endActivity() {
+      const p = new URLSearchParams(location.search);
+      p.delete('activity');
+      const qs = p.toString();
+      location.href = location.pathname + (qs ? '?' + qs : '');
+    }
+
     // Build panel content
     function render() {
       const step = steps[currentStep];
       const isFirst = currentStep === 0;
       const isLast = currentStep === steps.length - 1;
       const isRevealed = revealed.has(currentStep);
+      const gateBlocks = !present && step.gate && !gateState.get(currentStep)?.passed;
 
       const html = `
         <div class="activity-header">
           <span class="activity-title">${md(activity.title)}</span>
           <span class="activity-step-count">Step ${currentStep + 1} of ${steps.length}</span>
+          <button type="button" class="activity-end-btn" aria-label="End activity and keep the tool open" title="End activity">✕</button>
         </div>
         <div class="activity-body">
           <div class="activity-instruction">${md(step.instruction)}</div>
+          ${step.demo && DEMOS[step.demo.type] ? `<button type="button" class="activity-demo-btn">▶ ${md(step.demo.label || 'Watch a demonstration')}</button>` : ''}
           ${step.observe ? `<div class="activity-observe"><span class="activity-observe-label">Look for:</span> ${md(step.observe)}</div>` : ''}
+          ${step.gate ? gateHtml(step.gate) : ''}
           ${step.reveal ? `
             <div class="activity-reveal-section">
               <button type="button" class="activity-reveal-btn">${isRevealed ? 'Hide explanation' : 'Show explanation'}</button>
@@ -164,7 +330,8 @@
         </div>
         <div class="activity-nav">
           <button type="button" class="activity-prev" ${isFirst ? 'disabled' : ''}>← Back</button>
-          <button type="button" class="activity-next" ${isLast ? 'disabled' : ''}>Next →</button>
+          <button type="button" class="activity-next" ${isLast || gateBlocks ? 'disabled' : ''}
+            ${gateBlocks ? 'title="Answer the question above to continue" aria-disabled="true"' : ''}>Next →</button>
         </div>
       `;
 
@@ -172,22 +339,27 @@
       sheet.innerHTML = `<div class="activity-sheet-handle"></div>${html}<button type="button" class="activity-sheet-close" aria-label="Minimize">✕</button>`;
       fab.textContent = `${currentStep + 1}/${steps.length}`;
 
-      // Wire events — panel
-      const prevBtn = panel.querySelector('.activity-prev');
-      const nextBtn = panel.querySelector('.activity-next');
-      const revealBtn = panel.querySelector('.activity-reveal-btn');
-      if (prevBtn) prevBtn.addEventListener('click', () => { currentStep--; render(); });
-      if (nextBtn) nextBtn.addEventListener('click', () => { currentStep++; render(); });
-      if (revealBtn) revealBtn.addEventListener('click', () => { toggleReveal(); });
-
-      // Wire events — sheet
-      const sPrev = sheet.querySelector('.activity-prev');
-      const sNext = sheet.querySelector('.activity-next');
-      const sReveal = sheet.querySelector('.activity-reveal-btn');
+      // Wire events — identical controls exist in panel and sheet
+      for (const root of [panel, sheet]) {
+        const prevBtn = root.querySelector('.activity-prev');
+        const nextBtn = root.querySelector('.activity-next');
+        const revealBtn = root.querySelector('.activity-reveal-btn');
+        const endBtn = root.querySelector('.activity-end-btn');
+        const demoBtn = root.querySelector('.activity-demo-btn');
+        if (prevBtn) prevBtn.addEventListener('click', () => { currentStep--; render(); });
+        if (nextBtn) nextBtn.addEventListener('click', () => { currentStep++; render(); });
+        if (revealBtn) revealBtn.addEventListener('click', () => { toggleReveal(); });
+        if (endBtn) endBtn.addEventListener('click', () => { endActivity(); });
+        if (demoBtn && steps[currentStep].demo) {
+          demoBtn.addEventListener('click', () => openDemo(steps[currentStep].demo));
+        }
+        for (const btn of root.querySelectorAll('.gate-choice[data-choice]')) {
+          btn.addEventListener('click', () => {
+            commitGate(parseInt(/** @type {HTMLElement} */ (btn).dataset.choice || '0', 10));
+          });
+        }
+      }
       const sClose = sheet.querySelector('.activity-sheet-close');
-      if (sPrev) sPrev.addEventListener('click', () => { currentStep--; render(); });
-      if (sNext) sNext.addEventListener('click', () => { currentStep++; render(); });
-      if (sReveal) sReveal.addEventListener('click', () => { toggleReveal(); });
       if (sClose) sClose.addEventListener('click', () => { closeSheet(); });
     }
 
