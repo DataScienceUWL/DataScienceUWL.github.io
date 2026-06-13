@@ -140,7 +140,9 @@
 
   /**
    * Open a demo in a modal dialog and play it.
-   * @param {{ type: string, label?: string, options?: object }} demo
+   * `static: true` shows the demo's initial render only — no auto-play, no
+   * Play-again button (e.g. "see the data as cards" before any shuffling).
+   * @param {{ type: string, label?: string, static?: boolean, options?: object }} demo
    */
   async function openDemo(demo) {
     const modulePath = DEMOS[demo.type];
@@ -152,7 +154,7 @@
     dialog.innerHTML = `
       <div class="demo-stage"><p class="demo-loading">Loading…</p></div>
       <div class="demo-actions">
-        <button type="button" class="demo-play-btn">▶ Play again</button>
+        ${demo.static ? '' : '<button type="button" class="demo-play-btn">▶ Play again</button>'}
         <button type="button" class="demo-close-btn">Close</button>
       </div>
     `;
@@ -168,7 +170,7 @@
       dialog.addEventListener('close', () => instance.destroy());
       dialog.querySelector('.demo-play-btn')?.addEventListener('click', () => instance.play());
       // Let the mounted layout paint before the first play
-      setTimeout(() => instance.play(), 400);
+      if (!demo.static) setTimeout(() => instance.play(), 400);
     } catch (err) {
       console.warn('Activity demo: failed to load', err);
       const stage = dialog.querySelector('.demo-stage');
