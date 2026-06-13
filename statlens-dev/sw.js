@@ -1,6 +1,6 @@
 // StatLens Service Worker — stale-while-revalidate with update notification.
 // DEPLOY_VERSION is replaced by deploy.sh on each deploy.
-const CACHE_NAME = 'statlens-60329eb5';
+const CACHE_NAME = 'statlens-d19e9084';
 
 // App shell — the core files needed for the app to work
 const APP_SHELL = [
@@ -88,6 +88,23 @@ self.addEventListener('fetch', (event) => {
 
   // CDN requests — network first, fall back to cache
   if (url.origin !== self.location.origin) {
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Activity definitions: network-first. Instructors iterate on these and
+  // students must get the latest on every load — stale-while-revalidate would
+  // serve a one-load-old activity (e.g. missing a newly added demo step).
+  // Falls back to cache when offline.
+  if (url.pathname.includes('/activities/') && url.pathname.endsWith('.json')) {
     event.respondWith(
       fetch(event.request).then((response) => {
         if (response.ok) {
