@@ -3549,13 +3549,63 @@ body[data-activity="true"] #data-panel {
     transform: translateY(0);
   }
 
+  /* Peek — collapsed to a bottom bar so the tool shows and is interactive.
+     Only the handle (with step hint) stays; body, nav and close hide. */
+  .activity-sheet.open.peek {
+    max-height: none;
+    overflow: visible;
+    padding-bottom: 0.5rem;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+  .activity-sheet.peek .activity-header,
+  .activity-sheet.peek .activity-body,
+  .activity-sheet.peek .activity-nav,
+  .activity-sheet.peek .activity-sheet-close {
+    display: none;
+  }
+
+  /* Keep the update toast clear of the collapsed peek bar (both sit bottom-center) */
+  body[data-activity="true"] .update-toast {
+    bottom: 5.5rem;
+  }
+
+  /* Handle doubles as the collapse/expand button (44px tap target) */
   .activity-sheet-handle {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 44px;
+    margin: 0 0 0.5rem;
+    padding: 0.5rem 0 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  /* The grab bar itself, drawn as a pseudo-element above any hint text */
+  .activity-sheet-handle::before {
+    content: "";
+    position: absolute;
+    top: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
     width: 40px;
     height: 4px;
     background: #ccc;
     border-radius: 2px;
-    margin: 0 auto 0.75rem;
   }
+  /* "tap to expand" hint shows only when collapsed */
+  .activity-peek-hint {
+    display: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--ims-dark, #114B5F);
+  }
+  .activity-sheet.peek .activity-peek-hint { display: inline; }
+  .activity-sheet.peek .activity-sheet-handle { min-height: 48px; }
 
   .activity-sheet-close {
     position: absolute;
@@ -3563,10 +3613,12 @@ body[data-activity="true"] #data-panel {
     right: 0.75rem;
     background: none;
     border: none;
-    font-size: 1.25rem;
-    color: #666;
+    font-size: 1.5rem;
+    color: #595959;
     cursor: pointer;
-    padding: 0.25rem;
+    padding: 0.4rem;
+    min-width: 44px;
+    min-height: 44px;
     line-height: 1;
   }
 }

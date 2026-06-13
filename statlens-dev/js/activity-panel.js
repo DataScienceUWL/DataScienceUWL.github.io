@@ -338,7 +338,9 @@
       `;
 
       panel.innerHTML = html;
-      sheet.innerHTML = `<div class="activity-sheet-handle"></div>${html}<button type="button" class="activity-sheet-close" aria-label="Minimize">✕</button>`;
+      sheet.innerHTML = `<button type="button" class="activity-sheet-handle" aria-label="Collapse or expand instructions">`
+        + `<span class="activity-peek-hint">Step ${currentStep + 1} of ${steps.length} · tap to expand</span></button>`
+        + `${html}<button type="button" class="activity-sheet-close" aria-label="Hide instructions">✕</button>`;
       fab.textContent = `${currentStep + 1}/${steps.length}`;
 
       // Wire events — identical controls exist in panel and sheet
@@ -363,6 +365,10 @@
       }
       const sClose = sheet.querySelector('.activity-sheet-close');
       if (sClose) sClose.addEventListener('click', () => { closeSheet(); });
+      const sHandle = sheet.querySelector('.activity-sheet-handle');
+      if (sHandle) sHandle.addEventListener('click', () => {
+        if (sheet.classList.contains('peek')) openSheet(); else peekSheet();
+      });
     }
 
     function toggleReveal() {
@@ -374,20 +380,34 @@
       render();
     }
 
+    // Mobile sheet has three states:
+    //  full  — .open (backdrop on): reading instructions, tool not interactive
+    //  peek  — .open.peek (no backdrop): collapsed to a bottom bar, tool visible
+    //          and interactive — lets students act on the instructions
+    //  hidden — neither class: only the FAB shows
     function openSheet() {
       sheet.classList.add('open');
+      sheet.classList.remove('peek');
       sheetBackdrop.classList.add('open');
       fab.classList.add('hidden');
     }
 
+    function peekSheet() {
+      sheet.classList.add('open', 'peek');
+      sheetBackdrop.classList.remove('open');
+      fab.classList.add('hidden');
+    }
+
     function closeSheet() {
-      sheet.classList.remove('open');
+      sheet.classList.remove('open', 'peek');
       sheetBackdrop.classList.remove('open');
       fab.classList.remove('hidden');
     }
 
     fab.addEventListener('click', () => openSheet());
-    sheetBackdrop.addEventListener('click', () => closeSheet());
+    // Tapping the dimmed area collapses to peek (keeps the step visible) rather
+    // than hiding entirely — students rarely want to lose their place.
+    sheetBackdrop.addEventListener('click', () => peekSheet());
 
     // Insert into DOM
     document.body.appendChild(panel);
