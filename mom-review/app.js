@@ -93,11 +93,19 @@ function toggle(pid,line,el){const key=k(pid,line);OV[key]=OV[key]||{};
   el.classList.toggle('on');el.closest('.item').classList.toggle('done');
   el.textContent=el.classList.contains('on')?'✓ Resolved — tap to undo':'Resolve';}
 
-function exportNotes(){
+async function exportNotes(){
   const out={exported:new Date().toISOString(),snapshot:BUNDLE.generated,changes:OV};
-  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='mom-review-export.json';document.body.appendChild(a);a.click();a.remove();}
+  const json=JSON.stringify(out,null,2);
+  const ts=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+  const fname='mom-review-export-'+ts+'.json';
+  try{const file=new File([json],fname,{type:'application/json'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:'MOM Review export',text:'MOM review notes + resolves'});
+      return;}
+  }catch(e){if(e&&e.name==='AbortError')return;}
+  const blob=new Blob([json],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;
+  document.body.appendChild(a);a.click();a.remove();}
 
 async function dl(btn){
   const urls=['./data/bundle.json',...BUNDLE.problems.filter(p=>p.shot).map(p=>'./'+p.shot)];
