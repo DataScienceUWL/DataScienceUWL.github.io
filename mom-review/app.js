@@ -93,19 +93,34 @@ function toggle(pid,line,el){const key=k(pid,line);OV[key]=OV[key]||{};
   el.classList.toggle('on');el.closest('.item').classList.toggle('done');
   el.textContent=el.classList.contains('on')?'✓ Resolved — tap to undo':'Resolve';}
 
-async function exportNotes(){
+function exportNotes(){
+  const n=Object.keys(OV).length;
   const out={exported:new Date().toISOString(),snapshot:BUNDLE.generated,changes:OV};
   const json=JSON.stringify(out,null,2);
   const ts=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
   const fname='mom-review-export-'+ts+'.json';
-  try{const file=new File([json],fname,{type:'application/json'});
-    if(navigator.canShare&&navigator.canShare({files:[file]})){
-      await navigator.share({files:[file],title:'MOM Review export',text:'MOM review notes + resolves'});
-      return;}
-  }catch(e){if(e&&e.name==='AbortError')return;}
   const blob=new Blob([json],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;
-  document.body.appendChild(a);a.click();a.remove();}
+  const m=document.createElement('div');m.className='modal';
+  m.innerHTML=`<div class=sheet>
+    <div class=mh>Export — ${n} change(s)</div>
+    <button id=esh>📤 Send file (Tailscale / Drive)</button>
+    <button id=ecp class=alt>📋 Copy JSON</button>
+    <a id=edl class=dlbtn download="${fname}">⬇ Download file</a>
+    <button id=ecl class=cancel>Close</button>
+    <div class=muted>or long-press to select &amp; copy:</div>
+    <textarea readonly>${json.replace(/</g,'&lt;')}</textarea></div>`;
+  document.body.appendChild(m);
+  const dl=m.querySelector('#edl');dl.href=URL.createObjectURL(blob);
+  m.querySelector('#esh').onclick=async()=>{
+    try{const file=new File([json],fname,{type:'application/json'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'MOM Review export'});return;}
+      await navigator.share({title:'MOM Review export',text:json});
+    }catch(e){if(e&&e.name!=='AbortError')alert('Share unavailable here — use Copy or Download.');}};
+  m.querySelector('#ecp').onclick=async(e)=>{
+    try{await navigator.clipboard.writeText(json);e.target.textContent='✓ Copied';}
+    catch(_){m.querySelector('textarea').select();document.execCommand('copy');e.target.textContent='✓ Copied';}};
+  m.querySelector('#ecl').onclick=()=>m.remove();
+  m.onclick=(e)=>{if(e.target===m)m.remove();};}
 
 async function dl(btn){
   const urls=['./data/bundle.json',...BUNDLE.problems.filter(p=>p.shot).map(p=>'./'+p.shot)];
