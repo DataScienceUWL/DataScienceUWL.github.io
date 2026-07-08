@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Calculate — Unit Review – Introduction to Statistics: A Simulation-First Approach</title>
+<title>23&nbsp; ANOVA for Regression – Introduction to Statistics: A Simulation-First Approach</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -30,8 +30,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../tech/tech-tutorial-calculate.html" rel="next">
-<link href="../chapters/hypothesis-tests-means.html" rel="prev">
+<link href="../chapters/multiple-regression.html" rel="next">
+<link href="../chapters/prediction-model-fit.html" rel="prev">
 <link href="../images/favicon.svg" rel="icon" type="image/svg+xml">
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -118,7 +118,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-iii.html">Unit 3: Calculate</a></li><li class="breadcrumb-item"><a href="../reviews/review-calculate.html">Calculate — Unit Review</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-iv.html">Unit 4: Apply</a></li><li class="breadcrumb-item"><a href="../chapters/anova-for-regression.html"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">ANOVA for Regression</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -285,11 +285,11 @@ window.Quarto = {
       <div class="sidebar-item-container"> 
             <a href="../parts/part-iii.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Unit 3: Calculate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../chapters/normal-approximation.html" class="sidebar-item-text sidebar-link">
@@ -316,7 +316,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../reviews/review-calculate.html" class="sidebar-item-text sidebar-link active">
+  <a href="../reviews/review-calculate.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Calculate — Unit Review</span></a>
   </div>
 </li>
@@ -344,11 +344,11 @@ window.Quarto = {
       <div class="sidebar-item-container"> 
             <a href="../parts/part-iv.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Unit 4: Apply</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../chapters/chisq-gof.html" class="sidebar-item-text sidebar-link">
@@ -393,7 +393,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../chapters/anova-for-regression.html" class="sidebar-item-text sidebar-link">
+  <a href="../chapters/anova-for-regression.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">ANOVA for Regression</span></span></a>
   </div>
 </li>
@@ -557,21 +557,31 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#sec-review-calculate-bigpicture" id="toc-sec-review-calculate-bigpicture" class="nav-link active" data-scroll-target="#sec-review-calculate-bigpicture">The big picture</a></li>
-  <li><a href="#sec-review-calculate-compare" id="toc-sec-review-calculate-compare" class="nav-link" data-scroll-target="#sec-review-calculate-compare">Which z- or t-procedure?</a></li>
-  <li><a href="#sec-review-calculate-decision" id="toc-sec-review-calculate-decision" class="nav-link" data-scroll-target="#sec-review-calculate-decision">Simulation or formula?</a></li>
-  <li><a href="#sec-review-calculate-vocab" id="toc-sec-review-calculate-vocab" class="nav-link" data-scroll-target="#sec-review-calculate-vocab">Key ideas to carry forward</a></li>
-  <li><a href="#sec-review-calculate-pitfalls" id="toc-sec-review-calculate-pitfalls" class="nav-link" data-scroll-target="#sec-review-calculate-pitfalls">Common pitfalls</a></li>
-  <li><a href="#sec-review-calculate-exercises" id="toc-sec-review-calculate-exercises" class="nav-link" data-scroll-target="#sec-review-calculate-exercises">Exercises</a></li>
+  <li><a href="#sec-two-questions" id="toc-sec-two-questions" class="nav-link active" data-scroll-target="#sec-two-questions"><span class="header-section-number">23.1</span> The two-question view of regression</a></li>
+  <li><a href="#sec-ss-partition" id="toc-sec-ss-partition" class="nav-link" data-scroll-target="#sec-ss-partition"><span class="header-section-number">23.2</span> Partitioning the total sum of squares</a></li>
+  <li><a href="#sec-anova-table-regression" id="toc-sec-anova-table-regression" class="nav-link" data-scroll-target="#sec-anova-table-regression"><span class="header-section-number">23.3</span> The ANOVA table for regression</a></li>
+  <li><a href="#sec-f-stat-regression" id="toc-sec-f-stat-regression" class="nav-link" data-scroll-target="#sec-f-stat-regression"><span class="header-section-number">23.4</span> The <span class="math inline">\(F\)</span>-statistic and its distribution</a></li>
+  <li><a href="#sec-possum-anova" id="toc-sec-possum-anova" class="nav-link" data-scroll-target="#sec-possum-anova"><span class="header-section-number">23.5</span> Worked example: possum head length on total length</a></li>
+  <li><a href="#sec-f-equals-t-squared" id="toc-sec-f-equals-t-squared" class="nav-link" data-scroll-target="#sec-f-equals-t-squared"><span class="header-section-number">23.6</span> <span class="math inline">\(F = t^2\)</span> in simple regression</a></li>
+  <li><a href="#sec-anova-mlr-bridge" id="toc-sec-anova-mlr-bridge" class="nav-link" data-scroll-target="#sec-anova-mlr-bridge"><span class="header-section-number">23.7</span> Bridge to multiple regression</a></li>
+  <li><a href="#sec-anova-for-regression-review" id="toc-sec-anova-for-regression-review" class="nav-link" data-scroll-target="#sec-anova-for-regression-review"><span class="header-section-number">23.8</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">23.8.1</span> Summary</a></li>
+  <li><a href="#terms" id="toc-terms" class="nav-link" data-scroll-target="#terms"><span class="header-section-number">23.8.2</span> Terms</a></li>
+  </ul></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">23.9</span> Exercises</a>
+  <ul class="collapse">
+  <li><a href="#statlens-exercises" id="toc-statlens-exercises" class="nav-link" data-scroll-target="#statlens-exercises">StatLens Exercises</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-iii.html">Unit 3: Calculate</a></li><li class="breadcrumb-item"><a href="../reviews/review-calculate.html">Calculate — Unit Review</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-iv.html">Unit 4: Apply</a></li><li class="breadcrumb-item"><a href="../chapters/anova-for-regression.html"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">ANOVA for Regression</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Calculate — Unit Review</h1>
+<h1 class="title"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">ANOVA for Regression</span></h1>
 </div>
 
 
@@ -589,141 +599,361 @@ window.Quarto = {
 
 
 <div class="chapterintro">
-<p>Unit 3 revisits the same questions you answered by simulation — <em>is there an effect?</em> and <em>how big is it?</em> — but answers them with <strong>formulas</strong>. When the conditions hold, the simulated distributions of Unit 2 are approximately <strong>normal</strong> (or <strong>t</strong>), so a short calculation replaces thousands of resamples. This review consolidates <em>which</em> formula goes with which question, and <em>when you’re allowed to use it.</em></p>
+<p>In the linear regression chapter we tested a single hypothesis: is the population slope <span class="math inline">\(\beta_1\)</span> zero? That test used a <span class="math inline">\(t\)</span>-statistic, and it answered a single question about a single coefficient. In this chapter we develop a <em>different</em> view of regression that scales naturally to models with many predictors: the <strong>analysis of variance (ANOVA) table for regression</strong>. This view partitions the total variability in the response into a piece the model explains and a piece it doesn’t, and summarizes the resulting evidence for the model <em>as a whole</em> with an <span class="math inline">\(F\)</span>-statistic. In simple regression the ANOVA <span class="math inline">\(F\)</span>-test is algebraically equivalent to the <span class="math inline">\(t\)</span>-test on <span class="math inline">\(\beta_1\)</span> (specifically, <span class="math inline">\(F = t^2\)</span>), so it provides no new answers there — but the framework is the one that carries over to multiple regression, where it becomes essential.</p>
 </div>
-<section id="sec-review-calculate-bigpicture" class="level2">
-<h2 class="anchored" data-anchor-id="sec-review-calculate-bigpicture">The big picture</h2>
-<p><a href="../chapters/normal-approximation.html">Mathematical models</a> showed that, under the right conditions, the sampling distribution of a statistic is approximately <strong>normal</strong>. That single fact powers the rest of the part:</p>
+<div class="statlens">
+<p><strong>StatLens tools for this chapter.</strong></p>
 <ul>
-<li><strong><a href="../chapters/inference-proportions.html">Inference for proportions</a></strong> — the normal model gives the <strong>z</strong>-procedures for one and two proportions.</li>
-<li><strong><a href="../chapters/ci-for-means.html">Confidence intervals for means</a></strong> and <strong><a href="../chapters/hypothesis-tests-means.html">hypothesis tests for means</a></strong> — because we estimate the standard deviation from the data, means use the <strong>t</strong>-distribution (one-sample, two-sample, and paired).</li>
+<li><a href="https://jbaggett.github.io/statlens/inference/slope/?dataset=possum_regression&amp;anova=true" target="_blank"><strong>Slope tool with ANOVA panel</strong></a> — displays the ANOVA table for a simple regression fit (SS partition, <span class="math inline">\(F\)</span>-statistic, model <span class="math inline">\(R^2\)</span>). The panel is being added to StatLens under contract REQ-037; until it lands, the <span class="math inline">\(F\)</span>-value can be verified as the square of the reported <span class="math inline">\(t\)</span>-statistic for the slope (both share the same p-value).</li>
+<li><a href="https://jbaggett.github.io/statlens/explore/regression/" target="_blank"><strong>Regression Explorer</strong></a> — pair with the ANOVA view to see the fitted line and residuals side by side.</li>
 </ul>
-<p>The logic is identical to Unit 2 — a <strong>test</strong> gives a p-value, an <strong>interval</strong> gives a range — but the null/sampling distribution now comes from a <em>model</em> instead of a simulation. The trade: formulas are fast, but they’re only valid when their <strong>conditions</strong> are met.</p>
+</div>
+<section id="sec-two-questions" class="level2" data-number="23.1">
+<h2 data-number="23.1" class="anchored" data-anchor-id="sec-two-questions"><span class="header-section-number">23.1</span> The two-question view of regression</h2>
+<p>When we fit a simple linear regression model <span class="math inline">\(\hat{y} = b_0 + b_1 x\)</span> to sample data, we can ask two related but distinct questions:</p>
+<ol type="1">
+<li><strong>Is the slope different from zero?</strong> This is a <em>coefficient-level</em> question. In the linear regression chapter we answered it with a <span class="math inline">\(t\)</span>-test on <span class="math inline">\(b_1\)</span>.</li>
+<li><strong>Is the model useful at all?</strong> This is a <em>model-level</em> question. Does the fitted regression explain a discernible share of the variability in <span class="math inline">\(y\)</span>, compared to using <span class="math inline">\(\bar{y}\)</span> as a “prediction” for every case?</li>
+</ol>
+<p>In simple regression these two questions have the same answer, because a single-predictor model is “useful” exactly when its one slope coefficient is nonzero. When we add more predictors in the next chapter, the two questions come apart — some coefficients can be individually nonsignificant while the model as a whole is highly significant, or vice versa. The ANOVA-for-regression view is the tool we use to ask the <em>model-level</em> question.</p>
 </section>
-<section id="sec-review-calculate-compare" class="level2">
-<h2 class="anchored" data-anchor-id="sec-review-calculate-compare">Which z- or t-procedure?</h2>
-<p>Pin the procedure with three questions — <strong>proportion or mean? one group or two? (for means) paired or independent?</strong> — then check the condition.</p>
+<section id="sec-ss-partition" class="level2" data-number="23.2">
+<h2 data-number="23.2" class="anchored" data-anchor-id="sec-ss-partition"><span class="header-section-number">23.2</span> Partitioning the total sum of squares</h2>
+<p>The <strong>total variability</strong> in the response is measured by</p>
+<p><span class="math display">\[SST = \sum_{i=1}^{n} (y_i - \bar{y})^2,\]</span></p>
+<p>the sum of squared deviations of each observation from the sample mean. For any fitted regression line, we can split each deviation <span class="math inline">\(y_i - \bar{y}\)</span> into two pieces:</p>
+<p><span class="math display">\[y_i - \bar{y} = \underbrace{(\hat{y}_i - \bar{y})}_{\text{explained by the model}} + \underbrace{(y_i - \hat{y}_i)}_{\text{unexplained (the residual)}}.\]</span></p>
+<p>Squaring and summing gives an identity that is arguably the single most important formula in this chapter:</p>
+<div class="important">
+<p><strong>The sum-of-squares decomposition for regression.</strong></p>
+<p><span class="math display">\[SST = SSR + SSE,\]</span></p>
+<p>where</p>
+<ul>
+<li><span class="math inline">\(SST = \sum (y_i - \bar{y})^2\)</span> is the <strong>total sum of squares</strong> (total variability in <span class="math inline">\(y\)</span>),</li>
+<li><span class="math inline">\(SSR = \sum (\hat{y}_i - \bar{y})^2\)</span> is the <strong>regression sum of squares</strong> (variability <em>explained</em> by the model),</li>
+<li><span class="math inline">\(SSE = \sum (y_i - \hat{y}_i)^2\)</span> is the <strong>error</strong> or <strong>residual sum of squares</strong> (variability <em>not</em> explained).</li>
+</ul>
+</div>
+<p>The cross-product term that would appear in a naive expansion vanishes because the ordinary least-squares fit is orthogonal to the residuals by construction; you can take that as a promise for now.</p>
+<p>This decomposition also gives an interpretation of <span class="math inline">\(R^2\)</span> that is the same one you already know but written in the new language:</p>
+<p><span class="math display">\[R^2 = \frac{SSR}{SST} = 1 - \frac{SSE}{SST}.\]</span></p>
+<p><span class="math inline">\(R^2\)</span> is the fraction of total variability that the regression model explains.</p>
+</section>
+<section id="sec-anova-table-regression" class="level2" data-number="23.3">
+<h2 data-number="23.3" class="anchored" data-anchor-id="sec-anova-table-regression"><span class="header-section-number">23.3</span> The ANOVA table for regression</h2>
+<p>Software organizes the sum-of-squares decomposition, degrees of freedom, and derived quantities into an <strong>ANOVA table</strong>:</p>
+<div id="tbl-anova-simple" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-anova-simple-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;23.1: The ANOVA table for a simple linear regression fit. In simple regression the numerator degrees of freedom is always 1 (one slope estimated); the denominator is <span class="math inline">\(n - 2\)</span> (one intercept and one slope).
+</figcaption>
+<div aria-describedby="tbl-anova-simple-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table class="caption-top table">
 <colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Situation</th>
-<th>Procedure</th>
-<th>Key condition</th>
+<th>Source</th>
+<th style="text-align: center;">df</th>
+<th style="text-align: center;">SS</th>
+<th style="text-align: center;">MS</th>
+<th style="text-align: center;"><span class="math inline">\(F\)</span></th>
+<th style="text-align: center;">p-value</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>One <strong>proportion</strong> vs.&nbsp;a value</td>
-<td>one-proportion <strong>z</strong></td>
-<td><span class="math inline">\(np_0 \ge 10\)</span> and <span class="math inline">\(n(1-p_0) \ge 10\)</span></td>
+<td>Regression</td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(SSR\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(MSR = SSR / 1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(F = MSR/MSE\)</span></td>
+<td style="text-align: center;">(from <span class="math inline">\(F_{1,\,n-2}\)</span>)</td>
 </tr>
 <tr class="even">
-<td>Two <strong>proportions</strong> compared</td>
-<td>two-proportion <strong>z</strong></td>
-<td>each group has ≥10 successes &amp; ≥10 failures</td>
+<td>Residual</td>
+<td style="text-align: center;"><span class="math inline">\(n - 2\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(SSE\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(MSE = SSE / (n-2)\)</span></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr class="odd">
-<td>One <strong>mean</strong> vs.&nbsp;a value</td>
-<td>one-sample <strong>t</strong></td>
-<td>roughly normal, or large <span class="math inline">\(n\)</span></td>
-</tr>
-<tr class="even">
-<td>Two <strong>means</strong>, independent groups</td>
-<td>two-sample <strong>t</strong></td>
-<td>each group roughly normal / large</td>
-</tr>
-<tr class="odd">
-<td><strong>Paired</strong> measurements (before/after, matched)</td>
-<td>paired <strong>t</strong> (t on the differences)</td>
-<td>the <em>differences</em> roughly normal</td>
+<td>Total</td>
+<td style="text-align: center;"><span class="math inline">\(n - 1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(SST\)</span></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 </tbody>
 </table>
-<div class="important">
-<p><strong>Paired vs.&nbsp;independent is a design question, not a math question.</strong> If each value in one group is naturally linked to a specific value in the other (same subject twice, matched pairs), it’s <strong>paired</strong> — analyze the differences. If the two groups are separate samples, it’s <strong>two-sample</strong>.</p>
 </div>
-</section>
-<section id="sec-review-calculate-decision" class="level2">
-<h2 class="anchored" data-anchor-id="sec-review-calculate-decision">Simulation or formula?</h2>
-<p>Both routes answer the same question; pick by <strong>conditions</strong>:</p>
-<ol type="1">
-<li><strong>Identify the procedure</strong> from the table (proportion/mean, one/two, paired).</li>
-<li><strong>Check its condition.</strong>
+</figure>
+</div>
+<p>Two of the columns deserve extra comment.</p>
 <ul>
-<li><strong>Conditions met</strong> → the <strong>z/t formula</strong> is valid and convenient.</li>
-<li><strong>Conditions fail</strong> (e.g.&nbsp;too few successes/failures, small skewed sample) → fall back to the <strong>simulation</strong> method from Unit 2 (randomization test or bootstrap), which makes no normality assumption.</li>
-</ul></li>
-<li>Remember they <strong>agree when both apply</strong> — the formula is the shortcut the simulation justifies.</li>
-</ol>
-</section>
-<section id="sec-review-calculate-vocab" class="level2">
-<h2 class="anchored" data-anchor-id="sec-review-calculate-vocab">Key ideas to carry forward</h2>
-<p><strong>Sampling distribution</strong> · <strong>standard error</strong> · <strong>z-procedure</strong> (proportions) · <strong>t-distribution</strong> (means) · <strong>degrees of freedom</strong> · <strong>success–failure condition</strong> · <strong>pooled proportion</strong> · <strong>paired vs.&nbsp;two-sample</strong> · <strong>margin of error</strong> · <strong>critical value</strong> (<span class="math inline">\(z^*\)</span>, <span class="math inline">\(t^*\)</span>) · <strong>p-value</strong> · <strong>confidence level</strong>.</p>
-</section>
-<section id="sec-review-calculate-pitfalls" class="level2">
-<h2 class="anchored" data-anchor-id="sec-review-calculate-pitfalls">Common pitfalls</h2>
-<ul>
-<li><strong>Using a z-test on a proportion when <span class="math inline">\(np_0 &lt; 10\)</span></strong> — the normal model is unreliable; use simulation (this is the malaria/medical-consultant lesson).</li>
-<li><strong>Treating paired data as two independent samples</strong> (or vice versa) — wrong standard error, wrong df.</li>
-<li><strong>“Fail to reject” ≠ “accept the null.”</strong></li>
-<li><strong>A bigger sample shrinks the margin of error and raises power</strong> — but never fixes bias.</li>
-<li><strong>A confidence interval is about the procedure’s long-run capture rate</strong>, not a probability for the one interval.</li>
+<li>The <strong>degrees of freedom</strong> row is what you would guess: we lose two df fitting the two coefficients (<span class="math inline">\(b_0\)</span> and <span class="math inline">\(b_1\)</span>), leaving <span class="math inline">\(n - 2\)</span> for the residual row; the regression row picks up the remaining <span class="math inline">\(1\)</span> so that everything sums to the total’s <span class="math inline">\(n - 1\)</span>.</li>
+<li><span class="math inline">\(MSE\)</span> estimates the residual variance <span class="math inline">\(\sigma^2\)</span> around the true regression line. Its square root, <span class="math inline">\(s = \sqrt{MSE}\)</span>, is the <strong>residual standard error</strong> that software reports on the same output.</li>
 </ul>
 </section>
-<section id="sec-review-calculate-exercises" class="level2">
-<h2 class="anchored" data-anchor-id="sec-review-calculate-exercises">Exercises</h2>
-<p>The Unit 3 skill is <strong>naming the right z/t procedure and checking whether you’re allowed to use it.</strong> Answers are provided so you can check your work.</p>
+<section id="sec-f-stat-regression" class="level2" data-number="23.4">
+<h2 data-number="23.4" class="anchored" data-anchor-id="sec-f-stat-regression"><span class="header-section-number">23.4</span> The <span class="math inline">\(F\)</span>-statistic and its distribution</h2>
+<p>The <strong><span class="math inline">\(F\)</span>-statistic</strong> for regression is a ratio of two variance estimates:</p>
+<p><span class="math display">\[F = \frac{MSR}{MSE} = \frac{SSR / 1}{SSE / (n-2)}.\]</span></p>
+<p>Under <span class="math inline">\(H_0: \beta_1 = 0\)</span> (and the LINE conditions from the linear regression chapter), this statistic follows an <span class="math inline">\(F\)</span> distribution with <span class="math inline">\(1\)</span> numerator degree of freedom and <span class="math inline">\(n - 2\)</span> denominator degrees of freedom. When the true slope is zero, both <span class="math inline">\(MSR\)</span> and <span class="math inline">\(MSE\)</span> estimate the same noise variance <span class="math inline">\(\sigma^2\)</span>, so <span class="math inline">\(F\)</span> hovers near 1. When the slope is nonzero, the model captures real signal and <span class="math inline">\(MSR\)</span> inflates relative to <span class="math inline">\(MSE\)</span>, driving <span class="math inline">\(F\)</span> above 1. So the test is always right-tailed: we compute a p-value as the area <em>to the right</em> of the observed <span class="math inline">\(F\)</span> on the <span class="math inline">\(F_{1,\,n-2}\)</span> curve.</p>
+<div class="definition">
+<p>The <strong>model-level <span class="math inline">\(F\)</span>-test</strong> for a simple linear regression tests</p>
+<p><span class="math display">\[H_0: \beta_1 = 0 \quad \text{vs.} \quad H_A: \beta_1 \ne 0\]</span></p>
+<p>with test statistic <span class="math inline">\(F = MSR / MSE\)</span>. Under <span class="math inline">\(H_0\)</span> and the LINE conditions, <span class="math inline">\(F \sim F_{1,\,n-2}\)</span>. Small p-values (large <span class="math inline">\(F\)</span>) provide evidence that the regression model captures real signal in <span class="math inline">\(y\)</span>.</p>
+</div>
+</section>
+<section id="sec-possum-anova" class="level2" data-number="23.5">
+<h2 data-number="23.5" class="anchored" data-anchor-id="sec-possum-anova"><span class="header-section-number">23.5</span> Worked example: possum head length on total length</h2>
+<div class="workedexample">
+<p>The linear regression chapter fit a model of possum head length (mm) on total length (cm) using <span class="math inline">\(n = 104\)</span> possums. Suppose the software reports the following:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Quantity</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Slope estimate <span class="math inline">\(b_1\)</span></td>
+<td>0.573</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(SE(b_1)\)</span></td>
+<td>0.062</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(t\)</span>-statistic for <span class="math inline">\(H_0: \beta_1 = 0\)</span></td>
+<td>9.24</td>
+</tr>
+<tr class="even">
+<td>Residual standard error <span class="math inline">\(s\)</span></td>
+<td>2.60 mm</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(R^2\)</span></td>
+<td>0.456</td>
+</tr>
+</tbody>
+</table>
+<p>Fill in the ANOVA table.</p>
+<hr>
+<p><strong>Total sum of squares.</strong> With <span class="math inline">\(n = 104\)</span>, the residual row has <span class="math inline">\(df = n - 2 = 102\)</span>. The regression row has <span class="math inline">\(df = 1\)</span>. The total row has <span class="math inline">\(df = n - 1 = 103\)</span>.</p>
+<p>The residual mean square is <span class="math inline">\(MSE = s^2 = 2.60^2 = 6.76\)</span>, so <span class="math display">\[SSE = df_{\text{resid}} \times MSE = 102 \times 6.76 = 689.5.\]</span></p>
+<p><span class="math inline">\(R^2 = 0.456\)</span> means the model explains <span class="math inline">\(45.6\%\)</span> of the total variability, so <span class="math display">\[SSR = \frac{R^2}{1 - R^2} \cdot SSE = \frac{0.456}{0.544} \times 689.5 \approx 578.\]</span></p>
+<p>(Equivalently, <span class="math inline">\(SST = SSE / (1 - R^2) \approx 689.5 / 0.544 \approx 1267\)</span> and <span class="math inline">\(SSR = SST - SSE \approx 578\)</span>.)</p>
+<p><strong>The regression mean square</strong> is <span class="math inline">\(MSR = SSR / 1 = 578\)</span>, and</p>
+<p><span class="math display">\[F = \frac{MSR}{MSE} = \frac{578}{6.76} \approx 85.5.\]</span></p>
+<p>Compare to <span class="math inline">\(t^2 = 9.24^2 \approx 85.4\)</span> — the two match to within rounding.</p>
+<p>Under <span class="math inline">\(H_0\)</span> the null distribution is <span class="math inline">\(F_{1, 102}\)</span>, and <span class="math inline">\(F = 85.5\)</span> is far into the right tail; the p-value from software is essentially zero. The ANOVA <span class="math inline">\(F\)</span>-test rejects the null of no linear relationship, in exact agreement with the <span class="math inline">\(t\)</span>-test we ran in the linear regression chapter.</p>
+</div>
+</section>
+<section id="sec-f-equals-t-squared" class="level2" data-number="23.6">
+<h2 data-number="23.6" class="anchored" data-anchor-id="sec-f-equals-t-squared"><span class="header-section-number">23.6</span> <span class="math inline">\(F = t^2\)</span> in simple regression</h2>
+<p>The near-equality of <span class="math inline">\(F\)</span> and <span class="math inline">\(t^2\)</span> in the worked example is not a coincidence.</p>
+<div class="important">
+<p><strong>In a simple linear regression</strong>, the ANOVA <span class="math inline">\(F\)</span>-statistic and the slope <span class="math inline">\(t\)</span>-statistic satisfy</p>
+<p><span class="math display">\[F = t^2,\]</span></p>
+<p>and the two tests give <strong>identical</strong> p-values. Rejecting <span class="math inline">\(H_0: \beta_1 = 0\)</span> with the <span class="math inline">\(t\)</span>-test is the same event as rejecting the model-level <span class="math inline">\(H_0\)</span> with the <span class="math inline">\(F\)</span>-test.</p>
+</div>
+<p>This equivalence is a special case of a broader algebraic fact about <span class="math inline">\(F\)</span> distributions: an <span class="math inline">\(F\)</span> random variable with <span class="math inline">\(1\)</span> numerator degree of freedom is the square of a <span class="math inline">\(t\)</span> random variable with the corresponding denominator degrees of freedom. So in simple regression the two tests are literally the same test dressed in different notation.</p>
+<p>Why bother introducing the ANOVA framework at all, then? Because in <strong>multiple regression</strong> — with two or more predictors — the <span class="math inline">\(F\)</span>-test tests whether <em>any</em> of the slopes are nonzero. There is no single <span class="math inline">\(t\)</span>-statistic that answers that question; each predictor gets its own <span class="math inline">\(t\)</span>, and the model-level <span class="math inline">\(F\)</span> combines them. The ANOVA-for-regression view is the correct generalization; the coincidence of <span class="math inline">\(F = t^2\)</span> in the one-predictor case simply reflects that the two views have to agree when there is only one slope to test.</p>
+</section>
+<section id="sec-anova-mlr-bridge" class="level2" data-number="23.7">
+<h2 data-number="23.7" class="anchored" data-anchor-id="sec-anova-mlr-bridge"><span class="header-section-number">23.7</span> Bridge to multiple regression</h2>
+<p>The next chapter introduces regression models with <strong>more than one</strong> predictor. The ANOVA framework extends naturally.</p>
+<ul>
+<li>The <strong>regression sum of squares</strong> picks up the variability jointly explained by all the predictors together; its degrees of freedom equal the number of predictors <span class="math inline">\(k\)</span>.</li>
+<li>The <strong>residual sum of squares</strong> measures the variability the multi-predictor model still cannot explain; its degrees of freedom are <span class="math inline">\(n - k - 1\)</span> (one lost per slope plus one for the intercept).</li>
+<li>The <strong>overall <span class="math inline">\(F\)</span>-statistic</strong> tests <span class="math inline">\(H_0: \beta_1 = \beta_2 = \cdots = \beta_k = 0\)</span>, i.e.&nbsp;“none of the predictors help.” Under <span class="math inline">\(H_0\)</span> it follows an <span class="math inline">\(F_{k,\,n-k-1}\)</span> distribution.</li>
+<li>The <strong>coefficient-level <span class="math inline">\(t\)</span>-tests</strong> answer individual questions about each predictor “controlling for the others.” A predictor with a discernible <span class="math inline">\(t\)</span>-test contributes above and beyond the other predictors already in the model.</li>
+</ul>
+<p>In simple regression there is only one <span class="math inline">\(t\)</span>-test and one <span class="math inline">\(F\)</span>-test and they agree; in multiple regression there are <span class="math inline">\(k+1\)</span> tests and they can disagree in informative ways. The rest of that story is Chapter 23.</p>
+</section>
+<section id="sec-anova-for-regression-review" class="level2" data-number="23.8">
+<h2 data-number="23.8" class="anchored" data-anchor-id="sec-anova-for-regression-review"><span class="header-section-number">23.8</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="23.8.1">
+<h3 data-number="23.8.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">23.8.1</span> Summary</h3>
+<p>This chapter introduced the ANOVA-for-regression framework. The total sum of squares <span class="math inline">\(SST\)</span> decomposes as <span class="math inline">\(SST = SSR + SSE\)</span>, splitting the response’s variability into a piece the model explains and a piece it does not. Organizing this decomposition alongside degrees of freedom, mean squares, and an <span class="math inline">\(F\)</span>-statistic gives the <strong>ANOVA table for regression</strong>. The <span class="math inline">\(F\)</span>-statistic tests the model as a whole; in simple regression it satisfies <span class="math inline">\(F = t^2\)</span> and gives the same p-value as the slope <span class="math inline">\(t\)</span>-test, but the framework generalizes to multiple regression where the two views come apart. Along the way we reinterpreted <span class="math inline">\(R^2 = SSR/SST\)</span> as the fraction of total variability the model explains.</p>
+</section>
+<section id="terms" class="level3" data-number="23.8.2">
+<h3 data-number="23.8.2" class="anchored" data-anchor-id="terms"><span class="header-section-number">23.8.2</span> Terms</h3>
+<p><span class="math inline">\(SST\)</span>, <span class="math inline">\(SSR\)</span>, <span class="math inline">\(SSE\)</span>, sum-of-squares decomposition, regression mean square <span class="math inline">\(MSR\)</span>, residual mean square <span class="math inline">\(MSE\)</span>, ANOVA table for regression, model-level <span class="math inline">\(F\)</span>-test, <span class="math inline">\(F\)</span> distribution, residual standard error, <span class="math inline">\(F = t^2\)</span> equivalence in simple regression.</p>
+</section>
+</section>
+<section id="exercises" class="level2 exercises" data-number="23.9">
+<h2 class="exercises anchored" data-number="23.9" data-anchor-id="exercises"><span class="header-section-number">23.9</span> Exercises</h2>
+<!-- Standard textbook exercises for ch 22 anova-for-regression -->
+<p>Answers to odd-numbered exercises are provided in the <a href="../appendices/exercise-solutions.html">Exercise Solutions appendix</a> at the back of the book.</p>
 <ol type="1">
-<li><p><strong>Name the procedure.</strong> For each scenario, give the specific analytic procedure (one-proportion z, two-proportion z, one-sample t, two-sample t, or paired t).</p>
+<li><p><strong>Reading the ANOVA table.</strong> A regression of highway miles-per-gallon on curb weight for <span class="math inline">\(n = 60\)</span> vehicles produces the following (abbreviated) ANOVA table:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Source</th>
+<th style="text-align: center;">df</th>
+<th style="text-align: center;">SS</th>
+<th style="text-align: center;">MS</th>
+<th style="text-align: center;"><span class="math inline">\(F\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Regression</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">442</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td>Residual</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">128</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td>Total</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+</tbody>
+</table>
 <ol type="a">
-<li>Is the proportion of defective chips different from the 1% target?</li>
-<li>Do graduates of program A earn a higher <em>average</em> starting salary than graduates of program B (two separate samples)?</li>
-<li>Did blood pressure change after a 12-week program, measured on the <em>same</em> patients before and after?</li>
-<li>Is the average dosage in a batch different from the labeled 500 mg?</li>
-<li>Is the proportion of voters favoring a measure different between two cities?</li>
+<li>Fill in the missing degrees of freedom, mean squares, total sum of squares, and <span class="math inline">\(F\)</span>-statistic.</li>
+<li>Compute <span class="math inline">\(R^2\)</span>.</li>
+<li>State the null and alternative hypotheses that the <span class="math inline">\(F\)</span>-test evaluates. Given the value of <span class="math inline">\(F\)</span> you computed, is the p-value small or large? (You may reason from the size of <span class="math inline">\(F\)</span> alone.)</li>
+</ol></li>
+<li><p><strong>Filling gaps from <span class="math inline">\(R^2\)</span> and <span class="math inline">\(s\)</span>.</strong> A regression of test scores on hours studied for <span class="math inline">\(n = 25\)</span> students reports residual standard error <span class="math inline">\(s = 4.20\)</span> (points) and <span class="math inline">\(R^2 = 0.36\)</span>.</p>
+<ol type="a">
+<li>Compute <span class="math inline">\(MSE\)</span> and <span class="math inline">\(SSE\)</span>.</li>
+<li>Compute <span class="math inline">\(SST\)</span> and <span class="math inline">\(SSR\)</span>.</li>
+<li>Report the ANOVA <span class="math inline">\(F\)</span>-statistic.</li>
+</ol></li>
+<li><p><strong>The <span class="math inline">\(F = t^2\)</span> equivalence.</strong> A software output reports <span class="math inline">\(t = 3.1\)</span> for the slope with 47 degrees of freedom, and <span class="math inline">\(F = 9.61\)</span> for the model.</p>
+<ol type="a">
+<li>Show numerically that <span class="math inline">\(F = t^2\)</span> for this fit.</li>
+<li>Explain in one sentence why the two tests must give the same p-value.</li>
+</ol></li>
+<li><p><strong>Interpreting <span class="math inline">\(R^2\)</span> using sums of squares.</strong> Suppose a fitted regression has <span class="math inline">\(SSR = 200\)</span> and <span class="math inline">\(SSE = 800\)</span>.</p>
+<ol type="a">
+<li>Compute <span class="math inline">\(R^2\)</span>.</li>
+<li>In plain English, what does the value of <span class="math inline">\(R^2\)</span> tell you about how useful the regression is at explaining <span class="math inline">\(y\)</span>?</li>
+<li>Would you feel confident using this model for prediction? What other information would you want to see before deciding?</li>
+</ol></li>
+<li><p><strong>When the <span class="math inline">\(F\)</span>-test does <em>not</em> reject.</strong> A study of <span class="math inline">\(n = 40\)</span> light bulbs regresses lifetime on bulb voltage. The ANOVA reports <span class="math inline">\(F = 0.34\)</span> with 1 and 38 degrees of freedom.</p>
+<ol type="a">
+<li>Estimate the p-value roughly (you may use the “<span class="math inline">\(F\)</span> near 1 means no evidence” rule).</li>
+<li>What conclusion does this suggest about the linear relationship between voltage and lifetime in this sample?</li>
+<li>Does a non-rejecting <span class="math inline">\(F\)</span>-test mean there is no relationship at all between voltage and lifetime? What are two alternative explanations?</li>
+</ol></li>
+</ol>
+<!-- StatLens Interactive Exercises — ANOVA for Regression -->
+<!-- HAND-AUTHORED. Focus on the F-vs-t view, reading an ANOVA table, and     -->
+<!-- the bridge to multiple regression.                                       -->
+<section id="statlens-exercises" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="statlens-exercises">StatLens Exercises</h3>
+<p>Let <a href="https://jbaggett.github.io/statlens" target="_blank">StatLens</a> do the arithmetic; spend your effort on the reasoning a calculator can’t do.</p>
+<ol type="1">
+<li><p><strong>Frame the question.</strong> A researcher fits a simple linear regression of a student’s final exam score on hours studied.</p>
+<ol type="a">
+<li>Write the null and alternative hypotheses that the <strong>model-level <span class="math inline">\(F\)</span>-test</strong> evaluates. Write them again for the <strong>slope <span class="math inline">\(t\)</span>-test</strong>.</li>
+<li>Why are these the <em>same</em> hypothesis in a simple regression? What would need to be true for them to differ?</li>
+<li>Suppose the <span class="math inline">\(F\)</span>-statistic comes out to 12.25 with 1 and 48 degrees of freedom. What <span class="math inline">\(t\)</span>-statistic on 48 df would give the same p-value?</li>
 </ol>
 <details>
 <summary>
 <p>Show answer</p>
 </summary>
-<p><strong>a.</strong> one-proportion z (vs.&nbsp;0.01). <strong>b.</strong> two-sample t. <strong>c.</strong> paired t (test the before–after differences). <strong>d.</strong> one-sample t (vs.&nbsp;500). <strong>e.</strong> two-proportion z.</p>
+<ol type="a">
+<li><p>Both: <span class="math inline">\(H_0: \beta_1 = 0\)</span> vs.&nbsp;<span class="math inline">\(H_A: \beta_1 \neq 0\)</span>.</p></li>
+<li><p>They are the same because there is only <em>one</em> slope to test. If the model had more than one predictor, the F-test would test <em>all</em> slopes jointly (<span class="math inline">\(H_0: \beta_1 = \beta_2 = \cdots = 0\)</span>), while each <span class="math inline">\(t\)</span>-test would test one slope at a time.</p></li>
+<li><p><span class="math inline">\(t = \sqrt{F} = \sqrt{12.25} = 3.5\)</span> (positive or negative depending on the direction). Both give the same p-value because <span class="math inline">\(F_{1,48} = t^2_{48}\)</span>.</p></li>
+</ol>
 </details></li>
-<li><p><strong>Are you allowed to use it?</strong> A clinic claims its complication rate is below the national 10%. In a sample of <span class="math inline">\(n = 62\)</span> patients, 3 had complications. Should you trust a one-proportion <strong>z</strong>-test here? What should you do instead?</p>
+<li><p><strong>Open the ANOVA panel.</strong> Open the <a href="https://jbaggett.github.io/statlens/inference/slope/?dataset=possum_regression&amp;anova=true" target="_blank">Slope tool with ANOVA panel</a> for the possum head-length regression.</p>
+<ol type="a">
+<li>Report the sums of squares <span class="math inline">\(SSR\)</span>, <span class="math inline">\(SSE\)</span>, <span class="math inline">\(SST\)</span> and verify that <span class="math inline">\(SSR + SSE = SST\)</span>.</li>
+<li>Report the degrees of freedom for each row. Explain why <span class="math inline">\(df_{\text{regression}} = 1\)</span> and <span class="math inline">\(df_{\text{residual}} = n - 2\)</span>.</li>
+<li>Report the <span class="math inline">\(F\)</span>-statistic and the <span class="math inline">\(t\)</span>-statistic for the slope, and confirm <span class="math inline">\(F = t^2\)</span>.</li>
+<li>Report <span class="math inline">\(R^2\)</span>. Verify from the ANOVA table that <span class="math inline">\(R^2 = SSR / SST\)</span>.</li>
+</ol>
 <details>
 <summary>
 <p>Show answer</p>
 </summary>
-<p>Check the condition with <span class="math inline">\(p_0 = 0.10\)</span>: <span class="math inline">\(np_0 = 62(0.10) = 6.2 &lt; 10\)</span>, so the <strong>success–failure condition fails</strong> — the z-test is <strong>not</strong> trustworthy. Use a <strong>simulation</strong> (a bootstrap interval or randomization test), which makes no normality assumption. (“Run the test” sometimes correctly answers “the conditions don’t support this test.”)</p>
+<ol type="a">
+<li><p>The identity should hold exactly (up to floating-point rounding).</p></li>
+<li><p>We estimate 2 parameters (intercept + slope), so 2 df are “spent” on fitting. The regression row accounts for 1 (the slope estimate); the residual row gets the remaining <span class="math inline">\(n - 2\)</span>; the total gets <span class="math inline">\(n - 1\)</span> (one lost to computing <span class="math inline">\(\bar{y}\)</span>).</p></li>
+<li><p>In simple regression this must hold algebraically; the two are the same test written in different notation.</p></li>
+<li><p><span class="math inline">\(R^2\)</span> = fraction of total variability explained by the fitted line = <span class="math inline">\(SSR/SST\)</span>. Rearranging, <span class="math inline">\(SSE/SST = 1 - R^2\)</span>.</p></li>
+</ol>
 </details></li>
-<li><p><strong>Paired or two-sample?</strong> Two studies compare a drug to a placebo. Study X gives the drug to one group and placebo to a <em>different</em> group. Study Y gives <em>each</em> subject the drug for a month and placebo for a month and compares within subject. Which t-procedure does each use?</p>
+<li><p><strong>Read <span class="math inline">\(R^2\)</span> correctly.</strong> A fitted regression reports <span class="math inline">\(R^2 = 0.72\)</span>.</p>
+<ol type="a">
+<li>Complete this sentence: “About ____ % of the variability in the response is explained by ____.” Which value goes in each blank?</li>
+<li>A student concludes: “<span class="math inline">\(R^2 = 0.72\)</span> means my model is 72% accurate.” Why is this wrong, and what’s the correct statement?</li>
+<li>What does <span class="math inline">\(R^2 = 0.72\)</span> <em>not</em> tell you about the model? Give three specific things.</li>
+</ol>
 <details>
 <summary>
 <p>Show answer</p>
 </summary>
-<p><strong>Study X → two-sample t</strong> (independent groups). <strong>Study Y → paired t</strong> (each subject is their own control; analyze the within-subject differences). Same comparison, different design → different procedure and standard error.</p>
+<ol type="a">
+<li><p>About <strong>72%</strong> of the variability in the response is explained by the <strong>linear model on this predictor</strong>.</p></li>
+<li><p>“72% accurate” is nonsense — accuracy is a classifier concept, not a regression one. Individual predictions are not 72% correct; the <em>variability</em> in <span class="math inline">\(y\)</span> is 72% explained by the regression on average.</p></li>
+<li><p><span class="math inline">\(R^2\)</span> does not tell you: (i) whether the LINE conditions are met (a curved relationship can still have high <span class="math inline">\(R^2\)</span>); (ii) whether the model will generalize to new data (it’s computed on the fit sample); (iii) whether the fit is <em>practically</em> useful — <span class="math inline">\(R^2 = 0.72\)</span> might be excellent in one domain and terrible in another.</p></li>
+</ol>
 </details></li>
-<li><p><strong>Simulation vs.&nbsp;formula.</strong> On a tidy dataset with 200 observations and dozens of successes and failures in each group, a two-proportion z-test and a randomization test give nearly the same p-value. On a 20-observation dataset with a zero cell, they diverge. Explain the pattern.</p>
+<li><p><strong>When <span class="math inline">\(F\)</span> rejects and <span class="math inline">\(t\)</span> agrees.</strong> Open <a href="https://jbaggett.github.io/statlens/inference/slope/?anova=true" target="_blank"><code>inference/slope/?anova=true</code></a> on any regression dataset with a clear linear trend.</p>
+<ol type="a">
+<li>Report <span class="math inline">\(F\)</span>, its degrees of freedom, and the p-value.</li>
+<li>Now switch datasets to one you expect to have <em>no</em> linear relationship. Report <span class="math inline">\(F\)</span> and the p-value. Is <span class="math inline">\(F\)</span> close to 1?</li>
+<li>Explain in one sentence why “<span class="math inline">\(F\)</span> close to 1” is the “no linear signal” case.</li>
+</ol>
 <details>
 <summary>
 <p>Show answer</p>
 </summary>
-<p>With large counts the sampling distribution of <span class="math inline">\(\hat{p}_1 - \hat{p}_2\)</span> is close to normal, so the <strong>formula and the simulation agree</strong>. With tiny, lopsided counts the normal model is a poor fit, so the z-test’s p-value is unreliable and <strong>diverges</strong> from the simulation — which stays valid. Divergence is a <em>signal that the conditions failed</em>; trust the simulation there.</p>
+<ol type="a">
+<li><p>&amp; b. Answers depend on the specific dataset chosen.</p></li>
+<li><p>Under <span class="math inline">\(H_0\)</span>, both <span class="math inline">\(MSR\)</span> and <span class="math inline">\(MSE\)</span> estimate the same residual variance <span class="math inline">\(\sigma^2\)</span>, so their ratio <span class="math inline">\(F = MSR/MSE\)</span> hovers near 1. Large <span class="math inline">\(F\)</span> means the model explains more variability than pure noise would predict — evidence of a real signal.</p></li>
+</ol>
 </details></li>
-<li><p><strong>Interval ⇔ test.</strong> A 95% confidence interval for <span class="math inline">\(\mu_1 - \mu_2\)</span> is <span class="math inline">\((0.8, 3.4)\)</span>. Two-sided at <span class="math inline">\(\alpha = 0.05\)</span>, does the matched t-test reject <span class="math inline">\(H_0: \mu_1 - \mu_2 = 0\)</span>?</p>
+<li><p><strong>The multiple-regression preview.</strong> In simple regression, the model-level <span class="math inline">\(F\)</span>-test and the slope <span class="math inline">\(t\)</span>-test <em>must</em> agree. In multiple regression, they can diverge.</p>
+<ol type="a">
+<li>Imagine a multiple regression with 3 predictors where the overall <span class="math inline">\(F\)</span>-test rejects at <span class="math inline">\(\alpha = 0.05\)</span> but <em>no</em> individual predictor’s <span class="math inline">\(t\)</span>-test does. What could explain this? (Hint: think about <em>joint</em> vs.&nbsp;<em>individual</em> contributions.)</li>
+<li>Imagine the reverse: no individual <span class="math inline">\(t\)</span>-test rejects, and the <span class="math inline">\(F\)</span>-test doesn’t either. What does this suggest about the model?</li>
+<li>Imagine one predictor’s <span class="math inline">\(t\)</span>-test rejects while the model-level <span class="math inline">\(F\)</span>-test does not. Which conclusion should you trust?</li>
+</ol>
 <details>
 <summary>
 <p>Show answer</p>
 </summary>
-<p><strong>Yes.</strong> The interval lies entirely above 0, so 0 is not plausible — the matched two-sided test rejects <span class="math inline">\(H_0\)</span> at <span class="math inline">\(\alpha = 0.05\)</span>.</p>
+<ol type="a">
+<li><p>This is the classic multicollinearity signature: the predictors are so correlated with each other that no single one is <em>uniquely</em> responsible for the fit, but together they explain a discernible share of the variability. The <span class="math inline">\(F\)</span>-test picks up the joint contribution; the individual <span class="math inline">\(t\)</span>-tests each ask “does <em>this</em> predictor add something the others don’t?” — and when the predictors are redundant, none does individually.</p></li>
+<li><p>Neither the joint fit nor any individual contribution is discernible. Either there’s no real relationship, or the sample is too small for the effects present to reach significance — more data would help.</p></li>
+<li><p>This is rare but can happen with small samples and correlated predictors. The <strong><span class="math inline">\(F\)</span>-test is the more trustworthy summary</strong> for “does the model work as a whole?”; a single significant <span class="math inline">\(t\)</span> against a non-significant <span class="math inline">\(F\)</span> is often a false positive on the individual test. Repeat the fit with fewer predictors or more data before drawing conclusions.</p></li>
+</ol>
 </details></li>
 </ol>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -1290,13 +1520,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../chapters/hypothesis-tests-means.html" class="pagination-link" aria-label="Hypothesis Tests for Means">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Hypothesis Tests for Means</span></span>
+      <a href="../chapters/prediction-model-fit.html" class="pagination-link" aria-label="Prediction and Model Fit">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Prediction and Model Fit</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../tech/tech-tutorial-calculate.html" class="pagination-link" aria-label="Tech Tutorial: Calculate">
-        <span class="nav-page-text">Tech Tutorial: Calculate</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../chapters/multiple-regression.html" class="pagination-link" aria-label="Multiple Regression">
+        <span class="nav-page-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Multiple Regression</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

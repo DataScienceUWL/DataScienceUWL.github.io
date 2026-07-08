@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>24&nbsp; Multiple Regression – Introduction to Statistics: A Simulation-First Approach</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../reviews/review-apply.html" rel="next">
+<link href="../chapters/anova-for-regression.html" rel="prev">
+<link href="../images/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-c76bc2edb0e532e390ad582fcbf98d52.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-6d220f2ac84f3aca43323efe3f21d976.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-813c0d4d719b0fab90870b54cd0526b5.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://hypothes.is/embed.js"></script>
+<script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-iv.html">Unit 4: Apply</a></li><li class="breadcrumb-item"><a href="../chapters/multiple-regression.html"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Multiple Regression</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Introduction to Statistics: A Simulation-First Approach</a> 
+        <div class="sidebar-tools-main">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../technology-setup.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Technology Setup</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-i.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 1: Explore</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/intro-to-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Introduction to Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/study-design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Data Collection and Study Design</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/data-visualization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Exploring Categorical Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/describing-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Exploring Quantitative Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/relationships.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Relationships Between Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-explore.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explore — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-explore.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Explore</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-eda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Exploring a Distribution</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-ii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 2: Simulate</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sampling-variability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Sampling Variability</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/randomization-tests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Randomization Tests</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/decision-errors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Decision Errors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/bootstrap-ci.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Bootstrap Confidence Intervals</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sampling-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Sampling Distributions via Simulation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-simulate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulate — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-simulate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Simulate</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 3: Calculate</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/normal-approximation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Normal Approximation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/inference-proportions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Inference for Proportions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ci-for-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Confidence Intervals for Means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/hypothesis-tests-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Hypothesis Tests for Means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-calculate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Calculate — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-calculate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Calculate</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-proportions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Inference for Proportions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Comparing Two Means</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 4: Apply</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chisq-gof.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Chi-Square Goodness of Fit</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chisq-independence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Chi-Square Test of Independence</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Analysis of Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Multiple Comparisons</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Correlation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/linear-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Linear Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/prediction-model-fit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Prediction and Model Fit</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/anova-for-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">ANOVA for Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-regression.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Multiple Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-apply.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Apply — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-apply.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Apply</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Comparing Several Means (ANOVA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-chisq.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Association Between Two Categorical Variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-chisq-ai.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Association Between Two Categorical Variables (AI version)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Fitting and Testing a Regression Line</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-v.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 5: Foundations</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/probability-rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Probability Rules</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/random-variables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Random Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/expected-value.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Expected Value and Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/binomial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Binomial Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/normal-distribution.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Normal Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/type-ii-error.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/statistical-power.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">Statistical Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sample-size.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">Sample Size Planning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-foundations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundations — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-foundations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Foundations</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/datasets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Datasets</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/statlens-guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">StatLens Quick Reference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/tables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Statistical Tables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/exercise-solutions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Exercise Solutions</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-mlr-motivation" id="toc-sec-mlr-motivation" class="nav-link active" data-scroll-target="#sec-mlr-motivation"><span class="header-section-number">24.1</span> From one predictor to many</a></li>
+  <li><a href="#sec-mlr-model" id="toc-sec-mlr-model" class="nav-link" data-scroll-target="#sec-mlr-model"><span class="header-section-number">24.2</span> The multiple regression model</a></li>
+  <li><a href="#sec-mlr-output" id="toc-sec-mlr-output" class="nav-link" data-scroll-target="#sec-mlr-output"><span class="header-section-number">24.3</span> Reading multiple-regression output</a></li>
+  <li><a href="#sec-mlr-interpretation" id="toc-sec-mlr-interpretation" class="nav-link" data-scroll-target="#sec-mlr-interpretation"><span class="header-section-number">24.4</span> Interpreting coefficients “holding others constant”</a></li>
+  <li><a href="#sec-mlr-fit" id="toc-sec-mlr-fit" class="nav-link" data-scroll-target="#sec-mlr-fit"><span class="header-section-number">24.5</span> Assessing overall fit: <span class="math inline">\(R^2\)</span>, adjusted <span class="math inline">\(R^2\)</span>, and the <span class="math inline">\(F\)</span>-test</a></li>
+  <li><a href="#sec-mlr-multicollinearity" id="toc-sec-mlr-multicollinearity" class="nav-link" data-scroll-target="#sec-mlr-multicollinearity"><span class="header-section-number">24.6</span> Multicollinearity</a></li>
+  <li><a href="#sec-mlr-model-building" id="toc-sec-mlr-model-building" class="nav-link" data-scroll-target="#sec-mlr-model-building"><span class="header-section-number">24.7</span> Building a model: adding predictors thoughtfully</a></li>
+  <li><a href="#sec-mlr-penguins" id="toc-sec-mlr-penguins" class="nav-link" data-scroll-target="#sec-mlr-penguins"><span class="header-section-number">24.8</span> Worked example: predicting body mass in penguins</a></li>
+  <li><a href="#sec-mlr-diagnostics" id="toc-sec-mlr-diagnostics" class="nav-link" data-scroll-target="#sec-mlr-diagnostics"><span class="header-section-number">24.9</span> Diagnostics for multiple regression</a></li>
+  <li><a href="#sec-multiple-regression-review" id="toc-sec-multiple-regression-review" class="nav-link" data-scroll-target="#sec-multiple-regression-review"><span class="header-section-number">24.10</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">24.10.1</span> Summary</a></li>
+  <li><a href="#terms" id="toc-terms" class="nav-link" data-scroll-target="#terms"><span class="header-section-number">24.10.2</span> Terms</a></li>
+  <li><a href="#attribution" id="toc-attribution" class="nav-link" data-scroll-target="#attribution"><span class="header-section-number">24.10.3</span> Attribution</a></li>
+  </ul></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">24.11</span> Exercises</a>
+  <ul class="collapse">
+  <li><a href="#statlens-exercises" id="toc-statlens-exercises" class="nav-link" data-scroll-target="#statlens-exercises">StatLens Exercises</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-iv.html">Unit 4: Apply</a></li><li class="breadcrumb-item"><a href="../chapters/multiple-regression.html"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Multiple Regression</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Multiple Regression</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="chapterintro">
+<p>The regression models in earlier chapters used a single predictor <span class="math inline">\(x\)</span> to explain a response <span class="math inline">\(y\)</span>. Most real datasets carry many potential predictors: a house’s price depends on square footage <em>and</em> location <em>and</em> age <em>and</em> the number of bathrooms; a student’s exam score depends on hours studied <em>and</em> prior GPA <em>and</em> sleep <em>and</em> attendance. <strong>Multiple linear regression</strong> extends the simple regression framework to accommodate two or more predictors at once. This chapter introduces the multiple regression model, shows how to read the coefficient table software produces, discusses what “holding the other predictors constant” actually means in practice, introduces the <strong>adjusted <span class="math inline">\(R^2\)</span></strong> that penalizes extra predictors, and addresses <strong>multicollinearity</strong> — what happens when two predictors carry overlapping information. The chapter follows IMS’s ordering (<code>inf-model-mlr.qmd</code>), adapted and reframed for the simulation-first approach.</p>
+</div>
+<div class="statlens">
+<p><strong>StatLens tools for this chapter.</strong></p>
+<ul>
+<li><a href="https://jbaggett.github.io/statlens/inference/mlr/" target="_blank"><strong>Multiple Regression tool</strong></a> — pick a response and any set of numeric predictors, then read the coefficient table, model-level <span class="math inline">\(F\)</span>-test, and <span class="math inline">\(R^2\)</span>/adjusted <span class="math inline">\(R^2\)</span>. Under construction as contract REQ-038; until it lands, use the pre-computed software output in each worked example below. VIF readouts are available in the tool’s <strong>expert mode</strong> for readers who want the formal multicollinearity metric.</li>
+<li>Pair with <a href="https://jbaggett.github.io/statlens/explore/regression/" target="_blank"><code>explore/regression</code></a> for the underlying scatterplots of individual predictor pairs.</li>
+</ul>
+</div>
+<section id="sec-mlr-motivation" class="level2" data-number="24.1">
+<h2 data-number="24.1" class="anchored" data-anchor-id="sec-mlr-motivation"><span class="header-section-number">24.1</span> From one predictor to many</h2>
+<div class="original">
+<p>A single-predictor regression is a starting point, not an ending point. In the real world, a response variable is almost never driven by just one thing. When we ignore other variables that also influence the response, two things can go wrong.</p>
+<p><strong>Confounding can bias the slope estimate.</strong> If we regress house price on square footage alone, and larger houses happen to be newer and in fancier neighborhoods, the fitted slope absorbs the effects of <em>all three</em> — not just square footage. Our estimate of “how much does an extra square foot cost, in a comparable house?” is contaminated by the unmeasured differences in neighborhood and age.</p>
+<p><strong>Predictive accuracy suffers.</strong> Even when we don’t care about causal interpretation, ignoring available predictors leaves signal on the table. A model with three good predictors will typically predict future observations more accurately than a model with one.</p>
+<p>Multiple regression solves the first problem by fitting all predictors together in a single model, so each coefficient represents the effect of that predictor <em>while holding the others fixed</em>. And it addresses the second by explaining more of the total variability with the additional predictors.</p>
+</div>
+</section>
+<section id="sec-mlr-model" class="level2" data-number="24.2">
+<h2 data-number="24.2" class="anchored" data-anchor-id="sec-mlr-model"><span class="header-section-number">24.2</span> The multiple regression model</h2>
+<div class="definition">
+<p>The <strong>multiple linear regression model</strong> with <span class="math inline">\(k\)</span> predictors is</p>
+<p><span class="math display">\[y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_k x_k + \varepsilon,\]</span></p>
+<p>where <span class="math inline">\(\beta_0\)</span> is the population intercept, <span class="math inline">\(\beta_1, \dots, \beta_k\)</span> are the population slopes for the <span class="math inline">\(k\)</span> predictors, and <span class="math inline">\(\varepsilon\)</span> is a random error term with mean 0 and constant variance <span class="math inline">\(\sigma^2\)</span>.</p>
+<p>The fitted model estimated from a sample is</p>
+<p><span class="math display">\[\hat{y} = b_0 + b_1 x_1 + b_2 x_2 + \cdots + b_k x_k,\]</span></p>
+<p>with <span class="math inline">\(b_0, b_1, \ldots, b_k\)</span> chosen to minimize the sum of squared residuals <span class="math inline">\(\sum (y_i - \hat{y}_i)^2\)</span> — the same least-squares criterion used in simple regression.</p>
+</div>
+<p>Geometrically, a single-predictor regression fits a <em>line</em> in a two-dimensional scatterplot. A two-predictor regression fits a <em>plane</em> in a three-dimensional cloud. With three or more predictors we lose the ability to draw the picture, but the mathematics generalizes without incident: we are always fitting the flat surface that comes closest to the observed points in the sum-of-squared-residuals sense.</p>
+</section>
+<section id="sec-mlr-output" class="level2" data-number="24.3">
+<h2 data-number="24.3" class="anchored" data-anchor-id="sec-mlr-output"><span class="header-section-number">24.3</span> Reading multiple-regression output</h2>
+<p>Software returns a coefficient table for a multiple regression fit that looks like this:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Predictor</th>
+<th style="text-align: right;">Estimate</th>
+<th style="text-align: right;">Std. Error</th>
+<th style="text-align: right;"><span class="math inline">\(t\)</span>-value</th>
+<th style="text-align: right;">p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td style="text-align: right;"><span class="math inline">\(b_0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(SE(b_0)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(t_0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(p_0\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(x_1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(b_1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(SE(b_1)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(t_1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(p_1\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(x_2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(b_2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(SE(b_2)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(t_2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(p_2\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\vdots\)</span></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(x_k\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(b_k\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(SE(b_k)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(t_k\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(p_k\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Each row reports the estimated coefficient, its standard error, the <span class="math inline">\(t\)</span>-statistic testing <span class="math inline">\(H_0: \beta_j = 0\)</span> (with <span class="math inline">\(n - k - 1\)</span> degrees of freedom), and the two-sided p-value. Above or below this table, software also reports goodness-of-fit statistics — the residual standard error, <span class="math inline">\(R^2\)</span>, and adjusted <span class="math inline">\(R^2\)</span> — and the ANOVA table with the model-level <span class="math inline">\(F\)</span>-statistic.</p>
+<div class="workedexample">
+<p>Suppose we regress the price of used cars (in thousands of dollars) on mileage (in ten-thousands), age (in years), and whether the car has one previous owner (yes = 1, no = 0). Software returns:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Predictor</th>
+<th style="text-align: right;">Estimate</th>
+<th style="text-align: right;">Std. Error</th>
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;">p</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td style="text-align: right;">28.4</td>
+<td style="text-align: right;">1.7</td>
+<td style="text-align: right;">16.7</td>
+<td style="text-align: right;">&lt; 0.001</td>
+</tr>
+<tr class="even">
+<td>mileage</td>
+<td style="text-align: right;"><span class="math inline">\(-0.85\)</span></td>
+<td style="text-align: right;">0.14</td>
+<td style="text-align: right;"><span class="math inline">\(-6.07\)</span></td>
+<td style="text-align: right;">&lt; 0.001</td>
+</tr>
+<tr class="odd">
+<td>age</td>
+<td style="text-align: right;"><span class="math inline">\(-1.20\)</span></td>
+<td style="text-align: right;">0.31</td>
+<td style="text-align: right;"><span class="math inline">\(-3.87\)</span></td>
+<td style="text-align: right;">&lt; 0.001</td>
+</tr>
+<tr class="even">
+<td>one_owner</td>
+<td style="text-align: right;">2.10</td>
+<td style="text-align: right;">0.60</td>
+<td style="text-align: right;">3.50</td>
+<td style="text-align: right;">&lt; 0.001</td>
+</tr>
+</tbody>
+</table>
+<p><span class="math inline">\(R^2 = 0.71\)</span>, adjusted <span class="math inline">\(R^2 = 0.70\)</span>, residual standard error <span class="math inline">\(s = 2.9\)</span> thousand dollars, <span class="math inline">\(n = 84\)</span>.</p>
+<p>Interpret each coefficient in context.</p>
+<hr>
+<ul>
+<li><p><strong>Intercept.</strong> A car with <span class="math inline">\(0\)</span> mileage, age <span class="math inline">\(0\)</span>, and no prior owner (<code>one_owner = 0</code>) has an estimated mean price of $28,400. The intercept is often not a meaningful prediction on its own; here “age <span class="math inline">\(0\)</span> with mileage <span class="math inline">\(0\)</span>” describes a brand-new car with a specific ownership status.</p></li>
+<li><p><strong>Mileage.</strong> Holding age and ownership status fixed, each additional 10,000 miles is associated with a mean price <em>decrease</em> of $850.</p></li>
+<li><p><strong>Age.</strong> Holding mileage and ownership fixed, each additional year of age is associated with a mean price decrease of $1,200.</p></li>
+<li><p><strong>One_owner.</strong> Holding mileage and age fixed, a car that has had exactly one prior owner sells for an average of $2,100 more than a car with more than one prior owner.</p></li>
+</ul>
+<p>Each of the three <span class="math inline">\(t\)</span>-statistics has a p-value below 0.001, so each predictor contributes discernibly <em>above and beyond</em> the others. The model as a whole explains <span class="math inline">\(R^2 = 71\%\)</span> of the variability in used-car prices.</p>
+</div>
+</section>
+<section id="sec-mlr-interpretation" class="level2" data-number="24.4">
+<h2 data-number="24.4" class="anchored" data-anchor-id="sec-mlr-interpretation"><span class="header-section-number">24.4</span> Interpreting coefficients “holding others constant”</h2>
+<p>The single most important interpretive habit in multiple regression is the phrase <strong>“holding the other predictors constant.”</strong> It appears in every coefficient interpretation, and dropping it turns a correct sentence into a wrong one.</p>
+<p>To see why, consider the used-car model above. In simple regression on mileage alone, the fitted slope would absorb the effects of both mileage <em>and</em> age <em>and</em> ownership status — because older cars tend to have higher mileage, and single-owner cars tend to be lower-mileage. The single-predictor slope estimate would be steeper (more negative) than <span class="math inline">\(-0.85\)</span>, because it would be measuring “cars with high mileage sell for less” as a <em>bundle</em> of effects: high-mileage cars are also older and have had more owners.</p>
+<p>The multiple-regression slope <span class="math inline">\(b_1 = -0.85\)</span> isolates the mileage effect from the age and ownership effects. That is why it can be interpreted as “for each additional 10,000 miles, holding age and ownership status fixed.” The “holding fixed” is not a philosophical qualifier; it is the <em>only</em> way the coefficient makes sense.</p>
+<div class="important">
+<p>Every coefficient interpretation in multiple regression should include the phrase <strong>“holding the other predictors constant”</strong> (or an equivalent like “controlling for” or “at fixed values of”). Interpreting <span class="math inline">\(b_j\)</span> <em>without</em> that qualifier is one of the most common errors students make with multiple regression output.</p>
+</div>
+</section>
+<section id="sec-mlr-fit" class="level2" data-number="24.5">
+<h2 data-number="24.5" class="anchored" data-anchor-id="sec-mlr-fit"><span class="header-section-number">24.5</span> Assessing overall fit: <span class="math inline">\(R^2\)</span>, adjusted <span class="math inline">\(R^2\)</span>, and the <span class="math inline">\(F\)</span>-test</h2>
+<p>Three quantities that already appeared in simple regression take on richer meanings when there are multiple predictors.</p>
+<p><strong><span class="math inline">\(R^2\)</span></strong> is still the fraction of total variability the model explains: <span class="math inline">\(R^2 = SSR / SST\)</span>. But now, adding <em>any</em> predictor to the model — even a completely useless one — can only <em>increase</em> <span class="math inline">\(R^2\)</span>, never decrease it. The additional predictor might soak up a tiny amount of variability by chance alone, which inflates <span class="math inline">\(R^2\)</span> without indicating a real improvement in the model.</p>
+<p><strong>Adjusted <span class="math inline">\(R^2\)</span></strong> corrects for that inflation. It is computed as</p>
+<p><span class="math display">\[R^2_{\text{adj}} = 1 - \frac{SSE / (n - k - 1)}{SST / (n - 1)} = 1 - (1 - R^2) \cdot \frac{n - 1}{n - k - 1}.\]</span></p>
+<p>The adjustment penalizes models with more predictors: adding a useless predictor eats up one degree of freedom in the denominator without meaningfully reducing <span class="math inline">\(SSE\)</span>, so <span class="math inline">\(R^2_{\text{adj}}\)</span> <em>decreases</em> rather than increases. <strong>Adjusted <span class="math inline">\(R^2\)</span> is the right summary to compare candidate models with different numbers of predictors.</strong></p>
+<p><strong>The model-level <span class="math inline">\(F\)</span>-test</strong> tests</p>
+<p><span class="math display">\[H_0: \beta_1 = \beta_2 = \cdots = \beta_k = 0 \quad \text{vs.} \quad H_A: \text{at least one } \beta_j \ne 0.\]</span></p>
+<p>Under <span class="math inline">\(H_0\)</span> and the LINE conditions, the <span class="math inline">\(F\)</span>-statistic follows an <span class="math inline">\(F_{k,\,n-k-1}\)</span> distribution. Small p-values indicate that <em>some</em> predictor contributes; they do not tell us <em>which</em> one. The individual <span class="math inline">\(t\)</span>-tests (one per coefficient) answer the “which one” question — with the caveat that each <span class="math inline">\(t\)</span> asks whether that predictor contributes above and beyond the others already in the model.</p>
+</section>
+<section id="sec-mlr-multicollinearity" class="level2" data-number="24.6">
+<h2 data-number="24.6" class="anchored" data-anchor-id="sec-mlr-multicollinearity"><span class="header-section-number">24.6</span> Multicollinearity</h2>
+<div class="definition">
+<p>Two predictors in a regression exhibit <strong>multicollinearity</strong> when they are strongly linearly related to each other. This is not a problem for prediction, but it is a serious problem for interpreting individual coefficients: when two predictors carry nearly the same information, the fit cannot tell them apart, and the standard errors of both coefficients inflate.</p>
+</div>
+<p>A telltale sign of multicollinearity is a predictor whose relationship to the response looks strong on a scatterplot yet has an individual <span class="math inline">\(t\)</span>-test that fails to reject. The predictor may be redundant with another predictor already in the model, so it does not contribute <em>additional</em> information once that other predictor is accounted for.</p>
+<p>The most direct diagnostic is to plot the predictors <em>against each other</em>. A scatterplot showing a strong linear pattern between two predictors is evidence that they carry overlapping information about the response, and one may be safely dropped without losing much explanatory power. In practice, three responses are common when scatterplots reveal collinearity: <strong>(i) drop one of the collinear predictors</strong>, <strong>(ii) combine them into a single summary variable</strong> (an average or a sum, when the units allow it), or <strong>(iii) accept that individual coefficients cannot be separately interpreted but that the model still predicts well as a whole</strong>.</p>
+<div class="workedexample">
+<p>A model of a cherry tree’s timber volume includes both the tree’s <strong>height</strong> (feet) and <strong>diameter at breast height</strong> (inches). The individual <span class="math inline">\(t\)</span>-tests report a very small p-value for diameter but a marginal p-value for height. A scatterplot of the two predictors shows a moderately strong positive relationship: taller trees tend to have larger diameters.</p>
+<p>Interpret the pattern.</p>
+<hr>
+<p>Height and diameter carry overlapping information about volume: knowing a tree’s diameter already tells us a lot about its likely height. Once diameter is in the model, the marginal contribution of height <em>given</em> diameter is smaller than height’s marginal contribution <em>by itself</em>. That is why height’s individual <span class="math inline">\(t\)</span>-test looks weak. A researcher who plotted only volume vs.&nbsp;height would see a strong association; the multi-predictor <span class="math inline">\(t\)</span>-test correctly reports that height adds little once diameter is included.</p>
+</div>
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>Extended Content: the variance inflation factor.</strong></p>
+<p>Beyond scatterplots, statisticians quantify the severity of multicollinearity with a single number per predictor: the <strong>variance inflation factor (VIF)</strong>. For predictor <span class="math inline">\(x_j\)</span>,</p>
+<p><span class="math display">\[VIF_j = \frac{1}{1 - R^2_j},\]</span></p>
+<p>where <span class="math inline">\(R^2_j\)</span> is the <span class="math inline">\(R^2\)</span> of a regression of <span class="math inline">\(x_j\)</span> on all the <em>other</em> predictors. A predictor uncorrelated with the others has <span class="math inline">\(R^2_j = 0\)</span> and <span class="math inline">\(VIF_j = 1\)</span>; a predictor perfectly explained by the others has <span class="math inline">\(R^2_j = 1\)</span> and infinite VIF. <strong>Rules of thumb</strong> (not sharp thresholds): <span class="math inline">\(VIF &lt; 5\)</span> is fine; <span class="math inline">\(5 \le VIF &lt; 10\)</span> warrants caution; <span class="math inline">\(VIF \ge 10\)</span> means individual coefficients are unreliable.</p>
+<p>VIF is retained here for readers, instructors, and later coursework that want a formal metric; UWL’s STAT 145 sequence detects multicollinearity through the scatterplot approach above and does not require the VIF machinery.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="sec-mlr-model-building" class="level2" data-number="24.7">
+<h2 data-number="24.7" class="anchored" data-anchor-id="sec-mlr-model-building"><span class="header-section-number">24.7</span> Building a model: adding predictors thoughtfully</h2>
+<p>Given many candidate predictors, which should we include? A full treatment of variable selection is beyond this chapter, but a few habits will serve you well.</p>
+<p><strong>Start with predictors you have a scientific reason to include.</strong> If the goal is to model house prices, square footage and number of bedrooms belong in the model whether or not they cross a significance threshold. Statistics is a supplement to domain knowledge, not a replacement.</p>
+<p><strong>Add predictors incrementally and watch adjusted <span class="math inline">\(R^2\)</span>.</strong> A new predictor that raises <span class="math inline">\(R^2\)</span> but <em>lowers</em> adjusted <span class="math inline">\(R^2\)</span> is not earning its keep. Adjusted <span class="math inline">\(R^2\)</span> is the honest summary of model improvement.</p>
+<p><strong>Check scatterplots of predictors against each other.</strong> A new predictor that is strongly related to a predictor already in the model is a redundancy warning. Consider dropping it or combining it with the correlated predictor.</p>
+<p><strong>Individual <span class="math inline">\(t\)</span>-tests are not a variable-selection procedure.</strong> In particular, dropping predictors one at a time based on their <span class="math inline">\(t\)</span>-statistics — a procedure sometimes called “backward elimination” — is an unreliable strategy that inflates the effective Type I error rate. If you must automate variable selection, use adjusted <span class="math inline">\(R^2\)</span>, cross-validation, or a criterion like AIC or BIC (beyond this chapter’s scope).</p>
+</section>
+<section id="sec-mlr-penguins" class="level2" data-number="24.8">
+<h2 data-number="24.8" class="anchored" data-anchor-id="sec-mlr-penguins"><span class="header-section-number">24.8</span> Worked example: predicting body mass in penguins</h2>
+<div class="workedexample">
+<p>Ecologists studied <span class="math inline">\(n = 342\)</span> penguins from three Antarctic species and recorded body mass (in grams) along with several morphological measurements. Suppose we regress body mass on <strong>flipper length</strong> (mm) and <strong>bill depth</strong> (mm). Software reports:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Predictor</th>
+<th style="text-align: right;">Estimate</th>
+<th style="text-align: right;">Std. Error</th>
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;">p</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td style="text-align: right;"><span class="math inline">\(-6420\)</span></td>
+<td style="text-align: right;">613</td>
+<td style="text-align: right;"><span class="math inline">\(-10.5\)</span></td>
+<td style="text-align: right;">&lt; 0.001</td>
+</tr>
+<tr class="even">
+<td>flipper_length</td>
+<td style="text-align: right;">51.5</td>
+<td style="text-align: right;">2.10</td>
+<td style="text-align: right;">24.5</td>
+<td style="text-align: right;">&lt; 0.001</td>
+</tr>
+<tr class="odd">
+<td>bill_depth</td>
+<td style="text-align: right;"><span class="math inline">\(-135\)</span></td>
+<td style="text-align: right;">27.6</td>
+<td style="text-align: right;"><span class="math inline">\(-4.89\)</span></td>
+<td style="text-align: right;">&lt; 0.001</td>
+</tr>
+</tbody>
+</table>
+<p><span class="math inline">\(R^2 = 0.762\)</span>, adjusted <span class="math inline">\(R^2 = 0.760\)</span>, residual SE <span class="math inline">\(s = 393\)</span> g, model <span class="math inline">\(F = 542\)</span> on 2 and 339 df (<span class="math inline">\(p &lt; 0.001\)</span>).</p>
+<ol type="a">
+<li><p>Write the fitted equation and interpret each slope in context.</p></li>
+<li><p>Predict the body mass of a penguin with flipper length 200 mm and bill depth 18 mm.</p></li>
+<li><p>What does the model-level <span class="math inline">\(F\)</span>-statistic tell us that the individual <span class="math inline">\(t\)</span>-tests do not?</p></li>
+</ol>
+<hr>
+<p><strong>(a) Fitted equation:</strong></p>
+<p><span class="math display">\[\widehat{\text{mass}} = -6420 + 51.5 \times \text{flipper\_length} - 135 \times \text{bill\_depth}.\]</span></p>
+<p><em>Flipper length slope.</em> Holding bill depth fixed, each additional millimeter of flipper length is associated with a mean body-mass increase of 51.5 g.</p>
+<p><em>Bill depth slope.</em> Holding flipper length fixed, each additional millimeter of bill depth is associated with a mean body-mass <em>decrease</em> of 135 g. This may seem counterintuitive (bigger bills, lighter penguins?), but it reflects the joint effect of both predictors: the species with deeper bills happen to be the smaller-bodied ones, and once flipper length is accounted for, that species-composition effect shows up as a negative bill-depth coefficient.</p>
+<p><strong>(b)</strong> <span class="math inline">\(\widehat{\text{mass}} = -6420 + 51.5 \times 200 - 135 \times 18 = -6420 + 10{,}300 - 2430 = 1450 \text{ g}\)</span>.</p>
+<p>Wait — this is far smaller than a real penguin, which suggests we are extrapolating. A quick check: flipper lengths in the dataset span roughly 172 to 231 mm, so 200 mm is interior. But bill depths span roughly 13 to 22 mm, and 18 mm is well interior too. The unrealistic prediction is a signal that either the model is misspecified (perhaps species should be a predictor too), or the small residual <span class="math inline">\(s = 393\)</span> g is hiding structural issues visible only from a diagnostic plot.</p>
+<p><strong>(c)</strong> The <span class="math inline">\(F\)</span>-test rejects overwhelmingly (<span class="math inline">\(F = 542\)</span>, <span class="math inline">\(p &lt; 0.001\)</span>), which tells us that <em>at least one</em> of the two predictors contributes discernibly. The individual <span class="math inline">\(t\)</span>-tests confirm that <em>both</em> do. In simple regression the <span class="math inline">\(F\)</span>-test would be redundant with the <span class="math inline">\(t\)</span>-test; in multiple regression it summarizes the joint contribution and disagrees informatively with the individual <span class="math inline">\(t\)</span>-tests in cases (like multicollinearity) where the whole is greater than any one part.</p>
+</div>
+</section>
+<section id="sec-mlr-diagnostics" class="level2" data-number="24.9">
+<h2 data-number="24.9" class="anchored" data-anchor-id="sec-mlr-diagnostics"><span class="header-section-number">24.9</span> Diagnostics for multiple regression</h2>
+<p>The LINE conditions from the linear regression chapter carry over unchanged to multiple regression, but the checks look slightly different because we no longer have a single predictor’s scatterplot to eyeball.</p>
+<p><strong>Linearity.</strong> Plot each predictor against the residuals. A curved pattern in one plot suggests that predictor’s relationship with the response is not linear at fixed values of the others.</p>
+<p><strong>Independence.</strong> Same as in simple regression: the design of the study is what earns this assumption. Random sampling or random assignment protects independence; convenience samples and repeated measures on the same subject do not.</p>
+<p><strong>Normality of residuals.</strong> A residual histogram or Q-Q plot works the same as in simple regression.</p>
+<p><strong>Equal variance.</strong> The residual-versus-fitted plot is still the go-to diagnostic. A fan shape suggests the residual spread grows with <span class="math inline">\(\hat{y}\)</span>; if so, coefficient standard errors are unreliable and the reported CIs are too narrow. A log-transformation of the response often fixes fan-shaped residuals.</p>
+<p>Add one MLR-specific check:</p>
+<p><strong>Multicollinearity.</strong> Inspect scatterplots of each pair of predictors. Strong pairwise associations flag pairs that carry overlapping information about the response; the multicollinearity section above discusses how to respond. (Extended-content readers can also inspect the variance inflation factor for a formal quantitative check.)</p>
+</section>
+<section id="sec-multiple-regression-review" class="level2" data-number="24.10">
+<h2 data-number="24.10" class="anchored" data-anchor-id="sec-multiple-regression-review"><span class="header-section-number">24.10</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="24.10.1">
+<h3 data-number="24.10.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">24.10.1</span> Summary</h3>
+<p>Multiple regression extends the simple regression model to two or more predictors, fit by least squares. The interpretation of each coefficient becomes “the mean change in <span class="math inline">\(y\)</span> per unit change in <span class="math inline">\(x_j\)</span> <em>holding the other predictors fixed</em>” — a qualifier that separates multiple regression’s slope from the simple-regression slope that would absorb the other predictors’ effects. Software reports coefficient estimates alongside a coefficient table, an ANOVA table with a model-level <span class="math inline">\(F\)</span>-test, and goodness-of-fit statistics <span class="math inline">\(R^2\)</span> and adjusted <span class="math inline">\(R^2\)</span>. Multicollinearity — when two predictors carry overlapping information — is a new concern that only arises with multiple predictors; the standard check is a scatterplot of each pair of predictors. (The variance inflation factor, VIF, offers a formal quantification of multicollinearity for readers who want the metric.) Diagnostics for the LINE conditions carry over from simple regression, with residual-versus-fitted plots and per-predictor residual checks taking the place of the single predictor plot.</p>
+</section>
+<section id="terms" class="level3" data-number="24.10.2">
+<h3 data-number="24.10.2" class="anchored" data-anchor-id="terms"><span class="header-section-number">24.10.2</span> Terms</h3>
+<p>Multiple linear regression, predictor, response, coefficient table, “holding others constant,” adjusted <span class="math inline">\(R^2\)</span>, model-level <span class="math inline">\(F\)</span>-test, multicollinearity, residual-versus-fitted plot, extrapolation in multi-dimensional predictor space. <em>(Extended-content only: variance inflation factor / VIF.)</em></p>
+</section>
+<section id="attribution" class="level3" data-number="24.10.3">
+<h3 data-number="24.10.3" class="anchored" data-anchor-id="attribution"><span class="header-section-number">24.10.3</span> Attribution</h3>
+<p>This chapter is adapted, with substantial reorganization, from IMS 2e’s <em>Inference for linear regression with multiple predictors</em> chapter (Cetinkaya-Rundel and Hardin, CC BY-SA 3.0), retaining its topic ordering and pedagogical arc while writing the exposition anew for the simulation-first STAT 145 sequence. Cross-validation, an important topic in the IMS chapter, is intentionally deferred to a later course.</p>
+</section>
+</section>
+<section id="exercises" class="level2 exercises" data-number="24.11">
+<h2 class="exercises anchored" data-number="24.11" data-anchor-id="exercises"><span class="header-section-number">24.11</span> Exercises</h2>
+<!-- Standard textbook exercises for ch 23 multiple-regression -->
+<p>Answers to odd-numbered exercises are provided in the <a href="../appendices/exercise-solutions.html">Exercise Solutions appendix</a> at the back of the book.</p>
+<p><em>Note.</em> Exercise 3 (VIF interpretation) draws on the <strong>Extended Content</strong> callout on the variance inflation factor. The rest of the exercises use only the base multicollinearity content (scatterplots of predictors against each other) and do not require the VIF material.</p>
+<ol type="1">
+<li><p><strong>Reading a coefficient table.</strong> A regression of birth weight (in ounces) on <strong>mother’s age</strong> (years), <strong>mother’s weight</strong> (pounds), <strong>cigarettes per day</strong>, and <strong>weeks of gestation</strong> for <span class="math inline">\(n = 120\)</span> births produces the following output:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Predictor</th>
+<th style="text-align: right;">Estimate</th>
+<th style="text-align: right;">Std. Error</th>
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;">p</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td style="text-align: right;"><span class="math inline">\(-50.2\)</span></td>
+<td style="text-align: right;">12.8</td>
+<td style="text-align: right;"><span class="math inline">\(-3.92\)</span></td>
+<td style="text-align: right;">&lt; 0.001</td>
+</tr>
+<tr class="even">
+<td>age</td>
+<td style="text-align: right;">0.10</td>
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">0.67</td>
+<td style="text-align: right;">0.505</td>
+</tr>
+<tr class="odd">
+<td>mother_weight</td>
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">4.00</td>
+<td style="text-align: right;">&lt; 0.001</td>
+</tr>
+<tr class="even">
+<td>cigarettes</td>
+<td style="text-align: right;"><span class="math inline">\(-0.30\)</span></td>
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;"><span class="math inline">\(-3.33\)</span></td>
+<td style="text-align: right;">0.001</td>
+</tr>
+<tr class="odd">
+<td>gestation_weeks</td>
+<td style="text-align: right;">3.20</td>
+<td style="text-align: right;">0.35</td>
+<td style="text-align: right;">9.14</td>
+<td style="text-align: right;">&lt; 0.001</td>
+</tr>
+</tbody>
+</table>
+<ol type="a">
+<li>Interpret the coefficient for cigarettes per day in context. Include the phrase “holding the other predictors constant.”</li>
+<li>Which predictors contribute discernibly at <span class="math inline">\(\alpha = 0.05\)</span> after accounting for the others?</li>
+<li>One predictor is not statistically discernible from zero. What should you <em>not</em> conclude from this?</li>
+</ol></li>
+<li><p><strong>Adjusted <span class="math inline">\(R^2\)</span> vs.&nbsp;<span class="math inline">\(R^2\)</span>.</strong> Two candidate models are fit to the same data (<span class="math inline">\(n = 60\)</span>):</p>
+<ul>
+<li>Model A (3 predictors): <span class="math inline">\(R^2 = 0.62\)</span>, adjusted <span class="math inline">\(R^2 = 0.60\)</span>.</li>
+<li>Model B (5 predictors): <span class="math inline">\(R^2 = 0.65\)</span>, adjusted <span class="math inline">\(R^2 = 0.59\)</span>.</li>
+</ul>
+<ol type="a">
+<li>Which model has more explained variability by raw <span class="math inline">\(R^2\)</span>?</li>
+<li>Which model is preferred by adjusted <span class="math inline">\(R^2\)</span>? Why do they disagree?</li>
+<li>Argue in one sentence why adjusted <span class="math inline">\(R^2\)</span> is the more honest comparison when the models have different numbers of predictors.</li>
+</ol></li>
+<li><p><strong>VIF interpretation.</strong> A multiple regression reports the following VIFs:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Predictor</th>
+<th style="text-align: right;">VIF</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Income</td>
+<td style="text-align: right;">1.4</td>
+</tr>
+<tr class="even">
+<td>Years of education</td>
+<td style="text-align: right;">8.7</td>
+</tr>
+<tr class="odd">
+<td>Occupational prestige score</td>
+<td style="text-align: right;">9.1</td>
+</tr>
+<tr class="even">
+<td>Age</td>
+<td style="text-align: right;">1.2</td>
+</tr>
+</tbody>
+</table>
+<ol type="a">
+<li>Which two predictors are causing concern about multicollinearity, and why?</li>
+<li>Explain in one sentence why high VIF makes it hard to interpret those two coefficients individually.</li>
+<li>Name two possible responses to the high VIFs.</li>
+</ol></li>
+<li><p><strong>Simple vs.&nbsp;multiple regression slope.</strong> A simple regression of house price on square footage gives a slope of $220 per additional square foot. A multiple regression of house price on square footage, number of bedrooms, and neighborhood-median-income gives a slope for square footage of $155.</p>
+<ol type="a">
+<li>Why is the multiple-regression slope smaller?</li>
+<li>Which slope answers the question “in a comparable house, how much does an extra square foot cost?”</li>
+<li>Which slope answers the question “for two random houses differing only in size (ignoring their other differences), how much more expensive is the larger one?”</li>
+</ol></li>
+<li><p><strong>When to include a predictor.</strong> A researcher must choose whether to add a fifth predictor to a four-predictor model of employee salary. The fifth predictor’s individual <span class="math inline">\(t\)</span>-test has p-value 0.28, and a scatterplot shows a moderately strong linear relationship between the new predictor and one of the four already in the model.</p>
+<ol type="a">
+<li>Should the researcher add the predictor purely based on statistical evidence?</li>
+<li>Suppose the researcher has a strong subject-matter reason to include the predictor even though its p-value is large. Is that a valid reason to include it?</li>
+<li>After adding the predictor, adjusted <span class="math inline">\(R^2\)</span> dropped from 0.53 to 0.51. What does this tell you about the predictor’s contribution?</li>
+</ol></li>
+</ol>
+<!-- StatLens Interactive Exercises — Multiple Regression -->
+<!-- HAND-AUTHORED. Focus on interpreting output, choosing predictors, VIF,   -->
+<!-- and why "holding others fixed" is the whole game.                        -->
+<section id="statlens-exercises" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="statlens-exercises">StatLens Exercises</h3>
+<p>Let <a href="https://jbaggett.github.io/statlens" target="_blank">StatLens</a> do the arithmetic; spend your effort on the reasoning a calculator can’t do.</p>
+<p><em>Note.</em> Exercise 4 (VIF and interpretation) uses the <strong>Extended Content</strong> variance inflation factor material and requires <strong>expert mode</strong> on the Multiple Regression tool. Exercises 2 and 5 reference VIF in a few options; the reasoning still works if you substitute “scatterplot showing a strong relationship between predictors” for high VIF and “no strong relationship on the predictor scatterplot” for low VIF.</p>
+<ol type="1">
+<li><p><strong>Frame the question.</strong> A real estate analyst wants to build a model that predicts a home’s sale price from its <strong>square footage</strong>, <strong>age</strong>, and <strong>neighborhood median income</strong>.</p>
+<ol type="a">
+<li>Write the multiple regression model in the standard form <span class="math inline">\(y = \beta_0 + \beta_1 x_1 + \cdots\)</span> with all variables clearly labeled.</li>
+<li>State the null and alternative hypotheses for the <strong>model-level</strong> <span class="math inline">\(F\)</span>-test in words.</li>
+<li>State the null and alternative hypotheses for the <strong>individual <span class="math inline">\(t\)</span>-test</strong> on square footage. Why is this a different question from the one the <span class="math inline">\(F\)</span>-test asks?</li>
+</ol>
+<details>
+<summary>
+<p>Show answer</p>
+</summary>
+<ol type="a">
+<li><p><span class="math inline">\(\text{price} = \beta_0 + \beta_1 \cdot \text{sqft} + \beta_2 \cdot \text{age} + \beta_3 \cdot \text{med\_income} + \varepsilon\)</span>.</p></li>
+<li><p><span class="math inline">\(H_0\)</span>: none of the predictors is linearly related to price (<span class="math inline">\(\beta_1 = \beta_2 = \beta_3 = 0\)</span>). <span class="math inline">\(H_A\)</span>: at least one predictor is linearly related to price.</p></li>
+<li><p><span class="math inline">\(H_0: \beta_1 = 0\)</span> (square footage does not contribute, <em>holding age and neighborhood income fixed</em>). This is a <em>conditional</em> question: does square footage add anything above and beyond what age and neighborhood income already explain? The <span class="math inline">\(F\)</span>-test asks the <em>unconditional</em> joint question: does any predictor contribute at all?</p></li>
+</ol>
+</details></li>
+<li><p><strong>Choose predictors thoughtfully.</strong> For each scenario, decide whether to include the new predictor in the model. Options: <strong>include</strong>, <strong>exclude</strong>, or <strong>it depends</strong> (and specify the deciding factor).</p>
+<ol type="a">
+<li>The new predictor’s individual <span class="math inline">\(t\)</span>-test has p = 0.03; VIF = 2.1; adjusted <span class="math inline">\(R^2\)</span> increases from 0.55 to 0.61.</li>
+<li>The new predictor’s <span class="math inline">\(t\)</span>-test has p = 0.42; VIF = 3.0; adjusted <span class="math inline">\(R^2\)</span> drops from 0.55 to 0.53.</li>
+<li>The new predictor’s <span class="math inline">\(t\)</span>-test has p &lt; 0.001; VIF = 14.2; adjusted <span class="math inline">\(R^2\)</span> increases from 0.55 to 0.56.</li>
+<li>The new predictor has a strong scientific reason to be in the model (a well-established causal driver), <span class="math inline">\(t\)</span>-test p = 0.20, VIF = 2.5, adjusted <span class="math inline">\(R^2\)</span> unchanged.</li>
+</ol>
+<details>
+<summary>
+<p>Show answer</p>
+</summary>
+<ol type="a">
+<li><p><strong>Include.</strong> Statistically discernible, low VIF, and adjusted <span class="math inline">\(R^2\)</span> rises: everything says yes.</p></li>
+<li><p><strong>Exclude.</strong> Not discernible and adjusted <span class="math inline">\(R^2\)</span> drops — the predictor is not earning its degree of freedom.</p></li>
+<li><p><strong>It depends.</strong> The strong <span class="math inline">\(t\)</span>-value with high VIF is a classic signal that the predictor duplicates an existing one; individual coefficients become unreliable. Consider dropping <em>one</em> of the collinear pair, or combining them into a single summary variable. Never keep both at VIF &gt; 10 and interpret the coefficients separately.</p></li>
+<li><p><strong>Include.</strong> Domain knowledge and the goal matter as much as the numerics. If there is a strong scientific reason to model the effect of a predictor, include it even without a small p-value; the coefficient still estimates the effect <em>given</em> the other predictors, and the standard error tells you how precise the estimate is. Statistical non-significance ≠ evidence of no effect.</p></li>
+</ol>
+</details></li>
+<li><p><strong>Read the coefficient table.</strong> Open the <a href="https://jbaggett.github.io/statlens/inference/mlr/?dataset=possum" target="_blank">Multiple Regression tool</a> loaded with the possum data. Select <strong>head length</strong> as the response and both <strong>total length</strong> and <strong>skull width</strong> as predictors.</p>
+<ol type="a">
+<li>Write the fitted equation with numeric coefficients.</li>
+<li>Interpret each slope in context, using the phrase “holding the other constant.”</li>
+<li>Compare the total-length slope in the two-predictor model to the total-length slope from the <em>simple</em> regression in Ch 20. Are they the same? If they differ, what does that tell you about what the simple slope was actually measuring?</li>
+<li>Report the model-level <span class="math inline">\(F\)</span>-statistic and its p-value. Does the model contribute discernibly?</li>
+</ol>
+<details>
+<summary>
+<p>Show answer</p>
+</summary>
+<ol type="a">
+<li><p>Read the coefficients directly from StatLens. The equation will read <span class="math inline">\(\widehat{\text{head\_l}} = b_0 + b_1 \cdot \text{total\_l} + b_2 \cdot \text{skull\_width}\)</span>.</p></li>
+<li><p>Each slope is the mean change in head length per unit change in that predictor, <strong>holding the other fixed</strong>. Report the actual numbers with units (mm per cm, mm per mm).</p></li>
+<li><p>The multi-predictor total-length slope will typically be <em>smaller</em> in magnitude than the simple-regression slope. The simple slope absorbed the joint effect of total length AND skull width, because larger possums tend to have both larger total lengths and larger skulls. The multi-predictor slope isolates the total-length effect.</p></li>
+<li><p>The model-level <span class="math inline">\(F\)</span>-test rejects overwhelmingly on this data — both predictors carry real signal about head length.</p></li>
+</ol>
+</details></li>
+<li><p><strong>VIF and interpretation.</strong> Add a third predictor (say, <strong>tail length</strong>) to the model in Exercise 3.</p>
+<ol type="a">
+<li>Report the VIFs for all three predictors. Are any concerning?</li>
+<li>Report the new adjusted <span class="math inline">\(R^2\)</span> and compare to the two-predictor model. Did adding the third predictor help?</li>
+<li>Report the coefficient for total length and its standard error. How does the standard error compare to the two-predictor version? What does the change in <span class="math inline">\(SE\)</span> reflect?</li>
+<li>A student says: “adjusted <span class="math inline">\(R^2\)</span> went up, so the third predictor is clearly worth including.” Is that always sufficient justification? What else should you check before finalizing the model?</li>
+</ol>
+<details>
+<summary>
+<p>Show answer</p>
+</summary>
+<ol type="a">
+<li><p>Answers vary; report the VIF values. Values below 5 are safe; 5–10 warrants caution; 10+ is a problem.</p></li>
+<li><p>Adjusted <span class="math inline">\(R^2\)</span> may rise, fall, or stay similar depending on the data. If it drops, the third predictor’s added variance-explained doesn’t pay for the degree of freedom it costs.</p></li>
+<li><p>Standard errors on individual coefficients generally <em>inflate</em> as correlated predictors are added — that inflation is exactly what VIF is quantifying. If total length’s SE rose noticeably, its coefficient became less precisely estimated because tail length duplicates some of the signal.</p></li>
+<li><p>Also check: (i) is the new predictor’s coefficient interpretable (any high-VIF flags?), (ii) are residual diagnostics still clean (linearity, equal variance, no new outliers), (iii) does the extra predictor make substantive sense in the problem context. A rise in adjusted <span class="math inline">\(R^2\)</span> alone doesn’t override those.</p></li>
+</ol>
+</details></li>
+<li><p><strong>When <span class="math inline">\(F\)</span> and <span class="math inline">\(t\)</span> disagree.</strong> Use the <a href="https://jbaggett.github.io/statlens/inference/mlr/" target="_blank">Multiple Regression tool</a> to construct or find a dataset where the model-level <span class="math inline">\(F\)</span>-test rejects at <span class="math inline">\(\alpha = 0.05\)</span> but <em>none</em> of the individual <span class="math inline">\(t\)</span>-tests do.</p>
+<ol type="a">
+<li>Report the <span class="math inline">\(F\)</span>-statistic, its p-value, and the p-values of the individual <span class="math inline">\(t\)</span>-tests. What does this pattern suggest?</li>
+<li>Report the VIFs for each predictor. Is high VIF the likely cause?</li>
+<li>What does “the model as a whole works, but no individual predictor is discernible” <em>mean</em> for the researcher trying to use this model?</li>
+<li>A student says: “If no individual <span class="math inline">\(t\)</span>-test rejects, we should throw out the model.” Push back on that argument in one sentence.</li>
+</ol>
+<details>
+<summary>
+<p>Show answer</p>
+</summary>
+<ol type="a">
+<li><p>This pattern is the fingerprint of multicollinearity: the joint contribution of the predictors is real (the model beats “none of them contribute”), but no <em>single</em> predictor is uniquely responsible for it. Each is essentially interchangeable with a combination of the others.</p></li>
+<li><p><strong>Yes</strong>, high VIFs are usually the cause. Predictors that carry nearly the same information make each <span class="math inline">\(t\)</span>-test look at a lonely, individual contribution — and none is discernibly large on its own.</p></li>
+<li><p>It means the predictors are collectively useful for predicting <span class="math inline">\(y\)</span> but individual causal interpretation is unreliable. Predictions from the whole model are trustworthy; conclusions like “predictor <span class="math inline">\(x_1\)</span> specifically caused the effect” are not.</p></li>
+<li><p>Rejecting the model based on individual <span class="math inline">\(t\)</span>-tests would throw out a <em>jointly informative</em> model just because its predictors overlap. Better responses: combine collinear predictors, drop one, or accept that predictions are trustworthy even if individual coefficients are not.</p></li>
+</ol>
+</details></li>
+</ol>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/anova-for-regression.html" class="pagination-link" aria-label="ANOVA for Regression">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">ANOVA for Regression</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../reviews/review-apply.html" class="pagination-link" aria-label="Apply — Unit Review">
+        <span class="nav-page-text">Apply — Unit Review</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Introduction to Statistics: A Simulation-First Approach</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>. Built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
