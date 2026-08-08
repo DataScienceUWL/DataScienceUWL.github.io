@@ -2,17 +2,23 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.6.42">
+<meta name="generator" content="quarto-1.10.18">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>Correlation and Linear Regression – STAT 145 Course Pack</title>
 <style>
-code{white-space: pre-wrap;}
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -32,15 +38,16 @@ ul.task-list li input[type="checkbox"] {
 <meta name="quarto:offset" content="../../">
 <link href="../../sections/Unit4/ch18-additional-regression.html" rel="next">
 <link href="../../sections/Unit4/ch16-anova.html" rel="prev">
-<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-0e7bfd922d411307b3ad2ffcbaad6d00.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-31add7e0a2538daf5e2a8a858b78da74.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -76,7 +83,7 @@ ul.task-list li input[type="checkbox"] {
 </script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -89,7 +96,7 @@ const typesetMath = (el) => {
     var macros = [];
     for (var i = 0; i < mathElements.length; i++) {
       var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
         window.katex.render(texText.data, mathElements[i], {
           displayMode: mathElements[i].classList.contains('display'),
           throwOnError: false,
@@ -107,7 +114,7 @@ window.Quarto = {
 
 </head>
 
-<body class="nav-sidebar docked">
+<body class="nav-sidebar docked quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -407,6 +414,7 @@ window.Quarto = {
 <li><em>Strength</em>: How tightly do the points cluster around the trend? A strong relationship has little scatter; a weak relationship has lots of scatter.</li>
 <li><em>Unusual observations</em>: Are there any outliers that deviate from the overall pattern?</li>
 </ul>
+<div style="page-break-after: always;"></div>
 <div class="example-box">
 <p><strong>Class Example 4.4.1: Describing Relationships</strong></p>
 <p>Researchers captured 104 brushtail possums in Australia and took body measurements before releasing them. Consider the relationship between total body length (cm) and head length (mm).</p>
@@ -415,7 +423,7 @@ window.Quarto = {
 <div id="fig-possum-scatter" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A scatterplot with total length on the x-axis and head length on the y-axis. The points show a moderately strong positive linear relationship.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-possum-scatter-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="ch17-correlation-linear-regression_files/figure-html/fig-possum-scatter-1.png" class="img-fluid figure-img" alt="A scatterplot with total length on the x-axis and head length on the y-axis. The points show a moderately strong positive linear relationship." width="672">
+<img src="ch17-correlation-linear-regression_files/figure-html/fig-possum-scatter-1.png" class="img-fluid figure-img" style="width:75.0%" alt="A scatterplot with total length on the x-axis and head length on the y-axis. The points show a moderately strong positive linear relationship.">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-possum-scatter-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;18.1: A scatterplot showing head length against total length for 104 brushtail possums. The relationship is moderately strong, positive, and linear.
@@ -433,7 +441,7 @@ Figure&nbsp;18.1: A scatterplot showing head length against total length for 104
 <div id="fig-nonlinear-quadratic" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A scatterplot with a perfect quadratic relationship between angle of incline and distance traveled. A horizontal line of best fit is superimposed, showing that a linear model is inappropriate.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-nonlinear-quadratic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="ch17-correlation-linear-regression_files/figure-html/fig-nonlinear-quadratic-1.png" class="img-fluid figure-img" alt="A scatterplot with a perfect quadratic relationship between angle of incline and distance traveled. A horizontal line of best fit is superimposed, showing that a linear model is inappropriate." width="672">
+<img src="ch17-correlation-linear-regression_files/figure-html/fig-nonlinear-quadratic-1.png" class="img-fluid figure-img" style="width:60.0%" alt="A scatterplot with a perfect quadratic relationship between angle of incline and distance traveled. A horizontal line of best fit is superimposed, showing that a linear model is inappropriate.">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-nonlinear-quadratic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;18.2: A scatterplot showing a clear quadratic (U-shaped) relationship between angle of incline and distance traveled. The best-fitting straight line is flat and does not capture the pattern at all.
@@ -448,7 +456,7 @@ Figure&nbsp;18.2: A scatterplot showing a clear quadratic (U-shaped) relationshi
 <h2 class="anchored" data-anchor-id="the-linear-correlation-coefficient">The linear correlation coefficient</h2>
 <p>The <em>correlation coefficient</em>, denoted <span class="math inline">\(r\)</span>, quantifies the strength and direction of a linear relationship.</p>
 <p>The formula for the correlation coefficient is:</p>
-<p><span class="math display">\[r = \frac{1}{n-1} \sum_{i=1}^{n} \frac{x_i - \bar{x}}{s_x} \cdot \frac{y_i - \bar{y}}{s_y}\]</span></p>
+<p><span class="math display">\[r = \frac{1}{n-1} \sum_{i=1}^{n} \left(\frac{x_i - \bar{x}}{s_x} \times \frac{y_i - \bar{y}}{s_y} \right)\]</span></p>
 <p>where <span class="math inline">\(\bar{x}\)</span> and <span class="math inline">\(\bar{y}\)</span> are the sample means, and <span class="math inline">\(s_x\)</span> and <span class="math inline">\(s_y\)</span> are the sample standard deviations for each variable. In practice, we always use a computer or calculator to compute <span class="math inline">\(r\)</span>.</p>
 <p>The correlation coefficient has several important properties:</p>
 <ol type="1">
@@ -463,7 +471,7 @@ Figure&nbsp;18.2: A scatterplot showing a clear quadratic (U-shaped) relationshi
 <div id="fig-correlation-gallery" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Eight scatterplots with fabricated data showing correlations ranging from r = -1 to r = +1.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-correlation-gallery-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="ch17-correlation-linear-regression_files/figure-html/fig-correlation-gallery-1.png" class="img-fluid figure-img" alt="Eight scatterplots with fabricated data showing correlations ranging from r = -1 to r = +1." width="960">
+<img src="ch17-correlation-linear-regression_files/figure-html/fig-correlation-gallery-1.png" class="img-fluid figure-img" style="width:100.0%" alt="Eight scatterplots with fabricated data showing correlations ranging from r = -1 to r = +1.">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-correlation-gallery-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;18.3: Eight scatterplots showing different correlation values. The first row shows positive relationships with <span class="math inline">\(r\)</span> values of 1.00, 0.92, 0.73, and 0.31. The second row shows negative relationships with <span class="math inline">\(r\)</span> values of -0.28, -0.58, -0.87, and -1.00.
@@ -472,6 +480,7 @@ Figure&nbsp;18.3: Eight scatterplots showing different correlation values. The f
 </div>
 </div>
 </div>
+<div style="page-break-after: always;"></div>
 <p>Key patterns to notice:</p>
 <ul>
 <li>When <span class="math inline">\(r = 1\)</span> or <span class="math inline">\(r = -1\)</span>, all points fall exactly on a straight line (a perfect linear relationship).</li>
@@ -484,7 +493,7 @@ Figure&nbsp;18.3: Eight scatterplots showing different correlation values. The f
 <div class="example-box">
 <p><strong>Class Example 4.4.2: Firefighters and Damage</strong></p>
 <p>Studies have found a positive correlation between the number of firefighters sent to a fire and the amount of damage the fire causes. Does this mean sending more firefighters causes more damage?</p>
-<div class="workspace" style="min-height:2cm;"></div>
+<div class="workspace" style="min-height:0.75in;"></div>
 </div>
 </section>
 <section id="linear-regression" class="level2">
@@ -505,10 +514,11 @@ Figure&nbsp;18.3: Eight scatterplots showing different correlation values. The f
 <p>The values <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> represent the model’s <em>population intercept</em> and <em>population slope</em>, respectively, and the error is represented by <span class="math inline">\(\varepsilon\)</span>. If we collect data from a random sample from a target population, we can estimate <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> with <span class="math inline">\(b_0\)</span> and <span class="math inline">\(b_1\)</span>, the <em>sample intercept</em> and <em>sample slope</em>, respectively:</p>
 <p><span class="math display">\[\widehat{y} = b_0 + b_1 x.\]</span></p>
 <p>The “hat” on <span class="math inline">\(y\)</span> signifies that this is a predicted (estimated) value.</p>
-<p>When we use <span class="math inline">\(x\)</span> to predict <span class="math inline">\(y\)</span>, we call <span class="math inline">\(x\)</span> the <strong>predictor</strong> variable (or explanatory variable) and <span class="math inline">\(y\)</span> the <strong>outcome</strong> variable (or response variable). he <em>slope</em>, <span class="math inline">\(b_1\)</span>, represents the average predicted change in the response variable,<span class="math inline">\(y\)</span>, given a one unit increase in the explanatory variable, <span class="math inline">\(x\)</span>. The <em>intercept</em>, <span class="math inline">\(b_0\)</span>, represents the predicted value of the response variable, <span class="math inline">\(y\)</span>, if the explanatory variable, <span class="math inline">\(x\)</span> is zero. The equation for the intercept and slope are given as</p>
+<p>When we use <span class="math inline">\(x\)</span> to predict <span class="math inline">\(y\)</span>, we call <span class="math inline">\(x\)</span> the <strong>predictor</strong> variable (or explanatory variable) and <span class="math inline">\(y\)</span> the <strong>outcome</strong> variable (or response variable). The <em>slope</em>, <span class="math inline">\(b_1\)</span>, represents the average predicted change in the response variable,<span class="math inline">\(y\)</span>, given a one unit increase in the explanatory variable, <span class="math inline">\(x\)</span>. The <em>intercept</em>, <span class="math inline">\(b_0\)</span>, represents the predicted value of the response variable, <span class="math inline">\(y\)</span>, if the explanatory variable, <span class="math inline">\(x\)</span> is zero. The equation for the intercept and slope are given as</p>
 <p><span class="math display">\[
 b_1 = r \frac{ s_y }{ s_x } \qquad b_0 = \overline{y} - b_1 \overline{x}.
 \]</span></p>
+<div style="page-break-after: always;"></div>
 <div class="def-card">
 <p>The <em>slope</em> and <em>correlation coefficient</em> should <em>always</em> have the same sign</p>
 </div>
@@ -516,12 +526,9 @@ b_1 = r \frac{ s_y }{ s_x } \qquad b_0 = \overline{y} - b_1 \overline{x}.
 <div class="example-box">
 <p><strong>Class Example 4.4.3: Possums</strong></p>
 <p>Researchers captured 104 brushtail possums in Australia and took body measurements. We consider total body length (cm) as the predictor to predict head length (mm). Some summary statistics and a scatterplot of the data are given below</p>
-<div>
-
-</div>
-<div class="quarto-layout-panel" data-layout="[50, 50]">
+<div class="quarto-layout-panel" data-layout="[40, 60]">
 <div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<div class="quarto-layout-cell" style="flex-basis: 40.0%;justify-content: center;">
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -549,7 +556,7 @@ b_1 = r \frac{ s_y }{ s_x } \qquad b_0 = \overline{y} - b_1 \overline{x}.
 </tbody>
 </table>
 </div>
-<div class="cell quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="cell quarto-layout-cell" style="flex-basis: 60.0%;justify-content: flex-start;">
 <div class="cell-output-display">
 <div id="fig-possum-regression" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A scatterplot with total length on the x-axis and head length on the y-axis, with a least squares line superimposed.">
 <figure class="quarto-float quarto-float-fig figure">
@@ -572,7 +579,7 @@ Figure&nbsp;18.4: A scatterplot showing head length against total length for 104
 <ol start="2" type="a">
 <li>Use the summaries to find estimates for the slope and intercept for the regression line. Record your answer in the form <span class="math inline">\(\widehat{y} = b_0 + b_1x\)</span>.</li>
 </ol>
-<div class="workspace" style="min-height:2cm;"></div>
+<div class="workspace" style="min-height:1.5in;"></div>
 </div>
 <section id="interpreting-slope-and-intercept" class="level3">
 <h3 class="anchored" data-anchor-id="interpreting-slope-and-intercept">Interpreting Slope and Intercept</h3>
@@ -604,19 +611,21 @@ Figure&nbsp;18.4: A scatterplot showing head length against total length for 104
 <li>Outliers can have strong influence on the regression line, just as we saw for correlation.</li>
 </ul>
 <div class="example-box">
-<p><strong>Class Example 4.4.4: Possums, revisited</strong> Consider the previous example.</p>
+<p><strong>Class Example 4.4.4: Possums, revisited</strong></p>
+<p>Consider the previous example.</p>
 <ol type="a">
 <li>Predict the head length of a possum whose body length is 90mm. Is this prediction extrapolation?</li>
 </ol>
-<div class="workspace" style="min-height:2cm;"></div>
+<div class="workspace" style="min-height:1in;"></div>
 <ol start="2" type="a">
 <li>One of the possums had a body length of 83mm and a head length of 88.4mm. Find the predicted value and residual for this possum.</li>
 </ol>
-<div class="workspace" style="min-height:2cm;"></div>
+<div class="workspace" style="min-height:1.5in;"></div>
+<div style="page-break-after: always;"></div>
 <ol start="3" type="a">
 <li>Provide an interpretation of the slope and intercept (if reasonable) in the context of this problem.</li>
 </ol>
-<div class="workspace" style="min-height:2cm;"></div>
+<div class="workspace" style="min-height:1.5in;"></div>
 </div>
 </section>
 </section>
@@ -631,7 +640,7 @@ H_0{:} \hspace{.5em} \beta_1 = 0 \qquad \qquad H_A{:} \hspace{.5em} \begin{align
 \end{aligned}
 \]</span></p>
 <p>What do each of these alternative hypotheses represent in words?</p>
-<div class="workspace" style="min-height:2cm;"></div>
+<div class="workspace" style="min-height:2in;"></div>
 <p>As with all statistics, we need to report a standard error in order to determine if our findings are significant. This will be provided to you with software output, so you do not need to worry about calculating this on your own. However, you will need to know how to find the test statistic in order to find a <span class="math inline">\(p\)</span>-value. For a hypothesis test about a slope, we use the test statistic</p>
 <div class="def-card">
 <p>SE<span class="math inline">\(_{b_1}\)</span> is the standard error of <span class="math inline">\(b_1\)</span></p>
@@ -639,7 +648,9 @@ H_0{:} \hspace{.5em} \beta_1 = 0 \qquad \qquad H_A{:} \hspace{.5em} \begin{align
 <p><span class="math display">\[
 t = \frac{ b_1 - 0 }{ \text{SE}_{b_1} }
 \]</span></p>
-<p>where SE<span class="math inline">\(_{b_1}\)</span> stands for standard error of <span class="math inline">\(b_1\)</span>. To find a <span class="math inline">\(p\)</span>-value, you should use a <span class="math inline">\(t\)</span>-distribution with <span class="math inline">\(n-2\)</span> degrees of freedom. The remaining steps of the hypothesis test are the same as all other hypothesis tests. The table below shows output that is typically given by software when conducting linear regression.</p>
+<p>where SE<span class="math inline">\(_{b_1}\)</span> stands for standard error of <span class="math inline">\(b_1\)</span>. To find a <span class="math inline">\(p\)</span>-value, you should use a <span class="math inline">\(t\)</span>-distribution with <span class="math inline">\(n-2\)</span> degrees of freedom. The remaining steps of the hypothesis test are the same as all other hypothesis tests.</p>
+<div style="page-break-after: always;"></div>
+<p>The table below shows output that is typically given by software when conducting linear regression.</p>
 <table class="caption-top table">
 <caption>Example output from software</caption>
 <thead>
@@ -695,8 +706,9 @@ t = \frac{ b_1 - 0 }{ \text{SE}_{b_1} }
 </tr>
 </tbody>
 </table>
-<div class="workspace" style="min-height:2cm;"></div>
+<div class="workspace" style="min-height:3in;"></div>
 </div>
+<div style="page-break-after: always;"></div>
 <section id="conditions-for-inference" class="level3">
 <h3 class="anchored" data-anchor-id="conditions-for-inference">Conditions for inference</h3>
 <p>For the mathematical inference to be valid, we check four conditions, often remembered by the <em>LINE</em> mnemonic:</p>
@@ -716,9 +728,10 @@ t = \frac{ b_1 - 0 }{ \text{SE}_{b_1} }
 </div>
 <p>There is another statistic from regression that is often used to compare two simple linear regressions models with each other. The <em>coefficient of determination</em>, notated <span class="math inline">\(R^2\)</span>, gives the percentage (or proportion) of variation in the <em>response</em> variable that we can explain by the linear regression using the <em>explanatory</em> variable. Because we hope the explanatory variable and fitted model do a good job in explaining the response, a higher <span class="math inline">\(R^2\)</span> is desired.</p>
 <div class="def-card">
-<p>When fitting a simple linear regression model, we can get the coefficient of determination by squaring the correlation, <span class="math inline">\(r\)</span>.</p>
+<p>When fitting a <em>simple</em> linear regression model, we can get the coefficient of determination by squaring the correlation, <span class="math inline">\(r\)</span>.</p>
 </div>
-<p>A more general idea of how <span class="math inline">\(R^2\)</span> is computed will be discussed in the next chapter, but <em>if we are fitting a simple linear model</em>, we can find the coefficient of determination, <span class="math inline">\(R^2\)</span>, by squaring the correlation coefficient, <span class="math inline">\(r\)</span>. Therefore, <span class="math inline">\(0 \leq R^2 &lt; \leq 1\)</span>. Values closer to 1 suggest a higher percentage of variation that <em>is</em> being explained. What if we are not interested in a <em>linear</em> model but some sort of curve instead? Then we know that the correlation <span class="math inline">\(r\)</span> does not tell us about the adequacy of the fitted curve since it only describes a linear relationship. However, the coefficient of determination <span class="math inline">\(R^2\)</span> <em>can</em> tell us how well a curve fits. This makes it more general in purpose than correlation.</p>
+<p>A more general idea of how <span class="math inline">\(R^2\)</span> is computed will be discussed in the next chapter, but <em>if we are fitting a simple linear model</em>, we can find the coefficient of determination, <span class="math inline">\(R^2\)</span>, by squaring the correlation coefficient, <span class="math inline">\(r\)</span>. Therefore, <span class="math inline">\(0 \leq R^2 \leq 1\)</span>. Values closer to 1 suggest a higher percentage of variation that <em>is</em> being explained. What if we are not interested in a <em>linear</em> model but some sort of curve instead? Then we know that the correlation <span class="math inline">\(r\)</span> does not tell us about the adequacy of the fitted curve since it only describes a linear relationship. However, the coefficient of determination <span class="math inline">\(R^2\)</span> <em>can</em> tell us how well a curve fits. This makes it more general in purpose than correlation.</p>
+<div style="page-break-after: always;"></div>
 <div class="example-box">
 <p><strong>Class Example 4.4.6: Investigating the coefficient of determination</strong></p>
 <p>Match each of the following scatterplots below (each displays the fitted model as the dashed line/curve) to one of the following values of coefficient of determination: <span class="math inline">\(R^2 = .98\)</span>, <span class="math inline">\(R^2 = .80\)</span>, <span class="math inline">\(R^2 = .37\)</span>, or <span class="math inline">\(R^2 = .001\)</span></p>
@@ -736,13 +749,14 @@ Figure&nbsp;18.5: Four scatterplots with fitted regression model fit to the data
 </div>
 </div>
 </div>
-<div class="workspace" style="min-height:2cm;"></div>
+<div class="workspace" style="min-height:1.5in;"></div>
 </div>
 <div class="example-box">
 <p><strong>Class Example 4.4.7: <span class="math inline">\(R^2\)</span> for the Possum data</strong></p>
 <p>If the correlation coefficient for the simple linear regression model relating the body length and head length of possums is 0.691, find and interpret the coefficient of determination, <span class="math inline">\(R^2\)</span>.</p>
-<div class="workspace" style="min-height:2cm;"></div>
+<div class="workspace" style="min-height:1.5in;"></div>
 </div>
+<div style="page-break-after: always;"></div>
 <div class="example-box">
 <p><strong>Class Example 4.4.8: Possum data, revisited</strong></p>
 <p>In the previous examples, we use the variable <em>body length</em> to predict <em>head length</em>. Now, we are going to use <em>body length</em> to predict <em>skull width</em>. The following table give the output from a simple linear regression model of skull width with body length.</p>
@@ -784,261 +798,269 @@ Figure&nbsp;18.5: Four scatterplots with fitted regression model fit to the data
 <ol type="a">
 <li>Using the output above, write the regression equation in the form <span class="math inline">\(\widehat{y} = b_0 + b_1 x\)</span>. Use it to find the predicted and residual value for a possum with a length of 80.5mm and a skull width of 56mm.</li>
 </ol>
-<div class="workspace" style="min-height:2cm;"></div>
+<div class="workspace" style="min-height:2in;"></div>
 <ol start="2" type="a">
 <li>Interpret the slope of the line in the context of the problem.</li>
 </ol>
-<div class="workspace" style="min-height:2cm;"></div>
-<ol start="4" type="a">
+<div class="workspace" style="min-height:1.25in;"></div>
+<ol start="3" type="a">
 <li>Conduct a hypothesis test to see if there is a significant positive relationship between length and skull width. Use <span class="math inline">\(\alpha = 0.05.\)</span></li>
 </ol>
-<div class="workspace" style="min-height:2cm;"></div>
-<ol start="5" type="a">
-<li>Find <span class="math inline">\(R^2\)</span> for this linear fit. Do body length explain head length or skull width better? Explain.</li>
+<div class="workspace" style="min-height:2in;"></div>
+<ol start="4" type="a">
+<li>Find <span class="math inline">\(R^2\)</span> for this linear fit. Does body length explain head length or skull width better? Explain.</li>
 </ol>
-<div class="workspace" style="min-height:2cm;"></div>
+<div class="workspace" style="min-height:1.5in;"></div>
 </div>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>
 <p>In this chapter, we introduced scatterplots as the primary tool for visualizing the relationship between two quantitative variables. We then defined the correlation coefficient <span class="math inline">\(r\)</span> as a measure of the strength and direction of the linear relationship. Key properties of <span class="math inline">\(r\)</span> include: it ranges from <span class="math inline">\(-1\)</span> to <span class="math inline">\(+1\)</span>, it is unitless, it is symmetric, and it measures only linear relationships. We emphasized that correlation does not imply causation – confounding variables can create spurious associations. Finally, we noted that the sample correlation is subject to sampling variability, especially in small samples.</p>
 <p>We developed the least squares regression line as a tool for modeling the linear relationship between two quantitative variables. The slope describes the predicted change in <span class="math inline">\(y\)</span> for a one-unit increase in <span class="math inline">\(x\)</span>, and the intercept describes the predicted value of <span class="math inline">\(y\)</span> when <span class="math inline">\(x = 0\)</span>. Residuals measure the difference between observed and predicted values, and residual plots help assess whether the linear model is appropriate. The coefficient of determination <span class="math inline">\(R^2\)</span> quantifies the proportion of variability in <span class="math inline">\(y\)</span> explained by the model. For inference, we use either a randomization test or the <span class="math inline">\(t\)</span>-distribution to test whether the slope is discernibly different from zero, and we can construct confidence intervals for the slope. The LINE conditions (linearity, independence, normality, equal variance) must be checked for the mathematical model to be valid.</p>
+<div style="page-break-after: always;"></div>
 
 
 </section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
-window.document.addEventListener("DOMContentLoaded", function (event) {
-  const toggleBodyColorMode = (bsSheetEl) => {
-    const mode = bsSheetEl.getAttribute("data-mode");
-    const bodyEl = window.document.querySelector("body");
-    if (mode === "dark") {
-      bodyEl.classList.add("quarto-dark");
-      bodyEl.classList.remove("quarto-light");
-    } else {
-      bodyEl.classList.add("quarto-light");
-      bodyEl.classList.remove("quarto-dark");
-    }
-  }
-  const toggleBodyColorPrimary = () => {
-    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
-    if (bsSheetEl) {
-      toggleBodyColorMode(bsSheetEl);
-    }
-  }
-  toggleBodyColorPrimary();  
-  const icon = "";
-  const anchorJS = new window.AnchorJS();
-  anchorJS.options = {
-    placement: 'right',
-    icon: icon
-  };
-  anchorJS.add('.anchored');
-  const isCodeAnnotation = (el) => {
-    for (const clz of el.classList) {
-      if (clz.startsWith('code-annotation-')) {                     
-        return true;
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
       }
+      return false;
     }
-    return false;
-  }
-  const onCopySuccess = function(e) {
-    // button target
-    const button = e.trigger;
-    // don't keep focus
-    button.blur();
-    // flash "checked"
-    button.classList.add('code-copy-button-checked');
-    var currentTitle = button.getAttribute("title");
-    button.setAttribute("title", "Copied!");
-    let tooltip;
-    if (window.bootstrap) {
-      button.setAttribute("data-bs-toggle", "tooltip");
-      button.setAttribute("data-bs-placement", "left");
-      button.setAttribute("data-bs-title", "Copied!");
-      tooltip = new bootstrap.Tooltip(button, 
-        { trigger: "manual", 
-          customClass: "code-copy-button-tooltip",
-          offset: [0, -8]});
-      tooltip.show();    
-    }
-    setTimeout(function() {
-      if (tooltip) {
-        tooltip.hide();
-        button.removeAttribute("data-bs-title");
-        button.removeAttribute("data-bs-toggle");
-        button.removeAttribute("data-bs-placement");
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
       }
-      button.setAttribute("title", currentTitle);
-      button.classList.remove('code-copy-button-checked');
-    }, 1000);
-    // clear code selection
-    e.clearSelection();
-  }
-  const getTextToCopy = function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
       for (const childEl of codeEl.children) {
         if (isCodeAnnotation(childEl)) {
           childEl.remove();
         }
       }
       return codeEl.innerText;
-  }
-  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
-    text: getTextToCopy
-  });
-  clipboard.on('success', onCopySuccess);
-  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
-      text: getTextToCopy,
-      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
     });
-    clipboardModal.on('success', onCopySuccess);
-  }
-    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-    var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp('/' + window.location.host + '/');
-    var isInternal = (href) => {
-        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
     }
-    // Inspect non-navigation links and adorn them if external
- 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
-    for (var i=0; i<links.length; i++) {
-      const link = links[i];
-      if (!isInternal(link.href)) {
-        // undo the damage that might have been done by quarto-nav.js in the case of
-        // links that we want to consider external
-        if (link.dataset.originalHref !== undefined) {
-          link.href = link.dataset.originalHref;
-        }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
-    }
-  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
-    const config = {
-      allowHTML: true,
-      maxWidth: 500,
-      delay: 100,
-      arrow: false,
-      appendTo: function(el) {
-          return el.parentElement;
-      },
-      interactive: true,
-      interactiveBorder: 10,
-      theme: 'quarto',
-      placement: 'bottom-start',
-    };
-    if (contentFn) {
-      config.content = contentFn;
-    }
-    if (onTriggerFn) {
-      config.onTrigger = onTriggerFn;
-    }
-    if (onUntriggerFn) {
-      config.onUntrigger = onUntriggerFn;
-    }
-    window.tippy(el, config); 
-  }
-  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
-  for (var i=0; i<noterefs.length; i++) {
-    const ref = noterefs[i];
-    tippyHover(ref, function() {
-      // use id or data attribute instead here
-      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
-      try { href = new URL(href).hash; } catch {}
-      const id = href.replace(/^#\/?/, "");
-      const note = window.document.getElementById(id);
-      if (note) {
-        return note.innerHTML;
-      } else {
-        return "";
-      }
-    });
-  }
-  const xrefs = window.document.querySelectorAll('a.quarto-xref');
-  const processXRef = (id, note) => {
-    // Strip column container classes
-    const stripColumnClz = (el) => {
-      el.classList.remove("page-full", "page-columns");
-      if (el.children) {
-        for (const child of el.children) {
-          stripColumnClz(child);
-        }
-      }
-    }
-    stripColumnClz(note)
-    if (id === null || id.startsWith('sec-')) {
-      // Special case sections, only their first couple elements
-      const container = document.createElement("div");
-      if (note.children && note.children.length > 2) {
-        container.appendChild(note.children[0].cloneNode(true));
-        for (let i = 1; i < note.children.length; i++) {
-          const child = note.children[i];
-          if (child.tagName === "P" && child.innerText === "") {
-            continue;
-          } else {
-            container.appendChild(child.cloneNode(true));
-            break;
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
           }
         }
-        if (window.Quarto?.typesetMath) {
-          window.Quarto.typesetMath(container);
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
         }
-        return container.innerHTML
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
       } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
         if (window.Quarto?.typesetMath) {
           window.Quarto.typesetMath(note);
         }
-        return note.innerHTML;
-      }
-    } else {
-      // Remove any anchor links if they are present
-      const anchorLink = note.querySelector('a.anchorjs-link');
-      if (anchorLink) {
-        anchorLink.remove();
-      }
-      if (window.Quarto?.typesetMath) {
-        window.Quarto.typesetMath(note);
-      }
-      if (note.classList.contains("callout")) {
-        return note.outerHTML;
-      } else {
-        return note.innerHTML;
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
       }
     }
-  }
-  for (var i=0; i<xrefs.length; i++) {
-    const xref = xrefs[i];
-    tippyHover(xref, undefined, function(instance) {
-      instance.disable();
-      let url = xref.getAttribute('href');
-      let hash = undefined; 
-      if (url.startsWith('#')) {
-        hash = url;
-      } else {
-        try { hash = new URL(url).hash; } catch {}
-      }
-      if (hash) {
-        const id = hash.replace(/^#\/?/, "");
-        const note = window.document.getElementById(id);
-        if (note !== null) {
-          try {
-            const html = processXRef(id, note.cloneNode(true));
-            instance.setContent(html);
-          } finally {
-            instance.enable();
-            instance.show();
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
           }
         } else {
-          // See if we can fetch this
-          fetch(url.split('#')[0])
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
           .then(res => res.text())
           .then(html => {
             const parser = new DOMParser();
             const htmlDoc = parser.parseFromString(html, "text/html");
-            const note = htmlDoc.getElementById(id);
+            const note = htmlDoc.querySelector('main.content');
             if (note !== null) {
-              const html = processXRef(id, note);
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
               instance.setContent(html);
             } 
           }).finally(() => {
@@ -1046,185 +1068,161 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             instance.show();
           });
         }
-      } else {
-        // See if we can fetch a full url (with no hash to target)
-        // This is a special case and we should probably do some content thinning / targeting
-        fetch(url)
-        .then(res => res.text())
-        .then(html => {
-          const parser = new DOMParser();
-          const htmlDoc = parser.parseFromString(html, "text/html");
-          const note = htmlDoc.querySelector('main.content');
-          if (note !== null) {
-            // This should only happen for chapter cross references
-            // (since there is no id in the URL)
-            // remove the first header
-            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
-              note.children[0].remove();
-            }
-            const html = processXRef(null, note);
-            instance.setContent(html);
-          } 
-        }).finally(() => {
-          instance.enable();
-          instance.show();
-        });
-      }
-    }, function(instance) {
-    });
-  }
-      let selectedAnnoteEl;
-      const selectorForAnnotation = ( cell, annotation) => {
-        let cellAttr = 'data-code-cell="' + cell + '"';
-        let lineAttr = 'data-code-annotation="' +  annotation + '"';
-        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
-        return selector;
-      }
-      const selectCodeLines = (annoteEl) => {
-        const doc = window.document;
-        const targetCell = annoteEl.getAttribute("data-target-cell");
-        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
-        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
-        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
-        const lineIds = lines.map((line) => {
-          return targetCell + "-" + line;
-        })
-        let top = null;
-        let height = null;
-        let parent = null;
-        if (lineIds.length > 0) {
-            //compute the position of the single el (top and bottom and make a div)
-            const el = window.document.getElementById(lineIds[0]);
-            top = el.offsetTop;
-            height = el.offsetHeight;
-            parent = el.parentElement.parentElement;
-          if (lineIds.length > 1) {
-            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
-            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
-            height = bottom - top;
-          }
-          if (top !== null && height !== null && parent !== null) {
-            // cook up a div (if necessary) and position it 
-            let div = window.document.getElementById("code-annotation-line-highlight");
-            if (div === null) {
-              div = window.document.createElement("div");
-              div.setAttribute("id", "code-annotation-line-highlight");
-              div.style.position = 'absolute';
-              parent.appendChild(div);
-            }
-            div.style.top = top - 2 + "px";
-            div.style.height = height + 4 + "px";
-            div.style.left = 0;
-            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
-            if (gutterDiv === null) {
-              gutterDiv = window.document.createElement("div");
-              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
-              gutterDiv.style.position = 'absolute';
-              const codeCell = window.document.getElementById(targetCell);
-              const gutter = codeCell.querySelector('.code-annotation-gutter');
-              gutter.appendChild(gutterDiv);
-            }
-            gutterDiv.style.top = top - 2 + "px";
-            gutterDiv.style.height = height + 4 + "px";
-          }
-          selectedAnnoteEl = annoteEl;
-        }
-      };
-      const unselectCodeLines = () => {
-        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
-        elementsIds.forEach((elId) => {
-          const div = window.document.getElementById(elId);
-          if (div) {
-            div.remove();
-          }
-        });
-        selectedAnnoteEl = undefined;
-      };
-        // Handle positioning of the toggle
-    window.addEventListener(
-      "resize",
-      throttle(() => {
-        elRect = undefined;
-        if (selectedAnnoteEl) {
-          selectCodeLines(selectedAnnoteEl);
-        }
-      }, 10)
-    );
-    function throttle(fn, ms) {
-    let throttle = false;
-    let timer;
-      return (...args) => {
-        if(!throttle) { // first call gets through
-            fn.apply(this, args);
-            throttle = true;
-        } else { // all the others get throttled
-            if(timer) clearTimeout(timer); // cancel #2
-            timer = setTimeout(() => {
-              fn.apply(this, args);
-              timer = throttle = false;
-            }, ms);
-        }
-      };
-    }
-      // Attach click handler to the DT
-      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
-      for (const annoteDlNode of annoteDls) {
-        annoteDlNode.addEventListener('click', (event) => {
-          const clickedEl = event.target;
-          if (clickedEl !== selectedAnnoteEl) {
-            unselectCodeLines();
-            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
-            if (activeEl) {
-              activeEl.classList.remove('code-annotation-active');
-            }
-            selectCodeLines(clickedEl);
-            clickedEl.classList.add('code-annotation-active');
-          } else {
-            // Unselect the line
-            unselectCodeLines();
-            clickedEl.classList.remove('code-annotation-active');
-          }
-        });
-      }
-  const findCites = (el) => {
-    const parentEl = el.parentElement;
-    if (parentEl) {
-      const cites = parentEl.dataset.cites;
-      if (cites) {
-        return {
-          el,
-          cites: cites.split(' ')
-        };
-      } else {
-        return findCites(el.parentElement)
-      }
-    } else {
-      return undefined;
-    }
-  };
-  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
-  for (var i=0; i<bibliorefs.length; i++) {
-    const ref = bibliorefs[i];
-    const citeInfo = findCites(ref);
-    if (citeInfo) {
-      tippyHover(citeInfo.el, function() {
-        var popup = window.document.createElement('div');
-        citeInfo.cites.forEach(function(cite) {
-          var citeDiv = window.document.createElement('div');
-          citeDiv.classList.add('hanging-indent');
-          citeDiv.classList.add('csl-entry');
-          var biblioDiv = window.document.getElementById('ref-' + cite);
-          if (biblioDiv) {
-            citeDiv.innerHTML = biblioDiv.innerHTML;
-          }
-          popup.appendChild(citeDiv);
-        });
-        return popup.innerHTML;
+      }, function(instance) {
       });
     }
-  }
-});
-</script>
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
       <a href="../../sections/Unit4/ch16-anova.html" class="pagination-link" aria-label="Analysis of Variance">
