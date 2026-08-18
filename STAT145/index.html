@@ -220,6 +220,131 @@
       clip: rect(0, 0, 0, 0); border: 0;
     }
 
+    /* ── QR thumbnail + lightbox ── */
+    .card { position: relative; }
+    .card h3 { padding-right: 4.25rem; }  /* leave room for QR thumb */
+
+    .qr-thumb {
+      position: absolute;
+      top: 0.9rem;
+      right: 0.9rem;
+      width: 3.25rem;
+      height: 3.25rem;
+      padding: 0.2rem;
+      background: #fff;
+      border: 1px solid var(--ims-lgray);
+      border-radius: 4px;
+      cursor: pointer;
+      display: block;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    }
+    .qr-thumb:hover,
+    .qr-thumb:focus-visible {
+      border-color: var(--ims-blue);
+      box-shadow: 0 2px 8px rgba(86, 155, 189, 0.25);
+      transform: scale(1.04);
+      outline: none;
+    }
+    .qr-thumb svg { display: block; width: 100%; height: 100%; }
+    .qr-thumb .qr-thumb-label {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); border: 0;
+    }
+
+    .qr-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .qr-lightbox[hidden] { display: none; }
+    .qr-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(17, 75, 95, 0.75);
+      backdrop-filter: blur(2px);
+    }
+    .qr-panel {
+      position: relative;
+      background: #fff;
+      border-radius: 10px;
+      max-width: 24rem;
+      width: 100%;
+      padding: 1.75rem 1.5rem 1.25rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      text-align: center;
+    }
+    .qr-close {
+      position: absolute;
+      top: 0.4rem;
+      right: 0.5rem;
+      width: 2rem;
+      height: 2rem;
+      background: transparent;
+      border: 0;
+      font-size: 1.6rem;
+      line-height: 1;
+      color: var(--ims-gray);
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .qr-close:hover,
+    .qr-close:focus-visible {
+      background: var(--ims-surface);
+      color: var(--ims-green);
+      outline: none;
+    }
+    .qr-panel-title {
+      font-size: 1.05rem;
+      color: var(--ims-green);
+      margin-bottom: 0.75rem;
+      font-weight: 700;
+    }
+    .qr-code-big {
+      background: #fff;
+      padding: 0.75rem;
+      border: 1px solid var(--ims-lgray);
+      border-radius: 6px;
+      margin: 0 auto 1rem;
+      max-width: 18rem;
+    }
+    .qr-code-big svg { display: block; width: 100%; height: auto; }
+    .qr-url {
+      font-size: 0.85rem;
+      word-break: break-all;
+      margin-bottom: 1rem;
+      color: var(--ims-gray);
+    }
+    .qr-url a { color: var(--ims-blue-dark); }
+    .qr-actions {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .qr-actions .btn { cursor: pointer; }
+    .qr-toast {
+      position: absolute;
+      bottom: -2.25rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ims-green);
+      color: #fff;
+      font-size: 0.8rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .qr-toast.show { opacity: 1; }
+
     /* ── Responsive ── */
     @media (max-width: 600px) {
       .site-header { padding: 1.5rem 1rem; }
@@ -246,7 +371,7 @@
   <div class="card-grid">
 
     <!-- Textbook -->
-    <div class="card">
+    <div class="card" data-qr-url="https://datascienceuwl.github.io/STAT145/textbook/" data-qr-title="Textbook">
       <span class="card-icon" aria-hidden="true">&#128214;</span>
       <h3>Textbook <span class="badge badge-wip">In Development</span></h3>
       <p>
@@ -260,7 +385,7 @@
     </div>
 
     <!-- Coursepack (Fall 2026) -->
-    <div class="card">
+    <div class="card" data-qr-url="https://datascienceuwl.github.io/STAT145/Coursepack_Fall_2026/" data-qr-title="Coursepack — Fall 2026">
       <span class="card-icon" aria-hidden="true">&#128221;</span>
       <h3>Coursepack &mdash; Fall 2026 <span class="badge badge-wip">In Development</span></h3>
       <p>
@@ -275,7 +400,7 @@
     </div>
 
     <!-- Interactive Companion -->
-    <div class="card">
+    <div class="card" data-qr-url="https://datascienceuwl.github.io/STAT145/companion/" data-qr-title="Interactive Companion">
       <span class="card-icon" aria-hidden="true">&#129517;</span>
       <h3>Interactive Companion <span class="badge badge-ready">Live</span></h3>
       <p>
@@ -289,7 +414,7 @@
     </div>
 
     <!-- Coursepack (Original) -->
-    <div class="card">
+    <div class="card" data-qr-url="https://datascienceuwl.github.io/STAT145/coursepack_original/" data-qr-title="Coursepack — Original">
       <span class="card-icon" aria-hidden="true">&#128221;</span>
       <h3>Coursepack &mdash; Original</h3>
       <p>
@@ -303,7 +428,7 @@
     </div>
 
     <!-- StatLens -->
-    <div class="card">
+    <div class="card" data-qr-url="https://learnlens.org/statlens/" data-qr-title="StatLens">
       <span class="card-icon" aria-hidden="true">&#128202;</span>
       <h3>StatLens <span class="badge badge-ready">Live</span></h3>
       <p>
@@ -317,7 +442,7 @@
     </div>
 
     <!-- StatLens for Instructors -->
-    <div class="card">
+    <div class="card" data-qr-url="https://learnlens.org/statlens/instructors/" data-qr-title="StatLens for Instructors">
       <span class="card-icon" aria-hidden="true">&#127891;</span>
       <h3>StatLens for Instructors <span class="badge badge-ready">Live</span></h3>
       <p>
@@ -412,6 +537,173 @@
     Built with <a href="https://quarto.org/">Quarto</a> and <a href="https://github.com/">GitHub Pages</a>.
   </p>
 </footer>
+
+<!-- QR lightbox -->
+<div id="qr-lightbox" class="qr-lightbox" role="dialog" aria-labelledby="qr-lightbox-title" aria-modal="true" hidden>
+  <div class="qr-backdrop" data-qr-close></div>
+  <div class="qr-panel">
+    <button type="button" class="qr-close" data-qr-close aria-label="Close QR code">&times;</button>
+    <h4 id="qr-lightbox-title" class="qr-panel-title">Scan to open</h4>
+    <div id="qr-lightbox-code" class="qr-code-big" aria-live="polite"></div>
+    <p class="qr-url"><a id="qr-lightbox-url" href="#" target="_blank" rel="noopener"></a></p>
+    <div class="qr-actions">
+      <button type="button" class="btn btn-outline" id="qr-copy">Copy link</button>
+      <button type="button" class="btn btn-outline" id="qr-save">Save PNG</button>
+    </div>
+    <div id="qr-toast" class="qr-toast" role="status" aria-live="polite"></div>
+  </div>
+</div>
+
+<script src="qrcode.min.js"></script>
+<script>
+(function () {
+  if (typeof qrcode !== 'function') return;
+
+  function buildQr(text, ec) {
+    // Try Low, Medium, Quartile, High until the payload fits.
+    var levels = [ec || 'M', 'M', 'Q', 'H'];
+    for (var i = 0; i < levels.length; i++) {
+      try {
+        var q = qrcode(0, levels[i]);
+        q.addData(text);
+        q.make();
+        return q;
+      } catch (e) { /* try next EC level */ }
+    }
+    return null;
+  }
+
+  function svgFor(qr, cellSize, margin) {
+    return qr.createSvgTag({ cellSize: cellSize, margin: margin, scalable: true });
+  }
+
+  function drawPng(qr, cellSize, margin) {
+    var count = qr.getModuleCount();
+    var size = count * cellSize + margin * 2;
+    var canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = '#000000';
+    for (var r = 0; r < count; r++) {
+      for (var c = 0; c < count; c++) {
+        if (qr.isDark(r, c)) {
+          ctx.fillRect(margin + c * cellSize, margin + r * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+    return canvas;
+  }
+
+  // 1. Render a small QR thumbnail button in each card that carries data-qr-url.
+  var cards = document.querySelectorAll('.card[data-qr-url]');
+  cards.forEach(function (card) {
+    var url = card.getAttribute('data-qr-url');
+    var title = card.getAttribute('data-qr-title') || 'this resource';
+    var qr = buildQr(url, 'M');
+    if (!qr) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'qr-thumb';
+    btn.setAttribute('aria-label', 'Show larger QR code for ' + title);
+    btn.innerHTML = svgFor(qr, 2, 0) + '<span class="qr-thumb-label">QR code for ' + title + '</span>';
+    btn.addEventListener('click', function () { openLightbox(url, title); });
+    card.appendChild(btn);
+  });
+
+  // 2. Lightbox wiring.
+  var box = document.getElementById('qr-lightbox');
+  var codeEl = document.getElementById('qr-lightbox-code');
+  var urlLink = document.getElementById('qr-lightbox-url');
+  var titleEl = document.getElementById('qr-lightbox-title');
+  var copyBtn = document.getElementById('qr-copy');
+  var saveBtn = document.getElementById('qr-save');
+  var toast = document.getElementById('qr-toast');
+  var lastFocus = null;
+  var currentUrl = null;
+  var currentTitle = null;
+
+  function openLightbox(url, title) {
+    currentUrl = url;
+    currentTitle = title;
+    lastFocus = document.activeElement;
+    var qr = buildQr(url, 'M');
+    if (!qr) return;
+    codeEl.innerHTML = svgFor(qr, 8, 2);
+    urlLink.textContent = url;
+    urlLink.setAttribute('href', url);
+    titleEl.textContent = 'Scan or share — ' + title;
+    box.hidden = false;
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKey);
+    // Move focus into the dialog for keyboard users.
+    (box.querySelector('.qr-close') || box).focus();
+  }
+
+  function closeLightbox() {
+    box.hidden = true;
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', onKey);
+    if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+  }
+
+  function onKey(e) {
+    if (e.key === 'Escape') { e.preventDefault(); closeLightbox(); }
+  }
+
+  box.addEventListener('click', function (e) {
+    if (e.target.hasAttribute('data-qr-close')) closeLightbox();
+  });
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function () { toast.classList.remove('show'); }, 1600);
+  }
+
+  copyBtn.addEventListener('click', function () {
+    if (!currentUrl) return;
+    var done = function () { showToast('Link copied'); };
+    var fail = function () { showToast('Copy failed — select and copy manually'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(currentUrl).then(done, fail);
+    } else {
+      // Fallback: temp textarea.
+      var ta = document.createElement('textarea');
+      ta.value = currentUrl;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { fail(); }
+      document.body.removeChild(ta);
+    }
+  });
+
+  saveBtn.addEventListener('click', function () {
+    if (!currentUrl) return;
+    var qr = buildQr(currentUrl, 'M');
+    if (!qr) { showToast('Could not render'); return; }
+    var canvas = drawPng(qr, 12, 20);
+    var safe = (currentTitle || 'qr-code').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    var filename = 'stat145-' + (safe || 'qr') + '.png';
+    canvas.toBlob(function (blob) {
+      if (!blob) { showToast('Save failed'); return; }
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 500);
+    }, 'image/png');
+  });
+})();
+</script>
 
 </body>
 </html>
