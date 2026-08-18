@@ -133,6 +133,41 @@
       .container { padding: 1rem; }
       .map-table td.sec { width: auto; }
     }
+
+    /* ── QR icon per link + branded StatLens QR lightbox ── */
+    .chip-wrap { display: inline-flex; align-items: center; margin: 0.12rem 0.35rem 0.12rem 0; vertical-align: middle; }
+    .chip-wrap .chip { margin: 0; }
+    .qr-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 1.4rem; height: 1.4rem; margin-left: 0.2rem; padding: 0;
+      border: 1px solid var(--ims-lgray); border-radius: 5px;
+      background: var(--ims-bg); color: var(--ims-gray); cursor: pointer;
+      flex: none; transition: border-color .12s, color .12s, background .12s;
+    }
+    .qr-icon:hover, .qr-icon:focus-visible {
+      border-color: var(--ims-blue); color: var(--ims-blue-dark);
+      background: var(--ims-surface); outline: none;
+    }
+    .qr-icon svg { width: 0.85rem; height: 0.85rem; display: block; }
+
+    .qr-lightbox { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .qr-lightbox[hidden] { display: none; }
+    .qr-backdrop { position: absolute; inset: 0; background: rgba(17,75,95,0.75); backdrop-filter: blur(2px); }
+    .qr-panel { position: relative; background: #fff; border-radius: 10px; max-width: 24rem; width: 100%; padding: 1.75rem 1.5rem 1.25rem; box-shadow: 0 20px 60px rgba(0,0,0,0.35); text-align: center; }
+    .qr-close { position: absolute; top: 0.4rem; right: 0.5rem; width: 2rem; height: 2rem; background: transparent; border: 0; font-size: 1.6rem; line-height: 1; color: var(--ims-gray); cursor: pointer; border-radius: 4px; }
+    .qr-close:hover, .qr-close:focus-visible { background: var(--ims-surface); color: var(--ims-green); outline: none; }
+    .qr-panel-title { font-size: 1.05rem; color: var(--ims-green); margin-bottom: 0.75rem; font-weight: 700; }
+    .qr-code-big { background: #fff; padding: 0.75rem; border: 1px solid var(--ims-lgray); border-radius: 6px; margin: 0 auto 1rem; max-width: 17rem; }
+    .qr-code-big svg { display: block; width: 100%; height: auto; }
+    .qr-url { font-size: 0.85rem; word-break: break-all; margin-bottom: 1rem; color: var(--ims-gray); }
+    .qr-url a { color: var(--ims-blue-dark); }
+    .qr-actions { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+    .qr-actions .btn { cursor: pointer; }
+    .btn { display: inline-block; padding: 0.4rem 1rem; border-radius: 4px; font-size: 0.9rem; font-weight: 700; text-decoration: none; font-family: inherit; transition: background 0.15s, color 0.15s; }
+    .btn-outline { border: 1.5px solid var(--ims-blue); color: var(--ims-blue-dark); background: transparent; }
+    .btn-outline:hover, .btn-outline:focus-visible { background: var(--ims-blue); color: #fff; outline: none; }
+    .qr-toast { position: absolute; bottom: -2.25rem; left: 50%; transform: translateX(-50%); background: var(--ims-green); color: #fff; font-size: 0.8rem; padding: 0.35rem 0.75rem; border-radius: 4px; opacity: 0; pointer-events: none; transition: opacity 0.2s; white-space: nowrap; }
+    .qr-toast.show { opacity: 1; }
   </style>
 </head>
 <body>
@@ -301,6 +336,167 @@
   </p>
   <p>Section and example numbers match the Fall&nbsp;2026 coursepack.</p>
 </footer>
+
+<!-- Branded StatLens QR lightbox (same look as StatLens's own share QR) -->
+<div id="qr-lightbox" class="qr-lightbox" role="dialog" aria-labelledby="qr-lightbox-title" aria-modal="true" hidden>
+  <div class="qr-backdrop" data-qr-close></div>
+  <div class="qr-panel">
+    <button type="button" class="qr-close" data-qr-close aria-label="Close QR code">&times;</button>
+    <h4 id="qr-lightbox-title" class="qr-panel-title">Scan to open</h4>
+    <div id="qr-lightbox-code" class="qr-code-big" aria-live="polite"></div>
+    <p class="qr-url"><a id="qr-lightbox-url" href="#" target="_blank" rel="noopener"></a></p>
+    <div class="qr-actions">
+      <button type="button" class="btn btn-outline" id="qr-copy">Copy link</button>
+      <button type="button" class="btn btn-outline" id="qr-save">Save PNG</button>
+    </div>
+    <div id="qr-toast" class="qr-toast" role="status" aria-live="polite"></div>
+  </div>
+</div>
+
+<script src="../qrcode.min.js"></script>
+<script>
+(function () {
+  if (typeof qrcode !== 'function') return;
+
+  // StatLens favicon (blue circle + bell curve) — embedded in the QR center, EC level H.
+  var LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" fill="#569BBD"/><path d="M4 24 C4 24, 8 23, 10 20 C12 17, 13 8, 16 8 C19 8, 20 17, 22 20 C24 23, 28 24, 28 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>';
+
+  function makeQr(text) {
+    var qr = qrcode(0, 'H');
+    qr.addData(text); qr.make();
+    var count = qr.getModuleCount(), cellSize = 6, margin = cellSize * 2;
+    var size = count * cellSize + margin * 2, qrSize = count * cellSize;
+    var logoSize = Math.round(qrSize * 0.22);
+    var logoX = margin + (qrSize - logoSize) / 2, logoY = logoX;
+    var logoPad = Math.round(cellSize * 0.6);
+    return { qr: qr, count: count, cellSize: cellSize, margin: margin, size: size,
+             qrSize: qrSize, logoSize: logoSize, logoX: logoX, logoY: logoY, logoPad: logoPad };
+  }
+  function renderModules(q) {
+    var l = q.logoX - q.logoPad, r = q.logoX + q.logoSize + q.logoPad;
+    var t = q.logoY - q.logoPad, b = q.logoY + q.logoSize + q.logoPad, rects = '';
+    for (var row = 0; row < q.count; row++) for (var col = 0; col < q.count; col++) {
+      if (!q.qr.isDark(row, col)) continue;
+      var px = col * q.cellSize + q.margin, py = row * q.cellSize + q.margin;
+      if (px + q.cellSize > l && px < r && py + q.cellSize > t && py < b) continue;
+      rects += '<rect x="' + px + '" y="' + py + '" width="' + q.cellSize + '" height="' + q.cellSize + '" fill="#000"/>';
+    }
+    return rects;
+  }
+  function logoBg(q) {
+    var cr = (q.logoSize + q.logoPad * 2) / 2, cx = q.logoX + q.logoSize / 2, cy = q.logoY + q.logoSize / 2;
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + cr + '" fill="#fff"/>';
+  }
+  function nativeLogo(q) {
+    var s = q.logoSize / 32, lx = q.logoX, ly = q.logoY;
+    return '<circle cx="' + (lx + 16 * s) + '" cy="' + (ly + 16 * s) + '" r="' + (15 * s) + '" fill="#569BBD"/>' +
+      '<path d="M' + (lx + 4 * s) + ' ' + (ly + 24 * s) + ' C' + (lx + 4 * s) + ' ' + (ly + 24 * s) + ', ' + (lx + 8 * s) + ' ' + (ly + 23 * s) + ', ' + (lx + 10 * s) + ' ' + (ly + 20 * s) + ' C' + (lx + 12 * s) + ' ' + (ly + 17 * s) + ', ' + (lx + 13 * s) + ' ' + (ly + 8 * s) + ', ' + (lx + 16 * s) + ' ' + (ly + 8 * s) + ' C' + (lx + 19 * s) + ' ' + (ly + 8 * s) + ', ' + (lx + 20 * s) + ' ' + (ly + 17 * s) + ', ' + (lx + 22 * s) + ' ' + (ly + 20 * s) + ' C' + (lx + 24 * s) + ' ' + (ly + 23 * s) + ', ' + (lx + 28 * s) + ' ' + (ly + 24 * s) + ', ' + (lx + 28 * s) + ' ' + (ly + 24 * s) + '" fill="none" stroke="#fff" stroke-width="' + (2.2 * s) + '" stroke-linecap="round"/>';
+  }
+  function displaySvg(text) {
+    var q = makeQr(text);
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + q.size + ' ' + q.size + '" width="100%" height="100%" shape-rendering="crispEdges">' +
+      '<rect width="' + q.size + '" height="' + q.size + '" fill="#fff"/>' + renderModules(q) + logoBg(q) +
+      '<foreignObject x="' + q.logoX + '" y="' + q.logoY + '" width="' + q.logoSize + '" height="' + q.logoSize + '"><body xmlns="http://www.w3.org/1999/xhtml" style="margin:0;padding:0;background:transparent"><img src="data:image/svg+xml;base64,' + btoa(LOGO_SVG) + '" width="' + q.logoSize + '" height="' + q.logoSize + '" alt="" style="display:block"/></body></foreignObject></svg>';
+  }
+  function downloadSvg(text) {
+    var q = makeQr(text);
+    return '<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + q.size + ' ' + q.size + '" width="' + q.size + '" height="' + q.size + '" shape-rendering="crispEdges">' +
+      '<rect width="' + q.size + '" height="' + q.size + '" fill="#fff"/>' + renderModules(q) + logoBg(q) + nativeLogo(q) + '</svg>';
+  }
+
+  var QR_GLYPH = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 3h7v7H3V3zm2 2v3h3V5H5zm9-2h7v7h-7V3zm2 2v3h3V5h-3zM3 14h7v7H3v-7zm2 2v3h3v-3H5zm9-2h2v2h-2zm3 0h3v3h-3zm-3 5h2v2h-2zm3 1h3v2h-3z"/></svg>';
+
+  // Attach a QR icon after each tool/activity chip.
+  document.querySelectorAll('a.chip[href]').forEach(function (chip) {
+    var url = chip.href;
+    var title = chip.textContent.replace(/\s+/g, ' ').trim();
+    var wrap = document.createElement('span');
+    wrap.className = 'chip-wrap';
+    chip.parentNode.insertBefore(wrap, chip);
+    wrap.appendChild(chip);
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'qr-icon';
+    btn.title = 'QR code';
+    btn.setAttribute('aria-label', 'Show QR code for ' + title);
+    btn.innerHTML = QR_GLYPH;
+    btn.addEventListener('click', function () { openLightbox(url, title); });
+    wrap.appendChild(btn);
+  });
+
+  var box = document.getElementById('qr-lightbox');
+  var codeEl = document.getElementById('qr-lightbox-code');
+  var urlLink = document.getElementById('qr-lightbox-url');
+  var titleEl = document.getElementById('qr-lightbox-title');
+  var copyBtn = document.getElementById('qr-copy');
+  var saveBtn = document.getElementById('qr-save');
+  var toast = document.getElementById('qr-toast');
+  var lastFocus = null, currentUrl = null, currentTitle = null;
+
+  function openLightbox(url, title) {
+    currentUrl = url; currentTitle = title; lastFocus = document.activeElement;
+    codeEl.innerHTML = displaySvg(url);
+    urlLink.textContent = url; urlLink.setAttribute('href', url);
+    titleEl.textContent = title ? ('Scan or share — ' + title) : 'Scan or share';
+    box.hidden = false; document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKey);
+    (box.querySelector('.qr-close') || box).focus();
+  }
+  function closeLightbox() {
+    box.hidden = true; document.body.style.overflow = '';
+    document.removeEventListener('keydown', onKey);
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); closeLightbox(); } }
+  box.addEventListener('click', function (e) { if (e.target.hasAttribute('data-qr-close')) closeLightbox(); });
+
+  function showToast(m) {
+    toast.textContent = m; toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function () { toast.classList.remove('show'); }, 1600);
+  }
+  copyBtn.addEventListener('click', function () {
+    if (!currentUrl) return;
+    var done = function () { showToast('Link copied'); }, fail = function () { showToast('Copy failed'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(currentUrl).then(done, fail);
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = currentUrl; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { fail(); }
+      document.body.removeChild(ta);
+    }
+  });
+  saveBtn.addEventListener('click', function () {
+    if (!currentUrl) return;
+    var q = makeQr(currentUrl);
+    var scale = 6;
+    var svgBlob = new Blob([downloadSvg(currentUrl)], { type: 'image/svg+xml;charset=utf-8' });
+    var svgUrl = URL.createObjectURL(svgBlob);
+    var img = new Image();
+    img.onload = function () {
+      var canvas = document.createElement('canvas');
+      canvas.width = q.size * scale; canvas.height = q.size * scale;
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(svgUrl);
+      var safe = (currentTitle || 'qr').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      canvas.toBlob(function (blob) {
+        if (!blob) { showToast('Save failed'); return; }
+        var u = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = u; a.download = 'statlens-' + (safe || 'qr') + '.png';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(u); }, 500);
+      }, 'image/png');
+    };
+    img.onerror = function () { URL.revokeObjectURL(svgUrl); showToast('Save failed'); };
+    img.src = svgUrl;
+  });
+})();
+</script>
 
 </body>
 </html>
