@@ -168,6 +168,16 @@
     .btn-outline:hover, .btn-outline:focus-visible { background: var(--ims-blue); color: #fff; outline: none; }
     .qr-toast { position: absolute; bottom: -2.25rem; left: 50%; transform: translateX(-50%); background: var(--ims-green); color: #fff; font-size: 0.8rem; padding: 0.35rem 0.75rem; border-radius: 4px; opacity: 0; pointer-events: none; transition: opacity 0.2s; white-space: nowrap; }
     .qr-toast.show { opacity: 1; }
+
+    /* ── "Share this page" bar (whole-companion QR) ── */
+    .page-qr-bar { display: flex; align-items: center; gap: 1rem; background: var(--ims-surface); border: 1px solid var(--ims-lgray); border-radius: 8px; padding: 0.9rem 1.1rem; margin: 1rem 0 1.4rem; }
+    .page-qr-text { font-size: 0.92rem; color: var(--ims-gray); }
+    .page-qr-text strong { color: var(--ims-green); }
+    .page-qr-text a { color: var(--ims-blue-dark); word-break: break-all; }
+    .page-qr-thumb { flex: none; width: 5rem; height: 5rem; padding: 0.25rem; background: #fff; border: 1px solid var(--ims-lgray); border-radius: 6px; cursor: pointer; transition: border-color .12s, box-shadow .12s, transform .12s; }
+    .page-qr-thumb:hover, .page-qr-thumb:focus-visible { border-color: var(--ims-blue); box-shadow: 0 2px 8px rgba(86,155,189,0.25); transform: scale(1.03); outline: none; }
+    .page-qr-thumb svg { display: block; width: 100%; height: 100%; }
+    @media (max-width: 600px) { .page-qr-bar { flex-direction: column-reverse; align-items: flex-start; } }
   </style>
 </head>
 <body>
@@ -182,6 +192,18 @@
 </nav>
 
 <main class="container" role="main">
+
+  <div class="page-qr-bar">
+    <button type="button" class="page-qr-thumb" id="page-qr-thumb"
+            data-qr-url="https://datascienceuwl.github.io/STAT145/companion/"
+            data-qr-title="STAT 145 Interactive Companion"
+            aria-label="Enlarge the QR code for this companion page"></button>
+    <div class="page-qr-text">
+      <strong>Share this page.</strong> Project this QR code so students can open the companion on their phones &mdash;
+      then tap the QR beside any tool to send them straight to it.<br>
+      <a href="https://datascienceuwl.github.io/STAT145/companion/">datascienceuwl.github.io/STAT145/companion/</a>
+    </div>
+  </div>
 
   <div class="intro">
     <strong>How to use this page.</strong> Your printed coursepack is the text; this page is the live layer beside it.
@@ -495,6 +517,15 @@
     img.onerror = function () { URL.revokeObjectURL(svgUrl); showToast('Save failed'); };
     img.src = svgUrl;
   });
+
+  // Render the branded whole-page QR thumbnail at the top; click to enlarge.
+  var pageThumb = document.getElementById('page-qr-thumb');
+  if (pageThumb) {
+    var pu = pageThumb.getAttribute('data-qr-url');
+    var pt = pageThumb.getAttribute('data-qr-title') || '';
+    pageThumb.innerHTML = displaySvg(pu);
+    pageThumb.addEventListener('click', function () { openLightbox(pu, pt); });
+  }
 })();
 </script>
 
