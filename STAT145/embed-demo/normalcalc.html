@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Normal Probability Tool — embed demo</title>
+<style>
+  body{font:14px/1.4 system-ui,sans-serif;margin:0;padding:10px;color:#1a2b3c;background:#f7fafc}
+  .card{max-width:520px;border:1px solid #cbd5e1;border-radius:10px;padding:12px 14px;background:#fff}
+  h1{font-size:14px;margin:0 0 2px;color:#0f5132}
+  .sub{font-size:12px;color:#64748b;margin:0 0 8px}
+  canvas{width:100%;height:auto;touch-action:none;cursor:ew-resize;border:1px solid #e2e8f0;border-radius:6px}
+  .readout{display:flex;justify-content:space-between;margin-top:8px;font-size:13px}
+  .big{font-size:20px;font-weight:700;color:#0d6efd}
+  .goal{color:#7c3aed;font-weight:600}
+  .ok{color:#0f5132;font-weight:700}
+  .hint{font-size:11px;color:#64748b;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Normal Probability Tool</h1>
+  <p class="sub" id="dist">X ~ N(μ, σ)</p>
+  <canvas id="cv" width="500" height="240"></canvas>
+  <div class="readout">
+    <span>boundary&nbsp; c = <span class="big" id="cval">–</span></span>
+    <span>shaded left area&nbsp; P(X &lt; c) = <span class="big" id="area">–</span></span>
+  </div>
+  <div class="readout"><span class="goal" id="goal"></span><span id="match"></span></div>
+  <p class="hint">Drag the boundary. As you move it, this tool sends the value of <b>c</b> to MyOpenMath (<code>postMessage</code>), where it is graded.</p>
+</div>
+<script>
+var P = new URLSearchParams(location.search);
+var mu = parseFloat(P.get('mu')||'50'), sig = parseFloat(P.get('sigma')||'10');
+var target = P.get('target')!==null ? parseFloat(P.get('target')) : null;   // goal left-area (proportion)
+var qn = (P.get('qn')||'0').replace(/[^\d]/g,'');
+var lo = mu-4*sig, hi = mu+4*sig;
+var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+var W = cv.width, H = cv.height, pad = 24;
+var c = mu;   // current boundary
+
+function erf(x){var t=1/(1+0.3275911*Math.abs(x));
+  var y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);
+  return x>=0?y:-y;}
+function cdf(x){return 0.5*(1+erf((x-mu)/(sig*Math.SQRT2)));}
+function pdf(x){return Math.exp(-0.5*Math.pow((x-mu)/sig,2))/(sig*Math.sqrt(2*Math.PI));}
+var peak = pdf(mu);
+function xToPx(x){return pad+(x-lo)/(hi-lo)*(W-2*pad);}
+function pxToX(px){return lo+(px-pad)/(W-2*pad)*(hi-lo);}
+function yToPx(y){return H-pad-(y/peak)*(H-2*pad);}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  // shaded left region
+  ctx.beginPath(); ctx.moveTo(xToPx(lo),H-pad);
+  for(var x=lo;x<=c;x+=(hi-lo)/300){ctx.lineTo(xToPx(x),yToPx(pdf(x)));}
+  ctx.lineTo(xToPx(c),H-pad); ctx.closePath();
+  ctx.fillStyle='rgba(13,110,253,0.28)'; ctx.fill();
+  // curve
+  ctx.beginPath();
+  for(var x2=lo;x2<=hi;x2+=(hi-lo)/300){var px=xToPx(x2),py=yToPx(pdf(x2)); x2===lo?ctx.moveTo(px,py):ctx.lineTo(px,py);}
+  ctx.strokeStyle='#334155'; ctx.lineWidth=2; ctx.stroke();
+  // axis
+  ctx.beginPath(); ctx.moveTo(pad,H-pad); ctx.lineTo(W-pad,H-pad); ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1; ctx.stroke();
+  ctx.fillStyle='#475569'; ctx.font='11px system-ui'; ctx.textAlign='center';
+  [mu-2*sig,mu,mu+2*sig].forEach(function(t){ctx.fillText(Math.round(t),xToPx(t),H-8);});
+  // boundary line + handle
+  ctx.beginPath(); ctx.moveTo(xToPx(c),pad-6); ctx.lineTo(xToPx(c),H-pad);
+  ctx.strokeStyle='#dc2626'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='#dc2626'; ctx.beginPath(); ctx.arc(xToPx(c),pad-6,5,0,7); ctx.fill();
+  // readouts
+  var a=cdf(c);
+  document.getElementById('cval').textContent=c.toFixed(1);
+  document.getElementById('area').textContent=(a*100).toFixed(1)+'%';
+  if(target!==null){
+    var near=Math.abs(a-target)<0.005;
+    document.getElementById('match').innerHTML= near?'<span class="ok">✓ matches the goal</span>':'';
+  }
+  send();
+}
+function send(){
+  window.parent.postMessage(JSON.stringify({subject:'imathas.update', qn:qn, value:c.toFixed(2)}),'*');
+}
+function setFromEvent(e){
+  var r=cv.getBoundingClientRect();
+  var clientX=(e.touches?e.touches[0].clientX:e.clientX);
+  var px=(clientX-r.left)*(W/r.width);
+  c=Math.max(lo,Math.min(hi,pxToX(px)));
+  draw();
+}
+var dragging=false;
+cv.addEventListener('mousedown',function(e){dragging=true;setFromEvent(e);});
+window.addEventListener('mousemove',function(e){if(dragging)setFromEvent(e);});
+window.addEventListener('mouseup',function(){dragging=false;});
+cv.addEventListener('touchstart',function(e){dragging=true;setFromEvent(e);e.preventDefault();});
+cv.addEventListener('touchmove',function(e){if(dragging){setFromEvent(e);e.preventDefault();}});
+cv.addEventListener('touchend',function(){dragging=false;});
+
+document.getElementById('dist').textContent='X ~ N(μ = '+mu+', σ = '+sig+')';
+if(target!==null){document.getElementById('goal').textContent='Goal: drag c until the shaded left area = '+(target*100).toFixed(1)+'%';}
+draw();
+</script>
+</body>
+</html>
