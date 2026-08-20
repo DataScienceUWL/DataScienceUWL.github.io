@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estimator — external tool embed demo</title>
+<style>
+  body{font:15px/1.4 system-ui,sans-serif;margin:0;padding:14px;color:#1a2b3c;background:#f7fafc}
+  .card{max-width:460px;border:1px solid #cbd5e1;border-radius:10px;padding:16px 18px;background:#fff}
+  h1{font-size:15px;margin:0 0 4px;color:#0f5132}
+  .sub{font-size:12px;color:#64748b;margin:0 0 14px}
+  .val{font-size:34px;font-weight:700;color:#0d6efd;text-align:center;margin:6px 0}
+  input[type=range]{width:100%}
+  .note{font-size:12px;color:#475569;margin-top:12px;border-top:1px dashed #cbd5e1;padding-top:10px}
+  code{background:#eef2f7;padding:1px 4px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Estimator (external tool)</h1>
+  <p class="sub">This page is hosted outside MyOpenMath and embedded via an iframe — a stand-in for a StatLens tool.</p>
+  <div class="val" id="val">0.50</div>
+  <input type="range" id="sl" min="0" max="1" step="0.01" value="0.50" aria-label="estimate">
+  <p class="note">As you drag, this tool sends its value to MyOpenMath (<code>postMessage → imathas.update</code>) to fill the graded answer box. Target box: <code id="q">qn?</code></p>
+</div>
+<script>
+  var params = new URLSearchParams(location.search);
+  var qn = (params.get('qn') || '0').replace(/[^\d]/g, '');
+  document.getElementById('q').textContent = 'qn' + qn;
+  var sl = document.getElementById('sl'), out = document.getElementById('val');
+  function send() {
+    var v = sl.value;
+    out.textContent = v;
+    // IMathAS listens for a message whose string contains "imathas.update"
+    // and writes {value} into #qn{qn}, then triggers grading. (general.js:1305)
+    window.parent.postMessage(JSON.stringify({
+      subject: 'imathas.update', qn: qn, value: String(v)
+    }), '*');
+  }
+  sl.addEventListener('input', send);
+  window.addEventListener('load', send);
+</script>
+</body>
+</html>
