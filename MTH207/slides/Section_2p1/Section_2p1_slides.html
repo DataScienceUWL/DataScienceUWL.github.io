@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2.1 - Secant Lines and Average Rate of Change | MTH 207</title>
+<title>2.1 - The Tangent and Velocity Problems | MTH 207</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/white.min.css">
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
@@ -58,6 +58,9 @@
     cursor: zoom-in; transition: opacity 0.15s; }
 .fig-container img:hover { opacity: 0.8; }
 .fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
 .fig-link { display: inline-block; }
 .textbook-fig img { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; }
 .plotly-lazy-thumb { cursor: pointer; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
@@ -133,123 +136,154 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <div class="slides">
 <section class="title-slide" data-background-gradient="radial-gradient(circle at 30% 50%, #e8f4f8 0%, #f8f9fa 70%)">
   <h1>2.1</h1>
-  <p class="subtitle">Secant Lines and Average Rate of Change</p>
+  <p class="subtitle">The Tangent and Velocity Problems</p>
   <hr style="border-color:rgba(0,212,255,0.3);width:60%;margin:1em auto;" aria-hidden="true">
   <p class="course-info">MTH 207 &mdash; Calculus I<br>  Limits and Derivatives</p>
 </section>
 
-<section id="a-ball-in-the-air">
-<h2>A Ball in the Air</h2>
-<div class="fragment" data-editor-line="18"><div class="two-col">
-  <div><div><p>A ball is thrown straight up. Its height in feet after \(t\) seconds is</p>
-<p>\[ s(t) = 64 - 16(t-1)^2,    0 \le t \le 3. \]</p>
+<section id="two-questions">
+<h2>Two Questions</h2>
+<div class="fragment" data-editor-line="20"><div class="two-col">
+  <div><div><p><strong>A geometry question.</strong></p>
+<p>What is the slope of the line that just <em>touches</em> a curve at one point?</p>
+<p><strong>A physics question.</strong></p>
+<p>A speedometer reads \(58\) mph <em>right now</em>. What does “velocity at an instant” even mean?</p></div></div>
+  <div><div class="key-point fragment" data-editor-line="0"><p>These look like different questions. By the end of today they will be the <strong>same</strong> question &mdash; and we will not be able to answer either one yet.</p></div></div>
+</div></div>
+<aside class="notes">Resist answering. The point of today is to earn the need for limits; Section 2.2 pays it off.</aside>
+</section>
+
+<section id="what-is-a-tangent-line">
+<h2>What Is a Tangent Line?</h2>
+<div class="fragment" data-editor-line="41"><div class="two-col">
+  <div><div><p>“Tangent” comes from the Latin <em>tangens</em> &mdash; <strong>touching</strong>. A tangent should head in the <strong>same direction as the curve</strong> where it touches.</p>
+<p>Euclid's definition works for a circle: <em>a line meeting the curve exactly once</em>.</p>
+<p>For other curves it breaks down:</p>
 <ul>
-<li>Where is the ball when \(t = 0\)?</li>
-<li>When does it reach its highest point?</li>
-<li>When does it land?</li>
-</ul></div>
-<div class="key-point fragment" data-editor-line="8"><p>This is a downward parabola with vertex at \(t = 1\), \(s = 64\).</p></div></div>
+<li>line \(\ell\) meets the curve <strong>once</strong> but is clearly not tangent</li>
+<li>line \(t\) <strong>does</strong> look tangent &mdash; and meets the curve <strong>twice</strong></li>
+</ul></div></div>
   <div><div class="fig-container">
-  <a href="figures/ball_height.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/ball_height.png"><img src="figures/ball_height.png" alt="Graph of the height s of a ball against time t, from t equals 0 to t equals 3. The curve is a downward-opening parabola starting at height 48 when t is 0, rising to its peak height of 64 at t equals 1, falling back through 48 at t equals 2, and reaching 0 at t equals 3 when the ball lands." style="max-height:60vh;"></a>
+  <a href="figures/tangent_puzzle.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/tangent_puzzle.png"><img src="figures/tangent_puzzle.png" alt="Two pictures side by side. On the left, a circle with a line touching it at exactly one point, which is a tangent in Euclid's sense. On the right, a wavy curve with two lines through the same point P: a steep line labelled l that crosses the curve only at P but cuts across it rather than touching, and a line labelled t that lies along the direction of the curve at P but also meets the curve again further away." style="max-height:60vh;"></a>
 </div></div>
 </div></div>
-<aside class="notes">Build the table with them before showing the graph. The three landmark points &mdash; release, peak, landing &mdash; are the ones to label.</aside>
+<div class="key-point fragment" data-editor-line="58"><p>Counting intersections is the wrong idea. We need to talk about <em>direction</em>.</p></div>
 </section>
 
-<section id="reading-the-motion-off-the-graph">
-<h2>Reading the Motion off the Graph</h2>
-<div class="fragment" data-editor-line="40"><table>
-<tr><th scope="col">\(t\)</th><th scope="col">\(s(t)\)</th><th scope="col"></th></tr>
-<tr><td>\(0\)</td><td>\(48\)</td><td>initial height</td></tr>
-<tr><td>\(1\)</td><td>\(64\)</td><td>peak</td></tr>
-<tr><td>\(2\)</td><td>\(48\)</td><td></td></tr>
-<tr><td>\(3\)</td><td>\(0\)</td><td>landing</td></tr>
-</table>
-<ul>
-<li>On \(0 < t < 1\) the ball is <strong>rising</strong>.</li>
-<li>On \(1 < t < 3\) the ball is <strong>falling</strong>.</li>
-<li>At \(t = 1\) it <strong>turns around</strong> &mdash; stopped for an instant.</li>
-</ul></div>
-<div class="key-point fragment" data-editor-line="54"><p>“Stopped for an instant” is the idea we are about to make precise.</p></div>
-</section>
-
-<section id="average-velocity">
-<h2>Average Velocity</h2>
-<div class="example-box fragment" data-editor-line="61">
+<section id="the-tangent-problem">
+<h2>The Tangent Problem</h2>
+<div class="example-box fragment" data-editor-line="65">
   <div class="example-title">Example 1</div>
-  <p>Compute</p>
-<p>\[ AV_{[0.5, 1]} = \frac{s(1) - s(0.5)}{1 - 0.5} \]</p>
-<p>and say what it measures. What are its units?</p>
+  <p>Find the slope of the tangent line to \(y = x^2\) at the point \(P(3, 9)\).</p>
 </div>
-<div class="fragment" data-editor-line="67"><p class="work-prompt">Compute the average velocity on \([0.5, 1]\).</p></div>
-<div class="fragment" data-editor-line="69"><p>\(s(1) = 64\) and \(s(0.5) = 60\), so</p>
-<p>\[ AV_{[0.5,1]} = \frac{64 - 60}{1 - 0.5} = \frac{4}{1/2} = 8  \text{ft/sec}. \]</p></div>
-<div class="fragment" data-editor-line="74"><p>This is the <strong>slope of the secant line</strong> joining the two points on the graph. It is the ball's <strong>average velocity</strong> over that half second.</p></div>
+<div class="fragment" data-editor-line="69"><p><strong>The difficulty.</strong> Slope needs <strong>two</strong> points. We have only \(P\).</p></div>
+<div class="fragment" data-editor-line="71"><p><strong>The workaround.</strong> Pick a second point \(Q(x, x^2)\) on the curve and compute the slope of the <strong>secant</strong> line \(PQ\) &mdash; from the Latin <em>secans</em>, “cutting”:</p>
+<p>\[ m_{PQ} = \frac{x^2 - 9}{x - 3} \]</p></div>
+<div class="fragment" data-editor-line="76"><p>Then slide \(Q\) toward \(P\) and watch what the secant slopes do.</p></div>
+<aside class="notes">Name both words &mdash; touching vs cutting. Students remember the pair.</aside>
 </section>
 
-<section id="from-secant-lines-to-tangent-lines">
-<h2>From Secant Lines to Tangent Lines</h2>
-<div class="fragment" data-editor-line="83"><div class="two-col">
-  <div><div><p>We want the slope of the <strong>tangent line</strong> at a single point \((a, f(a))\).</p>
-<p><strong>The problem:</strong> slope needs <em>two</em> points.</p>
-<p>\[ m = \frac{y_2 - y_1}{x_2 - x_1} = \frac{f(b) - f(a)}{b - a} \]</p>
-<p>That is the slope of a <strong>secant</strong> line, not a tangent.</p></div>
-<div class="key-point fragment" data-editor-line="5"><p>The curve must be smooth &mdash; no corners, jumps or gaps.</p></div></div>
+<section id="sliding-toward">
+<h2>Sliding \(Q\) Toward \(P\)</h2>
+<div class="fragment" data-editor-line="87"><div class="two-col">
+  <div><div><p><strong>From the right:</strong></p>
+<table>
+<caption class="sr-only">Secant slopes as Q approaches P from the right</caption>
+<tr><th scope="col">\(x\)</th><th scope="col">\(m_{PQ}\)</th></tr>
+<tr><td>\(6\)</td><td>\(9\)</td></tr>
+<tr><td>\(4\)</td><td>\(7\)</td></tr>
+<tr><td>\(3.5\)</td><td>\(6.5\)</td></tr>
+<tr><td>\(3.1\)</td><td>\(6.1\)</td></tr>
+<tr><td>\(3.01\)</td><td>\(6.01\)</td></tr>
+</table></div></div>
+  <div><div><p><strong>From the left:</strong></p>
+<table>
+<caption class="sr-only">Secant slopes as Q approaches P from the left</caption>
+<tr><th scope="col">\(x\)</th><th scope="col">\(m_{PQ}\)</th></tr>
+<tr><td>\(0\)</td><td>\(3\)</td></tr>
+<tr><td>\(2\)</td><td>\(5\)</td></tr>
+<tr><td>\(2.5\)</td><td>\(5.5\)</td></tr>
+<tr><td>\(2.9\)</td><td>\(5.9\)</td></tr>
+<tr><td>\(2.99\)</td><td>\(5.99\)</td></tr>
+</table></div></div>
+</div></div>
+<div class="key-point fragment" data-editor-line="114"><p>From both sides the secant slopes close in on \(6\).</p></div>
+</section>
+
+<section id="the-secants-rotate-into-the-tangent">
+<h2>The Secants Rotate into the Tangent</h2>
+<div class="fragment" data-editor-line="121"><div class="two-col">
+  <div><div><p>As \(Q\) slides toward \(P\), the secant lines <strong>pivot about \(P\)</strong> and settle onto one line &mdash; the tangent.</p>
+<p>We say the slope of the tangent is the <strong>limit</strong> of the slopes of the secants:</p>
+<p>\[ m = \lim_{Q \to P} m_{PQ} = \lim_{x \to 3} \frac{x^2 - 9}{x - 3} \]</p></div></div>
   <div><div class="fig-container">
-  <a href="figures/secant_tangent.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/secant_tangent.png"><img src="figures/secant_tangent.png" alt="A smooth curve y equals f of x. A secant line is drawn through the point (a, f(a)) and a second point (b, f(b)) further along the curve. A separate tangent line touches the curve at (a, f(a)) only. Beside the picture a small sketch of a curve with a sharp corner is marked as not allowed." style="max-height:60vh;"></a>
+  <a href="figures/secants_converge.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/secants_converge.png"><img src="figures/secants_converge.png" alt="The parabola y equals x squared with the point P at (3,9) marked. Four secant lines are drawn from P to points Q further along the curve at x equals 6, 4.5, 3.6 and 3.2. As Q gets closer to P the secant lines pivot about P and lie closer and closer to a single dashed line, the tangent at P." style="max-height:60vh;"></a>
 </div></div>
 </div></div>
 </section>
 
-<section id="the-difference-quotient">
-<h2>The Difference Quotient</h2>
-<div class="fragment" data-editor-line="100"><p>Slope of the secant line through \((a, f(a))\) and a second point:</p>
-<p>\[ m_{PQ} = \frac{f(x) - f(a)}{x - a}   \text{or}   m_{PQ} = \frac{f(a+h) - f(a)}{h} \]</p></div>
-<div class="defn-box fragment" data-editor-line="103">
-  <div class="defn-title">Difference quotient</div>
-  <p>Either expression above is the <strong>difference quotient</strong> of \(f\) at \(a\).</p>
-</div>
-<div class="fragment" data-editor-line="107"><p><strong>The calculus step.</strong> Take the limit as the second point slides toward \(a\):</p>
-<p>\[ m = \lim_{x \to a} \frac{f(x) - f(a)}{x - a} = \lim_{h \to 0} \frac{f(a+h) - f(a)}{h} \]</p></div>
-<div class="key-point fragment" data-editor-line="110"><p>New problem: how do we deal with a <em>limit</em>? That is Section 2.2.</p></div>
+<section id="evaluating-the-limit">
+<h2>Evaluating the Limit</h2>
+<div class="fragment" data-editor-line="137"><p>\[ m = \lim_{x \to 3} \frac{x^2 - 9}{x - 3} = \lim_{x \to 3} \frac{(x-3)(x+3)}{x - 3} = \lim_{x \to 3} (x+3) = 6 \]</p></div>
+<div class="fragment" data-editor-line="139"><p>So the tangent line at \(P(3,9)\) has slope \(6\), and its equation is</p>
+<p>\[ y - 9 = 6(x - 3)   \text{or}   y = 6x - 9 \]</p></div>
+<div class="key-point fragment" data-editor-line="144"><p>Canceling \((x-3)\) is legal because \(x \neq 3\) while \(x\) <em>approaches</em> \(3\). That distinction is the whole content of Section 2.2.</p></div>
+<aside class="notes">Flag the \(0/0\) form explicitly &mdash; substituting \(x=3\) gives nonsense, which is exactly why a limit is needed.</aside>
 </section>
 
-<section id="approximating-a-tangent-slope">
-<h2>Approximating a Tangent Slope</h2>
-<div class="example-box fragment" data-editor-line="117">
+<section id="the-velocity-problem">
+<h2>The Velocity Problem</h2>
+<div class="fragment" data-editor-line="153"><p>A ball is thrown straight up; its height in feet after \(t\) seconds is</p>
+<p>\[ s(t) = 64 - 16(t-1)^2,    0 \le t \le 3. \]</p></div>
+<div class="fragment" data-editor-line="156"><div class="two-col">
+  <div><div><p><strong>The difficulty.</strong> Velocity is (change in position)/(time elapsed) &mdash; but an <em>instant</em> is not an interval. There is nothing to divide by.</p>
+<p><strong>The same workaround.</strong> Average over a short interval and then shrink it.</p></div></div>
+  <div><div class="fig-container">
+  <a href="figures/ball_height.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/ball_height.png"><img src="figures/ball_height.png" alt="Graph of the height s of a ball against time t from 0 to 3 seconds. The curve is a downward-opening parabola starting at height 48 at t equals 0, peaking at 64 when t equals 1, and returning to 0 at t equals 3 when the ball lands. A short secant line is drawn between the points at t equals 0.5 and t equals 1." style="max-height:60vh;"></a>
+</div></div>
+</div></div>
+</section>
+
+<section id="average-velocity-over-shrinking-intervals">
+<h2>Average Velocity over Shrinking Intervals</h2>
+<div class="example-box fragment" data-editor-line="171">
   <div class="example-title">Example 2</div>
-  <p>Approximate the slope of the tangent line to \(f(x) = x^2\) at \(x = 3\) by computing secant slopes using a second point at \(x = 6,\ 5,\ 4,\ 3.5,\ 3.1\).</p>
+  <p>Estimate the ball's velocity at the instant \(t = 0.5\).</p>
 </div>
-<div class="fragment" data-editor-line="121"><p class="work-prompt">Compute the secant slope from \(a=3\) to each listed \(x\).</p></div>
-<div class="fragment" data-editor-line="123"><p>\[ \frac{6^2-3^2}{6-3} = \frac{27}{3} = 9    \frac{5^2-3^2}{5-3} = \frac{16}{2} = 8    \frac{4^2-3^2}{4-3} = \frac{7}{1} = 7 \]</p></div>
-<div class="fragment" data-editor-line="127"><p>\[ \frac{3.5^2-3^2}{3.5-3} = \frac{3.25}{0.5} = 6.5    \frac{3.1^2-3^2}{3.1-3} = 6.1 \]</p>
-<p>The slopes are marching toward \(6\).</p></div>
+<div class="fragment" data-editor-line="175"><p class="work-prompt">Compute the average velocity on \([0.5, 1]\) first.</p></div>
+<div class="fragment" data-editor-line="177"><p>\[ AV_{[0.5, 1]} = \frac{s(1) - s(0.5)}{1 - 0.5} = \frac{64 - 60}{0.5} = 8\text{ ft/sec} \]</p></div>
+<div class="fragment" data-editor-line="181"><p>Shrinking the interval: \([0.5, 0.75] \to 12\),   \([0.5, 0.6] \to 14.4\),   \([0.5, 0.51] \to 15.84\).</p>
+<p>The averages close in on \(\mathbf{16}\) ft/sec &mdash; the <strong>instantaneous velocity</strong> at \(t = 0.5\).</p></div>
 </section>
 
-<section id="computing-the-limit-exactly">
-<h2>Computing the Limit Exactly</h2>
-<div class="fragment" data-editor-line="137"><p>\[ m = \lim_{x \to 3} \frac{x^2 - 3^2}{x - 3} \]</p></div>
-<div class="fragment" data-editor-line="139"><p>\[ = \lim_{x \to 3} \frac{(x-3)(x+3)}{x-3} \]</p></div>
-<div class="fragment" data-editor-line="143"><p>\[ = \lim_{x \to 3} (x + 3) = 6 \]</p></div>
-<div class="key-point fragment" data-editor-line="147"><p>The tangent line to \(y = x^2\) at \(x = 3\) has slope \(6\) &mdash; matching the pattern \(9, 8, 7, 6.5, 6.1, \ldots\)</p></div>
-<aside class="notes">Cancelling \((x-3)\) is legitimate because \(x \neq 3\) in the limit &mdash; worth saying out loud now, it recurs constantly in \S2.3.</aside>
+<section id="they-are-the-same-problem">
+<h2>They Are the Same Problem</h2>
+<div class="fragment" data-editor-line="192"><div class="two-col">
+  <div><div><p>On the graph of \(s(t)\), take \(P(a, s(a))\) and \(Q(a+h, s(a+h))\). The slope of the secant \(PQ\) is</p>
+<p>\[ m_{PQ} = \frac{s(a+h) - s(a)}{h} \]</p>
+<p>which is exactly the <strong>average velocity</strong> on \([a,\,a+h]\).</p>
+<p>So shrinking the interval <em>is</em> sliding \(Q\) toward \(P\).</p></div></div>
+  <div><div class="fig-container">
+  <a href="figures/two_problems.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/two_problems.png"><img src="figures/two_problems.png" alt="The height curve with a point P and a point Q further along it. The secant line through P and Q is labelled as both the slope of the secant and the average velocity. A second, dashed line touching the curve at P alone is labelled as both the slope of the tangent and the instantaneous velocity." style="max-height:60vh;"></a>
+</div></div>
+</div></div>
+<div class="key-point fragment" data-editor-line="204"><p>Slope of the secant \(=\) average rate of change. Slope of the tangent \(=\) instantaneous rate of change. One idea, two vocabularies.</p></div>
 </section>
 
-<section id="two-interpretations">
-<h2>Two Interpretations</h2>
+<section id="what-we-still-owe">
+<h2>What We Still Owe</h2>
+<div class="fragment" data-editor-line="211"><p>Both problems ended in the same place: a quantity we could only <strong>approach</strong>, never evaluate directly.</p></div>
 <div class="summary-grid">
-<div class="defn-box"><div class="defn-title">Slope of the secant on \([a,b]\)</div><p class="small">The <strong>average rate of change</strong> of \(y\) as \(x\) changes from \(a\) to \(b\).
-For the ball: average velocity.</p></div>
-<div class="defn-box"><div class="defn-title">Slope of the tangent at \(a\)</div><p class="small">The <strong>instantaneous rate of change</strong> of \(y\) with respect to \(x\) at \(a\).
-For the ball: the speedometer reading.</p></div>
+<div class="defn-box"><div class="defn-title">Tangent</div><p class="small">Slope \(= \lim_{x \to 3} \dfrac{x^2-9}{x-3}\) &mdash; substituting gives \(0/0\).</p></div>
+<div class="defn-box"><div class="defn-title">Velocity</div><p class="small">Speed \(= \lim_{h \to 0} \dfrac{s(a+h)-s(a)}{h}\) &mdash; substituting gives \(0/0\).</p></div>
 </div>
-<div class="key-point fragment" data-editor-line="165"><p>Everything in Chapter 3 is a technique for computing that second slope quickly.</p></div>
+<div class="key-point fragment" data-editor-line="218"><p>We have no rules yet for computing a limit. That is Sections 2.2 through 2.6 &mdash; and we return to tangents and velocities in Section 2.7 with the derivative.</p></div>
 </section>
 
 <section>
 <h2>Homework</h2>
 <div class="hw-box"><h3>Section 2.1</h3>
-<p style="font-size:1.3em;color:var(--accent-amber);">HW01 --- due Tue Sep 15</p>
+<p style="font-size:1.3em;color:var(--accent-amber);">HW01 — due Tue Sep 15</p>
 </div>
 <div class="key-point fragment" style="margin-top:1.5em;"><strong>Next time:</strong> Section 2.2 &mdash; The Limit of a Function</div>
 </section>
