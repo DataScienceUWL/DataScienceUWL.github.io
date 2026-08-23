@@ -283,7 +283,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <section>
 <h2>Homework</h2>
 <div class="hw-box"><h3>Section 2.1</h3>
-<p style="font-size:1.3em;color:var(--accent-amber);">HW01 — due Tue Sep 15</p>
+<p style="font-size:1.3em;color:var(--accent-amber);">HW01 — due Mon Sep 14</p>
 </div>
 <div class="key-point fragment" style="margin-top:1.5em;"><strong>Next time:</strong> Section 2.2 &mdash; The Limit of a Function</div>
 </section>
@@ -470,17 +470,17 @@ Reveal.on('ready', () => {
     var triggerImg = null;
     var currentBlobUrl = null;
 
-    function openPlotlyLightbox(blobUrl) {
+    function openPlotlyLightbox(url, isDirect) {
         // Revoke any previous blob URL
         if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); }
-        currentBlobUrl = blobUrl;
+        currentBlobUrl = isDirect ? null : url;
         var iframe = plbContent.querySelector('iframe');
         if (!iframe) {
             iframe = document.createElement('iframe');
-            iframe.style.cssText = 'width:100%;height:80vh;border:none;background:#fff;';
+            iframe.style.cssText = 'width:100%;height:100%;border:none;background:#fff;border-radius:6px;';
             plbContent.appendChild(iframe);
         }
-        iframe.src = blobUrl;
+        iframe.src = url;
         plb.classList.add('active');
         plbClose.focus();
     }
@@ -498,6 +498,11 @@ Reveal.on('ready', () => {
         if (!img) return;
         e.stopPropagation();
         triggerImg = img;
+        if (img.dataset.standalone) {
+            // Already a complete document -- point the iframe at it directly.
+            openPlotlyLightbox(img.dataset.plotlySrc, true);
+            return;
+        }
         // The companion .html is a bare Plotly div fragment (no CDN script).
         // Fetch it and wrap in a complete page so it renders in the iframe.
         fetch(img.dataset.plotlySrc)
