@@ -307,7 +307,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <p><strong>The question.</strong> How fast is it moving at the instant \(t = 0.5\)?</p>
 <p><strong>The trouble.</strong> Speed is distance divided by time &mdash; but an instant has no duration. There is nothing to divide by.</p></div>
 <div class="fig-container fragment" data-editor-line="254">
-  <img src="figures/secant_limit.png" alt="The height of a thrown ball plotted against time, with a point P at t equals 0.5 and three secant lines drawn from P to points Q that get closer and closer to it. As Q approaches P the secant slopes rise toward the slope of the dashed tangent line, marked as the speedometer reading of 16 feet per second." class="plotly-lazy-thumb" data-plotly-src="figures/secant_limit.html" style="max-height:60vh;" title="Click to interact">
+  <img src="figures/secant_limit.png" alt="The height of a thrown ball plotted against time, with a point P at t equals 0.5 and three secant lines drawn from P to points Q that get closer and closer to it. As Q approaches P the secant slopes rise toward the slope of the dashed tangent line, marked as the speedometer reading of 16 feet per second." class="plotly-lazy-thumb" data-plotly-src="figures/secant_limit.html" data-standalone="1" style="max-height:60vh;" title="Click to interact">
 </div>
 <aside class="notes">Drag the slider. Ask them to call out the number before it settles.</aside>
 </section>
@@ -318,7 +318,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <p><strong>The trouble.</strong> We know the area of a triangle. We know the area of a rectangle. A circle has no straight edges at all.</p>
 <p><strong>Archimedes' idea.</strong> Draw a polygon inside the circle. You <em>can</em> find its area. Then add sides.</p></div>
 <div class="fig-container fragment" data-editor-line="269">
-  <img src="figures/exhaustion.png" alt="A circle with regular polygons inscribed in it at 3, 6, 12 and 96 sides. The polygon areas are 1.2990, 2.5981, 3.0000 and 3.1394, climbing toward the area of the circle, pi equals 3.14159." class="plotly-lazy-thumb" data-plotly-src="figures/exhaustion.html" style="max-height:60vh;" title="Click to interact">
+  <img src="figures/exhaustion.png" alt="A circle with regular polygons inscribed in it at 3, 6, 12 and 96 sides. The polygon areas are 1.2990, 2.5981, 3.0000 and 3.1394, climbing toward the area of the circle, pi equals 3.14159." class="plotly-lazy-thumb" data-plotly-src="figures/exhaustion.html" data-standalone="1" style="max-height:60vh;" title="Click to interact">
 </div>
 <aside class="notes">Push the slider to 96 and note that this is exactly as far as Archimedes got, by hand, around 250 BC.</aside>
 </section>
@@ -554,17 +554,17 @@ Reveal.on('ready', () => {
     var triggerImg = null;
     var currentBlobUrl = null;
 
-    function openPlotlyLightbox(blobUrl) {
+    function openPlotlyLightbox(url, isDirect) {
         // Revoke any previous blob URL
         if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); }
-        currentBlobUrl = blobUrl;
+        currentBlobUrl = isDirect ? null : url;
         var iframe = plbContent.querySelector('iframe');
         if (!iframe) {
             iframe = document.createElement('iframe');
-            iframe.style.cssText = 'width:100%;height:80vh;border:none;background:#fff;';
+            iframe.style.cssText = 'width:100%;height:100%;border:none;background:#fff;border-radius:6px;';
             plbContent.appendChild(iframe);
         }
-        iframe.src = blobUrl;
+        iframe.src = url;
         plb.classList.add('active');
         plbClose.focus();
     }
@@ -582,6 +582,11 @@ Reveal.on('ready', () => {
         if (!img) return;
         e.stopPropagation();
         triggerImg = img;
+        if (img.dataset.standalone) {
+            // Already a complete document -- point the iframe at it directly.
+            openPlotlyLightbox(img.dataset.plotlySrc, true);
+            return;
+        }
         // The companion .html is a bare Plotly div fragment (no CDN script).
         // Fetch it and wrap in a complete page so it renders in the iframe.
         fetch(img.dataset.plotlySrc)
