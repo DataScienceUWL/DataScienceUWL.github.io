@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 1: Welcome to Calculus I | MTH 207</title>
+<style>
+:root {
+    --accent-cyan: #0077b6; --accent-red: #c1121f;
+    --accent-green: #2d6a4f; --accent-yellow: #e09f3e;
+    --bg: #ffffff; --fg: #1a1a1a;
+}
+body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; max-width: 900px;
+    margin: 0 auto; padding: 1em 2em; color: var(--fg); background: var(--bg);
+    font-size: 1.05rem; line-height: 1.6; }
+h1 { font-size: 1.8em; color: var(--accent-cyan); border-bottom: 3px solid var(--accent-cyan);
+    padding-bottom: 0.2em; }
+h2 { font-size: 1.4em; color: var(--accent-cyan); margin-top: 1.5em;
+    border-bottom: 1px solid #ddd; padding-bottom: 0.15em; }
+h3 { font-size: 1.1em; margin: 0.5em 0 0.2em 0; }
+h4 { font-size: 1em; color: var(--accent-cyan); margin: 0.3em 0; }
+p { margin: 0.5em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 1em 0; }
+.course-info { color: #666; font-size: 0.9em; }
+.defn-box { background: #f0f7ff; border-left: 4px solid var(--accent-cyan);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.defn-box h3, .defn-box .defn-title { color: var(--accent-red); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.theorem-box { background: #fdf6ec; border-left-color: #e09f3e; }
+.theorem-box h3, .theorem-box .defn-title { color: #9a6b00; }
+.example-box { background: #f0faf0; border-left: 4px solid var(--accent-green);
+    border-radius: 4px; padding: 0.8em 1.2em; margin: 0.8em 0; }
+.example-box h3, .example-box .example-title { color: var(--accent-green); font-weight: 700;
+    font-size: 1em; margin: 0 0 0.3em 0; }
+.solution { border: 1px solid #ddd; border-radius: 4px; margin: 0.5em 0; }
+.solution summary { padding: 0.5em 0.8em; cursor: pointer; font-weight: 600;
+    color: #8a6200; background: #fffdf5; border-radius: 4px; }
+.solution > div, .solution > p, .solution > ul, .solution > ol {
+    padding: 0.5em 1em; }
+.key-point { background: #f5f3ff; border: 1px solid #d4d0f7; border-radius: 4px;
+    padding: 0.8em 1em; margin: 0.8em 0; text-align: center; font-size: 1.05em; }
+.work-prompt { font-style: italic; color: #595959; margin: 0.5em 0; font-size: 0.9em; }
+.hw-box { background: #fff5f5; border: 2px solid var(--accent-red); border-radius: 6px;
+    padding: 0.8em 1.2em; text-align: center; margin: 1em 0; font-size: 1.1em; }
+.desmos-container { text-align: center; margin: 1em 0; }
+.desmos-container figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.desmos-container iframe { border: 1px solid #ddd; border-radius: 6px; }
+.desmos-open-tab { display: inline-block; text-decoration: none; font-size: 1.2em;
+    color: var(--accent-cyan); opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-open-tab:hover { opacity: 1; }
+.desmos-fullscreen { background: none; border: 1px solid var(--accent-cyan); border-radius: 4px;
+    color: var(--accent-cyan); font-size: 1em; cursor: pointer; padding: 0.15em 0.5em;
+    opacity: 0.7; transition: opacity 0.15s; vertical-align: middle; margin-right: 0.3em; }
+.desmos-fullscreen:hover { opacity: 1; background: rgba(0,119,182,0.1); }
+figure { margin: 0.8em 0; text-align: center; }
+figure img { max-width: 100%; height: auto; max-height: 500px; border-radius: 4px; }
+figcaption { font-size: 0.85em; color: #666; margin-top: 0.3em; }
+.interactive-link { color: var(--accent-cyan); text-decoration: none; }
+.interactive-link:hover { text-decoration: underline; }
+.textbook-fig img { background: white; padding: 4px; border: 1px solid #ddd; }
+.plotly-figure { border-radius: 4px; overflow: hidden; margin: 0.5em 0; }
+.plotly-figure .js-plotly-plot { width: 100% !important; height: 100% !important; }
+.plotly-figure .plotly-graph-div { width: 100% !important; height: 100% !important; }
+.plotly-figure .modebar-container { position: absolute !important; top: 2px !important; right: 2px !important; }
+.plotly-alt { margin-top: 0.3em; font-size: 0.85em; color: #666; }
+.plotly-alt summary { cursor: pointer; color: var(--accent-cyan); }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+.image-grid { display: flex; gap: 1em; align-items: flex-start; }
+.image-grid .grid-col { flex: 1; display: flex; flex-direction: column; gap: 0.5em; align-items: center; }
+.image-grid .grid-col-header { font-weight: 700; color: var(--accent-cyan); text-align: center; }
+.image-grid .grid-cell { text-align: center; }
+.image-grid .grid-cell img { max-height: 200px; max-width: 100%; border-radius: 4px; }
+.image-grid .grid-cell.textbook-fig img { padding: 3px; border: 1px solid #ddd; background: white; }
+.image-grid .grid-caption { font-size: 0.8em; color: #666; }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+table { border-collapse: collapse; margin: 0.5em 0; }
+th, td { padding: 0.3em 0.8em; border: 1px solid #ddd; text-align: center; }
+th { background: #f0f7ff; color: var(--accent-cyan); }
+.small { font-size: 0.85em; }
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px;
+    overflow: hidden; z-index: 100; padding: 0.5em 1em; background: var(--accent-cyan);
+    color: white; text-decoration: none; border-radius: 0 0 4px 0; font-weight: 600; }
+.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; }
+a { color: var(--accent-cyan); }
+a:focus-visible, summary:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+@media (max-width: 600px) {
+    body { padding: 0.5em 1em; }
+    .summary-grid { grid-template-columns: 1fr; }
+}
+</style>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'],
+               enableMenu: true, menuOptions: { settings: { assistiveMml: true } } },
+    loader: { load: ['a11y/assistive-mml'] }
+};
+</script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content">
+<header>
+  <h1>Day 1: Welcome to Calculus I</h1>
+  <p class="course-info">MTH 207 &mdash; Calculus I | Introduction</p>
+</header>
+<hr aria-hidden="true">
+
+<section id="today" data-source-line="20" aria-label="Today">
+  <h2>Today</h2>
+  <div><p>Most days I don't use slides. Today I do.</p>
+<ul>
+<li>How this course runs &mdash; and how to get help</li>
+<li>How calculus is different from the math you have done</li>
+<li>What calculus actually <em>is</em></li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Slides and a filled-in version of every deck are posted on the course website. You never have to copy a slide down.</p></aside>
+</section>
+
+<section id="who-am-i" data-source-line="37" aria-label="Who Am I?">
+  <h2>Who Am I?</h2>
+  <div><p><strong>Dr. Baggett</strong> &mdash; call me “Doctor B”.</p>
+<ul>
+<li>Office: 1026 Cowley Hall</li>
+<li>E-mail: jbaggett@uwlax.edu</li>
+<li>Native of Hermiston, Oregon</li>
+</ul>
+<p>My job is to give you the resources to build a strong foundation in calculus. Your job is to use them early.</p></div>
+</section>
+
+<section id="hermiston" data-source-line="52" aria-label="Hermiston?">
+  <h2>Hermiston?</h2>
+  <figure>
+  <img src="figures/crosscountry.png" alt="A simple diagram of a cross-country trip: a dashed arc runs from a dot labelled Hermiston, Oregon on the left to a dot labelled La Crosse, Wisconsin on the right, annotated 1,658 miles and about 25 hours." style="max-width:100%; max-height:500px;">
+</figure>
+</section>
+
+<section id="where-everything-lives" data-source-line="59" aria-label="Where Everything Lives">
+  <h2>Where Everything Lives</h2>
+  <div><p><strong>Canvas</strong> is the home for this course. Schedule, announcements, notes, and every link start there.</p>
+<p><strong>Stewart, <em>Calculus: Early Transcendentals</em>, 9th edition.</strong> Don't bring the book to class &mdash; there is a PDF of the chapters we use in Canvas.</p>
+<p><strong>MyOpenMath</strong> hosts the online homework. You reach it through Canvas; your score comes back to Canvas automatically.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>If you cannot find something, look in Canvas first, then e-mail me. That order saves us both a day.</p></aside>
+</section>
+
+<section id="how-the-grade-works" data-source-line="75" aria-label="How the Grade Works">
+  <h2>How the Grade Works</h2>
+  <div class="summary-grid">
+<section class="defn-box" role="region" aria-label="Homework &mdash; 10%"><h3 class="defn-title">Homework &mdash; 10%</h3><p>51 sets in MyOpenMath, roughly one per class day. Lowest 3 dropped.</p></section>
+<section class="defn-box" role="region" aria-label="Quizzes &mdash; 20%"><h3 class="defn-title">Quizzes &mdash; 20%</h3><p>11 quizzes, every Tuesday, about 15 minutes. Lowest 3 dropped.</p></section>
+<section class="defn-box" role="region" aria-label="Midterms &mdash; 42%"><h3 class="defn-title">Midterms &mdash; 42%</h3><p>Three, all on Tuesdays: Oct 6, Nov 3, Dec 8.</p></section>
+<section class="defn-box" role="region" aria-label="Final &mdash; 28%"><h3 class="defn-title">Final &mdash; 28%</h3><p>Comprehensive, during the UWL final exam period.</p></section>
+</div>
+<div><p>Grade scale: A 92, AB 88, B 82, BC 78, C 70, D 60.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Homework is only 10% of the grade and close to 100% of the learning. Treat the percentage as a lie.</p></aside>
+</section>
+
+<section id="the-weekly-rhythm" data-source-line="93" aria-label="The Weekly Rhythm">
+  <h2>The Weekly Rhythm</h2>
+  <div><p>We meet Monday through Thursday.</p>
+<ul>
+<li><strong>Every Tuesday</strong> there is a quiz, covering material through the previous week.</li>
+<li><strong>Homework</strong> for a given day is due at 11:59 pm three class days later.</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>That gap is deliberate. Do not save the homework for the deadline &mdash; if you do, you will be working on Monday's material while I am teaching Thursday's.</p></aside>
+</section>
+
+<section id="getting-help" data-source-line="107" aria-label="Getting Help">
+  <h2>Getting Help</h2>
+  <div><p><strong>My office hours</strong> are posted in Canvas. If none of them work, e-mail me three times you are free and whether you want Zoom or in person.</p>
+<p><strong>The Murphy Learning Center</strong> (251 Murphy Library) offers free drop-in tutoring through Calculus II. It usually opens in Week 2.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Come at the first sign of trouble, not the week of the exam. Math builds &mdash; a gap in September is still there in December.</p></aside>
+</section>
+
+<section id="how-to-use-the-textbook" data-source-line="120" aria-label="How to Use the Textbook">
+  <h2>How to Use the Textbook</h2>
+  <div><p>Fifty minutes is not enough time to cover everything in a section, so I choose. What I skip is still yours to learn.</p>
+<ul>
+<li><strong>Before class:</strong> skim the section. Ten seconds a page. You are looking for what the section is about, not understanding it.</li>
+<li><strong>After class:</strong> read it properly. Find every definition and theorem, then read the example right after it.</li>
+<li><strong>Then:</strong> do the homework.</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Most students skip the definitions. That is the single most expensive habit in this course.</p></aside>
+</section>
+
+<section id="calculus-asks-more-of-your-logic" data-source-line="135" aria-label="Calculus Asks More of Your Logic">
+  <h2>Calculus Asks More of Your Logic</h2>
+  <div><p>In algebra, trigonometry, and precalculus, roughly <strong>95% calculation</strong> and <strong>5% logic</strong>.</p>
+<p>In calculus, closer to <strong>70% calculation</strong> and <strong>30% logic</strong>.</p>
+<p>You will be asked to <em>state</em> theorems, not just use them &mdash; because knowing exactly what a theorem requires is what tells you whether you are allowed to use it.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>The calculation is not the hard part of calculus. Knowing which calculation you are entitled to do is.</p></aside>
+</section>
+
+<section id="if-a-then-b" data-source-line="151" aria-label="“If A, then B”">
+  <h2>“If A, then B”</h2>
+  <section class="defn-box theorem-box" role="region" aria-label="Theorem: The Moldy Bread Theorem">
+  <h3 class="defn-title">Theorem: The Moldy Bread Theorem</h3>
+  <p>If I eat moldy bread, then I will get sick.</p>
+</section>
+<div><p>Here \(A\) (“I eat moldy bread”) is the <strong>hypothesis</strong> and \(B\) (“I get sick”) is the <strong>conclusion</strong>.</p></div>
+<div><p>This is <em>not</em> the same statement as “If I am sick, then I ate moldy bread.” I could be sick for all sorts of reasons.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>“If A then B” is not “if B then A.” Think of the hypothesis as a requirement you must check before the theorem is available to you.</p></aside>
+</section>
+
+<section id="a-definition-is-not-an-example" data-source-line="168" aria-label="A Definition Is Not an Example">
+  <h2>A Definition Is Not an Example</h2>
+  <div><p><strong>What is the definition of a car?</strong></p>
+<ul>
+<li>“A Ford Focus.”</li>
+<li>“A four-wheeled vehicle used on paved streets to transport people and puppies.”</li>
+</ul></div>
+<div><p>Only the second one lets you decide whether a thing you have never seen before is a car.</p></div>
+<div><p>The first time I taught this course, I asked a student in office hours for the definition of continuity. I got an example of continuity instead &mdash; and the example could not solve the problem in front of us.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>A picture is an example. Pictures are useful and pictures can deceive. Learn the definition too.</p></aside>
+</section>
+
+<section id="reading-a-definition-carefully" data-source-line="186" aria-label="Reading a Definition Carefully">
+  <h2>Reading a Definition Carefully</h2>
+  <section class="defn-box" role="region" aria-label="Ginormous">
+  <h3 class="defn-title">Ginormous</h3>
+  <p>A natural number \(n\) is <strong>ginormous</strong> if \(n\) has more than \(n/2\) distinct factors.</p>
+</section>
+<div><table>
+<caption class="sr-only">Testing small numbers against the definition of ginormous</caption>
+<tr><th scope="col">\(n\)</th><th scope="col">factors</th><th scope="col">ginormous?</th></tr>
+<tr><td>\(1\)</td><td>\(1\)</td><td>yes</td></tr>
+<tr><td>\(2\)</td><td>\(1, 2\)</td><td>yes</td></tr>
+<tr><td>\(3\)</td><td>\(1, 3\)</td><td>yes</td></tr>
+<tr><td>\(4\)</td><td>\(1, 2, 4\)</td><td>yes</td></tr>
+<tr><td>\(5\)</td><td>\(1, 5\)</td><td>no</td></tr>
+<tr><td>\(6\)</td><td>\(1, 2, 3, 6\)</td><td>yes</td></tr>
+<tr><td>\(8\)</td><td>\(1, 2, 4, 8\)</td><td>?</td></tr>
+</table></div>
+<div><p>\(8\) has exactly four factors, and \(8/2 = 4\). “More than” means <em>strictly</em> more &mdash; so \(8\) is <strong>not</strong> ginormous.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Nobody has any intuition about ginormous numbers. All you can do is read the definition and apply it exactly. That is the skill.</p></aside>
+</section>
+
+<section id="so-what-is-calculus" data-source-line="216" aria-label="So What Is Calculus?">
+  <h2>So What Is Calculus?</h2>
+  <div><p>Here is my honest summary of this course:</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Calculus is algebra and trigonometry, plus <strong>one</strong> new idea.</p></aside>
+<div><p>Everything you already know still applies &mdash; factoring, fractions, exponents, logarithms, the unit circle. You will use all of it, constantly, and rusty algebra will cost you far more points than calculus ever will.</p></div>
+<div><p>What is new is a single idea, and we will spend the next five weeks learning to handle it.</p></div>
+</section>
+
+<section id="the-one-new-idea-the-limit" data-source-line="229" aria-label="The One New Idea: The Limit">
+  <h2>The One New Idea: The Limit</h2>
+  <div><p>Every question in this course has the same shape:</p>
+<ul>
+<li>The quantity I want cannot be computed directly.</li>
+<li>But I can compute an <strong>approximation</strong> to it.</li>
+<li>And I can make that approximation as good as I like.</li>
+</ul>
+<p>A <strong>limit</strong> is what you get by pushing that process as far as it goes.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Two questions in particular are worth a whole course. Both were open problems for two thousand years, and both are answered by limits.</p></aside>
+</section>
+
+<section id="big-limit-1-how-fast-right-now" data-source-line="246" aria-label="Big Limit #1: How Fast, Right Now?">
+  <h2>Big Limit #1: How Fast, Right Now?</h2>
+  <div><p>A ball is thrown straight up. Its height after \(t\) seconds is \(s(t) = 64 - 16(t-1)^2\) feet.</p>
+<p><strong>The question.</strong> How fast is it moving at the instant \(t = 0.5\)?</p>
+<p><strong>The trouble.</strong> Speed is distance divided by time &mdash; but an instant has no duration. There is nothing to divide by.</p></div>
+<figure aria-label="The height of a thrown ball plotted against time, with a poi...">
+  <div class="plotly-figure" role="img" aria-label="The height of a thrown ball plotted against time, with a point P at t equals 0.5 and three secant lines drawn from P to points Q that get closer and closer to it. As Q approaches P the secant slopes rise toward the slope of the dashed tangent line, marked as the speedometer reading of 16 feet per second." style="height:600px;width:100%;">
+    <!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Instantaneous rate of change</title>
+<style>
+ :root{--curve:#0077b6;--sec:#c1121f;--tan:#2d6a4f;--ink:#22303c;--grey:#6c757d}
+ *{box-sizing:border-box}
+ body{margin:0;padding:10px;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      color:var(--ink);background:#fff}
+ .wrap{max-width:640px;margin:0 auto}
+ svg{width:100%;height:auto;display:block;touch-action:pan-y}
+ .ctl{display:flex;align-items:center;gap:.7em;margin:.5em 0 .3em}
+ .ctl label{font-weight:600;white-space:nowrap}
+ input[type=range]{flex:1;min-width:0;accent-color:var(--sec)}
+ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+ caption{text-align:left;font-weight:600;padding-bottom:.3em}
+ th,td{text-align:left;padding:.22em .5em .22em 0}
+ th{font-weight:600;color:var(--grey)}
+ .sec{color:var(--sec);font-weight:700}.tan{color:var(--tan);font-weight:700}
+</style></head><body><div class="wrap">
+<svg id="v" viewBox="0 0 560 330" role="img"
+     aria-label="Height of a thrown ball against time, with a secant line from the point at t = 0.5 to a second point Q that a slider slides toward it. As Q approaches, the secant slope approaches 16 feet per second.">
+  <g id="grid"></g>
+  <path id="curve" fill="none" stroke="var(--curve)" stroke-width="3"/>
+  <line id="tan" stroke="var(--tan)" stroke-width="2.5" stroke-dasharray="7 5"/>
+  <line id="sec" stroke="var(--sec)" stroke-width="2.5"/>
+  <circle id="P" r="6" fill="#000"/><circle id="Q" r="6" fill="var(--sec)"/>
+  <text id="Plab" font-size="14">P</text><text id="Qlab" font-size="14" fill="var(--sec)">Q</text>
+  <text x="278" y="325" font-size="13" fill="var(--grey)" text-anchor="middle">t (seconds)</text>
+  <text x="12" y="18" font-size="13" fill="var(--grey)">s (feet)</text>
+</svg>
+<div class="ctl"><label for="h">Slide Q toward P</label>
+  <input id="h" type="range" min="0" max="100" step="1" value="0"
+         aria-describedby="out" aria-label="Slide Q toward P"></div>
+<table id="out"><caption>Height of the ball: s(t) = 64 &minus; 16(t &minus; 1)&sup2;</caption>
+ <tr><th scope="row">interval</th><td id="iv"></td></tr>
+ <tr><th scope="row">average velocity over it</th><td class="sec" id="av"></td></tr>
+ <tr><th scope="row">speedometer at t = 0.5</th><td class="tan">16 ft/sec</td></tr>
+</table></div>
+<script>
+(function(){
+ var X0=-0.15,X1=3.15,Y0=-6,Y1=78, L=46,R=546,T=16,B=300;
+ var s=function(t){return 64-16*(t-1)*(t-1)};
+ var px=function(t){return L+(t-X0)/(X1-X0)*(R-L)};
+ var py=function(y){return B-(y-Y0)/(Y1-Y0)*(B-T)};
+ var el=function(i){return document.getElementById(i)};
+ var g=el('grid'),ns='http://www.w3.org/2000/svg';
+ function add(tag,at){var e=document.createElementNS(ns,tag);
+   for(var k in at)e.setAttribute(k,at[k]);g.appendChild(e);return e}
+ [0,16,32,48,64].forEach(function(y){
+   add('line',{x1:L,y1:py(y),x2:R,y2:py(y),stroke:'#e6ecf1','stroke-width':1});
+   var t=add('text',{x:L-8,y:py(y)+4,'font-size':12,fill:'#6c757d','text-anchor':'end'});
+   t.textContent=y});
+ [0,1,2,3].forEach(function(t){
+   var e=add('text',{x:px(t),y:B+18,'font-size':12,fill:'#6c757d','text-anchor':'middle'});
+   e.textContent=t});
+ add('line',{x1:L,y1:py(0),x2:R,y2:py(0),stroke:'#22303c','stroke-width':1.4});
+ add('line',{x1:px(0),y1:T,x2:px(0),y2:B,stroke:'#22303c','stroke-width':1.4});
+ var d='';for(var i=0;i<=180;i++){var t=i/180*3;d+=(i?'L':'M')+px(t)+' '+py(s(t))}
+ el('curve').setAttribute('d',d);
+ var a=0.5, sa=s(a), HMAX=0.80, HMIN=0.02;
+ el('P').setAttribute('cx',px(a));el('P').setAttribute('cy',py(sa));
+ el('Plab').setAttribute('x',px(a)-18);el('Plab').setAttribute('y',py(sa)+18);
+ // the tangent -- the value every secant is heading for
+ (function(){var m=16,x1=a-0.42,x2=a+1.0;var L1=el('tan');
+  L1.setAttribute('x1',px(x1));L1.setAttribute('y1',py(sa+m*(x1-a)));
+  L1.setAttribute('x2',px(x2));L1.setAttribute('y2',py(sa+m*(x2-a)))})();
+ function draw(){
+  var h=HMAX-(HMAX-HMIN)*el('h').value/100, b=a+h, sb=s(b), m=(sb-sa)/h;
+  var x1=a-0.42, x2=Math.max(b+0.30,a+0.55), L2=el('sec');
+  L2.setAttribute('x1',px(x1));L2.setAttribute('y1',py(sa+m*(x1-a)));
+  L2.setAttribute('x2',px(x2));L2.setAttribute('y2',py(sa+m*(x2-a)));
+  el('Q').setAttribute('cx',px(b));el('Q').setAttribute('cy',py(sb));
+  el('Qlab').setAttribute('x',px(b)+9);el('Qlab').setAttribute('y',py(sb)+20);
+  el('iv').textContent='[0.5, '+b.toFixed(2)+'],  h = '+h.toFixed(2);
+  el('av').textContent=m.toFixed(3)+' ft/sec';
+ }
+ el('h').addEventListener('input',draw);draw();
+})();
+</script></body></html>
+  </div>
+  <details class="plotly-alt"><summary>Description: The height of a thrown ball plotted against time, with a poi...</summary>
+    <p>The height of a thrown ball plotted against time, with a point P at t equals 0.5 and three secant lines drawn from P to points Q that get closer and closer to it. As Q approaches P the secant slopes rise toward the slope of the dashed tangent line, marked as the speedometer reading of 16 feet per second.</p>
+  </details>
+</figure>
+</section>
+
+<section id="big-limit-2-area-by-exhaustion" data-source-line="261" aria-label="Big Limit #2: Area by Exhaustion">
+  <h2>Big Limit #2: Area by Exhaustion</h2>
+  <div><p><strong>The question.</strong> What is the area of a circle of radius \(1\)?</p>
+<p><strong>The trouble.</strong> We know the area of a triangle. We know the area of a rectangle. A circle has no straight edges at all.</p>
+<p><strong>Archimedes' idea.</strong> Draw a polygon inside the circle. You <em>can</em> find its area. Then add sides.</p></div>
+<figure aria-label="A circle with regular polygons inscribed in it at 3, 6, 12 a...">
+  <div class="plotly-figure" role="img" aria-label="A circle with regular polygons inscribed in it at 3, 6, 12 and 96 sides. The polygon areas are 1.2990, 2.5981, 3.0000 and 3.1394, climbing toward the area of the circle, pi equals 3.14159." style="height:600px;width:100%;">
+    <!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Area by exhaustion</title>
+<style>
+ :root{--circ:#0077b6;--poly:#c1121f;--ink:#22303c;--grey:#6c757d}
+ *{box-sizing:border-box}
+ body{margin:0;padding:10px;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      color:var(--ink);background:#fff}
+ .wrap{max-width:560px;margin:0 auto}
+ svg{width:100%;height:auto;display:block;touch-action:pan-y}
+ .ctl{display:flex;align-items:center;gap:.7em;margin:.6em 0 .3em}
+ .ctl label{font-weight:600;white-space:nowrap}
+ input[type=range]{flex:1;min-width:0;accent-color:var(--poly)}
+ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+ caption{text-align:left;font-weight:600;padding-bottom:.3em}
+ th,td{text-align:left;padding:.22em .5em .22em 0}
+ th{font-weight:600;color:var(--grey)}
+ .poly{color:var(--poly);font-weight:700}.circ{color:var(--circ);font-weight:700}
+ .note{color:var(--grey);font-size:.86em;margin:.5em 0 0}
+</style></head><body><div class="wrap">
+<svg id="v" viewBox="0 0 400 340" role="img"
+     aria-label="A circle of radius 1 with a regular polygon inscribed in it. A slider raises the number of sides, and the polygon's area climbs toward the area of the circle, pi.">
+  <circle cx="200" cy="165" r="150" fill="none" stroke="var(--circ)" stroke-width="3"/>
+  <polygon id="poly" fill="rgba(193,18,31,.13)" stroke="var(--poly)" stroke-width="2.5"/>
+  <circle cx="200" cy="165" r="3.5" fill="var(--ink)"/>
+  <line x1="200" y1="165" x2="350" y2="165" stroke="var(--ink)" stroke-width="1.4"/>
+  <text x="272" y="158" font-size="14" fill="var(--ink)" text-anchor="middle">r = 1</text>
+</svg>
+<div class="ctl"><label for="n">Sides</label>
+  <input id="n" type="range" min="3" max="96" step="1" value="3" aria-describedby="out">
+  <output id="nv" style="font-weight:700;min-width:2.4em;text-align:right">3</output></div>
+<table id="out"><caption>Inscribed polygon vs. the circle</caption>
+ <tr><th scope="row">area of the polygon</th><td class="poly" id="ap"></td></tr>
+ <tr><th scope="row">area of the circle</th><td class="circ">&pi; = 3.14159265&hellip;</td></tr>
+ <tr><th scope="row">still missing</th><td id="gap"></td></tr>
+</table>
+<p class="note" id="arch">Archimedes did this by hand and stopped at 96 sides.</p></div>
+<script>
+(function(){
+ var CX=200,CY=165,R=150,el=function(i){return document.getElementById(i)};
+ function draw(){
+  var n=+el('n').value, pts=[];
+  for(var k=0;k<n;k++){
+    // start at the top so the polygon looks deliberate rather than tilted
+    var th=-Math.PI/2+2*Math.PI*k/n;
+    pts.push((CX+R*Math.cos(th)).toFixed(2)+','+(CY+R*Math.sin(th)).toFixed(2));
+  }
+  el('poly').setAttribute('points',pts.join(' '));
+  var A=n/2*Math.sin(2*Math.PI/n);          // area of a unit-radius n-gon
+  el('nv').textContent=n;
+  el('ap').textContent=A.toFixed(6);
+  el('gap').textContent=(Math.PI-A).toFixed(6);
+  el('arch').textContent = n>=96
+    ? 'Archimedes got this far by hand — 96 sides, no calculator.'
+    : 'Archimedes did this by hand and stopped at 96 sides.';
+ }
+ el('n').addEventListener('input',draw);draw();
+})();
+</script></body></html>
+  </div>
+  <details class="plotly-alt"><summary>Description: A circle with regular polygons inscribed in it at 3, 6, 12 a...</summary>
+    <p>A circle with regular polygons inscribed in it at 3, 6, 12 and 96 sides. The polygon areas are 1.2990, 2.5981, 3.0000 and 3.1394, climbing toward the area of the circle, pi equals 3.14159.</p>
+  </details>
+</figure>
+</section>
+
+<section id="the-same-trick-on-any-curve" data-source-line="276" aria-label="The Same Trick, on Any Curve">
+  <h2>The Same Trick, on Any Curve</h2>
+  <div><p>Archimedes needed a circle. In Chapter 5 we do it with rectangles, and then it works under <em>any</em> curve.</p></div>
+<figure>
+  <img src="figures/riemann_preview.png" alt="The region under a curve approximated by 4, then 10, then 40 rectangles. As the rectangles get narrower they fill the region more and more exactly." style="max-width:100%; max-height:500px;">
+</figure>
+<aside class="key-point" role="note" aria-label="Key point"><p>Same move both times: approximate with something you can compute, then let the approximation run to its limit.</p></aside>
+</section>
+
+<section id="two-limits-one-course" data-source-line="287" aria-label="Two Limits, One Course">
+  <h2>Two Limits, One Course</h2>
+  <div class="summary-grid">
+<section class="defn-box" role="region" aria-label="The derivative"><h3 class="defn-title">The derivative</h3><p>How fast, right now. Chapters 2 through 4 &mdash; rates of change, tangent lines, optimization.</p></section>
+<section class="defn-box" role="region" aria-label="The integral"><h3 class="defn-title">The integral</h3><p>How much, in total. Chapters 5 and 6 &mdash; area, accumulation, net change.</p></section>
+</div>
+<div><p>They look like opposite questions. In Chapter 5 we will prove they are inverses of each other, which is such a surprise that it is called the <strong>Fundamental Theorem of Calculus</strong>.</p></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Starting tomorrow we chase the first one. We cannot finish it until we know what a limit really is &mdash; that is Sections 2.2 through 2.6.</p></aside>
+</section>
+
+<section id="brush-up-on-this-week" data-source-line="301" aria-label="Brush Up on This Week">
+  <h2>Brush Up on This Week</h2>
+  <div><p>There is a review sheet in Canvas. The greatest hits:</p></div>
+<div><p><strong>Algebra</strong></p>
+<ul>
+<li>Fractions: adding, subtracting, dividing</li>
+<li>Exponent rules and negative and fractional exponents</li>
+<li>Factoring; interval notation</li>
+<li>Logarithm laws and domains</li>
+</ul></div>
+<div><p><strong>Functions and trig</strong></p>
+<ul>
+<li>Evaluating \(f(3+h)\) and \(f(x+h)\)</li>
+<li>Lines: \(y - y_0 = m(x - x_0)\)</li>
+<li>Unit circle, radians, graphs of sine and cosine</li>
+<li>\(|a| = -a\) when \(a < 0\)</li>
+</ul></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>We did not schedule a review day. If your algebra is rusty, this week is when to fix it &mdash; not October.</p></aside>
+</section>
+
+<section aria-label="Homework">
+  <h2>Homework</h2>
+  <div class="hw-box"><strong>Day 1:</strong> No homework tonight. HW01 opens after Wednesday's class, due Tue Sep 15.</div>
+</section>
+</main>
+<script>
+// Scroll observer: notify parent when visible section changes (for editor sync)
+(function() {
+    if (!window.parent || window.parent === window) return;
+    var sections = document.querySelectorAll('main > section[data-source-line]');
+    if (!sections.length) return;
+    var currentLine = null;
+    var scrollTimer = null;
+    function onScroll() {
+        if (scrollTimer) clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(updateVisibleSection, 80);
+    }
+    function updateVisibleSection() {
+        var viewTop = window.innerHeight * 0.3;
+        var best = null;
+        for (var i = 0; i < sections.length; i++) {
+            var rect = sections[i].getBoundingClientRect();
+            if (rect.top <= viewTop && rect.bottom > 0) best = sections[i];
+        }
+        if (best) {
+            var line = parseInt(best.dataset.sourceLine, 10);
+            if (!isNaN(line) && line !== currentLine) {
+                currentLine = line;
+                window.parent.postMessage({ type: 'htmlSectionChanged', sourceLine: line }, '*');
+            }
+        }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    // Also listen for goToSection messages from parent
+    window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'goToSection' && e.data.sourceLine != null) {
+            for (var i = 0; i < sections.length; i++) {
+                if (parseInt(sections[i].dataset.sourceLine, 10) === e.data.sourceLine) {
+                    sections[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    break;
+                }
+            }
+        }
+    });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Instantaneous rate of change</title>
+<style>
+ :root{--curve:#0077b6;--sec:#c1121f;--tan:#2d6a4f;--ink:#22303c;--grey:#6c757d}
+ *{box-sizing:border-box}
+ body{margin:0;padding:10px;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      color:var(--ink);background:#fff}
+ .wrap{max-width:640px;margin:0 auto}
+ svg{width:100%;height:auto;display:block;touch-action:pan-y}
+ .ctl{display:flex;align-items:center;gap:.7em;margin:.5em 0 .3em}
+ .ctl label{font-weight:600;white-space:nowrap}
+ input[type=range]{flex:1;min-width:0;accent-color:var(--sec)}
+ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+ caption{text-align:left;font-weight:600;padding-bottom:.3em}
+ th,td{text-align:left;padding:.22em .5em .22em 0}
+ th{font-weight:600;color:var(--grey)}
+ .sec{color:var(--sec);font-weight:700}.tan{color:var(--tan);font-weight:700}
+</style></head><body><div class="wrap">
+<svg id="v" viewBox="0 0 560 330" role="img"
+     aria-label="Height of a thrown ball against time, with a secant line from the point at t = 0.5 to a second point Q that a slider slides toward it. As Q approaches, the secant slope approaches 16 feet per second.">
+  <g id="grid"></g>
+  <path id="curve" fill="none" stroke="var(--curve)" stroke-width="3"/>
+  <line id="tan" stroke="var(--tan)" stroke-width="2.5" stroke-dasharray="7 5"/>
+  <line id="sec" stroke="var(--sec)" stroke-width="2.5"/>
+  <circle id="P" r="6" fill="#000"/><circle id="Q" r="6" fill="var(--sec)"/>
+  <text id="Plab" font-size="14">P</text><text id="Qlab" font-size="14" fill="var(--sec)">Q</text>
+  <text x="278" y="325" font-size="13" fill="var(--grey)" text-anchor="middle">t (seconds)</text>
+  <text x="12" y="18" font-size="13" fill="var(--grey)">s (feet)</text>
+</svg>
+<div class="ctl"><label for="h">Slide Q toward P</label>
+  <input id="h" type="range" min="0" max="100" step="1" value="0"
+         aria-describedby="out" aria-label="Slide Q toward P"></div>
+<table id="out"><caption>Height of the ball: s(t) = 64 &minus; 16(t &minus; 1)&sup2;</caption>
+ <tr><th scope="row">interval</th><td id="iv"></td></tr>
+ <tr><th scope="row">average velocity over it</th><td class="sec" id="av"></td></tr>
+ <tr><th scope="row">speedometer at t = 0.5</th><td class="tan">16 ft/sec</td></tr>
+</table></div>
+<script>
+(function(){
+ var X0=-0.15,X1=3.15,Y0=-6,Y1=78, L=46,R=546,T=16,B=300;
+ var s=function(t){return 64-16*(t-1)*(t-1)};
+ var px=function(t){return L+(t-X0)/(X1-X0)*(R-L)};
+ var py=function(y){return B-(y-Y0)/(Y1-Y0)*(B-T)};
+ var el=function(i){return document.getElementById(i)};
+ var g=el('grid'),ns='http://www.w3.org/2000/svg';
+ function add(tag,at){var e=document.createElementNS(ns,tag);
+   for(var k in at)e.setAttribute(k,at[k]);g.appendChild(e);return e}
+ [0,16,32,48,64].forEach(function(y){
+   add('line',{x1:L,y1:py(y),x2:R,y2:py(y),stroke:'#e6ecf1','stroke-width':1});
+   var t=add('text',{x:L-8,y:py(y)+4,'font-size':12,fill:'#6c757d','text-anchor':'end'});
+   t.textContent=y});
+ [0,1,2,3].forEach(function(t){
+   var e=add('text',{x:px(t),y:B+18,'font-size':12,fill:'#6c757d','text-anchor':'middle'});
+   e.textContent=t});
+ add('line',{x1:L,y1:py(0),x2:R,y2:py(0),stroke:'#22303c','stroke-width':1.4});
+ add('line',{x1:px(0),y1:T,x2:px(0),y2:B,stroke:'#22303c','stroke-width':1.4});
+ var d='';for(var i=0;i<=180;i++){var t=i/180*3;d+=(i?'L':'M')+px(t)+' '+py(s(t))}
+ el('curve').setAttribute('d',d);
+ var a=0.5, sa=s(a), HMAX=0.80, HMIN=0.02;
+ el('P').setAttribute('cx',px(a));el('P').setAttribute('cy',py(sa));
+ el('Plab').setAttribute('x',px(a)-18);el('Plab').setAttribute('y',py(sa)+18);
+ // the tangent -- the value every secant is heading for
+ (function(){var m=16,x1=a-0.42,x2=a+1.0;var L1=el('tan');
+  L1.setAttribute('x1',px(x1));L1.setAttribute('y1',py(sa+m*(x1-a)));
+  L1.setAttribute('x2',px(x2));L1.setAttribute('y2',py(sa+m*(x2-a)))})();
+ function draw(){
+  var h=HMAX-(HMAX-HMIN)*el('h').value/100, b=a+h, sb=s(b), m=(sb-sa)/h;
+  var x1=a-0.42, x2=Math.max(b+0.30,a+0.55), L2=el('sec');
+  L2.setAttribute('x1',px(x1));L2.setAttribute('y1',py(sa+m*(x1-a)));
+  L2.setAttribute('x2',px(x2));L2.setAttribute('y2',py(sa+m*(x2-a)));
+  el('Q').setAttribute('cx',px(b));el('Q').setAttribute('cy',py(sb));
+  el('Qlab').setAttribute('x',px(b)+9);el('Qlab').setAttribute('y',py(sb)+20);
+  el('iv').textContent='[0.5, '+b.toFixed(2)+'],  h = '+h.toFixed(2);
+  el('av').textContent=m.toFixed(3)+' ft/sec';
+ }
+ el('h').addEventListener('input',draw);draw();
+})();
+</script></body></html>

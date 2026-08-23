@@ -1,0 +1,59 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Area by exhaustion</title>
+<style>
+ :root{--circ:#0077b6;--poly:#c1121f;--ink:#22303c;--grey:#6c757d}
+ *{box-sizing:border-box}
+ body{margin:0;padding:10px;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      color:var(--ink);background:#fff}
+ .wrap{max-width:560px;margin:0 auto}
+ svg{width:100%;height:auto;display:block;touch-action:pan-y}
+ .ctl{display:flex;align-items:center;gap:.7em;margin:.6em 0 .3em}
+ .ctl label{font-weight:600;white-space:nowrap}
+ input[type=range]{flex:1;min-width:0;accent-color:var(--poly)}
+ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+ caption{text-align:left;font-weight:600;padding-bottom:.3em}
+ th,td{text-align:left;padding:.22em .5em .22em 0}
+ th{font-weight:600;color:var(--grey)}
+ .poly{color:var(--poly);font-weight:700}.circ{color:var(--circ);font-weight:700}
+ .note{color:var(--grey);font-size:.86em;margin:.5em 0 0}
+</style></head><body><div class="wrap">
+<svg id="v" viewBox="0 0 400 340" role="img"
+     aria-label="A circle of radius 1 with a regular polygon inscribed in it. A slider raises the number of sides, and the polygon's area climbs toward the area of the circle, pi.">
+  <circle cx="200" cy="165" r="150" fill="none" stroke="var(--circ)" stroke-width="3"/>
+  <polygon id="poly" fill="rgba(193,18,31,.13)" stroke="var(--poly)" stroke-width="2.5"/>
+  <circle cx="200" cy="165" r="3.5" fill="var(--ink)"/>
+  <line x1="200" y1="165" x2="350" y2="165" stroke="var(--ink)" stroke-width="1.4"/>
+  <text x="272" y="158" font-size="14" fill="var(--ink)" text-anchor="middle">r = 1</text>
+</svg>
+<div class="ctl"><label for="n">Sides</label>
+  <input id="n" type="range" min="3" max="96" step="1" value="3" aria-describedby="out">
+  <output id="nv" style="font-weight:700;min-width:2.4em;text-align:right">3</output></div>
+<table id="out"><caption>Inscribed polygon vs. the circle</caption>
+ <tr><th scope="row">area of the polygon</th><td class="poly" id="ap"></td></tr>
+ <tr><th scope="row">area of the circle</th><td class="circ">&pi; = 3.14159265&hellip;</td></tr>
+ <tr><th scope="row">still missing</th><td id="gap"></td></tr>
+</table>
+<p class="note" id="arch">Archimedes did this by hand and stopped at 96 sides.</p></div>
+<script>
+(function(){
+ var CX=200,CY=165,R=150,el=function(i){return document.getElementById(i)};
+ function draw(){
+  var n=+el('n').value, pts=[];
+  for(var k=0;k<n;k++){
+    // start at the top so the polygon looks deliberate rather than tilted
+    var th=-Math.PI/2+2*Math.PI*k/n;
+    pts.push((CX+R*Math.cos(th)).toFixed(2)+','+(CY+R*Math.sin(th)).toFixed(2));
+  }
+  el('poly').setAttribute('points',pts.join(' '));
+  var A=n/2*Math.sin(2*Math.PI/n);          // area of a unit-radius n-gon
+  el('nv').textContent=n;
+  el('ap').textContent=A.toFixed(6);
+  el('gap').textContent=(Math.PI-A).toFixed(6);
+  el('arch').textContent = n>=96
+    ? 'Archimedes got this far by hand — 96 sides, no calculator.'
+    : 'Archimedes did this by hand and stopped at 96 sides.';
+ }
+ el('n').addEventListener('input',draw);draw();
+})();
+</script></body></html>
