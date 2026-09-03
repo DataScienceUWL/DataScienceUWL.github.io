@@ -19,7 +19,7 @@
    /* the panel is too narrow for label-beside-slider: give the slider its
       own full-width line, and keep the readout on the label's line */
    body>.wrap .ctl{margin-top:0;flex-wrap:wrap;row-gap:.4em}
-   body>.wrap .ctl input[type=range]{flex:1 1 100%;order:3}
+   body>.wrap .ctl .stepper{flex:1 1 100%;order:3}
    body>.wrap .ctl output{order:2;margin-left:auto}
    body>.wrap .side table tr{display:block;margin-bottom:.6em}
    body>.wrap .side th,body>.wrap .side td{display:block;padding:0}
@@ -29,6 +29,19 @@
  body>.wrap .ctl{display:flex;align-items:center;gap:.7em;margin:.6em 0 .3em}
  body>.wrap .ctl label{font-weight:600;white-space:nowrap}
  input[type=range]{flex:1;min-width:0;accent-color:var(--poly)}
+ /* the buttons flank the slider and travel with it when the panel wraps */
+ .stepper{display:flex;align-items:center;gap:.5em;flex:1;min-width:0}
+ .step{flex:0 0 auto;width:2.1em;height:2.1em;min-width:34px;min-height:34px;
+       display:flex;align-items:center;justify-content:center;
+       font:inherit;font-size:1.1em;font-weight:700;line-height:1;
+       color:var(--poly);background:#fff;border:2px solid var(--poly);
+       border-radius:6px;cursor:pointer;padding:0;
+       -webkit-tap-highlight-color:transparent}
+ .step:hover:not(:disabled){background:var(--poly);color:#fff}
+ .step:active:not(:disabled){transform:translateY(1px)}
+ .step:focus-visible{outline:3px solid var(--circ);outline-offset:2px}
+ .step:disabled{opacity:.32;cursor:default}
+ @media (prefers-reduced-motion:reduce){.step:active{transform:none}}
  table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
  caption{text-align:left;font-weight:600;padding-bottom:.3em}
  th,td{text-align:left;padding:.22em .5em .22em 0}
@@ -47,7 +60,11 @@
         stroke-linejoin="round">r = 1</text>
 </svg></div>
 <div class="side"><div class="ctl"><label for="n">Sides</label>
-  <input id="n" type="range" min="3" max="96" step="1" value="3" aria-describedby="out">
+  <div class="stepper">
+    <button type="button" class="step" id="dec" aria-label="One fewer side">&minus;</button>
+    <input id="n" type="range" min="3" max="96" step="1" value="3" aria-describedby="out">
+    <button type="button" class="step" id="inc" aria-label="One more side">+</button>
+  </div>
   <output id="nv" style="font-weight:700;min-width:2.4em;text-align:right">3</output></div>
 <table id="out"><caption>Inscribed polygon vs. the circle</caption>
  <tr><th scope="row">area of the polygon</th><td class="poly" id="ap"></td></tr>
@@ -74,7 +91,18 @@
   el('arch').textContent = n>=96
     ? 'Archimedes got this far by hand — 96 sides, no calculator.'
     : 'Archimedes did this by hand and stopped at 96 sides.';
+  el('dec').disabled = n <= +el('n').min;
+  el('inc').disabled = n >= +el('n').max;
  }
+ // +/- move one side at a time, for stepping through 3, 4, 5, 6 at the start
+ // where each new side changes the picture a lot. Clamped to the slider's
+ // own range so the two controls can never disagree.
+ function step(d){
+  var i=el('n'), v=Math.min(+i.max, Math.max(+i.min, (+i.value)+d));
+  if(v!==+i.value){ i.value=v; draw(); }
+ }
+ el('dec').addEventListener('click',function(){step(-1)});
+ el('inc').addEventListener('click',function(){step(1)});
  el('n').addEventListener('input',draw);draw();
 })();
 </script></body></html>
