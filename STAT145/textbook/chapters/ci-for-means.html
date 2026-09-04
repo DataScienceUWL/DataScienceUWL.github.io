@@ -780,6 +780,16 @@ With only <span class="math inline">\(df = 5\)</span>, there is substantial unce
 <div class="caution">
 <p><strong>Outliers and the <span class="math inline">\(t\)</span>-test.</strong> The sample mean <span class="math inline">\(\bar{x}\)</span> and sample standard deviation <span class="math inline">\(s\)</span> are sensitive to outliers. A single extreme observation can substantially shift <span class="math inline">\(\bar{x}\)</span> and inflate <span class="math inline">\(s\)</span>, leading to misleading confidence intervals. When outliers are present, consider whether they represent data errors. If the outliers are genuine, a bootstrap confidence interval (the bootstrap confidence intervals chapter) may be more reliable.</p>
 </div>
+<div class="caution">
+<p><strong>When neither <span class="math inline">\(t\)</span> nor the plain bootstrap is enough.</strong> The <span class="math inline">\(t\)</span>-interval assumes a moderately-behaved population (or a large sample); the percentile bootstrap fills in when normality is doubtful and <span class="math inline">\(n\)</span> is at least moderate. But if your sample is <strong>both small and strongly skewed</strong>, or if extreme outliers dominate, <em>neither</em> tool is fully trustworthy. In that situation:</p>
+<ul>
+<li><strong>Increase the sample size</strong> if you can — by far the best fix.</li>
+<li><strong>Use a rank-based method</strong> (Wilcoxon signed-rank, sign test) that does not require estimating a mean.</li>
+<li><strong>Reach for the BCa bootstrap</strong> — an accuracy-corrected CI that handles skew and small samples better than the plain percentile method. Available in StatLens under <strong>expert mode</strong> and in R via <code>boot::boot.ci(..., type = "bca")</code>.</li>
+<li><strong>Or consult a statistician.</strong> Small-and-skewed is exactly the case where general-purpose tools fail and specific expertise helps.</li>
+</ul>
+<p>Reporting a <span class="math inline">\(t\)</span>-interval or a plain percentile CI in this situation without flagging the concern would overstate your confidence. See Hesterberg (2015), <a href="https://arxiv.org/abs/1411.5279"><em>“What Teachers Should Know About the Bootstrap”</em></a>, for the full accounting.</p>
+</div>
 </section>
 <section id="worked-example-mercury-levels-in-rissos-dolphins" class="level3" data-number="13.2.3">
 <h3 data-number="13.2.3" class="anchored" data-anchor-id="worked-example-mercury-levels-in-rissos-dolphins"><span class="header-section-number">13.2.3</span> Worked example: Mercury levels in Risso’s dolphins</h3>
@@ -1139,7 +1149,7 @@ First check conditions: pairs (individuals) were randomly selected (independence
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="ci-for-means_files/figure-html/unnamed-chunk-4-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="ci-for-means_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="ci-for-means_files/figure-html/unnamed-chunk-4-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="ci-for-means_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="2100"></a></p>
 </figure>
 </div>
 </div>
@@ -1165,7 +1175,7 @@ First check conditions: pairs (individuals) were randomly selected (independence
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="ci-for-means_files/figure-html/unnamed-chunk-5-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="ci-for-means_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="ci-for-means_files/figure-html/unnamed-chunk-5-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="ci-for-means_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="1500"></a></p>
 </figure>
 </div>
 </div>
@@ -1225,7 +1235,7 @@ First check conditions: pairs (individuals) were randomly selected (independence
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="ci-for-means_files/figure-html/unnamed-chunk-7-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="ci-for-means_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="ci-for-means_files/figure-html/unnamed-chunk-7-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="ci-for-means_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="2100"></a></p>
 </figure>
 </div>
 </div>
@@ -1241,7 +1251,7 @@ First check conditions: pairs (individuals) were randomly selected (independence
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="ci-for-means_files/figure-html/unnamed-chunk-8-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="ci-for-means_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="ci-for-means_files/figure-html/unnamed-chunk-8-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="ci-for-means_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="2100"></a></p>
 </figure>
 </div>
 </div>
@@ -1410,7 +1420,7 @@ First check conditions: pairs (individuals) were randomly selected (independence
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="ci-for-means_files/figure-html/unnamed-chunk-12-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="ci-for-means_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="ci-for-means_files/figure-html/unnamed-chunk-12-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="ci-for-means_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="2100"></a></p>
 </figure>
 </div>
 </div>
