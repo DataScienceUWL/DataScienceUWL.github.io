@@ -910,15 +910,19 @@ Two conditions are violated: (1) the sample is a convenience sample of friends, 
 </details>
 </div>
 <div class="caution">
-<p><strong>When the percentile method isn’t enough.</strong> The percentile bootstrap is the simplest defensible CI and it works well for most statistics from moderate-sized samples, but its accuracy degrades in a few named situations. Be skeptical of a percentile CI when:</p>
+<p><strong>When neither bootstrap CI is enough.</strong> The two methods this chapter teaches — the <strong>percentile</strong> interval and the <strong>standard-error</strong> interval (statistic <span class="math inline">\(\pm z^{*} \cdot SE_{\text{boot}}\)</span>) — are both starter tools, and they can go wrong in different ways. Be skeptical of <em>either</em> interval when:</p>
 <ul>
-<li><strong>Sample size is small</strong> (below about 15–20).</li>
-<li><strong>The bootstrap distribution is strongly skewed</strong> — percentile can under-cover the parameter on the long-tail side.</li>
+<li><strong>Sample size is small</strong> (below about 15–20). The bootstrap distribution can be lumpy and miss the shape of the true sampling distribution.</li>
 <li><strong>The parameter sits near a boundary</strong> — a proportion near 0 or 1, a variance, an extreme quantile.</li>
 <li><strong>The statistic is unusual</strong> — ratios, correlations, mins/maxes.</li>
 </ul>
-<p>When any of these apply, professional practice reaches past the percentile method — most commonly to the <strong>BCa</strong> (bias-corrected and accelerated) interval, which corrects for both bias and skew in the bootstrap distribution. BCa is available in StatLens under <strong>expert mode</strong> and in R via <code>boot::boot.ci(..., type = "bca")</code>. Hesterberg’s <a href="https://arxiv.org/abs/1411.5279">“What Teachers Should Know About the Bootstrap”</a> (<em>The American Statistician</em>, 2015) is the readable reference for when each bootstrap method applies.</p>
-<p>For this course we stay with the percentile method — it is the simplest defensible tool that keeps the simulation logic in view. Recognize its limits: percentile is a starter, not the final word.</p>
+<p>The two methods also have method-specific failure modes:</p>
+<ul>
+<li>The <strong>standard-error method</strong> assumes the bootstrap distribution is roughly symmetric and bell-shaped. When it isn’t, the formula forces symmetry the data don’t have and can push endpoints outside the parameter space (a negative bound for a proportion, for example).</li>
+<li>The <strong>percentile method</strong> respects skew but can under-cover the parameter on the “long-tail” side of a strongly skewed bootstrap distribution.</li>
+</ul>
+<p>When any of these apply, professional practice reaches past both methods — most commonly to the <strong>BCa</strong> (bias-corrected and accelerated) interval, which corrects for both bias and skew in the bootstrap distribution. BCa is available in StatLens under <strong>expert mode</strong> and in R via <code>boot::boot.ci(..., type = "bca")</code>. Hesterberg’s <a href="https://arxiv.org/abs/1411.5279">“What Teachers Should Know About the Bootstrap”</a> (<em>The American Statistician</em>, 2015) is the readable reference for when each method applies.</p>
+<p>For this course we stay with these two methods — they are the simplest defensible tools that keep the simulation logic in view. Recognize their limits: they are starters, not the final word.</p>
 </div>
 </section>
 <section id="sec-bootstrap-other" class="level2" data-number="9.10">
@@ -979,7 +983,7 @@ Two conditions are violated: (1) the sample is a convenience sample of friends, 
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="bootstrap-ci_files/figure-html/unnamed-chunk-3-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="bootstrap-ci_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="bootstrap-ci_files/figure-html/unnamed-chunk-3-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="bootstrap-ci_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="2100"></a></p>
 </figure>
 </div>
 </div>
@@ -999,7 +1003,7 @@ Two conditions are violated: (1) the sample is a convenience sample of friends, 
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="bootstrap-ci_files/figure-html/unnamed-chunk-4-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="bootstrap-ci_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="bootstrap-ci_files/figure-html/unnamed-chunk-4-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="bootstrap-ci_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="2100"></a></p>
 </figure>
 </div>
 </div>
@@ -1011,7 +1015,7 @@ Two conditions are violated: (1) the sample is a convenience sample of friends, 
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="bootstrap-ci_files/figure-html/unnamed-chunk-5-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="bootstrap-ci_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="bootstrap-ci_files/figure-html/unnamed-chunk-5-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="bootstrap-ci_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="2100"></a></p>
 </figure>
 </div>
 </div>
@@ -1023,7 +1027,7 @@ Two conditions are violated: (1) the sample is a convenience sample of friends, 
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="bootstrap-ci_files/figure-html/unnamed-chunk-6-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="bootstrap-ci_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="bootstrap-ci_files/figure-html/unnamed-chunk-6-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="bootstrap-ci_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="2100"></a></p>
 </figure>
 </div>
 </div>
