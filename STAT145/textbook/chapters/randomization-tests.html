@@ -1334,17 +1334,7 @@ Dataset sources
 <li>What is the parameter of interest? Describe it in words.</li>
 <li>Write <span class="math inline">\(H_0\)</span> and <span class="math inline">\(H_A\)</span> for testing whether tutoring <em>improves</em> exam scores. Is the test one-sided or two-sided, and why?</li>
 <li>The randomization test will simulate the “no effect” world by <strong>shuffling group labels</strong> across students. <em>Why is shuffling labels the right way to simulate <span class="math inline">\(H_0\)</span> here, and what feature of the study design makes shuffling labels valid?</em></li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>The parameter is <span class="math inline">\(\mu_T - \mu_C\)</span>, the difference in <strong>population</strong> mean exam scores between students who would receive the tutoring program and those who would not. The observed 4.2-point difference is the sample estimate.</p></li>
-<li><p><span class="math inline">\(H_0: \mu_T - \mu_C = 0\)</span> vs.&nbsp;<span class="math inline">\(H_A: \mu_T - \mu_C &gt; 0\)</span> — <strong>one-sided</strong>, because the question is whether tutoring <em>improves</em> scores (a directional claim stated in advance).</p></li>
-<li><p>Under <span class="math inline">\(H_0\)</span> (“tutoring does nothing”) every student’s exam score would be the same regardless of group label. So the group labels are interchangeable: a student who scored 87 in the tutoring group would have scored 87 in the control group anyway. Shuffling labels generates new datasets that are consistent with this “exchangeable” world. <strong>Random assignment</strong> is what makes this valid — the students were assigned to groups by a coin flip, not self-selected, so under <span class="math inline">\(H_0\)</span> the labels really are arbitrary.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Choose the procedure.</strong> For each scenario, name the randomization shuffle you would use — <strong>shuffle group labels</strong> (independent groups), <strong>shuffle paired-difference signs</strong> (paired data), <strong>shuffle the values of one variable</strong> (correlation/independence), or <strong>a Bernoulli null simulation</strong> (one proportion vs.&nbsp;a fixed value).</p>
 <ol type="a">
 <li>Did a coin biased toward heads come up “heads” more than 50% of the time in 100 tosses?</li>
@@ -1352,31 +1342,13 @@ Dataset sources
 <li>Do students score higher on a test taken <strong>after</strong> a study skills workshop compared to <strong>before</strong>?</li>
 <li>Is hours of TV per week associated with hours of sleep per night?</li>
 <li>Do four different fertilizer brands produce different mean yields?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><strong>Bernoulli null simulation</strong> — simulate 100 coin flips with <span class="math inline">\(p = 0.5\)</span> many times and ask how often you get the observed count or more. b. <strong>Shuffle group labels</strong> (sex) — a two-group independent-samples randomization test for means. c.&nbsp;<strong>Shuffle paired-difference signs</strong> — for each student you have a “before” and “after”; randomly flipping the sign of each within-student difference simulates the world where the workshop did nothing. d.&nbsp;<strong>Shuffle the values of one variable</strong> — e.g., shuffle the sleep values to break the pairing with TV hours; this generates a null distribution of the correlation under “no association.” e. <strong>Shuffle group labels</strong> with <strong>four</strong> groups; the test statistic is the <span class="math inline">\(F\)</span> statistic (one-way ANOVA on the shuffled labels), not a difference of two means.</li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Read the null distribution.</strong> Open the <a href="https://learnlens.org/statlens/simulate/randomization-diff-props/?activity=randomization-test-gated.json" target="_blank">Randomization Test — Difference in Proportions</a> (the gated sex-discrimination walkthrough). Step through it until you have the null distribution of 1000 shuffled differences in front of you.</p>
 <ol type="a">
 <li>Where is the null distribution centered? Why does it have to be centered there, by construction?</li>
 <li>The observed sample difference is marked on the dotplot. Roughly what proportion of the <em>shuffled</em> differences are at least as extreme as the observed one (one-sided)? That proportion <em>is</em> the p-value.</li>
 <li>Suppose the observed difference had landed <em>near</em> the middle of the null distribution instead. What would the p-value be approximately, and what would you conclude?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>The null distribution is centered at <strong>0</strong> (the value <span class="math inline">\(H_0\)</span> asserts). It has to be, because the shuffling procedure breaks any real association between group label and outcome — on average, shuffled differences cancel out.</p></li>
-<li><p>The p-value is (number of shuffles at least as extreme as the observed difference) / 1000. The activity reports it directly; for the sex-discrimination data it is around 0.02–0.03 one-sided. A small p-value means the observed result is rare under “no effect.”</p></li>
-<li><p>The p-value would be near 0.5 (most shuffles would be at least as far from center as the observed value, when “the observed value” sits in the middle of the distribution). Conclusion: no evidence against <span class="math inline">\(H_0\)</span> — the observed difference is exactly the kind of fluctuation we expect under chance alone.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Run it and interpret it (means).</strong> Open the <a href="https://learnlens.org/statlens/simulate/randomization-diff-means/" target="_blank">Randomization Test for Difference in Means</a> with any two-group numeric dataset.</p>
 <ol type="a">
 <li><p>Run 1000 shuffles and read off the p-value. State your decision at <span class="math inline">\(\alpha = 0.05\)</span>.</p></li>
@@ -1388,35 +1360,14 @@ Dataset sources
 <li>If the two groups really had the same mean, we would see a difference at least as extreme as ours in about 3% of randomly assigned studies.</li>
 <li>The probability that the alternative hypothesis is true is 0.97.</li>
 </ol></li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>&amp; b. Read what StatLens reports; the in-context conclusion should name the groups and the strength of evidence (“strong evidence that the mean [response] in group A differs from group B,” etc.).</p></li>
-<li><p>With more shuffles the p-value stabilizes (the Monte Carlo error shrinks like <span class="math inline">\(1/\sqrt{N}\)</span>). With only 100 shuffles the p-value can wobble by several percentage points between runs; with 10000 it is reliable to two decimal places. We want a number that does not depend on the random seed.</p></li>
-<li><p><strong>(ii).</strong> The p-value is the probability of the <em>data</em> (or something more extreme) <em>given</em> <span class="math inline">\(H_0\)</span> — not the probability of <span class="math inline">\(H_0\)</span> given the data. Statements (i) and (iii) would require a prior probability for the hypotheses, which the test does not give us.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Simulation as a sanity check on the normal approximation.</strong> A textbook says: “When the sample sizes are large and the data are not too skewed, the randomization distribution of <span class="math inline">\(\bar{x}_1 - \bar{x}_2\)</span> is approximately normal.” You will check this by eye.</p>
 <ol type="a">
 <li>Open any moderate-<span class="math inline">\(n\)</span> two-group numeric dataset in the <a href="https://learnlens.org/statlens/simulate/randomization-diff-means/" target="_blank">randomization test tool</a> and run 5000 shuffles. Describe the <strong>shape</strong>, <strong>center</strong>, and <strong>spread</strong> of the resulting null distribution.</li>
 <li>Why does the <em>spread</em> of the null distribution tell you the <em>standard error</em> of <span class="math inline">\(\bar{x}_1 - \bar{x}_2\)</span> — and why does that mean a randomization test essentially “discovers” the same SE the <span class="math inline">\(t\)</span>-formula computes from <span class="math inline">\(s_1\)</span>, <span class="math inline">\(s_2\)</span>, <span class="math inline">\(n_1\)</span>, <span class="math inline">\(n_2\)</span>?</li>
 <li>Now try the same on a <em>small</em>, skewed dataset (say <span class="math inline">\(n_1 = n_2 = 6\)</span>, with one outlier). Is the null distribution still approximately normal? If you ran a two-sample <span class="math inline">\(t\)</span>-test on this same data, would the <span class="math inline">\(t\)</span> distribution be a good match for the randomization distribution? Where would they disagree?</li>
 <li>A student claims that the randomization test “only works for large samples.” Why is this exactly backwards — which test works <em>better</em> in small samples, the <span class="math inline">\(t\)</span>-test or the randomization test, and why?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>The null distribution is roughly <strong>bell-shaped</strong> (with enough shuffles), <strong>centered at 0</strong> (by construction), and the <strong>spread</strong> matches the standard error of the difference.</p></li>
-<li><p>The standard deviation of the null distribution <em>is</em> the simulated standard error of <span class="math inline">\(\bar{x}_1 - \bar{x}_2\)</span>. The formula <span class="math inline">\(\text{SE}(\bar{x}_1 - \bar{x}_2) = \sqrt{s_1^2/n_1 + s_2^2/n_2}\)</span> is an analytical <em>estimate</em> of the same quantity, derived under independence and large-sample assumptions. When both work, they should agree.</p></li>
-<li><p>With small <span class="math inline">\(n\)</span> and an outlier, the null distribution is <strong>discrete</strong> (only a finite number of label permutations exist), often visibly <strong>non-normal</strong> in the tails, and may show “spikes” or “gaps.” The <span class="math inline">\(t\)</span> distribution is a smooth approximation that may underestimate or overestimate the tail probability, depending on where the outlier ends up under the permutations. The two p-values can differ substantially.</p></li>
-<li><p>The randomization test makes no normality assumption — it just enumerates the label-shuffling distribution that <em>actually applies</em> under random assignment. It works best in <strong>small</strong> samples because the <span class="math inline">\(t\)</span>-distribution approximation is <em>worst</em> there. The <span class="math inline">\(t\)</span>-test relies on the CLT to make <span class="math inline">\(\bar{x}_1 - \bar{x}_2\)</span> approximately normal; the randomization test does not need the CLT at all. So if anything, the rule should be: “use the randomization test in small samples <em>because</em> the <span class="math inline">\(t\)</span>-test’s assumptions are most likely to fail there.”</p></li>
-</ol>
-</details></li>
+</ol></li>
 </ol>
 
 

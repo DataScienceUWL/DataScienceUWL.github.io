@@ -1648,17 +1648,7 @@ Dataset sources
 <li>Identify the explanatory variable, its number of levels, and the response.</li>
 <li>Write <span class="math inline">\(H_0\)</span> and <span class="math inline">\(H_A\)</span> for the omnibus ANOVA <span class="math inline">\(F\)</span>-test in symbols <em>and</em> in words.</li>
 <li>Why does ANOVA use an <span class="math inline">\(F\)</span>-statistic that compares two <em>variances</em>, when the question is really about <em>means</em>?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>Explanatory: fertilizer brand (4 levels, categorical). Response: yield (quantitative, bushels/acre).</p></li>
-<li><p><span class="math inline">\(H_0: \mu_1 = \mu_2 = \mu_3 = \mu_4\)</span> (all four population mean yields are equal). <span class="math inline">\(H_A:\)</span> at least one <span class="math inline">\(\mu_i\)</span> differs from the others (not “all are different”).</p></li>
-<li><p>Because comparing <span class="math inline">\(k\)</span> means simultaneously is captured by asking: “Is the variability <strong>between</strong> group means larger than what we’d expect from the variability <strong>within</strong> groups?” The <span class="math inline">\(F\)</span>-statistic = (between-group variance) / (within-group variance). Under <span class="math inline">\(H_0\)</span> both estimate the same noise, so <span class="math inline">\(F \approx 1\)</span>. Under <span class="math inline">\(H_A\)</span> the between-group piece is inflated by real group differences, so <span class="math inline">\(F &gt; 1\)</span>. Squaring and ratioing variances turns “are these means different?” into a one-sided right-tail test.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Choose the procedure.</strong> For each scenario, name the procedure — <strong>one-way ANOVA <span class="math inline">\(F\)</span>-test</strong>, <strong>two-sample <span class="math inline">\(t\)</span>-test</strong>, <strong>paired <span class="math inline">\(t\)</span>-test</strong>, or <strong>not an ANOVA problem</strong>.</p>
 <ol type="a">
 <li>Compare mean test scores across three teaching methods (random assignment).</li>
@@ -1666,33 +1656,13 @@ Dataset sources
 <li>Compare the <em>proportion</em> of students passing across four schools.</li>
 <li>Compare yields across four fertilizer brands, where the <em>same</em> plots received different brands in different years (within-plot pairing).</li>
 <li>Compare the mean grade of every student in three sections of the same course.</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><strong>One-way ANOVA <span class="math inline">\(F\)</span>-test</strong> (three groups, one quantitative response). b. <strong>Two-sample <span class="math inline">\(t\)</span>-test</strong> (two groups, one quantitative response — ANOVA reduces to <span class="math inline">\(t^2\)</span> with 2 groups, so either works, but the <span class="math inline">\(t\)</span> form is more direct). c.&nbsp;<strong>Not an ANOVA problem</strong> — response is a proportion across groups, so use a <span class="math inline">\(\chi^2\)</span> test (or two-proportion <span class="math inline">\(z\)</span> tests with adjustment for multiple comparisons). d.&nbsp;<strong>Not one-way ANOVA</strong> — the within-plot pairing makes this a <em>repeated-measures</em> (or paired) design; one-way ANOVA assumes independent groups. e. <strong>One-way ANOVA <span class="math inline">\(F\)</span>-test</strong>.</li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Check the conditions.</strong> Open the <a href="https://learnlens.org/statlens/inference/anova/" target="_blank">One-Way ANOVA tool</a> with any multi-group numeric dataset.</p>
 <ol type="a">
 <li>Name the <strong>three</strong> ANOVA conditions and state each in plain language.</li>
 <li>Inspect the side-by-side boxplots in StatLens. What pattern would convince you the <strong>equal-variance</strong> condition has failed?</li>
 <li>Suppose one group has <span class="math inline">\(n_1 = 8\)</span> with a strong right skew, while two other groups have <span class="math inline">\(n_2 = n_3 = 50\)</span> and look symmetric. Is ANOVA’s <span class="math inline">\(F\)</span>-test trustworthy here? What’s a defensible alternative?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><ol type="i">
-<li><strong>Independence</strong> within each group (random sample / random assignment). (ii) <strong>Approximate normality</strong> of the response within each group (small samples) or via the CLT (larger samples). (iii) <strong>Equal variances</strong> across groups (homoscedasticity — the within-group SD should be roughly the same in each group).</li>
 </ol></li>
-<li><p>Boxes that are wildly different <em>heights</em> (one group’s IQR is several times another’s). A rule of thumb: if the <strong>largest</strong> group SD is more than ~2× the <strong>smallest</strong>, equal variances is a stretch.</p></li>
-<li><p>ANOVA’s <span class="math inline">\(F\)</span>-test relies on each group’s mean being approximately normal — the CLT covers the two big groups, but with <span class="math inline">\(n_1 = 8\)</span> and skew, group 1’s <span class="math inline">\(\bar{x}_1\)</span> may not be near-normal. A defensible alternative: the <strong>randomization ANOVA</strong> (<code>simulate/randomization-anova/</code>) shuffles labels across groups and builds the actual null distribution of <span class="math inline">\(F\)</span> — no normality assumption, just exchangeability under <span class="math inline">\(H_0\)</span>.</p></li>
-</ol>
-</details></li>
 <li><p><strong>Run it and interpret it.</strong> Open the <a href="https://learnlens.org/statlens/inference/anova/" target="_blank">One-Way ANOVA tool</a> with any multi-group numeric dataset.</p>
 <ol type="a">
 <li><p>Report the <span class="math inline">\(F\)</span>-statistic, the two df values (between and within), and the p-value.</p></li>
@@ -1704,37 +1674,14 @@ Dataset sources
 <li>The between-group variance is 4.5 times the within-group variance, in this sample.</li>
 <li>About 4.5% of the variability is explained by the group factor.</li>
 </ol></li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>&amp; b. Read what StatLens reports.</p></li>
-<li><p>ANOVA’s <span class="math inline">\(H_A\)</span> is “<strong>at least one</strong> group mean differs from the others” — it does not say <em>all</em> of them differ from each other. A small p-value lets you reject the “all equal” <span class="math inline">\(H_0\)</span>, but it does <strong>not</strong> tell you which pair(s) are responsible. To identify which means differ from which, you need a <strong>post-hoc</strong> procedure (Tukey HSD, Bonferroni-adjusted pairwise comparisons, etc.). StatLens has this built in: append <strong><code>?posthoc=tukey</code></strong> (or <code>bonferroni</code>) to the ANOVA URL and a pairwise-CI table + forest plot appear below the F-test on the same page — e.g., <a href="https://learnlens.org/statlens/inference/anova/?posthoc=tukey" target="_blank"><code>inference/anova/?posthoc=tukey</code></a>. Multiple comparisons are covered in depth in Ch 18.</p></li>
-<li><p><strong>(ii).</strong> <span class="math inline">\(F\)</span> is a ratio of two variance estimates: between-group / within-group. Statement (i) confuses <span class="math inline">\(F\)</span> with a mean difference; (iii) confuses it with <span class="math inline">\(R^2\)</span> (proportion of variance explained), which is a different quantity.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Simulation as a sanity check.</strong> Open the <a href="https://learnlens.org/statlens/simulate/randomization-anova/" target="_blank">Randomization ANOVA</a> on the same data.</p>
 <ol type="a">
 <li>Run 5000 simulated <span class="math inline">\(F\)</span> statistics under <span class="math inline">\(H_0\)</span> (group labels shuffled). What does the null distribution <strong>look like</strong>? Is it <span class="math inline">\(F\)</span>-shaped?</li>
 <li>Compare the <strong>simulation</strong> p-value to the <strong><span class="math inline">\(F\)</span>-distribution</strong> p-value from Exercise 4. How close are they?</li>
 <li>Repeat on a dataset where one group has only <span class="math inline">\(n = 6\)</span> observations with a clear outlier. Are the two p-values still close? Which is the safer one to report?</li>
 <li>A student says: “If I’m going to run the randomization version anyway, why learn the <span class="math inline">\(F\)</span>-distribution?” Give two good reasons. (Hint: think about <em>understanding</em> the <span class="math inline">\(F\)</span> statistic, and <em>speed</em> for routine reporting.)</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>Right-skewed, supported on <span class="math inline">\([0, \infty)\)</span>, peaking near 1 (under <span class="math inline">\(H_0\)</span> the between/within ratio is roughly 1). With enough shuffles the simulated distribution closely matches the theoretical <span class="math inline">\(F\)</span> curve — <em>when</em> the ANOVA conditions hold.</p></li>
-<li><p>For well-behaved data the simulation and the <span class="math inline">\(F\)</span>-distribution agree closely.</p></li>
-<li><p>With small <span class="math inline">\(n\)</span> and outliers, the two can diverge — and the <strong>simulation</strong> is the safer report. The <span class="math inline">\(F\)</span>-distribution can produce misleadingly small p-values when normality or equal variances fail; the randomization version is robust because it makes no distributional assumption.</p></li>
-<li><ol type="i">
-<li>The <span class="math inline">\(F\)</span>-distribution is what makes the ratio of variances a <em>probability statement</em>. Understanding why the <span class="math inline">\(F\)</span> has two df parameters (between and within) builds intuition that no amount of shuffling will. (ii) Once conditions are known to hold, the <span class="math inline">\(F\)</span>-distribution computes the p-value instantly; the simulation needs 5000 shuffles. For routine reports on well-behaved data, the formula is the practical choice; the simulation is the safety net.</li>
 </ol></li>
-</ol>
-</details></li>
 </ol>
 
 

@@ -951,17 +951,7 @@ Figure&nbsp;18.1: Confidence intervals for pairwise differences in mean exam sco
 <li>What is the <strong>per-test</strong> Type I error rate? What is the <strong>family-wise</strong> Type I error rate, and how do they differ?</li>
 <li>Under the assumption that all 10 null hypotheses are true and the tests are independent, what is the probability of at least one false positive across the 10 tests?</li>
 <li>A colleague suggests: “Just report the per-test <span class="math inline">\(\alpha\)</span>; don’t worry about the family-wise rate.” Why is that unacceptable when the goal is to identify <em>which</em> conditions differ?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p><strong>Per-test</strong> <span class="math inline">\(\alpha\)</span> = the false-positive rate of one single test in isolation (0.05 by convention). <strong>Family-wise</strong> <span class="math inline">\(\alpha\)</span> = the probability of <em>at least one</em> false positive across the whole family of tests. As the number of tests grows, the family-wise rate grows even when each per-test <span class="math inline">\(\alpha\)</span> stays fixed.</p></li>
-<li><p>Under independence and all-true nulls, <span class="math inline">\(P(\text{at least one false positive}) = 1 - (0.95)^{10} \approx 0.401\)</span> — about 40%. Six per-test errors would inflate to <em>far</em> worse than 5%.</p></li>
-<li><p>Because the <em>decision</em> you’ll report is “condition A and condition C differ” — that’s a <em>particular</em> pair identified out of many. If any single pairwise finding has an unbounded family-wise error rate, the study can’t credibly claim to have located “the” difference. Uncorrected pairwise <span class="math inline">\(t\)</span>-tests are how researchers accidentally publish false discoveries in multi-group studies.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Choose the procedure.</strong> For each scenario, name the appropriate approach — <strong>Tukey HSD</strong>, <strong>Bonferroni</strong>, <strong>just the ANOVA F-test (no post-hoc needed)</strong>, or <strong>not a multiple-comparisons problem</strong>.</p>
 <ol type="a">
 <li>ANOVA rejects <span class="math inline">\(H_0\)</span> across 4 fertilizer brands; you want to identify which brands differ from which.</li>
@@ -969,35 +959,13 @@ Figure&nbsp;18.1: Confidence intervals for pairwise differences in mean exam sco
 <li>You have 3 groups but pre-specified only <em>two</em> comparisons of interest before seeing the data (e.g., new-treatment vs.&nbsp;control, and new-treatment vs.&nbsp;standard).</li>
 <li>You want to compare mean scores across two teaching methods.</li>
 <li>You want to test the same difference-in-means for 100 different genes to see which are associated with a disease.</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p><strong>Tukey HSD</strong> — the standard follow-up when the omnibus F is significant and you want <em>all</em> pairwise comparisons on the same footing. Family-wise CIs; usually more powerful than Bonferroni for pairwise means.</p></li>
-<li><p><strong>No post-hoc needed</strong> — if the omnibus F does not reject, doing pairwise post-hoc tests would inflate the Type I error rate without a family-level rejection to justify them. Report the null result.</p></li>
-<li><p><strong>Bonferroni</strong> across the 2 pre-specified comparisons. Bonferroni is more flexible than Tukey (works for any collection of tests, not just pairwise-of-means), and with only 2 comparisons it costs little power.</p></li>
-<li><p><strong>Not a multiple-comparisons problem</strong> — two groups means one test (two-sample <span class="math inline">\(t\)</span>), so no correction is needed.</p></li>
-<li><p><strong>Bonferroni</strong> (or a false-discovery-rate procedure like Benjamini–Hochberg) — 100 tests give an enormous family-wise error rate at uncorrected <span class="math inline">\(\alpha = 0.05\)</span>. Genomics-scale problems typically use FDR control rather than family-wise, but the principle is the same: correct for the multiplicity.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Check conditions before you trust the post-hoc.</strong> Open the <a href="https://learnlens.org/statlens/inference/multiple-comparisons/?dataset=insectsprays" target="_blank">Multiple Comparisons tool</a> loaded with the classic <code>insectsprays</code> data (6 insecticides, count of dead insects per plot).</p>
 <ol type="a">
 <li>Confirm from the tool’s display: how many groups? What is the smallest per-group <span class="math inline">\(n\)</span>? Is that enough for the pairwise procedure to work?</li>
 <li>What conditions does the Tukey HSD test require, beyond just “3+ groups”?</li>
 <li>The tool’s output shows the ANOVA table above the pairwise panel. Why is it appropriate to <em>inspect</em> the omnibus F-test first, even if you plan to do pairwise comparisons?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>6 groups (A–F), typically 12 plots per group. Well over the minimum (3+ per group), so the procedure is sound.</p></li>
-<li><p>Tukey HSD assumes (i) the response is approximately normal within each group (or the group <span class="math inline">\(n\)</span>s are large enough for the CLT to kick in), and (ii) the within-group variances are approximately equal (homoscedasticity — same as ANOVA). Both should be checked via boxplots and per-group SDs before trusting the results.</p></li>
-<li><p>Two reasons. (i) <strong>Protection:</strong> if the omnibus F doesn’t reject, doing post-hoc anyway inflates Type I error — so the F-test is a gatekeeper. (ii) <strong>Sanity check:</strong> the omnibus test tells you <em>whether</em> there’s any signal in the group-mean structure at all; if it barely rejects with a huge family, you’ll want to be extra cautious about individual pairwise claims.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Run it and interpret it.</strong> Stay in the <a href="https://learnlens.org/statlens/inference/multiple-comparisons/?dataset=insectsprays" target="_blank">Multiple Comparisons tool</a>. Make sure <code>?posthoc=tukey</code> is active.</p>
 <ol type="a">
 <li>Report the omnibus <span class="math inline">\(F\)</span> statistic and p-value. Does the ANOVA reject <span class="math inline">\(H_0\)</span>?</li>
@@ -1005,19 +973,7 @@ Figure&nbsp;18.1: Confidence intervals for pairwise differences in mean exam sco
 <li>Read the forest plot: which pairs’ CIs cross zero, and which do not? Group the 6 sprays into “equivalence classes” (letters that don’t discernibly differ from each other but do differ from other classes).</li>
 <li>A student writes: “Sprays A and B differ from Spray C at family-wise <span class="math inline">\(\alpha = 0.05\)</span>.” Write the <em>correct</em> sentence including which quantity has family-wise coverage, and what “family-wise” actually means for the interpretation.</li>
 <li>The tool warns <em>not</em> to run post-hoc if the omnibus F is not significant. Why?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p><span class="math inline">\(F \approx 34.7\)</span> (df = 5, 66); p ≈ 3 × <span class="math inline">\(10^{-17}\)</span>. Reject overwhelmingly.</p></li>
-<li><p>Roughly <strong>9 of the 15</strong> pairs are discernibly different at Tukey-adjusted <span class="math inline">\(\alpha = 0.05\)</span> (all the A/B/F vs.&nbsp;C/D/E crossings), and the remaining 6 pairs (within-{A,B,F} and within-{C,D,E}) are not discernibly different.</p></li>
-<li><p>Two equivalence classes: <strong>{A, B, F}</strong> (high kill counts) and <strong>{C, D, E}</strong> (low kill counts). Within each class the sprays don’t discernibly differ; between classes they do.</p></li>
-<li><p>Correct: “The family-wise 95% confidence intervals for the pairwise mean differences (A–C, B–C, etc.) all lie entirely above zero, so we conclude at family-wise <span class="math inline">\(\alpha = 0.05\)</span> that A, B, and F each produce a discernibly higher mean than C.” <strong>Family-wise</strong> means: <em>across the whole set of pairwise comparisons</em>, we’re 95% confident that all of the intervals simultaneously cover their respective true differences. It’s a <em>joint</em> guarantee, not per-pair.</p></li>
-<li><p>Because Tukey’s family-wise error control is <em>conditional on the omnibus F rejecting</em>. If you run Tukey after a non-significant F, you get the family-wise inflation the correction is supposed to prevent — you’re multiplying testing that shouldn’t be happening in the first place.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Bonferroni vs.&nbsp;Tukey — when do they agree?</strong> Switch the tool between <code>?posthoc=tukey</code> and <code>?posthoc=bonferroni</code> (or use the toggle).</p>
 <ol type="a">
 <li>Compare the widths of the pairwise 95% CIs under Tukey vs.&nbsp;Bonferroni on the <code>insectsprays</code> data. Which method gives <strong>narrower</strong> intervals?</li>
@@ -1025,19 +981,7 @@ Figure&nbsp;18.1: Confidence intervals for pairwise differences in mean exam sco
 <li>Why does Tukey give tighter intervals than Bonferroni <strong>when the goal is all pairwise comparisons of means</strong>? Tie your answer to what each method is <em>actually</em> controlling.</li>
 <li>When would you prefer <strong>Bonferroni</strong> over Tukey?</li>
 <li>A student is confused because on one dataset Bonferroni declares an extra pair discernibly different that Tukey does not. What could explain that, and which conclusion should you trust?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>Tukey gives narrower CIs on most datasets — it’s designed specifically for all-pairwise comparisons of means and exploits the correlation structure of those comparisons. Bonferroni ignores that structure and just penalizes by the number of tests.</p></li>
-<li><p>With few pairs (e.g., 3 groups → 3 pairs) the two methods are closer; Tukey still edges out but by less. With many pairs (6 groups → 15 pairs) Tukey pulls further ahead.</p></li>
-<li><p><strong>Bonferroni</strong> controls the family-wise error rate for <em>any</em> collection of tests, treating each as if independent — the correction is generic (divide <span class="math inline">\(\alpha\)</span> by number of tests). <strong>Tukey HSD</strong> is specifically for pairwise means from the same ANOVA; it uses the studentized-range distribution, which accounts for the correlations among the sample-mean differences (<span class="math inline">\(\bar{x}_1 - \bar{x}_2\)</span> and <span class="math inline">\(\bar{x}_1 - \bar{x}_3\)</span> share <span class="math inline">\(\bar{x}_1\)</span>). That extra information → tighter intervals with the same family-wise coverage.</p></li>
-<li><p>Bonferroni is preferable when: (i) you have a <strong>pre-specified</strong> set of comparisons that aren’t all pairwise (e.g., “treatment vs.&nbsp;control” and “treatment vs.&nbsp;combination therapy” but not “control vs.&nbsp;combination”); (ii) the tests aren’t all mean-comparisons from the same ANOVA (e.g., mixing proportion tests, correlation tests); (iii) the sample sizes are wildly unbalanced (Tukey assumes equal <span class="math inline">\(n\)</span>; unequal-<span class="math inline">\(n\)</span> Tukey exists but the theoretical guarantee weakens).</p></li>
-<li><p>This can happen because Bonferroni’s per-pair p-value threshold is <span class="math inline">\(\alpha/m\)</span> (family-of-<span class="math inline">\(m\)</span> tests), and it can occasionally cross a per-pair significance boundary that Tukey’s studentized-range approach does not, depending on the exact test statistics. <strong>Both methods provide honest family-wise control</strong> at the same nominal level, but they’re not identical. When they disagree on a <em>particular</em> pair, the two methods are answering slightly different questions — neither is “right”; you report both if it matters. For all-pairwise-of-means questions, Tukey is the standard choice.</p></li>
-</ol>
-</details></li>
+</ol></li>
 </ol>
 
 

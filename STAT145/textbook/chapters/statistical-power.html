@@ -994,92 +994,35 @@ With <span class="math inline">\(n = 250\)</span>: <span class="math inline">\(S
 <li>The shaded regions correspond to <span class="math inline">\(\alpha\)</span>, <span class="math inline">\(\beta\)</span>, and power. Match each label to the correct region.</li>
 <li>Read off the current power (the tool reports it as a number). At <span class="math inline">\(\alpha = 0.05\)</span>, <span class="math inline">\(n = 30\)</span>, <span class="math inline">\(\delta = 1\)</span>, <span class="math inline">\(\sigma = 2\)</span>, what is it?</li>
 <li>In one sentence, explain what “power <span class="math inline">\(= 0.5\)</span>” would mean in plain English about your experiment.</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>The <strong>left</strong> curve is the null (<span class="math inline">\(\mu = 0\)</span>), the <strong>right</strong> curve is the alternative (<span class="math inline">\(\mu = \delta = 1\)</span>). You tell them apart by which mean is at the center of each.</p></li>
-<li><p><span class="math inline">\(\alpha\)</span> = right-tail of the null (false-alarm region under <span class="math inline">\(H_0\)</span>). <span class="math inline">\(\beta\)</span> = the part of the alternative curve to the <em>left</em> of the critical value (missed-detection region under <span class="math inline">\(H_A\)</span>). Power <span class="math inline">\(= 1 - \beta\)</span> = the part of the alternative curve to the <em>right</em> of the critical value.</p></li>
-<li><p>With these defaults, power ≈ 0.756. (The exact value depends on the tool’s continuity rounding.)</p></li>
-<li><p>“If a real effect of this size exists, my experiment has only a 50/50 chance of detecting it” — a coin-flip’s worth of statistical detection ability.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>The four levers — vary one at a time.</strong> Stay in the <a href="https://learnlens.org/statlens/distribution/power/" target="_blank">Power &amp; Error Visualizer</a>.</p>
 <ol type="a">
 <li>Start at <span class="math inline">\(\alpha = 0.05\)</span>, <span class="math inline">\(n = 30\)</span>, <span class="math inline">\(\delta = 1\)</span>, <span class="math inline">\(\sigma = 2\)</span>. Note the power. Now double <span class="math inline">\(n\)</span> to 60. How does power change?</li>
 <li>Reset to defaults. Double <span class="math inline">\(\delta\)</span> (effect size) to 2. How does power change compared to doubling <span class="math inline">\(n\)</span>? Which is the bigger lever?</li>
 <li>Reset. Double <span class="math inline">\(\sigma\)</span> (population noise) to 4. What happens to power? Why?</li>
 <li>Reset. Lower <span class="math inline">\(\alpha\)</span> from 0.05 to 0.01. What happens to power? Why is there a tradeoff?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>Power rises substantially (from ~0.76 to ~0.97). Doubling <span class="math inline">\(n\)</span> shrinks the SE by <span class="math inline">\(\sqrt{2}\)</span>, which sharpens both curves and pushes more of the alternative into the rejection region.</p></li>
-<li><p>Doubling <span class="math inline">\(\delta\)</span> also raises power dramatically (typically to ≥ 0.99 here). <strong>Effect size is a bigger lever than sample size</strong>: doubling <span class="math inline">\(\delta\)</span> moves the alternative curve, while doubling <span class="math inline">\(n\)</span> only sharpens both curves. But effect size is usually <em>not</em> under the researcher’s control — it’s a feature of nature.</p></li>
-<li><p>Power <strong>falls</strong> (from ~0.76 to ~0.30 or so). Bigger <span class="math inline">\(\sigma\)</span> widens both curves, increasing overlap, making the alternative harder to distinguish from the null.</p></li>
-<li><p>Power <strong>falls</strong>. Lowering <span class="math inline">\(\alpha\)</span> pushes the critical value farther into the tail, shrinking the rejection region — so the alternative curve has less area on the “reject” side. <strong>The tradeoff:</strong> you trade lower Type I error rate for higher Type II error rate, unless you also raise <span class="math inline">\(n\)</span>.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Simulation as a sanity check.</strong> Open the <a href="https://learnlens.org/statlens/conceptual/power-sim/?delta=1&amp;sigma=2&amp;n=30&amp;alpha=0.05&amp;tail=right" target="_blank">Power Lab (simulation)</a>.</p>
 <ol type="a">
 <li>Run 500 simulated <span class="math inline">\(z\)</span>-tests under these parameters. The empirical reject rate is the <strong>simulated power</strong>. How close is it to the analytic power from Exercise 1?</li>
 <li>Run 5000 simulations and re-read. Tighter agreement?</li>
 <li>Look at the dance-of-the-p-values panel. Under a real effect, p-values are <em>not</em> uniform — where do they cluster? Why?</li>
 <li>A student says: “If the analytic power formula already gives the answer, the simulation is pointless.” Give two reasons the simulation is still valuable.</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>With 500 simulations the empirical reject rate is close to the analytic power (within a few percentage points, depending on Monte Carlo error).</p></li>
-<li><p><strong>Yes</strong> — Monte Carlo error scales as <span class="math inline">\(1/\sqrt{N}\)</span>, so 5000 sims is about 3× tighter than 500.</p></li>
-<li><p>Under a real effect, p-values cluster toward <strong>0</strong>. Under <span class="math inline">\(H_0\)</span>, p-values are uniform on [0, 1]; under <span class="math inline">\(H_A\)</span>, the distribution shifts toward small values. The cluster is denser when the effect is bigger or <span class="math inline">\(n\)</span> is larger.</p></li>
-<li><ol type="i">
-<li><strong>Trust calibration</strong> — the analytic formula assumes the test’s distributional assumptions hold (normality, homoscedasticity, independence). Simulating with the <em>actual</em> generating process tells you whether the analytic power is honest. (ii) <strong>Intuition building</strong> — seeing 500 individual studies that “ought to detect a real effect” but <span class="math inline">\(\approx 25\%\)</span> don’t is a stronger lesson than reading “power = 0.76” off a tool.</li>
 </ol></li>
-</ol>
-</details></li>
 <li><p><strong>Reading studies from the power perspective.</strong> A journal article reports: “A previous trial (<span class="math inline">\(n = 80\)</span>, <span class="math inline">\(\alpha = 0.05\)</span>) failed to detect an effect of [the new drug] on blood pressure.” A second team plans a replication with <span class="math inline">\(n = 200\)</span>.</p>
 <ol type="a">
 <li>Why does “the previous trial failed to detect” not mean “the drug doesn’t work”?</li>
 <li>If the true effect size is small (say <span class="math inline">\(\delta/\sigma = 0.2\)</span>), use the <a href="https://learnlens.org/statlens/distribution/power/?alpha=0.05&amp;n=80&amp;delta=0.2&amp;sigma=1&amp;tail=right" target="_blank">Power &amp; Error Visualizer</a> to estimate the power of the first trial. Is the failure to detect surprising?</li>
 <li>At what <span class="math inline">\(n\)</span> would the replication achieve at least 80% power for <span class="math inline">\(\delta/\sigma = 0.2\)</span> and <span class="math inline">\(\alpha = 0.05\)</span>? Use the tool’s <span class="math inline">\(n\)</span> slider.</li>
 <li>Suppose the replication achieves power 0.85 and the result is <em>still</em> non-significant. What can you conclude — and what can you not?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>“Failed to detect” = failed to reject <span class="math inline">\(H_0\)</span>. Two reasons: (1) the drug might really not work, or (2) the drug works but the test lacked <strong>power</strong> to detect a small effect. Without computing power, the article can’t distinguish these.</p></li>
-<li><p>With <span class="math inline">\(\delta/\sigma = 0.2\)</span> (a small effect by Cohen’s rule of thumb) at <span class="math inline">\(n = 80\)</span>, the analytic power is only about <strong>0.56</strong> — barely better than a coin flip, so roughly a 44% chance of missing the effect. <strong>Not surprising at all</strong> that the trial missed it, even if it’s real.</p></li>
-<li><p>Roughly <span class="math inline">\(n \approx 155\)</span> is needed to reach 80% power at <span class="math inline">\(\delta/\sigma = 0.2, \alpha = 0.05\)</span> <strong>one-sided</strong> (the tool is preset to <code>tail=right</code>, which is what the <span class="math inline">\(n\)</span> slider reads against). A <strong>two-sided</strong> test at the same effect size needs <span class="math inline">\(n \approx 200\)</span> — so the tail setting matters.</p></li>
-<li><p><strong>Conclude:</strong> a high-powered, well-designed study failed to find an effect of this size — the evidence against an effect of <span class="math inline">\(\delta/\sigma \ge 0.2\)</span> is <em>now</em> meaningful. <strong>Cannot conclude:</strong> “there is no effect at all” — the trial wasn’t powered to detect a <em>smaller</em> effect (e.g., <span class="math inline">\(\delta/\sigma = 0.1\)</span> might still be present and undetected).</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Power, replication, and “statistical significance.”</strong> Suppose 100 independent labs run the same experiment with true power 0.8 at <span class="math inline">\(\alpha = 0.05\)</span>.</p>
 <ol type="a">
 <li>Roughly how many labs will report a “statistically discernible” result? How many will report a non-result?</li>
 <li>Now suppose only the 80 labs with discernible results publish their findings. What kind of bias does this introduce in the literature?</li>
 <li>Three independent meta-analyses pool all 100 labs’ results (not just the published ones). What advantage does this have over relying on any single significant study?</li>
 <li>A media headline reads: “New study shows X causes Y.” The study was a single trial with power 0.5. Given everything you’ve learned, how should you read this headline?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>About <strong>80</strong> will report discernibility (power <span class="math inline">\(= 0.8 \Rightarrow\)</span> 80% rejection rate when <span class="math inline">\(H_A\)</span> is true). About <strong>20</strong> will report non-results.</p></li>
-<li><p><strong>Publication bias</strong> — the literature is enriched for “positive” findings. A naive reader who sees the published 80 papers but not the unpublished 20 will perceive an over-strong signal of effect. Meta-analyses that include only published studies inherit this bias.</p></li>
-<li><p>The full-data meta-analysis sees the <strong>true effect size</strong> with a much smaller standard error (the pooled <span class="math inline">\(n\)</span> is 100 times larger). It can also detect publication bias by comparing published vs.&nbsp;all results. Single-study significance is fragile; meta-analysis is the right level of inference.</p></li>
-<li><p>Power 0.5 = 50/50 chance of detecting the effect <em>if it exists</em>. But the headline conflates “detected” with “exists.” Given the file-drawer problem and publication bias, a single low-power “discernible” result is <strong>weak evidence</strong> — exactly the regime where false-positives dominate the published literature. Wait for replication.</p></li>
-</ol>
-</details></li>
+</ol></li>
 </ol>
 
 

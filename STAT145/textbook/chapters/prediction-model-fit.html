@@ -1123,96 +1123,35 @@ Dataset sources
 <li>Identify three <em>bad</em> patterns and name what each one tells you about the model.</li>
 <li>A student says: “If the residuals are small, the model is good.” Why is the <em>size</em> of residuals not the main thing to look at?</li>
 <li>Suppose you see a fan-shaped residual plot (spread grows with <span class="math inline">\(x\)</span>). Which regression assumption has failed? What does this do to the trust you can place in the reported <span class="math inline">\(t\)</span>-test for the slope and its CI?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><ol type="i">
-<li>Random scatter around 0 with no pattern. (ii) Roughly constant spread across <span class="math inline">\(x\)</span>. (iii) No outliers far from the rest of the cloud.</li>
 </ol></li>
-<li><p><strong>Curved pattern</strong> → the linear model is wrong; the true relationship is non-linear. <strong>Fan shape</strong> → the equal-variance assumption fails (heteroscedasticity). <strong>One huge residual</strong> → a possible outlier or data-quality issue worth investigating.</p></li>
-<li><p>Small residuals just mean the data points are close to the line — they say nothing about whether the line is <em>the right kind of curve</em>. A curved relationship can have small residuals near the data range and still be badly mis-specified.</p></li>
-<li><p>The <strong>equal-variance</strong> (homoscedasticity) condition fails. The reported <span class="math inline">\(t\)</span>-statistic and CI use a single SE pooled across all <span class="math inline">\(x\)</span>, which understates uncertainty where the spread is wide and overstates it where the spread is narrow. The <span class="math inline">\(t\)</span>-CI’s actual coverage is below 95% — the <strong>bootstrap CI for the slope</strong> is more honest in this situation.</p></li>
-</ol>
-</details></li>
 <li><p><strong>R² in plain English.</strong> A regression of campus weekly food spending on monthly income reports <span class="math inline">\(R^2 = 0.41\)</span>.</p>
 <ol type="a">
 <li>Translate “<span class="math inline">\(R^2 = 0.41\)</span>” into one plain-English sentence about what fraction of variability in food spending is explained.</li>
 <li>Does <span class="math inline">\(R^2 = 0.41\)</span> mean the regression is “weak” or “strong”? Why is this judgment context-dependent?</li>
 <li>Adding a second predictor (e.g., number of dining-out trips) raises <span class="math inline">\(R^2\)</span> to 0.55. Is this <em>always</em> a sign that the new predictor matters? What does adding a <em>random</em> variable do to <span class="math inline">\(R^2\)</span>?</li>
 <li>A student concludes: “<span class="math inline">\(R^2 = 0.41\)</span> means 41% of food spending is <em>caused</em> by income.” What’s wrong with this?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>“About 41% of the variability in weekly food spending can be explained by a linear model on monthly income; the rest is unexplained variability (from other factors, noise, or model mis-specification).”</p></li>
-<li><p><strong>Context-dependent.</strong> In some domains (e.g., predicting next year’s stock returns) <span class="math inline">\(R^2 = 0.41\)</span> is huge. In others (e.g., predicting blood pressure from age in a tightly controlled sample) it might be modest. Comparison should be against subject-matter benchmarks, not abstract thresholds.</p></li>
-<li><p><strong>Not always.</strong> <span class="math inline">\(R^2\)</span> can rise even when the added predictor is pure noise — it never goes <em>down</em> when you add a variable, even a random one. The <strong>adjusted <span class="math inline">\(R^2\)</span></strong> penalizes added complexity and is the right comparison; even then, increased <span class="math inline">\(R^2\)</span> shows <em>fit</em>, not <em>causation</em>.</p></li>
-<li><ol type="i">
-<li><span class="math inline">\(R^2\)</span> measures <strong>variance explained by the linear model</strong>, not the share of food spending that has a causal source. (ii) Even if 100% of food-spending variability were captured by a regression on income, it could still be that a third variable (cost of living in the city) drives both, with no direct causal link from income to spending. Regression on observational data <strong>cannot establish causation</strong> on its own.</li>
 </ol></li>
-</ol>
-</details></li>
 <li><p><strong>Extrapolation: don’t trust the line outside the data.</strong> A regression of city temperature on month of year (1–12) gives a fitted line over the year.</p>
 <ol type="a">
 <li>Why is using the line to predict the temperature <em>at month 25</em> not just unreliable, but conceptually wrong?</li>
 <li>In a regression of test score on hours studied (in a sample where hours range 0–10), would you trust a prediction at 15 hours? At 5 hours? At <span class="math inline">\(-2\)</span> hours? Rank the trust.</li>
 <li>Open any regression dataset in the <a href="https://learnlens.org/statlens/explore/regression/" target="_blank">Regression Explorer</a> and note the range of <span class="math inline">\(x\)</span> values. What would extrapolating the fitted line beyond that range tell you about the prediction — and what would it <em>not</em> tell you?</li>
 <li>A real-estate analyst predicts the price of a 50000-square-foot mansion using a regression fit to homes 500–3500 sqft. Why is even a “narrow” prediction interval at <span class="math inline">\(x = 50000\)</span> deeply misleading?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>Months are periodic (12 wraps to 1), and the linear model is mis-specified for a periodic phenomenon anyway. But more importantly, month 25 is <em>not in the data range</em> — there’s no evidence the linear trend continues there. A line through your data tells you about that range, not beyond it.</p></li>
-<li><p><strong>Trusted: 5 hours</strong> (interior to the data). <strong>Untrusted: 15 hours</strong> (extrapolated, but at least possible). <strong>Nonsensical: -2 hours</strong> (extrapolated <em>and</em> impossible).</p></li>
-<li><p>Extrapolating tells you what the <em>line would say</em> outside the data — it does not tell you whether the relationship even is still linear out there. The model has no evidence for or against any behavior outside the data range.</p></li>
-<li><p>The model was fit on small-to-medium homes; the relationship between price and area at <em>very</em> large sizes is almost certainly different (different buyer pool, fewer comparables, scaling effects). The interval’s width is computed <em>as if</em> the linear model holds at <span class="math inline">\(x = 50000\)</span> — but that assumption is itself the dominant source of error, and it’s not reflected in the width.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>CI for the mean response vs.&nbsp;prediction interval for a new <span class="math inline">\(y\)</span>.</strong> These two intervals answer different questions at the same <span class="math inline">\(x_0\)</span>.</p>
 <ol type="a">
 <li>In words, what does a <strong>CI for the mean response at <span class="math inline">\(x_0\)</span></strong> estimate? Use a real-estate example to make it concrete.</li>
 <li>In words, what does a <strong>prediction interval for a new <span class="math inline">\(y\)</span> at <span class="math inline">\(x_0\)</span></strong> estimate? Same example.</li>
 <li>Which interval is <strong>wider</strong>, and why? (Hint: the prediction interval has two sources of uncertainty; the mean-response CI has only one.)</li>
 <li>An analyst quotes the <em>mean-response CI</em> but speaks as if it were a <em>prediction interval</em> (e.g., “we’re 95% sure the next house at 2000 sqft sells for between $280k and $320k”). What’s wrong, and what is the right way to state each interval?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>The CI for <span class="math inline">\(\mu_{y|x_0}\)</span> estimates the <strong>average</strong> sale price for the <em>population</em> of all 2000-sqft houses — not what any single house will sell for, but the long-run mean of all such homes.</p></li>
-<li><p>The prediction interval for a new <span class="math inline">\(y\)</span> at <span class="math inline">\(x_0\)</span> estimates the sale price of <strong>one specific new house</strong> of size 2000 sqft — including the variability from house-to-house around the mean line.</p></li>
-<li><p><strong>Prediction interval is wider.</strong> The mean-response CI captures only the uncertainty about where the regression <em>line</em> sits. The prediction interval captures that <em>plus</em> the variability of individual houses around the line — <span class="math inline">\(\hat{y}_0 \pm t^* \sqrt{s_e^2 + \text{SE}(\hat\mu)^2}\)</span>, where <span class="math inline">\(s_e\)</span> is the residual SE.</p></li>
-<li><p>The analyst is reporting the narrow mean-response CI but using prediction-interval language. The right phrasing: for the CI, “we’re 95% sure the <em>average</em> selling price of 2000-sqft houses is between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>”; for the PI, “if we sell one new 2000-sqft house tomorrow, we’re 95% sure it goes for between <span class="math inline">\(X'\)</span> and <span class="math inline">\(Y'\)</span> (a wider range, because individual sales vary around the average).” To see both intervals at once, open <a href="https://learnlens.org/statlens/inference/slope/?dataset=possum_regression&amp;interval=both" target="_blank"><code>inference/slope/?dataset=possum_regression&amp;interval=both</code></a> and type an <span class="math inline">\(x_0\)</span> into the <em>Predict a response</em> box, or toggle the shaded bands on <a href="https://learnlens.org/statlens/explore/regression/?dataset=possum_regression&amp;bands=true" target="_blank"><code>explore/regression/?bands=true</code></a>.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Leverage and influential observations.</strong> Open the <a href="https://learnlens.org/statlens/explore/regression-by-eye/" target="_blank">Regression by Eye lab</a> and generate a scatter with <span class="math inline">\(n = 20\)</span> near a moderate slope. Then mentally add a single extra point with very large <span class="math inline">\(x\)</span>.</p>
 <ol type="a">
 <li>Define <strong>leverage</strong>. Why does an observation at extreme <span class="math inline">\(x\)</span> have high leverage even before you look at its <span class="math inline">\(y\)</span>?</li>
 <li>Suppose your extra extreme-<span class="math inline">\(x\)</span> point sits <strong>on the fitted line</strong> (it’s high-leverage but consistent). Does removing it change the slope much? What does that tell you about high leverage in isolation?</li>
 <li>Suppose instead the extra point sits <strong>far off</strong> the line — high leverage <em>and</em> high residual. Now does removing it change the slope? What’s the buzzword for this kind of point?</li>
 <li>In the <a href="https://learnlens.org/statlens/explore/regression/" target="_blank">Regression Explorer</a>, find a real dataset and identify any potential high-leverage points by eye. What two questions should you ask before deciding whether to keep or remove them?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p><strong>Leverage</strong> measures how far an observation’s <span class="math inline">\(x\)</span> is from the mean <span class="math inline">\(\bar{x}\)</span> relative to the spread of <span class="math inline">\(x\)</span>. An observation at extreme <span class="math inline">\(x\)</span> exerts strong influence on the slope’s <em>potential</em> for change — it sits at the end of the lever-arm. High leverage is a <em>position</em> property, decided by <span class="math inline">\(x\)</span> alone.</p></li>
-<li><p><strong>Not much.</strong> A high-leverage observation that’s <em>consistent</em> with the trend simply confirms the line; removing it doesn’t move the fit much. High leverage <em>alone</em> is not a problem.</p></li>
-<li><p>The slope changes a lot. This is an <strong>influential</strong> observation: a point with high leverage <em>and</em> a large residual, whose presence pulls the regression line toward itself.</p></li>
-<li><ol type="i">
-<li><strong>Is the observation a data-quality error?</strong> (typo, mis-recorded value, unit mismatch) — if so, fix or remove and document the reason. (ii) <strong>Is it a real but extreme observation from the same population?</strong> — in that case, report results both with and without the point and be transparent about how sensitive the conclusion is to its inclusion.</li>
 </ol></li>
-</ol>
-</details></li>
 <li><p><strong>Apply-unit capstone — write conclusions across every procedure in the book.</strong> You have now met every inferential procedure this course covers: the one- and two-proportion <span class="math inline">\(z\)</span>, the one-sample / two-sample / paired <span class="math inline">\(t\)</span>, the chi-square goodness-of-fit and independence tests, one-way ANOVA, and slope inference. This capstone exercises the writing skill across all of them.</p>
 <p>Open <a href="https://learnlens.org/statlens/practice/conclusions/?scope=apply" target="_blank">Conclusion Practice — Apply scope</a>. The pool now includes chi-square scenarios in addition to the Calculate-unit scenarios you saw at the end of Ch 13. <em>(As of this printing, the practice tool does not yet include ANOVA or slope scenarios — see contract REQ-035 for planned additions. When those land, the same link picks them up automatically.)</em></p>
 <ol type="a">
@@ -1220,17 +1159,7 @@ Dataset sources
 <li>For at least one round where you scored <em>poorly</em>, re-read the scenario and identify the specific misinterpretation. Was it a p-value trap, a CI trap, a causation-vs-association slip, or a scope-of-inference issue?</li>
 <li>Compare your performance now to the ch 13 Calculate-scope capstone (if you did that one). Have you internalized the reasoning skills better, or did the added chi-square scenarios trip you up? What does that tell you about your understanding of “one framework, many procedures”?</li>
 <li>Finally: in one paragraph, write your own summary of the <em>inference framework</em> that unifies every procedure you learned this term. What are the four moves that appear in <strong>every</strong> test, regardless of the specific tool?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>&amp; b. Answers vary. Common tough spots: chi-square post-rejection interpretation (which cells drove it), ANOVA’s “at least one differs” caveat, slope interpretation with units.</p></li>
-<li><p>Doing better on the wider pool signals that you have internalized the <em>framework</em>, not just individual formulas. Doing worse suggests the new procedures haven’t gelled yet — go back to the chapters that gave you trouble and re-do their StatLens exercises.</p></li>
-<li><p>The four moves in every test: <strong>(1) Frame</strong> — identify the parameter and write the hypotheses. <strong>(2) Choose</strong> — match the scenario to the right procedure and check its conditions. <strong>(3) Run and read</strong> — get the test statistic, p-value, and CI. <strong>(4) Interpret</strong> — state the conclusion in context, avoiding the standard traps (p as <span class="math inline">\(P(H_0)\)</span>, CI as probability of the parameter, statistical vs.&nbsp;practical discernibility, correlation vs.&nbsp;causation, scope of inference). Every test in this course fits this template.</p></li>
-</ol>
-</details></li>
+</ol></li>
 </ol>
 
 

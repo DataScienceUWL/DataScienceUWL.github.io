@@ -875,82 +875,32 @@ Table&nbsp;22.1: The ANOVA table for a simple linear regression fit. In simple r
 <li>Write the null and alternative hypotheses that the <strong>model-level <span class="math inline">\(F\)</span>-test</strong> evaluates. Write them again for the <strong>slope <span class="math inline">\(t\)</span>-test</strong>.</li>
 <li>Why are these the <em>same</em> hypothesis in a simple regression? What would need to be true for them to differ?</li>
 <li>Suppose the <span class="math inline">\(F\)</span>-statistic comes out to 12.25 with 1 and 48 degrees of freedom. What <span class="math inline">\(t\)</span>-statistic on 48 df would give the same p-value?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>Both: <span class="math inline">\(H_0: \beta_1 = 0\)</span> vs.&nbsp;<span class="math inline">\(H_A: \beta_1 \neq 0\)</span>.</p></li>
-<li><p>They are the same because there is only <em>one</em> slope to test. If the model had more than one predictor, the F-test would test <em>all</em> slopes jointly (<span class="math inline">\(H_0: \beta_1 = \beta_2 = \cdots = 0\)</span>), while each <span class="math inline">\(t\)</span>-test would test one slope at a time.</p></li>
-<li><p><span class="math inline">\(t = \sqrt{F} = \sqrt{12.25} = 3.5\)</span> (positive or negative depending on the direction). Both give the same p-value because <span class="math inline">\(F_{1,48} = t^2_{48}\)</span>.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Open the ANOVA panel.</strong> Open the <a href="https://learnlens.org/statlens/inference/slope/?dataset=possum_regression&amp;anova=true" target="_blank">Slope tool with ANOVA panel</a> for the possum head-length regression.</p>
 <ol type="a">
 <li>Report the sums of squares <span class="math inline">\(SSR\)</span>, <span class="math inline">\(SSE\)</span>, <span class="math inline">\(SST\)</span> and verify that <span class="math inline">\(SSR + SSE = SST\)</span>.</li>
 <li>Report the degrees of freedom for each row. Explain why <span class="math inline">\(df_{\text{regression}} = 1\)</span> and <span class="math inline">\(df_{\text{residual}} = n - 2\)</span>.</li>
 <li>Report the <span class="math inline">\(F\)</span>-statistic and the <span class="math inline">\(t\)</span>-statistic for the slope, and confirm <span class="math inline">\(F = t^2\)</span>.</li>
 <li>Report <span class="math inline">\(R^2\)</span>. Verify from the ANOVA table that <span class="math inline">\(R^2 = SSR / SST\)</span>.</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>The identity should hold exactly (up to floating-point rounding).</p></li>
-<li><p>We estimate 2 parameters (intercept + slope), so 2 df are “spent” on fitting. The regression row accounts for 1 (the slope estimate); the residual row gets the remaining <span class="math inline">\(n - 2\)</span>; the total gets <span class="math inline">\(n - 1\)</span> (one lost to computing <span class="math inline">\(\bar{y}\)</span>).</p></li>
-<li><p>In simple regression this must hold algebraically; the two are the same test written in different notation.</p></li>
-<li><p><span class="math inline">\(R^2\)</span> = fraction of total variability explained by the fitted line = <span class="math inline">\(SSR/SST\)</span>. Rearranging, <span class="math inline">\(SSE/SST = 1 - R^2\)</span>.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Read <span class="math inline">\(R^2\)</span> correctly.</strong> A fitted regression reports <span class="math inline">\(R^2 = 0.72\)</span>.</p>
 <ol type="a">
 <li>Complete this sentence: “About ____ % of the variability in the response is explained by ____.” Which value goes in each blank?</li>
 <li>A student concludes: “<span class="math inline">\(R^2 = 0.72\)</span> means my model is 72% accurate.” Why is this wrong, and what’s the correct statement?</li>
 <li>What does <span class="math inline">\(R^2 = 0.72\)</span> <em>not</em> tell you about the model? Give three specific things.</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>About <strong>72%</strong> of the variability in the response is explained by the <strong>linear model on this predictor</strong>.</p></li>
-<li><p>“72% accurate” is nonsense — accuracy is a classifier concept, not a regression one. Individual predictions are not 72% correct; the <em>variability</em> in <span class="math inline">\(y\)</span> is 72% explained by the regression on average.</p></li>
-<li><p><span class="math inline">\(R^2\)</span> does not tell you: (i) whether the LINE conditions are met (a curved relationship can still have high <span class="math inline">\(R^2\)</span>); (ii) whether the model will generalize to new data (it’s computed on the fit sample); (iii) whether the fit is <em>practically</em> useful — <span class="math inline">\(R^2 = 0.72\)</span> might be excellent in one domain and terrible in another.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>When <span class="math inline">\(F\)</span> rejects and <span class="math inline">\(t\)</span> agrees.</strong> Open <a href="https://learnlens.org/statlens/inference/slope/?anova=true" target="_blank"><code>inference/slope/?anova=true</code></a> on any regression dataset with a clear linear trend.</p>
 <ol type="a">
 <li>Report <span class="math inline">\(F\)</span>, its degrees of freedom, and the p-value.</li>
 <li>Now switch datasets to one you expect to have <em>no</em> linear relationship. Report <span class="math inline">\(F\)</span> and the p-value. Is <span class="math inline">\(F\)</span> close to 1?</li>
 <li>Explain in one sentence why “<span class="math inline">\(F\)</span> close to 1” is the “no linear signal” case.</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>&amp; b. Answers depend on the specific dataset chosen.</p></li>
-<li><p>Under <span class="math inline">\(H_0\)</span>, both <span class="math inline">\(MSR\)</span> and <span class="math inline">\(MSE\)</span> estimate the same residual variance <span class="math inline">\(\sigma^2\)</span>, so their ratio <span class="math inline">\(F = MSR/MSE\)</span> hovers near 1. Large <span class="math inline">\(F\)</span> means the model explains more variability than pure noise would predict — evidence of a real signal.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>The multiple-regression preview.</strong> In simple regression, the model-level <span class="math inline">\(F\)</span>-test and the slope <span class="math inline">\(t\)</span>-test <em>must</em> agree. In multiple regression, they can diverge.</p>
 <ol type="a">
 <li>Imagine a multiple regression with 3 predictors where the overall <span class="math inline">\(F\)</span>-test rejects at <span class="math inline">\(\alpha = 0.05\)</span> but <em>no</em> individual predictor’s <span class="math inline">\(t\)</span>-test does. What could explain this? (Hint: think about <em>joint</em> vs.&nbsp;<em>individual</em> contributions.)</li>
 <li>Imagine the reverse: no individual <span class="math inline">\(t\)</span>-test rejects, and the <span class="math inline">\(F\)</span>-test doesn’t either. What does this suggest about the model?</li>
 <li>Imagine one predictor’s <span class="math inline">\(t\)</span>-test rejects while the model-level <span class="math inline">\(F\)</span>-test does not. Which conclusion should you trust?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>This is the classic multicollinearity signature: the predictors are so correlated with each other that no single one is <em>uniquely</em> responsible for the fit, but together they explain a discernible share of the variability. The <span class="math inline">\(F\)</span>-test picks up the joint contribution; the individual <span class="math inline">\(t\)</span>-tests each ask “does <em>this</em> predictor add something the others don’t?” — and when the predictors are redundant, none does individually.</p></li>
-<li><p>Neither the joint fit nor any individual contribution is discernible. Either there’s no real relationship, or the sample is too small for the effects present to reach significance — more data would help.</p></li>
-<li><p>This is rare but can happen with small samples and correlated predictors. The <strong><span class="math inline">\(F\)</span>-test is the more trustworthy summary</strong> for “does the model work as a whole?”; a single significant <span class="math inline">\(t\)</span> against a non-significant <span class="math inline">\(F\)</span> is often a false positive on the individual test. Repeat the fit with fewer predictors or more data before drawing conclusions.</p></li>
-</ol>
-</details></li>
+</ol></li>
 </ol>
 
 

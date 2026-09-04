@@ -931,89 +931,35 @@ window.Quarto = {
 <li>Write the multiple regression model in the standard form <span class="math inline">\(y = \beta_0 + \beta_1 x_1 + \cdots\)</span> with all variables clearly labeled.</li>
 <li>State the null and alternative hypotheses for the <strong>model-level</strong> <span class="math inline">\(F\)</span>-test in words.</li>
 <li>State the null hypothesis for the <strong>individual <span class="math inline">\(t\)</span>-test</strong> on <code>debt_to_income</code> — including the “given other predictors are in the model” qualifier. Why is this a different question from the one the <span class="math inline">\(F\)</span>-test asks?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p><span class="math inline">\(\texttt{interest\_rate} = \beta_0 + \beta_1 \cdot \texttt{debt\_to\_income} + \beta_2 \cdot \texttt{term} + \beta_3 \cdot \texttt{credit\_checks} + \varepsilon\)</span>.</p></li>
-<li><p><span class="math inline">\(H_0\)</span>: none of the three predictors is linearly related to interest rate (<span class="math inline">\(\beta_1 = \beta_2 = \beta_3 = 0\)</span>). <span class="math inline">\(H_A\)</span>: at least one predictor is linearly related to interest rate.</p></li>
-<li><p><span class="math inline">\(H_0: \beta_1 = 0\)</span>, given <code>term</code> and <code>credit_checks</code> are included in the model. This is a <em>conditional</em> question: does debt-to-income add anything above and beyond what term and credit checks already explain? The <span class="math inline">\(F\)</span>-test asks the <em>unconditional</em> joint question: does any predictor contribute at all?</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Choose predictors thoughtfully.</strong> For each scenario, decide whether to include the new predictor in the model. Options: <strong>include</strong>, <strong>exclude</strong>, or <strong>it depends</strong> (and specify the deciding factor).</p>
 <ol type="a">
 <li>The new predictor’s individual <span class="math inline">\(t\)</span>-test has p = 0.03; its scatterplot vs.&nbsp;existing predictors shows no strong relationships; residual standard error drops noticeably after adding it.</li>
 <li>The new predictor’s <span class="math inline">\(t\)</span>-test has p = 0.42; residual standard error is essentially unchanged.</li>
 <li>The new predictor’s <span class="math inline">\(t\)</span>-test has p &lt; 0.001; its scatterplot vs.&nbsp;an existing predictor shows a very strong linear relationship (or, equivalently, its VIF is 14.2).</li>
 <li>The new predictor has a strong scientific reason to be in the model (a well-established causal driver), <span class="math inline">\(t\)</span>-test p = 0.20, no strong scatterplot associations with the other predictors.</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p><strong>Include.</strong> Statistically discernible, no multicollinearity concerns, and residual SE drops: everything says yes.</p></li>
-<li><p><strong>Exclude.</strong> Not discernible and residual SE unchanged — the predictor is not earning its degree of freedom.</p></li>
-<li><p><strong>It depends.</strong> The strong <span class="math inline">\(t\)</span>-value combined with the strong pairwise association is a classic multicollinearity signal: the predictor duplicates an existing one, and individual coefficients become unreliable. Consider dropping <em>one</em> of the collinear pair, or combining them into a single summary variable.</p></li>
-<li><p><strong>Include.</strong> Domain knowledge and the research goal matter as much as the statistics. If there is a strong scientific reason to model the effect of a predictor, include it even without a small p-value; the coefficient still estimates the effect <em>given</em> the other predictors, and the standard error tells you how precise the estimate is. Statistical non-significance is not evidence of no effect.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Read the coefficient table (possum data).</strong> Open the <a href="https://learnlens.org/statlens/inference/mlr/?dataset=possum" target="_blank">Multiple Regression tool</a> loaded with the possum data. Select <strong>head length</strong> as the response and both <strong>total length</strong> and <strong>skull width</strong> as predictors.</p>
 <ol type="a">
 <li>Write the fitted equation with numeric coefficients.</li>
 <li>Interpret each slope in context, using the phrase “holding the other constant.”</li>
 <li>Compare the total-length slope in the two-predictor model to the total-length slope from the <em>simple</em> regression in the linear-regression chapter. Are they the same? If they differ, what does that tell you about what the simple slope was actually measuring?</li>
 <li>Report the model-level <span class="math inline">\(F\)</span>-statistic and its p-value. Does the model contribute discernibly?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>Read the coefficients directly from StatLens. The equation will read <span class="math inline">\(\widehat{\text{head\_l}} = b_0 + b_1 \cdot \text{total\_l} + b_2 \cdot \text{skull\_width}\)</span>.</p></li>
-<li><p>Each slope is the mean change in head length per unit change in that predictor, <strong>holding the other fixed</strong>. Report the actual numbers with units.</p></li>
-<li><p>The multi-predictor total-length slope will typically be <em>smaller</em> in magnitude than the simple-regression slope. The simple slope absorbed the joint effect of total length AND skull width, because larger possums tend to have both. The multi-predictor slope isolates the total-length effect.</p></li>
-<li><p>The model-level <span class="math inline">\(F\)</span>-test rejects overwhelmingly on this data — both predictors carry real signal about head length.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Multicollinearity via scatterplot (Extended: VIF).</strong> Add a third predictor (say, <strong>tail length</strong>) to the model in Exercise 3.</p>
 <ol type="a">
 <li>Open the <strong>pairwise scatterplot matrix</strong> of the three predictors. Are any pair of predictors visibly related? Which pair?</li>
 <li>Report the coefficient for total length and its standard error. How does the standard error compare to the two-predictor version? What does the change reflect?</li>
 <li>Optional (Extended Content, requires expert mode): Report the VIFs for all three predictors. Do the VIF values agree with what the pairwise scatterplot showed?</li>
 <li>A student says: “adjusted <span class="math inline">\(R^2\)</span> went up, so the third predictor is clearly worth including.” Is that always sufficient justification? What else should you check before finalizing the model?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>Larger possums tend to have longer everything — total length and tail length are often visibly related, and both are related to skull width to a lesser degree.</p></li>
-<li><p>Standard errors on individual coefficients generally <em>inflate</em> as correlated predictors are added — multicollinearity. If total length’s SE rose noticeably, its coefficient became less precisely estimated because tail length duplicates some of the signal.</p></li>
-<li><p>VIFs above 5 warrant caution; above 10 the individual coefficients are unreliable. They should agree qualitatively with what the scatterplot showed.</p></li>
-<li><p>Also check: (i) is the new predictor’s coefficient interpretable (any pairwise-scatterplot flags?), (ii) are residual diagnostics still clean, (iii) does the extra predictor make substantive sense in the problem context.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>When <span class="math inline">\(F\)</span> and <span class="math inline">\(t\)</span> disagree.</strong> Use the <a href="https://learnlens.org/statlens/inference/mlr/" target="_blank">Multiple Regression tool</a> to construct or find a dataset where the model-level <span class="math inline">\(F\)</span>-test rejects at <span class="math inline">\(\alpha = 0.05\)</span> but <em>none</em> of the individual <span class="math inline">\(t\)</span>-tests do.</p>
 <ol type="a">
 <li>Report the <span class="math inline">\(F\)</span>-statistic, its p-value, and the p-values of the individual <span class="math inline">\(t\)</span>-tests. What does this pattern suggest?</li>
 <li>Inspect the pairwise scatterplot matrix of the predictors. Are any pairs strongly related? <em>(Optional Extended Content: report the VIFs.)</em></li>
 <li>What does “the model as a whole works, but no individual predictor is discernible” <em>mean</em> for the researcher trying to use this model?</li>
 <li>A student says: “If no individual <span class="math inline">\(t\)</span>-test rejects, we should throw out the model.” Push back on that argument in one sentence.</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>This pattern is the fingerprint of multicollinearity: the joint contribution of the predictors is real (the model beats “none of them contribute”), but no <em>single</em> predictor is uniquely responsible for it. Each is essentially interchangeable with a combination of the others.</p></li>
-<li><p><strong>Yes</strong>, the pairwise scatterplots typically show strong linear associations between one or more pairs. Predictors that carry nearly the same information make each <span class="math inline">\(t\)</span>-test look at a lonely, individual contribution — and none is discernibly large on its own.</p></li>
-<li><p>It means the predictors are collectively useful for predicting <span class="math inline">\(y\)</span> but individual causal interpretation is unreliable. Predictions from the whole model are trustworthy; conclusions like “predictor <span class="math inline">\(x_1\)</span> specifically caused the effect” are not.</p></li>
-<li><p>Rejecting the model based on individual <span class="math inline">\(t\)</span>-tests would throw out a <em>jointly informative</em> model just because its predictors overlap. Better responses: combine collinear predictors, drop one, or accept that predictions are trustworthy even if individual coefficients are not.</p></li>
-</ol>
-</details></li>
+</ol></li>
 </ol>
 
 

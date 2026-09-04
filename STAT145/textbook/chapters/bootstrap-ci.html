@@ -1115,17 +1115,7 @@ status: skeleton
 <li>What is the parameter of interest? Describe it in words and give a symbol.</li>
 <li>Why is a <strong>bootstrap</strong> confidence interval especially well-suited to the median compared to the mean?</li>
 <li>Should the resulting bootstrap CI be <strong>percentile-based</strong> or <strong>standard-error-based</strong>, and how would you choose between them?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>The parameter is the <em>population</em> median wait time at this drive-through. Symbol: <span class="math inline">\(M\)</span> (or sometimes <span class="math inline">\(\tilde{\mu}\)</span>). The sample median <span class="math inline">\(\tilde{x}\)</span> of the 80 times is the estimate, not the parameter.</p></li>
-<li><p>The <strong>mean</strong> has a tidy formula for its standard error (<span class="math inline">\(s/\sqrt{n}\)</span>) because the CLT gives it an approximately normal sampling distribution. The <strong>median</strong> has no clean closed-form SE and its sampling distribution can be skewed and irregular. The bootstrap doesn’t need a formula — it just resamples and <em>shows</em> the sampling distribution, so the median works as easily as the mean.</p></li>
-<li><p><strong>Percentile-based</strong> when the bootstrap distribution is <strong>skewed</strong> (so the symmetric formula <span class="math inline">\(\hat{\theta} \pm z^*\,\text{SE}\)</span> would put the interval in the wrong shape). <strong>SE-based</strong> when the bootstrap distribution is <strong>roughly symmetric and bell-shaped</strong>, where the formula and the percentile method coincide and the SE form is conceptually closer to the formulas we’ll meet later. Default to percentile when in doubt.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Choose the resampling scheme.</strong> For each scenario, name the resampling — <strong>resample with replacement from one sample</strong> (one mean/median/SD/proportion), <strong>resample within each group</strong> (two means/proportions, independent groups), <strong>resample paired-difference values</strong> (paired data), or <strong>the bootstrap doesn’t apply here</strong> (and why).</p>
 <ol type="a">
 <li>Estimate the mean weight of a single bag of coffee from 30 weighed bags.</li>
@@ -1133,31 +1123,13 @@ status: skeleton
 <li>Estimate the difference in the proportion of customers who return for a second visit after two different welcome promotions (random assignment).</li>
 <li>Estimate the standard deviation of completion times in a single sample of 60 jobs.</li>
 <li>Estimate the maximum age in a population from a random sample of 50 people.</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><strong>Resample with replacement from the one sample</strong> (one mean). b. <strong>Resample within each group</strong> independently (one bootstrap sample per courier, then take the difference of means). c.&nbsp;<strong>Resample within each group</strong> (one bootstrap sample per promotion, then take the difference of proportions). d.&nbsp;<strong>Resample with replacement from the one sample</strong> (one SD). e. <strong>The bootstrap does not apply well to the maximum.</strong> The bootstrap reuses observed values, so the resampled max can never exceed the sample max; it systematically under-estimates the true population max. Extremes need different tools (extreme-value theory).</li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Read the bootstrap distribution.</strong> Open the <a href="https://learnlens.org/statlens/simulate/bootstrap-prop/?dataset=medical_consultant" target="_blank">Bootstrap CI for One Proportion</a> with the medical consultant data (62 patients, 3 complications, <span class="math inline">\(\hat{p} \approx 0.048\)</span>). Generate 10000 resamples.</p>
 <ol type="a">
 <li>Describe the <strong>shape</strong>, <strong>center</strong>, and <strong>spread</strong> of the bootstrap distribution. What feature of the data (small <span class="math inline">\(\hat{p}\)</span>) is responsible for the shape?</li>
 <li>Read off the 95% percentile interval. Does it contain the national average of 0.10?</li>
 <li>If you instead built a <strong>symmetric</strong> 95% interval as <span class="math inline">\(\hat{p} \pm 2 \cdot \text{SE}_{\text{boot}}\)</span>, what would go wrong? Sketch what that interval would look like next to the percentile interval.</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p><strong>Right-skewed</strong>, <strong>centered near <span class="math inline">\(\hat{p} \approx 0.048\)</span></strong>, <strong>narrow spread</strong> (a small SE). The shape is right-skewed because <span class="math inline">\(\hat{p}\)</span> is small: resamples can’t go below 0 (a hard floor), but can drift somewhat higher — so the tail extends to the right.</p></li>
-<li><p>The percentile interval will be something like (0.01, 0.11) — typically <em>barely</em> covering 0.10 or just including it. Because the interval contains the national rate, the data do not provide strong evidence that the consultant’s true rate differs from 10%.</p></li>
-<li><p>The symmetric interval <span class="math inline">\(\hat{p} \pm 2 \cdot \text{SE}_{\text{boot}}\)</span> would be <strong>centered at <span class="math inline">\(\hat{p}\)</span> and the same width on both sides</strong> — which is wrong for a skewed distribution. The lower endpoint could even go <strong>negative</strong> (below 0!), which is impossible for a proportion. The percentile interval respects the skew naturally; the symmetric formula imposes a shape the data don’t have.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Run it and interpret it.</strong> Open any one-variable numeric dataset in the <a href="https://learnlens.org/statlens/simulate/bootstrap-mean/" target="_blank">Bootstrap CI for One Mean tool</a> and generate 5000 resamples at 95% confidence.</p>
 <ol type="a">
 <li><p>Report the 95% percentile interval StatLens gives you.</p></li>
@@ -1170,17 +1142,7 @@ status: skeleton
 <li>95% of the bootstrap resamples have means in this interval.</li>
 </ol></li>
 <li><p>Change the confidence level to 99% and re-run. Does the interval get <strong>wider</strong> or <strong>narrower</strong>? Why?</p></li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>Read what StatLens reports. b. Name the population and units — e.g., “We are 95% confident that the population mean [response] is between [low] and [high] [units].”</p></li>
-<li><p><strong>(ii).</strong> Confidence refers to the long-run success rate of the <em>procedure</em>, not the probability that the unknown (but fixed) parameter is in any one particular interval. <strong>(iv) is true but irrelevant</strong> — it describes the <em>construction</em> of the percentile interval, not what “95% confidence” means in terms of the population.</p></li>
-<li><p><strong>Wider.</strong> Higher confidence requires more “coverage,” which means a longer interval. The trade-off: 99% confidence at the cost of a less precise estimate.</p></li>
-</ol>
-</details></li>
+</ol></li>
 <li><p><strong>Simulation vs.&nbsp;analytic — where the bootstrap shines.</strong> The normal-approximation formula and the bootstrap are two routes to the same confidence interval. Sometimes they nearly coincide; sometimes they don’t.</p>
 <p>First a well-behaved case. Open a moderately large, roughly symmetric numeric dataset in both the <a href="https://learnlens.org/statlens/simulate/bootstrap-mean/" target="_blank">Bootstrap CI for One Mean</a> and the <a href="https://learnlens.org/statlens/inference/one-mean/" target="_blank">One-Sample <span class="math inline">\(t\)</span> tool</a>.</p>
 <ol type="a">
@@ -1191,18 +1153,7 @@ status: skeleton
 <li>Report the 95% intervals from each tool. Are they as close as in (a)? Where do they differ — in the <strong>midpoint</strong>, the <strong>width</strong>, or both?</li>
 <li>Explain the pattern. Why do the bootstrap percentile interval and the <span class="math inline">\(t\)</span>-interval agree on well-behaved data but diverge on small skewed data? Tie your explanation to (i) the symmetry of the <span class="math inline">\(t\)</span>-interval and (ii) the bootstrap’s ability to follow the shape of the sampling distribution.</li>
 <li>A student says: “The <span class="math inline">\(t\)</span>-interval and the bootstrap interval disagree, so one of them must be wrong.” Why is that the wrong framing? Which interval should you <em>trust more</em> when they disagree, and why?</li>
-</ol>
-<details>
-<summary>
-<p>Show answer</p>
-</summary>
-<ol type="a">
-<li><p>For well-behaved, moderate-<span class="math inline">\(n\)</span> data the two 95% intervals are typically very close — agreeing to within a small fraction of the SE. The <span class="math inline">\(t\)</span>-procedure’s assumptions (independent observations, approximate normality of <span class="math inline">\(\bar{x}\)</span>) are satisfied, so the formula and the bootstrap converge.</p></li>
-<li><p>They differ noticeably. The <span class="math inline">\(t\)</span>-interval is forced to be <strong>symmetric</strong> about <span class="math inline">\(\bar{x}\)</span> (same width on each side, controlled by <span class="math inline">\(t^*\cdot s/\sqrt{n}\)</span>); the bootstrap percentile interval can be <strong>asymmetric</strong>, following the actual skew of the bootstrap distribution. The midpoint can shift; the width on one side can be larger than the other.</p></li>
-<li><p>The <span class="math inline">\(t\)</span>-interval is built from a <em>symmetric</em> distribution (the <span class="math inline">\(t\)</span>-distribution), so it can only express symmetric uncertainty around <span class="math inline">\(\bar{x}\)</span>. When the sampling distribution of <span class="math inline">\(\bar{x}\)</span> is itself skewed — which happens with small <span class="math inline">\(n\)</span> and a skewed population — the symmetric interval is the <em>wrong shape</em>, even if its center is right. The bootstrap doesn’t impose a shape; it just shows what the sampling distribution actually looks like. In well-behaved data the two shapes coincide, so the intervals agree.</p></li>
-<li><p>They are not “disagreeing about a fact” — they are two approximations to the same target, and they converge as the conditions improve. When they diverge, it is a <strong>signal that the <span class="math inline">\(t\)</span>-interval’s symmetry assumption has failed</strong>, not that one of them computed wrong. In that situation trust the <strong>bootstrap</strong>: it makes no normality or symmetry assumption, so it stays honest exactly where the formula breaks down. This is the same logic as in the proportions chapter — simulation is the more general tool, the formula is the shortcut that only applies when its conditions are met.</p></li>
-</ol>
-</details></li>
+</ol></li>
 </ol>
 
 
