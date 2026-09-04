@@ -50,9 +50,13 @@
  .note{color:var(--grey);font-size:.86em;margin:.5em 0 0}
 </style></head><body><div class="wrap">
 <div class="stage"><svg id="v" viewBox="0 0 400 340" role="img"
-     aria-label="A circle of radius 1 with a regular polygon inscribed in it. A slider raises the number of sides, and the polygon's area climbs toward the area of the circle, pi.">
+     aria-label="A circle of radius 1 with a regular polygon inscribed in it. Faint lines run from the centre to each corner, splitting the polygon into identical triangles. A slider raises the number of sides, and the polygon's area climbs toward the area of the circle, pi.">
   <circle cx="200" cy="165" r="150" fill="none" stroke="var(--circ)" stroke-width="3"/>
   <polygon id="poly" fill="rgba(193,18,31,.13)" stroke="var(--poly)" stroke-width="2.5"/>
+  <!-- radii to each vertex: makes the n-triangle decomposition visible, which is
+       how you get an area formula. Faded as n grows so 96 spokes do not become
+       a solid disc. -->
+  <g id="spokes" stroke="var(--ink)" stroke-width="1"></g>
   <circle cx="200" cy="165" r="3.5" fill="var(--ink)"/>
   <line x1="200" y1="165" x2="350" y2="165" stroke="var(--ink)" stroke-width="1.4"/>
   <text x="272" y="152" font-size="14" fill="var(--ink)" text-anchor="middle"
@@ -84,6 +88,17 @@
     pts.push((CX+R*Math.cos(th)).toFixed(2)+','+(CY+R*Math.sin(th)).toFixed(2));
   }
   el('poly').setAttribute('points',pts.join(' '));
+  // one radius per vertex. Opacity falls as n rises: at n=3..8 the triangles are
+  // the whole point, by n=96 they would just fill the circle in.
+  var sp='';
+  for(var j=0;j<n;j++){
+    var a2=-Math.PI/2+2*Math.PI*j/n;
+    sp+='<line x1="'+CX+'" y1="'+CY+'" x2="'+(CX+R*Math.cos(a2)).toFixed(2)
+      +'" y2="'+(CY+R*Math.sin(a2)).toFixed(2)+'"/>';
+  }
+  el('spokes').innerHTML=sp;
+  el('spokes').setAttribute('opacity',
+  n > 40 ? '0' : Math.min(0.45, 4/n).toFixed(3));
   var A=n/2*Math.sin(2*Math.PI/n);          // area of a unit-radius n-gon
   el('nv').textContent=n;
   el('ap').textContent=A.toFixed(6);

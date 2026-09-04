@@ -125,7 +125,7 @@ window.MathJax = {
 <li>How this course runs, and how to get help</li>
 <li>How to study for it, and what the research says about AI and solution videos</li>
 </ul></div>
-<aside class="key-point" role="note" aria-label="Key point"><p>Slides and a filled-in version of every deck are posted on the course website. You never have to copy a slide down.</p></aside>
+<aside class="key-point" role="note" aria-label="Key point"><p>Slides and a filled-in version of every deck are posted on the course website, so don't spend class time transcribing one. <strong>Bring paper anyway</strong> &mdash; what you should be writing is your own work on the examples, especially the <strong>Your Turn</strong> ones.</p></aside>
 </section>
 
 <section id="who-am-i" data-source-line="35" aria-label="Who Am I?">
@@ -164,10 +164,10 @@ window.MathJax = {
 <p><strong>The question.</strong> How fast is it moving at the instant \(t = 0.5\)?</p>
 <p><strong>The trouble.</strong> Speed is distance divided by time &mdash; but an instant has no duration. There is nothing to divide by.</p></div>
 
-<div><p>\[s(t) = 16(-t^2+2t+3)\]</p></div>
-<aside class="your-turn" role="note" aria-label="Your turn: student exercise"><span class="yt-label">Your turn</span> <p>Over an <em>interval</em> you can do it with algebra you already have. Compute the average velocity \(\dfrac{s(b)-s(a)}{b-a}\) on \([0.5, 1]\), then on \([0.5, 0.6]\).</p></aside>
+<aside class="your-turn" role="note" aria-label="Your turn: student exercise"><span class="yt-label">Your turn</span> <p>Over an <em>interval</em> you can do it with algebra you already have. Using \(s(t) = 16(-t^2+2t+3)\), compute the average velocity \(\dfrac{s(x)-s(a)}{x-a}\) with \(a = 0.5\) &mdash; first for \(x = 1\), then for \(x = 0.6\).</p></aside>
+<div><p>\[x = 1:\quad \frac{s(1)-s(0.5)}{1-0.5} \;=\; \frac{64-60}{0.5} \;=\; 8\text{ ft/sec}\]</p></div>
+<div><p>\[x = 0.6:\quad \frac{s(0.6)-s(0.5)}{0.6-0.5} \;=\; \frac{61.44-60}{0.1} \;=\; 14.4\text{ ft/sec}\]</p></div>
 
-<div><p>On \([0.5,1]\): \(\frac{16(4 - 3.75)}{0.5} = 8\) ft/sec. On \([0.5,0.6]\): \(\frac{16(3.84 - 3.75)}{0.1} = 14.4\) ft/sec. Keep shrinking and they pile up near \(16\).</p></div>
 <figure aria-label="The height of a thrown ball plotted against time, with a poi...">
   <div class="plotly-figure" role="img" aria-label="The height of a thrown ball plotted against time, with a point P at t equals 0.5 and three secant lines drawn from P to points Q that get closer and closer to it. As Q approaches P the secant slopes rise toward the slope of the dashed tangent line, marked as the speedometer reading of 16 feet per second." style="height:600px;width:100%;">
     <!doctype html><html lang="en"><head><meta charset="utf-8">
@@ -221,7 +221,7 @@ window.MathJax = {
 <div class="side"><div class="ctl"><label for="h">Slide Q toward P</label>
   <input id="h" type="range" min="0" max="100" step="1" value="0"
          aria-describedby="out" aria-label="Slide Q toward P"></div>
-<table id="out"><caption>Height of the ball: s(t) = 64 &minus; 16(t &minus; 1)&sup2;</caption>
+<table id="out"><caption>Height of the ball: s(t) = 16(&minus;t&sup2; + 2t + 3)</caption>
  <tr><th scope="row">interval</th><td id="iv"></td></tr>
  <tr><th scope="row">average velocity over it</th><td class="sec" id="av"></td></tr>
  <tr><th scope="row">speedometer at t = 0.5</th><td class="tan">16 ft/sec</td></tr>
@@ -230,7 +230,10 @@ window.MathJax = {
 <script>
 (function(){
  var X0=-0.15,X1=3.15,Y0=-6,Y1=78, L=46,R=546,T=16,B=390;
- var s=function(t){return 64-16*(t-1)*(t-1)};
+ // same function as the deck and the caption: 16(-t^2 + 2t + 3).
+ // Written in THIS form on purpose -- it used to be the vertex form
+ // 64-16(t-1)^2, which no longer matched the slide.
+ var s=function(t){return 16*(-t*t + 2*t + 3)};
  var px=function(t){return L+(t-X0)/(X1-X0)*(R-L)};
  var py=function(y){return B-(y-Y0)/(Y1-Y0)*(B-T)};
  var el=function(i){return document.getElementById(i)};
@@ -272,22 +275,49 @@ window.MathJax = {
   <details class="plotly-alt"><summary>Description: The height of a thrown ball plotted against time, with a poi...</summary>
     <p>The height of a thrown ball plotted against time, with a point P at t equals 0.5 and three secant lines drawn from P to points Q that get closer and closer to it. As Q approaches P the secant slopes rise toward the slope of the dashed tangent line, marked as the speedometer reading of 16 feet per second.</p>
   </details>
+  <figcaption>Keep shrinking the interval and the answers pile up near 16. Click to interact: drag the slider</figcaption>
 </figure>
 </section>
 
-<section id="big-limit-2-area-by-exhaustion" data-source-line="106" aria-label="Big Limit #2: Area by Exhaustion">
+<section id="do-it-once-with-letters" data-source-line="106" aria-label="Do It Once with Letters">
+  <h2>Do It Once with Letters</h2>
+  <div><p>Instead of a new number every time, do the same computation with \(x\) left in.</p></div>
+<aside class="your-turn" role="note" aria-label="Your turn: student exercise"><span class="yt-label">Your turn</span> <p>Form \(\dfrac{s(x)-s(0.5)}{x-0.5}\) using \(s(t) = 16(-t^2+2t+3)\), and simplify it as far as it will go. Factor the top.</p></aside>
+<div><p>First evaluate the two pieces: \(s(x) = 16(-x^2+2x+3)\), and \(s(0.5) = 16(-0.25+1+3) = 16(3.75) = 60\).</p></div>
+
+<div><p>\[\frac{s(x)-s(0.5)}{x-0.5} \;=\; \frac{16(-x^2+2x+3) - 60}{x-0.5}\]</p></div>
+<div><p>\[=\; \frac{-16x^2+32x+48-60}{x-0.5} \;=\; \frac{-16x^2+32x-12}{x-0.5}\]</p></div>
+<div><p>\[=\; \frac{-4(4x^2-8x+3)}{x-0.5} \;=\; \frac{-4(2x-1)(2x-3)}{x-0.5}\]</p></div>
+<div><p>\[=\; \frac{-8(x-0.5)(2x-3)}{x-0.5} \;=\; -8(2x-3) \;=\; 24-16x\]</p></div>
+
+<div><p>Check it against the numbers you already found:</p>
+<table>
+<caption class="sr-only">The simplified quotient reproduces every value computed above</caption>
+<tr><th scope="col">\(x\)</th><th scope="col">\(24-16x\)</th><th scope="col">earlier</th></tr>
+<tr><td>\(1\)</td><td>\(8\)</td><td>\(8\)</td></tr>
+<tr><td>\(0.6\)</td><td>\(14.4\)</td><td>\(14.4\)</td></tr>
+<tr><td>\(0.51\)</td><td>\(15.84\)</td><td>&mdash;</td></tr>
+<tr><td>\(0.5\)</td><td>\(\mathbf{16}\)</td><td>the speedometer</td></tr>
+</table></div>
+<aside class="key-point" role="note" aria-label="Key point"><p>Once the \((x-0.5)\) cancels, nothing stops you putting \(x = 0.5\) in &mdash; and out comes \(16\). The algebra you already had did this. The limit is what makes the cancelling legal.</p></aside>
+</section>
+
+<section id="big-limit-2-area-by-exhaustion" data-source-line="144" aria-label="Big Limit #2: Area by Exhaustion">
   <h2>Big Limit #2: Area by Exhaustion</h2>
   <div><p><strong>The question.</strong> What is the area of a circle of radius \(1\)?</p>
 <p><strong>The trouble.</strong> We know the area of a triangle. We know the area of a rectangle. A circle has no straight edges at all.</p>
 <p><strong>Archimedes' idea.</strong> Draw a polygon inside the circle. You <em>can</em> find its area. Then add sides.</p></div>
 
-<div><p><strong>In case it has been a while:</strong></p></div>
 <figure>
-  <img src="figures/special_triangles.png" alt="Two reference right triangles side by side. The 45-45-90 triangle has both legs of length 1 and hypotenuse the square root of 2. The 30-60-90 triangle has short leg 1, long leg the square root of 3, and hypotenuse 2." style="max-width:100%; max-height:220px;">
+  <img src="figures/special_triangles.png" alt="Two reference right triangles side by side. The 45-45-90 triangle has both legs of length 1 and hypotenuse the square root of 2. The 30-60-90 triangle has short leg 1, long leg the square root of 3, and hypotenuse 2." style="max-width:100%; max-height:350px;">
 </figure>
 <aside class="your-turn" role="note" aria-label="Your turn: student exercise"><span class="yt-label">Your turn</span> <p>Find the exact area of the inscribed <strong>square</strong>, then the inscribed <strong>regular hexagon</strong>. Geometry only &mdash; no calculus, no calculator.</p></aside>
 
-<div><p>Square: \(\frac{1}{2}(2)(2) = 2\). Hexagon: six equilateral triangles of side \(1\), so \(\frac{3\sqrt{3}}{2} \approx 2.598\). Both under \(\pi \approx 3.14159\), and the hexagon is closer.</p></div>
+<div><p>\[\text{Square:}\quad \text{side} = \sqrt{2}, \qquad A = (\sqrt{2})^2 = 2\]</p></div>
+<div><p>\[\text{Hexagon:}\quad \text{six equilateral triangles of side } 1\]</p></div>
+<div><p>\[A = 6\cdot\frac{\sqrt{3}}{4}(1)^2 = \frac{3\sqrt{3}}{2} \approx 2.598\]</p></div>
+<div><p>Both are under \(\pi\) &mdash; and the hexagon is closer.</p></div>
+
 <figure aria-label="A circle with regular polygons inscribed in it at 3, 6, 12 a...">
   <div class="plotly-figure" role="img" aria-label="A circle with regular polygons inscribed in it at 3, 6, 12 and 96 sides. The polygon areas are 1.2990, 2.5981, 3.0000 and 3.1394, climbing toward the area of the circle, pi equals 3.14159." style="height:600px;width:100%;">
     <!doctype html><html lang="en"><head><meta charset="utf-8">
@@ -342,9 +372,13 @@ window.MathJax = {
  .note{color:var(--grey);font-size:.86em;margin:.5em 0 0}
 </style></head><body><div class="wrap">
 <div class="stage"><svg id="v" viewBox="0 0 400 340" role="img"
-     aria-label="A circle of radius 1 with a regular polygon inscribed in it. A slider raises the number of sides, and the polygon's area climbs toward the area of the circle, pi.">
+     aria-label="A circle of radius 1 with a regular polygon inscribed in it. Faint lines run from the centre to each corner, splitting the polygon into identical triangles. A slider raises the number of sides, and the polygon's area climbs toward the area of the circle, pi.">
   <circle cx="200" cy="165" r="150" fill="none" stroke="var(--circ)" stroke-width="3"/>
   <polygon id="poly" fill="rgba(193,18,31,.13)" stroke="var(--poly)" stroke-width="2.5"/>
+  <!-- radii to each vertex: makes the n-triangle decomposition visible, which is
+       how you get an area formula. Faded as n grows so 96 spokes do not become
+       a solid disc. -->
+  <g id="spokes" stroke="var(--ink)" stroke-width="1"></g>
   <circle cx="200" cy="165" r="3.5" fill="var(--ink)"/>
   <line x1="200" y1="165" x2="350" y2="165" stroke="var(--ink)" stroke-width="1.4"/>
   <text x="272" y="152" font-size="14" fill="var(--ink)" text-anchor="middle"
@@ -376,6 +410,17 @@ window.MathJax = {
     pts.push((CX+R*Math.cos(th)).toFixed(2)+','+(CY+R*Math.sin(th)).toFixed(2));
   }
   el('poly').setAttribute('points',pts.join(' '));
+  // one radius per vertex. Opacity falls as n rises: at n=3..8 the triangles are
+  // the whole point, by n=96 they would just fill the circle in.
+  var sp='';
+  for(var j=0;j<n;j++){
+    var a2=-Math.PI/2+2*Math.PI*j/n;
+    sp+='<line x1="'+CX+'" y1="'+CY+'" x2="'+(CX+R*Math.cos(a2)).toFixed(2)
+      +'" y2="'+(CY+R*Math.sin(a2)).toFixed(2)+'"/>';
+  }
+  el('spokes').innerHTML=sp;
+  el('spokes').setAttribute('opacity',
+  n > 40 ? '0' : Math.min(0.45, 4/n).toFixed(3));
   var A=n/2*Math.sin(2*Math.PI/n);          // area of a unit-radius n-gon
   el('nv').textContent=n;
   el('ap').textContent=A.toFixed(6);
@@ -402,20 +447,21 @@ window.MathJax = {
   <details class="plotly-alt"><summary>Description: A circle with regular polygons inscribed in it at 3, 6, 12 a...</summary>
     <p>A circle with regular polygons inscribed in it at 3, 6, 12 and 96 sides. The polygon areas are 1.2990, 2.5981, 3.0000 and 3.1394, climbing toward the area of the circle, pi equals 3.14159.</p>
   </details>
+  <figcaption>Click to interact: add sides</figcaption>
 </figure>
 </section>
 
-<section id="the-same-trick-on-any-curve" data-source-line="133" aria-label="The Same Trick, on Any Curve">
+<section id="the-same-trick-on-any-curve" data-source-line="177" aria-label="The Same Trick, on Any Curve">
   <h2>The Same Trick, on Any Curve</h2>
   <div><p>Archimedes needed a circle. In Chapter 5 we do it with rectangles, and then it works under <em>any</em> curve.</p></div>
 
 <figure>
-  <img src="figures/riemann_preview.png" alt="The region under a curve approximated by 4, then 10, then 40 rectangles. As the rectangles get narrower they fill the region more and more exactly." style="max-width:100%; max-height:320px;">
+  <img src="figures/riemann_preview.png" alt="The region under a curve approximated by 4, then 10, then 40 rectangles. As the rectangles get narrower they fill the region more and more exactly." style="max-width:100%; max-height:425px;">
 </figure>
 <aside class="key-point" role="note" aria-label="Key point"><p>Same move both times: approximate with something you can compute, then let the approximation run to its limit.</p></aside>
 </section>
 
-<section id="two-limits-one-course" data-source-line="146" aria-label="Two Limits, One Course">
+<section id="two-limits-one-course" data-source-line="190" aria-label="Two Limits, One Course">
   <h2>Two Limits, One Course</h2>
   <div class="summary-grid">
 <section class="defn-box" role="region" aria-label="The derivative"><h3 class="defn-title">The derivative</h3><p>How fast, right now. Chapters 2 through 4 &mdash; rates of change, tangent lines, optimization.</p></section>
@@ -425,16 +471,16 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p>Starting tomorrow we chase the first one. We cannot finish it until we know what a limit really is &mdash; that is Sections 2.2 through 2.6.</p></aside>
 </section>
 
-<section id="whose-example-is-it" data-source-line="160" aria-label="Whose Example Is It?">
+<section id="whose-example-is-it" data-source-line="204" aria-label="Whose Example Is It?">
   <h2>Whose Example Is It?</h2>
   <div><p>Most days you will do more of the work than I do. Every example is labelled so you know which kind it is before it starts.</p></div>
 <aside class="my-turn" role="note" aria-label="My turn: worked by the instructor"><span class="mt-label">My turn</span> <p>I work it at the board &mdash; usually because it introduces a new idea, or because watching once beats being stuck for ten minutes.</p></aside>
-<aside class="your-turn" role="note" aria-label="Your turn: student exercise"><span class="yt-label">Your turn</span> <p>You work it, alone or with a neighbor. I walk around. Then we compare and I show the solution.</p></aside>
+<aside class="your-turn" role="note" aria-label="Your turn: student exercise"><span class="yt-label">Your turn</span> <p>You work it, alone or with a neighbor &mdash; pen actually moving on paper. I walk around. Then we compare and I show the solution.</p></aside>
 
-<aside class="key-point" role="note" aria-label="Key point"><p>The answer is on the next slide either way. The minutes you spend stuck are where the learning happens.</p></aside>
+<aside class="key-point" role="note" aria-label="Key point"><p>The answer is on the next slide either way &mdash; so copying it down is never the point. <strong>Attempting it first is.</strong> The minutes you spend stuck are where the learning happens.</p></aside>
 </section>
 
-<section id="where-everything-lives" data-source-line="177" aria-label="Where Everything Lives">
+<section id="where-everything-lives" data-source-line="221" aria-label="Where Everything Lives">
   <h2>Where Everything Lives</h2>
   <div><p><strong>Canvas</strong> is the home for this course. Schedule, announcements, notes, and every link start there.</p>
 <p><strong>Stewart, <em>Calculus: Early Transcendentals</em>, 9th edition.</strong> Don't bring the book to class &mdash; there is a PDF of the chapters we use in Canvas.</p>
@@ -442,7 +488,7 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p>If you cannot find something, look in Canvas first, then e-mail me. That order saves us both a day.</p></aside>
 </section>
 
-<section id="how-the-grade-works" data-source-line="193" aria-label="How the Grade Works">
+<section id="how-the-grade-works" data-source-line="237" aria-label="How the Grade Works">
   <h2>How the Grade Works</h2>
   <div class="summary-grid">
 <section class="defn-box" role="region" aria-label="Homework &mdash; 10%"><h3 class="defn-title">Homework &mdash; 10%</h3><p>51 sets in MyOpenMath, roughly one per class day. Every problem is worth 1 point; your grade is the percent of all points earned. Nothing dropped.</p></section>
@@ -455,7 +501,7 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p>Homework is only 10% of the grade and close to 100% of the learning. Treat the percentage as a lie.</p></aside>
 </section>
 
-<section id="the-weekly-rhythm" data-source-line="213" aria-label="The Weekly Rhythm">
+<section id="the-weekly-rhythm" data-source-line="257" aria-label="The Weekly Rhythm">
   <h2>The Weekly Rhythm</h2>
   <div><p>We meet Monday through Thursday.</p>
 <ul>
@@ -474,14 +520,14 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p>However long you get, there is always exactly <strong>one</strong> class meeting between getting the homework and its deadline. That meeting is your chance to ask. Start early enough to have a question.</p></aside>
 </section>
 
-<section id="getting-help" data-source-line="238" aria-label="Getting Help">
+<section id="getting-help" data-source-line="282" aria-label="Getting Help">
   <h2>Getting Help</h2>
   <div><p><strong>My office hours</strong> are posted in Canvas. If none of them work, e-mail me three times you are free and whether you want Zoom or in person.</p>
 <p><strong>The Murphy Learning Center</strong> (251 Murphy Library) offers free drop-in tutoring through Calculus II. It usually opens in Week 2.</p></div>
 <aside class="key-point" role="note" aria-label="Key point"><p>Come at the first sign of trouble, not the week of the exam. Math builds &mdash; a gap in September is still there in December.</p></aside>
 </section>
 
-<section id="how-to-use-the-textbook" data-source-line="251" aria-label="How to Use the Textbook">
+<section id="how-to-use-the-textbook" data-source-line="295" aria-label="How to Use the Textbook">
   <h2>How to Use the Textbook</h2>
   <div><p>Fifty minutes is not enough time to cover everything in a section, so I choose. What I skip is still yours to learn.</p>
 <ul>
@@ -492,17 +538,16 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p>Most students skip the definitions. That is the single most expensive habit in this course.</p></aside>
 </section>
 
-<section id="the-experiment-you-are-about-to-run-on-yourself" data-source-line="266" aria-label="The Experiment You Are About to Run on Yourself">
+<section id="the-experiment-you-are-about-to-run-on-yourself" data-source-line="310" aria-label="The Experiment You Are About to Run on Yourself">
   <h2>The Experiment You Are About to Run on Yourself</h2>
-  <div><p>When you get stuck on homework you have a choice students ten years ago did not have: ask an AI, or find someone on YouTube working that exact problem.</p>
-<p>Researchers ran this as a real experiment. About a thousand students worked math practice problems &mdash; one group with unrestricted GPT-4, one with a tutor version that gave hints instead of answers, one with nothing. Then everyone sat an exam <strong>without</strong> any AI.</p></div>
+  <div><p>Stuck on homework, you can ask an AI or find someone on YouTube working that exact problem. Researchers ran this as an experiment: about a thousand students worked math practice problems &mdash; one group with unrestricted GPT-4, one with a hints-only tutor, one with nothing. Then everyone sat an exam <strong>without</strong> any AI.</p></div>
 <aside class="your-turn" role="note" aria-label="Your turn: student exercise"><span class="yt-label">Your turn</span> <p>Predict: on that exam, how did the unrestricted-AI group do against the group that had no AI at all?</p></aside>
-
 <div><p>They scored about <strong>17% worse</strong> &mdash; not worse than they hoped, worse than the students who never had the tool. During practice that same group looked like it was doing great.</p></div>
+
 <aside class="key-point" role="note" aria-label="Key point"><p>Their practice scores went <strong>up</strong> while their learning went <strong>down</strong>, and nothing warned them. The feeling of understanding arrives on time even when the understanding does not.</p></aside>
 </section>
 
-<section id="why-it-feels-like-learning" data-source-line="285" aria-label="Why It Feels Like Learning">
+<section id="why-it-feels-like-learning" data-source-line="327" aria-label="Why It Feels Like Learning">
   <h2>Why It Feels Like Learning</h2>
   <div><p>Watching a clean solution is <strong>fluent</strong>. Nothing is confusing, so it feels like understanding. Being stuck is not fluent &mdash; it feels like failing, right up until it works.</p>
 <p>In one study, students in classes that made them work <em>learned more</em> but <strong>felt like they learned less</strong>. The smooth version wins on feel and loses on results.</p></div>
@@ -512,7 +557,7 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p>The tool was not the variable. How it was <strong>asked</strong> was the variable &mdash; and that part is yours.</p></aside>
 </section>
 
-<section id="so-use-them-like-this" data-source-line="304" aria-label="So Use Them Like This">
+<section id="so-use-them-like-this" data-source-line="346" aria-label="So Use Them Like This">
   <h2>So Use Them Like This</h2>
   <div><p><strong>Attempt first.</strong> Ten real minutes on blank paper. Struggle is working while you are still generating and testing ideas; it is over when you have re-read the problem three times with no new idea. That moment &mdash; out of ideas, not out of patience &mdash; is when a hint is worth the most.</p>
 <p><strong>Then ask for the next step, not the answer.</strong> Paste this once:</p></div>
@@ -522,7 +567,7 @@ window.MathJax = {
 <aside class="key-point" role="note" aria-label="Key point"><p>Two tells. If you are nodding along, you are watching. If you are slightly annoyed and doing the work yourself, it is helping.</p></aside>
 </section>
 
-<section id="brush-up-on-this-week" data-source-line="323" aria-label="Brush Up on This Week">
+<section id="brush-up-on-this-week" data-source-line="365" aria-label="Brush Up on This Week">
   <h2>Brush Up on This Week</h2>
   <div><p>Four short review sets run alongside the regular homework this week and next: <strong>Review1</strong> (algebra) due tomorrow, then <strong>Review2</strong>, <strong>Review3</strong> (inverses, exponents, logs) and <strong>Review4</strong> (trigonometry) on the next three class days.</p>
 <p>They cover this:</p></div>

@@ -62,7 +62,8 @@
 .two-col { display: flex; gap: 1.2em; align-items: flex-start; }
 .two-col > * { flex: 1; }
 .fig-container { text-align: center; margin: 0.3em 0; }
-.fig-container img { max-height: 60vh; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+.fig-container img { max-width: 100%; max-height: 60vh; border-radius: 6px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
     cursor: zoom-in; transition: opacity 0.15s; }
 .fig-container img:hover { opacity: 0.8; }
 .fig-container .fig-caption { font-size: 0.7em; color: #666; margin-top: 0.2em; }
@@ -190,7 +191,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 </div>
 <div class="fragment" data-editor-line="71"><p><strong>The difficulty.</strong> Slope needs <strong>two</strong> points. We have only \(P\).</p></div>
 <div class="fragment" data-editor-line="73"><p><strong>The workaround.</strong> Pick a second point \(Q(x, x^2)\) on the curve and compute the slope of the <strong>secant</strong> line \(PQ\) &mdash; from the Latin <em>secans</em>, “cutting”:</p>
-<p>\[ m_{PQ} = \frac{x^2 - 9}{x - 3} \]</p></div>
+<p>\[ m_{PQ} = \frac{f(x) - f(a)}{x - a} = \frac{x^2 - 9}{x - 3} \]</p></div>
 <div class="fragment" data-editor-line="78"><p>Then slide \(Q\) toward \(P\) and watch what the secant slopes do.</p></div>
 <aside class="notes">Name both words &mdash; touching vs cutting. Students remember the pair.</aside>
 </section>
@@ -261,7 +262,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
   <div><div><p><strong>The difficulty.</strong> Velocity is (change in position)/(time elapsed) &mdash; but an <em>instant</em> is not an interval. There is nothing to divide by.</p>
 <p><strong>The same workaround.</strong> Average over a short interval and then shrink it.</p></div></div>
   <div><div class="fig-container">
-  <a href="figures/ball_height.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/ball_height.png"><img src="figures/ball_height.png" alt="Graph of the height s of a ball against time t from 0 to 3 seconds. The curve is a downward-opening parabola starting at height 48 at t equals 0, peaking at 64 when t equals 1, and returning to 0 at t equals 3 when the ball lands. A short secant line is drawn between the points at t equals 0.5 and t equals 1." style="max-height:37vh;"></a>
+  <a href="figures/ball_height.png" target="_blank" rel="noopener" class="fig-link" data-src="figures/ball_height.png"><img src="figures/ball_height.png" alt="Graph of the height s of a ball against time t from 0 to 3 seconds. The curve is a downward-opening parabola starting at height 48 at t equals 0, peaking at 64 when t equals 1, and returning to 0 at t equals 3 when the ball lands. A short secant line is drawn between the points at t equals 0.5 and t equals 1." style="max-height:51vh;"></a>
 </div></div>
 </div></div>
 </section>
@@ -304,6 +305,18 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 <div class="defn-box"><div class="defn-title">Velocity</div><p class="small">Speed \(= \lim_{h \to 0} \dfrac{s(a+h)-s(a)}{h}\) &mdash; substituting gives \(0/0\).</p></div>
 </div>
 <div class="key-point fragment" data-editor-line="230"><p>We have no rules yet for computing a limit. That is Sections 2.2 through 2.6 &mdash; and we return to tangents and velocities in Section 2.7 with the derivative.</p></div>
+</section>
+
+<section id="what-you-should-be-able-to-do">
+<h2>What You Should Be Able to Do</h2>
+<div class="fragment" data-editor-line="237"><p>By the end of this section &mdash; and on the quiz and the exam:</p>
+<ul>
+<li>I can compute the average rate of change of a function on an interval and explain why it is the slope of a secant line.</li>
+<li>I can estimate the slope of a tangent line by computing average rates of change over shrinking intervals.</li>
+<li>I can explain the difference between average and instantaneous velocity, and say which one a secant slope gives.</li>
+</ul></div>
+<div class="key-point fragment" data-editor-line="245"><p>If you cannot honestly tick one of these off, that is the one to work on &mdash; not the one that felt hardest in class.</p></div>
+<aside class="notes">Visit these if there is time; if not, say where they live. They are the blueprint for the quiz and the exam, so a student who can do all of them is prepared by construction.</aside>
 </section>
 
 <section>
@@ -387,11 +400,19 @@ Reveal.on('slidechanged', (event) => {
 // Fragment auto-scroll: configurable via meta.fragment_scroll in content.yaml
 // Value is the max fraction down the slide viewport (0.0=top, 1.0=bottom)
 var FRAG_SCROLL_TARGET = 0.67;
+function spacerHeight(section) {
+    // The spacer below is a scroll affordance, not content -- it must never
+    // make a slide that fits look like a slide that needs scrolling.
+    var sp = section.querySelector(':scope > .frag-scroll-spacer');
+    return sp ? sp.offsetHeight : 0;
+}
 function findScrollContainer(el) {
     var section = el.closest('section');
     while (section) {
-        if (section.scrollHeight > section.clientHeight + 1) return section;
-        var parent = section.parentElement?.closest('section, .slides, .reveal');
+        if (section.scrollHeight - spacerHeight(section) > section.clientHeight + 1) return section;
+        // Only ever scroll a slide, never the deck container: a slide whose
+        // content fits must not scroll at all.
+        var parent = section.parentElement ? section.parentElement.closest('section') : null;
         if (!parent || parent === section) break;
         section = parent;
     }
@@ -408,9 +429,13 @@ function scrollToFragment(frag, direction) {
     var fragBottom = (fragRect.bottom - containerRect.top) / scale + container.scrollTop;
     var fragTop = (fragRect.top - containerRect.top) / scale + container.scrollTop;
     var targetLine = container.clientHeight * FRAG_SCROLL_TARGET;
+    // Never scroll past the real content: without this a tall-but-fitting slide
+    // (one big figure, say) still scrolls its own title off the top.
+    var maxScroll = Math.max(0, container.scrollHeight - spacerHeight(container)
+                                - container.clientHeight);
     if (direction === 'forward') {
         // Scroll so the fragment's bottom is at the target line
-        var desiredScrollTop = fragBottom - targetLine;
+        var desiredScrollTop = Math.min(fragBottom - targetLine, maxScroll);
         if (desiredScrollTop > container.scrollTop) {
             container.scrollTo({ top: desiredScrollTop, behavior: 'smooth' });
         }
@@ -430,6 +455,7 @@ Reveal.on('ready', () => {
     document.querySelectorAll('.reveal .slides > section, .reveal .slides > section > section').forEach(function(s) {
         if (s.querySelector('.fragment')) {
             var spacer = document.createElement('div');
+            spacer.className = 'frag-scroll-spacer';
             spacer.style.height = spacerH + 'px';
             spacer.style.pointerEvents = 'none';
             spacer.setAttribute('aria-hidden', 'true');
