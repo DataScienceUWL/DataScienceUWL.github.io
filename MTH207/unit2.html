@@ -50,6 +50,25 @@ a:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
 .card p { margin: 0; color: #595959; font-size: 0.92em; }
 nav { margin-bottom: 1em; }
 nav a { margin-right: 1em; }
+/* Lightbox for the unit-circle figure (tools/build_resources.py). The dialog is
+   the native element, so focus trapping, Escape and focus return are the
+   browser's job rather than hand-written JavaScript. */
+.zoom-btn { font: inherit; padding: 0.35em 0.9em; cursor: pointer; color: var(--accent-cyan);
+    background: #fff; border: 1px solid var(--accent-cyan); border-radius: 4px; }
+.zoom-btn:hover { background: #f0f7ff; }
+.zoom-btn:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+dialog.lightbox { width: min(96vw, 1100px); max-height: 94vh; overflow: auto; padding: 1em 1.2em;
+    border: 2px solid var(--accent-cyan); border-radius: 8px; background: var(--bg); }
+dialog.lightbox::backdrop { background: rgba(0, 0, 0, 0.6); }
+/* min-width so the diagram is genuinely bigger, not merely re-fitted: on a
+   narrow phone the dialog scrolls rather than shrinking the labels again. */
+dialog.lightbox svg { width: 100%; max-width: none; min-width: 520px; height: auto; }
+.lightbox-close { float: right; font: inherit; padding: 0.35em 0.9em; cursor: pointer;
+    color: var(--accent-cyan); background: #fff; border: 1px solid var(--accent-cyan);
+    border-radius: 4px; }
+.lightbox-close:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+figure { margin: 1.2em 0; }
+figcaption { color: #595959; font-size: 0.92em; margin-top: 0.5em; }
 @media (max-width: 600px) {
     body { padding: 0.5em 1em; }
     th, td { padding: 0.3em 0.5em; font-size: 0.95em; }
@@ -70,8 +89,8 @@ same ones used in the schedule and on the slides.</p>
 <h2>Studying for Exam 2</h2>
 <ol>
 <li>Work <strong>ExamReview2</strong> in Canvas. It is the cumulative review
-    set for this exam, and it is weighted toward the sections the exam actually
-    spends its points on.</li>
+    set for this exam, weighted toward the sections the exam actually spends its
+    points on.</li>
 <li>Do the <strong>practice exam</strong>, on paper, timed, without notes. Then check it.</li>
 <li>Bring what is still broken to the review day, or to office hours.</li>
 </ol>
@@ -81,27 +100,24 @@ same ones used in the schedule and on the slides.</p>
 <caption>Read the OpenStax section; use Paul's when you are stuck on a specific
 step; watch only where a video earns its place.</caption>
 <thead><tr>
-<th scope="col">Section</th>
-<th scope="col">Read</th>
-<th scope="col">Worked examples</th>
-<th scope="col">Watch</th>
+<th scope="col">Section</th><th scope="col">Read</th>
+<th scope="col">Worked examples</th><th scope="col">Watch</th>
 </tr></thead>
 <tbody>
-<tr><td><strong>§3.2</strong><br>The product and quotient rules</td><td><a href="https://openstax.org/books/calculus-volume-1/pages/3-3-differentiation-rules">§3.3</a> <span class="unreleased">same section as §3.1</span></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/ProductQuotientRule.aspx">Product and Quotient Rule</a></td><td><a href="https://www.3blue1brown.com/lessons/chain-rule-and-product-rule">Visualizing the chain rule and product rule (ch. 4)</a></td></tr>
-<tr><td><strong>§3.3</strong><br>Derivatives of trig functions</td><td><a href="https://openstax.org/books/calculus-volume-1/pages/3-5-derivatives-of-trigonometric-functions">§3.5</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/DiffTrigFcns.aspx">Derivatives of Trig Functions</a></td><td></td></tr>
-<tr><td><strong>§3.4</strong><br>The chain rule</td><td><a href="https://openstax.org/books/calculus-volume-1/pages/3-6-the-chain-rule">§3.6</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/ChainRule.aspx">Chain Rule</a></td><td><a href="https://www.3blue1brown.com/lessons/chain-rule-and-product-rule">Visualizing the chain rule and product rule (ch. 4)</a></td></tr>
-<tr><td><strong>§3.5</strong><br>Implicit differentiation</td><td><a href="https://openstax.org/books/calculus-volume-1/pages/3-8-implicit-differentiation">§3.8</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/ImplicitDIff.aspx">Implicit Differentiation</a></td><td><a href="https://www.3blue1brown.com/lessons/implicit-differentiation">Implicit differentiation, what&#x27;s going on here? (ch. 6)</a></td></tr>
-<tr><td><strong>§3.6</strong><br>Derivatives of logarithmic functions</td><td><a href="https://openstax.org/books/calculus-volume-1/pages/3-9-derivatives-of-exponential-and-logarithmic-functions">§3.9</a> <span class="unreleased">including logarithmic differentiation</span><br><a href="https://openstax.org/books/calculus-volume-1/pages/3-7-derivatives-of-inverse-functions">§3.7</a> <span class="unreleased">for the inverse trig derivatives</span></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/DiffExpLogFcns.aspx">Derivatives of Exponential and Logarithm Functions</a><br><a href="https://tutorial.math.lamar.edu/classes/calci/LogDiff.aspx">Logarithmic Differentiation</a><br><a href="https://tutorial.math.lamar.edu/classes/calci/DiffInvTrigFcns.aspx">Derivatives of Inverse Trig Functions</a></td><td><a href="https://www.3blue1brown.com/lessons/eulers-number">What&#x27;s so special about Euler&#x27;s number e? (ch. 5)</a></td></tr>
-<tr><td><strong>§3.9</strong><br>Related rates</td><td><a href="https://openstax.org/books/calculus-volume-1/pages/4-1-related-rates">§4.1</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/RelatedRates.aspx">Related Rates</a></td><td></td></tr>
-<tr><td><strong>§3.10</strong><br>Linear approximation and differentials</td><td><a href="https://openstax.org/books/calculus-volume-1/pages/4-2-linear-approximations-and-differentials">§4.2</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/LinearApproximations.aspx">Linear Approximations</a><br><a href="https://tutorial.math.lamar.edu/classes/calci/Differentials.aspx">Differentials</a></td><td></td></tr>
-<tr><td><strong>§4.1</strong><br>Local extrema and critical numbers</td><td><a href="https://openstax.org/books/calculus-volume-1/pages/4-3-maxima-and-minima">§4.3</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/CriticalPoints.aspx">Critical Points</a><br><a href="https://tutorial.math.lamar.edu/classes/calci/MinMaxValues.aspx">Minimum and Maximum Values</a><br><a href="https://tutorial.math.lamar.edu/classes/calci/AbsExtrema.aspx">Finding Absolute Extrema</a></td><td></td></tr>
-<tr><td><strong>§4.2</strong><br>Rolle&#x27;s theorem and the MVT</td><td><a href="https://openstax.org/books/calculus-volume-1/pages/4-4-the-mean-value-theorem">§4.4</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/MeanValueTheorem.aspx">The Mean Value Theorem</a></td><td></td></tr>
+<tr><th scope="row">§3.2<br>The product and quotient rules</th><td><a href="https://openstax.org/books/calculus-volume-1/pages/3-3-differentiation-rules">§3.3</a> <span class="unreleased">same section as §3.1</span></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/ProductQuotientRule.aspx">Product and Quotient Rule</a></td><td><a href="https://www.3blue1brown.com/lessons/chain-rule-and-product-rule">Visualizing the chain rule and product rule (ch. 4)</a></td></tr>
+<tr><th scope="row">§3.3<br>Derivatives of trig functions</th><td><a href="https://openstax.org/books/calculus-volume-1/pages/3-5-derivatives-of-trigonometric-functions">§3.5</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/DiffTrigFcns.aspx">Derivatives of Trig Functions</a></td><td></td></tr>
+<tr><th scope="row">§3.4<br>The chain rule</th><td><a href="https://openstax.org/books/calculus-volume-1/pages/3-6-the-chain-rule">§3.6</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/ChainRule.aspx">Chain Rule</a></td><td><a href="https://www.3blue1brown.com/lessons/chain-rule-and-product-rule">Visualizing the chain rule and product rule (ch. 4)</a></td></tr>
+<tr><th scope="row">§3.5<br>Implicit differentiation</th><td><a href="https://openstax.org/books/calculus-volume-1/pages/3-8-implicit-differentiation">§3.8</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/ImplicitDIff.aspx">Implicit Differentiation</a></td><td><a href="https://www.3blue1brown.com/lessons/implicit-differentiation">Implicit differentiation, what&#x27;s going on here? (ch. 6)</a></td></tr>
+<tr><th scope="row">§3.6<br>Derivatives of logarithmic functions</th><td><a href="https://openstax.org/books/calculus-volume-1/pages/3-9-derivatives-of-exponential-and-logarithmic-functions">§3.9</a> <span class="unreleased">including logarithmic differentiation</span><br><a href="https://openstax.org/books/calculus-volume-1/pages/3-7-derivatives-of-inverse-functions">§3.7</a> <span class="unreleased">for the inverse trig derivatives</span></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/DiffExpLogFcns.aspx">Derivatives of Exponential and Logarithm Functions</a><br><a href="https://tutorial.math.lamar.edu/classes/calci/LogDiff.aspx">Logarithmic Differentiation</a><br><a href="https://tutorial.math.lamar.edu/classes/calci/DiffInvTrigFcns.aspx">Derivatives of Inverse Trig Functions</a></td><td><a href="https://www.3blue1brown.com/lessons/eulers-number">What&#x27;s so special about Euler&#x27;s number e? (ch. 5)</a></td></tr>
+<tr><th scope="row">§3.9<br>Related rates</th><td><a href="https://openstax.org/books/calculus-volume-1/pages/4-1-related-rates">§4.1</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/RelatedRates.aspx">Related Rates</a></td><td></td></tr>
+<tr><th scope="row">§3.10<br>Linear approximation and differentials</th><td><a href="https://openstax.org/books/calculus-volume-1/pages/4-2-linear-approximations-and-differentials">§4.2</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/LinearApproximations.aspx">Linear Approximations</a><br><a href="https://tutorial.math.lamar.edu/classes/calci/Differentials.aspx">Differentials</a></td><td></td></tr>
+<tr><th scope="row">§4.1<br>Local extrema and critical numbers</th><td><a href="https://openstax.org/books/calculus-volume-1/pages/4-3-maxima-and-minima">§4.3</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/CriticalPoints.aspx">Critical Points</a><br><a href="https://tutorial.math.lamar.edu/classes/calci/MinMaxValues.aspx">Minimum and Maximum Values</a><br><a href="https://tutorial.math.lamar.edu/classes/calci/AbsExtrema.aspx">Finding Absolute Extrema</a></td><td></td></tr>
+<tr><th scope="row">§4.2<br>Rolle&#x27;s theorem and the MVT</th><td><a href="https://openstax.org/books/calculus-volume-1/pages/4-4-the-mean-value-theorem">§4.4</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/MeanValueTheorem.aspx">The Mean Value Theorem</a></td><td></td></tr>
 </tbody>
 </table>
 
-<p><a href="lookup.html">Look It Up</a> &mdash; formula tables and theorem
-statements, for when you just need the thing itself.</p>
-
+<p><a href="lookup.html">Look It Up</a> &mdash; formula tables, the unit circle,
+and theorem statements.</p>
 
 <h2>About videos</h2>
 
@@ -112,24 +128,25 @@ behind a method &mdash; the problems are still where the learning happens.</p>
 
 <p><a href="https://www.3blue1brown.com/topics/calculus">3Blue1Brown, <em>Essence of
 Calculus</em></a> is listed against particular sections above. It shows you what a
-derivative or an integral <em>is</em>, with pictures, and never how to grind one out.
-That is exactly what it is good for. Most sections have no video listed, which is
-not an oversight.</p>
+derivative or an integral <em>is</em>, with pictures, and never how to grind one
+out. That is exactly what it is good for. Most sections have no video listed,
+which is not an oversight.</p>
 
 <p><a href="https://www.youtube.com/@bprpcalcbasics">blackpenredpen (bprp calculus
 basics)</a> works enormous numbers of problems, and you will find him whether or
 not I link him, so here he is. Two honest cautions. First, watching a problem
-being solved is not solving one, and the two feel identical while you are doing it
-&mdash; go to him <em>after</em> you have attempted the problem yourself. Second, for
-&ldquo;I am stuck on step 3&rdquo;, a written solution beats a video every time: you
-can scan Paul's to step 3 in ten seconds, where a video makes you scrub, guess, and
-usually watch the whole thing. His own channel describes itself as being for people
-who &ldquo;understand the theory but need to build computational fluency&rdquo; &mdash;
-by his own account, not a first stop.</p>
+being solved is not solving one, and the two feel identical while you are doing
+it &mdash; go to him <em>after</em> you have attempted the problem yourself.
+Second, for &ldquo;I am stuck on step 3&rdquo;, a written solution beats a video
+every time: you can scan Paul's to step 3 in ten seconds, where a video makes you
+scrub, guess, and usually watch the whole thing. His own channel describes itself
+as being for people who &ldquo;understand the theory but need to build
+computational fluency&rdquo; &mdash; by his own account, not a first stop.</p>
 
 <p>If you missed a class and want a full lecture,
 <a href="https://www.youtube.com/@ProfessorLeonard">Professor Leonard</a> records
 complete ones.</p>
+
 
 </main>
 </body>

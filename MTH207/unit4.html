@@ -50,6 +50,25 @@ a:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
 .card p { margin: 0; color: #595959; font-size: 0.92em; }
 nav { margin-bottom: 1em; }
 nav a { margin-right: 1em; }
+/* Lightbox for the unit-circle figure (tools/build_resources.py). The dialog is
+   the native element, so focus trapping, Escape and focus return are the
+   browser's job rather than hand-written JavaScript. */
+.zoom-btn { font: inherit; padding: 0.35em 0.9em; cursor: pointer; color: var(--accent-cyan);
+    background: #fff; border: 1px solid var(--accent-cyan); border-radius: 4px; }
+.zoom-btn:hover { background: #f0f7ff; }
+.zoom-btn:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+dialog.lightbox { width: min(96vw, 1100px); max-height: 94vh; overflow: auto; padding: 1em 1.2em;
+    border: 2px solid var(--accent-cyan); border-radius: 8px; background: var(--bg); }
+dialog.lightbox::backdrop { background: rgba(0, 0, 0, 0.6); }
+/* min-width so the diagram is genuinely bigger, not merely re-fitted: on a
+   narrow phone the dialog scrolls rather than shrinking the labels again. */
+dialog.lightbox svg { width: 100%; max-width: none; min-width: 520px; height: auto; }
+.lightbox-close { float: right; font: inherit; padding: 0.35em 0.9em; cursor: pointer;
+    color: var(--accent-cyan); background: #fff; border: 1px solid var(--accent-cyan);
+    border-radius: 4px; }
+.lightbox-close:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+figure { margin: 1.2em 0; }
+figcaption { color: #595959; font-size: 0.92em; margin-top: 0.5em; }
 @media (max-width: 600px) {
     body { padding: 0.5em 1em; }
     th, td { padding: 0.3em 0.5em; font-size: 0.95em; }
@@ -70,8 +89,8 @@ same ones used in the schedule and on the slides.</p>
 <h2>Studying for Final Exam</h2>
 <ol>
 <li>Work <strong>FinalReview</strong> in Canvas. It is the cumulative review
-    set for this exam, and it is weighted toward the sections the exam actually
-    spends its points on.</li>
+    set for this exam, weighted toward the sections the exam actually spends its
+    points on.</li>
 <li>Do the <strong>practice exam</strong>, on paper, timed, without notes. Then check it.</li>
 <li>Bring what is still broken to the review day, or to office hours.</li>
 </ol>
@@ -81,22 +100,19 @@ same ones used in the schedule and on the slides.</p>
 <caption>Read the OpenStax section; use Paul's when you are stuck on a specific
 step; watch only where a video earns its place.</caption>
 <thead><tr>
-<th scope="col">Section</th>
-<th scope="col">Read</th>
-<th scope="col">Worked examples</th>
-<th scope="col">Watch</th>
+<th scope="col">Section</th><th scope="col">Read</th>
+<th scope="col">Worked examples</th><th scope="col">Watch</th>
 </tr></thead>
 <tbody>
-<tr><td><strong>§5.3</strong><br>The Fundamental Theorem, part 1</td><td><a href="https://openstax.org/books/calculus-volume-1/pages/5-3-the-fundamental-theorem-of-calculus">§5.3</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/ComputingDefiniteIntegrals.aspx">Computing Definite Integrals</a></td><td><a href="https://www.3blue1brown.com/lessons/integration">Integration and the fundamental theorem of calculus (ch. 8)</a></td></tr>
-<tr><td><strong>§5.4</strong><br>Indefinite integrals</td><td><a href="https://openstax.org/books/calculus-volume-1/pages/5-4-integration-formulas-and-the-net-change-theorem">§5.4</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/IndefiniteIntegrals.aspx">Indefinite Integrals</a><br><a href="https://tutorial.math.lamar.edu/classes/calci/ComputingIndefiniteIntegrals.aspx">Computing Indefinite Integrals</a></td><td></td></tr>
-<tr><td><strong>§5.5</strong><br>The substitution rule</td><td><a href="https://openstax.org/books/calculus-volume-1/pages/5-5-substitution">§5.5</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/SubstitutionRuleIndefinite.aspx">Substitution Rule for Indefinite Integrals</a><br><a href="https://tutorial.math.lamar.edu/classes/calci/SubstitutionRuleDefinite.aspx">Substitution Rule for Definite Integrals</a></td><td></td></tr>
-<tr><td><strong>§6.1</strong><br>Area between curves</td><td><a href="https://openstax.org/books/calculus-volume-1/pages/6-1-areas-between-curves">§6.1</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/AreaBetweenCurves.aspx">Area Between Curves</a></td><td></td></tr>
+<tr><th scope="row">§5.3<br>The Fundamental Theorem, part 1</th><td><a href="https://openstax.org/books/calculus-volume-1/pages/5-3-the-fundamental-theorem-of-calculus">§5.3</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/ComputingDefiniteIntegrals.aspx">Computing Definite Integrals</a></td><td><a href="https://www.3blue1brown.com/lessons/integration">Integration and the fundamental theorem of calculus (ch. 8)</a></td></tr>
+<tr><th scope="row">§5.4<br>Indefinite integrals</th><td><a href="https://openstax.org/books/calculus-volume-1/pages/5-4-integration-formulas-and-the-net-change-theorem">§5.4</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/IndefiniteIntegrals.aspx">Indefinite Integrals</a><br><a href="https://tutorial.math.lamar.edu/classes/calci/ComputingIndefiniteIntegrals.aspx">Computing Indefinite Integrals</a></td><td></td></tr>
+<tr><th scope="row">§5.5<br>The substitution rule</th><td><a href="https://openstax.org/books/calculus-volume-1/pages/5-5-substitution">§5.5</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/SubstitutionRuleIndefinite.aspx">Substitution Rule for Indefinite Integrals</a><br><a href="https://tutorial.math.lamar.edu/classes/calci/SubstitutionRuleDefinite.aspx">Substitution Rule for Definite Integrals</a></td><td></td></tr>
+<tr><th scope="row">§6.1<br>Area between curves</th><td><a href="https://openstax.org/books/calculus-volume-1/pages/6-1-areas-between-curves">§6.1</a></td><td><a href="https://tutorial.math.lamar.edu/classes/calci/AreaBetweenCurves.aspx">Area Between Curves</a></td><td></td></tr>
 </tbody>
 </table>
 
-<p><a href="lookup.html">Look It Up</a> &mdash; formula tables and theorem
-statements, for when you just need the thing itself.</p>
-
+<p><a href="lookup.html">Look It Up</a> &mdash; formula tables, the unit circle,
+and theorem statements.</p>
 
 <h2>About videos</h2>
 
@@ -107,24 +123,25 @@ behind a method &mdash; the problems are still where the learning happens.</p>
 
 <p><a href="https://www.3blue1brown.com/topics/calculus">3Blue1Brown, <em>Essence of
 Calculus</em></a> is listed against particular sections above. It shows you what a
-derivative or an integral <em>is</em>, with pictures, and never how to grind one out.
-That is exactly what it is good for. Most sections have no video listed, which is
-not an oversight.</p>
+derivative or an integral <em>is</em>, with pictures, and never how to grind one
+out. That is exactly what it is good for. Most sections have no video listed,
+which is not an oversight.</p>
 
 <p><a href="https://www.youtube.com/@bprpcalcbasics">blackpenredpen (bprp calculus
 basics)</a> works enormous numbers of problems, and you will find him whether or
 not I link him, so here he is. Two honest cautions. First, watching a problem
-being solved is not solving one, and the two feel identical while you are doing it
-&mdash; go to him <em>after</em> you have attempted the problem yourself. Second, for
-&ldquo;I am stuck on step 3&rdquo;, a written solution beats a video every time: you
-can scan Paul's to step 3 in ten seconds, where a video makes you scrub, guess, and
-usually watch the whole thing. His own channel describes itself as being for people
-who &ldquo;understand the theory but need to build computational fluency&rdquo; &mdash;
-by his own account, not a first stop.</p>
+being solved is not solving one, and the two feel identical while you are doing
+it &mdash; go to him <em>after</em> you have attempted the problem yourself.
+Second, for &ldquo;I am stuck on step 3&rdquo;, a written solution beats a video
+every time: you can scan Paul's to step 3 in ten seconds, where a video makes you
+scrub, guess, and usually watch the whole thing. His own channel describes itself
+as being for people who &ldquo;understand the theory but need to build
+computational fluency&rdquo; &mdash; by his own account, not a first stop.</p>
 
 <p>If you missed a class and want a full lecture,
 <a href="https://www.youtube.com/@ProfessorLeonard">Professor Leonard</a> records
 complete ones.</p>
+
 
 </main>
 </body>
