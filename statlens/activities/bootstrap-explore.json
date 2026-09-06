@@ -1,8 +1,34 @@
 {
   "title": "Exploring Bootstrap Resampling",
   "tool": "simulate/bootstrap-mean",
-  "params": { "dataset": "penny_ages", "ci": 95, "seed": "ch8demo" },
+  "params": {
+    "dataset": "penny_ages",
+    "ci": 95,
+    "seed": "ch8demo",
+    "mview": "tiles"
+  },
   "steps": [
+    {
+      "instruction": "You're about to build the bootstrap distribution of the mean penny age — resampling the 648 pennies **with replacement** 1,000 times. The original pennies are strongly **right-skewed**. **Before you start, commit to a prediction.**",
+      "gate": {
+        "question": "After 1,000 resamples, where will the bootstrap distribution of \\(\\bar{x}^*\\) be centered, and what shape will it take?",
+        "choices": [
+          {
+            "text": "Centered at the sample mean \\(\\bar{x}\\), and roughly bell-shaped",
+            "correct": true
+          },
+          {
+            "text": "Centered at the true population mean μ, and bell-shaped"
+          },
+          {
+            "text": "Centered at \\(\\bar{x}\\), but right-skewed like the original pennies"
+          }
+        ],
+        "feedback": "It centers at **\\(\\bar{x}^*\\)* — the bootstrap only knows your sample, not μ — and comes out **bell-shaped** even though the pennies are skewed. Averaging does that, and we'll come back to why. Now build it and watch.",
+        "retryFeedback": "The bootstrap resamples from *your sample*, so what's the most it can center on? And what does averaging do to skew?"
+      },
+      "phase": "predict"
+    },
     {
       "instruction": "Click **+1** once to draw a single bootstrap resample.",
       "observe": "Look at the **This Resample** panel. How many pennies were selected once? Twice? Three or more times? How many were not selected at all?",
@@ -16,12 +42,39 @@
     {
       "instruction": "Click the **Play** button and watch the animation for a while.",
       "observe": "Watch the histogram build up one bar at a time. What shape is emerging? Where is the distribution centered?",
-      "reveal": "The bootstrap distribution is approximately **bell-shaped** and centered near the original sample mean — even though the penny ages themselves are right-skewed. This is the Central Limit Theorem in action."
+      "reveal": "The bootstrap distribution is approximately **bell-shaped** and centered near the original sample mean — even though the penny ages themselves are right-skewed. Averaging pulls the shape toward symmetry \u2014 we'll name why later."
     },
     {
       "instruction": "Click **Pause** to stop the animation. Then click **+1000** to fill out the distribution.",
       "observe": "Read the **95% CI** bounds in the results panel. What is the interval? Would you say the average penny age is around 10 years?",
       "reveal": "The 95% CI is roughly **(9.7, 11.1)**. We're 95% confident the true mean penny age falls in this range. Since 10 is inside the interval, yes — 10 years is a plausible value for the population mean."
+    },
+    {
+      "instruction": "You've watched the bootstrap distribution of the penny-age mean build up. Put the key ideas in your own words.",
+      "respond": {
+        "prompts": [
+          {
+            "id": "centers_at_xbar",
+            "label": "Why does the bootstrap distribution center at \\(\\bar{x}\\) (the sample mean) rather than at μ (the true population mean)?",
+            "placeholder": "Your reasoning",
+            "rows": 2
+          },
+          {
+            "id": "clt_at_work",
+            "label": "The pennies data are strongly right-skewed, yet the bootstrap distribution of \\(\\bar{x}^*\\) came out bell-shaped. Why?",
+            "placeholder": "Your reasoning",
+            "rows": 2
+          },
+          {
+            "id": "different_sample",
+            "label": "If you'd started with a different sample of 648 pennies, would the bootstrap distribution be centered at exactly the same place? Would the CI be identical?",
+            "placeholder": "Your reasoning",
+            "rows": 2
+          }
+        ],
+        "answer": "A strong answer: the bootstrap resamples from **your one sample**, so it can only know \\(\\bar{x}\\), not μ — it centers on \\(\\bar{x}\\). It comes out bell-shaped even from skewed pennies because it's a distribution of **means**, and averaging invokes the CLT. A different original sample of 648 would center on **its** \\(\\bar{x}\\) and give a slightly different CI — the *method* has 95% coverage, but any single interval is just one draw."
+      },
+      "phase": "explain"
     }
   ]
 }
