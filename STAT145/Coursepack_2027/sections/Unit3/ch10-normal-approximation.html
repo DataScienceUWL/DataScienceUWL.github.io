@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Normal Distributions – STAT 145 Course Pack</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../sections/Unit3/ch11-inference-for-proportions.html" rel="next">
+<link href="../../sections/Unit2/ch9-from-simulation-to-theory.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-666438e56c82003e3cd70ae7e7d08e1f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://hypothes.is/embed.js"></script>
+<script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../sections/Unit3/ch10-normal-approximation.html">Unit 3: Compute</a></li><li class="breadcrumb-item"><a href="../../sections/Unit3/ch10-normal-approximation.html"><span class="chapter-title">3.1 Normal Distributions</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">STAT 145 Course Pack</a> 
+        <div class="sidebar-tools-main">
+    <a href="../../coursepack-pdf.pdf" title="Download the print PDF" class="quarto-navigation-tool px-1" aria-label="Download the print PDF"><i class="bi bi-file-earmark-pdf"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">STAT 145 Course Pack</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
+ <span class="menu-text">Unit 1: Explore</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit1/ch1-introduction-to-data.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">1.1 Introduction to Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit1/ch2-data-collection-and-study-design.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">1.2 Data Collection and Study Design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit1/ch3-exploring-categorical-data.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">1.3 Exploring Categorical Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit1/ch4-exploring-quantitative-data.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">1.4 Exploring Quantitative Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit1/ch5-relationships-between-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">1.5 Relationships Between Variables</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">Unit 2: Simulate</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit2/ch6-sampling-variability.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2.1 Sampling Variability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit2/ch7-randomization-tests.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2.2 Randomization Tests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit2/ch8-bootstrap-confidence-intervals.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2.3 Bootstrap Confidence Intervals</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit2/ch9-from-simulation-to-theory.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2.4 From Simulation to Theory</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Unit 3: Compute</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit3/ch10-normal-approximation.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">3.1 Normal Distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit3/ch11-inference-for-proportions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3.2 Inference for Proportions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit3/ch12-confidence-intervals-for-mean.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3.3 Confidence Intervals for Means</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit3/ch13-hypothesis-tests-for-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3.4 Hypothesis Tests for Means</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">Unit 4: Apply</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit4/ch14-chi-squared-goodness.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4.1 Chi-Squared Goodness of Fit</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit4/ch15-chi-squared-independence.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4.2 Chi-Squared Test of Independence</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit4/ch16-anova.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4.3 Analysis of Variance</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit4/ch17-correlation-linear-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4.4 Correlation and Linear Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit4/ch18-additional-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4.5 Multiple Linear Regression</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">Unit 5: Foundations</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit5/ch19-probability-rules.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5.1 Probability Rules</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/Unit5/ch20-binomial-distribution.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5.2 Binomial Distribution</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/data-sources.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Data Sources</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
+ <span class="menu-text">Experimental Demos</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../sections/experimental/experimental-demos.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Experimental Demos</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#density-curves" id="toc-density-curves" class="nav-link active" data-scroll-target="#density-curves">Density curves</a></li>
+  <li><a href="#normal-distribution" id="toc-normal-distribution" class="nav-link" data-scroll-target="#normal-distribution">Normal distribution</a></li>
+  <li><a href="#z-scores-and-standardizing" id="toc-z-scores-and-standardizing" class="nav-link" data-scroll-target="#z-scores-and-standardizing">Z-scores and standardizing</a></li>
+  <li><a href="#the-68-95-99.7-rule-empirical-rule" id="toc-the-68-95-99.7-rule-empirical-rule" class="nav-link" data-scroll-target="#the-68-95-99.7-rule-empirical-rule">The 68-95-99.7 rule (Empirical rule)</a></li>
+  <li><a href="#finding-probabilities-from-the-normal-distribution" id="toc-finding-probabilities-from-the-normal-distribution" class="nav-link" data-scroll-target="#finding-probabilities-from-the-normal-distribution">Finding probabilities from the normal distribution</a></li>
+  <li><a href="#the-normal-approximation-to-sampling-distributions" id="toc-the-normal-approximation-to-sampling-distributions" class="nav-link" data-scroll-target="#the-normal-approximation-to-sampling-distributions">The normal approximation to sampling distributions</a></li>
+  <li><a href="#confidence-intervals-using-the-normal-model" id="toc-confidence-intervals-using-the-normal-model" class="nav-link" data-scroll-target="#confidence-intervals-using-the-normal-model">Confidence intervals using the normal model</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../sections/Unit3/ch10-normal-approximation.html">Unit 3: Compute</a></li><li class="breadcrumb-item"><a href="../../sections/Unit3/ch10-normal-approximation.html"><span class="chapter-title">3.1 Normal Distributions</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">3.1 Normal Distributions</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="section-intro">
+<p>When we discussed randomization tests, we used simulation-based methods, randomization distributions and bootstrapping, to make inferences about population parameters. Those methods are powerful and flexible, but they share a limitation: every new problem requires running thousands of simulations. In this chapter, we introduce the <strong>normal distribution</strong>, a mathematical model that describes the bell-shaped pattern we keep seeing in our sampling distributions. When certain conditions are met, the normal distribution lets us calculate probabilities and construct confidence intervals using formulas instead of simulations. This is not a replacement for simulation-based thinking, it is a complement. The normal model provides the theoretical justification for why those simulations work the way they do.</p>
+</div>
+<section id="key-concepts" class="level3 concepts">
+<h3 class="anchored" data-anchor-id="key-concepts">Key Concepts</h3>
+<ul>
+<li>Estimate probabilities as areas under a density curve</li>
+<li>Recognize how the mean and standard deviation represent to the center and spread of a normal distribution</li>
+<li>Use the 68-95-99.7 rule to compute probabilities of intervals for normal distributions</li>
+<li>Use technology to compute probabilities of intervals for normal distributions</li>
+<li>Use technology to find endpoint(s) of intervals with a specified probability for normal distributions</li>
+<li>Convert in either direction between a general normal distribution, denoted <span class="math inline">\(N(\mu, \sigma)\)</span>, and a standard normal distribution, denoted <span class="math inline">\(N(0, 1)\)</span></li>
+</ul>
+</section>
+<section id="density-curves" class="level2">
+<h2 class="anchored" data-anchor-id="density-curves">Density curves</h2>
+<div class="def-card">
+<p>A <em>density curve</em> is a graphical representation of the distribution for a <em>continuous</em> random variable (<em>i.e.</em> sample space with probabilities).</p>
+</div>
+<p>Although density curves come in many different shapes, there are two key characteristics that all density curves have:</p>
+<ul>
+<li>The total area under the curve equals 1 (which corresponds to 100% of the distribution).</li>
+<li>The area under the density curve within any interval is the proportion of the distribution in that interval and, thus, represents the probability that a randomly selected value from that distribution falls in that interval.</li>
+</ul>
+</section>
+<section id="normal-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="normal-distribution">Normal distribution</h2>
+<div class="def-card">
+<p>The <em>normal distribution</em> is a symmetric, bell-shaped distribution described by two parameters: the mean, <span class="math inline">\(\mu\)</span> (which determines the center), and the standard deviation, <span class="math inline">\(\sigma\)</span> (which determines the spread). We write the distribution shorthand as <span class="math inline">\(N(\mu,\sigma)\)</span>.</p>
+</div>
+<p>It is not always easy to produce a bootstrap or randomization distribution to answer the statistical question of interest. However, in many circumstances, a theoretical model can be used in place of the randomization distribution. Most of the bootstrap and randomization distributions we have seen in this class have been symmetric and bell-shaped. This type of distribution shape occurs frequently in statistics and is also a characteristic of a family of continuous probability distributions called the <em>normal distributions</em>. The normal distribution is density curve that has been well-studied and has a number of very nice properties.</p>
+<p>All normal distributions are centered at their mean, <span class="math inline">\(\mu\)</span>, and the standard deviation, <span class="math inline">\(\sigma\)</span>, tells us how spread out the distribution is. We will use the notation <span class="math inline">\(X \sim N(\mu, \sigma)\)</span> to indicate that the random variable <span class="math inline">\(X\)</span> follows a normal distribution with mean, <span class="math inline">\(\mu\)</span>, and standard deviation, <span class="math inline">\(\sigma\)</span>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-two-normal-curves" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Two bell-shaped normal distribution curves side by side. The left curve is centered at 0 with a narrow spread (standard deviation 1). The right curve is centered at 19 with a wider spread (standard deviation 4). Both curves are symmetric and unimodal.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-two-normal-curves-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="ch10-normal-approximation_files/figure-html/fig-two-normal-curves-1.png" class="img-fluid figure-img" alt="Two bell-shaped normal distribution curves side by side. The left curve is centered at 0 with a narrow spread (standard deviation 1). The right curve is centered at 19 with a wider spread (standard deviation 4). Both curves are symmetric and unimodal." width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-two-normal-curves-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11.1: Two normal distributions with different parameters. The left curve has <span class="math inline">\(\mu = 0\)</span> and <span class="math inline">\(\sigma = 1\)</span>; the right curve has <span class="math inline">\(\mu = 19\)</span> and <span class="math inline">\(\sigma = 4\)</span>. Changing <span class="math inline">\(\mu\)</span> shifts the curve left or right; changing <span class="math inline">\(\sigma\)</span> stretches or compresses it.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="def-card">
+<p>The <em>standard normal distribution</em> is denoted <span class="math inline">\(N(0,1)\)</span>.</p>
+</div>
+<p>The normal distribution with mean <span class="math inline">\(\mu = 0\)</span> and standard deviation <span class="math inline">\(\sigma = 1\)</span> is called the <em>standard normal distribution</em>, written <span class="math inline">\(N(0,1)\)</span>. We use the letter <span class="math inline">\(Z\)</span> to represent the standard normal distribution.</p>
+</section>
+<section id="z-scores-and-standardizing" class="level2">
+<h2 class="anchored" data-anchor-id="z-scores-and-standardizing">Z-scores and standardizing</h2>
+<div class="def-card">
+<p>The <em>standard score</em> or <em>z-score</em> indicates how many standard deviations a particular value is from the mean.</p>
+</div>
+<p>Often times, we want to compare two different observations relative to their populations. To do so, it is helpful to first standardize them and then compare the <em>standard score</em> or <em>z-score</em>. The <span class="math inline">\(z\)</span>-score is a measure of relative standing and tells us how many standard deviations the observation is from the mean. We can standardize a random variable <span class="math inline">\(X\)</span> by using the following formula: <span class="math display">\[Z = \frac{X - \mu}{\sigma}.\]</span></p>
+<p>We can unstandardize <span class="math inline">\(Z\)</span> by using the following formula: <span class="math display">\[X = \mu + Z \sigma.\]</span></p>
+<p>A positive z-score indicates the observation is above the mean and a negative z-score indicates below the mean. Z-scores closer to 0 are more common and z-scores further away from 0 are more rare.</p>
+<div style="page-break-after: always;"></div>
+<div class="example-box">
+<p><strong>Class Example 3.1.1: Standardizing to compare</strong></p>
+<p>For each of the following, compare the results using their standardized score</p>
+<ol type="a">
+<li>Benny and Aaron are on the same track team. They have recently competed at a track and field day, and have each won their respective events. Benny won the high jump with a jump of 75 inches, and Aaron won the 100m dash with a time of 12 seconds. Let <span class="math inline">\(J \sim N(65, 2)\)</span> be the height of the jumps and <span class="math inline">\(D\sim N(15, 1)\)</span> be the times of the 100m dash. Who performed better Benny or Aaron?</li>
+</ol>
+<div class="workspace" style="min-height:2in;"></div>
+<ol start="2" type="a">
+<li>A car manufacturer has a small car that gets 36 mpg and a truck that gets 22 mpg. Let <span class="math inline">\(C \sim N(35, 4)\)</span> be the distribution of mpgs for small cars and <span class="math inline">\(T \sim N(19, 3)\)</span> be the mpgs for trucks. Which vehicle performs better relative to the other vehicles in its class?</li>
+</ol>
+<div class="workspace" style="min-height:2in;"></div>
+</div>
+</section>
+<section id="the-68-95-99.7-rule-empirical-rule" class="level2">
+<h2 class="anchored" data-anchor-id="the-68-95-99.7-rule-empirical-rule">The 68-95-99.7 rule (Empirical rule)</h2>
+<p>One of the most useful facts about the normal distribution is how observations spread out around the mean. This relationship is captured by the <em>68-95-99.7 rule</em> (sometimes called the <em>empirical rule</em>). The <em>68-95-99.7 rule</em> gives for any normal distribution <span class="math inline">\(N(\mu, \sigma)\)</span>:</p>
+<ul>
+<li>About <strong>68%</strong> of observations fall within <strong>1 standard deviation</strong> of the mean: between <span class="math inline">\(\mu - \sigma\)</span> and <span class="math inline">\(\mu + \sigma\)</span>.</li>
+<li>About <strong>95%</strong> of observations fall within <strong>2 standard deviations</strong> of the mean: between <span class="math inline">\(\mu - 2\sigma\)</span> and <span class="math inline">\(\mu + 2\sigma\)</span>.</li>
+<li>About <strong>99.7%</strong> of observations fall within <strong>3 standard deviations</strong> of the mean: between <span class="math inline">\(\mu - 3\sigma\)</span> and <span class="math inline">\(\mu + 3\sigma\)</span>.</li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-68-95-997" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A normal distribution curve with three nested shaded regions. The innermost region covers 68 percent of the area and extends one standard deviation on each side of the mean. The middle region covers 95 percent and extends two standard deviations on each side. The outermost region covers 99.7 percent and extends three standard deviations on each side.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-68-95-997-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="ch10-normal-approximation_files/figure-html/fig-68-95-997-1.png" class="img-fluid figure-img" alt="A normal distribution curve with three nested shaded regions. The innermost region covers 68 percent of the area and extends one standard deviation on each side of the mean. The middle region covers 95 percent and extends two standard deviations on each side. The outermost region covers 99.7 percent and extends three standard deviations on each side." width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-68-95-997-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11.2: The 68-95-99.7 rule illustrated on a normal curve. The innermost shaded region (68%) extends from <span class="math inline">\(\mu - \sigma\)</span> to <span class="math inline">\(\mu + \sigma\)</span>. The middle region (95%) extends from <span class="math inline">\(\mu - 2\sigma\)</span> to <span class="math inline">\(\mu + 2\sigma\)</span>. The outermost region (99.7%) extends from <span class="math inline">\(\mu - 3\sigma\)</span> to <span class="math inline">\(\mu + 3\sigma\)</span>.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="example-box">
+<p><strong>Class Example 3.1.2: SAT scores</strong></p>
+<p>Let <span class="math inline">\(X\)</span> be the SAT math scores for science and engineering majors, <span class="math inline">\(X \sim N(609, 80)\)</span>. Using the 68-95-99.7 rule, answer the following questions.</p>
+<ol type="a">
+<li>What proportion of SAT scores should be between 529 and 689.</li>
+</ol>
+<div class="workspace" style="min-height:1.5in;"></div>
+<ol start="2" type="a">
+<li>What is the probability that a randomly selected student with a science and engineering major has an SAT score of at least 769?</li>
+</ol>
+<div class="workspace" style="min-height:1.5in;"></div>
+<div style="page-break-after: always;"></div>
+<ol start="3" type="a">
+<li>What proportion of SAT scores should be between 609 and 769?</li>
+</ol>
+<div class="workspace" style="min-height:1.5in;"></div>
+</div>
+</section>
+<section id="finding-probabilities-from-the-normal-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="finding-probabilities-from-the-normal-distribution">Finding probabilities from the normal distribution</h2>
+<p>To find the probability that a normally distributed variable falls in a specified range, we must find the area under the density curve. You’ve already been doing this intuitively — in the randomization tests and bootstrap confidence intervals chapters, every time you counted “what fraction of simulated statistics were this extreme?” you were estimating a probability by looking at proportions in a distribution. The normal model just gives us a formula for the curve, so we can compute the area exactly instead of simulating it.</p>
+<p><em>Strategy for normal probability problems.</em> Always follow these steps:</p>
+<ol type="1">
+<li><em>Draw a picture.</em> Sketch the normal curve, mark the mean, and shade the area you want to find.</li>
+<li><em>Find the Z-score.</em> Standardize the value(s) of interest using <span class="math inline">\(Z = \frac{x - \mu}{\sigma}\)</span>.</li>
+<li><em>Look up the area.</em> Use a normal probability table, statistical software, or the StatLens Normal Distribution Explorer to find the area to the <em>left</em> of the Z-score.</li>
+<li><em>Adjust if needed.</em> If you need a right-tail area, subtract the left-tail area from 1. For an area between two values, subtract the smaller left-tail area from the larger.</li>
+</ol>
+<div class="example-box">
+<p><strong>Class Example 3.1.3: Rainfall in Ithaca</strong></p>
+<p>Let <span class="math inline">\(R\)</span> be the yearly rainfall (in inches) in Ithaca, NY. Data from Cornell’s Northeast Regional Climate Center indicates that <span class="math inline">\(R \sim N(35.4, 4.2)\)</span>.</p>
+<ol type="a">
+<li>How much rain should Ithaca expect to get in the year that is the <span class="math inline">\(99^{th}\)</span> percentile of rainfall?</li>
+</ol>
+<div class="workspace" style="min-height:1.5in;"></div>
+<div style="page-break-after: always;"></div>
+<ol start="2" type="a">
+<li>How much rain should Ithaca expect to get in the year that marks the top 20 percent of rainfall?</li>
+</ol>
+<div class="workspace" style="min-height:1.5in;"></div>
+<ol start="3" type="a">
+<li>What should the IQR be for yearly rainfall in Ithaca? (<em>i.e.</em> the middle 50%)</li>
+</ol>
+<div class="workspace" style="min-height:1.5in;"></div>
+</div>
+<div class="example-box">
+<p><strong>Class Example 3.1.4: Furniture assembly</strong></p>
+<p>A company that markets build-it-yourself furniture sells a computer desk that is advertised with the claim “less than an hour to assemble.” Let <span class="math inline">\(T\)</span> be the time (in hours) it takes to assemble the furniture. Through post-purchase surveys, it appears that <span class="math inline">\(T \sim N(1.29, 0.43)\)</span>.</p>
+<ol type="a">
+<li>What percentage of people should be able to assemble the desk in less than an hour?</li>
+</ol>
+<div class="workspace" style="min-height:1.5in;"></div>
+<ol start="2" type="a">
+<li>What is the probability that a randomly selected person can assemble the desk in between 1 and 1.5 hours?</li>
+</ol>
+<div class="workspace" style="min-height:1.5in;"></div>
+<div style="page-break-after: always;"></div>
+<ol start="3" type="a">
+<li>The company would like to change the advertising claim to read “less than <span class="blank">_______________</span> to assemble” so that 90% of people can assemble the desk in the time listed. What time should they use (as the cutoff for the bottom 90%)?</li>
+</ol>
+<div class="workspace" style="min-height:1.5in;"></div>
+</div>
+</section>
+<section id="the-normal-approximation-to-sampling-distributions" class="level2">
+<h2 class="anchored" data-anchor-id="the-normal-approximation-to-sampling-distributions">The normal approximation to sampling distributions</h2>
+<div class="def-card">
+<p>The <em>standard error (SE)</em> of a statistic is the standard deivation of its sampling distribution. It measures how much the statistic varies from sample to sample.</p>
+</div>
+<p>In the sampling distributions chapter, we used simulation to explore <em>sampling distributions</em>, the distributions of sample statistics computed from many repeated samples. A striking pattern emerged: regardless of whether we were looking at sample means, sample proportions, or differences in means or proportions, the sampling distributions tended to look <em>normal</em> centered at the parameter of interest due to the <em>Central Limit Thorem</em>. But how wide is the normal distribution? The spread of the sampling distibution is given by the <em>standard error</em>.</p>
+<p>The standard error depends on the parameter of interest:</p>
+<table class="caption-top table">
+<caption>Standard error formulas for common parameters.</caption>
+<colgroup>
+<col style="width: 26%">
+<col style="width: 35%">
+<col style="width: 38%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Point estimate</th>
+<th>Standard error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Population mean <span class="math inline">\(\mu\)</span></td>
+<td><span class="math inline">\(\bar{x}\)</span></td>
+<td><span class="math inline">\(SE = \frac{s}{\sqrt{n}}\)</span></td>
+</tr>
+<tr class="even">
+<td>Population proportion <span class="math inline">\(p\)</span></td>
+<td><span class="math inline">\(\hat{p}\)</span></td>
+<td><span class="math inline">\(SE = \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}\)</span></td>
+</tr>
+<tr class="odd">
+<td>Difference in means <span class="math inline">\(\mu_1 - \mu_2\)</span></td>
+<td><span class="math inline">\(\bar{x}_1 - \bar{x}_2\)</span></td>
+<td><span class="math inline">\(SE = \sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}\)</span></td>
+</tr>
+<tr class="even">
+<td>Difference in proportions <span class="math inline">\(p_1 - p_2\)</span></td>
+<td><span class="math inline">\(\hat{p}_1 - \hat{p}_2\)</span></td>
+<td><span class="math inline">\(SE = \sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Putting it all together, for the sample mean, <span class="math inline">\(\overline{x}\)</span>, and sample proportion <span class="math inline">\(\widehat{p}\)</span>:</p>
+<ul>
+<li>The sampling distribution of <span class="math inline">\(\bar{x}\)</span> is approximately <span class="math inline">\(N\!\left(\mu, \frac{\sigma}{\sqrt{n}}\right)\)</span>.</li>
+<li>The sampling distribution of <span class="math inline">\(\hat{p}\)</span> is approximately <span class="math inline">\(N\!\left(p, \sqrt{\frac{p(1-p)}{n}}\right)\)</span>.</li>
+</ul>
+<div style="page-break-after: always;"></div>
+</section>
+<section id="confidence-intervals-using-the-normal-model" class="level2">
+<h2 class="anchored" data-anchor-id="confidence-intervals-using-the-normal-model">Confidence intervals using the normal model</h2>
+<p>The normal approximation also lets us build confidence intervals without bootstrapping.</p>
+<p><em>General confidence interval formula.</em> When the sampling distribution of a statistic is approximately normal with standard error <span class="math inline">\(SE\)</span>, a confidence interval takes the form:</p>
+<p><span class="math display">\[\text{point estimate} \pm z^* \times SE\]</span></p>
+<p>where <span class="math inline">\(z^*\)</span> is chosen based on the desired confidence level:</p>
+<table class="caption-top table">
+<caption>Critical values <span class="math inline">\(z^*\)</span> for common confidence levels.</caption>
+<thead>
+<tr class="header">
+<th>Confidence level</th>
+<th><span class="math inline">\(z^*\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>90%</td>
+<td>1.645</td>
+</tr>
+<tr class="even">
+<td>95%</td>
+<td>1.960</td>
+</tr>
+<tr class="odd">
+<td>99%</td>
+<td>2.575</td>
+</tr>
+</tbody>
+</table>
+<p>The distance <span class="math inline">\(z^* \times SE\)</span> is called the <em>margin of error</em>. For a 95% confidence interval, <span class="math inline">\(z^* = 1.96\)</span> (often rounded to 2), giving a margin of error of approximately <span class="math inline">\(2 \times SE\)</span>. This is directly connected to the 68-95-99.7 rule: 95% of sample statistics fall within about 2 standard errors of the true parameter value.</p>
+<div class="example-box">
+<p><strong>Class Example 3.1.5: Stents and stroke risk</strong></p>
+<p>A study examined whether stents reduce stroke risk. The observed difference in 30-day stroke rates (treatment minus control) was <span class="math inline">\(\hat{p}_T - \hat{p}_C = 0.090\)</span>, with <span class="math inline">\(SE = 0.028\)</span>. Construct a 95% confidence interval.</p>
+<div class="workspace" style="min-height:1.5in;"></div>
+</div>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>This chapter introduced the normal distribution, the most commonly encountered distribution in statistics. Key concepts include:</p>
+<ul>
+<li>The normal distribution is described by two parameters: the mean <span class="math inline">\(\mu\)</span> (center) and standard deviation <span class="math inline">\(\sigma\)</span> (spread), written as <span class="math inline">\(N(\mu, \sigma)\)</span>.</li>
+<li>The <em>68-95-99.7 rule</em> provides quick estimates: about 68%, 95%, and 99.7% of observations fall within 1, 2, and 3 standard deviations of the mean.</li>
+<li>A <em>Z-score</em> standardizes an observation by measuring how many standard deviations it lies from the mean: <span class="math inline">\(Z = \frac{x - \mu}{\sigma}\)</span>.</li>
+<li>Normal probabilities are found by computing Z-scores and looking up areas under the standard normal curve using tables, software, or StatLens.</li>
+<li>The <em>standard error</em> measures how much a statistic varies from sample to sample and is the key ingredient in confidence intervals and hypothesis tests.</li>
+</ul>
+<div style="page-break-after: always;"></div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../sections/Unit2/ch9-from-simulation-to-theory.html" class="pagination-link" aria-label="From Simulation to Theory">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">2.4 From Simulation to Theory</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../sections/Unit3/ch11-inference-for-proportions.html" class="pagination-link" aria-label="Inference for Proportions">
+        <span class="nav-page-text"><span class="chapter-title">3.2 Inference for Proportions</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
