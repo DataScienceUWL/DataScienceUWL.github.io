@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTH 207 &mdash; 2.1 The Tangent and Velocity Problems</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
+  loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
+<script id="MathJax-script" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  /* Projected on a 1920 screen this lands near 30px, which is legible from the
+     back of the room; on a laptop later it falls back to comfortable reading. */
+  font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
+/* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
+   expose the next thing. Read later: it is just a long page. */
+
+.beat{padding:2.4rem 6vw 3rem;
+  border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
+h1{font-size:1.9rem;margin:0 0 .3rem}
+h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
+h2.cont{color:var(--slate);font-size:1.3rem}
+p{margin:0 0 .9rem;max-width:46ch}
+ul{max-width:46ch}
+.turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
+.turn.my{border-left-color:var(--slate);background:#f6f8fb}
+.badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;background:var(--amber);color:#3a2c00;padding:.32rem .6rem;
+  border-radius:3px;margin-bottom:.7rem}
+.turn.my .badge{background:var(--slate);color:#fff}
+.turn .work{font-size:.85rem;color:var(--slate);font-style:italic;margin:.6rem 0 0}
+.key{border-left:6px solid var(--ink);background:#f2f3f5;padding:.9rem 1.2rem;margin:1.2rem 0}
+.sol.shown{margin:1.1rem 0;border-left:5px solid var(--slate);background:#fff;
+  padding:.7rem 1.1rem;border-radius:0 5px 5px 0}
+.sol-label{display:block;font:600 .78rem/1 system-ui,sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate);margin-bottom:.5rem}
+details.sol{margin:1.1rem 0;border:1px solid var(--rule);border-radius:5px;background:#fff}
+details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-ui,sans-serif;
+  color:var(--slate)}
+details.sol[open] summary{border-bottom:1px solid var(--rule)}
+details.sol > :not(summary){padding:0 1.1rem}
+details.sol > p:last-child{padding-bottom:.9rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:64ch}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;margin:.6rem 0}
+table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--rule);padding:.3rem .9rem .3rem 0;text-align:left}
+th{border-bottom:2px solid var(--ink)}
+.boxed{margin:1.1rem 0;padding:.8rem 1.1rem;border-radius:5px;background:#fff;
+  border:1px solid var(--rule)}
+.boxed.dfn{border-left:5px solid var(--ink)}
+.boxed.thm{border-left:5px solid var(--amber)}
+.boxed.ex{border-left:5px solid var(--slate)}
+.badge.dfn{background:var(--ink);color:#fff}
+.badge.thm{background:var(--amber);color:#3a2c00}
+.ex{margin:1rem 0}
+.workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
+.badge.ex{background:var(--ink);color:#fff}
+.grid-item{margin:0}
+figure{margin:1.2rem 0;max-width:60ch}
+figure img{max-width:100%;height:auto;display:block}
+button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
+  border-radius:3px;display:block;max-width:100%}
+button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+dialog.lb{border:none;padding:0;max-width:96vw;max-height:96vh;background:transparent}
+dialog.lb::backdrop{background:rgba(13,27,42,.88)}
+dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
+dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
+  background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem}
+header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
+header.top p{color:var(--slate);margin:.2rem 0 0}
+.switch{margin:.35rem 0 0}
+.switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px}
+.switch a:hover{border-bottom-width:2px}
+.switch a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media print{.switch{display:none}}
+.hint{position:fixed;right:1rem;bottom:1rem;font:.72rem system-ui,sans-serif;color:var(--slate);
+  background:#fff;border:1px solid var(--rule);border-radius:4px;padding:.35rem .6rem;opacity:.75}
+@media print{.beat{min-height:auto;page-break-inside:avoid}.hint{display:none}
+  details.sol{break-inside:avoid}details.sol summary{display:none}}
+</style></head>
+<body>
+<header class="top">
+  <h1>2.1 &nbsp;The Tangent and Velocity Problems</h1>
+  <p>MTH 207 Calculus I &mdash; Limits and Derivatives</p>
+  <p class="switch"><a class="twin" href="../../practice/Section_2p1/Section_2p1_class.html">Let me try the examples first &rarr;</a></p>
+</header>
+<main>
+<section class="beat" aria-label="First: What the Parentheses Mean in $f(x)$" data-source-line="29">
+  <h2>First: What the Parentheses Mean in $f(x)$</h2>
+<p>$\displaystyle f$ is not a number multiplying $\displaystyle x$. It is a <strong>machine</strong>: whatever goes in the parentheses gets used everywhere $\displaystyle x$ appears in the formula.</p>
+  <div class="sol shown">
+<p>If $\displaystyle f(x) = x^2 + 1$, then $\displaystyle f(3) = 3^2 + 1 = 10$. Whatever sits inside the parentheses goes everywhere $\displaystyle x$ was &mdash; the $\displaystyle x$ is a placeholder, not a quantity.</p>
+  </div>
+  <div class="sol shown">
+<p>So $\displaystyle f(t) = t^2 + 1$ is the <strong>same function</strong>: the letter names the slot, not the machine.</p>
+  </div>
+  <div class="turn your"><span class="badge">Your turn</span><p>With $\displaystyle f(x) = x^2 + 1$, write $\displaystyle f(5)$, then $\displaystyle f(a)$, then $\displaystyle f(x+h)$.</p></div>
+  <div class="sol shown">
+<p>$\displaystyle f(5) = 26$;   $\displaystyle f(a) = a^2 + 1$;   $\displaystyle f(x+h) = (x+h)^2 + 1$.</p>
+  </div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Same function or different?    $\displaystyle g(x) = 3x - 4$    and   $\displaystyle g(s) = 3s - 4$.</p></div>
+  <div class="sol shown">
+<p>The same. Only the name of the slot changed. (Different would mean a different <em>rule</em> &mdash; $\displaystyle 3x-4$ against $\displaystyle 4x-3$, say.)</p>
+  </div>
+</section>
+<section class="beat" aria-label="Two Questions" data-source-line="58">
+  <h2>Two Questions</h2>
+<div class="cols"><div><p><strong>A geometry question.</strong></p>
+<p>What is the slope of the line that just <em>touches</em> a curve at one point?</p>
+<p><strong>A physics question.</strong></p>
+<p>A speedometer reads $\displaystyle 58$ mph <em>right now</em>. What does "velocity at an instant" even mean?</p></div><div><div class="key"><p>These look like different questions. By the end of today they will be the <strong>same</strong> question &mdash; and we will not be able to answer either one yet.</p></div></div></div>
+</section>
+<section class="beat" aria-label="First, Lines" data-source-line="79">
+  <h2>First, Lines</h2>
+<p>Every answer today is the equation of a line, so let us agree on the two forms.</p>
+<p>Suppose you know <strong>one point</strong> on the line, $\displaystyle (x_0, y_0)$, and its <strong>slope</strong> $\displaystyle m$. Today you always will. <span style="display:block;height:1.5em"></span></p>
+  <div class="sol shown">
+<p><strong>Point&ndash;slope:</strong> $\displaystyle y - y_0 = m(x - x_0)$</p>
+<p>The subscripts are doing real work. $\displaystyle x_0$ and $\displaystyle y_0$ are <em>numbers you already know</em> &mdash; the coordinates of your point. $\displaystyle x$ and $\displaystyle y$ have no subscript because they stay <em>variables</em>: they range over every other point on the line.<span style="display:block;height:1.5em"></span></p>
+  </div>
+  <div class="sol shown">
+<p><strong>Slope&ndash;intercept:</strong> $\displaystyle y = mx + b$, where $\displaystyle b$ is the $\displaystyle y$-value where the line crosses the $\displaystyle y$-axis.</p>
+  </div>
+  <div class="key"><p>There are two ways to get slope&ndash;intercept from a point and a slope, and both are worth having.</p></div>
+<ul><li>Write point&ndash;slope, then expand and simplify.</li><li>Start from $\displaystyle y = mx + b$, put $\displaystyle m$ in, then substitute the point and solve for $\displaystyle b$.</li></ul>
+  <div class="turn my"><span class="badge">My turn</span><p>The line through $\displaystyle (1,2)$ with slope $\displaystyle 3$ &mdash; let me do this one both ways.</p></div>
+  <div class="sol shown">
+<p><strong>Point&ndash;slope, then expand.</strong>
+\[ y - y_0 = m(x - x_0) \]
+\[ y - 2 = 3(x - 1) \]
+\[ y = 3x - 3 + 2 = 3x - 1 \]</p>
+  </div>
+  <div class="sol shown">
+<p><strong>Or solve for $\displaystyle b$.</strong>
+\[ y = mx + b \]
+\[ 2 = 3(1) + b \quad\Longrightarrow\quad b = -1 \]
+\[ y = 3x - 1 \]
+Same line, both ways.</p>
+  </div>
+<p>\[ y - y_0 = m(x - x_0) \qquad\qquad y = mx + b \]</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Find the line through $\displaystyle (3, 9)$ with slope $\displaystyle 6$ &mdash; once each way. Do you get the same line?</p></div>
+  <div class="sol shown">
+<p><strong>Point&ndash;slope.</strong>
+\[ y - 9 = 6(x - 3) \]
+\[ y = 6x - 18 + 9 = 6x - 9 \]</p>
+  </div>
+  <div class="sol shown">
+<p><strong>Solve for $\displaystyle b$.</strong>
+\[ 9 = 6(3) + b \quad\Longrightarrow\quad b = -9 \]
+\[ y = 6x - 9 \]
+Same line, both ways.</p>
+  </div>
+</section>
+<section class="beat" aria-label="What Is a Tangent Line?" data-source-line="145">
+  <h2>What Is a Tangent Line?</h2>
+<div class="cols"><div><p>"Tangent" comes from the Latin <em>tangens</em> &mdash; <strong>touching</strong>.</p>
+<p>A tangent should head in the <strong>same direction as the curve</strong> where it touches.</p>
+<p>Euclid's definition works for a circle: <em>a line meeting the curve exactly once</em>.</p>
+<p>For other curves it breaks down:
+<ul><li>line $\displaystyle \ell$ meets the curve <strong>once</strong> but is clearly not tangent</li><li>line $\displaystyle t$ <strong>does</strong> look tangent &mdash; and meets the curve <strong>twice</strong></li></ul></p></div><div><p><figure><button type="button" class="zoom" data-src="figures/tangent_puzzle.png" aria-label="Enlarge figure"><img src="figures/tangent_puzzle.png" alt="Two pictures side by side. On the left, a circle with a line touching it at exactly one point, which is a tangent in Euclid&#x27;s sense. On the right, a wavy curve with two lines through the same point P: a steep line labelled l that crosses the curve only at P but cuts across it rather than touching, and a line labelled t that lies along the direction of the curve at P but also meets the curve again further away."></button></figure></p></div></div>
+  <div class="key"><p>Counting intersections is the wrong idea. We need to talk about <em>direction</em>.</p></div>
+</section>
+<section class="beat" aria-label="The Tangent Problem" data-source-line="172">
+  <h2>The Tangent Problem</h2>
+<div class="boxed ex"><span class="badge ex">Example 1</span><p>Find the slope of the tangent line to $\displaystyle y = x^2$ at the point $\displaystyle P(3, 9)$.</p></div>
+<p><strong>The difficulty.</strong> Slope needs <strong>two</strong> points. We have only $\displaystyle P$.</p>
+  <div class="sol shown">
+<p><strong>The workaround.</strong> Pick a second point $\displaystyle Q(x, x^2)$ on the curve and compute the slope of the <strong>secant</strong> line $\displaystyle PQ$ &mdash; from the Latin <em>secans</em>, "cutting":
+\[ m_{PQ} = \frac{f(x) - f(a)}{x - a} = \frac{x^2 - 9}{x - 3} \]</p>
+  </div>
+  <div class="sol shown">
+<p>Then slide $\displaystyle Q$ toward $\displaystyle P$ and watch what the secant slopes do.</p>
+  </div>
+</section>
+<section class="beat" aria-label="Sliding $Q$ Toward $P$" data-source-line="196">
+  <h2>Sliding $Q$ Toward $P$</h2>
+  <div class="turn my"><span class="badge">My turn</span><p>One of these first, to set the pattern &mdash; the secant from $\displaystyle P = (3,9)$ to $\displaystyle Q = (6, 36)$.</p></div>
+  <div class="sol shown">
+<p>$\displaystyle P = (3, 9)$ and $\displaystyle Q = (x, x^2)$, so the secant slope is
+\[ m_{PQ} = \frac{x^2 - 9}{x - 3} \]
+and at $\displaystyle x = 6$:
+\[ m_{PQ} = \frac{36 - 9}{6 - 3} = \frac{27}{3} = 9 \]</p>
+  </div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Two rows of each table are done. Compute $\displaystyle m_{PQ} = \dfrac{x^2-9}{x-3}$ for $\displaystyle x = 3.5,\ 3.1,\ 3.01$ and for $\displaystyle x = 2.9,\ 2.99$ &mdash; then answer the question that matters: what are the slopes <em>doing</em>?</p></div>
+  <div class="sol shown">
+<div class="cols"><div><p><strong>From the right:</strong></p>
+<p><table><caption>Secant slopes as Q approaches P from the right</caption><tr><th scope="col">$\displaystyle x$</th><th scope="col">$\displaystyle m_{PQ}$</th></tr><tr><td>$\displaystyle 6$</td><td>$\displaystyle 9$</td></tr><tr><td>$\displaystyle 4$</td><td>$\displaystyle 7$</td></tr><tr><td>$\displaystyle 3.5$</td><td>$\displaystyle 6.5$</td></tr><tr><td>$\displaystyle 3.1$</td><td>$\displaystyle 6.1$</td></tr><tr><td>$\displaystyle 3.01$</td><td>$\displaystyle 6.01$</td></tr></table></p></div><div><p><strong>From the left:</strong></p>
+<p><table><caption>Secant slopes as Q approaches P from the left</caption><tr><th scope="col">$\displaystyle x$</th><th scope="col">$\displaystyle m_{PQ}$</th></tr><tr><td>$\displaystyle 0$</td><td>$\displaystyle 3$</td></tr><tr><td>$\displaystyle 2$</td><td>$\displaystyle 5$</td></tr><tr><td>$\displaystyle 2.5$</td><td>$\displaystyle 5.5$</td></tr><tr><td>$\displaystyle 2.9$</td><td>$\displaystyle 5.9$</td></tr><tr><td>$\displaystyle 2.99$</td><td>$\displaystyle 5.99$</td></tr></table></p></div></div>
+<div class="key"><p>From both sides the secant slopes close in on $\displaystyle 6$.</p></div>
+  </div>
+<p><a href="https://learnlens.org/calclens/derivatives/secant/?f=x%5E2&a=3&h=0.5&window=2,7&embed=true&controls=h,table&readout=false&prose=none&form=interval" target="_blank" rel="noopener">Slide $\displaystyle Q$ in yourself</a> &mdash; $\displaystyle y = x^2$ with $\displaystyle P$ at $\displaystyle (3,9)$.</p>
+</section>
+<section class="beat" aria-label="The Secants Rotate into the Tangent" data-source-line="249">
+  <h2>The Secants Rotate into the Tangent</h2>
+<div class="cols"><div><p>As $\displaystyle Q$ slides toward $\displaystyle P$, the secant lines <strong>pivot about $\displaystyle P$</strong> and settle onto one line &mdash; the tangent.</p>
+<p>We say the slope of the tangent is the <strong>limit</strong> of the slopes of the secants:
+\[ m = \lim_{Q \to P} m_{PQ} = \lim_{x \to 3} \frac{x^2 - 9}{x - 3} \]</p></div><div><p><figure><button type="button" class="zoom" data-src="figures/secants_converge.png" aria-label="Enlarge figure"><img src="figures/secants_converge.png" alt="The parabola y equals x squared with the point P at (3,9) marked. Four secant lines are drawn from P to points Q further along the curve at x equals 6, 4.5, 3.6 and 3.2. As Q gets closer to P the secant lines pivot about P and lie closer and closer to a single dashed line, the tangent at P."></button><figcaption>Slide $\displaystyle Q$ toward $\displaystyle P$ yourself <a href="https://learnlens.org/calclens/derivatives/secant/?f=x%5E2&a=3&h=3&window=2,7&embed=true&controls=h,table&readout=false&prose=none&form=interval" target="_blank" rel="noopener">Open the interactive version</a></figcaption></figure></p></div></div>
+</section>
+<section class="beat" aria-label="Evaluating the Limit" data-source-line="266">
+  <h2>Evaluating the Limit</h2>
+  <div class="turn my"><span class="badge">My turn</span><p>Why we are allowed to cancel $\displaystyle (x-3)$ is the whole point, so let me do this one.</p></div>
+  <div class="sol shown">
+<p>$$m = \lim_{x \to 3} \frac{x^2 - 9}{x - 3}$$</p>
+  </div>
+  <div class="sol shown">
+<p>Substituting $\displaystyle x = 3$ gives $\displaystyle \dfrac{0}{0}$ &mdash; nonsense. Factor instead.
+$$= \lim_{x \to 3} \frac{(x-3)(x+3)}{x - 3}$$</p>
+  </div>
+  <div class="sol shown">
+<p>$$= \lim_{x \to 3} (x+3) \;=\; 6$$</p>
+  </div>
+  <div class="key"><p>Read that cancellation again. We divided by $\displaystyle x - 3$, and that is only legal because $\displaystyle x \neq 3$. The limit lets $\displaystyle x$ <strong>approach</strong> $\displaystyle 3$ without ever <strong>being</strong> $\displaystyle 3$ &mdash; so $\displaystyle x - 3$ is never zero, and dividing by it is fine. This one distinction is the whole content of Section 2.2.</p></div>
+  <div class="sol shown">
+<p>So the tangent at $\displaystyle P(3,9)$ has slope $\displaystyle 6$. Using point&ndash;slope, exactly as in the warm-up:
+\[ y - 9 = 6(x - 3) \qquad\text{or}\qquad y = 6x - 9 \]</p>
+  </div>
+</section>
+<section class="beat" aria-label="The Velocity Problem" data-source-line="298">
+  <h2>The Velocity Problem</h2>
+<p>The same ball as day one, written two ways:
+\[ s(t) = 64 - 16(t-1)^2 \;=\; -16t^2 + 32t + 48, \qquad 0 \le t \le 3. \]</p>
+  <div class="key"><p>Same function, two shapes. The left one shows the peak at a glance; the right one is easier to compute with. Choosing the convenient form is part of the work.</p></div>
+<div class="cols"><div><p><strong>The difficulty.</strong> Velocity is (change in position)/(time elapsed) &mdash; but an <em>instant</em> is not an interval. There is nothing to divide by.</p>
+<p><strong>The same workaround.</strong> Average over a short interval and then shrink it.</p></div><div><p><figure><button type="button" class="zoom" data-src="figures/ball_height.png" aria-label="Enlarge figure"><img src="figures/ball_height.png" alt="Graph of the height s of a ball against time t from 0 to 3 seconds. The curve is a downward-opening parabola starting at height 48 at t equals 0, peaking at 64 when t equals 1, and returning to 0 at t equals 3 when the ball lands. A short secant line is drawn between the points at t equals 0.5 and t equals 1."></button><figcaption>Slide the second point in yourself <a href="https://learnlens.org/calclens/derivatives/secant/?f=-16t%5E2%2B32t%2B48&a=0.5&h=0.5&name=s&window=0,2&embed=true&controls=h,table&readout=false&prose=none&form=interval" target="_blank" rel="noopener">Open the interactive version</a></figcaption></figure></p></div></div>
+</section>
+<section class="beat" aria-label="Average Velocity over Shrinking Intervals" data-source-line="322">
+  <h2>Average Velocity over Shrinking Intervals</h2>
+<div class="boxed ex"><span class="badge ex">Example 2</span><p>Estimate the ball's velocity at the instant $\displaystyle t = 0.5$.</p></div>
+<div class="workspace" role="region" aria-label="Working space"><p class="work">Compute the average velocity on $\displaystyle [0.5,\,1]$ first.</p></div>
+  <div class="sol shown">
+<p>\[ AV_{[0.5,\,1]} = \frac{s(1) - s(0.5)}{1 - 0.5} = \frac{64 - 60}{0.5} = 8\text{ ft/sec} \]</p>
+  </div>
+  <div class="sol shown">
+<p>Shrinking the interval: $\displaystyle [0.5,\,0.75] \to 12$,   $\displaystyle [0.5,\,0.6] \to 14.4$,   $\displaystyle [0.5,\,0.51] \to 15.84$.</p>
+  </div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Do not compute another one. Say what number these are heading for, and say how confident you are.</p></div>
+  <div class="sol shown">
+<p>$\displaystyle \mathbf{16}$ ft/sec &mdash; the <strong>instantaneous velocity</strong> at $\displaystyle t = 0.5$. Confidence is the honest issue: nothing here <em>proves</em> it is exactly $\displaystyle 16$. That is what Section 2.2 is for.</p>
+  </div>
+</section>
+<section class="beat" aria-label="They Are the Same Problem" data-source-line="351">
+  <h2>They Are the Same Problem</h2>
+<div class="cols"><div><p>On the graph of $\displaystyle s(t)$, take $\displaystyle P(a, s(a))$ and $\displaystyle Q(a+h, s(a+h))$. The slope of the secant $\displaystyle PQ$ is
+\[ m_{PQ} = \frac{s(a+h) - s(a)}{h} \]
+which is exactly the <strong>average velocity</strong> on $\displaystyle [a,\,a+h]$.</p>
+<p>So shrinking the interval <em>is</em> sliding $\displaystyle Q$ toward $\displaystyle P$.</p></div><div><p><figure><button type="button" class="zoom" data-src="figures/two_problems.png" aria-label="Enlarge figure"><img src="figures/two_problems.png" alt="The height curve with a point P and a point Q further along it. The secant line through P and Q is labelled as both the slope of the secant and the average velocity. A second, dashed line touching the curve at P alone is labelled as both the slope of the tangent and the instantaneous velocity."></button></figure></p></div></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>In the picture, one line's slope is the <em>average</em> velocity over $\displaystyle [a,\,a+h]$ and the other's is the <em>instantaneous</em> velocity at $\displaystyle t = a$. Which is which? Then say what happens to the secant as $\displaystyle h$ shrinks toward $\displaystyle 0$.</p></div>
+  <div class="sol shown">
+<p>The secant through $\displaystyle P$ and $\displaystyle Q$ gives the average; the line touching only at $\displaystyle P$ gives the instantaneous. As $\displaystyle h \to 0$, $\displaystyle Q$ slides into $\displaystyle P$ and the secant turns into the tangent.</p>
+  </div>
+  <div class="key"><p>Slope of the secant $\displaystyle =$ average rate of change. Slope of the tangent $\displaystyle =$ instantaneous rate of change. One idea, two vocabularies.</p></div>
+</section>
+<section class="beat" aria-label="What We Still Owe" data-source-line="380">
+  <h2>What We Still Owe</h2>
+<p>Both problems ended in the same place: a quantity we could only <strong>approach</strong>, never evaluate directly.</p>
+<div class="cols">
+<div class="grid-item"><strong>Tangent</strong><p>Slope $\displaystyle = \lim_{x \to 3} \dfrac{x^2-9}{x-3}$ &mdash; substituting gives $\displaystyle 0/0$.</p></div>
+<div class="grid-item"><strong>Velocity</strong><p>Speed $\displaystyle = \lim_{h \to 0} \dfrac{s(a+h)-s(a)}{h}$ &mdash; substituting gives $\displaystyle 0/0$.</p></div>
+</div>
+  <div class="key"><p>We have no rules yet for computing a limit. That is Sections 2.2 through 2.6 &mdash; and we return to tangents and velocities in Section 2.7 with the derivative.</p></div>
+</section>
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="395">
+  <h2>What You Should Be Able to Do</h2>
+<p>By the end of this section &mdash; and on the quiz and the exam:</p>
+<ul><li>I can compute the average rate of change of a function on an interval and explain why it is the slope of a secant line.</li><li>I can estimate the slope of a tangent line by computing average rates of change over shrinking intervals.</li><li>I can explain the difference between average and instantaneous velocity, and say which one a secant slope gives.</li></ul>
+  <div class="key"><p>If you cannot honestly tick one of these off, that is the one to work on &mdash; not the one that felt hardest in class.</p></div>
+</section>
+</main>
+<p class="hint">13 sections &middot; worked solutions included</p>
+<dialog class="lb" aria-label="Enlarged figure">
+  <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
+</dialog>
+<script>
+// Editor scroll-sync. Same protocol the filled/blank builds use, so the editor
+// side needs no new message types: we post htmlSectionChanged as the reader
+// scrolls, and honour goToSection when the cursor moves in the tex.
+(function(){
+  if(!window.parent || window.parent===window) return;
+  var secs=document.querySelectorAll('main > section[data-source-line]');
+  if(!secs.length) return;
+  var cur=null, t=null;
+  function report(){
+    // the section covering 30% down the viewport -- the one being read, not
+    // the one clipped at the top edge
+    var mark=window.innerHeight*0.3, best=null;
+    for(var i=0;i<secs.length;i++){
+      var r=secs[i].getBoundingClientRect();
+      if(r.top<=mark && r.bottom>0) best=secs[i];
+    }
+    if(!best) return;
+    var line=parseInt(best.dataset.sourceLine,10);
+    if(!isNaN(line) && line!==cur){
+      cur=line;
+      window.parent.postMessage({type:'htmlSectionChanged',sourceLine:line},'*');
+    }
+  }
+  addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(report,80);},
+                   {passive:true});
+  addEventListener('message',function(e){
+    if(!e.data || e.data.type!=='goToSection' || e.data.sourceLine==null) return;
+    // nearest section at or before the cursor: a cursor inside a frame should
+    // scroll to that frame, not fail to match its exact opening line
+    var best=null;
+    for(var i=0;i<secs.length;i++){
+      if(parseInt(secs[i].dataset.sourceLine,10)<=e.data.sourceLine) best=secs[i];
+    }
+    if(best){ cur=parseInt(best.dataset.sourceLine,10);
+              best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+(function(){
+  var dlg=document.querySelector('dialog.lb'), img=dlg.querySelector('img');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button.zoom');
+    if(b){ img.src=b.dataset.src;
+           img.alt=b.querySelector('img').alt;   // carry the real alt text over
+           dlg.showModal(); return; }
+    if(e.target.closest('dialog.lb .close') || e.target===dlg) dlg.close();
+  });
+  dlg.addEventListener('close',function(){ img.removeAttribute('src'); });
+})();
+</script>
+</body></html>

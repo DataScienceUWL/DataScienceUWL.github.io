@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTH 207 &mdash; 2.2 The Limit of a Function</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
+  loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
+<script id="MathJax-script" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  /* Projected on a 1920 screen this lands near 30px, which is legible from the
+     back of the room; on a laptop later it falls back to comfortable reading. */
+  font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
+/* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
+   expose the next thing. Read later: it is just a long page. */
+main{scroll-snap-type:y proximity}
+.beat{scroll-snap-align:start;min-height:100vh}
+.beat{padding:2.4rem 6vw 3rem;
+  border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
+h1{font-size:1.9rem;margin:0 0 .3rem}
+h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
+h2.cont{color:var(--slate);font-size:1.3rem}
+p{margin:0 0 .9rem;max-width:46ch}
+ul{max-width:46ch}
+.turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
+.turn.my{border-left-color:var(--slate);background:#f6f8fb}
+.badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;background:var(--amber);color:#3a2c00;padding:.32rem .6rem;
+  border-radius:3px;margin-bottom:.7rem}
+.turn.my .badge{background:var(--slate);color:#fff}
+.turn .work{font-size:.85rem;color:var(--slate);font-style:italic;margin:.6rem 0 0}
+.key{border-left:6px solid var(--ink);background:#f2f3f5;padding:.9rem 1.2rem;margin:1.2rem 0}
+.sol.shown{margin:1.1rem 0;border-left:5px solid var(--slate);background:#fff;
+  padding:.7rem 1.1rem;border-radius:0 5px 5px 0}
+.sol-label{display:block;font:600 .78rem/1 system-ui,sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate);margin-bottom:.5rem}
+details.sol{margin:1.1rem 0;border:1px solid var(--rule);border-radius:5px;background:#fff}
+details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-ui,sans-serif;
+  color:var(--slate)}
+details.sol[open] summary{border-bottom:1px solid var(--rule)}
+details.sol > :not(summary){padding:0 1.1rem}
+details.sol > p:last-child{padding-bottom:.9rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:64ch}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;margin:.6rem 0}
+table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--rule);padding:.3rem .9rem .3rem 0;text-align:left}
+th{border-bottom:2px solid var(--ink)}
+.boxed{margin:1.1rem 0;padding:.8rem 1.1rem;border-radius:5px;background:#fff;
+  border:1px solid var(--rule)}
+.boxed.dfn{border-left:5px solid var(--ink)}
+.boxed.thm{border-left:5px solid var(--amber)}
+.boxed.ex{border-left:5px solid var(--slate)}
+.badge.dfn{background:var(--ink);color:#fff}
+.badge.thm{background:var(--amber);color:#3a2c00}
+.ex{margin:1rem 0}
+.workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
+.badge.ex{background:var(--ink);color:#fff}
+.grid-item{margin:0}
+figure{margin:1.2rem 0;max-width:60ch}
+figure img{max-width:100%;height:auto;display:block}
+button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
+  border-radius:3px;display:block;max-width:100%}
+button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+dialog.lb{border:none;padding:0;max-width:96vw;max-height:96vh;background:transparent}
+dialog.lb::backdrop{background:rgba(13,27,42,.88)}
+dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
+dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
+  background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem}
+header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
+header.top p{color:var(--slate);margin:.2rem 0 0}
+.switch{margin:.35rem 0 0}
+.switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px}
+.switch a:hover{border-bottom-width:2px}
+.switch a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media print{.switch{display:none}}
+.hint{position:fixed;right:1rem;bottom:1rem;font:.72rem system-ui,sans-serif;color:var(--slate);
+  background:#fff;border:1px solid var(--rule);border-radius:4px;padding:.35rem .6rem;opacity:.75}
+@media print{.beat{min-height:auto;page-break-inside:avoid}.hint{display:none}
+  details.sol{break-inside:avoid}details.sol summary{display:none}}
+</style></head>
+<body>
+<header class="top">
+  <h1>2.2 &nbsp;The Limit of a Function</h1>
+  <p>MTH 207 Calculus I &mdash; Limits and Derivatives</p>
+  <p class="switch"><a class="twin" href="../../notes/Section_2p2/Section_2p2_home.html">Show me the worked-out notes &rarr;</a></p>
+</header>
+<main>
+<section class="beat" aria-label="What Section 2.1 Owed Us" data-source-line="33">
+  <h2>What Section 2.1 Owed Us</h2>
+<p>Two problems, one answer. The tangent slope and the instantaneous velocity both
+came out as the same move: compute something you <em>can</em> on an interval, then
+shrink the interval.</p>
+<p>Both times we said the numbers "approach" a value and moved on.</p>
+  <div class="key"><p>Today we say what "approach" actually means. That is the one new idea the whole course rests on.</p></div>
+</section>
+<section class="beat" aria-label="Estimating a Limit from a Table" data-source-line="48">
+  <h2>Estimating a Limit from a Table</h2>
+<p>Consider $\displaystyle f(x) = \dfrac{x^2-1}{x-1}$.</p>
+<p><table><caption>Values of f(x) as x approaches 1 from both sides</caption><tr><th scope="col">$\displaystyle x$</th><th scope="col">$\displaystyle 0.9$</th><th scope="col">$\displaystyle 0.99$</th><th scope="col">$\displaystyle 0.999$</th><th scope="col">$\displaystyle 1.001$</th><th scope="col">$\displaystyle 1.01$</th><th scope="col">$\displaystyle 1.1$</th></tr><tr><td>$\displaystyle f(x)$</td><td>$\displaystyle 1.9$</td><td>$\displaystyle 1.99$</td><td>$\displaystyle 1.999$</td><td>$\displaystyle 2.001$</td><td>$\displaystyle 2.01$</td><td>$\displaystyle 2.1$</td></tr></table></p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Two different questions. <strong>What is $\displaystyle f(1)$?</strong> And <strong>what is this table heading for?</strong> Answer both &mdash; then say which of the two the limit is asking.</p></div>
+  <details class="sol"><summary>Show: the two answers, and which one is the limit</summary>
+<p>$\displaystyle f(1)$ <strong>does not exist</strong>. The table heads for $\displaystyle \mathbf{2}$.</p>
+<p>The limit asks only the second question.</p>
+<div class="key"><p>We write $$\lim_{x \to 1} f(x) = 2$$ even though $\displaystyle f(1)$ does not exist. 
+The limit never asks about the point itself.</p></div>
+  </details>
+</section>
+<section class="beat" aria-label="What a Limit Means" data-source-line="78">
+  <h2>What a Limit Means</h2>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; Limit of a function</span><p>We write $$\lim_{x \to a} f(x) = L$$ if we can make the values of $\displaystyle f(x)$ as close
+to $\displaystyle L$ as we like by taking $\displaystyle x$ close enough to $\displaystyle a$, but <strong>not equal</strong> to $\displaystyle a$.</p></div>
+<p><strong>Say it out loud like this:</strong> <em>"the limit, as $\displaystyle x$ approaches $\displaystyle a$, of
+$\displaystyle f$ of $\displaystyle x$, equals $\displaystyle L$."</em></p>
+<p>And in your head, say what it <em>means</em>:</p>
+<span style="display:block;height:0.4em"></span>
+<p><em>"As $\displaystyle x$ gets close to $\displaystyle a$, $\displaystyle f(x)$ gets close to $\displaystyle L$."</em></p>
+<span style="display:block;height:0.4em"></span>
+<p>Read the last four words of the definition again. They are doing all the work.</p>
+<ul><li>The limit does not care whether $\displaystyle f(a)$ exists.</li><li>If $\displaystyle f(a)$ does exist, the limit does not care what it equals.</li></ul>
+  <div class="key"><p>$\displaystyle f(a)$ and $\displaystyle \lim_{x\to a} f(x)$ are answers to two different questions. Getting them confused is the most expensive mistake in this chapter.</p></div>
+</section>
+<section class="beat" aria-label="Reading Limits off a Graph" data-source-line="112">
+  <h2>Reading Limits off a Graph</h2>
+  <figure><button type="button" class="zoom" data-src="figures/limit_graph.png" aria-label="Enlarge figure"><img src="figures/limit_graph.png" alt="A piecewise graph. At x equals 1 there is an open circle at height 2 with a separate solid dot at height 4. At x equals 3 the left piece ends at height 3 with an open circle and the right piece starts at height 1 with a solid dot. At x equals 5 the graph passes through a solid dot at height 3 with no break. Every marked height is a whole number."></button></figure>
+  <div class="turn your"><span class="badge">Your turn</span><p>From the graph: $\displaystyle \lim_{x\to1}f(x)$,   $\displaystyle f(1)$,   $\displaystyle \lim_{x\to3}f(x)$,   $\displaystyle \lim_{x\to5}f(x)$,   $\displaystyle f(5)$. Say if one does not exist.</p></div>
+  <details class="sol"><summary>Show: what happens at $\displaystyle x=1$</summary>
+<p><figure><button type="button" class="zoom" data-src="figures/limit_graph_x1.png" aria-label="Enlarge figure"><img src="figures/limit_graph_x1.png" alt="The same piecewise graph, with a red box drawn around the part near x equals 1, so the region under discussion is marked."></button></figure>
+$$\lim_{x\to1}f(x) = 2, \qquad f(1) = 4$$</p>
+  </details>
+  <details class="sol"><summary>Show: what happens at $\displaystyle x=3$</summary>
+<p><figure><button type="button" class="zoom" data-src="figures/limit_graph_x3.png" aria-label="Enlarge figure"><img src="figures/limit_graph_x3.png" alt="The same piecewise graph, with a red box drawn around the part near x equals 3, so the region under discussion is marked."></button></figure>
+$$\lim_{x\to3}f(x) \ \textbf{does not exist}$$</p>
+  </details>
+  <details class="sol"><summary>Show: what happens at $\displaystyle x=5$</summary>
+<p><figure><button type="button" class="zoom" data-src="figures/limit_graph_x5.png" aria-label="Enlarge figure"><img src="figures/limit_graph_x5.png" alt="The same piecewise graph, with a red box drawn around the part near x equals 5, so the region under discussion is marked."></button></figure>
+$$\lim_{x\to5}f(x) = 3 = f(5)$$</p>
+  </details>
+  <div class="key"><p>Three different things happen at $\displaystyle x=1$, $\displaystyle x=3$ and $\displaystyle x=5$. Only one of them is a function behaving itself.</p></div>
+</section>
+<section class="beat" aria-label="When a Table Lies to You" data-source-line="141">
+  <h2>When a Table Lies to You</h2>
+<p>A table is evidence, not proof. Consider $\displaystyle f(x) = \sin(\pi/x)$ near $\displaystyle 0$.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Compute $\displaystyle f(x)$ at $\displaystyle x = 1$, $\displaystyle \tfrac12$, $\displaystyle \tfrac13$, $\displaystyle \tfrac14$, $\displaystyle \tfrac15$. What would you conclude?</p></div>
+  <details class="sol"><summary>Show: what the table says</summary>
+<p>Every one gives $\displaystyle \sin(n\pi) = 0$. A table says the limit is $\displaystyle 0$.</p>
+  </details>
+  <details class="sol"><summary>Show: what the graph shows</summary>
+<p><figure><button type="button" class="zoom" data-src="figures/oscillate.png" aria-label="Enlarge figure"><img src="figures/oscillate.png" alt="The graph of y equals sine of pi over x between negative one half and one half. The curve oscillates faster and faster approaching zero from both sides, never settling. Red dots mark the sample points, all of which sit exactly on zero."></button></figure></p>
+<div class="key"><p>The limit does <strong>not</strong> exist. The function swings between $\displaystyle -1$ and $\displaystyle 1$ infinitely often, and your table happened to sample the zeros every time.</p></div>
+  </details>
+</section>
+<section class="beat" aria-label="Approaching from One Side" data-source-line="162">
+  <h2>Approaching from One Side</h2>
+<p>At $\displaystyle x=3$ the limit failed &mdash; but not because nothing happened. Two different
+things happened, one from each side.</p>
+  <figure><button type="button" class="zoom" data-src="figures/limit_graph_x3.png" aria-label="Enlarge figure"><img src="figures/limit_graph_x3.png" alt="The same piecewise graph, with a red box drawn around the part near x equals 3, so the region under discussion is marked."></button></figure>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; One-sided limits</span><p>The <strong>left-hand</strong> limit &mdash; approach $\displaystyle a$ through values <em>less</em> than $\displaystyle a$:
+$$\lim_{x \to a^-} f(x) = L$$
+The <strong>right-hand</strong> limit &mdash; approach $\displaystyle a$ through values <em>greater</em> than $\displaystyle a$:
+$$\lim_{x \to a^+} f(x) = L$$</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Go back to the graph. What are $\displaystyle \lim_{x\to3^-}f(x)$ and $\displaystyle \lim_{x\to3^+}f(x)$?</p></div>
+  <details class="sol"><summary>Show: the two one-sided limits</summary>
+<p>$\displaystyle 3$ from the left, $\displaystyle 1$ from the right.
+$$\lim_{x \to 3^-} f(x) = 3$$
+$$\lim_{x \to 3^+} f(x) = 1$$</p>
+<div class="key"><p>$\displaystyle \lim_{x\to a}f(x) = L$ exactly when <strong>both</strong> one-sided limits exist and <strong>both</strong> equal $\displaystyle L$. At $\displaystyle x=3$ they exist and disagree, so the two-sided limit does not exist.</p></div>
+  </details>
+</section>
+<section class="beat" aria-label="Limits That Grow Without Bound" data-source-line="193">
+  <h2>Limits That Grow Without Bound</h2>
+  <div class="turn my"><span class="badge">My turn</span><p>Look at $\displaystyle g(x) = \dfrac{1}{x^2}$ as $\displaystyle x \to 0$. As $\displaystyle x$ gets small, $\displaystyle x^2$ gets very small and positive, so $\displaystyle 1/x^2$ gets enormous &mdash; from both sides.</p></div>
+<p>% no-reveal &mdash; states its own answer</p>
+<p>We write $\displaystyle \lim_{x\to0} \dfrac{1}{x^2} = \infty$.</p>
+  <div class="key"><p>This is not a number. Writing $\displaystyle \infty$ is shorthand for "the values grow past any bound you name" &mdash; it is a description of <em>how</em> the limit fails, not a value it reaches.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Now try $\displaystyle h(x) = \dfrac{1}{x}$ as $\displaystyle x \to 0$. Check both sides separately. Is the answer the same?</p></div>
+  <details class="sol"><summary>Show: approaching from the right</summary>
+<p>$$\text{From the right:}\quad \frac1x \to \infty$$</p>
+  </details>
+  <details class="sol"><summary>Show: approaching from the left</summary>
+<p>$$\text{From the left:}\quad \frac1x \to -\infty$$</p>
+  </details>
+  <details class="sol"><summary>Show: what that means for the limit</summary>
+<p>The two sides disagree, so $\displaystyle \lim_{x\to0}\frac1x$ does not exist &mdash; not even as $\displaystyle \infty$.</p>
+  </details>
+</section>
+<section class="beat" aria-label="Vertical Asymptotes" data-source-line="222">
+  <h2>Vertical Asymptotes</h2>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; Vertical asymptote</span><p>The line $\displaystyle x = a$ is a vertical asymptote of $\displaystyle y=f(x)$ if at least one of the
+one-sided limits at $\displaystyle a$ is $\displaystyle \infty$ or $\displaystyle -\infty$.</p></div>
+<p>Note what this does <strong>not</strong> say. It says nothing about whether $\displaystyle f(a)$
+exists &mdash; only about how $\displaystyle f$ behaves nearby.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Find the vertical asymptotes of $\displaystyle f(x) = \dfrac{x+1}{(x-2)(x+3)}$. Then decide the sign of $\displaystyle f$ just to the right of $\displaystyle x=2$.</p></div>
+  <details class="sol"><summary>Show: where the denominator vanishes</summary>
+<p>$$\text{Denominator} = 0 \text{ at } x = 2 \text{ and } x = -3$$</p>
+  </details>
+  <details class="sol"><summary>Show: the sign of each factor</summary>
+<p>$$\text{Just right of } 2:\quad x+1 \approx 3 > 0, \quad x-2 = \text{small} > 0, \quad x+3 \approx 5 > 0$$</p>
+  </details>
+  <details class="sol"><summary>Show: the sign of $\displaystyle f$</summary>
+<p>$$\text{All three positive, so } f \to +\infty$$</p>
+  </details>
+  <div class="key"><p>Finding <em>where</em> an asymptote is takes algebra. Finding which way the graph goes takes a sign check on each factor.</p></div>
+</section>
+<section class="beat" aria-label="Where This Goes" data-source-line="253">
+  <h2>Where This Goes</h2>
+<p>We can now estimate a limit from a table or a graph, and say precisely when one
+fails to exist.</p>
+<div class="cols">
+<div class="grid-item"><strong>What we can do</strong><p>Read a limit off a picture. Recognise a jump, a hole, an oscillation, an asymptote.</p></div>
+<div class="grid-item"><strong>What we cannot do yet</strong><p>Compute a limit exactly, from a formula, without guessing from numbers.</p></div>
+<div class="grid-item"><strong>Next</strong><p>Section 2.3 &mdash; the limit laws, which turn all of this into algebra.</p></div>
+</div>
+  <div class="key"><p>Tables and graphs build the intuition. Section 2.3 is where limits become something you can actually calculate.</p></div>
+</section>
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="273">
+  <h2>What You Should Be Able to Do</h2>
+<p>By the end of this section &mdash; and on the quiz and the exam:</p>
+<ul><li>I can estimate a limit from a table or a graph, and explain why the value of the function at the point does not affect it.</li><li>I can decide whether a two-sided limit exists by comparing the one-sided limits.</li><li>I can recognise an infinite limit and locate the vertical asymptotes of a function.</li><li>I can explain how a table of values or a calculator can mislead me about a limit.</li></ul>
+  <div class="key"><p>If you cannot honestly tick one of these off, that is the one to work on &mdash; not the one that felt hardest in class.</p></div>
+</section>
+</main>
+<p class="hint">10 sections &middot; solutions open on click</p>
+<dialog class="lb" aria-label="Enlarged figure">
+  <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
+</dialog>
+<script>
+// Editor scroll-sync. Same protocol the filled/blank builds use, so the editor
+// side needs no new message types: we post htmlSectionChanged as the reader
+// scrolls, and honour goToSection when the cursor moves in the tex.
+(function(){
+  if(!window.parent || window.parent===window) return;
+  var secs=document.querySelectorAll('main > section[data-source-line]');
+  if(!secs.length) return;
+  var cur=null, t=null;
+  function report(){
+    // the section covering 30% down the viewport -- the one being read, not
+    // the one clipped at the top edge
+    var mark=window.innerHeight*0.3, best=null;
+    for(var i=0;i<secs.length;i++){
+      var r=secs[i].getBoundingClientRect();
+      if(r.top<=mark && r.bottom>0) best=secs[i];
+    }
+    if(!best) return;
+    var line=parseInt(best.dataset.sourceLine,10);
+    if(!isNaN(line) && line!==cur){
+      cur=line;
+      window.parent.postMessage({type:'htmlSectionChanged',sourceLine:line},'*');
+    }
+  }
+  addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(report,80);},
+                   {passive:true});
+  addEventListener('message',function(e){
+    if(!e.data || e.data.type!=='goToSection' || e.data.sourceLine==null) return;
+    // nearest section at or before the cursor: a cursor inside a frame should
+    // scroll to that frame, not fail to match its exact opening line
+    var best=null;
+    for(var i=0;i<secs.length;i++){
+      if(parseInt(secs[i].dataset.sourceLine,10)<=e.data.sourceLine) best=secs[i];
+    }
+    if(best){ cur=parseInt(best.dataset.sourceLine,10);
+              best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+(function(){
+  var dlg=document.querySelector('dialog.lb'), img=dlg.querySelector('img');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button.zoom');
+    if(b){ img.src=b.dataset.src;
+           img.alt=b.querySelector('img').alt;   // carry the real alt text over
+           dlg.showModal(); return; }
+    if(e.target.closest('dialog.lb .close') || e.target===dlg) dlg.close();
+  });
+  dlg.addEventListener('close',function(){ img.removeAttribute('src'); });
+})();
+</script>
+</body></html>

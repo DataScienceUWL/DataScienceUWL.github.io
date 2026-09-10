@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTH 207 &mdash; Day 1 Welcome to Calculus I</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
+  loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
+<script id="MathJax-script" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  /* Projected on a 1920 screen this lands near 30px, which is legible from the
+     back of the room; on a laptop later it falls back to comfortable reading. */
+  font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
+/* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
+   expose the next thing. Read later: it is just a long page. */
+main{scroll-snap-type:y proximity}
+.beat{scroll-snap-align:start;min-height:100vh}
+.beat{padding:2.4rem 6vw 3rem;
+  border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
+h1{font-size:1.9rem;margin:0 0 .3rem}
+h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
+h2.cont{color:var(--slate);font-size:1.3rem}
+p{margin:0 0 .9rem;max-width:46ch}
+ul{max-width:46ch}
+.turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
+.turn.my{border-left-color:var(--slate);background:#f6f8fb}
+.badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;background:var(--amber);color:#3a2c00;padding:.32rem .6rem;
+  border-radius:3px;margin-bottom:.7rem}
+.turn.my .badge{background:var(--slate);color:#fff}
+.turn .work{font-size:.85rem;color:var(--slate);font-style:italic;margin:.6rem 0 0}
+.key{border-left:6px solid var(--ink);background:#f2f3f5;padding:.9rem 1.2rem;margin:1.2rem 0}
+.sol.shown{margin:1.1rem 0;border-left:5px solid var(--slate);background:#fff;
+  padding:.7rem 1.1rem;border-radius:0 5px 5px 0}
+.sol-label{display:block;font:600 .78rem/1 system-ui,sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate);margin-bottom:.5rem}
+details.sol{margin:1.1rem 0;border:1px solid var(--rule);border-radius:5px;background:#fff}
+details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-ui,sans-serif;
+  color:var(--slate)}
+details.sol[open] summary{border-bottom:1px solid var(--rule)}
+details.sol > :not(summary){padding:0 1.1rem}
+details.sol > p:last-child{padding-bottom:.9rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:64ch}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;margin:.6rem 0}
+table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--rule);padding:.3rem .9rem .3rem 0;text-align:left}
+th{border-bottom:2px solid var(--ink)}
+.boxed{margin:1.1rem 0;padding:.8rem 1.1rem;border-radius:5px;background:#fff;
+  border:1px solid var(--rule)}
+.boxed.dfn{border-left:5px solid var(--ink)}
+.boxed.thm{border-left:5px solid var(--amber)}
+.boxed.ex{border-left:5px solid var(--slate)}
+.badge.dfn{background:var(--ink);color:#fff}
+.badge.thm{background:var(--amber);color:#3a2c00}
+.ex{margin:1rem 0}
+.workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
+.badge.ex{background:var(--ink);color:#fff}
+.grid-item{margin:0}
+figure{margin:1.2rem 0;max-width:60ch}
+figure img{max-width:100%;height:auto;display:block}
+button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
+  border-radius:3px;display:block;max-width:100%}
+button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+dialog.lb{border:none;padding:0;max-width:96vw;max-height:96vh;background:transparent}
+dialog.lb::backdrop{background:rgba(13,27,42,.88)}
+dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
+dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
+  background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem}
+header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
+header.top p{color:var(--slate);margin:.2rem 0 0}
+.switch{margin:.35rem 0 0}
+.switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px}
+.switch a:hover{border-bottom-width:2px}
+.switch a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media print{.switch{display:none}}
+.hint{position:fixed;right:1rem;bottom:1rem;font:.72rem system-ui,sans-serif;color:var(--slate);
+  background:#fff;border:1px solid var(--rule);border-radius:4px;padding:.35rem .6rem;opacity:.75}
+@media print{.beat{min-height:auto;page-break-inside:avoid}.hint{display:none}
+  details.sol{break-inside:avoid}details.sol summary{display:none}}
+</style></head>
+<body>
+<header class="top">
+  <h1>Day 1 &nbsp;Welcome to Calculus I</h1>
+  <p>MTH 207 Calculus I &mdash; Introduction</p>
+  <p class="switch"><a class="twin" href="../../notes/Section_Intro/Section_Intro_home.html">Show me the worked-out notes &rarr;</a></p>
+</header>
+<main>
+<section class="beat" aria-label="Today" data-source-line="20">
+  <h2>Today</h2>
+<ul><li>What calculus actually <em>is</em> &mdash; starting with two problems you can already make progress on</li><li>How this course runs, and how to get help</li><li>How to study for it, and what the research says about AI and solution videos</li></ul>
+  <div class="key"><p>Slides and a filled-in version of every deck are posted on the course website, so don't spend class time transcribing one. <strong>Bring paper anyway</strong> &mdash; what you should be writing is your own work on the examples, especially the <strong>Your Turn</strong> ones.</p></div>
+</section>
+<section class="beat" aria-label="Who Am I?" data-source-line="35">
+  <h2>Who Am I?</h2>
+<p><strong>Dr.\ Baggett</strong> &mdash; call me "Doctor B".</p>
+<ul><li>E-mail: jbaggett@uwlax.edu &mdash; the fastest way to reach me</li><li>Office: 259E Cartwright &mdash; but I am rarely there, so catch me at student hours</li></ul>
+<p><strong>Student hours</strong> &mdash; just turn up, no appointment:</p>
+<ul><li>Mon, Wed   11:00&ndash;11:30   Centennial 3rd floor common area</li><li>Tue, Thu   9:15&ndash;9:45   Centennial 3rd floor common area</li><li>Tue, Thu   1:00&ndash;2:00   Wimberly 425J</li></ul>
+<p>These are in the syllabus in Canvas too, so you never have to remember them.</p>
+<p><strong>My job:</strong> give you the resources to build a strong foundation in calculus.</p>
+<p><strong>Your job:</strong> use them early.</p>
+</section>
+<section class="beat" aria-label="So What Is Calculus?" data-source-line="61">
+  <h2>So What Is Calculus?</h2>
+<p>Here is my honest summary of this course:</p>
+  <div class="key"><p>Calculus is algebra and trigonometry, plus <strong>one</strong> new idea.</p></div>
+<p>Everything you already know still applies &mdash; factoring, fractions, exponents, logarithms, the unit circle. You will use all of it, constantly, and rusty algebra will cost you far more points than calculus ever will.</p>
+  <details class="sol"><summary>Show: what is actually new</summary>
+<p>What is new is a single idea, and we will spend the next several weeks learning to handle it.</p>
+  </details>
+</section>
+<section class="beat" aria-label="The One New Idea: The Limit" data-source-line="76">
+  <h2>The One New Idea: The Limit</h2>
+<p>Every question in this course has the same shape:</p>
+<ul><li>The quantity I want cannot be computed directly.</li><li>But I can compute an <strong>approximation</strong> to it.</li><li>And I can make that approximation as good as I like.</li></ul>
+<p>A <strong>limit</strong> is what you get by pushing that process as far as it goes.</p>
+  <div class="key"><p>Two questions in particular are worth a whole course, and their histories are opposites. One is ancient: Archimedes (~250 BC) got remarkably far on it, and then it sat for two thousand years. The other could not even be <em>asked</em> in general until algebra met geometry, less than four hundred years ago. The same one idea answers both.</p></div>
+</section>
+<section class="beat" aria-label="Big Limit #1: How Fast, Right Now?" data-source-line="95">
+  <h2>Big Limit #1: How Fast, Right Now?</h2>
+<p>A ball is thrown straight up. Its height after $\displaystyle t$ seconds is $$s(t) = -16t^2 + 32t + 48 = 16(-t^2+2t+3)$$ feet. 
+The second form is easier here &mdash; the $\displaystyle 16$ pulls out of any difference.</p>
+<p><strong>The question.</strong> How fast is it moving at the instant $\displaystyle t = 0.5$?</p>
+<p><strong>The trouble.</strong> Speed is distance divided by time &mdash; but an instant has no duration. There is nothing to divide by.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Over an <em>interval</em> you can do it with algebra you already have. 
+Using $\displaystyle s(t) = 16(-t^2+2t+3)$, compute the average velocity $$\dfrac{s(x)-s(a)}{x-a}$$ with $\displaystyle a = 0.5$ &mdash; first for $\displaystyle x = 1$, then for $\displaystyle x = 0.6$.</p></div>
+  <details class="sol"><summary>Show: the average speed to $\displaystyle x=1$</summary>
+<p>$$x = 1:\quad \frac{s(1)-s(0.5)}{1-0.5} \;=\; \frac{64-60}{0.5} \;=\; 8\text{ ft/sec}$$</p>
+  </details>
+  <details class="sol"><summary>Show: the average speed to $\displaystyle x=0.6$</summary>
+<p>$$x = 0.6:\quad \frac{s(0.6)-s(0.5)}{0.6-0.5} \;=\; \frac{61.44-60}{0.1} \;=\; 14.4\text{ ft/sec}$$</p>
+  </details>
+  <figure><button type="button" class="zoom" data-src="figures/secant_limit.png" aria-label="Enlarge figure"><img src="figures/secant_limit.png" alt="The height of a thrown ball plotted against time, with a point P at t equals 0.5 and three secant lines drawn from P to points Q that get closer and closer to it. As Q approaches P the secant slopes rise toward the slope of the dashed tangent line, marked as the speedometer reading of 16 feet per second."></button><figcaption>Keep shrinking the interval and the answers pile up near 16. Open it live and slide $\displaystyle Q$ in <a href="https://learnlens.org/calclens/derivatives/secant/?f=-16t%5E2%2B32t%2B48&a=0.5&h=0.5&name=s&window=0,2&embed=true&controls=h,table&readout=false&prose=none&form=interval" target="_blank" rel="noopener">Open the interactive version</a></figcaption></figure>
+</section>
+<section class="beat" aria-label="Do It Once with Letters" data-source-line="127">
+  <h2>Do It Once with Letters</h2>
+<p>Instead of a new number every time, do the same computation with $\displaystyle x$ left in.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Form $\displaystyle \dfrac{s(x)-s(0.5)}{x-0.5}$ using $\displaystyle s(t) = 16(-t^2+2t+3)$, and simplify it as far as it will go. Factor the top.</p></div>
+  <details class="sol"><summary>Show: the two pieces evaluated</summary>
+<p>First evaluate the two pieces: $\displaystyle s(x) = 16(-x^2+2x+3)$, and $\displaystyle s(0.5) = 16(-0.25+1+3) = 16(3.75) = 60$.</p>
+  </details>
+  <details class="sol"><summary>Show: setting up the quotient</summary>
+<p>$$\frac{s(x)-s(0.5)}{x-0.5} \;=\; \frac{16(-x^2+2x+3) - 60}{x-0.5}$$</p>
+  </details>
+  <details class="sol"><summary>Show: expanding the numerator</summary>
+<p>$$=\; \frac{-16x^2+32x+48-60}{x-0.5} \;=\; \frac{-16x^2+32x-12}{x-0.5}$$</p>
+  </details>
+  <details class="sol"><summary>Show: factoring it</summary>
+<p>$$=\; \frac{-4(4x^2-8x+3)}{x-0.5} \;=\; \frac{-4(2x-1)(2x-3)}{x-0.5}$$</p>
+  </details>
+  <details class="sol"><summary>Show: cancelling, and the answer</summary>
+<p>$$=\; \frac{-8(x-0.5)(2x-3)}{x-0.5} \;=\; -8(2x-3) \;=\; 24-16x$$</p>
+  </details>
+<p>Check it against the numbers you already found:</p>
+<p><table><caption>The simplified quotient reproduces every value computed above</caption><tr><th scope="col">$\displaystyle x$</th><th scope="col">$\displaystyle 24-16x$</th><th scope="col">earlier</th></tr><tr><td>$\displaystyle 1$</td><td>$\displaystyle 8$</td><td>$\displaystyle 8$</td></tr><tr><td>$\displaystyle 0.6$</td><td>$\displaystyle 14.4$</td><td>$\displaystyle 14.4$</td></tr><tr><td>$\displaystyle 0.51$</td><td>$\displaystyle 15.84$</td><td></td><td>mdash;</td></tr><tr><td>$\displaystyle 0.5$</td><td>$\displaystyle \mathbf{16}$</td><td>the speedometer</td></tr></table></p>
+  <div class="key"><p>Once the $\displaystyle (x-0.5)$ cancels, nothing stops you putting $\displaystyle x = 0.5$ in &mdash; and out comes $\displaystyle 16$. The algebra you already had did this. The limit is what makes the cancelling legal.</p></div>
+</section>
+<section class="beat" aria-label="Big Limit #2: Area by Exhaustion" data-source-line="175">
+  <h2>Big Limit #2: Area by Exhaustion</h2>
+<p><strong>The question.</strong> What is the area of a circle of radius $\displaystyle 1$?</p>
+<p><strong>The trouble.</strong> We know the area of a triangle. We know the area of a rectangle. A circle has no straight edges at all.</p>
+<p><strong>Archimedes' idea.</strong> Draw a polygon inside the circle. You <em>can</em> find its area. Then add sides.</p>
+  <figure><button type="button" class="zoom" data-src="figures/special_triangles.png" aria-label="Enlarge figure"><img src="figures/special_triangles.png" alt="Two reference right triangles side by side. The 45-45-90 triangle has both legs of length 1 and hypotenuse the square root of 2. The 30-60-90 triangle has short leg 1, long leg the square root of 3, and hypotenuse 2."></button></figure>
+  <div class="turn your"><span class="badge">Your turn</span><p>Find the exact area of the inscribed <strong>square</strong>, then the inscribed <strong>regular hexagon</strong>. Geometry only &mdash; no calculus, no calculator.</p></div>
+  <details class="sol"><summary>Show: the square</summary>
+<p>$$\text{Square:}\quad \text{side} = \sqrt{2}, \qquad A = (\sqrt{2})^2 = 2$$</p>
+  </details>
+  <details class="sol"><summary>Show: the hexagon</summary>
+<p>$$\text{Hexagon:}\quad \text{six equilateral triangles of side } 1$$</p>
+  </details>
+  <details class="sol"><summary>Show: its area</summary>
+<p>$$A = 6\cdot\frac{\sqrt{3}}{4}(1)^2 = \frac{3\sqrt{3}}{2} \approx 2.598$$</p>
+  </details>
+  <details class="sol"><summary>Show: how both compare with $\displaystyle \pi$</summary>
+<p>Both are under $\displaystyle \pi$ &mdash; and the hexagon is closer.</p>
+  </details>
+  <figure><button type="button" class="zoom" data-src="figures/exhaustion.png" aria-label="Enlarge figure"><img src="figures/exhaustion.png" alt="A circle with regular polygons inscribed in it at 3, 6, 12 and 96 sides. The polygon areas are 1.2990, 2.5981, 3.0000 and 3.1394, climbing toward the area of the circle, pi equals 3.14159."></button><figcaption>Click to interact: add sides</figcaption></figure>
+</section>
+<section class="beat" aria-label="The Same Trick, on Any Curve" data-source-line="216">
+  <h2>The Same Trick, on Any Curve</h2>
+<p>Archimedes needed a circle. In Chapter 5 we do it with rectangles, and then it works under <em>any</em> curve.</p>
+  <figure><button type="button" class="zoom" data-src="figures/riemann_preview.png" aria-label="Enlarge figure"><img src="figures/riemann_preview.png" alt="The region under a curve approximated by 4, then 10, then 40 rectangles. As the rectangles get narrower they fill the region more and more exactly."></button></figure>
+  <div class="key"><p>Same move both times: approximate with something you can compute, then let the approximation run to its limit.</p></div>
+</section>
+<section class="beat" aria-label="Two Limits, One Course" data-source-line="229">
+  <h2>Two Limits, One Course</h2>
+<div class="cols">
+<div class="grid-item"><strong>The derivative</strong><p>How fast, right now. Chapters 2 through 4 &mdash; rates of change, tangent lines, optimization.</p></div>
+<div class="grid-item"><strong>The integral</strong><p>How much, in total. Chapters 5 and 6 &mdash; area, accumulation, net change.</p></div>
+</div>
+<p>They look like opposite questions. In Chapter 5 we will prove they are inverses of each other, which is such a surprise that it is called the <strong>Fundamental Theorem of Calculus</strong>.</p>
+  <div class="key"><p>Starting tomorrow we chase the first one. We cannot finish it until we know what a limit really is &mdash; that is Sections 2.2 through 2.6.</p></div>
+</section>
+<section class="beat" aria-label="Whose Example Is It?" data-source-line="243">
+  <h2>Whose Example Is It?</h2>
+<p>Most days you will do more of the work than I do. Every example is labelled so you know which kind it is before it starts.</p>
+  <div class="turn my"><span class="badge">My turn</span><p>I work it at the board &mdash; usually because it introduces a new idea, or because watching once beats being stuck for ten minutes.</p></div>
+<p>% no-reveal &mdash; demonstrates the badge, not a problem</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>You work it, alone or with a neighbor &mdash; pen actually moving on paper. I walk around. Then we compare and I show the solution.</p></div>
+<p>% no-reveal, worksheet-skip &mdash; demonstrates the badge, not a problem</p>
+  <div class="key"><p>The answer is on the next slide either way &mdash; so copying it down is never the point. <strong>Attempting it first is.</strong> The minutes you spend stuck are where the learning happens.</p></div>
+</section>
+<section class="beat" aria-label="Where Everything Lives" data-source-line="260">
+  <h2>Where Everything Lives</h2>
+<div class="cols"><div><p><strong>Canvas</strong> is the home for this course. Schedule, announcements, notes, and every link start there.</p>
+<p><strong>Stewart, <em>Calculus: Early Transcendentals</strong>, 9th edition</em>, from Textbook Rental. Don't bring it to class. When you need a formula table or a theorem, use <strong>Look It Up</strong> on the course website &mdash; free, online, always with you.</p>
+<p><strong>MyOpenMath</strong> hosts the online homework. You reach it through Canvas; your score comes back to Canvas automatically.</p></div><div><div class="key"><p>If you cannot find something, look in Canvas first, then e-mail me. That order saves us both a day.</p></div></div></div>
+</section>
+<section class="beat" aria-label="How the Grade Works" data-source-line="276">
+  <h2>How the Grade Works</h2>
+<div class="cols">
+<div class="grid-item"><strong>Homework &mdash; 10%</strong><p>51 sets in MyOpenMath, roughly one per class day. Every problem is worth 1 point; your grade is the percent of all points earned. Nothing dropped.</p></div>
+<div class="grid-item"><strong>Quizzes &mdash; 20%</strong><p>11 quizzes, almost always Tuesday, about 15 minutes. Lowest 2 dropped.</p></div>
+<div class="grid-item"><strong>Midterms &mdash; 42%</strong><p>Three, all on Tuesdays: Oct 6, Nov 3, Dec 1.</p></div>
+<div class="grid-item"><strong>Final &mdash; 28%</strong><p>Comprehensive, during the UWL final exam period.</p></div>
+</div>
+<p>Grade scale: A 92, AB 88, B 82, BC 78, C 70, D 60.</p>
+  <div class="key"><p>Homework is only 10% of the grade and close to 100% of the learning. Treat the percentage as a lie.</p></div>
+</section>
+<section class="beat" aria-label="The Weekly Rhythm" data-source-line="296">
+  <h2>The Weekly Rhythm</h2>
+<p>We meet Monday through Thursday.</p>
+<ul><li>There is a <strong>quiz most Tuesdays</strong> &mdash; 11 in all &mdash; covering the last three class days. The schedule in Canvas has every date.</li><li><strong>Homework</strong> is due at 11:59 pm, on the schedule below. Everything is in Canvas &mdash; you never have to work it out.</li></ul>
+<p><table><caption>When homework assigned on each day is due</caption><tr><th scope="col">assigned in class</th><th scope="col">due at 11:59 pm</th></tr><tr><td>Monday</td><td>Tuesday</td></tr><tr><td>Tuesday</td><td>Wednesday</td></tr><tr><td>Wednesday</td><td>Sunday</td></tr><tr><td>Thursday</td><td>Monday</td></tr></table></p>
+  <div class="key"><p>However long you get, there is always exactly <strong>one</strong> class meeting between getting the homework and its deadline. That meeting is your chance to ask. Start early enough to have a question.</p></div>
+</section>
+<section class="beat" aria-label="Getting Help" data-source-line="321">
+  <h2>Getting Help</h2>
+<p><strong>My office hours</strong> are posted in Canvas. If none of them work, e-mail me three times you are free and whether you want Zoom or in person.</p>
+<p><strong>The Murphy Learning Center</strong> (251 Murphy Library) offers free drop-in tutoring through Calculus II. It usually opens in Week 2.</p>
+  <div class="key"><p>Come at the first sign of trouble, not the week of the exam. Math builds &mdash; a gap in September is still there in December.</p></div>
+</section>
+<section class="beat" aria-label="How to Use the Textbook" data-source-line="334">
+  <h2>How to Use the Textbook</h2>
+<p>Fifty minutes is not enough time to cover everything in a section, so I choose. What I skip is still yours to learn.</p>
+<ul><li><strong>Before class:</strong> skim the section. Ten seconds a page. You are looking for what the section is about, not understanding it.</li><li><strong>After class:</strong> read it properly. Find every definition and theorem, then read the example right after it.</li><li><strong>Then:</strong> do the homework.</li></ul>
+  <div class="key"><p>Most students skip the definitions. That is the single most expensive habit in this course.</p></div>
+</section>
+<section class="beat" aria-label="The Experiment You Are About to Run on Yourself" data-source-line="349">
+  <h2>The Experiment You Are About to Run on Yourself</h2>
+<p>Stuck on homework, you can ask an AI or find someone on YouTube working that exact problem. Researchers ran this as an experiment: about a thousand students worked math practice problems &mdash; one group with unrestricted GPT-4, one with a hints-only tutor, one with nothing. Then everyone sat an exam <strong>without</strong> any AI.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Predict: on that exam, how did the unrestricted-AI group do against the group that had no AI at all?</p></div>
+  <details class="sol"><summary>Show: what the study found</summary>
+<p>They scored about <strong>17% worse</strong> &mdash; not worse than they hoped, worse than the students who never had the tool. During practice that same group looked like it was doing great.</p>
+  </details>
+  <div class="key"><p>Their practice scores went <strong>up</strong> while their learning went <strong>down</strong>, and nothing warned them. The feeling of understanding arrives on time even when the understanding does not.</p></div>
+</section>
+<section class="beat" aria-label="Why It Feels Like Learning" data-source-line="368">
+  <h2>Why It Feels Like Learning</h2>
+<p>Watching a clean solution is <strong>fluent</strong>. Nothing is confusing, so it feels like understanding. Being stuck is not fluent &mdash; it feels like failing, right up until it works.</p>
+<p>In one study, students in classes that made them work <em>learned more</em> but <strong>felt like they learned less</strong>. The smooth version wins on feel and loses on results.</p>
+<p>But the tools are not the problem. At Harvard, 194 physics students were randomly given either a well-run active class or an AI tutor &mdash; and the AI-tutored students learned <strong>more than twice as much, in less time</strong>.</p>
+<p>Same kind of model that left those math students worse off. What differed: it gave <strong>one step at a time</strong>, never the whole solution, and made them try first.</p>
+  <div class="key"><p>The tool was not the variable. How it was <strong>asked</strong> was the variable &mdash; and that part is yours.</p></div>
+</section>
+<section class="beat" aria-label="So Use Them Like This" data-source-line="387">
+  <h2>So Use Them Like This</h2>
+<p><strong>Attempt first.</strong> Ten real minutes on blank paper. Struggle is working while you are still generating and testing ideas; it is over when you have re-read the problem three times with no new idea. That moment &mdash; out of ideas, not out of patience &mdash; is when a hint is worth the most.</p>
+<p><strong>Then ask for the next step, not the answer.</strong> Paste this once:</p>
+  <div class="key"><p><em>I am working a calculus problem and I want to learn it, not just finish it. Do not give me the full solution. Ask me what I have tried, then give me one small hint at a time and wait for me to attempt each step.</em></p></div>
+<p><strong>Then close it and redo the problem from blank paper.</strong> If you cannot reproduce it, you recognised it &mdash; you did not learn it.</p>
+  <div class="key"><p>Two tells. If you are nodding along, you are watching. If you are slightly annoyed and doing the work yourself, it is helping.</p></div>
+</section>
+<section class="beat" aria-label="Brush Up on This Week" data-source-line="406">
+  <h2>Brush Up on This Week</h2>
+<p>Four short review sets run alongside the regular homework this week and next: <strong>Review1</strong> (algebra) due tomorrow, then <strong>Review2</strong>, <strong>Review3</strong> (inverses, exponents, logs) and <strong>Review4</strong> (trigonometry) on the next three class days.</p>
+<p>They cover this:</p>
+<div class="cols"><div><p><strong>Algebra</strong>
+<ul><li>Fractions: adding, subtracting, dividing</li><li>Exponent rules and negative and fractional exponents</li><li>Factoring; interval notation</li><li>Logarithm laws and domains</li></ul></p></div><div><p><strong>Functions and trig</strong>
+<ul><li>Evaluating $\displaystyle f(3+h)$ and $\displaystyle f(x+h)$</li><li>Lines: $\displaystyle y - y_0 = m(x - x_0)$</li><li>Unit circle, radians, graphs of sine and cosine</li><li>$\displaystyle |a| = -a$ when $\displaystyle a < 0$</li></ul></p></div></div>
+  <div class="key"><p>We did not schedule a review day, so these four sets are it. If your algebra is rusty, this week is when to fix it &mdash; not October.</p></div>
+<p>Separately, a <strong>cumulative review set</strong> is available for each exam and is due on the review day before the exam. Start it early &mdash; it is built from the kind of problems the exam asks.</p>
+  <div class="key"><p>ExamReview1 is already open. It is not due until Oct 5, but it covers everything on Exam 1, so it doubles as your running check that you are keeping up.</p></div>
+</section>
+<section class="beat" aria-label="Where to Look Things Up" data-source-line="448">
+  <h2>Where to Look Things Up</h2>
+<p>Two pages on the course site, both pinned at the top of Canvas.</p>
+<ul><li><strong>Look It Up</strong> &mdash; every formula, definition and theorem for the term, on one page. Derivative rules, trig values, the unit circle. Use it while you work; you are not supposed to have these memorised yet.</li><li><strong>Unit 1</strong> &mdash; everything for Exam 1 in one place: the readings, and a short list of videos I picked.</li></ul>
+  <div class="key"><p>Read the written explanation <em>first</em>, then watch a video if you are still stuck. A video makes you feel caught up faster than it makes you caught up &mdash; that is the trap from the slides just before this.</p></div>
+</section>
+</main>
+<p class="hint">20 sections &middot; solutions open on click</p>
+<dialog class="lb" aria-label="Enlarged figure">
+  <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
+</dialog>
+<script>
+// Editor scroll-sync. Same protocol the filled/blank builds use, so the editor
+// side needs no new message types: we post htmlSectionChanged as the reader
+// scrolls, and honour goToSection when the cursor moves in the tex.
+(function(){
+  if(!window.parent || window.parent===window) return;
+  var secs=document.querySelectorAll('main > section[data-source-line]');
+  if(!secs.length) return;
+  var cur=null, t=null;
+  function report(){
+    // the section covering 30% down the viewport -- the one being read, not
+    // the one clipped at the top edge
+    var mark=window.innerHeight*0.3, best=null;
+    for(var i=0;i<secs.length;i++){
+      var r=secs[i].getBoundingClientRect();
+      if(r.top<=mark && r.bottom>0) best=secs[i];
+    }
+    if(!best) return;
+    var line=parseInt(best.dataset.sourceLine,10);
+    if(!isNaN(line) && line!==cur){
+      cur=line;
+      window.parent.postMessage({type:'htmlSectionChanged',sourceLine:line},'*');
+    }
+  }
+  addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(report,80);},
+                   {passive:true});
+  addEventListener('message',function(e){
+    if(!e.data || e.data.type!=='goToSection' || e.data.sourceLine==null) return;
+    // nearest section at or before the cursor: a cursor inside a frame should
+    // scroll to that frame, not fail to match its exact opening line
+    var best=null;
+    for(var i=0;i<secs.length;i++){
+      if(parseInt(secs[i].dataset.sourceLine,10)<=e.data.sourceLine) best=secs[i];
+    }
+    if(best){ cur=parseInt(best.dataset.sourceLine,10);
+              best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+(function(){
+  var dlg=document.querySelector('dialog.lb'), img=dlg.querySelector('img');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button.zoom');
+    if(b){ img.src=b.dataset.src;
+           img.alt=b.querySelector('img').alt;   // carry the real alt text over
+           dlg.showModal(); return; }
+    if(e.target.closest('dialog.lb .close') || e.target===dlg) dlg.close();
+  });
+  dlg.addEventListener('close',function(){ img.removeAttribute('src'); });
+})();
+</script>
+</body></html>
