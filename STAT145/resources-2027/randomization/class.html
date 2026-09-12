@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Coursepack — Randomization Tests</title>
+<title>Randomization Tests — Class</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -3182,18 +3182,85 @@ window.Quarto = {
 };
 </script>
 
+<style type="text/css">
+
+body { padding-bottom: 4.5rem; }
+
+details.reveal-answer { margin: 0.5em 0 1.3em; }
+details.reveal-answer > summary {
+cursor: pointer;
+display: inline-block;
+font-weight: 600;
+color: #2a76a8;
+background: #f0f7fb;
+border: 1px solid #cfe0ec;
+border-radius: 6px;
+padding: 0.3em 0.95em;
+list-style: none;
+user-select: none;
+}
+details.reveal-answer > summary::-webkit-details-marker { display: none; }
+details.reveal-answer > summary::before { content: "\25B8 "; } 
+details.reveal-answer[open] > summary::before { content: "\25BE "; } 
+details.reveal-answer[open] > summary {
+color: #2e7d32;
+background: #eef7ef;
+border-color: #cfe6d1;
+}
+details.reveal-answer > :not(summary) {
+margin-top: 0.5em;
+padding: 0.8em 1.1em;
+background: #f1f8f2;
+border-left: 4px solid #2e7d32;
+border-radius: 0 4px 4px 0;
+}
+
+details.reveal-answer.ck-current > summary {
+box-shadow: 0 0 0 3px rgba(86,155,189,0.45);
+}
+
+#ck-bar {
+position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
+display: flex; align-items: center; gap: 0.5em; flex-wrap: wrap;
+padding: 0.5em 0.9em;
+background: #35617a; color: #fff;
+font: 600 0.85rem/1.25 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+box-shadow: 0 -2px 10px rgba(0,0,0,0.18);
+}
+#ck-bar button {
+font: inherit; color: #fff;
+background: rgba(255,255,255,0.12);
+border: 1px solid rgba(255,255,255,0.35);
+border-radius: 6px; padding: 0.32em 0.85em; cursor: pointer;
+}
+#ck-bar button:hover { background: rgba(255,255,255,0.25); }
+#ck-next { background: #569BBD !important; border-color: #569BBD !important; }
+#ck-hint { opacity: 0.85; font-weight: 400; }
+#ck-progress { opacity: 0.9; font-weight: 400; }
+.ck-gap { flex: 1 1 auto; }
+
+body.ck-editing main { outline: 2px dashed #569BBD; outline-offset: 8px; }
+body.ck-editing #ck-edit { background: #e8a33d !important; border-color: #e8a33d !important; }
+
+body.ck-editing [contenteditable="false"] { cursor: default; }
+@media print {
+#ck-bar { display: none; }
+details.reveal-answer[open] > summary { display: none; }
+details.reveal-answer > :not(summary) { border-left-color: #999; }
+}
+</style>
 </head>
 
 <body>
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="../coursepack.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+</div>
 <main class="content page-columns page-full" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Coursepack — Randomization Tests</h1>
+<h1 class="title">Randomization Tests — Class</h1>
 </div>
 
 
@@ -3245,21 +3312,33 @@ Figure 1: The two cereal boxes shown to the children. The cereal inside was ide
 <ol type="a">
 <li>If the cartoons make no difference, because after all the cereal is the same in each box, how many of the 80 children do you expect to pick the cartoon box? What sample proportion is this?</li>
 </ol>
-<div class="workspace" height="0.7in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>If the cartoons make no difference, each child is equally likely to pick either box.</li>
+<li>We expect about half: <span class="math inline">\(40\)</span> of the <span class="math inline">\(80\)</span> children.</li>
+<li>As a proportion, <span class="math inline">\(\hat{p} = 40/80 = 0.50\)</span>.</li>
+</ol>
+</details>
 <ol start="2" type="a">
 <li>Suppose that in this study, 52 of the children chose the box with cartoons. What sample proportion is this? Does this lead you to believe that there was a preference toward the cartoon box, or would you expect this sample proportion to occur by chance even if there was no preference? (We will use StatLens to explore the sampling distribution for the proportion to determine what values are likely to occur.)</li>
 </ol>
-<div class="workspace" height="0.7in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li><span class="math inline">\(\hat{p} = 52/80 = 0.65\)</span>, which is above the <span class="math inline">\(0.50\)</span> we would expect if there were no preference.</li>
+<li>On its own, <span class="math inline">\(0.65\)</span> is not proof: sample proportions vary from sample to sample even when the true proportion is <span class="math inline">\(0.50\)</span>.</li>
+<li>The real question is whether a value as high as <span class="math inline">\(0.65\)</span> is <em>plausible by chance alone</em>. To answer it, we simulate many samples of <span class="math inline">\(80\)</span> children under “no preference” (<span class="math inline">\(p = 0.50\)</span>) and see how often chance produces a proportion this large.</li>
+</ol>
+</details>
 <ol start="3" type="a">
 <li>Using the simulation from part b), what sample proportions do we expect to see if there is no preference toward the cartoons?</li>
 </ol>
-<div class="workspace" height="0.65in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>Under “no preference” (<span class="math inline">\(p = 0.50\)</span>), the simulated sample proportions cluster around <span class="math inline">\(0.50\)</span>.</li>
+<li>Almost all fall roughly between <span class="math inline">\(0.39\)</span> and <span class="math inline">\(0.61\)</span> (about <span class="math inline">\(31\)</span> to <span class="math inline">\(49\)</span> of the <span class="math inline">\(80\)</span> children).</li>
+<li>The observed <span class="math inline">\(\hat{p} = 0.65\)</span> sits beyond that typical range, in the tail — so chance alone is an unlikely explanation. We will make this precise with a <span class="math inline">\(p\)</span>-value later in the chapter.</li>
+</ol>
+</details>
 </div>
 </section>
 <section id="the-hypothesis-testing-framework" class="level2 page-columns page-full">
@@ -3294,6 +3373,9 @@ Figure 1: The two cereal boxes shown to the children. The cereal inside was ide
 <p><span class="math display">\[H_0: \text{The defendant is innocent.}\]</span> <span class="math display">\[H_A: \text{The defendant is guilty.}\]</span></p>
 <p><strong>Caution</strong></p>
 <p>Notice that if a jury finds a defendant <em>not guilty</em>, this does not necessarily mean the jury is confident in the person’s innocence. They are simply not convinced of the alternative. This is also the case with hypothesis testing: <em>even if we fail to reject the null hypothesis, we do not accept the null hypothesis as truth.</em> Failing to find evidence in favor of the alternative is not the same as finding evidence that the null hypothesis is true.</p>
+<div class="elaboration">
+<p>The courtroom gives us one more useful idea. A jury is instructed to convict only when the evidence establishes guilt <em>beyond a reasonable doubt</em> — a deliberately high bar, set so that the system rarely convicts an innocent person. A hypothesis test works the same way: we reject the null hypothesis only when the data would be genuinely <em>surprising</em> if the null were true. Later we will make “surprising” precise with a <strong>significance level</strong>, which is nothing more than a choice of where to set the bar for reasonable doubt. Keeping that bar high is what protects us from too often declaring an effect that isn’t really there.</p>
+</div>
 <section id="the-shape-of-a-hypothesis" class="level3">
 <h3 class="anchored" data-anchor-id="the-shape-of-a-hypothesis">The shape of a hypothesis</h3>
 <p>Every test in this chapter begins the way the courtroom does — from skepticism. The <strong>null hypothesis</strong> plays the role of the presumption of innocence: it claims that <em>nothing is going on</em>, so the parameter sits at its “no-effect” value. For a single group that value is whatever is claimed or expected (<span class="math inline">\(p_0\)</span> or <span class="math inline">\(\mu_0\)</span>); for a comparison of two groups, “no effect” means the difference is <strong>zero</strong>. The <strong>alternative hypothesis</strong> is the claim the researcher actually set out to support, and it points in a direction the research question chooses — <em>different from</em>, <em>greater than</em>, or <em>less than</em> the null value.</p>
@@ -3347,33 +3429,53 @@ Figure 1: The two cereal boxes shown to the children. The cereal inside was ide
 <ol type="a">
 <li>We are testing to see if the average income is different in eastern states than western states.</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>Parameters: <span class="math inline">\(\mu_E\)</span> and <span class="math inline">\(\mu_W\)</span>, the mean income in eastern and western states.</li>
+<li><span class="math inline">\(H_0: \mu_E - \mu_W = 0\)</span> (no difference in average income).</li>
+<li><span class="math inline">\(H_A: \mu_E - \mu_W \neq 0\)</span> (two-sided — “different” gives no direction).</li>
+</ol>
+</details>
 <ol start="2" type="a">
 <li>We are testing to see if the average income is greater in eastern stats than western states.</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>Parameters: <span class="math inline">\(\mu_E\)</span> and <span class="math inline">\(\mu_W\)</span> as above.</li>
+<li><span class="math inline">\(H_0: \mu_E - \mu_W = 0\)</span>.</li>
+<li><span class="math inline">\(H_A: \mu_E - \mu_W &gt; 0\)</span> (one-sided — “greater” points east).</li>
+</ol>
+</details>
 <ol start="3" type="a">
 <li>We are testing to see if a particular coin is weighted (i.e., not fair).</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>Parameter: <span class="math inline">\(p\)</span>, the true proportion of heads for this coin.</li>
+<li><span class="math inline">\(H_0: p = 0.5\)</span> (the coin is fair).</li>
+<li><span class="math inline">\(H_A: p \neq 0.5\)</span> (two-sided — “not fair” could tip either way).</li>
+</ol>
+</details>
 <ol start="4" type="a">
 <li>We are testing to see if the average rent in La Crosse is less than $850.</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>Parameter: <span class="math inline">\(\mu\)</span>, the mean rent in La Crosse.</li>
+<li><span class="math inline">\(H_0: \mu = 850\)</span>.</li>
+<li><span class="math inline">\(H_A: \mu &lt; 850\)</span> (one-sided — “less than”).</li>
+</ol>
+</details>
 <ol start="5" type="a">
 <li>We are testing to see if children have a preference for the cereal box with cartoons (above).</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>Parameter: <span class="math inline">\(p\)</span>, the proportion of children who choose the cartoon box.</li>
+<li><span class="math inline">\(H_0: p = 0.5\)</span> (no preference).</li>
+<li><span class="math inline">\(H_A: p &gt; 0.5\)</span> (one-sided — a preference <em>for</em> the cartoon box).</li>
+</ol>
+</details>
 </div>
 </section>
 </section>
@@ -3393,15 +3495,22 @@ Figure 1: The two cereal boxes shown to the children. The cereal inside was ide
 <ol type="a">
 <li>Is this an observational study or an experiment? How does the type of study impact what can be inferred from the results?</li>
 </ol>
-<div class="workspace" height="0.75in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>It is an <strong>experiment</strong>: the researchers randomly assigned which version of option (B) each student saw.</li>
+<li>Because the treatment was randomly assigned, the two groups are comparable, so a discernible difference can be attributed to the phrasing — we can make a <strong>causal</strong> claim, not just an association.</li>
+</ol>
+</details>
 <ol start="2" type="a">
 <li>State the null and alternative hypotheses for this study.</li>
 </ol>
-<div class="workspace" height="0.75in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>Parameters: <span class="math inline">\(p_T\)</span> and <span class="math inline">\(p_C\)</span>, the proportion who do <strong>not</strong> buy the video in the treatment and control groups.</li>
+<li><span class="math inline">\(H_0: p_T - p_C = 0\)</span> (the reminder phrasing has no effect).</li>
+<li><span class="math inline">\(H_A: p_T - p_C &gt; 0\)</span> (the reminder increases the proportion who choose not to buy).</li>
+</ol>
+</details>
 </div>
 <p>The results are summarized below:</p>
 <table class="caption-top table">
@@ -3437,9 +3546,13 @@ Figure 1: The two cereal boxes shown to the children. The cereal inside was ide
 <div class="example-box">
 <p><strong>Class Example 7.3: Opportunity cost, revisited</strong></p>
 <p>Compute the difference in the sample proportions of students who choose not to buy the video.</p>
-<div class="workspace" height="0.75in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>Control: <span class="math inline">\(\hat{p}_C = 19/75 = 0.253\)</span>.</li>
+<li>Treatment: <span class="math inline">\(\hat{p}_T = 34/75 = 0.453\)</span>.</li>
+<li>Difference: <span class="math inline">\(\hat{p}_T - \hat{p}_C = 0.453 - 0.253 = 0.20\)</span> (treatment group is 20 percentage points more likely to not buy).</li>
+</ol>
+</details>
 </div>
 </section>
 <section id="building-a-randomization-distribution" class="level2 page-columns page-full">
@@ -3528,21 +3641,31 @@ Figure 3: Randomization distribution with 1000 randomizations
 <ol type="a">
 <li>Why is the distribution centered at 0.3?</li>
 </ol>
-<div class="workspace" height="0.75in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>The randomization distribution is built <em>assuming <span class="math inline">\(H_0\)</span> is true</em> — that the true proportion is <span class="math inline">\(0.3\)</span>.</li>
+<li>Each simulated sample proportion is generated with <span class="math inline">\(p = 0.3\)</span>, so they pile up around <span class="math inline">\(0.3\)</span>; the spread shows the sampling variability we get by chance alone.</li>
+</ol>
+</details>
 <ol start="2" type="a">
 <li>The <span class="math inline">\(p\)</span>-value for <span class="math inline">\(\widehat{p}=0.15\)</span> is closest to: 0.04 or 0.40?</li>
 </ol>
-<div class="workspace" height="0.25in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li><span class="math inline">\(H_A: p &lt; 0.3\)</span>, so the <span class="math inline">\(p\)</span>-value is the <em>lower</em>-tail area — the fraction of simulations at or below <span class="math inline">\(0.15\)</span>.</li>
+<li><span class="math inline">\(0.15\)</span> is far into the left tail, where very few simulations land, so the <span class="math inline">\(p\)</span>-value is small: closest to <strong>0.04</strong>.</li>
+</ol>
+</details>
 <ol start="3" type="a">
 <li>Which proportion, <span class="math inline">\(\widehat{p}=0.20\)</span> or <span class="math inline">\(\widehat{p}=0.10\)</span>, provides the strongest evidence to suggest that <span class="math inline">\(H_0\)</span> is not true? Explain.</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>Smaller <span class="math inline">\(p\)</span>-value = stronger evidence against <span class="math inline">\(H_0\)</span>.</li>
+<li><span class="math inline">\(\hat{p}=0.10\)</span> is farther into the lower tail than <span class="math inline">\(\hat{p}=0.20\)</span>, so fewer simulations are that extreme — its <span class="math inline">\(p\)</span>-value is smaller.</li>
+<li>So <strong><span class="math inline">\(\hat{p}=0.10\)</span></strong> provides the strongest evidence that <span class="math inline">\(H_0\)</span> is not true.</li>
+</ol>
+</details>
 </div>
 <div class="example-box">
 <p><strong>Class Example 7.5: Estimating a <span class="math inline">\(p\)</span>-value from a randomization distribution…continued</strong></p>
@@ -3564,21 +3687,30 @@ Figure 4: Randomization distribution with 1000 randomizations
 <ol type="a">
 <li>The <span class="math inline">\(p\)</span>-value for <span class="math inline">\(D=\overline{x}_1-\overline{x}_2 = -2.9\)</span> is closest to: 0.01 or 0.25?</li>
 </ol>
-<div class="workspace" height="0.25in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li><span class="math inline">\(H_A: \mu_1 - \mu_2 \neq 0\)</span> (two-sided), so count simulations at least as far from <span class="math inline">\(0\)</span> as <span class="math inline">\(2.9\)</span> <em>in either tail</em>.</li>
+<li><span class="math inline">\(-2.9\)</span> is only modestly out from the center, so a fair share of simulations are that extreme: closest to <strong>0.25</strong>.</li>
+</ol>
+</details>
 <ol start="2" type="a">
 <li>The <span class="math inline">\(p\)</span>-value for <span class="math inline">\(D=\overline{x}_1-\overline{x}_2 = 1.2\)</span> is closest to: 0.30 or 0.60?</li>
 </ol>
-<div class="workspace" height="0.25in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li><span class="math inline">\(1.2\)</span> is very close to the center of the distribution, so a large majority of simulations are at least that far from <span class="math inline">\(0\)</span>.</li>
+<li>The two-sided <span class="math inline">\(p\)</span>-value is large: closest to <strong>0.60</strong>.</li>
+</ol>
+</details>
 <ol start="3" type="a">
 <li>Of the two values of <span class="math inline">\(D\)</span> above, which provides strongest evidence to suggest that <span class="math inline">\(H_0\)</span> is not true? Explain.</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li><span class="math inline">\(D=-2.9\)</span> has the smaller <span class="math inline">\(p\)</span>-value (<span class="math inline">\(\approx 0.25\)</span> vs. <span class="math inline">\(\approx 0.60\)</span>), so it sits farther in the tail.</li>
+<li>So <strong><span class="math inline">\(D=-2.9\)</span></strong> gives the stronger evidence against <span class="math inline">\(H_0\)</span> — though with <span class="math inline">\(p \approx 0.25\)</span> neither result is discernible at <span class="math inline">\(\alpha = 0.05\)</span>.</li>
+</ol>
+</details>
 </div>
 <div class="example-box">
 <p><strong>Class Example 7.6: Migraine Acupuncture Trial</strong></p>
@@ -3586,27 +3718,40 @@ Figure 4: Randomization distribution with 1000 randomizations
 <ol type="a">
 <li>What are the null and alternative hypotheses for this study?</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>Parameters: <span class="math inline">\(p_T\)</span> and <span class="math inline">\(p_C\)</span>, the proportion pain-free after acupuncture (treatment) and sham (control).</li>
+<li><span class="math inline">\(H_0: p_T - p_C = 0\)</span> (acupuncture is no better than the placebo).</li>
+<li><span class="math inline">\(H_A: p_T - p_C &gt; 0\)</span> (acupuncture increases the proportion who are pain-free).</li>
+</ol>
+</details>
 <ol start="2" type="a">
 <li>What was the sample statistic for these data?</li>
 </ol>
-<div class="workspace" height="0.75in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>Treatment: <span class="math inline">\(\hat{p}_T = 10/43 = 0.233\)</span>. Control: <span class="math inline">\(\hat{p}_C = 2/46 = 0.043\)</span>.</li>
+<li>Statistic: <span class="math inline">\(\hat{p}_T - \hat{p}_C = 0.233 - 0.043 = 0.19\)</span> (about 19 percentage points more pain-free in the acupuncture group).</li>
+</ol>
+</details>
 <ol start="3" type="a">
 <li>What is the probability that the sample results (or those more extreme) occurred by random chance, assuming that the acupuncture had no effect?</li>
 </ol>
-<div class="workspace" height="0.75in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>This probability is the <span class="math inline">\(p\)</span>-value. Build the randomization distribution in StatLens by shuffling the 12 pain-free labels among all 89 patients and re-splitting into groups of 43 and 46; record how often the shuffled difference reaches <span class="math inline">\(0.19\)</span> or more.</li>
+<li>Very few shuffles reach <span class="math inline">\(0.19\)</span>: the one-sided <span class="math inline">\(p\)</span>-value is about <strong>0.01</strong>. It would be rare to see a gap this large by chance alone.</li>
+</ol>
+</details>
 <ol start="4" type="a">
 <li>How would your answer to c) change if the alternative hypothesis was two-sided?</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>A two-sided test counts extremes in <em>both</em> tails, so we double the one-sided value: <span class="math inline">\(p \approx 0.02\)</span>.</li>
+<li>The evidence is a bit weaker, but <span class="math inline">\(0.02 &lt; 0.05\)</span>, so the conclusion (discernible effect) is unchanged.</li>
+</ol>
+</details>
 </div>
 <div class="example-box">
 <p><strong>Class Example 7.7: Calorie Counts</strong></p>
@@ -3614,34 +3759,50 @@ Figure 4: Randomization distribution with 1000 randomizations
 <ol type="a">
 <li>State the null and alternative hypotheses</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>Parameter: <span class="math inline">\(\mu\)</span>, the mean calorie count for fast food menu items.</li>
+<li><span class="math inline">\(H_0: \mu = 525\)</span>.</li>
+<li><span class="math inline">\(H_A: \mu &gt; 525\)</span> (one-sided — “more than 525”).</li>
+</ol>
+</details>
 <ol start="2" type="a">
 <li>What is the sample statistic?</li>
 </ol>
-<div class="workspace" height="0.75in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>The sample mean: <span class="math inline">\(\overline{x} \approx 531\)</span> kilocalories (from the 515 menu items).</li>
+</ol>
+</details>
 <ol start="3" type="a">
 <li>To create the randomization distribution, what do we have to assume?</li>
 </ol>
-<div class="workspace" height="0.75in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>We assume <span class="math inline">\(H_0\)</span> is true — that the mean really is <span class="math inline">\(525\)</span>.</li>
+<li>In StatLens we impose this by <em>shifting</em> the data so its mean sits at <span class="math inline">\(525\)</span>, then resampling to see how much the sample mean bounces around when <span class="math inline">\(\mu = 525\)</span>. The distribution is therefore centered at <span class="math inline">\(525\)</span>.</li>
+</ol>
+</details>
 <ol start="4" type="a">
 <li>What is the <span class="math inline">\(p\)</span>-value for this study?</li>
 </ol>
-<div class="workspace" height="0.75in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>The <span class="math inline">\(p\)</span>-value is the fraction of that null distribution at or above the observed <span class="math inline">\(\overline{x} \approx 531\)</span>.</li>
+<li><span class="math inline">\(531\)</span> sits well inside the bulk of the distribution, so the <span class="math inline">\(p\)</span>-value is large: about <strong>0.32</strong>. The data do <strong>not</strong> provide discernible evidence that the mean exceeds 525 kcal.</li>
+</ol>
+</details>
 </div>
 <div class="example-box">
 <p><strong>Class Example 7.8: Cereal study revisited</strong></p>
 <p>Recall the motivating cereal study. We were trying to determine if children had a preference for the cereal in the box with the cartoon. In the study 52 out of 80 children chose the box with cartoons. Use StatLens to find the <span class="math inline">\(p\)</span>-value for this scenario.</p>
-<div class="workspace" height="0.75in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li><span class="math inline">\(H_0: p = 0.5\)</span> vs. <span class="math inline">\(H_A: p &gt; 0.5\)</span>; observed <span class="math inline">\(\hat{p} = 52/80 = 0.65\)</span>.</li>
+<li>In StatLens, simulate many samples of 80 children with <span class="math inline">\(p = 0.5\)</span> and find the fraction with <span class="math inline">\(\hat{p} \geq 0.65\)</span> (52 or more choosing cartoons).</li>
+<li>That upper tail is tiny: the <span class="math inline">\(p\)</span>-value is about <strong>0.005</strong>. Strong evidence that children do prefer the cartoon box.</li>
+</ol>
+</details>
 </div>
 <p><strong>Interpreting the <span class="math inline">\(p\)</span>-value</strong></p>
 <ul>
@@ -3706,21 +3867,27 @@ Figure 4: Randomization distribution with 1000 randomizations
 <ol type="a">
 <li>In a test to see if mean resting metabolic rate is higher after treatment (<span class="math inline">\(p\)</span>-value of 0.013).</li>
 </ol>
-<div class="workspace" height="0.5in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li><span class="math inline">\(p = 0.013 &lt; 0.05 = \alpha\)</span>, so <strong>reject <span class="math inline">\(H_0\)</span></strong>.</li>
+</ol>
+</details>
 <ol start="2" type="a">
 <li>In a test to see if mean body mass gain is lower after treatment (<span class="math inline">\(p\)</span>-value of 0.007).</li>
 </ol>
-<div class="workspace" height="0.5in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li><span class="math inline">\(p = 0.007 &lt; 0.05 = \alpha\)</span>, so <strong>reject <span class="math inline">\(H_0\)</span></strong>.</li>
+</ol>
+</details>
 <ol start="3" type="a">
 <li>In a test to see if mean locomotor activity is affected by treatment (<span class="math inline">\(p\)</span>-value of 0.980).</li>
 </ol>
-<div class="workspace" height="0.5in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li><span class="math inline">\(p = 0.980 \geq 0.05 = \alpha\)</span>, so <strong>do not reject <span class="math inline">\(H_0\)</span></strong>.</li>
+</ol>
+</details>
 </div>
 </section>
 <section id="interpreting-your-results" class="level3">
@@ -3736,42 +3903,59 @@ Figure 4: Randomization distribution with 1000 randomizations
 <ol type="a">
 <li>In a test to see if mean resting metabolic rate is higher after treatment (<span class="math inline">\(p\)</span>-value of 0.013).</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>At <span class="math inline">\(\alpha = 0.05\)</span>, we <strong>do</strong> have discernible evidence that the mean resting metabolic rate is higher after resveratrol treatment.</li>
+</ol>
+</details>
 <ol start="2" type="a">
 <li>In a test to see if mean body mass gain is lower after treatment (<span class="math inline">\(p\)</span>-value of 0.007).</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>At <span class="math inline">\(\alpha = 0.05\)</span>, we <strong>do</strong> have discernible evidence that the mean body mass gain is lower after treatment.</li>
+</ol>
+</details>
 <ol start="3" type="a">
 <li>In a test to see if mean locomotor activity is affected by treatment (<span class="math inline">\(p\)</span>-value of 0.980).</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>At <span class="math inline">\(\alpha = 0.05\)</span>, we <strong>do not</strong> have discernible evidence that mean locomotor activity is affected by treatment.</li>
+</ol>
+</details>
 </div>
 <div class="example-box">
 <p><strong>Class Example 7.11: Migraine Acupuncture Trial revisited</strong></p>
 <p>Can acupuncture relieve migraine pain? Using your decision from the Acupunture Trial example, interpret your results in the context of the problem.</p>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>The <span class="math inline">\(p\)</span>-value was about <span class="math inline">\(0.01 &lt; 0.05\)</span>, so we reject <span class="math inline">\(H_0\)</span>.</li>
+<li>At <span class="math inline">\(\alpha = 0.05\)</span>, we have discernible evidence that acupuncture increases the proportion of migraine patients who are pain-free 24 hours after treatment.</li>
+<li>Because patients were randomly assigned, this supports a <em>causal</em> conclusion: the acupuncture, not chance, explains the higher pain-free rate.</li>
+</ol>
+</details>
 </div>
 <div class="example-box">
 <p><strong>Class Example 7.12: Calorie count revisited</strong></p>
 <p>Is the average amount of kilocalories from a major U.S. fast food chain menu item more than 525 kilocalories? Using your decision from the Calorie Count example, interpret your results in the context of the problem.</p>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>The <span class="math inline">\(p\)</span>-value was about <span class="math inline">\(0.32 \geq 0.05\)</span>, so we do not reject <span class="math inline">\(H_0\)</span>.</li>
+<li>At <span class="math inline">\(\alpha = 0.05\)</span>, we do <strong>not</strong> have discernible evidence that the mean calorie count of fast food menu items exceeds 525 kilocalories.</li>
+<li>Note this does not prove the mean equals 525 — only that the data are consistent with it.</li>
+</ol>
+</details>
 </div>
 <div class="example-box">
 <p><strong>Class Example 7.13: Cereal study revisited</strong></p>
 <p>Recall the motivating cereal study. Interpret the results of the study in the context of the problem.</p>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>The <span class="math inline">\(p\)</span>-value was about <span class="math inline">\(0.005 &lt; 0.05\)</span>, so we reject <span class="math inline">\(H_0\)</span>.</li>
+<li>At <span class="math inline">\(\alpha = 0.05\)</span>, we have discernible evidence that more than half of children prefer the cereal box with cartoons.</li>
+</ol>
+</details>
 </div>
 </section>
 </section>
@@ -3827,21 +4011,27 @@ Figure 4: Randomization distribution with 1000 randomizations
 <ol type="a">
 <li>In a test to see if mean resting metabolic rate is higher after treatment (<span class="math inline">\(p\)</span>-value of 0.013).</li>
 </ol>
-<div class="workspace" height="0.5in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li><span class="math inline">\(p = 0.013 &lt; 0.05\)</span>, so we reject <span class="math inline">\(H_0\)</span>. When we reject, the only possible error is a <strong>Type I error</strong> (rejecting a true <span class="math inline">\(H_0\)</span>).</li>
+</ol>
+</details>
 <ol start="2" type="a">
 <li>In a test to see if mean body mass gain is lower after treatment (<span class="math inline">\(p\)</span>-value of 0.007).</li>
 </ol>
-<div class="workspace" height="0.5in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li><span class="math inline">\(p = 0.007 &lt; 0.05\)</span>, so we reject <span class="math inline">\(H_0\)</span> → a possible <strong>Type I error</strong>.</li>
+</ol>
+</details>
 <ol start="3" type="a">
 <li>In a test to see if mean locomotor activity is affected by treatment (<span class="math inline">\(p\)</span>-value of 0.980).</li>
 </ol>
-<div class="workspace" height="0.5in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li><span class="math inline">\(p = 0.980 \geq 0.05\)</span>, so we do not reject <span class="math inline">\(H_0\)</span>. When we fail to reject, the only possible error is a <strong>Type II error</strong> (failing to reject a false <span class="math inline">\(H_0\)</span>).</li>
+</ol>
+</details>
 </div>
 <section id="what-can-cause-these-errors" class="level3">
 <h3 class="anchored" data-anchor-id="what-can-cause-these-errors">What can cause these errors?</h3>
@@ -3886,33 +4076,48 @@ Figure 4: Randomization distribution with 1000 randomizations
 <ol type="a">
 <li>Give the null and alternative hypothesis that you would use for determining if the drug should be marketed.</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>Parameter: <span class="math inline">\(p\)</span>, the proportion of patients who respond favorably.</li>
+<li><span class="math inline">\(H_0: p = 0.80\)</span> (the drug works for exactly the break-even 80%).</li>
+<li><span class="math inline">\(H_A: p &gt; 0.80\)</span> (worth marketing — effective for more than 80%). The burden of proof is on showing the drug clears 80%.</li>
+</ol>
+</details>
 <ol start="2" type="a">
 <li>Describe in words what a Type I error would mean in the context of this study.</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>A Type I error = rejecting a true <span class="math inline">\(H_0\)</span>: concluding the drug helps <em>more</em> than 80% of patients (and marketing it) when in truth it does not.</li>
+<li>Consequence: the company spends money marketing a drug that will not be profitable.</li>
+</ol>
+</details>
 <ol start="3" type="a">
 <li>Describe in words what a Type II error would mean in the context of this study.</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>A Type II error = failing to reject a false <span class="math inline">\(H_0\)</span>: concluding there is not enough evidence to market the drug when it truly does help more than 80%.</li>
+<li>Consequence: the company passes on a drug that would have been effective and profitable.</li>
+</ol>
+</details>
 <ol start="4" type="a">
 <li>Suppose the significance level is set at a = .05, but the researchers find that this produces a Type II error rate of 0.4 and this is too high for their liking. List two ways they could reduce the Type II error rate.</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li><strong>Increase the sample size</strong> (test more than 60 patients) — the surest way to lower the Type II rate without raising the Type I rate.</li>
+<li><strong>Increase the significance level</strong> <span class="math inline">\(\alpha\)</span> (say to 0.10) — makes rejecting <span class="math inline">\(H_0\)</span> easier, lowering the Type II rate (at the cost of a higher Type I rate).</li>
+</ol>
+</details>
 <ol start="5" type="a">
 <li>Given a Type II error rate of 0.4, what is the power of the test?</li>
 </ol>
-<div class="workspace" height="1in">
-
-</div>
+<details class="reveal-answer"><summary>Reveal answer</summary>
+<ol type="1">
+<li>Power <span class="math inline">\(= 1 - P(\text{Type II error}) = 1 - 0.4 = 0.6\)</span>.</li>
+</ol>
+</details>
 </div>
 </section>
 </section>
@@ -3947,6 +4152,134 @@ Figure 4: Randomization distribution with 1000 randomizations
 
 </main>
 <!-- /main column -->
+<div id="ck-bar" role="toolbar" aria-label="Class controls">
+  <span id="ck-hint">→ / Space reveal · ← hide</span>
+  <button type="button" id="ck-prev" title="Hide last (Left arrow)">◀ Hide</button>
+  <button type="button" id="ck-next" title="Reveal next (Right arrow / Space)">Reveal ▶</button>
+  <button type="button" id="ck-all" title="Reveal all answers">Reveal all</button>
+  <button type="button" id="ck-reset" title="Hide all answers">Reset</button>
+  <span id="ck-progress" aria-live="polite"></span>
+  <span class="ck-gap"></span>
+  <button type="button" id="ck-edit" title="Edit this page in your browser">✎ Edit</button>
+  <button type="button" id="ck-save" hidden title="Download your personalized copy">⇣ Save a copy</button>
+</div>
+<script>
+(function () {
+  "use strict";
+  var editing = false, tinyTried = false;
+  function $(id) { return document.getElementById(id); }
+  function answers() { return [].slice.call(document.querySelectorAll("details.reveal-answer")); }
+
+  function progress() {
+    var us = answers(), open = us.filter(function (d) { return d.open; }).length;
+    var p = $("ck-progress"); if (p) p.textContent = open + " / " + us.length + " revealed";
+  }
+  function focusOn(el) {
+    answers().forEach(function (d) { d.classList.remove("ck-current"); });
+    if (el) { el.classList.add("ck-current"); el.scrollIntoView({ behavior: "smooth", block: "center" }); }
+  }
+  function next() {
+    var us = answers();
+    for (var i = 0; i < us.length; i++) { if (!us[i].open) { us[i].open = true; focusOn(us[i]); progress(); return; } }
+  }
+  function prev() {
+    var us = answers();
+    for (var i = us.length - 1; i >= 0; i--) { if (us[i].open) { us[i].open = false; focusOn(us[i]); progress(); return; } }
+  }
+  function all(v) { answers().forEach(function (d) { d.open = v; }); progress(); }
+
+  $("ck-next").addEventListener("click", next);
+  $("ck-prev").addEventListener("click", prev);
+  $("ck-all").addEventListener("click", function () { all(true); });
+  $("ck-reset").addEventListener("click", function () { all(false); });
+
+  document.addEventListener("keydown", function (e) {
+    if (editing) return;
+    var tag = (e.target && e.target.tagName) || "";
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || e.target.isContentEditable) return;
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " " || k === "Spacebar") { e.preventDefault(); next(); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); prev(); }
+  });
+  // keep the count honest if a summary is clicked directly
+  document.addEventListener("toggle", function (e) {
+    if (e.target && e.target.classList && e.target.classList.contains("reveal-answer")) progress();
+  }, true);
+  progress();
+
+  /* ---- Edit mode: personalize in the browser, then download your copy ---- */
+  function lockMath() {
+    document.querySelectorAll("mjx-container, .math, .katex").forEach(function (el) {
+      el.setAttribute("contenteditable", "false");
+      el.classList.add("mceNonEditable");
+    });
+  }
+  function plainEditable(on) {
+    var main = document.querySelector("main") || document.body;
+    if (on) { main.setAttribute("contenteditable", "true"); main.focus(); }
+    else { main.removeAttribute("contenteditable"); }
+  }
+  function initTiny() {
+    if (!window.tinymce) return false;
+    try {
+      window.tinymce.init({
+        target: document.querySelector("main") || document.body,
+        inline: true, menubar: false, license_key: "gpl", promotion: false, branding: false,
+        toolbar: "undo redo | bold italic | bullist numlist | removeformat",
+        valid_elements: "*[*]", noneditable_class: "mceNonEditable",
+        setup: function (ed) { ed.on("init", function () { ed.getBody().focus(); }); }
+      });
+      return true;
+    } catch (err) { return false; }
+  }
+  function enterEdit() {
+    editing = true;
+    lockMath();
+    document.body.classList.add("ck-editing");
+    $("ck-save").hidden = false;
+    $("ck-edit").textContent = "✓ Done";
+    if (window.tinymce) { if (!initTiny()) plainEditable(true); return; }
+    if (!tinyTried) {
+      tinyTried = true;
+      var s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js";
+      s.referrerPolicy = "origin";
+      s.onload = function () { if (editing && !initTiny()) plainEditable(true); };
+      s.onerror = function () { if (editing) plainEditable(true); };
+      document.head.appendChild(s);
+      // fallback if TinyMCE is slow/blocked
+      setTimeout(function () { if (editing && !window.tinymce) plainEditable(true); }, 2500);
+    } else { plainEditable(true); }
+  }
+  function exitEdit() {
+    editing = false;
+    document.body.classList.remove("ck-editing");
+    $("ck-edit").textContent = "✎ Edit";
+    if (window.tinymce) { try { window.tinymce.remove(); } catch (e) {} }
+    plainEditable(false);
+  }
+  $("ck-edit").addEventListener("click", function () { editing ? exitEdit() : enterEdit(); });
+
+  $("ck-save").addEventListener("click", function () {
+    if (editing) exitEdit();
+    var clone = document.documentElement.cloneNode(true);
+    // strip edit-session artifacts; keep the reveal bar + script so the copy still works
+    clone.querySelectorAll("[contenteditable]").forEach(function (el) { el.removeAttribute("contenteditable"); });
+    clone.querySelectorAll(".tox, .tox-tinymce-aux, .mce-content-body")
+      .forEach(function (el) { if (el.classList.contains("tox") || el.classList.contains("tox-tinymce-aux")) el.remove(); else el.classList.remove("mce-content-body"); });
+    clone.querySelectorAll('script[src*="tinymce"]').forEach(function (el) { el.remove(); });
+    // math is already rendered (mjx-container); drop the MathJax script so the copy doesn't re-typeset
+    clone.querySelectorAll('script[id="MathJax-script"], script[src*="mathjax"], script[src*="MathJax"]').forEach(function (el) { el.remove(); });
+    var html = "<!doctype html>\n" + clone.outerHTML;
+    var blob = new Blob([html], { type: "text/html" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "randomization-class-personalized.html";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+  });
+})();
+</script>
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
