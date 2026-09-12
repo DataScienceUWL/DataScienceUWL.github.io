@@ -8,7 +8,14 @@
 <script id="MathJax-script" async
   src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
 <style>
-:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0}
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0;
+  /* Line length, in characters, so it holds at every font size. 46ch was at the
+     narrow end of the readable 45-75 band and left half the width empty. This
+     is the AT-HOME value; the projected build overrides it below, because there
+     the scarce thing is screen area, not eye travel -- the font is already
+     ~30px on a 1920 screen, so a longer line is still easy to scan and buys
+     fewer scroll steps. */
+  --measure:68ch}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);
@@ -17,6 +24,7 @@ body{margin:0;background:var(--bg);color:var(--ink);
   font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
 /* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
    expose the next thing. Read later: it is just a long page. */
+:root{--measure:88ch}
 main{scroll-snap-type:y proximity}
 .beat{scroll-snap-align:start;min-height:100vh}
 .beat{padding:2.4rem 6vw 3rem;
@@ -24,8 +32,8 @@ main{scroll-snap-type:y proximity}
 h1{font-size:1.9rem;margin:0 0 .3rem}
 h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
 h2.cont{color:var(--slate);font-size:1.3rem}
-p{margin:0 0 .9rem;max-width:46ch}
-ul{max-width:46ch}
+p{margin:0 0 .9rem;max-width:var(--measure)}
+ul{max-width:var(--measure)}
 .turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
 .turn.my{border-left-color:var(--slate);background:#f6f8fb}
 .badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
@@ -44,7 +52,8 @@ details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-
 details.sol[open] summary{border-bottom:1px solid var(--rule)}
 details.sol > :not(summary){padding:0 1.1rem}
 details.sol > p:last-child{padding-bottom:.9rem}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:64ch}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;
+  max-width:min(100%, calc(var(--measure) * 1.25))}
 @media(max-width:800px){.cols{grid-template-columns:1fr}}
 table{border-collapse:collapse;margin:.6rem 0}
 table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
@@ -61,7 +70,7 @@ th{border-bottom:2px solid var(--ink)}
 .workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
 .badge.ex{background:var(--ink);color:#fff}
 .grid-item{margin:0}
-figure{margin:1.2rem 0;max-width:60ch}
+figure{margin:1.2rem 0;max-width:min(100%, var(--measure))}
 figure img{max-width:100%;height:auto;display:block}
 button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
   border-radius:3px;display:block;max-width:100%}
