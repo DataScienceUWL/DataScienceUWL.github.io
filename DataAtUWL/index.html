@@ -62,7 +62,6 @@
 
   <section class="schedule wrap" aria-labelledby="upcoming-heading">
     <h2 id="upcoming-heading">Upcoming</h2>
-    <p class="schedule__note" id="upcoming-note"></p>
     <ul class="list" id="upcoming-list"></ul>
   </section>
 
@@ -201,16 +200,15 @@
       return '<a class="btn btn--ghost" href="' + esc(l.url) + '">' + esc(l.label) + "</a>";
     }).join("");
 
-    var actions =
-      (upcoming ? '<button class="btn" type="button" id="btn-ics">Add to calendar</button>' : "") +
-      (t.poster ? '<a class="btn btn--ghost" href="' + esc(t.poster) + '" target="_blank" rel="noopener">View / print poster</a>' : "") +
-      extra;
-
-    var aside = t.poster
-      ? '<a class="poster" href="' + esc(t.poster) + '" target="_blank" rel="noopener">' +
-          '<img src="' + esc(t.poster) + '" alt="Poster for ' + esc(t.title) + '" loading="lazy">' +
-        "</a><p class=\"poster__cap\">Letter-size poster — click to open, then print at Actual Size.</p>"
-      : '<div class="poster poster--none">Poster coming soon.</div>';
+    // The poster duplicates everything in the left column, so it is shown only
+    // as a small link to the printable file — never at reading size.
+    var posterCard = t.poster
+      ? '<a class="postercard" href="' + esc(t.poster) + '" target="_blank" rel="noopener">' +
+          '<span class="postercard__thumb"><img src="' + esc(t.poster) + '" alt="" loading="lazy"></span>' +
+          '<span class="postercard__text"><strong>Printable poster</strong>' +
+            "<span>Letter size. Print at Actual Size.</span></span>" +
+        "</a>"
+      : '<div class="postercard postercard--none">Poster coming soon.</div>';
 
     $("talkcard").innerHTML =
       '<div class="talkcard__body">' +
@@ -221,16 +219,25 @@
           '<div class="talkcard__speakers">' + esc(t.speakers) + "</div>" +
           '<div class="talkcard__org">' + esc(t.org || "") + "</div>" +
         "</div>" +
-        '<dl class="facts">' +
-          "<div><dt>Date</dt><dd>" + esc(longDate(t)) + "</dd></div>" +
-          "<div><dt>Time</dt><dd>" + esc(timeRange(t)) + "</dd></div>" +
-          "<div><dt>Location</dt><dd>" + esc(t.location || "TBA") + "</dd></div>" +
-        "</dl>" +
         '<div class="abstract"><h3>In the talk</h3>' + paras + "</div>" +
         tags +
-        '<div class="actions">' + actions + "</div>" +
+        (extra ? '<div class="actions">' + extra + "</div>" : "") +
       "</div>" +
-      '<div class="talkcard__aside">' + aside + "</div>";
+      '<aside class="talkcard__aside">' +
+        '<div class="detailcard">' +
+          '<h3 class="detailcard__head">' + (upcoming ? "Join us" : "Details") + "</h3>" +
+          '<dl class="facts">' +
+            "<div><dt>Date</dt><dd>" + esc(longDate(t)) + "</dd></div>" +
+            "<div><dt>Time</dt><dd>" + esc(timeRange(t)) + "</dd></div>" +
+            "<div><dt>Location</dt><dd>" + esc(t.location || "TBA") + "</dd></div>" +
+          "</dl>" +
+          (upcoming
+            ? '<p class="detailcard__free">Free and open to all UWL students. No registration needed.</p>' +
+              '<button class="btn btn--cal" type="button" id="btn-ics">Add to calendar</button>'
+            : "") +
+        "</div>" +
+        posterCard +
+      "</aside>";
 
     var ics = $("btn-ics");
     if (ics) ics.addEventListener("click", function () { downloadIcs(t); });
@@ -275,10 +282,6 @@
     $("upcoming-list").innerHTML = up.length
       ? up.map(rowHtml).join("")
       : '<li class="empty">No talks on the calendar right now. The next semester\'s lineup is announced here — check back, or email the organizer to suggest a speaker.</li>';
-
-    $("upcoming-note").textContent = up.length
-      ? "Free and open to all UWL students. No registration needed."
-      : "";
 
     $("past-list").innerHTML = past.length
       ? past.map(rowHtml).join("")
