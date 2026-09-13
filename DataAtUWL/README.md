@@ -77,3 +77,22 @@ filesystem works in most browsers, but a server is closer to how Pages serves it
 Posters, the editable template, the speaker tracker, and printing instructions
 live in OneDrive under **Data at UWL**. The posters in `posters/` here are copies
 for the web; OneDrive holds the masters.
+
+## UWL branding
+
+The poster and the site both carry the official **UWL Spirit Mark**
+(`assets/uwl-spirit-mark-color-digital.svg`), unaltered, paired with the
+department name — which is what UWL brand architecture requires, since
+departments and programs don't get their own logos.
+
+The mark is maroon `#83151D` and must sit on a light background, so on the site
+it lives in a white bar under the navy footer rather than in the header.
+Its wide transparent margin is the mark's own clear space; don't crop it.
+
+Masters and usage notes are in OneDrive under
+`Data at UWL/Series-Assets/UWL-official-marks/`.
+
+**Open item:** the `DATA @ UWL` wordmark is a series-level identity. UWL allows
+those only for flagship events at UComm's discretion, and requires them to appear
+alongside the Spirit Mark. Worth confirming with UComm before promoting the
+series campus-wide.
