@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MTH 207 &mdash; 2.2 The Limit of a Function</title>
+<title>MTH 207 &mdash; 2.5 Continuity</title>
 <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
   displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
   loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
@@ -24,7 +24,9 @@ body{margin:0;background:var(--bg);color:var(--ink);
   font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
 /* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
    expose the next thing. Read later: it is just a long page. */
-
+:root{--measure:88ch}
+main{scroll-snap-type:y proximity}
+.beat{scroll-snap-align:start;min-height:100vh}
 .beat{padding:2.4rem 6vw 3rem;
   border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
 h1{font-size:1.9rem;margin:0 0 .3rem}
@@ -129,146 +131,125 @@ header.top p{color:var(--slate);margin:.2rem 0 0}
 </style></head>
 <body>
 <header class="top">
-  <h1>2.2 &nbsp;The Limit of a Function</h1>
+  <h1>2.5 &nbsp;Continuity</h1>
   <p>MTH 207 Calculus I &mdash; Limits and Derivatives</p>
-  <p class="switch"><a class="twin" href="../../practice/Section_2p2/Section_2p2_class.html">Let me try the examples first &rarr;</a></p>
+  <p class="switch"><a class="twin" href="../../notes/Section_2p5/Section_2p5_home.html">Show me the worked-out notes &rarr;</a></p>
 </header>
 <main>
-<section class="beat" aria-label="What Section 2.1 Owed Us" data-source-line="33">
-  <h2>What Section 2.1 Owed Us</h2>
-<p>Two problems, one answer. The tangent slope and the instantaneous velocity both
-came out as the same move: compute something you <em>can</em> on an interval, then
-shrink the interval.</p>
-<p>Both times we said the numbers "approach" a value and moved on.</p>
-  <div class="key"><p>Today we say what "approach" actually means. That is the one new idea the whole course rests on.</p></div>
+<section class="beat" aria-label="What 2.3 Kept Saying" data-source-line="37">
+  <h2>What 2.3 Kept Saying</h2>
+<p>Every time a limit came out easily in 2.3, the reason was the same: we could
+<strong>substitute</strong>.</p>
+<div class="dm">$$\lim_{x\to 3}\left(2x^2-5x+1\right) \;=\; 2(3)^2-5(3)+1$$</div>
+<p>And every time it did not, the reason was also the same &mdash; substituting gave
+$\displaystyle \tfrac00$, and the function had a hole or a break at exactly the point we cared
+about.</p>
+  <div class="key"><p>"You can just plug in" is not a lucky accident. It has a name, it has a
+definition, and today is that definition.</p></div>
 </section>
-<section class="beat" aria-label="Estimating a Limit from a Table" data-source-line="48">
-  <h2>Estimating a Limit from a Table</h2>
-<p>Consider $\displaystyle f(x) = \dfrac{x^2-1}{x-1}$.</p>
-<p><strong>Estimate</strong></p>
-<div class="dm">$$\lim_{x \to 1} \frac{x^2-1}{x-1}$$</div>
-<p>from values of $\displaystyle f(x)$ on either side of $\displaystyle 1$.</p>
-<table><caption>Values of f(x) as x approaches 1 from both sides</caption><tr><th scope="col">$\displaystyle x$</th><th scope="col">$\displaystyle 0.9$</th><th scope="col">$\displaystyle 0.99$</th><th scope="col">$\displaystyle 0.999$</th><th scope="col">$\displaystyle 1.001$</th><th scope="col">$\displaystyle 1.01$</th><th scope="col">$\displaystyle 1.1$</th></tr><tr><td>$\displaystyle f(x)$</td><td>$\displaystyle 1.9$</td><td>$\displaystyle 1.99$</td><td>$\displaystyle 1.999$</td><td>$\displaystyle 2.001$</td><td>$\displaystyle 2.01$</td><td>$\displaystyle 2.1$</td></tr></table>
-  <div class="turn your"><span class="badge">Your turn</span><p>Two different questions. <strong>What is $\displaystyle f(1)$?</strong> And <strong>what is this table heading for?</strong> Answer both &mdash; then say which of the two the limit is asking.</p></div>
-  <div class="sol shown">
-<p>$\displaystyle f(1)$ <strong>does not exist</strong>. The table heads for $\displaystyle \mathbf{2}$.</p>
-<p>The limit asks only the second question.</p>
-<div class="key"><p>We write</p>
-<div class="dm">
-<div class="dm">$$\lim_{x \to 1} f(x) = 2$$</div>
-<p></div>
-<p>even though $\displaystyle f(1)$ does not exist. 
-The limit never asks about the point itself.</p></div></p>
-  </div>
+<section class="beat" aria-label="What Continuity Says" data-source-line="58">
+  <h2>What Continuity Says</h2>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; Continuous at a point</span><p>$\displaystyle f$ is <strong>continuous at $\displaystyle a$</strong> if</p>
+<div class="dm">$$\lim_{x\to a} f(x) \;=\; f(a)$$</div></div>
+<p>That one line is quietly asking for <strong>three</strong> things at once.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>What are the three? Two of them are about the two sides of that equation existing at all.</p></div>
+  <details class="sol"><summary>Show: the three requirements</summary>
+<p><ol><li>$\displaystyle f(a)$ is defined &mdash; $\displaystyle a$ is in the domain.</li><li>$\displaystyle\lim_{x\to a}f(x)$ exists &mdash; so both one-sided limits exist and agree.</li><li>The two are <strong>equal</strong>.</li></ol></p>
+  </details>
+  <div class="key"><p>Section 2.2 spent a day insisting $\displaystyle f(a)$ and $\displaystyle \lim_{x\to a}f(x)$ are answers to different questions. Continuity is the name for the case where they happen to agree.</p></div>
 </section>
-<section class="beat" aria-label="What a Limit Means" data-source-line="82">
-  <h2>What a Limit Means</h2>
-<div class="boxed dfn"><span class="badge dfn">Definition &mdash; Limit of a function</span><p>We write</p>
-<div class="dm">$$\lim_{x \to a} f(x) = L$$</div>
-<p>if we can make the values of $\displaystyle f(x)$ as close
-to $\displaystyle L$ as we like by taking $\displaystyle x$ close enough to $\displaystyle a$, but <strong>not equal</strong> to $\displaystyle a$.</p></div>
-<p><strong>Say it out loud like this:</strong> <em>"the limit, as $\displaystyle x$ approaches $\displaystyle a$, of
-$\displaystyle f$ of $\displaystyle x$, equals $\displaystyle L$."</em></p>
-<p>And in your head, say what it <em>means</em>:</p>
+<section class="beat" aria-label="Three Ways to Fail" data-source-line="82">
+  <h2>Three Ways to Fail</h2>
+<p>Three requirements, so three ways to break &mdash; and each picture breaks a different one.</p>
+  <figure style="width:92%"><button type="button" class="zoom" data-src="figures/discontinuity_types.png" aria-label="Enlarge figure"><img src="figures/discontinuity_types.png" alt="Three graphs side by side. The first, labelled removable, is a straight line with a hole at x equals 1 and a separate solid dot above it. The second, labelled jump, has the left piece ending at one height and the right piece starting at a higher one. The third, labelled infinite, has the curve shooting up to infinity on both sides of a dashed vertical line at x equals 1."></button></figure>
+  <div class="turn your"><span class="badge">Your turn</span><p>For each picture, say which of the three requirements fails. Two of them fail the same one &mdash; which two, and why?</p></div>
+  <details class="sol"><summary>Show: which requirement each one breaks</summary>
+<ul><li><strong>Removable:</strong> the limit exists and $\displaystyle f(1)$ exists, but they disagree &mdash; requirement 3.</li><li><strong>Jump:</strong> the one-sided limits disagree, so the limit does not exist &mdash; requirement 2.</li><li><strong>Infinite:</strong> the limit does not exist either, and $\displaystyle f(1)$ is not defined &mdash; requirement 2 again, and 1 as well.</li></ul>
+Jump and infinite both fail requirement 2. Only the <em>removable</em> one could be fixed by redefining a single value &mdash; which is where the name comes from.
+  </details>
+</section>
+<section class="beat" aria-label="Which Functions Are Continuous?" data-source-line="104">
+  <h2>Which Functions Are Continuous?</h2>
+<p>Almost every function we use, wherever it is defined:</p>
+<ul><li>polynomials &mdash; everywhere</li><li>rational functions &mdash; everywhere <em>except</em> where the denominator is zero</li><li>roots, and $\displaystyle \sin$, $\displaystyle \cos$, $\displaystyle \exp$, $\displaystyle \log$ &mdash; everywhere in their domains</li><li>sums, differences, products, quotients and compositions of continuous functions</li></ul>
+  <div class="key"><p>The first two lines are old news &mdash; the limit laws gave you exactly those in 2.3, and that is why Direct Substitution was stated for polynomials and rational functions and nothing else. The third line is the new part, and it is why this section exists: the laws could never have reached $\displaystyle \sin x$ or $\displaystyle e^{x}$, because those are not built out of $\displaystyle x$ and constants by $\displaystyle +$, $\displaystyle -$, $\displaystyle \times$, $\displaystyle \div$.</p></div>
+</section>
+<section class="beat" aria-label="Continuous Where?" data-source-line="120">
+  <h2>Continuous Where?</h2>
+  <div class="turn my"><span class="badge">My turn</span><p>Is $\displaystyle \tan x$ continuous?</p></div>
+<p>The honest answer is that the question is missing a word. $\displaystyle \tan x$ is continuous
+<strong>at every point of its domain</strong>. But $\displaystyle x = \pi/2$ is not in its domain &mdash; there
+is nothing there to be continuous <em>or</em> discontinuous.</p>
 <span style="display:block;height:0.4em"></span>
-<p><em>"As $\displaystyle x$ gets close to $\displaystyle a$, $\displaystyle f(x)$ gets close to $\displaystyle L$."</em></p>
+<p>Compare: $\displaystyle \dfrac{1}{x}$ is continuous at every point of its domain too, and its
+domain does not include $\displaystyle 0$.</p>
 <span style="display:block;height:0.4em"></span>
-<p>Read the last four words of the definition again. They are doing all the work.</p>
-<ul><li>The limit does not care whether $\displaystyle f(a)$ exists.</li><li>If $\displaystyle f(a)$ does exist, the limit does not care what it equals.</li></ul>
-  <div class="key"><p>$\displaystyle f(a)$ and $\displaystyle \lim_{x\to a} f(x)$ are answers to two different questions. Getting them confused is the most expensive mistake in this chapter.</p></div>
+<p>And $\displaystyle \sqrt{x}$? Its domain is $\displaystyle [0,\infty)$, so $\displaystyle 0$ <em>is</em> in the domain &mdash; but
+there is no left side to check. At an endpoint we ask only for the side that
+exists:</p>
+<div class="dm">$$\lim_{x \to 0^{+}}\sqrt{x} \;=\; 0 \;=\; \sqrt{0},$$</div>
+<p>which is what <strong>continuous from the right</strong> means. That is exactly why 2.3
+stated the Direct Substitution Property for polynomials and rational functions
+only: their domains have no endpoints, so the question could not come up.</p>
+  <div class="key"><p>"Continuous" is always <strong>at a point</strong>, or <strong>on an interval</strong>. A function is not continuous or discontinuous in the abstract, and the domain decides which points are even candidates.</p></div>
 </section>
-<section class="beat" aria-label="Reading Limits off a Graph" data-source-line="116">
-  <h2>Reading Limits off a Graph</h2>
-  <figure style="width:58%"><button type="button" class="zoom" data-src="figures/limit_graph.png" aria-label="Enlarge figure"><img src="figures/limit_graph.png" alt="A piecewise graph. At x equals 1 there is an open circle at height 2 with a separate solid dot at height 4. At x equals 3 the left piece ends at height 3 with an open circle and the right piece starts at height 1 with a solid dot. At x equals 5 the graph passes through a solid dot at height 3 with no break. Every marked height is a whole number."></button></figure>
-  <div class="turn your"><span class="badge">Your turn</span><p>From the graph: $\displaystyle \lim_{x\to1}f(x)$,   $\displaystyle f(1)$,   $\displaystyle \lim_{x\to3}f(x)$,   $\displaystyle \lim_{x\to5}f(x)$,   $\displaystyle f(5)$. Say if one does not exist.</p></div>
-  <div class="sol shown">
-<figure style="width:46%"><button type="button" class="zoom" data-src="figures/limit_graph_x1.png" aria-label="Enlarge figure"><img src="figures/limit_graph_x1.png" alt="The same piecewise graph, with a red box drawn around the part near x equals 1, so the region under discussion is marked."></button></figure>
-<div class="dm">$$\lim_{x\to1}f(x) = 2, \qquad f(1) = 4$$</div>
+<section class="beat" aria-label="Making It Continuous On Purpose" data-source-line="155">
+  <h2>Making It Continuous On Purpose</h2>
+<div class="boxed ex"><span class="badge ex">Example 1</span><p>Find the value of $\displaystyle c$ that makes $\displaystyle g$ continuous at $\displaystyle x=2$:</p>
+<div class="dm">$$g(x) \;=\; \begin{cases} x^2 + c, & x < 2\\[2pt] 3x - 1, & x \ge 2\end{cases}$$</div></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Work it. The three requirements tell you exactly what to write down.</p></div>
+  <div class="steps" aria-live="polite">
+    <div class="stp" hidden><p>$\displaystyle g(2) = 3(2)-1 = 5$, so requirement 1 is fine for any $\displaystyle c$.</p></div>
+    <div class="stp" hidden><p>The limit has to exist, so the two sides must agree:</p>
+<div class="dm">$$\lim_{x\to2^-}g(x) = 4 + c \qquad \lim_{x\to2^+}g(x) = 5$$</div></div>
+    <div class="stp" hidden><p>Setting them equal: $\displaystyle 4 + c = 5$, so $\displaystyle \mathbf{c = 1}$.</p></div>
+    <div class="stp" hidden><p>With $\displaystyle c=1$ the limit is $\displaystyle 5$ and $\displaystyle g(2)=5$, so requirement 3 holds too.</p></div>
+    <button type="button" class="more" aria-label="Next step of the three requirements, one at a time">&#9654;</button>
   </div>
-  <div class="sol shown">
-<figure style="width:46%"><button type="button" class="zoom" data-src="figures/limit_graph_x3.png" aria-label="Enlarge figure"><img src="figures/limit_graph_x3.png" alt="The same piecewise graph, with a red box drawn around the part near x equals 3, so the region under discussion is marked."></button></figure>
-<div class="dm">$$\lim_{x\to3}f(x) \ \textbf{does not exist}$$</div>
-  </div>
-  <div class="sol shown">
-<figure style="width:46%"><button type="button" class="zoom" data-src="figures/limit_graph_x5.png" aria-label="Enlarge figure"><img src="figures/limit_graph_x5.png" alt="The same piecewise graph, with a red box drawn around the part near x equals 5, so the region under discussion is marked."></button></figure>
-<div class="dm">$$\lim_{x\to5}f(x) = 3 = f(5)$$</div>
-  </div>
-  <div class="key"><p>Three different things happen at $\displaystyle x=1$, $\displaystyle x=3$ and $\displaystyle x=5$. Only one of them is a function behaving itself.</p></div>
+  <div class="key"><p>Nothing was guessed. Each requirement became one line, and the only unknown fell out of requirement 2.</p></div>
 </section>
-<section class="beat" aria-label="When a Table Lies to You" data-source-line="145">
-  <h2>When a Table Lies to You</h2>
-<p>A table is evidence, not proof. Consider $\displaystyle f(x) = \sin(\pi/x)$ near $\displaystyle 0$.</p>
-  <div class="turn your"><span class="badge">Your turn</span><p>Compute $\displaystyle f(x)$ at $\displaystyle x = 1$, $\displaystyle \tfrac12$, $\displaystyle \tfrac13$, $\displaystyle \tfrac14$, $\displaystyle \tfrac15$. What would you conclude?</p></div>
-  <div class="sol shown">
-<p>Every one gives $\displaystyle \sin(n\pi) = 0$. A table says the limit is $\displaystyle 0$.</p>
-  </div>
-  <div class="sol shown">
-<figure style="width:72%"><button type="button" class="zoom" data-src="figures/oscillate.png" aria-label="Enlarge figure"><img src="figures/oscillate.png" alt="The graph of y equals sine of pi over x between negative one half and one half. The curve oscillates faster and faster approaching zero from both sides, never settling. Red dots mark the sample points, all of which sit exactly on zero."></button></figure>
-<div class="key"><p>The limit does <strong>not</strong> exist. The function swings between $\displaystyle -1$ and $\displaystyle 1$ infinitely often, and your table happened to sample the zeros every time.</p></div>
-  </div>
+<section class="beat" aria-label="You Cannot Cross Without Landing" data-source-line="186">
+  <h2>You Cannot Cross Without Landing</h2>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; Intermediate Value Theorem</span><p>Suppose $\displaystyle f$ is <strong>continuous</strong> on $\displaystyle [a,b]$, and $\displaystyle N$ is any number between $\displaystyle f(a)$ and $\displaystyle f(b)$. Then there is at least one $\displaystyle c$ in $\displaystyle (a,b)$ with</p>
+<div class="dm">$$f(c) = N$$</div></div>
+  <figure style="width:64%"><button type="button" class="zoom" data-src="figures/ivt.png" aria-label="Enlarge figure"><img src="figures/ivt.png" alt="A continuous curve from the point a to the point b, with a dashed horizontal line at height N drawn between f of a and f of b. The curve crosses that line, and the crossing point is marked c on the horizontal axis."></button></figure>
+  <div class="key"><p>Read it as a sentence about drawing: if you start below $\displaystyle N$ and finish above it without lifting your pen, you crossed $\displaystyle N$ somewhere. <strong>At least one</strong> $\displaystyle c$ &mdash; the theorem promises a crossing, not a single crossing.</p></div>
 </section>
-<section class="beat" aria-label="Approaching from One Side" data-source-line="166">
-  <h2>Approaching from One Side</h2>
-<p>At $\displaystyle x=3$ the limit failed &mdash; but not because nothing happened. Two different
-things happened, one from each side.</p>
-  <figure style="width:46%"><button type="button" class="zoom" data-src="figures/limit_graph_x3.png" aria-label="Enlarge figure"><img src="figures/limit_graph_x3.png" alt="The same piecewise graph, with a red box drawn around the part near x equals 3, so the region under discussion is marked."></button></figure>
-<div class="boxed dfn"><span class="badge dfn">Definition &mdash; One-sided limits</span><p>The <strong>left-hand</strong> limit &mdash; approach $\displaystyle a$ through values <em>less</em> than $\displaystyle a$:</p>
-<div class="dm">$$\lim_{x \to a^-} f(x) = L$$</div>
-<p>The <strong>right-hand</strong> limit &mdash; approach $\displaystyle a$ through values <em>greater</em> than $\displaystyle a$:</p>
-<div class="dm">$$\lim_{x \to a^+} f(x) = L$$</div></div>
-  <div class="turn your"><span class="badge">Your turn</span><p>Go back to the graph. What are $\displaystyle \lim_{x\to3^-}f(x)$ and $\displaystyle \lim_{x\to3^+}f(x)$?</p></div>
-  <div class="sol shown">
-<p>$\displaystyle 3$ from the left, $\displaystyle 1$ from the right.</p>
-<div class="dm">$$\lim_{x \to 3^-} f(x) = 3$$</div>
-<div class="dm">$$\lim_{x \to 3^+} f(x) = 1$$</div>
-<div class="key"><p>$\displaystyle \lim_{x\to a}f(x) = L$ exactly when <strong>both</strong> one-sided limits exist and <strong>both</strong> equal $\displaystyle L$. At $\displaystyle x=3$ they exist and disagree, so the two-sided limit does not exist.</p></div>
-  </div>
+<section class="beat" aria-label="Why &quot;Continuous&quot; Is the Hypothesis" data-source-line="200">
+  <h2>Why &quot;Continuous&quot; Is the Hypothesis</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Sketch a function on $\displaystyle [0,2]$ with $\displaystyle f(0)=-1$ and $\displaystyle f(2)=1$ that <em>never</em> equals $\displaystyle 0$. What must your sketch have?</p></div>
+  <details class="sol"><summary>Show: what your sketch needs</summary>
+<p>A break &mdash; a jump straight over $\displaystyle 0$. Any such function is discontinuous somewhere
+in $\displaystyle [0,2]$, and that is exactly what the theorem rules out.</p>
+  </details>
+  <div class="key"><p>Drop "continuous" and the theorem is simply false. It is not decoration on the statement; it is the statement.</p></div>
 </section>
-<section class="beat" aria-label="Limits That Grow Without Bound" data-source-line="197">
-  <h2>Limits That Grow Without Bound</h2>
-  <div class="turn my"><span class="badge">My turn</span><p>Look at $\displaystyle g(x) = \dfrac{1}{x^2}$ as $\displaystyle x \to 0$. As $\displaystyle x$ gets small, $\displaystyle x^2$ gets very small and positive, so $\displaystyle 1/x^2$ gets enormous &mdash; from both sides.</p></div>
-<p>We write $\displaystyle \lim_{x\to0} \dfrac{1}{x^2} = \infty$.</p>
-  <div class="key"><p>This is not a number. Writing $\displaystyle \infty$ is shorthand for "the values grow past any bound you name" &mdash; it is a description of <em>how</em> the limit fails, not a value it reaches.</p></div>
-  <div class="turn your"><span class="badge">Your turn</span><p>Now try $\displaystyle h(x) = \dfrac{1}{x}$ as $\displaystyle x \to 0$. Check both sides separately. Is the answer the same?</p></div>
-  <div class="steps">
-    <div class="stp"><div class="dm">$$\text{From the right:}\quad \frac1x \to \infty$$</div></div>
-    <div class="stp"><div class="dm">$$\text{From the left:}\quad \frac1x \to -\infty$$</div></div>
-    <div class="stp"><p>The two sides disagree, so $\displaystyle \lim_{x\to0}\frac1x$ does not exist &mdash; not even as $\displaystyle \infty$.</p></div>
+<section class="beat" aria-label="Using the IVT: Showing a Root Exists" data-source-line="218">
+  <h2>Using the IVT: Showing a Root Exists</h2>
+<div class="boxed ex"><span class="badge ex">Example 2</span><p>Show that $\displaystyle x^3 - x - 1 = 0$ has a solution between $\displaystyle 1$ and $\displaystyle 2$.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>You are not being asked to solve it. What <em>are</em> you being asked for, and what would you have to check?</p></div>
+  <div class="steps" aria-live="polite">
+    <div class="stp" hidden><p>Let $\displaystyle f(x) = x^3 - x - 1$. It is a polynomial, so it is continuous on $\displaystyle [1,2]$ &mdash; the hypothesis is satisfied.</p></div>
+    <div class="stp" hidden><div class="dm">$$f(1) = 1 - 1 - 1 = -1 \qquad f(2) = 8 - 2 - 1 = 5$$</div></div>
+    <div class="stp" hidden><p>$\displaystyle N = 0$ lies between $\displaystyle -1$ and $\displaystyle 5$.</p></div>
+    <div class="stp" hidden><p>By the IVT there is a $\displaystyle c$ in $\displaystyle (1,2)$ with $\displaystyle f(c)=0$. That $\displaystyle c$ solves the equation.</p></div>
+    <button type="button" class="more" aria-label="Next step of the argument, one line at a time">&#9654;</button>
   </div>
+  <div class="key"><p>Three lines: continuous, the two values straddle $\displaystyle N$, cite the theorem. The IVT tells you a root <strong>exists</strong> &mdash; it never tells you where.</p></div>
 </section>
-<section class="beat" aria-label="Vertical Asymptotes" data-source-line="220">
-  <h2>Vertical Asymptotes</h2>
-<div class="boxed dfn"><span class="badge dfn">Definition &mdash; Vertical asymptote</span><p>The line $\displaystyle x = a$ is a vertical asymptote of $\displaystyle y=f(x)$ if at least one of the
-one-sided limits at $\displaystyle a$ is $\displaystyle \infty$ or $\displaystyle -\infty$.</p></div>
-<p>Note what this does <strong>not</strong> say. It says nothing about whether $\displaystyle f(a)$
-exists &mdash; only about how $\displaystyle f$ behaves nearby.</p>
-  <div class="turn your"><span class="badge">Your turn</span><p>Find the vertical asymptotes of $\displaystyle f(x) = \dfrac{x+1}{(x-2)(x+3)}$. Then decide the sign of $\displaystyle f$ just to the right of $\displaystyle x=2$.</p></div>
-  <div class="steps">
-    <div class="stp"><div class="dm">$$\text{Denominator} = 0 \text{ at } x = 2 \text{ and } x = -3$$</div></div>
-    <div class="stp"><div class="dm">$$\text{Just right of } 2:\quad x+1 \approx 3 > 0, \quad x-2 = \text{small} > 0, \quad x+3 \approx 5 > 0$$</div></div>
-    <div class="stp"><div class="dm">$$\text{All three positive, so } f \to +\infty$$</div></div>
-  </div>
-  <div class="key"><p>Finding <em>where</em> an asymptote is takes algebra. Finding which way the graph goes takes a sign check on each factor.</p></div>
-</section>
-<section class="beat" aria-label="Where This Goes" data-source-line="245">
+<section class="beat" aria-label="Where This Goes" data-source-line="241">
   <h2>Where This Goes</h2>
-<p>We can now estimate a limit from a table or a graph, and say precisely when one
-fails to exist.</p>
-<div class="cols">
-<div class="grid-item"><strong>What we can do</strong><p>Read a limit off a picture. Recognise a jump, a hole, an oscillation, an asymptote.</p></div>
-<div class="grid-item"><strong>What we cannot do yet</strong><p>Compute a limit exactly, from a formula, without guessing from numbers.</p></div>
-<div class="grid-item"><strong>Next</strong><p>Section 2.3 &mdash; the limit laws, which turn all of this into algebra.</p></div>
-</div>
-  <div class="key"><p>Tables and graphs build the intuition. Section 2.3 is where limits become something you can actually calculate.</p></div>
+<p>Continuity is the hypothesis on nearly every theorem left in this course &mdash; the
+Extreme Value Theorem, the Mean Value Theorem, and the Fundamental Theorem of
+Calculus all open with "suppose $\displaystyle f$ is continuous".</p>
+  <div class="key"><p>Next: what happens to $\displaystyle f(x)$ as $\displaystyle x$ runs off to infinity, rather than toward a point. Same limit idea, different question.</p></div>
 </section>
-<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="265">
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="252">
   <h2>What You Should Be Able to Do</h2>
-<p>By the end of this section &mdash; and on the quiz and the exam:</p>
-<ul><li>I can estimate a limit from a table or a graph, and explain why the value of the function at the point does not affect it.</li><li>I can decide whether a two-sided limit exists by comparing the one-sided limits.</li><li>I can recognise an infinite limit and locate the vertical asymptotes of a function.</li><li>I can explain how a table of values or a calculator can mislead me about a limit.</li></ul>
-  <div class="key"><p>If you cannot honestly tick one of these off, that is the one to work on &mdash; not the one that felt hardest in class.</p></div>
+<ul><li>State the three requirements for continuity at a point, and say which one a given graph breaks.</li><li>Name a discontinuity as removable, jump or infinite.</li><li>Find a constant that makes a piecewise function continuous at a point.</li><li>State the IVT with its hypothesis, and use it to show a root exists.</li><li>Say why "continuous at every point of its domain" is the careful phrasing.</li></ul>
 </section>
 </main>
-<p class="hint">10 sections &middot; worked solutions included</p>
+<p class="hint">11 sections &middot; solutions open on click</p>
 <dialog class="lb" aria-label="Enlarged figure">
   <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
 </dialog>

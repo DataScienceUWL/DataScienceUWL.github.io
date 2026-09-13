@@ -84,6 +84,40 @@ figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem}
 header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
 header.top p{color:var(--slate);margin:.2rem 0 0}
 .dm{margin:.9rem 0;text-align:center}
+/* A derivation advanced by one button. [hidden] needs !important because .stp
+   sets display, which would otherwise win over the UA's hidden rule. */
+/* An equation chain. display:table so the three columns agree across rows --
+   that is the whole point: the = signs must line up. */
+.chain{display:table;margin:1.1rem 0 .4rem;border-collapse:collapse;
+  /* .beat is a column flexbox, which stretches its children to full width --
+     a shrink-to-fit table then became 1408px and the LHS floated to the far
+     right. align-self keeps the table the width of its own contents. */
+  align-self:start}
+.ch-row{display:table-row}
+.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.12rem 0}
+.ch-l{text-align:right}
+.ch-e{text-align:center;padding-left:.5rem;padding-right:.5rem}
+.ch-r{text-align:left}
+/* The reason column. Set back and lighter so the algebra still reads as the
+   line and the citation as an annotation on it, not a second equation. */
+.ch-y{text-align:left;padding-left:2.2rem;font-size:.82em;color:#5b6b7a;
+  font-style:italic;max-width:26ch}
+.chain [hidden]{display:none!important}
+@media print{.chain [hidden]{display:table-cell!important}
+  .chain .ch-row[hidden]{display:table-row!important}}
+.steps{margin:1.1rem 0}
+.steps .stp{display:block;margin:.2rem 0}
+.steps [hidden]{display:none!important}
+.chain button.more,
+.steps button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
+  background:none;border:1px solid var(--amber);border-radius:50%;
+  width:2rem;height:2rem;padding:0;cursor:pointer;margin-top:.5rem;
+  display:inline-flex;align-items:center;justify-content:center}
+.chain button.more:hover,
+.steps button.more:hover{background:#fff8e2}
+.chain button.more:focus-visible,
+.steps button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media print{.steps .stp{display:block!important}.steps button.more{display:none}}
 .switch{margin:.35rem 0 0}
 .switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
   border-bottom:1px solid currentColor;padding-bottom:1px}
@@ -109,31 +143,32 @@ header.top p{color:var(--slate);margin:.2rem 0 0}
 </section>
 <section class="beat" aria-label="Who Am I?" data-source-line="35">
   <h2>Who Am I?</h2>
-<p><strong>Dr.\ Baggett</strong> &mdash; call me "Doctor B".</p>
+<p><strong>Dr. Baggett</strong> &mdash; call me "Doctor B".</p>
 <ul><li>E-mail: jbaggett@uwlax.edu &mdash; the fastest way to reach me</li><li>Office: 259E Cartwright &mdash; but I am rarely there, so catch me at student hours</li></ul>
 <p><strong>Student hours</strong> &mdash; just turn up, no appointment:</p>
-<ul><li>Mon, Wed   11:00&ndash;11:30   Centennial 3rd floor common area</li><li>Tue, Thu   9:15&ndash;9:45   Centennial 3rd floor common area</li><li>Tue, Thu   1:00&ndash;2:00   Wimberly 425J</li></ul>
+<table><caption>Student hours: days, times and where to find me</caption><tr><th scope="col">Days</th><th scope="col">Time</th><th scope="col">Where</th></tr><tr><td>Mon, Wed</td><td>11:00&ndash;11:30</td><td>Centennial 3rd floor common area</td></tr><tr><td>Tue, Thu</td><td>9:15&ndash;9:45</td><td>Centennial 3rd floor common area</td></tr><tr><td>Tue, Thu</td><td>1:00&ndash;2:00</td><td>Wimberly 425J</td></tr></table>
 <p>These are in the syllabus in Canvas too, so you never have to remember them.</p>
 <p><strong>My job:</strong> give you the resources to build a strong foundation in calculus.</p>
 <p><strong>Your job:</strong> use them early.</p>
 </section>
-<section class="beat" aria-label="So What Is Calculus?" data-source-line="61">
+<section class="beat" aria-label="So What Is Calculus?" data-source-line="63">
   <h2>So What Is Calculus?</h2>
 <p>Here is my honest summary of this course:</p>
   <div class="key"><p>Calculus is algebra and trigonometry, plus <strong>one</strong> new idea.</p></div>
 <p>Everything you already know still applies &mdash; factoring, fractions, exponents, logarithms, the unit circle. You will use all of it, constantly, and rusty algebra will cost you far more points than calculus ever will.</p>
-  <details class="sol"><summary>Show: what is actually new</summary>
-<p>What is new is a single idea, and we will spend the next several weeks learning to handle it.</p>
-  </details>
+<p>We will spend the next few weeks on this new idea.</p>
 </section>
 <section class="beat" aria-label="The One New Idea: The Limit" data-source-line="76">
   <h2>The One New Idea: The Limit</h2>
 <p>Every question in this course has the same shape:</p>
 <ul><li>The quantity I want cannot be computed directly.</li><li>But I can compute an <strong>approximation</strong> to it.</li><li>And I can make that approximation as good as I like.</li></ul>
 <p>A <strong>limit</strong> is what you get by pushing that process as far as it goes.</p>
-  <div class="key"><p>Two questions in particular are worth a whole course, and their histories are opposites. One is ancient: Archimedes (~250 BC) got remarkably far on it, and then it sat for two thousand years. The other could not even be <em>asked</em> in general until algebra met geometry, less than four hundred years ago. The same one idea answers both.</p></div>
+  <div class="key"><p>Two questions in particular are worth a whole course, and their histories are opposites.</p>
+<p>One is ancient: Archimedes (~250 BC) got remarkably far on it, and then it sat for two thousand years.</p>
+<p>The other could not even be <em>asked</em> in general until algebra met geometry, less than four hundred years ago.</p>
+<p>The same one idea answers both.</p></div>
 </section>
-<section class="beat" aria-label="Big Limit #1: How Fast, Right Now?" data-source-line="95">
+<section class="beat" aria-label="Big Limit #1: How Fast, Right Now?" data-source-line="101">
   <h2>Big Limit #1: How Fast, Right Now?</h2>
 <p>A ball is thrown straight up. Its height after $\displaystyle t$ seconds is</p>
 <div class="dm">$$s(t) = -16t^2 + 32t + 48 = 16(-t^2+2t+3)$$</div>
@@ -151,59 +186,80 @@ Using $\displaystyle s(t) = 16(-t^2+2t+3)$, compute the average velocity</p>
   <details class="sol"><summary>Show: the average speed to $\displaystyle x=0.6$</summary>
 <div class="dm">$$x = 0.6:\quad \frac{s(0.6)-s(0.5)}{0.6-0.5} \;=\; \frac{61.44-60}{0.1} \;=\; 14.4\text{ ft/sec}$$</div>
   </details>
-  <figure><button type="button" class="zoom" data-src="figures/secant_limit.png" aria-label="Enlarge figure"><img src="figures/secant_limit.png" alt="The height of a thrown ball plotted against time, with a point P at t equals 0.5 and three secant lines drawn from P to points Q that get closer and closer to it. As Q approaches P the secant slopes rise toward the slope of the dashed tangent line, marked as the speedometer reading of 16 feet per second."></button><figcaption>Keep shrinking the interval and the answers pile up near 16. Open it live and slide $\displaystyle Q$ in <a href="https://learnlens.org/calclens/derivatives/secant/?f=-16t%5E2%2B32t%2B48&a=0.5&h=0.5&name=s&window=0,2&embed=true&controls=h,table&readout=false&prose=none&form=interval" target="_blank" rel="noopener">Open the interactive version</a></figcaption></figure>
+  <figure style="width:90%"><button type="button" class="zoom" data-src="figures/secant_limit.png" aria-label="Enlarge figure"><img src="figures/secant_limit.png" alt="The height of a thrown ball plotted against time, with a point P at t equals 0.5 and three secant lines drawn from P to points Q that get closer and closer to it. As Q approaches P the secant slopes rise toward the slope of the dashed tangent line, marked as the speedometer reading of 16 feet per second."></button><figcaption>Keep shrinking the interval and the answers pile up near 16. Open it live and slide $\displaystyle Q$ in <a href="https://learnlens.org/calclens/derivatives/secant/?f=-16t%5E2%2B32t%2B48&a=0.5&h=0.5&name=s&window=0,2&embed=true&controls=h,table&readout=false&prose=none&form=interval" target="_blank" rel="noopener">Open the interactive version</a></figcaption></figure>
 </section>
-<section class="beat" aria-label="Do It Once with Letters" data-source-line="123">
+<section class="beat" aria-label="Do It Once with Letters" data-source-line="129">
   <h2>Do It Once with Letters</h2>
 <p>Instead of a new number every time, do the same computation with $\displaystyle x$ left in.</p>
   <div class="turn your"><span class="badge">Your turn</span><p>Form $\displaystyle \dfrac{s(x)-s(0.5)}{x-0.5}$ using $\displaystyle s(t) = 16(-t^2+2t+3)$, and simplify it as far as it will go. Factor the top.</p></div>
-  <details class="sol"><summary>Show: the two pieces evaluated</summary>
-<p>First evaluate the two pieces: $\displaystyle s(x) = 16(-x^2+2x+3)$, and $\displaystyle s(0.5) = 16(-0.25+1+3) = 16(3.75) = 60$.</p>
-  </details>
-  <details class="sol"><summary>Show: setting up the quotient</summary>
-<div class="dm">$$\frac{s(x)-s(0.5)}{x-0.5} \;=\; \frac{16(-x^2+2x+3) - 60}{x-0.5}$$</div>
-  </details>
-  <details class="sol"><summary>Show: expanding the numerator</summary>
-<div class="dm">$$=\; \frac{-16x^2+32x+48-60}{x-0.5} \;=\; \frac{-16x^2+32x-12}{x-0.5}$$</div>
-  </details>
-  <details class="sol"><summary>Show: factoring it</summary>
-<div class="dm">$$=\; \frac{-4(4x^2-8x+3)}{x-0.5} \;=\; \frac{-4(2x-1)(2x-3)}{x-0.5}$$</div>
-  </details>
-  <details class="sol"><summary>Show: cancelling, and the answer</summary>
-<div class="dm">$$=\; \frac{-8(x-0.5)(2x-3)}{x-0.5} \;=\; -8(2x-3) \;=\; 24-16x$$</div>
-<div class="key"><p>Once the $\displaystyle (x-0.5)$ cancels, nothing stops you putting $\displaystyle x = 0.5$ in &mdash; and out comes $\displaystyle 16$. The algebra you already had did this. The limit is what makes the cancelling legal.</p></div>
-  </details>
+  <div class="chain" aria-live="polite">
+    <div class="ch-row"><span class="ch-l">$\displaystyle \frac{s(x)-s(0.5)}{x-0.5}$</span><span class="ch-e">$\displaystyle =$</span><span class="ch-r rv" hidden>$\displaystyle \frac{16(-x^2+2x+3) - 16(-0.25+1+3)}{x-0.5}$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \frac{16(-x^2+2x+3) - 16(3.75)}{x-0.5}$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \frac{16(-x^2+2x+3) - 60}{x-0.5}$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \frac{-16x^2+32x+48-60}{x-0.5}$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \frac{-16x^2+32x-12}{x-0.5}$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \frac{-4(4x^2-8x+3)}{x-0.5}$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \frac{-4(2x-1)(2x-3)}{x-0.5}$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \frac{-8(x-0.5)(2x-3)}{x-0.5}$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle -8(2x-3)$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle 24-16x$</span></div>
+    <button type="button" class="more" aria-label="Next step of the difference quotient">&#9654;</button>
+  </div>
+  <div class="key"><p>Once the $\displaystyle (x-0.5)$ cancels, nothing stops you putting $\displaystyle x = 0.5$ in &mdash; and out comes $\displaystyle 16$. The algebra you already had did this. The limit is what makes the cancelling legal.</p></div>
 <p>Check it against the numbers you already found:</p>
-<table><caption>The simplified quotient reproduces every value computed above</caption><tr><th scope="col">$\displaystyle x$</th><th scope="col">$\displaystyle 24-16x$</th><th scope="col">earlier</th></tr><tr><td>$\displaystyle 1$</td><td>$\displaystyle 8$</td><td>$\displaystyle 8$</td></tr><tr><td>$\displaystyle 0.6$</td><td>$\displaystyle 14.4$</td><td>$\displaystyle 14.4$</td></tr><tr><td>$\displaystyle 0.51$</td><td>$\displaystyle 15.84$</td><td></td><td>mdash;</td></tr><tr><td>$\displaystyle 0.5$</td><td>$\displaystyle \mathbf{16}$</td><td>the speedometer</td></tr></table>
+<table><caption>The simplified quotient reproduces every value computed above</caption><tr><th scope="col">$\displaystyle x$</th><th scope="col">$\displaystyle 24-16x$</th><th scope="col">earlier</th></tr><tr><td>$\displaystyle 1$</td><td>$\displaystyle 8$</td><td>$\displaystyle 8$</td></tr><tr><td>$\displaystyle 0.6$</td><td>$\displaystyle 14.4$</td><td>$\displaystyle 14.4$</td></tr><tr><td>$\displaystyle 0.51$</td><td>$\displaystyle 15.84$</td><td>&mdash;</td></tr><tr><td>$\displaystyle 0.5$</td><td>$\displaystyle \mathbf{16}$</td><td>the speedometer</td></tr></table>
 </section>
 <section class="beat" aria-label="Big Limit #2: Area by Exhaustion" data-source-line="167">
   <h2>Big Limit #2: Area by Exhaustion</h2>
 <p><strong>The question.</strong> What is the area of a circle of radius $\displaystyle 1$?</p>
 <p><strong>The trouble.</strong> We know the area of a triangle. We know the area of a rectangle. A circle has no straight edges at all.</p>
 <p><strong>Archimedes' idea.</strong> Draw a polygon inside the circle. You <em>can</em> find its area. Then add sides.</p>
-  <figure><button type="button" class="zoom" data-src="figures/special_triangles.png" aria-label="Enlarge figure"><img src="figures/special_triangles.png" alt="Two reference right triangles side by side. The 45-45-90 triangle has both legs of length 1 and hypotenuse the square root of 2. The 30-60-90 triangle has short leg 1, long leg the square root of 3, and hypotenuse 2."></button></figure>
-  <div class="turn your"><span class="badge">Your turn</span><p>Find the exact area of the inscribed <strong>square</strong>, then the inscribed <strong>regular hexagon</strong>. Geometry only &mdash; no calculus, no calculator.</p></div>
-  <details class="sol"><summary>Show: the square</summary>
-<div class="dm">$$\text{Square:}\quad \text{side} = \sqrt{2}, \qquad A = (\sqrt{2})^2 = 2$$</div>
-  </details>
-  <details class="sol"><summary>Show: the hexagon</summary>
-<div class="dm">$$\text{Hexagon:}\quad \text{six equilateral triangles of side } 1$$</div>
-  </details>
-  <details class="sol"><summary>Show: its area</summary>
-<div class="dm">$$A = 6\cdot\frac{\sqrt{3}}{4}(1)^2 = \frac{3\sqrt{3}}{2} \approx 2.598$$</div>
-  </details>
-  <details class="sol"><summary>Show: how both compare with $\displaystyle \pi$</summary>
-<p>Both are under $\displaystyle \pi$ &mdash; and the hexagon is closer.</p>
-  </details>
-  <figure><button type="button" class="zoom" data-src="figures/exhaustion.png" aria-label="Enlarge figure"><img src="figures/exhaustion.png" alt="A circle with regular polygons inscribed in it at 3, 6, 12 and 96 sides. The polygon areas are 1.2990, 2.5981, 3.0000 and 3.1394, climbing toward the area of the circle, pi equals 3.14159."></button><figcaption>Click to interact: add sides</figcaption></figure>
+  <figure style="width:70%"><button type="button" class="zoom" data-src="figures/special_triangles.png" aria-label="Enlarge figure"><img src="figures/special_triangles.png" alt="Two reference right triangles side by side. The 45-45-90 triangle has both legs of length 1 and hypotenuse the square root of 2. The 30-60-90 triangle has short leg 1, long leg the square root of 3, and hypotenuse 2."></button></figure>
+<p>These two are the ones we can actually do by hand:</p>
+  <figure style="width:88%"><button type="button" class="zoom" data-src="figures/inscribed_pair.png" aria-label="Enlarge figure"><img src="figures/inscribed_pair.png" alt="Side by side, a square and a regular hexagon each inscribed in a circle of radius 1. In both, a dashed radius is drawn from the centre to every vertex, and one radius is labelled 1."></button></figure>
+  <div class="key"><p>Notice the dashed radii. They cut each polygon into triangles that all meet at the centre &mdash; and triangles we can do.</p></div>
 </section>
-<section class="beat" aria-label="The Same Trick, on Any Curve" data-source-line="202">
+<section class="beat" aria-label="One Triangle at a Time: the Square" data-source-line="186">
+  <h2>One Triangle at a Time: the Square</h2>
+  <div class="turn my"><span class="badge">My turn</span><p>I will do the square completely. Watch the <em>method</em>, because you are about to use it again on the hexagon.</p></div>
+  <figure style="width:52%"><button type="button" class="zoom" data-src="figures/square_triangles.png" aria-label="Enlarge figure"><img src="figures/square_triangles.png" alt="The inscribed square cut by its radii into four triangles. One is shaded red, with its two radii labelled 1 and the angle between them labelled 90 degrees."></button></figure>
+<p>Four radii, so <strong>four</strong> triangles, all identical. Take the shaded one. Its two sides are radii of length $\displaystyle 1$, and they meet at a right angle &mdash; so one is the base and the other is the height:</p>
+<div class="dm">$$\text{one triangle} \;=\; \tfrac12 \cdot \text{base} \cdot \text{height} \;=\; \tfrac12 \cdot 1 \cdot 1 \;=\; \tfrac12$$</div>
+<p>Four of them:</p>
+<div class="dm">$$A_{\text{square}} \;=\; 4 \cdot \tfrac12 \;=\; 2$$</div>
+  <div class="key"><p>Find one triangle, then multiply by how many. That is the entire method, and it is the same method for the hexagon.</p></div>
+</section>
+<section class="beat" aria-label="Your Turn: the Hexagon" data-source-line="207">
+  <h2>Your Turn: the Hexagon</h2>
+<p>Same circle, radius $\displaystyle 1$. Same method. Three steps.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p><strong>Step 1.</strong> The six radii cut the hexagon into six triangles. Take one: how long are its three sides, and so what kind of triangle is it?</p></div>
+  <details class="sol"><summary>Show: step 1 &mdash; what kind of triangle it is</summary>
+<figure style="width:52%"><button type="button" class="zoom" data-src="figures/hexagon_triangles.png" aria-label="Enlarge figure"><img src="figures/hexagon_triangles.png" alt="The inscribed hexagon cut by its radii into six triangles. One is shaded red, with all three of its sides labelled 1, showing it is equilateral."></button></figure>
+Two of its sides are radii, so both are $\displaystyle 1$. The third is a side of the hexagon &mdash; which for a <em>hexagon</em> is also $\displaystyle 1$. All three sides equal: it is <strong>equilateral</strong>.
+  </details>
+  <div class="turn your"><span class="badge">Your turn</span><p><strong>Step 2.</strong> Find the area of that one triangle. Its base is $\displaystyle 1$; use the $\displaystyle 30$&ndash;$\displaystyle 60$&ndash;$\displaystyle 90$ triangle from earlier to get its height.</p></div>
+  <details class="sol"><summary>Show: step 2 &mdash; the area of one triangle</summary>
+<p>Cut the equilateral triangle down the middle and you have a $\displaystyle 30$&ndash;$\displaystyle 60$&ndash;$\displaystyle 90$ with hypotenuse $\displaystyle 1$ and short leg $\displaystyle \tfrac12$, so the height is $\displaystyle \sqrt{3}/2$:</p>
+<div class="dm">$$\text{one triangle} \;=\; \tfrac12 \cdot 1 \cdot \frac{\sqrt{3}}{2} \;=\; \frac{\sqrt{3}}{4}$$</div>
+  </details>
+  <div class="turn your"><span class="badge">Your turn</span><p><strong>Step 3.</strong> Finish it &mdash; what is the area of the whole hexagon?</p></div>
+  <details class="sol"><summary>Show: step 3 &mdash; the hexagon</summary>
+<div class="dm">$$A_{\text{hexagon}} \;=\; 6 \cdot \frac{\sqrt{3}}{4} \;=\; \frac{3\sqrt{3}}{2} \;\approx\; 2.598$$</div>
+  </details>
+  <div class="turn your"><span class="badge">Your turn</span><p>The circle's area is $\displaystyle \pi \approx 3.14159$. How do your two answers compare with it, and which is closer?</p></div>
+  <details class="sol"><summary>Show: how both compare with $\displaystyle \pi$</summary>
+<p>$\displaystyle 2 < 2.598 < \pi$. Both are under $\displaystyle \pi$ &mdash; a polygon inside the circle must be &mdash; and the hexagon is closer, because it has more sides.</p>
+  </details>
+  <figure><button type="button" class="zoom" data-src="figures/exhaustion.png" aria-label="Enlarge figure"><img src="figures/exhaustion.png" alt="A circle with regular polygons inscribed in it at 3, 6, 12 and 96 sides. The polygon areas are 1.2990, 2.5981, 3.0000 and 3.1394, climbing toward the area of the circle, pi equals 3.14159."></button><figcaption>Archimedes got to 96 sides, by hand, around 250 BC.</figcaption></figure>
+<p><a href="figures/exhaustion.html" target="_blank" rel="noopener">Vary the number of sides yourself &mdash; drag from 3 up to 96</a></p>
+</section>
+<section class="beat" aria-label="The Same Trick, on Any Curve" data-source-line="246">
   <h2>The Same Trick, on Any Curve</h2>
 <p>Archimedes needed a circle. In Chapter 5 we do it with rectangles, and then it works under <em>any</em> curve.</p>
-  <figure><button type="button" class="zoom" data-src="figures/riemann_preview.png" aria-label="Enlarge figure"><img src="figures/riemann_preview.png" alt="The region under a curve approximated by 4, then 10, then 40 rectangles. As the rectangles get narrower they fill the region more and more exactly."></button></figure>
+  <figure style="width:78%"><button type="button" class="zoom" data-src="figures/riemann_preview.png" aria-label="Enlarge figure"><img src="figures/riemann_preview.png" alt="The region under a curve approximated by 4, then 10, then 40 rectangles. As the rectangles get narrower they fill the region more and more exactly."></button></figure>
   <div class="key"><p>Same move both times: approximate with something you can compute, then let the approximation run to its limit.</p></div>
 </section>
-<section class="beat" aria-label="Two Limits, One Course" data-source-line="213">
+<section class="beat" aria-label="Two Limits, One Course" data-source-line="257">
   <h2>Two Limits, One Course</h2>
 <div class="cols">
 <div class="grid-item"><strong>The derivative</strong><p>How fast, right now. Chapters 2 through 4 &mdash; rates of change, tangent lines, optimization.</p></div>
@@ -212,22 +268,20 @@ Using $\displaystyle s(t) = 16(-t^2+2t+3)$, compute the average velocity</p>
 <p>They look like opposite questions. In Chapter 5 we will prove they are inverses of each other, which is such a surprise that it is called the <strong>Fundamental Theorem of Calculus</strong>.</p>
   <div class="key"><p>Starting tomorrow we chase the first one. We cannot finish it until we know what a limit really is &mdash; that is Sections 2.2 through 2.6.</p></div>
 </section>
-<section class="beat" aria-label="Whose Example Is It?" data-source-line="227">
+<section class="beat" aria-label="Whose Example Is It?" data-source-line="271">
   <h2>Whose Example Is It?</h2>
 <p>Most days you will do more of the work than I do. Every example is labelled so you know which kind it is before it starts.</p>
   <div class="turn my"><span class="badge">My turn</span><p>I work it at the board &mdash; usually because it introduces a new idea, or because watching once beats being stuck for ten minutes.</p></div>
-<p>% no-reveal &mdash; demonstrates the badge, not a problem</p>
   <div class="turn your"><span class="badge">Your turn</span><p>You work it, alone or with a neighbor &mdash; pen actually moving on paper. I walk around. Then we compare and I show the solution.</p></div>
-<p>% no-reveal, worksheet-skip &mdash; demonstrates the badge, not a problem</p>
   <div class="key"><p>The answer is on the next slide either way &mdash; so copying it down is never the point. <strong>Attempting it first is.</strong> The minutes you spend stuck are where the learning happens.</p></div>
 </section>
-<section class="beat" aria-label="Where Everything Lives" data-source-line="242">
+<section class="beat" aria-label="Where Everything Lives" data-source-line="286">
   <h2>Where Everything Lives</h2>
 <div class="cols"><div><p><strong>Canvas</strong> is the home for this course. Schedule, announcements, notes, and every link start there.</p>
 <p><strong>Stewart, <em>Calculus: Early Transcendentals</strong>, 9th edition</em>, from Textbook Rental. Don't bring it to class. When you need a formula table or a theorem, use <strong>Look It Up</strong> on the course website &mdash; free, online, always with you.</p>
 <p><strong>MyOpenMath</strong> hosts the online homework. You reach it through Canvas; your score comes back to Canvas automatically.</p></div><div><div class="key"><p>If you cannot find something, look in Canvas first, then e-mail me. That order saves us both a day.</p></div></div></div>
 </section>
-<section class="beat" aria-label="How the Grade Works" data-source-line="258">
+<section class="beat" aria-label="How the Grade Works" data-source-line="302">
   <h2>How the Grade Works</h2>
 <div class="cols">
 <div class="grid-item"><strong>Homework &mdash; 10%</strong><p>51 sets in MyOpenMath, roughly one per class day. Every problem is worth 1 point; your grade is the percent of all points earned. Nothing dropped.</p></div>
@@ -238,26 +292,26 @@ Using $\displaystyle s(t) = 16(-t^2+2t+3)$, compute the average velocity</p>
 <p>Grade scale: A 92, AB 88, B 82, BC 78, C 70, D 60.</p>
   <div class="key"><p>Homework is only 10% of the grade and close to 100% of the learning. Treat the percentage as a lie.</p></div>
 </section>
-<section class="beat" aria-label="The Weekly Rhythm" data-source-line="276">
+<section class="beat" aria-label="The Weekly Rhythm" data-source-line="320">
   <h2>The Weekly Rhythm</h2>
 <p>We meet Monday through Thursday.</p>
 <ul><li>There is a <strong>quiz most Tuesdays</strong> &mdash; 11 in all &mdash; covering the last three class days. The schedule in Canvas has every date.</li><li><strong>Homework</strong> is due at 11:59 pm, on the schedule below. Everything is in Canvas &mdash; you never have to work it out.</li></ul>
 <table><caption>When homework assigned on each day is due</caption><tr><th scope="col">assigned in class</th><th scope="col">due at 11:59 pm</th></tr><tr><td>Monday</td><td>Tuesday</td></tr><tr><td>Tuesday</td><td>Wednesday</td></tr><tr><td>Wednesday</td><td>Sunday</td></tr><tr><td>Thursday</td><td>Monday</td></tr></table>
   <div class="key"><p>However long you get, there is always exactly <strong>one</strong> class meeting between getting the homework and its deadline. That meeting is your chance to ask. Start early enough to have a question.</p></div>
 </section>
-<section class="beat" aria-label="Getting Help" data-source-line="299">
+<section class="beat" aria-label="Getting Help" data-source-line="343">
   <h2>Getting Help</h2>
 <p><strong>My office hours</strong> are posted in Canvas. If none of them work, e-mail me three times you are free and whether you want Zoom or in person.</p>
 <p><strong>The Murphy Learning Center</strong> (251 Murphy Library) offers free drop-in tutoring through Calculus II. It usually opens in Week 2.</p>
   <div class="key"><p>Come at the first sign of trouble, not the week of the exam. Math builds &mdash; a gap in September is still there in December.</p></div>
 </section>
-<section class="beat" aria-label="How to Use the Textbook" data-source-line="312">
+<section class="beat" aria-label="How to Use the Textbook" data-source-line="356">
   <h2>How to Use the Textbook</h2>
 <p>Fifty minutes is not enough time to cover everything in a section, so I choose. What I skip is still yours to learn.</p>
 <ul><li><strong>Before class:</strong> skim the section. Ten seconds a page. You are looking for what the section is about, not understanding it.</li><li><strong>After class:</strong> read it properly. Find every definition and theorem, then read the example right after it.</li><li><strong>Then:</strong> do the homework.</li></ul>
   <div class="key"><p>Most students skip the definitions. That is the single most expensive habit in this course.</p></div>
 </section>
-<section class="beat" aria-label="The Experiment You Are About to Run on Yourself" data-source-line="327">
+<section class="beat" aria-label="The Experiment You Are About to Run on Yourself" data-source-line="371">
   <h2>The Experiment You Are About to Run on Yourself</h2>
 <p>Stuck on homework, you can ask an AI or find someone on YouTube working that exact problem. Researchers ran this as an experiment: about a thousand students worked math practice problems &mdash; one group with unrestricted GPT-4, one with a hints-only tutor, one with nothing. Then everyone sat an exam <strong>without</strong> any AI.</p>
   <div class="turn your"><span class="badge">Your turn</span><p>Predict: on that exam, how did the unrestricted-AI group do against the group that had no AI at all?</p></div>
@@ -266,7 +320,7 @@ Using $\displaystyle s(t) = 16(-t^2+2t+3)$, compute the average velocity</p>
 <div class="key"><p>Their practice scores went <strong>up</strong> while their learning went <strong>down</strong>, and nothing warned them. The feeling of understanding arrives on time even when the understanding does not.</p></div>
   </details>
 </section>
-<section class="beat" aria-label="Why It Feels Like Learning" data-source-line="344">
+<section class="beat" aria-label="Why It Feels Like Learning" data-source-line="388">
   <h2>Why It Feels Like Learning</h2>
 <p>Watching a clean solution is <strong>fluent</strong>. Nothing is confusing, so it feels like understanding. Being stuck is not fluent &mdash; it feels like failing, right up until it works.</p>
 <p>In one study, students in classes that made them work <em>learned more</em> but <strong>felt like they learned less</strong>. The smooth version wins on feel and loses on results.</p>
@@ -274,7 +328,7 @@ Using $\displaystyle s(t) = 16(-t^2+2t+3)$, compute the average velocity</p>
 <p>Same kind of model that left those math students worse off. What differed: it gave <strong>one step at a time</strong>, never the whole solution, and made them try first.</p>
   <div class="key"><p>The tool was not the variable. How it was <strong>asked</strong> was the variable &mdash; and that part is yours.</p></div>
 </section>
-<section class="beat" aria-label="So Use Them Like This" data-source-line="361">
+<section class="beat" aria-label="So Use Them Like This" data-source-line="405">
   <h2>So Use Them Like This</h2>
 <p><strong>Attempt first.</strong> Ten real minutes on blank paper. Struggle is working while you are still generating and testing ideas; it is over when you have re-read the problem three times with no new idea. That moment &mdash; out of ideas, not out of patience &mdash; is when a hint is worth the most.</p>
 <p><strong>Then ask for the next step, not the answer.</strong> Paste this once:</p>
@@ -282,7 +336,7 @@ Using $\displaystyle s(t) = 16(-t^2+2t+3)$, compute the average velocity</p>
 <p><strong>Then close it and redo the problem from blank paper.</strong> If you cannot reproduce it, you recognised it &mdash; you did not learn it.</p>
   <div class="key"><p>Two tells. If you are nodding along, you are watching. If you are slightly annoyed and doing the work yourself, it is helping.</p></div>
 </section>
-<section class="beat" aria-label="Brush Up on This Week" data-source-line="378">
+<section class="beat" aria-label="Brush Up on This Week" data-source-line="422">
   <h2>Brush Up on This Week</h2>
 <p>Four short review sets run alongside the regular homework this week and next: <strong>Review1</strong> (algebra) due tomorrow, then <strong>Review2</strong>, <strong>Review3</strong> (inverses, exponents, logs) and <strong>Review4</strong> (trigonometry) on the next three class days.</p>
 <p>They cover this:</p>
@@ -293,14 +347,14 @@ Using $\displaystyle s(t) = 16(-t^2+2t+3)$, compute the average velocity</p>
 <p>Separately, a <strong>cumulative review set</strong> is available for each exam and is due on the review day before the exam. Start it early &mdash; it is built from the kind of problems the exam asks.</p>
   <div class="key"><p>ExamReview1 is already open. It is not due until Oct 5, but it covers everything on Exam 1, so it doubles as your running check that you are keeping up.</p></div>
 </section>
-<section class="beat" aria-label="Where to Look Things Up" data-source-line="416">
+<section class="beat" aria-label="Where to Look Things Up" data-source-line="460">
   <h2>Where to Look Things Up</h2>
 <p>Two pages on the course site, both pinned at the top of Canvas.</p>
 <ul><li><strong>Look It Up</strong> &mdash; every formula, definition and theorem for the term, on one page. Derivative rules, trig values, the unit circle. Use it while you work; you are not supposed to have these memorised yet.</li><li><strong>Unit 1</strong> &mdash; everything for Exam 1 in one place: the readings, and a short list of videos I picked.</li></ul>
   <div class="key"><p>Read the written explanation <em>first</em>, then watch a video if you are still stuck. A video makes you feel caught up faster than it makes you caught up &mdash; that is the trap from the slides just before this.</p></div>
 </section>
 </main>
-<p class="hint">20 sections &middot; solutions open on click</p>
+<p class="hint">22 sections &middot; solutions open on click</p>
 <dialog class="lb" aria-label="Enlarged figure">
   <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
 </dialog>
@@ -340,6 +394,92 @@ Using $\displaystyle s(t) = 16(-t^2+2t+3)$, compute the average velocity</p>
     }
     if(best){ cur=parseInt(best.dataset.sourceLine,10);
               best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+// ── Advancing the page ────────────────────────────────────────────────────
+// One action, whether it arrives from a block's own arrow or from a key. A
+// presentation remote is just a USB keyboard sending Right/PageDown, so making
+// the page respond to those keys is all a clicker needs -- no pairing, no app.
+//
+// The order is document order within the section you are looking at: chain
+// rows, step lines and closed reveals alike. When a section has nothing left
+// hidden, the next press moves to the next section. That is the slide feel,
+// on a scrolling page.
+(function(){
+  function units(sec){
+    return [].slice.call(sec.querySelectorAll('.rv, .stp, details.sol'));
+  }
+  function covered(u){
+    return u.tagName === 'DETAILS' ? !u.open : u.hidden;
+  }
+  function uncover(u, yes){
+    if(u.tagName === 'DETAILS'){ u.open = yes; } else { u.hidden = !yes; }
+  }
+  function tidy(sec){
+    // a block's arrow retires once that block has nothing left to give
+    [].forEach.call(sec.querySelectorAll('.steps, .chain'), function(box){
+      var b = box.querySelector('button.more');
+      if(b) b.hidden = !box.querySelector('.rv[hidden], .stp[hidden]');
+    });
+  }
+  function sections(){
+    return [].slice.call(document.querySelectorAll('main > section.beat'));
+  }
+  function here(){
+    var mark = window.innerHeight * 0.3, best = null;
+    sections().forEach(function(s){
+      var r = s.getBoundingClientRect();
+      if(r.top <= mark && r.bottom > 0) best = s;
+    });
+    return best || sections()[0];
+  }
+  function go(sec, d){
+    var all = sections(), i = all.indexOf(sec) + d;
+    if(i >= 0 && i < all.length) all[i].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.__advance = function(d){
+    var sec = here();
+    if(!sec) return;
+    var us = units(sec);
+    if(d > 0){
+      for(var i = 0; i < us.length; i++){
+        if(covered(us[i])){
+          uncover(us[i], true); tidy(sec);
+          us[i].scrollIntoView({block:'nearest'});
+          return;
+        }
+      }
+      go(sec, 1);
+    } else {
+      for(var j = us.length - 1; j >= 0; j--){
+        if(!covered(us[j])){ uncover(us[j], false); tidy(sec); return; }
+      }
+      go(sec, -1);
+    }
+  };
+  var FWD = {ArrowRight:1, ArrowDown:1, PageDown:1, ' ':1, Enter:1, Spacebar:1};
+  var BACK = {ArrowLeft:1, ArrowUp:1, PageUp:1, Backspace:1};
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    // let a focused control have its own keys
+    var t = e.target;
+    if(t && t.closest && t.closest('button, a, summary, input, textarea, dialog')) return;
+    if(FWD[e.key]){ e.preventDefault(); window.__advance(1); }
+    else if(BACK[e.key]){ e.preventDefault(); window.__advance(-1); }
+  });
+})();
+
+// One button per derivation: each press uncovers the next line.
+(function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.steps > button.more, .chain > button.more');
+    if(!b) return;
+    var box=b.parentElement;
+    // .rv marks a revealable unit: a whole step block, a chain row, or the
+    // right-hand side of the chain's first row. One selector covers all three.
+    var next=box.querySelector('.rv[hidden], .stp[hidden]');
+    if(next) next.hidden=false;
+    if(!box.querySelector('.rv[hidden], .stp[hidden]')) b.hidden=true;
   });
 })();
 (function(){

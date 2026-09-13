@@ -82,6 +82,40 @@ figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem}
 header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
 header.top p{color:var(--slate);margin:.2rem 0 0}
 .dm{margin:.9rem 0;text-align:center}
+/* A derivation advanced by one button. [hidden] needs !important because .stp
+   sets display, which would otherwise win over the UA's hidden rule. */
+/* An equation chain. display:table so the three columns agree across rows --
+   that is the whole point: the = signs must line up. */
+.chain{display:table;margin:1.1rem 0 .4rem;border-collapse:collapse;
+  /* .beat is a column flexbox, which stretches its children to full width --
+     a shrink-to-fit table then became 1408px and the LHS floated to the far
+     right. align-self keeps the table the width of its own contents. */
+  align-self:start}
+.ch-row{display:table-row}
+.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.12rem 0}
+.ch-l{text-align:right}
+.ch-e{text-align:center;padding-left:.5rem;padding-right:.5rem}
+.ch-r{text-align:left}
+/* The reason column. Set back and lighter so the algebra still reads as the
+   line and the citation as an annotation on it, not a second equation. */
+.ch-y{text-align:left;padding-left:2.2rem;font-size:.82em;color:#5b6b7a;
+  font-style:italic;max-width:26ch}
+.chain [hidden]{display:none!important}
+@media print{.chain [hidden]{display:table-cell!important}
+  .chain .ch-row[hidden]{display:table-row!important}}
+.steps{margin:1.1rem 0}
+.steps .stp{display:block;margin:.2rem 0}
+.steps [hidden]{display:none!important}
+.chain button.more,
+.steps button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
+  background:none;border:1px solid var(--amber);border-radius:50%;
+  width:2rem;height:2rem;padding:0;cursor:pointer;margin-top:.5rem;
+  display:inline-flex;align-items:center;justify-content:center}
+.chain button.more:hover,
+.steps button.more:hover{background:#fff8e2}
+.chain button.more:focus-visible,
+.steps button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media print{.steps .stp{display:block!important}.steps button.more{display:none}}
 .switch{margin:.35rem 0 0}
 .switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
   border-bottom:1px solid currentColor;padding-bottom:1px}
@@ -214,15 +248,11 @@ header.top p{color:var(--slate);margin:.2rem 0 0}
 <section class="beat" aria-label="Evaluating the Limit" data-source-line="260">
   <h2>Evaluating the Limit</h2>
   <div class="turn my"><span class="badge">My turn</span><p>Why we are allowed to cancel $\displaystyle (x-3)$ is the whole point, so let me do this one.</p></div>
-  <div class="sol shown">
-<div class="dm">$$m = \lim_{x \to 3} \frac{x^2 - 9}{x - 3}$$</div>
-  </div>
-  <div class="sol shown">
-<p>Substituting $\displaystyle x = 3$ gives $\displaystyle \dfrac{0}{0}$ &mdash; nonsense. Factor instead.</p>
-<div class="dm">$$= \lim_{x \to 3} \frac{(x-3)(x+3)}{x - 3}$$</div>
-  </div>
-  <div class="sol shown">
-<div class="dm">$$= \lim_{x \to 3} (x+3) \;=\; 6$$</div>
+  <div class="steps">
+    <div class="stp"><div class="dm">$$m = \lim_{x \to 3} \frac{x^2 - 9}{x - 3}$$</div></div>
+    <div class="stp"><p>Substituting $\displaystyle x = 3$ gives $\displaystyle \dfrac{0}{0}$ &mdash; nonsense. Factor instead.</p>
+<div class="dm">$$= \lim_{x \to 3} \frac{(x-3)(x+3)}{x - 3}$$</div></div>
+    <div class="stp"><div class="dm">$$= \lim_{x \to 3} (x+3) \;=\; 6$$</div></div>
   </div>
   <div class="key"><p>Read that cancellation again. We divided by $\displaystyle x - 3$, and that is only legal because $\displaystyle x \neq 3$. The limit lets $\displaystyle x$ <strong>approach</strong> $\displaystyle 3$ without ever <strong>being</strong> $\displaystyle 3$ &mdash; so $\displaystyle x - 3$ is never zero, and dividing by it is fine. This one distinction is the whole content of Section 2.2.</p></div>
   <div class="sol shown">
@@ -230,15 +260,15 @@ header.top p{color:var(--slate);margin:.2rem 0 0}
 <div class="dm">\[ y - 9 = 6(x - 3) \qquad\text{or}\qquad y = 6x - 9 \]</div>
   </div>
 </section>
-<section class="beat" aria-label="The Velocity Problem" data-source-line="290">
+<section class="beat" aria-label="The Velocity Problem" data-source-line="284">
   <h2>The Velocity Problem</h2>
 <p>The same ball as day one, written two ways:</p>
 <div class="dm">\[ s(t) = 64 - 16(t-1)^2 \;=\; -16t^2 + 32t + 48, \qquad 0 \le t \le 3. \]</div>
   <div class="key"><p>Same function, two shapes. The left one shows the peak at a glance; the right one is easier to compute with. Choosing the convenient form is part of the work.</p></div>
 <div class="cols"><div><p><strong>The difficulty.</strong> Velocity is (change in position)/(time elapsed) &mdash; but an <em>instant</em> is not an interval. There is nothing to divide by.</p>
-<p><strong>The same workaround.</strong> Average over a short interval and then shrink it.</p></div><div><figure><button type="button" class="zoom" data-src="figures/ball_height.png" aria-label="Enlarge figure"><img src="figures/ball_height.png" alt="Graph of the height s of a ball against time t from 0 to 3 seconds. The curve is a downward-opening parabola starting at height 48 at t equals 0, peaking at 64 when t equals 1, and returning to 0 at t equals 3 when the ball lands. A short secant line is drawn between the points at t equals 0.5 and t equals 1."></button><figcaption>Slide the second point in yourself <a href="https://learnlens.org/calclens/derivatives/secant/?f=-16t%5E2%2B32t%2B48&a=0.5&h=0.5&name=s&window=0,2&embed=true&controls=h,table&readout=false&prose=none&form=interval" target="_blank" rel="noopener">Open the interactive version</a></figcaption></figure></div></div>
+<p><strong>The same workaround.</strong> Average over a short interval and then shrink it.</p></div><div><figure style="width:85%"><button type="button" class="zoom" data-src="figures/ball_height.png" aria-label="Enlarge figure"><img src="figures/ball_height.png" alt="Graph of the height s of a ball against time t from 0 to 3 seconds. The curve is a downward-opening parabola starting at height 48 at t equals 0, peaking at 64 when t equals 1, and returning to 0 at t equals 3 when the ball lands. A short secant line is drawn between the points at t equals 0.5 and t equals 1."></button><figcaption>Slide the second point in yourself <a href="https://learnlens.org/calclens/derivatives/secant/?f=-16t%5E2%2B32t%2B48&a=0.5&h=0.5&name=s&window=0,2&embed=true&controls=h,table&readout=false&prose=none&form=interval" target="_blank" rel="noopener">Open the interactive version</a></figcaption></figure></div></div>
 </section>
-<section class="beat" aria-label="Average Velocity over Shrinking Intervals" data-source-line="312">
+<section class="beat" aria-label="Average Velocity over Shrinking Intervals" data-source-line="306">
   <h2>Average Velocity over Shrinking Intervals</h2>
 <div class="boxed ex"><span class="badge ex">Example 2</span><p>Estimate the ball's velocity at the instant $\displaystyle t = 0.5$.</p></div>
 <div class="workspace" role="region" aria-label="Working space"><p class="work">Compute the average velocity on $\displaystyle [0.5,\,1]$ first.</p></div>
@@ -253,7 +283,32 @@ header.top p{color:var(--slate);margin:.2rem 0 0}
 <p>$\displaystyle \mathbf{16}$ ft/sec &mdash; the <strong>instantaneous velocity</strong> at $\displaystyle t = 0.5$. Confidence is the honest issue: nothing here <em>proves</em> it is exactly $\displaystyle 16$. That is what Section 2.2 is for.</p>
   </div>
 </section>
-<section class="beat" aria-label="They Are the Same Problem" data-source-line="341">
+<section class="beat" aria-label="The Same Secant, Labelled Two Ways" data-source-line="335">
+  <h2>The Same Secant, Labelled Two Ways</h2>
+<p>Here is one secant line, drawn twice. Look at what is different.</p>
+  <figure style="width:94%"><button type="button" class="zoom" data-src="figures/two_labelings.png" aria-label="Enlarge figure"><img src="figures/two_labelings.png" alt="Two copies of the same picture side by side. Each shows a rising curve with a point P at input a and a point Q further along, the secant line through them, and a dashed right triangle giving the rise and the run. On the left the second input is labelled x, the run is x minus a, the rise is f of x minus f of a, and the slope is written as the quotient of those. On the right the second input is labelled a plus h, the run is h, the rise is f of a plus h minus f of a, and the slope is written with h underneath. The curve, the points and the line are identical in both."></button></figure>
+  <div class="key"><p>Nothing moved. Same curve, same $\displaystyle P$, same $\displaystyle Q$, same line, same rise over the same run. The only thing that changed is what we call the second input &mdash; and therefore what we call the run.</p></div>
+</section>
+<section class="beat" aria-label="Why the Two Names Agree" data-source-line="346">
+  <h2>Why the Two Names Agree</h2>
+<p>Call the gap $\displaystyle h$. Then the second input is $\displaystyle a+h$ rather than $\displaystyle x$:</p>
+<div class="dm">$$h \;=\; x - a \qquad\Longleftrightarrow\qquad x \;=\; a + h$$</div>
+<p>Substituting that into the left-hand version turns it into the right-hand one:</p>
+  <div class="chain">
+    <div class="ch-row"><span class="ch-l">$\displaystyle \frac{f(x)-f(a)}{x-a}$</span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \frac{f(a+h)-f(a)}{(a+h)-a}$</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \frac{f(a+h)-f(a)}{h}$</span></div>
+  </div>
+  <div class="key"><p>And <strong>$\displaystyle x \to a$ is exactly $\displaystyle h \to 0$</strong>. Closing the gap is the gap going to zero.</p></div>
+<span style="display:block;height:0.3em"></span>
+<p><strong>One more thing.</strong> Nothing above said $\displaystyle Q$ has to be to the <em>right</em> of $\displaystyle P$.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Our intervals all started at $\displaystyle t=0.5$. What is $\displaystyle h$ if the second time is $\displaystyle t = 0.4$ instead?</p></div>
+  <div class="sol shown">
+<p>$\displaystyle h = 0.4 - 0.5 = -0.1$. A point on the earlier side just makes $\displaystyle h$ <strong>negative</strong>:</p>
+<figure style="width:90%"><button type="button" class="zoom" data-src="figures/negative_h.png" aria-label="Enlarge figure"><img src="figures/negative_h.png" alt="Two copies of the same rising curve side by side, with the same point P in the middle of each. On the left Q sits to the right of P: the run is labelled h greater than zero and the rise is positive. On the right Q sits to the left of P: the run is labelled h less than zero and the dashed rise goes downward, so the rise is negative too. The secant line through P and Q slopes upward in both."></button></figure>
+<p>Both the rise and the run flip sign, so the quotient is still the slope of that secant. Nothing else changes.</p>
+  </div>
+</section>
+<section class="beat" aria-label="They Are the Same Problem" data-source-line="381">
   <h2>They Are the Same Problem</h2>
 <div class="cols"><div><p>On the graph of $\displaystyle s(t)$, take $\displaystyle P(a, s(a))$ and $\displaystyle Q(a+h, s(a+h))$. The slope of the secant $\displaystyle PQ$ is</p>
 <div class="dm">\[ m_{PQ} = \frac{s(a+h) - s(a)}{h} \]</div>
@@ -265,7 +320,7 @@ header.top p{color:var(--slate);margin:.2rem 0 0}
 <div class="key"><p>Slope of the secant $\displaystyle =$ average rate of change. Slope of the tangent $\displaystyle =$ instantaneous rate of change. One idea, two vocabularies.</p></div>
   </div>
 </section>
-<section class="beat" aria-label="What We Still Owe" data-source-line="368">
+<section class="beat" aria-label="What We Still Owe" data-source-line="408">
   <h2>What We Still Owe</h2>
 <p>Both problems ended in the same place: a quantity we could only <strong>approach</strong>, never evaluate directly.</p>
 <div class="cols">
@@ -274,14 +329,14 @@ header.top p{color:var(--slate);margin:.2rem 0 0}
 </div>
   <div class="key"><p>We have no rules yet for computing a limit. That is Sections 2.2 through 2.6 &mdash; and we return to tangents and velocities in Section 2.7 with the derivative.</p></div>
 </section>
-<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="383">
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="423">
   <h2>What You Should Be Able to Do</h2>
 <p>By the end of this section &mdash; and on the quiz and the exam:</p>
 <ul><li>I can compute the average rate of change of a function on an interval and explain why it is the slope of a secant line.</li><li>I can estimate the slope of a tangent line by computing average rates of change over shrinking intervals.</li><li>I can explain the difference between average and instantaneous velocity, and say which one a secant slope gives.</li></ul>
   <div class="key"><p>If you cannot honestly tick one of these off, that is the one to work on &mdash; not the one that felt hardest in class.</p></div>
 </section>
 </main>
-<p class="hint">13 sections &middot; worked solutions included</p>
+<p class="hint">15 sections &middot; worked solutions included</p>
 <dialog class="lb" aria-label="Enlarged figure">
   <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
 </dialog>
@@ -321,6 +376,92 @@ header.top p{color:var(--slate);margin:.2rem 0 0}
     }
     if(best){ cur=parseInt(best.dataset.sourceLine,10);
               best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+// ── Advancing the page ────────────────────────────────────────────────────
+// One action, whether it arrives from a block's own arrow or from a key. A
+// presentation remote is just a USB keyboard sending Right/PageDown, so making
+// the page respond to those keys is all a clicker needs -- no pairing, no app.
+//
+// The order is document order within the section you are looking at: chain
+// rows, step lines and closed reveals alike. When a section has nothing left
+// hidden, the next press moves to the next section. That is the slide feel,
+// on a scrolling page.
+(function(){
+  function units(sec){
+    return [].slice.call(sec.querySelectorAll('.rv, .stp, details.sol'));
+  }
+  function covered(u){
+    return u.tagName === 'DETAILS' ? !u.open : u.hidden;
+  }
+  function uncover(u, yes){
+    if(u.tagName === 'DETAILS'){ u.open = yes; } else { u.hidden = !yes; }
+  }
+  function tidy(sec){
+    // a block's arrow retires once that block has nothing left to give
+    [].forEach.call(sec.querySelectorAll('.steps, .chain'), function(box){
+      var b = box.querySelector('button.more');
+      if(b) b.hidden = !box.querySelector('.rv[hidden], .stp[hidden]');
+    });
+  }
+  function sections(){
+    return [].slice.call(document.querySelectorAll('main > section.beat'));
+  }
+  function here(){
+    var mark = window.innerHeight * 0.3, best = null;
+    sections().forEach(function(s){
+      var r = s.getBoundingClientRect();
+      if(r.top <= mark && r.bottom > 0) best = s;
+    });
+    return best || sections()[0];
+  }
+  function go(sec, d){
+    var all = sections(), i = all.indexOf(sec) + d;
+    if(i >= 0 && i < all.length) all[i].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.__advance = function(d){
+    var sec = here();
+    if(!sec) return;
+    var us = units(sec);
+    if(d > 0){
+      for(var i = 0; i < us.length; i++){
+        if(covered(us[i])){
+          uncover(us[i], true); tidy(sec);
+          us[i].scrollIntoView({block:'nearest'});
+          return;
+        }
+      }
+      go(sec, 1);
+    } else {
+      for(var j = us.length - 1; j >= 0; j--){
+        if(!covered(us[j])){ uncover(us[j], false); tidy(sec); return; }
+      }
+      go(sec, -1);
+    }
+  };
+  var FWD = {ArrowRight:1, ArrowDown:1, PageDown:1, ' ':1, Enter:1, Spacebar:1};
+  var BACK = {ArrowLeft:1, ArrowUp:1, PageUp:1, Backspace:1};
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    // let a focused control have its own keys
+    var t = e.target;
+    if(t && t.closest && t.closest('button, a, summary, input, textarea, dialog')) return;
+    if(FWD[e.key]){ e.preventDefault(); window.__advance(1); }
+    else if(BACK[e.key]){ e.preventDefault(); window.__advance(-1); }
+  });
+})();
+
+// One button per derivation: each press uncovers the next line.
+(function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.steps > button.more, .chain > button.more');
+    if(!b) return;
+    var box=b.parentElement;
+    // .rv marks a revealable unit: a whole step block, a chain row, or the
+    // right-hand side of the chain's first row. One selector covers all three.
+    var next=box.querySelector('.rv[hidden], .stp[hidden]');
+    if(next) next.hidden=false;
+    if(!box.querySelector('.rv[hidden], .stp[hidden]')) b.hidden=true;
   });
 })();
 (function(){
