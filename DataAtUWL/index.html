@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data @ UWL — Talk Series</title>
+<meta name="description" content="Data @ UWL: a recurring talk series connecting UW-La Crosse students with people who use data to make consequential decisions.">
+<meta property="og:title" content="Data @ UWL — Talk Series">
+<meta property="og:description" content="Talks by data professionals for UWL students. Mathematics &amp; Statistics, UW-La Crosse.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip" href="#featured">Skip to the featured talk</a>
+
+<header class="masthead">
+  <div class="wrap masthead__inner">
+    <a class="wordmark" href="#/">
+      <div class="wordmark__type">DATA <span class="wordmark__at">@</span> UWL</div>
+      <div class="wordmark__rule"></div>
+      <div class="wordmark__tag" id="series-tagline"></div>
+    </a>
+    <div class="masthead__meta">
+      <strong id="masthead-term">&nbsp;</strong>
+      <span id="masthead-dept"></span>
+    </div>
+  </div>
+  <div class="wrap">
+    <p class="masthead__blurb" id="series-blurb"></p>
+  </div>
+</header>
+
+<main id="featured">
+
+  <section class="featured wrap" aria-labelledby="featured-heading">
+    <h1 class="eyebrow" id="featured-heading">Featured talk</h1>
+
+    <div class="featured__bar">
+      <span class="status" id="talk-status"></span>
+      <span class="featured__count" id="talk-count"></span>
+    </div>
+
+    <article class="talkcard" id="talkcard" aria-live="polite">
+      <!-- filled by script -->
+    </article>
+
+    <nav class="stepper" aria-label="Browse talks">
+      <button class="step step--prev" id="btn-prev" type="button">
+        <span class="step__label">&#8592; Previous talk</span>
+        <span class="step__title" id="prev-title"></span>
+        <span class="step__date" id="prev-date"></span>
+      </button>
+      <button class="step step--next" id="btn-next" type="button">
+        <span class="step__label">Next talk &#8594;</span>
+        <span class="step__title" id="next-title"></span>
+        <span class="step__date" id="next-date"></span>
+      </button>
+    </nav>
+  </section>
+
+  <section class="schedule wrap" aria-labelledby="upcoming-heading">
+    <h2 id="upcoming-heading">Upcoming</h2>
+    <p class="schedule__note" id="upcoming-note"></p>
+    <ul class="list" id="upcoming-list"></ul>
+  </section>
+
+  <section class="schedule wrap" aria-labelledby="past-heading">
+    <h2 id="past-heading">Past talks</h2>
+    <ul class="list" id="past-list"></ul>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__rule"></div>
+    <div class="foot__grid">
+      <div>
+        <div class="foot__name">DATA @ UWL</div>
+        <p id="foot-blurb"></p>
+        <p>Interested in speaking, or have someone to suggest? Email
+          <a id="foot-contact" href="#">the organizer</a>.</p>
+        <div class="foot__dept" id="foot-dept"></div>
+      </div>
+      <div class="foot__right">
+        <div class="foot__term" id="foot-term">&nbsp;</div>
+        <div class="foot__motto">Questions into decisions.</div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="talks.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ---- Setup -------------------------------------------------------------
+
+  var talks = TALKS.slice().sort(function (a, b) {
+    return new Date(a.start) - new Date(b.start);
+  });
+
+  var $ = function (id) { return document.getElementById(id); };
+  var current = 0;
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function isUpcoming(t) {
+    return new Date(t.end || t.start) >= new Date();
+  }
+
+  // Long form: "Thursday, September 17, 2026"
+  function longDate(t) {
+    return new Date(t.start).toLocaleDateString(undefined, {
+      weekday: "long", month: "long", day: "numeric", year: "numeric"
+    });
+  }
+
+  // Short form for lists and the stepper: "Thu, Sep 17"
+  function shortDate(t) {
+    return new Date(t.start).toLocaleDateString(undefined, {
+      weekday: "short", month: "short", day: "numeric"
+    });
+  }
+
+  function timeRange(t) {
+    var opts = { hour: "numeric", minute: "2-digit" };
+    var a = new Date(t.start).toLocaleTimeString(undefined, opts).replace(":00", "");
+    if (!t.end) return a;
+    var b = new Date(t.end).toLocaleTimeString(undefined, opts).replace(":00", "");
+    return a.replace(/\s*[AP]M$/i, "") + "–" + b;
+  }
+
+  // ---- Calendar file -----------------------------------------------------
+
+  function icsStamp(d) {
+    function p(n) { return String(n).padStart(2, "0"); }
+    return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) +
+           "T" + p(d.getHours()) + p(d.getMinutes()) + "00";
+  }
+
+  function icsFor(t) {
+    var end = t.end ? new Date(t.end) : new Date(new Date(t.start).getTime() + 3600000);
+    var desc = (t.abstract || "").replace(/\n+/g, " ").replace(/([,;\\])/g, "\\$1");
+    return [
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Data @ UWL//EN",
+      "BEGIN:VEVENT",
+      "UID:" + t.id + "@datascienceuwl.github.io",
+      "DTSTAMP:" + icsStamp(new Date()),
+      "DTSTART:" + icsStamp(new Date(t.start)),
+      "DTEND:" + icsStamp(end),
+      "SUMMARY:Data @ UWL — " + t.title.replace(/([,;\\])/g, "\\$1"),
+      "LOCATION:" + String(t.location || "").replace(/([,;\\])/g, "\\$1"),
+      "DESCRIPTION:" + t.speakers + " (" + t.org + "). " + desc,
+      "END:VEVENT", "END:VCALENDAR"
+    ].join("\r\n");
+  }
+
+  function downloadIcs(t) {
+    var blob = new Blob([icsFor(t)], { type: "text/calendar;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "data-at-uwl_" + t.id + ".ics";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  // ---- Featured talk -----------------------------------------------------
+
+  function renderTalk(i) {
+    var t = talks[i];
+    if (!t) return;
+    current = i;
+
+    var upcoming = isUpcoming(t);
+    var status = $("talk-status");
+    status.textContent = upcoming ? "Upcoming" : "Past talk";
+    status.className = "status " + (upcoming ? "status--next" : "status--past");
+    $("talk-count").textContent = "Talk " + (i + 1) + " of " + talks.length +
+      (t.term ? " · " + t.term : "");
+
+    var paras = (t.abstract || "").split(/\n\s*\n/).map(function (p) {
+      return "<p>" + esc(p.trim()) + "</p>";
+    }).join("");
+
+    var tags = (t.tags && t.tags.length)
+      ? '<ul class="tags">' + t.tags.map(function (g) { return "<li>" + esc(g) + "</li>"; }).join("") + "</ul>"
+      : "";
+
+    var extra = (t.links || []).map(function (l) {
+      return '<a class="btn btn--ghost" href="' + esc(l.url) + '">' + esc(l.label) + "</a>";
+    }).join("");
+
+    var actions =
+      (upcoming ? '<button class="btn" type="button" id="btn-ics">Add to calendar</button>' : "") +
+      (t.poster ? '<a class="btn btn--ghost" href="' + esc(t.poster) + '" target="_blank" rel="noopener">View / print poster</a>' : "") +
+      extra;
+
+    var aside = t.poster
+      ? '<a class="poster" href="' + esc(t.poster) + '" target="_blank" rel="noopener">' +
+          '<img src="' + esc(t.poster) + '" alt="Poster for ' + esc(t.title) + '" loading="lazy">' +
+        "</a><p class=\"poster__cap\">Letter-size poster — click to open, then print at Actual Size.</p>"
+      : '<div class="poster poster--none">Poster coming soon.</div>';
+
+    $("talkcard").innerHTML =
+      '<div class="talkcard__body">' +
+        '<p class="talkcard__term">' + esc(t.term || "") +
+          (t.number ? " &nbsp;/&nbsp; Talk " + String(t.number).padStart(2, "0") : "") + "</p>" +
+        '<h2 class="talkcard__title">' + esc(t.title) + "</h2>" +
+        '<div class="talkcard__who">' +
+          '<div class="talkcard__speakers">' + esc(t.speakers) + "</div>" +
+          '<div class="talkcard__org">' + esc(t.org || "") + "</div>" +
+        "</div>" +
+        '<dl class="facts">' +
+          "<div><dt>Date</dt><dd>" + esc(longDate(t)) + "</dd></div>" +
+          "<div><dt>Time</dt><dd>" + esc(timeRange(t)) + "</dd></div>" +
+          "<div><dt>Location</dt><dd>" + esc(t.location || "TBA") + "</dd></div>" +
+        "</dl>" +
+        '<div class="abstract"><h3>In the talk</h3>' + paras + "</div>" +
+        tags +
+        '<div class="actions">' + actions + "</div>" +
+      "</div>" +
+      '<div class="talkcard__aside">' + aside + "</div>";
+
+    var ics = $("btn-ics");
+    if (ics) ics.addEventListener("click", function () { downloadIcs(t); });
+
+    renderStepper(i);
+    markCurrentRow(t.id);
+
+    document.title = t.title + " — Data @ UWL";
+    if (location.hash !== "#/" + t.id) {
+      history.replaceState(null, "", "#/" + t.id);
+    }
+  }
+
+  function renderStepper(i) {
+    // talks[] runs oldest -> newest, so "previous" is the lower index.
+    var prev = talks[i - 1], next = talks[i + 1];
+
+    $("btn-prev").disabled = !prev;
+    $("prev-title").textContent = prev ? prev.title : "Nothing earlier";
+    $("prev-date").textContent = prev ? shortDate(prev) + " · " + prev.speakers : "";
+
+    $("btn-next").disabled = !next;
+    $("next-title").textContent = next ? next.title : "Nothing scheduled yet";
+    $("next-date").textContent = next ? shortDate(next) + " · " + next.speakers : "";
+  }
+
+  // ---- Schedule lists ----------------------------------------------------
+
+  function rowHtml(t) {
+    return '<li><button class="row" type="button" data-id="' + esc(t.id) + '">' +
+      '<span class="row__date">' + esc(shortDate(t)) + "</span>" +
+      '<span><span class="row__title">' + esc(t.title) + "</span>" +
+        '<span class="row__who">' + esc(t.speakers) + (t.org ? " · " + esc(t.org) : "") + "</span></span>" +
+      '<span class="row__go">Details</span>' +
+    "</button></li>";
+  }
+
+  function renderLists() {
+    var up = talks.filter(isUpcoming);
+    var past = talks.filter(function (t) { return !isUpcoming(t); }).reverse();
+
+    $("upcoming-list").innerHTML = up.length
+      ? up.map(rowHtml).join("")
+      : '<li class="empty">No talks on the calendar right now. The next semester\'s lineup is announced here — check back, or email the organizer to suggest a speaker.</li>';
+
+    $("upcoming-note").textContent = up.length
+      ? "Free and open to all UWL students. No registration needed."
+      : "";
+
+    $("past-list").innerHTML = past.length
+      ? past.map(rowHtml).join("")
+      : '<li class="empty">The series is just getting started.</li>';
+
+    Array.prototype.forEach.call(document.querySelectorAll(".row"), function (b) {
+      b.addEventListener("click", function () {
+        var idx = talks.findIndex(function (t) { return t.id === b.dataset.id; });
+        if (idx > -1) {
+          renderTalk(idx);
+          document.getElementById("featured").scrollIntoView({ block: "start" });
+        }
+      });
+    });
+  }
+
+  function markCurrentRow(id) {
+    Array.prototype.forEach.call(document.querySelectorAll(".row"), function (b) {
+      b.setAttribute("aria-current", b.dataset.id === id ? "true" : "false");
+    });
+  }
+
+  // ---- Chrome ------------------------------------------------------------
+
+  function renderSeries() {
+    $("series-tagline").textContent = SERIES.tagline;
+    $("series-blurb").textContent = SERIES.blurb;
+    $("masthead-dept").textContent = SERIES.department;
+    $("foot-blurb").textContent = SERIES.blurb;
+    $("foot-dept").textContent = SERIES.department;
+
+    var term = (talks[talks.length - 1] || {}).term || "";
+    $("masthead-term").textContent = term;
+    $("foot-term").textContent = term;
+
+    var c = $("foot-contact");
+    c.href = "mailto:" + SERIES.contact;
+    c.textContent = SERIES.contact;
+  }
+
+  // Default view: the next upcoming talk, or the most recent one if the
+  // series is between semesters.
+  function defaultIndex() {
+    var i = talks.findIndex(isUpcoming);
+    return i === -1 ? talks.length - 1 : i;
+  }
+
+  function indexFromHash() {
+    var m = /^#\/(.+)$/.exec(location.hash);
+    if (!m) return -1;
+    return talks.findIndex(function (t) { return t.id === decodeURIComponent(m[1]); });
+  }
+
+  // ---- Wire up -----------------------------------------------------------
+
+  if (!talks.length) {
+    $("talkcard").innerHTML = '<p class="empty">No talks have been added yet.</p>';
+    renderSeries();
+    renderLists();
+    return;
+  }
+
+  renderSeries();
+  renderLists();
+
+  $("btn-prev").addEventListener("click", function () { renderTalk(current - 1); });
+  $("btn-next").addEventListener("click", function () { renderTalk(current + 1); });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.target.matches("input, textarea") || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === "ArrowLeft" && talks[current - 1]) renderTalk(current - 1);
+    if (e.key === "ArrowRight" && talks[current + 1]) renderTalk(current + 1);
+  });
+
+  window.addEventListener("hashchange", function () {
+    var i = indexFromHash();
+    if (i > -1 && i !== current) renderTalk(i);
+  });
+
+  var start = indexFromHash();
+  renderTalk(start > -1 ? start : defaultIndex());
+})();
+</script>
+
+</body>
+</html>
