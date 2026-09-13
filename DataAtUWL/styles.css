@@ -1,17 +1,25 @@
 /* Data @ UWL — series site. Palette and type follow the printed poster. */
 
 :root {
-  --navy: #0b2342;
-  --navy-2: #16355c;
-  --navy-line: #31506c;
-  --aqua: #16b9be;
-  --aqua-pale: #eaf7f7;
-  --aqua-light: #bdeef0;
-  --burgundy: #8a1538;
+  /* Official UWL palette. Maroon and gray are the primary colors; Cleary Blue
+     is the single secondary, per "pair our primary colors with a small amount
+     of one or two secondary colors".
+
+     Two accent tints, deliberately: Cleary Blue #00838F manages only 2.4:1 on
+     maroon, so anything sitting ON a maroon ground uses --accent-dark (the
+     light tint, 9.5:1) instead. */
+  --navy: #830019;          /* Primary Maroon        */
+  --navy-2: #6b0015;        /* Primary Maroon, hover */
+  --navy-line: #a8566a;     /* hairline on maroon    */
+  --aqua: #00838f;          /* Cleary Blue           */
+  --accent-dark: #d5f9f9;   /* Cleary Blue, light — accents on maroon */
+  --aqua-pale: #d5f9f9;
+  --aqua-light: #f2f2f3;    /* Charcoal Gray, light — body text on maroon */
+  --burgundy: #830019;
   --paper: #fffdfc;
-  --ink: #0b2342;
-  --muted: #4b5f70;
-  --rule: #d5e3e7;
+  --ink: #282a2e;           /* Charcoal Gray         */
+  --muted: #404143;         /* Primary Gray, dark    */
+  --rule: #d8d9da;
 
   --sans: "Helvetica Neue", Arial, Helvetica, system-ui, sans-serif;
   --serif: Georgia, "Times New Roman", Times, serif;
@@ -74,14 +82,14 @@ button:focus-visible { outline: 3px solid var(--aqua); outline-offset: 3px; }
   font-size: clamp(2rem, 5vw, 2.9rem);
   font-weight: 800; letter-spacing: 0.05em; line-height: 1;
 }
-.wordmark__at { font-family: var(--serif); color: var(--aqua); font-weight: 700; font-size: 1.25em; }
-.wordmark__rule { height: 5px; background: var(--aqua); margin: 12px 0 10px; }
+.wordmark__at { font-family: var(--serif); color: var(--accent-dark); font-weight: 700; font-size: 1.25em; }
+.wordmark__rule { height: 5px; background: var(--accent-dark); margin: 12px 0 10px; }
 .wordmark__tag { font-family: var(--serif); font-size: 1.02rem; color: var(--aqua-light); }
 
 .masthead__meta { margin-left: auto; text-align: right; font-size: 0.82rem; }
 .masthead__meta strong {
   display: block; font-size: 0.74rem; font-weight: 800;
-  letter-spacing: 0.16em; text-transform: uppercase; color: var(--aqua);
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-dark);
 }
 .masthead__meta span { color: var(--aqua-light); }
 
@@ -103,7 +111,8 @@ button:focus-visible { outline: 3px solid var(--aqua); outline-offset: 3px; }
   font-size: 0.72rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase;
   padding: 7px 13px; border-radius: 999px;
 }
-.status--next { background: var(--aqua); color: #05323a; }
+/* Cleary Blue dark, not the normal tint: at 12px the chip needs 4.5:1. */
+.status--next { background: #00334a; color: #fff; }
 .status--past { background: var(--rule); color: var(--muted); }
 .featured__count { font-size: 0.82rem; color: var(--muted); margin-left: auto; }
 
@@ -147,7 +156,7 @@ button:focus-visible { outline: 3px solid var(--aqua); outline-offset: 3px; }
 }
 .detailcard__head {
   font-size: 0.72rem; font-weight: 800; letter-spacing: 0.16em;
-  text-transform: uppercase; color: var(--aqua); margin: 0 0 20px;
+  text-transform: uppercase; color: var(--accent-dark); margin: 0 0 20px;
 }
 .detailcard__free { font-size: 0.85rem; color: var(--aqua-light); margin: 0 0 20px; }
 
@@ -159,9 +168,6 @@ button:focus-visible { outline: 3px solid var(--aqua); outline-offset: 3px; }
 }
 .facts dd { margin: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.3; }
 
-.btn--cal { width: 100%; background: var(--aqua); border-color: var(--aqua); color: #04303a; }
-.btn--cal:hover { background: #11a4a9; border-color: #11a4a9; color: #fff; }
-
 .abstract {
   background: var(--aqua-pale); border-left: 10px solid var(--aqua);
   border-radius: 0 14px 14px 0; padding: 24px 28px; margin-bottom: 24px;
@@ -170,7 +176,7 @@ button:focus-visible { outline: 3px solid var(--aqua); outline-offset: 3px; }
   font-size: 0.72rem; font-weight: 800; letter-spacing: 0.16em;
   text-transform: uppercase; color: var(--navy); margin: 0 0 12px;
 }
-.abstract p { margin: 0 0 12px; color: #243c55; }
+.abstract p { margin: 0 0 12px; color: var(--ink); }
 .abstract p:last-child { margin-bottom: 0; }
 
 .tags { display: flex; flex-wrap: wrap; gap: 9px; list-style: none; padding: 0; margin: 0 0 26px; }
@@ -189,6 +195,11 @@ button:focus-visible { outline: 3px solid var(--aqua); outline-offset: 3px; }
 .btn:hover { background: var(--navy-2); border-color: var(--navy-2); }
 .btn--ghost { background: transparent; color: var(--navy); }
 .btn--ghost:hover { background: var(--navy); color: #fff; }
+
+/* Must come after .btn: same specificity, so source order decides. Sitting on
+   the maroon detail card, it needs the light tint or it disappears. */
+.btn--cal { width: 100%; background: var(--accent-dark); border-color: var(--accent-dark); color: #530019; }
+.btn--cal:hover { background: #fff; border-color: #fff; color: #530019; }
 
 .talkcard__aside { min-width: 0; }
 @media (min-width: 941px) {
@@ -281,14 +292,14 @@ button:focus-visible { outline: 3px solid var(--aqua); outline-offset: 3px; }
 /* ---------- Footer ------------------------------------------------------ */
 
 .foot { background: var(--navy); color: #fff; margin-top: 70px; padding: 46px 0 40px; }
-.foot__rule { width: 64px; height: 6px; background: var(--aqua); margin-bottom: 22px; }
+.foot__rule { width: 64px; height: 6px; background: var(--accent-dark); margin-bottom: 22px; }
 .foot__grid { display: flex; flex-wrap: wrap; gap: 26px 60px; justify-content: space-between; }
 .foot__name { font-size: 1.4rem; font-weight: 800; letter-spacing: 0.04em; margin-bottom: 10px; }
 .foot p { margin: 0 0 8px; color: var(--aqua-light); font-size: 0.94rem; max-width: 56ch; }
 .foot a { color: #fff; }
 .foot__dept { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: #fff; margin-top: 14px; }
 .foot__right { text-align: right; }
-.foot__right .foot__term { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--aqua); }
+.foot__right .foot__term { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-dark); }
 .foot__right .foot__motto { font-family: var(--serif); font-size: 1.15rem; margin-top: 8px; }
 
 /* ---------- University mark --------------------------------------------- */
