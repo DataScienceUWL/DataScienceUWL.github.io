@@ -13,15 +13,20 @@
      start/end - local time, "YYYY-MM-DDTHH:MM". No timezone suffix.
      abstract  - plain text. Blank line = new paragraph.
      poster    - path to the poster file, or null if there isn't one yet.
+     kind      - optional label for what sort of talk this is, e.g. "Research",
+                 "Industry", "Careers", "Methods", "Student work". Shown as a
+                 chip beside the talk. Omit it and nothing is shown.
+     org       - the speaker's affiliation. For a UWL speaker this is just
+                 "UW-La Crosse · Mathematics & Statistics".
      tags      - optional, 2-4 short topic chips.
      links     - optional extra buttons (registration, org site, recording).
    ========================================================================== */
 
 const SERIES = {
   name: "Data @ UWL",
-  tagline: "Data people. Real work. Serious curiosity.",
+  tagline: "What people actually do with data.",
   blurb:
-    "A recurring conversation between UWL students and the people who use data to make consequential decisions. Three to four talks each semester, free and open to all UWL students.",
+    "A talk series on statistics and data science at UW–La Crosse — research, methods, real-world applications, and the careers built on them. Speakers come from industry, from other campuses, and from our own faculty and students. Three to four talks each semester, free and open to all UWL students.",
   department: "Mathematics & Statistics Department",
   institution: "University of Wisconsin–La Crosse",
   contact: "jbaggett@uwlax.edu",
@@ -35,6 +40,7 @@ const TALKS = [
     title: "Quills, Thrills & Power Bills: Hertz the Power Hedgehog",
     speakers: "David Elzinga & Claire Nordt",
     org: "Dairyland Power Cooperative",
+    kind: "Industry",
     start: "2026-09-17T16:00",
     end: "2026-09-17T17:00",
     location: "Centennial Hall 1404",
@@ -46,20 +52,27 @@ const TALKS = [
   },
 
   /* ---- Copy this block for the next talk -------------------------------
+     Talks are not only about careers. A faculty or student research talk, a
+     methods talk, or a walk through an applied project all belong here --
+     the example below is shaped like a research talk.
+
   {
     id: "2026-10-22-example",
     number: 2,
     term: "Fall 2026",
     title: "Talk title goes here",
     speakers: "First Last",
-    org: "Organization",
+    org: "UW-La Crosse · Mathematics & Statistics",
+    kind: "Research",
     start: "2026-10-22T16:00",
     end: "2026-10-22T17:00",
     location: "Centennial Hall 1404",
-    abstract: "One or two paragraphs, roughly 60-95 words.",
+    abstract: "One or two paragraphs, roughly 60-95 words. Say what the
+      question is, what the data looks like, and why a student should care --
+      not just the result.",
     poster: null,
-    tags: [],
-    links: [{ label: "Speaker's site", url: "https://example.org" }],
+    tags: ["Medical imaging", "Deep learning"],
+    links: [{ label: "Project page", url: "https://example.org" }],
   },
   ---------------------------------------------------------------------- */
 ];

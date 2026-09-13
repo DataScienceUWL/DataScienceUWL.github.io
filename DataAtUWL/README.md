@@ -2,6 +2,11 @@
 
 Live at **https://datascienceuwl.github.io/DataAtUWL/**
 
+A talk series on statistics and data science at UW–La Crosse: research, methods,
+applications, and careers. Speakers come from industry, from other campuses, and
+from our own faculty and students — a faculty research talk belongs here as much
+as a visiting practitioner does.
+
 A single static page. No build step, no dependencies, no framework. Edit, commit,
 push; GitHub Pages redeploys in about a minute.
 
@@ -15,6 +20,16 @@ push; GitHub Pages redeploys in about a minute.
 
 Order in the array doesn't matter — the page sorts by date. You never edit
 `index.html` or `styles.css` to add a talk.
+
+### Marking what kind of talk it is
+
+`kind` is optional and free text — `"Research"`, `"Industry"`, `"Careers"`,
+`"Methods"`, `"Student work"`, whatever fits. It shows as a chip beside the talk
+and in the schedule list, so the series visibly isn't just career talks. Leave it
+out and nothing is shown.
+
+For a UWL speaker, `org` is just the affiliation:
+`"UW-La Crosse · Mathematics & Statistics"`.
 
 ## What the page does automatically
 

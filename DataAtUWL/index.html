@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Data @ UWL — Talk Series</title>
-<meta name="description" content="Data @ UWL: a recurring talk series connecting UW-La Crosse students with people who use data to make consequential decisions.">
+<meta name="description" content="Data @ UWL: a talk series on statistics and data science at UW-La Crosse — research, methods, applications, and careers. Free and open to all UWL students.">
 <meta property="og:title" content="Data @ UWL — Talk Series">
-<meta property="og:description" content="Talks by data professionals for UWL students. Mathematics &amp; Statistics, UW-La Crosse.">
+<meta property="og:description" content="Talks on statistics and data science — research, methods, applications, and careers. Mathematics &amp; Statistics, UW-La Crosse.">
 <meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
@@ -39,6 +39,7 @@
 
     <div class="featured__bar">
       <span class="status" id="talk-status"></span>
+      <span class="kindchip" id="talk-kind" hidden></span>
       <span class="featured__count" id="talk-count"></span>
     </div>
 
@@ -185,6 +186,11 @@
     var status = $("talk-status");
     status.textContent = upcoming ? "Upcoming" : "Past talk";
     status.className = "status " + (upcoming ? "status--next" : "status--past");
+
+    // Optional: what sort of talk this is (Research, Industry, Careers, ...).
+    var kind = $("talk-kind");
+    kind.textContent = t.kind || "";
+    kind.hidden = !t.kind;
     $("talk-count").textContent = "Talk " + (i + 1) + " of " + talks.length +
       (t.term ? " · " + t.term : "");
 
@@ -270,7 +276,8 @@
     return '<li><button class="row" type="button" data-id="' + esc(t.id) + '">' +
       '<span class="row__date">' + esc(shortDate(t)) + "</span>" +
       '<span><span class="row__title">' + esc(t.title) + "</span>" +
-        '<span class="row__who">' + esc(t.speakers) + (t.org ? " · " + esc(t.org) : "") + "</span></span>" +
+        '<span class="row__who">' + esc(t.speakers) + (t.org ? " · " + esc(t.org) : "") +
+          (t.kind ? ' <span class="row__kind">' + esc(t.kind) + "</span>" : "") + "</span></span>" +
       '<span class="row__go">Details</span>' +
     "</button></li>";
   }
