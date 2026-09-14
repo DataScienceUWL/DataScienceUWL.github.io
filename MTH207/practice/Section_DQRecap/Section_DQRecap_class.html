@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTH 207 &mdash; Recap Difference Quotients: Two Sources, Two Notations</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
+  loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
+<script id="MathJax-script" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0;
+  /* Line length, in characters, so it holds at every font size. 46ch was at the
+     narrow end of the readable 45-75 band and left half the width empty. This
+     is the AT-HOME value; the projected build overrides it below, because there
+     the scarce thing is screen area, not eye travel -- the font is already
+     ~30px on a 1920 screen, so a longer line is still easy to scan and buys
+     fewer scroll steps. */
+  --measure:68ch}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  /* Projected on a 1920 screen this lands near 30px, which is legible from the
+     back of the room; on a laptop later it falls back to comfortable reading. */
+  font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
+/* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
+   expose the next thing. Read later: it is just a long page. */
+:root{--measure:88ch}
+main{scroll-snap-type:y proximity}
+.beat{scroll-snap-align:start;min-height:100vh}
+.beat{padding:2.4rem 6vw 3rem;
+  border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
+h1{font-size:1.9rem;margin:0 0 .3rem}
+h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
+h2.cont{color:var(--slate);font-size:1.3rem}
+p{margin:0 0 .9rem;max-width:var(--measure)}
+ul{max-width:var(--measure)}
+.turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
+.turn.my{border-left-color:var(--slate);background:#f6f8fb}
+.badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;background:var(--amber);color:#3a2c00;padding:.32rem .6rem;
+  border-radius:3px;margin-bottom:.7rem}
+.turn.my .badge{background:var(--slate);color:#fff}
+.turn .work{font-size:.85rem;color:var(--slate);font-style:italic;margin:.6rem 0 0}
+.key{border-left:6px solid var(--ink);background:#f2f3f5;padding:.9rem 1.2rem;margin:1.2rem 0}
+.sol.shown{margin:1.1rem 0;border-left:5px solid var(--slate);background:#fff;
+  padding:.7rem 1.1rem;border-radius:0 5px 5px 0}
+.sol-label{display:block;font:600 .78rem/1 system-ui,sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate);margin-bottom:.5rem}
+details.sol{margin:1.1rem 0;border:1px solid var(--rule);border-radius:5px;background:#fff}
+details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-ui,sans-serif;
+  color:var(--slate)}
+details.sol[open] summary{border-bottom:1px solid var(--rule)}
+details.sol > :not(summary){padding:0 1.1rem}
+details.sol > p:last-child{padding-bottom:.9rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;
+  max-width:min(100%, calc(var(--measure) * 1.25))}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;margin:.6rem 0}
+table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--rule);padding:.3rem .9rem .3rem 0;text-align:left}
+th{border-bottom:2px solid var(--ink)}
+.boxed{margin:1.1rem 0;padding:.8rem 1.1rem;border-radius:5px;background:#fff;
+  border:1px solid var(--rule)}
+.boxed.dfn{border-left:5px solid var(--ink)}
+.boxed.thm{border-left:5px solid var(--amber)}
+.boxed.ex{border-left:5px solid var(--slate)}
+.badge.dfn{background:var(--ink);color:#fff}
+.badge.thm{background:var(--amber);color:#3a2c00}
+.ex{margin:1rem 0}
+.workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
+.badge.ex{background:var(--ink);color:#fff}
+.grid-item{margin:0}
+figure{margin:1.2rem 0;max-width:min(100%, var(--measure))}
+figure img{max-width:100%;height:auto;display:block}
+button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
+  border-radius:3px;display:block;max-width:100%}
+button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+dialog.lb{border:none;padding:0;max-width:96vw;max-height:96vh;background:transparent}
+dialog.lb::backdrop{background:rgba(13,27,42,.88)}
+dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
+dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
+  background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem}
+header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
+header.top p{color:var(--slate);margin:.2rem 0 0}
+.dm{margin:.9rem 0;text-align:center}
+/* A derivation advanced by one button. [hidden] needs !important because .stp
+   sets display, which would otherwise win over the UA's hidden rule. */
+/* An equation chain. display:table so the three columns agree across rows --
+   that is the whole point: the = signs must line up. */
+.chain{display:table;margin:1.1rem 0 .4rem;border-collapse:collapse;
+  /* .beat is a column flexbox, which stretches its children to full width --
+     a shrink-to-fit table then became 1408px and the LHS floated to the far
+     right. align-self keeps the table the width of its own contents. */
+  align-self:start}
+.ch-row{display:table-row}
+.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.12rem 0}
+.ch-l{text-align:right}
+.ch-e{text-align:center;padding-left:.5rem;padding-right:.5rem}
+.ch-r{text-align:left}
+/* The reason column. Set back and lighter so the algebra still reads as the
+   line and the citation as an annotation on it, not a second equation. */
+.ch-y{text-align:left;padding-left:2.2rem;font-size:.82em;color:#5b6b7a;
+  font-style:italic;max-width:26ch}
+.chain [hidden]{display:none!important}
+@media print{.chain [hidden]{display:table-cell!important}
+  .chain .ch-row[hidden]{display:table-row!important}}
+.steps{margin:1.1rem 0}
+.steps .stp{display:block;margin:.2rem 0}
+.steps [hidden]{display:none!important}
+.chain button.more,
+.steps button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
+  background:none;border:1px solid var(--amber);border-radius:50%;
+  width:2rem;height:2rem;padding:0;cursor:pointer;margin-top:.5rem;
+  display:inline-flex;align-items:center;justify-content:center}
+.chain button.more:hover,
+.steps button.more:hover{background:#fff8e2}
+.chain button.more:focus-visible,
+.steps button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media print{.steps .stp{display:block!important}.steps button.more{display:none}}
+.switch{margin:.35rem 0 0}
+.switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px}
+.switch a:hover{border-bottom-width:2px}
+.switch a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media print{.switch{display:none}}
+.hint{position:fixed;right:1rem;bottom:1rem;font:.72rem system-ui,sans-serif;color:var(--slate);
+  background:#fff;border:1px solid var(--rule);border-radius:4px;padding:.35rem .6rem;opacity:.75}
+@media print{.beat{min-height:auto;page-break-inside:avoid}.hint{display:none}
+  details.sol{break-inside:avoid}details.sol summary{display:none}}
+</style></head>
+<body>
+<header class="top">
+  <h1>Recap &nbsp;Difference Quotients: Two Sources, Two Notations</h1>
+  <p>MTH 207 Calculus I &mdash; Limits and Derivatives</p>
+  <p class="switch"><a class="twin" href="../../notes/Section_DQRecap/Section_DQRecap_home.html">Show me the worked-out notes &rarr;</a></p>
+</header>
+<main>
+<section class="beat" aria-label="Two Questions, One Quotient" data-source-line="20">
+  <h2>Two Questions, One Quotient</h2>
+<p>We met the same fraction twice, from two questions that look unrelated.</p>
+<div class="cols"><div><p><strong>The tangent problem.</strong> How steep is the curve <em>at</em> a point?</p>
+<p>We could only find the slope of a line through <strong>two</strong> points, so we took a second point $\displaystyle Q$ and computed the slope of the secant:</p>
+<div class="dm">$$m_{PQ} \;=\; \frac{f(x)-f(a)}{x-a}$$</div></div><div><p><strong>The velocity problem.</strong> How fast is the ball going <em>at</em> an instant?</p>
+<p>We could only find speed over an <strong>interval</strong>, so we took a second time and computed the average velocity:</p>
+<div class="dm">$$\text{avg vel} \;=\; \frac{s(x)-s(a)}{x-a}$$</div></div></div>
+  <div class="key"><p>Two questions, one fraction. In both, the obstacle was the same: what we wanted was about a single point, and the only tool we had needed two.</p></div>
+</section>
+<section class="beat" aria-label="The Same Picture Both Times" data-source-line="44">
+  <h2>The Same Picture Both Times</h2>
+  <figure style="width:74%"><button type="button" class="zoom" data-src="figures/two_problems.png" aria-label="Enlarge figure"><img src="figures/two_problems.png" alt="The height curve with a point P and a point Q further along it. The secant line through P and Q is labelled as both the slope of the secant and the average velocity. A second, dashed line touching the curve at P alone is labelled as both the slope of the tangent and the instantaneous velocity."></button></figure>
+  <div class="key"><p>The secant's slope <em>is</em> the average velocity &mdash; not an analogy, the same number. And the tangent's slope <em>is</em> the instantaneous velocity.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>So what has to happen to $\displaystyle Q$ for the secant to turn into the tangent?</p></div>
+  <details class="sol"><summary>Show: what happens to $\displaystyle Q$</summary>
+<p>$\displaystyle Q$ slides toward $\displaystyle P$. The secant pivots, and what it settles on is the tangent.</p>
+  </details>
+</section>
+<section class="beat" aria-label="Both Answers Are Limits" data-source-line="59">
+  <h2>Both Answers Are Limits</h2>
+  <figure style="width:64%"><button type="button" class="zoom" data-src="figures/secants_converge.png" aria-label="Enlarge figure"><img src="figures/secants_converge.png" alt="The parabola y equals x squared with the point P at (3,9) marked. Four secant lines are drawn from P to points progressively closer to P, and their slopes are shown approaching 6."></button></figure>
+<p>Neither question could be answered directly. Both were answered the same way &mdash; compute the quotient on a shrinking gap and see what the numbers head for:</p>
+<div class="dm">$$\text{tangent slope} \;=\; \lim_{x \to a} \frac{f(x)-f(a)}{x-a}
+\qquad
+\text{instantaneous velocity} \;=\; \lim_{x \to a} \frac{s(x)-s(a)}{x-a}$$</div>
+  <div class="key"><p>Same limit, two names. That is why one idea &mdash; the limit &mdash; answers both, and it is why we spent Thursday on what a limit actually means.</p></div>
+</section>
+<section class="beat" aria-label="The Same Secant, Labelled Two Ways" data-source-line="74">
+  <h2>The Same Secant, Labelled Two Ways</h2>
+<p>You will see this quotient written another way, and it is worth five minutes because from Section 2.7 onward it is the <em>only</em> way you will see it.</p>
+<p>Here is one secant line, drawn twice. Look at what is different.</p>
+  <figure style="width:94%"><button type="button" class="zoom" data-src="figures/two_labelings.png" aria-label="Enlarge figure"><img src="figures/two_labelings.png" alt="Two copies of the same picture side by side. Each shows a rising curve with a point P at input a and a point Q further along, the secant line through them, and a dashed right triangle giving the rise and the run. On the left the second input is labelled x, the run is x minus a, the rise is f of x minus f of a, and the slope is written as the quotient of those. On the right the second input is labelled a plus h, the run is h, the rise is f of a plus h minus f of a, and the slope is written with h underneath. The curve, the points and the line are identical in both."></button></figure>
+  <div class="key"><p>Nothing moved. Same curve, same $\displaystyle P$, same $\displaystyle Q$, same line, same rise over the same run. The only thing that changed is what we call the second input &mdash; and therefore what we call the run.</p></div>
+</section>
+<section class="beat" aria-label="Why the Two Names Agree" data-source-line="87">
+  <h2>Why the Two Names Agree</h2>
+<p>Call the gap $\displaystyle h$. Then the second input is $\displaystyle a+h$ rather than $\displaystyle x$:</p>
+<div class="dm">$$h \;=\; x - a \qquad\Longleftrightarrow\qquad x \;=\; a + h$$</div>
+<p>Substituting that into the left-hand version turns it into the right-hand one:</p>
+  <div class="chain" aria-live="polite">
+    <div class="ch-row"><span class="ch-l">$\displaystyle \frac{f(x)-f(a)}{x-a}$</span><span class="ch-e">$\displaystyle =$</span><span class="ch-r rv" hidden>$\displaystyle \frac{f(a+h)-f(a)}{(a+h)-a}$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \frac{f(a+h)-f(a)}{h}$</span></div>
+    <button type="button" class="more" aria-label="Next step of the substitution">&#9654;</button>
+  </div>
+  <div class="key"><p>And <strong>$\displaystyle x \to a$ is exactly $\displaystyle h \to 0$</strong>. Closing the gap is the gap going to zero, so the two limits below are the same limit:</p>
+<div class="dm">$$\lim_{x \to a}\frac{f(x)-f(a)}{x-a} \qquad=\qquad \lim_{h \to 0}\frac{f(a+h)-f(a)}{h}$$</div></div>
+</section>
+<section class="beat" aria-label="Does $Q$ Have to Be on the Right?" data-source-line="107">
+  <h2>Does $Q$ Have to Be on the Right?</h2>
+<p>Nothing above said $\displaystyle Q$ has to come <em>after</em> $\displaystyle P$.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Our ball intervals all started at $\displaystyle t = 0.5$. What is $\displaystyle h$ if the second time is $\displaystyle t = 0.4$ instead?</p></div>
+  <details class="sol"><summary>Show: the value of $\displaystyle h$, and the picture</summary>
+<p>$\displaystyle h = 0.4 - 0.5 = \mathbf{-0.1}$. A point on the earlier side just makes $\displaystyle h$ <strong>negative</strong>:</p>
+<figure style="width:90%"><button type="button" class="zoom" data-src="figures/negative_h.png" aria-label="Enlarge figure"><img src="figures/negative_h.png" alt="Two copies of the same rising curve side by side, with the same point P in the middle of each. On the left Q sits to the right of P: the run is labelled h greater than zero and the rise is positive. On the right Q sits to the left of P: the run is labelled h less than zero and the dashed rise goes downward, so the rise is negative too. The secant line through P and Q slopes upward in both."></button></figure>
+<p>Both the rise and the run flip sign, so the quotient is still the slope of that secant &mdash; nothing else changes.</p>
+  </details>
+  <div class="key"><p>Which is why approaching from the left is not a separate idea. It is the same quotient with $\displaystyle h < 0$ &mdash; exactly the one-sided limits we named on Thursday.</p></div>
+</section>
+</main>
+<p class="hint">6 sections &middot; solutions open on click</p>
+<dialog class="lb" aria-label="Enlarged figure">
+  <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
+</dialog>
+<script>
+// Editor scroll-sync. Same protocol the filled/blank builds use, so the editor
+// side needs no new message types: we post htmlSectionChanged as the reader
+// scrolls, and honour goToSection when the cursor moves in the tex.
+(function(){
+  if(!window.parent || window.parent===window) return;
+  var secs=document.querySelectorAll('main > section[data-source-line]');
+  if(!secs.length) return;
+  var cur=null, t=null;
+  function report(){
+    // the section covering 30% down the viewport -- the one being read, not
+    // the one clipped at the top edge
+    var mark=window.innerHeight*0.3, best=null;
+    for(var i=0;i<secs.length;i++){
+      var r=secs[i].getBoundingClientRect();
+      if(r.top<=mark && r.bottom>0) best=secs[i];
+    }
+    if(!best) return;
+    var line=parseInt(best.dataset.sourceLine,10);
+    if(!isNaN(line) && line!==cur){
+      cur=line;
+      window.parent.postMessage({type:'htmlSectionChanged',sourceLine:line},'*');
+    }
+  }
+  addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(report,80);},
+                   {passive:true});
+  addEventListener('message',function(e){
+    if(!e.data || e.data.type!=='goToSection' || e.data.sourceLine==null) return;
+    // nearest section at or before the cursor: a cursor inside a frame should
+    // scroll to that frame, not fail to match its exact opening line
+    var best=null;
+    for(var i=0;i<secs.length;i++){
+      if(parseInt(secs[i].dataset.sourceLine,10)<=e.data.sourceLine) best=secs[i];
+    }
+    if(best){ cur=parseInt(best.dataset.sourceLine,10);
+              best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+// ── Advancing the page ────────────────────────────────────────────────────
+// One action, whether it arrives from a block's own arrow or from a key. A
+// presentation remote is just a USB keyboard sending Right/PageDown, so making
+// the page respond to those keys is all a clicker needs -- no pairing, no app.
+//
+// The order is document order within the section you are looking at: chain
+// rows, step lines and closed reveals alike. When a section has nothing left
+// hidden, the next press moves to the next section. That is the slide feel,
+// on a scrolling page.
+(function(){
+  function units(sec){
+    return [].slice.call(sec.querySelectorAll('.rv, .stp, details.sol'));
+  }
+  function covered(u){
+    return u.tagName === 'DETAILS' ? !u.open : u.hidden;
+  }
+  function uncover(u, yes){
+    if(u.tagName === 'DETAILS'){ u.open = yes; } else { u.hidden = !yes; }
+  }
+  function tidy(sec){
+    // a block's arrow retires once that block has nothing left to give
+    [].forEach.call(sec.querySelectorAll('.steps, .chain'), function(box){
+      var b = box.querySelector('button.more');
+      if(b) b.hidden = !box.querySelector('.rv[hidden], .stp[hidden]');
+    });
+  }
+  function sections(){
+    return [].slice.call(document.querySelectorAll('main > section.beat'));
+  }
+  function here(){
+    var mark = window.innerHeight * 0.3, best = null;
+    sections().forEach(function(s){
+      var r = s.getBoundingClientRect();
+      if(r.top <= mark && r.bottom > 0) best = s;
+    });
+    return best || sections()[0];
+  }
+  function go(sec, d){
+    var all = sections(), i = all.indexOf(sec) + d;
+    if(i >= 0 && i < all.length) all[i].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.__advance = function(d){
+    var sec = here();
+    if(!sec) return;
+    var us = units(sec);
+    if(d > 0){
+      for(var i = 0; i < us.length; i++){
+        if(covered(us[i])){
+          uncover(us[i], true); tidy(sec);
+          us[i].scrollIntoView({block:'nearest'});
+          return;
+        }
+      }
+      go(sec, 1);
+    } else {
+      for(var j = us.length - 1; j >= 0; j--){
+        if(!covered(us[j])){ uncover(us[j], false); tidy(sec); return; }
+      }
+      go(sec, -1);
+    }
+  };
+  var FWD = {ArrowRight:1, ArrowDown:1, PageDown:1, ' ':1, Enter:1, Spacebar:1};
+  var BACK = {ArrowLeft:1, ArrowUp:1, PageUp:1, Backspace:1};
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    // let a focused control have its own keys
+    var t = e.target;
+    if(t && t.closest && t.closest('button, a, summary, input, textarea, dialog')) return;
+    if(FWD[e.key]){ e.preventDefault(); window.__advance(1); }
+    else if(BACK[e.key]){ e.preventDefault(); window.__advance(-1); }
+  });
+})();
+
+// One button per derivation: each press uncovers the next line.
+(function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.steps > button.more, .chain > button.more');
+    if(!b) return;
+    var box=b.parentElement;
+    // .rv marks a revealable unit: a whole step block, a chain row, or the
+    // right-hand side of the chain's first row. One selector covers all three.
+    var next=box.querySelector('.rv[hidden], .stp[hidden]');
+    if(next) next.hidden=false;
+    if(!box.querySelector('.rv[hidden], .stp[hidden]')) b.hidden=true;
+  });
+})();
+(function(){
+  var dlg=document.querySelector('dialog.lb'), img=dlg.querySelector('img');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button.zoom');
+    if(b){ img.src=b.dataset.src;
+           img.alt=b.querySelector('img').alt;   // carry the real alt text over
+           dlg.showModal(); return; }
+    if(e.target.closest('dialog.lb .close') || e.target===dlg) dlg.close();
+  });
+  dlg.addEventListener('close',function(){ img.removeAttribute('src'); });
+})();
+</script>
+</body></html>
