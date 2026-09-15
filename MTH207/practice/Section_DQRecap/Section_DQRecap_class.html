@@ -109,14 +109,17 @@ header.top p{color:var(--slate);margin:.2rem 0 0}
 .steps .stp{display:block;margin:.2rem 0}
 .steps [hidden]{display:none!important}
 .chain button.more,
-.steps button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
+.steps button.more,
+details.sol button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
   background:none;border:1px solid var(--amber);border-radius:50%;
   width:2rem;height:2rem;padding:0;cursor:pointer;margin-top:.5rem;
   display:inline-flex;align-items:center;justify-content:center}
 .chain button.more:hover,
-.steps button.more:hover{background:#fff8e2}
+.steps button.more:hover,
+details.sol button.more:hover{background:#fff8e2}
 .chain button.more:focus-visible,
-.steps button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.steps button.more:focus-visible,
+details.sol button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 @media print{.steps .stp{display:block!important}.steps button.more{display:none}}
 .switch{margin:.35rem 0 0}
 .switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
@@ -190,8 +193,9 @@ header.top p{color:var(--slate);margin:.2rem 0 0}
   <div class="turn your"><span class="badge">Your turn</span><p>Our ball intervals all started at $\displaystyle t = 0.5$. What is $\displaystyle h$ if the second time is $\displaystyle t = 0.4$ instead?</p></div>
   <details class="sol"><summary>Show: the value of $\displaystyle h$, and the picture</summary>
 <p>$\displaystyle h = 0.4 - 0.5 = \mathbf{-0.1}$. A point on the earlier side just makes $\displaystyle h$ <strong>negative</strong>:</p>
-<figure style="width:90%"><button type="button" class="zoom" data-src="figures/negative_h.png" aria-label="Enlarge figure"><img src="figures/negative_h.png" alt="Two copies of the same rising curve side by side, with the same point P in the middle of each. On the left Q sits to the right of P: the run is labelled h greater than zero and the rise is positive. On the right Q sits to the left of P: the run is labelled h less than zero and the dashed rise goes downward, so the rise is negative too. The secant line through P and Q slopes upward in both."></button></figure>
-<p>Both the rise and the run flip sign, so the quotient is still the slope of that secant &mdash; nothing else changes.</p>
+    <div class="rv" hidden><figure style="width:90%"><button type="button" class="zoom" data-src="figures/negative_h.png" aria-label="Enlarge figure"><img src="figures/negative_h.png" alt="Two copies of the same rising curve side by side, with the same point P in the middle of each. On the left Q sits to the right of P: the run is labelled h greater than zero and the rise is positive. On the right Q sits to the left of P: the run is labelled h less than zero and the dashed rise goes downward, so the rise is negative too. The secant line through P and Q slopes upward in both."></button></figure></div>
+    <div class="rv" hidden><p>Both the rise and the run flip sign, so the quotient is still the slope of that secant &mdash; nothing else changes.</p></div>
+    <button type="button" class="more" aria-label="Next part of the value of $\displaystyle h$, and the picture">&#9654;</button>
   </details>
   <div class="key"><p>Which is why approaching from the left is not a separate idea. It is the same quotient with $\displaystyle h < 0$ &mdash; exactly the one-sided limits we named on Thursday.</p></div>
 </section>
@@ -321,7 +325,7 @@ header.top p{color:var(--slate);margin:.2rem 0 0}
 // One button per derivation: each press uncovers the next line.
 (function(){
   document.addEventListener('click',function(e){
-    var b=e.target.closest('.steps > button.more, .chain > button.more');
+    var b=e.target.closest('.steps > button.more, .chain > button.more, details.sol > button.more');
     if(!b) return;
     var box=b.parentElement;
     // .rv marks a revealable unit: a whole step block, a chain row, or the
