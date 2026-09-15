@@ -400,6 +400,13 @@ header.top p{color:var(--slate);margin:.2rem 0 0}
   }
   function uncover(u, yes){
     if(u.tagName === 'DETAILS'){ u.open = yes; } else { u.hidden = !yes; }
+    pair(u, yes);
+  }
+  // Anything marked .pair in the same chain row rides with it.
+  function pair(u, yes){
+    var row = u.closest ? u.closest('.ch-row') : null;
+    if(!row) return;
+    [].forEach.call(row.querySelectorAll('.pair'), function(p){ p.hidden = !yes; });
   }
   function tidy(sec){
     // a block's arrow retires once that block has nothing left to give
@@ -464,7 +471,13 @@ header.top p{color:var(--slate);margin:.2rem 0 0}
     // .rv marks a revealable unit: a whole step block, a chain row, or the
     // right-hand side of the chain's first row. One selector covers all three.
     var next=box.querySelector('.rv[hidden], .stp[hidden]');
-    if(next) next.hidden=false;
+    if(next){
+      next.hidden=false;
+      // its citation, if it has one, arrives on the same press
+      var row=next.closest?next.closest('.ch-row'):null;
+      if(row) [].forEach.call(row.querySelectorAll('.pair'),
+                              function(p){ p.hidden=false; });
+    }
     if(!box.querySelector('.rv[hidden], .stp[hidden]')) b.hidden=true;
   });
 })();
