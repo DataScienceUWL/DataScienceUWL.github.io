@@ -642,7 +642,7 @@ window.Quarto = {
 <div class="definition">
 <p>A <strong>bootstrap resample</strong> is a sample of size <span class="math inline">\(n\)</span> drawn <strong>with replacement</strong> from the original sample. The statistic computed from a bootstrap resample is called a <strong>bootstrap statistic</strong>. The collection of many bootstrap statistics forms the <strong>bootstrap distribution</strong>.</p>
 </div>
-<p>Why does this work? If the original sample is representative of the population, then resampling from it mimics what would happen if we could repeatedly sample from the population itself. The variability we see in the bootstrap distribution approximates the true sampling variability of our statistic.</p>
+<p>Why does resampling from our own sample work? If the original sample is representative of the population, then resampling from it mimics what would happen if we could repeatedly sample from the population itself. The variability we see in the bootstrap distribution approximates the true sampling variability of our statistic.</p>
 </section>
 <section id="sec-bootstrap-action" class="level2" data-number="9.2">
 <h2 data-number="9.2" class="anchored" data-anchor-id="sec-bootstrap-action"><span class="header-section-number">9.2</span> Bootstrapping a sample mean</h2>
@@ -1099,18 +1099,6 @@ Two conditions are violated: (1) the sample is a convenience sample of friends, 
 <li><p>A study has <span class="math inline">\(n = 12\)</span>; the bootstrap distribution looks lumpy and irregular but is roughly centered.</p></li>
 <li><p>In one sentence, explain the underlying reason the two methods can disagree.</p></li>
 </ol>
-<details>
-<summary>
-Show answer
-</summary>
-<ol type="a">
-<li><p><strong>Both methods agree.</strong> The SE method assumes an approximately normal bootstrap distribution (statistic ± 2 SE). When the bootstrap distribution is symmetric and bell-shaped, this assumption holds and the two methods give nearly identical intervals.</p></li>
-<li><p><strong>Percentile is more trustworthy.</strong> The SE method centers the CI symmetrically around <span class="math inline">\(\bar{x}\)</span>, but a skewed bootstrap distribution has an asymmetric middle 95% — the upper tail is longer. Percentile captures that asymmetry; SE forces symmetry it doesn’t have.</p></li>
-<li><p><strong>Percentile is more trustworthy.</strong> The SE method could push the upper endpoint above 1 (impossible for a proportion). Percentile respects the natural boundary because it just reports what’s in the middle 95% of the bootstrap draws.</p></li>
-<li><p><strong>Neither method is fully trustworthy</strong> — a lumpy bootstrap distribution suggests <span class="math inline">\(n\)</span> is too small for the bootstrap to work well. If you must report an interval, percentile is safer than SE because it doesn’t require the bootstrap distribution to be roughly normal.</p></li>
-<li><p><strong>The SE method assumes the bootstrap distribution is approximately symmetric and bell-shaped</strong> (so that statistic ± 2 SE captures the middle 95%). Percentile makes no shape assumption — it just reads off the 2.5th and 97.5th percentiles of the bootstrap draws. When the bootstrap distribution is skewed, bounded, or lumpy, percentile is the safer default.</p></li>
-</ol>
-</details>
 <!--- MOM original-10-01
 title: "Percentile or SE method?"
 type: multipart
