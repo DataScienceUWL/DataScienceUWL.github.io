@@ -700,17 +700,17 @@ We would be assuming that these two variables are <strong>independent</strong> �
 </div>
 <section id="observed-data" class="level3" data-number="7.3.1">
 <h3 data-number="7.3.1" class="anchored" data-anchor-id="observed-data"><span class="header-section-number">7.3.1</span> Observed data</h3>
-<p>The participants were 48 bank supervisors who identified as male, attending a management institute at the University of North Carolina in 1972. They were asked to assume the role of personnel director of a bank and were given a personnel file to judge whether the person should be promoted to a branch manager position. The files were identical, except that half indicated the candidate identified as male and the other half indicated the candidate identified as female. These files were randomly assigned to the bank managers.</p>
+<p>The subjects were 48 male bank supervisors attending a management institute at the University of North Carolina in 1972. Each was asked to play the role of a bank’s personnel director: review one personnel file and decide whether that candidate should be promoted to branch manager. The files were identical in every detail but one — half described a candidate identified as male, half a candidate identified as female. The researchers <strong>randomly assigned</strong> 24 supervisors to review a “male” file and the other 24 to review a “female” file.</p>
 <div class="guidedpractice">
-<p>Is this an observational study or an experiment? How does the type of study impact what can be inferred from the results?</p>
+<p>Is this an observational study or an experiment? Who was randomly assigned, and what can the study tell us?</p>
 <details>
 <summary>
 Show answer
 </summary>
-The study is an experiment, as subjects were randomly assigned a “male” file or a “female” file (remember, all the files were actually identical in content). Since this is an experiment, the results can be used to evaluate a causal relationship between the sex of a candidate and the promotion decision.
+It is an <strong>experiment</strong>: the researchers randomly assigned each supervisor to review a “male” or a “female” file (the files were otherwise identical). The <strong>treatment</strong> is the sex stated on the file. Because the assignment was random, the study can tell us whether the file’s stated sex <em>caused</em> a difference in promotion decisions.
 </details>
 </div>
-<p>The results are summarized in the table below:</p>
+<p>The results are summarized below. Each row is the sex stated on the <em>file</em> the supervisor reviewed (not the supervisor’s own sex), and “Promoted” means the supervisor recommended promotion.</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -742,43 +742,46 @@ The study is an experiment, as subjects were randomly assigned a “male” file
 </tbody>
 </table>
 <div class="workedexample">
-<p>When looking at the rates of promotion in this study, why might we be tempted to immediately conclude that individuals identifying as female are being discriminated against?</p>
+<p>Why might these results look like discrimination — and why should we check chance before concluding that?</p>
 <hr>
-<p>The large difference in promotion rates (58.3% for female personnel versus 87.5% for male personnel) suggests there might be discrimination against women in promotion decisions. However, we cannot yet be sure if the observed difference represents discrimination or is just due to random chance when there is no discrimination occurring. Since we wouldn’t expect the sample proportions to be <em>exactly</em> equal, even if the truth was that the promotion decisions were independent of sex, we can’t rule out random chance as a possible explanation.</p>
+<p>The promotion rate was much higher for “male” files (87.5%) than for “female” files (58.3%), though the files were otherwise identical — that gap looks like discrimination. But suppose the sex on the file made no difference to any supervisor. Even then, the random assignment could have happened to place more of the promotion-inclined supervisors in the group reviewing “male” files. Before concluding discrimination, we ask whether chance alone could reasonably produce a gap this large.</p>
 </div>
 <p>The observed difference in promotion rates is:</p>
 <p><span class="math display">\[\hat{p}_M - \hat{p}_F = \frac{21}{24} - \frac{14}{24} = 0.875 - 0.583 = 0.292\]</span></p>
-<p>This is 29.2 percentage points. The point estimate is large, but the sample size is small, making it unclear if this represents real discrimination or simply chance variation. We label two competing claims:</p>
+<p>We always subtract the “female” rate from the “male” rate, so a positive value means a higher promotion rate for “male” files — here, <strong>29.2 percentage points higher</strong>. The estimate is large but the sample is small, so it isn’t yet clear whether it reflects real discrimination or ordinary chance. We label two competing claims:</p>
 <ul>
-<li><span class="math inline">\(H_0\)</span>: <strong>Null hypothesis.</strong> The variables <code>sex</code> and <code>decision</code> are independent. The difference in promotion rates of 29.2% was due to natural variability inherent in the random assignment.</li>
-<li><span class="math inline">\(H_A\)</span>: <strong>Alternative hypothesis.</strong> The variables <code>sex</code> and <code>decision</code> are <em>not</em> independent. The difference in promotion rates of 29.2% was not due to natural variability, and equally qualified female personnel are less likely to be promoted than male personnel.</li>
+<li><span class="math inline">\(H_0\)</span>: <strong>Null hypothesis.</strong> The variables <code>sex</code> and <code>decision</code> are independent — the sex on the file has no effect on the decision. The 29.2% gap is just natural variability from the random assignment.</li>
+<li><span class="math inline">\(H_A\)</span>: <strong>Alternative hypothesis.</strong> <code>sex</code> and <code>decision</code> are <em>not</em> independent — otherwise-identical candidates are less likely to be promoted when the file states female than when it states male.</li>
 </ul>
 </section>
 </section>
 <section id="sec-randomization-distribution" class="level2" data-number="7.4">
 <h2 data-number="7.4" class="anchored" data-anchor-id="sec-randomization-distribution"><span class="header-section-number">7.4</span> Building a randomization distribution</h2>
-<p>What would it mean if the null hypothesis were true? It would mean each banker would decide whether to promote the candidate without regard to the sex indicated on the file. The 35 promotions and 13 non-promotions were determined by factors <em>other than sex</em>, and the difference we observed was just bad luck in how the files happened to be assigned.</p>
-<p>We can test this by performing a <strong>randomization</strong> — simulating what the results would look like if sex and the promotion decision were independent, as the null hypothesis claims.</p>
+<p>We want to know whether a 29.2-point gap would be surprising <em>if the null hypothesis were true</em>. So we simulate what could happen when the sex on the file has no effect on the decision, and see how the observed gap compares.</p>
 <section id="the-card-shuffling-metaphor" class="level3" data-number="7.4.1">
 <h3 data-number="7.4.1" class="anchored" data-anchor-id="the-card-shuffling-metaphor"><span class="header-section-number">7.4.1</span> The card-shuffling metaphor</h3>
-<p>Think of the data as 48 cards, one for each supervisor’s decision. A card’s color is that supervisor’s decision — red if they promoted the candidate, white if not. A card’s group, “male” or “female,” is the sex of the candidate on the (otherwise identical) file that supervisor reviewed:</p>
+<p>Picture the study as 48 cards, one per supervisor. Each card’s <strong>color</strong> records that supervisor’s decision:</p>
 <ul>
-<li>35 red cards (promoted)</li>
-<li>13 white cards (not promoted)</li>
+<li>35 <strong>red</strong> cards — recommended promotion;</li>
+<li>13 <strong>white</strong> cards — did not.</li>
 </ul>
-<p>In the study, 24 of these cards fell in the “male” group and 24 in the “female” group. Under the null hypothesis, promotion is independent of the candidate’s sex, so a card’s color has nothing to do with which group it belongs to.</p>
-<p>To simulate what the null hypothesis looks like, we:</p>
+<p>Two piles stand for the two file versions — a “male” pile and a “female” pile, each holding 24 cards, matching the original group sizes. Under the null hypothesis, the sex on the file has no effect, so a card’s color has nothing to do with which pile it lands in.</p>
+<p>To run one simulation:</p>
 <ol type="1">
-<li><strong>Thoroughly shuffle</strong> all 48 cards together.</li>
-<li><strong>Deal</strong> 24 into a “male” pile and 24 into a “female” pile.</li>
-<li><strong>Count</strong> the number of red (promoted) cards in each pile and compute the difference in promotion rates.</li>
+<li><strong>Shuffle</strong> all 48 cards together.</li>
+<li><strong>Deal</strong> the cards into the two piles.</li>
+<li><strong>Count</strong> the red cards in each pile and divide by 24 to get each pile’s promotion rate.</li>
+<li><strong>Subtract</strong> the “female” rate from the “male” rate.</li>
 </ol>
-<p>The shuffle breaks any link between the promotion decision and the candidate’s sex — precisely what the null hypothesis claims. It keeps the totals fixed (35 promoted, 13 not; 24 male, 24 female) and asks: if sex played no role, how large a gap in promotion rates could show up by chance alone? It makes no difference whether we shuffle the decisions across the two sex groups or shuffle the sex labels across the 48 decisions — both keep the same totals, so both produce the same set of possibilities. Breaking the link is all the null requires. For this experiment, that second shuffle is exactly re-running the study’s own random assignment of files to bankers — which is what makes the reshuffle a fair stand-in for chance.</p>
-<p>This gives us one simulated difference <em>under the null hypothesis</em> — a difference that arose purely from the random shuffle, not from any real discrimination.</p>
+<div class="important">
+<p><strong>Why does shuffling simulate “no effect”?</strong></p>
+<p>Under <span class="math inline">\(H_0\)</span>, each supervisor would have made the <em>same</em> decision no matter which file they received — so we keep every card’s color fixed. Dealing the cards out at random stands in for running the study’s random assignment again. A pile can end up with more red cards purely by luck, so the two promotion rates can differ even though we built the simulation assuming the file’s sex makes no difference.</p>
+</div>
+<p>Each shuffle keeps the totals fixed — 35 promoted, 13 not, and 24 cards per pile — and produces <strong>one</strong> difference in promotion rates <em>under the null hypothesis</em>.</p>
 </section>
 <section id="one-simulation" class="level3" data-number="7.4.2">
 <h3 data-number="7.4.2" class="anchored" data-anchor-id="one-simulation"><span class="header-section-number">7.4.2</span> One simulation</h3>
-<p>Suppose after shuffling and dealing, we get the following result:</p>
+<p>Suppose one shuffle and deal gives this result:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -809,20 +812,20 @@ The study is an experiment, as subjects were randomly assigned a “male” file
 </tr>
 </tbody>
 </table>
-<p>The simulated difference is <span class="math inline">\(18/24 - 17/24 = 0.042\)</span>, or about 4.2% — much smaller than the observed 29.2%.</p>
 <div class="guidedpractice">
-<p>What is the difference in promotion rates in the simulated data above? How does this compare to the observed difference of 29.2% from the actual study?</p>
+<p>Find the simulated difference in promotion rates (the “male” rate minus the “female” rate). How does it compare with the observed 29.2 percentage points?</p>
 <details>
 <summary>
 Show answer
 </summary>
-The simulated difference is <span class="math inline">\(18/24 - 17/24 = 0.042\)</span> or about 4.2% in favor of male personnel. This difference due to chance is much smaller than the 29.2% difference observed in the actual groups.
+The simulated difference is <span class="math inline">\(18/24 - 17/24 \approx 0.042\)</span>, about 4.2 percentage points in favor of “male” files — far smaller than the observed 29.2 points. It came purely from dealing the cards at random while holding each supervisor’s decision fixed.
 </details>
 </div>
+<p>This is only one possible result under <span class="math inline">\(H_0\)</span>.</p>
 </section>
 <section id="many-simulations" class="level3" data-number="7.4.3">
 <h3 data-number="7.4.3" class="anchored" data-anchor-id="many-simulations"><span class="header-section-number">7.4.3</span> Many simulations</h3>
-<p>One simulation is not enough. We need to repeat the shuffle-and-deal process many times to build up a picture of what <em>chance alone</em> looks like. Using a computer, we can do this hundreds or thousands of times.</p>
+<p>To judge how unusual the observed 29.2 points really is, we repeat the shuffle-and-deal many times, building up a picture of what <em>chance alone</em> looks like. Using a computer, we can do this hundreds or thousands of times.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-sex-discrim-rand-dist" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A histogram of 100 simulated differences in promotion rates between male and female candidates. The distribution is centered at zero. A small number of simulations at or beyond 0.292 are highlighted, showing they are rare under the null hypothesis.">
