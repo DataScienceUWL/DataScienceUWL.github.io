@@ -70,8 +70,21 @@ th{border-bottom:2px solid var(--ink)}
 .workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
 .badge.ex{background:var(--ink);color:#fff}
 .grid-item{margin:0}
-figure{margin:1.2rem 0;max-width:min(100%, var(--measure))}
-figure img{max-width:100%;height:auto;display:block}
+/* A figure is not prose. --measure is a READING measure -- how far the eye
+   travels across a line of text -- and has no business capping a diagram: on a
+   1920 projector it left roughly 370px empty beside every wide plot. So a
+   figure takes the full beat width and centres, and scale=N is now read as a
+   fraction of THAT, still centred, not of the reading measure. An img keeps
+   max-width (not width), so a small figure centres at its natural size instead
+   of being upscaled into blur.
+
+   No height cap: a beat is allowed to be taller than the screen. This is a
+   scrolling document, not a slide -- min-height:100vh is a floor. The
+   "over-tall slide scrolls its title away" rule belongs to the retired reveal
+   decks, which is why deck_check only geometry-checks when _slides.html
+   exists. */
+figure{margin:1.2rem auto;max-width:100%}
+figure img{max-width:100%;height:auto;display:block;margin:0 auto}
 button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
   border-radius:3px;display:block;max-width:100%}
 button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
@@ -80,7 +93,7 @@ dialog.lb::backdrop{background:rgba(13,27,42,.88)}
 dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
 dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
   background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
-figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem;text-align:center}
 header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
 header.top p{color:var(--slate);margin:.2rem 0 0}
 .dm{margin:.9rem 0;text-align:center}
@@ -231,25 +244,33 @@ only: their domains have no endpoints, so the question could not come up.</p>
   <h2>Making It Continuous On Purpose</h2>
 <div class="boxed ex"><span class="badge ex">Example 1</span><p>Find the value of $\displaystyle c$ that makes $\displaystyle g$ continuous at $\displaystyle x=2$:</p>
 <div class="dm">$$g(x) \;=\; \begin{cases} x^2 + c, & x < 2\\[2pt] 3x - 1, & x \ge 2\end{cases}$$</div></div>
-  <div class="turn your"><span class="badge">Your turn</span><p>Work it. The three requirements tell you exactly what to write down.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Where is the <em>only</em> place this could fail? Then make it not fail there.</p></div>
   <div class="steps" aria-live="polite">
-    <div class="stp" hidden><p>$\displaystyle g(2) = 3(2)-1 = 5$, so requirement 1 is fine for any $\displaystyle c$.</p></div>
-    <div class="stp" hidden><p>The limit has to exist, so the two sides must agree:</p>
-<div class="dm">$$\lim_{x\to2^-}g(x) = 4 + c \qquad \lim_{x\to2^+}g(x) = 5$$</div></div>
-    <div class="stp" hidden><p>Setting them equal: $\displaystyle 4 + c = 5$, so $\displaystyle \mathbf{c = 1}$.</p></div>
-    <div class="stp" hidden><p>With $\displaystyle c=1$ the limit is $\displaystyle 5$ and $\displaystyle g(2)=5$, so requirement 3 holds too.</p></div>
-    <button type="button" class="more" aria-label="Next step of the three requirements, one at a time">&#9654;</button>
+    <div class="stp" hidden><p>Each piece is a polynomial, so each is continuous on its own side. The only
+place continuity can fail is the <strong>junction</strong>, $\displaystyle x=2$.</p></div>
+    <div class="stp" hidden><p>So the two pieces just have to <strong>meet</strong> there:</p>
+<div class="dm">$$\underbrace{2^2 + c}_{\text{left piece at }2} \;=\; \underbrace{3(2)-1}_{\text{right piece at }2}$$</div></div>
+    <div class="stp" hidden><p>$\displaystyle 4 + c = 5$, so $\displaystyle \mathbf{c = 1}$.</p></div>
+    <button type="button" class="more" aria-label="Next step of joining two continuous pieces at the junction">&#9654;</button>
   </div>
-  <div class="key"><p>Nothing was guessed. Each requirement became one line, and the only unknown fell out of requirement 2.</p></div>
+  <div class="key"><p>Nothing was guessed, and nothing was plugged into a limit. The pieces
+are continuous <em>because they are polynomials</em>; all that is left is whether
+they line up where they meet.</p></div>
+  <details class="sol"><summary>Show: where the limits went</summary>
+<p>Strictly, continuity at $\displaystyle 2$ asks for $\displaystyle\lim_{x\to2}g(x)=g(2)$, so
+for the one-sided limits to agree. But each one-sided limit <em>is</em> the
+polynomial's value there, by Direct Substitution &mdash; which is exactly why
+"do the pieces meet?" is the same question, asked in fewer symbols.</p>
+  </details>
 </section>
-<section class="beat" aria-label="You Cannot Cross Without Landing" data-source-line="232">
+<section class="beat" aria-label="You Cannot Cross Without Landing" data-source-line="242">
   <h2>You Cannot Cross Without Landing</h2>
 <div class="boxed thm"><span class="badge thm">Theorem &mdash; Intermediate Value Theorem</span><p>Suppose $\displaystyle f$ is <strong>continuous</strong> on $\displaystyle [a,b]$, and $\displaystyle N$ is any number between $\displaystyle f(a)$ and $\displaystyle f(b)$. Then there is at least one $\displaystyle c$ in $\displaystyle (a,b)$ with</p>
 <div class="dm">$$f(c) = N$$</div></div>
   <figure style="width:64%"><button type="button" class="zoom" data-src="figures/ivt.png" aria-label="Enlarge figure"><img src="figures/ivt.png" alt="A continuous curve from the point a to the point b, with a dashed horizontal line at height N drawn between f of a and f of b. The curve crosses that line, and the crossing point is marked c on the horizontal axis."></button></figure>
   <div class="key"><p>Read it as a sentence about drawing: if you start below $\displaystyle N$ and finish above it without lifting your pen, you crossed $\displaystyle N$ somewhere. <strong>At least one</strong> $\displaystyle c$ &mdash; the theorem promises a crossing, not a single crossing.</p></div>
 </section>
-<section class="beat" aria-label="Why &quot;Continuous&quot; Is the Hypothesis" data-source-line="246">
+<section class="beat" aria-label="Why &quot;Continuous&quot; Is the Hypothesis" data-source-line="256">
   <h2>Why &quot;Continuous&quot; Is the Hypothesis</h2>
   <div class="turn your"><span class="badge">Your turn</span><p>Sketch a function on $\displaystyle [0,2]$ with $\displaystyle f(0)=-1$ and $\displaystyle f(2)=1$ that <em>never</em> equals $\displaystyle 0$. What must your sketch have?</p></div>
   <details class="sol"><summary>Show: what your sketch needs</summary>
@@ -258,7 +279,7 @@ in $\displaystyle [0,2]$, and that is exactly what the theorem rules out.</p>
   </details>
   <div class="key"><p>Drop "continuous" and the theorem is simply false. It is not decoration on the statement; it is the statement.</p></div>
 </section>
-<section class="beat" aria-label="Using the IVT: Showing a Root Exists" data-source-line="264">
+<section class="beat" aria-label="Using the IVT: Showing a Root Exists" data-source-line="274">
   <h2>Using the IVT: Showing a Root Exists</h2>
 <div class="boxed ex"><span class="badge ex">Example 2</span><p>Show that $\displaystyle x^3 - x - 1 = 0$ has a solution between $\displaystyle 1$ and $\displaystyle 2$.</p></div>
   <div class="turn your"><span class="badge">Your turn</span><p>You are not being asked to solve it. What <em>are</em> you being asked for, and what would you have to check?</p></div>
@@ -271,14 +292,14 @@ in $\displaystyle [0,2]$, and that is exactly what the theorem rules out.</p>
   </div>
   <div class="key"><p>Three lines: continuous, the two values straddle $\displaystyle N$, cite the theorem. The IVT tells you a root <strong>exists</strong> &mdash; it never tells you where.</p></div>
 </section>
-<section class="beat" aria-label="Where This Goes" data-source-line="287">
+<section class="beat" aria-label="Where This Goes" data-source-line="297">
   <h2>Where This Goes</h2>
 <p>Continuity is the hypothesis on nearly every theorem left in this course &mdash; the
 Extreme Value Theorem, the Mean Value Theorem, and the Fundamental Theorem of
 Calculus all open with "suppose $\displaystyle f$ is continuous".</p>
   <div class="key"><p>Next: what happens to $\displaystyle f(x)$ as $\displaystyle x$ runs off to infinity, rather than toward a point. Same limit idea, different question.</p></div>
 </section>
-<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="298">
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="308">
   <h2>What You Should Be Able to Do</h2>
 <ul><li>State the three requirements for continuity at a point, and say which one a given graph breaks.</li><li>Evaluate a limit by substitution when $\displaystyle f$ is continuous, and cite continuity as the justification.</li><li>Name a discontinuity as removable, jump or infinite.</li><li>Find a constant that makes a piecewise function continuous at a point.</li><li>State the IVT with its hypothesis, and use it to show a root exists.</li><li>Say why "continuous at every point of its domain" is the careful phrasing.</li></ul>
 </section>
