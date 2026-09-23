@@ -70,8 +70,21 @@ th{border-bottom:2px solid var(--ink)}
 .workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
 .badge.ex{background:var(--ink);color:#fff}
 .grid-item{margin:0}
-figure{margin:1.2rem 0;max-width:min(100%, var(--measure))}
-figure img{max-width:100%;height:auto;display:block}
+/* A figure is not prose. --measure is a READING measure -- how far the eye
+   travels across a line of text -- and has no business capping a diagram: on a
+   1920 projector it left roughly 370px empty beside every wide plot. So a
+   figure takes the full beat width and centres, and scale=N is now read as a
+   fraction of THAT, still centred, not of the reading measure. An img keeps
+   max-width (not width), so a small figure centres at its natural size instead
+   of being upscaled into blur.
+
+   No height cap: a beat is allowed to be taller than the screen. This is a
+   scrolling document, not a slide -- min-height:100vh is a floor. The
+   "over-tall slide scrolls its title away" rule belongs to the retired reveal
+   decks, which is why deck_check only geometry-checks when _slides.html
+   exists. */
+figure{margin:1.2rem auto;max-width:100%}
+figure img{max-width:100%;height:auto;display:block;margin:0 auto}
 button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
   border-radius:3px;display:block;max-width:100%}
 button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
@@ -80,7 +93,7 @@ dialog.lb::backdrop{background:rgba(13,27,42,.88)}
 dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
 dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
   background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
-figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem;text-align:center}
 header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
 header.top p{color:var(--slate);margin:.2rem 0 0}
 .dm{margin:.9rem 0;text-align:center}
@@ -94,7 +107,11 @@ header.top p{color:var(--slate);margin:.2rem 0 0}
      right. align-self keeps the table the width of its own contents. */
   align-self:start}
 .ch-row{display:table-row}
-.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.12rem 0}
+/* Row spacing. .12rem was fine while every row was one line tall, but a
+   chain whose rows are stacked fractions -- dividing inside a square root,
+   say -- ran them together with nothing to separate one step from the next.
+   These are table cells, so padding is the only lever; margin does nothing. */
+.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.45rem 0}
 .ch-l{text-align:right}
 .ch-e{text-align:center;padding-left:.5rem;padding-right:.5rem}
 .ch-r{text-align:left}
@@ -318,7 +335,7 @@ Two of its sides are radii, so both are $\displaystyle 1$. The third is a side o
 <section class="beat" aria-label="Getting Help" data-source-line="343">
   <h2>Getting Help</h2>
 <p><strong>My office hours</strong> are posted in Canvas. If none of them work, e-mail me three times you are free and whether you want Zoom or in person.</p>
-<p><strong>The Murphy Learning Center</strong> (251 Murphy Library) offers free drop-in tutoring through Calculus II. It usually opens in Week 2.</p>
+<p><strong>The Tutoring and Learning Center</strong> (251 Murphy Library, and still called the Murphy Learning Center by nearly everyone) offers free drop-in tutoring through Calculus II. It usually opens in Week 2; current hours are on their page, linked from Getting Help in Canvas.</p>
   <div class="key"><p>Come at the first sign of trouble, not the week of the exam. Math builds &mdash; a gap in September is still there in December.</p></div>
 </section>
 <section class="beat" aria-label="How to Use the Textbook" data-source-line="356">
