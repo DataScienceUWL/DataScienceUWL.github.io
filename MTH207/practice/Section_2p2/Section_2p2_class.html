@@ -70,8 +70,21 @@ th{border-bottom:2px solid var(--ink)}
 .workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
 .badge.ex{background:var(--ink);color:#fff}
 .grid-item{margin:0}
-figure{margin:1.2rem 0;max-width:min(100%, var(--measure))}
-figure img{max-width:100%;height:auto;display:block}
+/* A figure is not prose. --measure is a READING measure -- how far the eye
+   travels across a line of text -- and has no business capping a diagram: on a
+   1920 projector it left roughly 370px empty beside every wide plot. So a
+   figure takes the full beat width and centres, and scale=N is now read as a
+   fraction of THAT, still centred, not of the reading measure. An img keeps
+   max-width (not width), so a small figure centres at its natural size instead
+   of being upscaled into blur.
+
+   No height cap: a beat is allowed to be taller than the screen. This is a
+   scrolling document, not a slide -- min-height:100vh is a floor. The
+   "over-tall slide scrolls its title away" rule belongs to the retired reveal
+   decks, which is why deck_check only geometry-checks when _slides.html
+   exists. */
+figure{margin:1.2rem auto;max-width:100%}
+figure img{max-width:100%;height:auto;display:block;margin:0 auto}
 button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
   border-radius:3px;display:block;max-width:100%}
 button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
@@ -80,7 +93,7 @@ dialog.lb::backdrop{background:rgba(13,27,42,.88)}
 dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
 dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
   background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
-figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem;text-align:center}
 header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
 header.top p{color:var(--slate);margin:.2rem 0 0}
 .dm{margin:.9rem 0;text-align:center}
@@ -252,14 +265,15 @@ things happened, one from each side.</p>
   <div class="key"><p>This is not a number. Writing $\displaystyle \infty$ is shorthand for "the values grow past any bound you name" &mdash; it is a description of <em>how</em> the limit fails, not a value it reaches.</p></div>
   <div class="turn your"><span class="badge">Your turn</span><p>Now try $\displaystyle h(x) = \dfrac{1}{x}$ as $\displaystyle x \to 0$. <strong>Sketch it first</strong>, then read the two sides off your own picture. Is the answer the same?</p></div>
   <details class="sol"><summary>Show: each side, then the conclusion</summary>
-<div class="dm">$$\text{From the right:}\quad \frac1x \to \infty
+<div class="dm">$$\lim_{x\to 0^{+}}\frac1x = \infty
 \qquad\qquad
-\text{From the left:}\quad \frac1x \to -\infty$$</div>
+\lim_{x\to 0^{-}}\frac1x = -\infty$$</div>
+<p>Neither is a number. Each one records <em>how</em> the limit fails on that side.</p>
     <div class="rv" hidden><p>The two sides disagree, so $\displaystyle \lim_{x\to0}\frac1x$ does not exist &mdash; not even as $\displaystyle \infty$.</p></div>
     <button type="button" class="more" aria-label="Next part of each side, then the conclusion">&#9654;</button>
   </details>
 </section>
-<section class="beat" aria-label="Vertical Asymptotes" data-source-line="226">
+<section class="beat" aria-label="Vertical Asymptotes" data-source-line="227">
   <h2>Vertical Asymptotes</h2>
 <div class="boxed dfn"><span class="badge dfn">Definition &mdash; Vertical asymptote</span><p>The line $\displaystyle x = a$ is a vertical asymptote of $\displaystyle y=f(x)$ if at least one of the
 one-sided limits at $\displaystyle a$ is $\displaystyle \infty$ or $\displaystyle -\infty$.</p></div>
@@ -277,7 +291,7 @@ both are vertical asymptotes.</p>
   <div class="key"><p>$\displaystyle \dfrac{\text{number}}{\text{small number}}$ is a <strong>large</strong> number. Its sign is just the signs of the factors multiplied out. That is the entire technique &mdash; and it is faster than any calculator, because there is nothing to type.</p></div>
   <div class="key"><p>Finding <em>where</em> an asymptote is takes algebra. Finding which way the graph goes takes a sign check on each factor.</p></div>
 </section>
-<section class="beat" aria-label="Where This Goes" data-source-line="263">
+<section class="beat" aria-label="Where This Goes" data-source-line="264">
   <h2>Where This Goes</h2>
 <p>We can now estimate a limit from a table or a graph, and say precisely when one
 fails to exist.</p>
@@ -288,7 +302,7 @@ fails to exist.</p>
 </div>
   <div class="key"><p>Tables and graphs build the intuition. Section 2.3 is where limits become something you can actually calculate.</p></div>
 </section>
-<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="283">
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="284">
   <h2>What You Should Be Able to Do</h2>
 <p>By the end of this section &mdash; and on the quiz and the exam:</p>
 <ul><li>I can estimate a limit from a table or a graph, and explain why the value of the function at the point does not affect it.</li><li>I can decide whether a two-sided limit exists by comparing the one-sided limits.</li><li>I can recognise an infinite limit and locate the vertical asymptotes of a function.</li><li>I can explain how a table of values or a calculator can mislead me about a limit.</li></ul>
