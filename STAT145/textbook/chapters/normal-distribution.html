@@ -694,7 +694,7 @@ The QQ plot suggests the data are right-skewed. The bulk of the data are approxi
 <p>The data are strongly right-skewed and bounded below by zero, so they are clearly not normal. A one-sample <span class="math inline">\(t\)</span>-test <em>may</em> still be reasonable if the sample size is large — the CLT says the sampling distribution of <span class="math inline">\(\bar{x}\)</span> will be approximately normal even when the population is skewed. But with a small sample (say, <span class="math inline">\(n &lt; 30\)</span>), the <span class="math inline">\(t\)</span>-test could give misleading results. A safer approach is a bootstrap confidence interval for the mean wait time, which doesn’t rely on normality of the population.</p>
 </div>
 <div class="statlens">
-<p><strong>See it in action.</strong> Open the <a href="https://learnlens.org/statlens/explore/descriptive/" target="_blank">Descriptive Statistics Explorer</a> on any bundled dataset — switch to the histogram view to eyeball symmetry and unimodality, then check the summary statistics for extreme outliers. For a formal look, StatLens’s Normal Distribution Explorer’s overlay mode fits a normal curve to your data so you can see where the fit is good and where it fails.</p>
+<p><strong>See it in action.</strong> Open the <a href="https://learnlens.org/statlens/explore/descriptive/" target="_blank">Descriptive Statistics Explorer</a> on any bundled dataset — switch to the histogram view to eyeball symmetry and unimodality, then check the sample statistics for extreme outliers. For a formal look, StatLens’s Normal Distribution Explorer’s overlay mode fits a normal curve to your data so you can see where the fit is good and where it fails.</p>
 </div>
 </section>
 <section id="sec-normal-distribution-review" class="level2" data-number="28.3">
@@ -728,17 +728,6 @@ The QQ plot suggests the data are right-skewed. The bulk of the data are approxi
 <li><p>Points hug the line in the middle but curve <strong>downward</strong> away from the line at the left end.</p></li>
 <li><p>Points fall below the line at the left end <strong>and</strong> above the line at the right end.</p></li>
 </ol>
-<details>
-<summary>
-Show answer
-</summary>
-<ol type="a">
-<li><p><strong>Approximately normal</strong> — a straight-line QQ plot is exactly what we hope to see; the observed quantiles match the normal quantiles at every point.</p></li>
-<li><p><strong>Right-skewed</strong> — the upper tail of the data extends farther than a normal distribution would predict, so the largest observed values are <em>bigger</em> than the normal quantiles → points rise above the line.</p></li>
-<li><p><strong>Left-skewed</strong> — the lower tail extends farther than normal, so the smallest observed values are <em>smaller</em> than the normal quantiles → points fall below the line on the left.</p></li>
-<li><p><strong>Heavy-tailed</strong> — both extremes are more extreme than a normal would predict. Common with a <span class="math inline">\(t\)</span>-distribution with low df or with data that have occasional extreme outliers on both sides.</p></li>
-</ol>
-</details>
 <!--- MOM original-29-01
 title: "Reading a QQ plot"
 type: multipart
@@ -756,19 +745,6 @@ status: skeleton
 <li><p>The proportion of a small sample that responds “yes” to a survey question.</p></li>
 <li><p>Systolic blood pressure of healthy adults.</p></li>
 </ol>
-<details>
-<summary>
-Show answer
-</summary>
-<ol type="a">
-<li><p><strong>Yes</strong> — heights within a sex are approximately normal (well-documented; symmetric, unimodal, bell-shaped, no natural boundary issues in the observed range).</p></li>
-<li><p><strong>No</strong> — income is strongly right-skewed with a long upper tail from high earners; use a log-transformation or a different family.</p></li>
-<li><p><strong>No</strong> — count data are usually modeled by the <strong>Poisson</strong> distribution, not the normal. (For high rates the normal can be a rough approximation, but not the primary model.)</p></li>
-<li><p><strong>Yes</strong> — by the <strong>Central Limit Theorem</strong>, the <em>sampling distribution</em> of the mean is approximately normal for large enough <span class="math inline">\(n\)</span>, regardless of the population.</p></li>
-<li><p><strong>Depends</strong> — the sampling distribution of a proportion is approximately normal only when the success-failure condition holds (<span class="math inline">\(np \ge 10\)</span> and <span class="math inline">\(n(1-p) \ge 10\)</span>). Small <span class="math inline">\(n\)</span> or extreme <span class="math inline">\(p\)</span> makes the normal a poor model.</p></li>
-<li><p><strong>Yes</strong> — blood pressure in healthy adults is roughly symmetric, unimodal, and bell-shaped (a standard example in medical statistics).</p></li>
-</ol>
-</details>
 <!--- MOM original-29-02
 title: "Which variables would you model as normal?"
 type: multipart
@@ -783,16 +759,6 @@ status: skeleton
 <li><p>If the same amount of scatter appeared in a QQ plot with <span class="math inline">\(n = 500\)</span>, would your conclusion change? Why?</p></li>
 <li><p>A colleague says “the points don’t fall exactly on the line, so we can’t use a <span class="math inline">\(t\)</span>-test.” Is this reasoning sound? Explain.</p></li>
 </ol>
-<details>
-<summary>
-Show answer
-</summary>
-<ol type="a">
-<li><p><strong>Consistent with normality.</strong> With small <span class="math inline">\(n\)</span>, we <em>expect</em> some scatter around the line even when the data truly are normal — random sampling variability alone produces wobble. Absence of a systematic curve (S-shape, monotonic curve at one end) is the signal that matters, not the amount of wobble.</p></li>
-<li><p><strong>Yes.</strong> With <span class="math inline">\(n = 500\)</span>, random sampling variability is much smaller and the plot should look much cleaner. Persistent scatter at <span class="math inline">\(n = 500\)</span> would indicate the data actually depart from normal in some way (mixture distribution, heteroscedasticity, etc.).</p></li>
-<li><p><strong>No — this misunderstands what we’re checking.</strong> The <span class="math inline">\(t\)</span>-test is robust to moderate departures from normality, especially with modest-to-large <span class="math inline">\(n\)</span>. Perfect linearity of the QQ plot is not required. The right questions are: is the departure severe (clear skew, heavy tails)? and is <span class="math inline">\(n\)</span> small enough that departures matter? Modest wobble at any <span class="math inline">\(n\)</span> is not a reason to abandon the <span class="math inline">\(t\)</span>-test.</p></li>
-</ol>
-</details>
 <!--- MOM original-29-03
 title: "Small-sample QQ plot interpretation"
 type: multipart
@@ -808,17 +774,6 @@ status: skeleton
 <li><p>You want to estimate the mean systolic blood pressure of adult women. Your <span class="math inline">\(n = 200\)</span> observations look approximately normal.</p></li>
 <li><p>You want to test whether the mean wait time at an emergency room exceeds 30 minutes. Your <span class="math inline">\(n = 8\)</span> observations are strongly right-skewed and bounded below by 0.</p></li>
 </ol>
-<details>
-<summary>
-Show answer
-</summary>
-<ol type="a">
-<li><p><strong><span class="math inline">\(t\)</span>-test reasonable.</strong> With <span class="math inline">\(n = 40\)</span> and symmetric-no-outliers, the CLT plus <span class="math inline">\(t\)</span>’s robustness handles the mild departures from perfect normality.</p></li>
-<li><p><strong>Bootstrap safer.</strong> <span class="math inline">\(n = 25\)</span> is not big enough for the CLT to fully rescue strongly skewed + outlier-driven data; <span class="math inline">\(\bar{x}\)</span> and <span class="math inline">\(s\)</span> are both distorted, so the <span class="math inline">\(t\)</span>-test standard error is unreliable. A percentile bootstrap CI makes fewer assumptions.</p></li>
-<li><p><strong><span class="math inline">\(t\)</span>-test reasonable.</strong> Large <span class="math inline">\(n\)</span> + approximately normal — this is exactly the setting the <span class="math inline">\(t\)</span>-test was designed for.</p></li>
-<li><p><strong>Bootstrap safer.</strong> <span class="math inline">\(n = 8\)</span> is too small for the CLT with strong right skew and a hard boundary at zero. The sampling distribution of <span class="math inline">\(\bar{x}\)</span> won’t be close to normal here, and the <span class="math inline">\(t\)</span>-test could give misleading results. A bootstrap CI is more trustworthy.</p></li>
-</ol>
-</details>
 <!--- MOM original-29-04
 title: "Pick a method: t-test vs. bootstrap"
 type: multipart
@@ -833,16 +788,6 @@ status: skeleton
 <li><p>Suggest one transformation of the data that might make the transformed values more nearly normal, and explain why it would help.</p></li>
 <li><p>Suppose you compute a 95% one-sample <span class="math inline">\(t\)</span> confidence interval for the mean daily rainfall from these 300 observations. Given the CLT and <span class="math inline">\(n = 300\)</span>, do you trust it? What’s the caveat?</p></li>
 </ol>
-<details>
-<summary>
-Show answer
-</summary>
-<ol type="a">
-<li><p><strong>Agree.</strong> Both diagnostics point to strong right skew. The histogram makes the shape visible directly; the QQ plot’s upward curve at the right end confirms an over-long upper tail versus a normal.</p></li>
-<li><p><strong>Log transformation</strong> (<span class="math inline">\(\log(x + \varepsilon)\)</span> or <span class="math inline">\(\sqrt{x}\)</span> for zero-heavy data) is a natural choice for right-skewed positive data — it compresses the long upper tail and expands the crowded region near zero, often producing an approximately symmetric transformed distribution.</p></li>
-<li><p><strong>Cautiously trust it, with the caveat that “the mean” may not be the interesting quantity.</strong> With <span class="math inline">\(n = 300\)</span> the CLT makes the sampling distribution of <span class="math inline">\(\bar{x}\)</span> approximately normal even from skewed data, so the <span class="math inline">\(t\)</span> CI’s coverage is roughly right. The deeper caveat: for very skewed data the mean is not always the best summary — the median or another percentile may answer the substantive question better.</p></li>
-</ol>
-</details>
 <!--- MOM original-29-05
 title: "Two normality checks, one dataset"
 type: multipart

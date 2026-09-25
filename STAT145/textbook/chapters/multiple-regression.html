@@ -641,7 +641,7 @@ window.Quarto = {
 <th style="text-align: right;">Estimate</th>
 <th style="text-align: right;">Std. Error</th>
 <th style="text-align: right;"><span class="math inline">\(t\)</span></th>
-<th style="text-align: right;">p-value</th>
+<th style="text-align: right;"><span class="math inline">\(p\)</span>-value</th>
 </tr>
 </thead>
 <tbody>
@@ -685,7 +685,7 @@ window.Quarto = {
 <li><p><strong>term.</strong> Holding debt-to-income and credit checks fixed, each additional month of loan term is associated with a 0.16 percentage-point increase in the mean interest rate. (Since term in this dataset takes only the values 36 or 60, the practical interpretation is that the 60-month loans carry a rate about <span class="math inline">\(24 \times 0.16 \approx 3.8\)</span> percentage points higher than the 36-month loans, on average.)</p></li>
 <li><p><strong>credit_checks.</strong> Holding debt-to-income and term fixed, each additional credit inquiry in the past 12 months is associated with a 0.25 percentage-point increase in the mean interest rate.</p></li>
 </ul>
-<p>Each of the four <span class="math inline">\(t\)</span>-statistics has a p-value below 0.0001, so each predictor contributes discernibly <em>above and beyond</em> the others.</p>
+<p>Each of the four <span class="math inline">\(t\)</span>-statistics has a <span class="math inline">\(p\)</span>-value below 0.0001, so each predictor contributes discernibly <em>above and beyond</em> the others.</p>
 </div>
 </section>
 <section id="sec-mlr-interpretation" class="level2" data-number="23.4">
@@ -699,11 +699,11 @@ window.Quarto = {
 </section>
 <section id="sec-mlr-individual-tests" class="level2" data-number="23.5">
 <h2 data-number="23.5" class="anchored" data-anchor-id="sec-mlr-individual-tests"><span class="header-section-number">23.5</span> Testing individual coefficients</h2>
-<p>Each row of the coefficient table also reports a <span class="math inline">\(t\)</span>-statistic and p-value. These test the null hypothesis that a single population slope is zero — but now the hypothesis is <em>conditioned</em> on the other predictors being in the model.</p>
+<p>Each row of the coefficient table also reports a <span class="math inline">\(t\)</span>-statistic and <span class="math inline">\(p\)</span>-value. These test the null hypothesis that a single population slope is zero — but now the hypothesis is <em>conditioned</em> on the other predictors being in the model.</p>
 <div class="important">
 <p><strong>Conditional slope hypotheses.</strong> In a multiple regression with <span class="math inline">\(k\)</span> predictors, the individual <span class="math inline">\(t\)</span>-test for predictor <span class="math inline">\(x_j\)</span> tests</p>
 <p><span class="math display">\[H_0: \beta_j = 0, \quad \text{given the other } k-1 \text{ predictors are included in the model.}\]</span></p>
-<p>A small p-value provides evidence that <span class="math inline">\(x_j\)</span> contributes to explaining the response <em>above and beyond</em> what the other predictors already explain.</p>
+<p>A small <span class="math inline">\(p\)</span>-value provides evidence that <span class="math inline">\(x_j\)</span> contributes to explaining the response <em>above and beyond</em> what the other predictors already explain.</p>
 </div>
 <p>Rejecting <span class="math inline">\(H_0: \beta_j = 0\)</span> tells us that dropping <span class="math inline">\(x_j\)</span> from the model would meaningfully worsen the fit. Failing to reject does <em>not</em> tell us that <span class="math inline">\(x_j\)</span> is unrelated to <span class="math inline">\(y\)</span> — it might be strongly related, but the <em>unique</em> piece it contributes above what the other predictors already capture is small. This distinction matters most when predictors are correlated with each other, which is the topic of the multicollinearity section.</p>
 </section>
@@ -747,7 +747,7 @@ window.Quarto = {
 </tbody>
 </table>
 </div>
-<p>Under <span class="math inline">\(H_0: \beta_1 = \beta_2 = \cdots = \beta_k = 0\)</span> (that <em>no</em> predictor contributes) and the LINE conditions, the <span class="math inline">\(F\)</span>-statistic follows an <span class="math inline">\(F_{k,\,n-k-1}\)</span> distribution. A small p-value indicates that the model as a whole explains a discernible share of the variability in <span class="math inline">\(y\)</span>; it does not tell us <em>which</em> predictors are responsible. The coefficient-level <span class="math inline">\(t\)</span>-tests answer the “which one” question — with the conditional caveat above.</p>
+<p>Under <span class="math inline">\(H_0: \beta_1 = \beta_2 = \cdots = \beta_k = 0\)</span> (that <em>no</em> predictor contributes) and the LINE conditions, the <span class="math inline">\(F\)</span>-statistic follows an <span class="math inline">\(F_{k,\,n-k-1}\)</span> distribution. A small <span class="math inline">\(p\)</span>-value indicates that the model as a whole explains a discernible share of the variability in <span class="math inline">\(y\)</span>; it does not tell us <em>which</em> predictors are responsible. The coefficient-level <span class="math inline">\(t\)</span>-tests answer the “which one” question — with the conditional caveat above.</p>
 <p>The interpretation of <span class="math inline">\(R^2 = SSR/SST\)</span> as “the fraction of total variability the model explains” is unchanged from simple regression. The important new fact is that adding <em>any</em> predictor to the model — even a completely useless one — can only <em>increase</em> <span class="math inline">\(R^2\)</span>, never decrease it. This is what motivates the Extended Content on adjusted <span class="math inline">\(R^2\)</span> below.</p>
 <div class="callout callout-style-simple callout-note no-icon">
 <div class="callout-body d-flex">
@@ -777,8 +777,8 @@ window.Quarto = {
 <div class="workedexample">
 <p><strong>Two simple regressions.</strong> Fitting the two simple regressions separately gives (numbers from IMS 2e):</p>
 <ul>
-<li><span class="math inline">\(\widehat{\text{total\_amount}} = 0.55 + 0.13 \cdot \text{number\_of\_coins}\)</span> — slope <span class="math inline">\(b_1 = 0.13\)</span>, p-value very small.</li>
-<li><span class="math inline">\(\widehat{\text{total\_amount}} = 2.28 + 0.02 \cdot \text{number\_of\_low\_coins}\)</span> — slope <span class="math inline">\(b_1 = 0.02\)</span>, p-value large (no discernible relationship).</li>
+<li><span class="math inline">\(\widehat{\text{total\_amount}} = 0.55 + 0.13 \cdot \text{number\_of\_coins}\)</span> — slope <span class="math inline">\(b_1 = 0.13\)</span>, <span class="math inline">\(p\)</span>-value very small.</li>
+<li><span class="math inline">\(\widehat{\text{total\_amount}} = 2.28 + 0.02 \cdot \text{number\_of\_low\_coins}\)</span> — slope <span class="math inline">\(b_1 = 0.02\)</span>, <span class="math inline">\(p\)</span>-value large (no discernible relationship).</li>
 </ul>
 <p>Interpret the two slopes and, briefly, why they take the values they do.</p>
 <hr>
