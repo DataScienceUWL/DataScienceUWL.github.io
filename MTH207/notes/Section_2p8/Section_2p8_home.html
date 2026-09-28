@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTH 207 &mdash; 2.8 The Derivative as a Function</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
+  loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
+<script id="MathJax-script" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0;
+  /* Line length, in characters, so it holds at every font size. 46ch was at the
+     narrow end of the readable 45-75 band and left half the width empty. This
+     is the AT-HOME value; the projected build overrides it below, because there
+     the scarce thing is screen area, not eye travel -- the font is already
+     ~30px on a 1920 screen, so a longer line is still easy to scan and buys
+     fewer scroll steps. */
+  --measure:68ch}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  /* Projected on a 1920 screen this lands near 30px, which is legible from the
+     back of the room; on a laptop later it falls back to comfortable reading. */
+  font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
+/* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
+   expose the next thing. Read later: it is just a long page. */
+
+.beat{padding:2.4rem 6vw 3rem;
+  border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
+h1{font-size:1.9rem;margin:0 0 .3rem}
+h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
+h2.cont{color:var(--slate);font-size:1.3rem}
+p{margin:0 0 .9rem;max-width:var(--measure)}
+ul{max-width:var(--measure)}
+.turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
+.turn.my{border-left-color:var(--slate);background:#f6f8fb}
+.badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;background:var(--amber);color:#3a2c00;padding:.32rem .6rem;
+  border-radius:3px;margin-bottom:.7rem}
+.turn.my .badge{background:var(--slate);color:#fff}
+.turn .work{font-size:.85rem;color:var(--slate);font-style:italic;margin:.6rem 0 0}
+.key{border-left:6px solid var(--ink);background:#f2f3f5;padding:.9rem 1.2rem;margin:1.2rem 0}
+.sol.shown{margin:1.1rem 0;border-left:5px solid var(--slate);background:#fff;
+  padding:.7rem 1.1rem;border-radius:0 5px 5px 0}
+.sol-label{display:block;font:600 .78rem/1 system-ui,sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate);margin-bottom:.5rem}
+details.sol{margin:1.1rem 0;border:1px solid var(--rule);border-radius:5px;background:#fff}
+details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-ui,sans-serif;
+  color:var(--slate)}
+details.sol[open] summary{border-bottom:1px solid var(--rule)}
+details.sol > :not(summary){padding:0 1.1rem}
+details.sol > p:last-child{padding-bottom:.9rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;
+  max-width:min(100%, calc(var(--measure) * 1.25))}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;margin:.6rem 0}
+table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--rule);padding:.3rem .9rem .3rem 0;text-align:left}
+th{border-bottom:2px solid var(--ink)}
+.boxed{margin:1.1rem 0;padding:.8rem 1.1rem;border-radius:5px;background:#fff;
+  border:1px solid var(--rule)}
+.boxed.dfn{border-left:5px solid var(--ink)}
+.boxed.thm{border-left:5px solid var(--amber)}
+.boxed.ex{border-left:5px solid var(--slate)}
+.badge.dfn{background:var(--ink);color:#fff}
+.badge.thm{background:var(--amber);color:#3a2c00}
+.ex{margin:1rem 0}
+.workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
+.badge.ex{background:var(--ink);color:#fff}
+.grid-item{margin:0}
+/* A figure is not prose. --measure is a READING measure -- how far the eye
+   travels across a line of text -- and has no business capping a diagram: on a
+   1920 projector it left roughly 370px empty beside every wide plot. So a
+   figure takes the full beat width and centres, and scale=N is now read as a
+   fraction of THAT, still centred, not of the reading measure. An img keeps
+   max-width (not width), so a small figure centres at its natural size instead
+   of being upscaled into blur.
+
+   No height cap: a beat is allowed to be taller than the screen. This is a
+   scrolling document, not a slide -- min-height:100vh is a floor. The
+   "over-tall slide scrolls its title away" rule belongs to the retired reveal
+   decks, which is why deck_check only geometry-checks when _slides.html
+   exists. */
+figure{margin:1.2rem auto;max-width:100%}
+figure img{max-width:100%;height:auto;display:block;margin:0 auto}
+button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
+  border-radius:3px;display:block;max-width:100%}
+button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+dialog.lb{border:none;padding:0;max-width:96vw;max-height:96vh;background:transparent}
+dialog.lb::backdrop{background:rgba(13,27,42,.88)}
+dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
+dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
+  background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem;text-align:center}
+header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
+header.top p{color:var(--slate);margin:.2rem 0 0}
+.dm{margin:.9rem 0;text-align:center}
+/* A derivation advanced by one button. [hidden] needs !important because .stp
+   sets display, which would otherwise win over the UA's hidden rule. */
+/* An equation chain. display:table so the three columns agree across rows --
+   that is the whole point: the = signs must line up. */
+.chain{display:table;margin:1.1rem 0 .4rem;border-collapse:collapse;
+  /* .beat is a column flexbox, which stretches its children to full width --
+     a shrink-to-fit table then became 1408px and the LHS floated to the far
+     right. align-self keeps the table the width of its own contents. */
+  align-self:start}
+.daybreak{display:flex;align-items:center;gap:1rem;margin:2.2rem 0 1.6rem;
+  color:var(--slate);font:600 .8rem/1 system-ui,sans-serif;letter-spacing:.1em;
+  text-transform:uppercase}
+.daybreak::before,.daybreak::after{content:"";flex:1;height:1px;
+  background:var(--rule)}
+.practicelink{margin:1.4rem 0 0}
+.practicelink a{display:inline-block;border:1px solid var(--amber);
+  border-radius:4px;padding:.45rem .9rem;color:var(--ink);text-decoration:none;
+  font:600 .9rem/1 system-ui,sans-serif;background:#fffdf5}
+.practicelink a:hover{background:var(--amber);color:#3a2c00}
+.ch-row{display:table-row}
+/* Row spacing. .12rem was fine while every row was one line tall, but a
+   chain whose rows are stacked fractions -- dividing inside a square root,
+   say -- ran them together with nothing to separate one step from the next.
+   These are table cells, so padding is the only lever; margin does nothing. */
+.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.45rem 0}
+.ch-l{text-align:right}
+.ch-e{text-align:center;padding-left:.5rem;padding-right:.5rem}
+.ch-r{text-align:left}
+/* The reason column. Set back and lighter so the algebra still reads as the
+   line and the citation as an annotation on it, not a second equation. */
+.ch-y{text-align:left;padding-left:2.2rem;font-size:.82em;color:#5b6b7a;
+  font-style:italic;max-width:26ch}
+.chain [hidden]{display:none!important}
+@media print{.chain [hidden]{display:table-cell!important}
+  .chain .ch-row[hidden]{display:table-row!important}}
+.steps{margin:1.1rem 0}
+.steps .stp{display:block;margin:.2rem 0}
+.steps [hidden]{display:none!important}
+.chain button.more,
+.steps button.more,
+details.sol button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
+  background:none;border:1px solid var(--amber);border-radius:50%;
+  width:2rem;height:2rem;padding:0;cursor:pointer;margin-top:.5rem;
+  display:inline-flex;align-items:center;justify-content:center}
+.chain button.more:hover,
+.steps button.more:hover,
+details.sol button.more:hover{background:#fff8e2}
+.chain button.more:focus-visible,
+.steps button.more:focus-visible,
+details.sol button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media print{.steps .stp{display:block!important}.steps button.more{display:none}}
+/* The in-page reveal. This used to be a text link to the twin page, and it was
+   missed constantly -- it looked like navigation, because it was. A filled
+   button that says what it does, in the first thing you see, is the fix. */
+/* --slate, not --blue: this palette has no --blue, and an undefined custom
+   property is not an error -- the background simply did not paint and the
+   button was white text on a cream page. Invisible, and working perfectly. */
+.revealall{font:600 1rem system-ui,sans-serif;cursor:pointer;
+  margin:.6rem 0 .2rem;padding:.55rem 1.1rem;border-radius:8px;
+  border:2px solid var(--slate);background:var(--slate);color:#fff}
+.revealall:hover{filter:brightness(1.12)}
+.revealall:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+.revealall[aria-pressed="true"]{background:var(--bg);color:var(--slate)}
+@media print{.revealall{display:none}}
+.switch{margin:.35rem 0 0}
+.switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px}
+.switch a:hover{border-bottom-width:2px}
+.switch a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media print{.switch{display:none}}
+.hint{position:fixed;right:1rem;bottom:1rem;font:.72rem system-ui,sans-serif;color:var(--slate);
+  background:#fff;border:1px solid var(--rule);border-radius:4px;padding:.35rem .6rem;opacity:.75}
+@media print{.beat{min-height:auto;page-break-inside:avoid}.hint{display:none}
+  details.sol{break-inside:avoid}details.sol summary{display:none}}
+</style></head>
+<body>
+<header class="top">
+  <h1>2.8 &nbsp;The Derivative as a Function</h1>
+  <p>MTH 207 Calculus I &mdash; Limits and Derivatives</p>
+  <p class="switch"><a class="twin" href="../../practice/Section_2p8/Section_2p8_class.html">Let me try the examples first &rarr;</a></p>
+</header>
+<main>
+<section class="beat" aria-label="One Letter Changes Everything" data-source-line="71">
+  <h2>One Letter Changes Everything</h2>
+<p>Last section we computed $\displaystyle f'(2)$, $\displaystyle f'(3)$, $\displaystyle s'(0.5)$ &mdash; a <strong>number</strong>
+each time, the slope at one point. Doing that once per point is honest work
+and it does not scale.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>$\displaystyle f'(a)$ and $\displaystyle f'(x)$ are written almost identically. What is the
+difference, and why is it worth a section of its own?</p></div>
+  <div class="sol shown">
+<p>In $\displaystyle f'(a)$ the point $\displaystyle a$ is a <strong>constant</strong> you chose, so $\displaystyle f'(a)$ is a
+<strong>number</strong>. In $\displaystyle f'(x)$ the point is the <strong>variable</strong> $\displaystyle x$, so $\displaystyle f'$ is
+a <strong>function</strong> &mdash; one output for every input where the limit exists.</p>
+<p>Compute it once, with the letter left in, and you have every $\displaystyle f'(a)$ at the
+same time.</p>
+  </div>
+  <div class="key"><p>$\displaystyle f'(a)$ is a number. $\displaystyle f'(x)$ is a function. The section is the move
+from one to the other, and the move costs nothing &mdash; it is the same limit
+with $\displaystyle a$ not yet chosen.</p></div>
+</section>
+<section class="beat" aria-label="The Derivative Function" data-source-line="100">
+  <h2>The Derivative Function</h2>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; The derivative of $\displaystyle f$</span><div class="dm">$$f'(x) \;=\; \lim_{h\to 0}\frac{f(x+h) - f(x)}{h}$$</div>
+<p>for every $\displaystyle x$ at which this limit exists.  Where it exists, $\displaystyle f$ is
+<strong>differentiable</strong>.</p></div>
+  <div class="turn my"><span class="badge">My turn</span><p>$\displaystyle f(x) = x^{2} - 3x$ &mdash; the same function as last time.  Find
+$\displaystyle f'(x)$.</p></div>
+  <div class="chain">
+    <div class="ch-row"><span class="ch-l">$\displaystyle f'(x)$</span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{f(x+h) - f(x)}{h}$</span><span class="ch-y pair">the definition, with $\displaystyle x$ left alone</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{\left[(x+h)^{2} - 3(x+h)\right] - \left[x^{2} - 3x\right]}{h}$</span><span class="ch-y">both brackets on the page &mdash; this is where the sign slips</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{x^{2} + 2xh + h^{2} - 3x - 3h - x^{2} + 3x}{h}$</span><span class="ch-y">multiply out, and distribute the minus</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{2xh + h^{2} - 3h}{h}$</span><span class="ch-y">collect &mdash; every surviving term has an $\displaystyle h$</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{h(2x + h - 3)}{h}$</span><span class="ch-y">factor $\displaystyle h$ out of the numerator</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\,(2x + h - 3)$</span><span class="ch-y">cancel $\displaystyle h$: the limit never uses $\displaystyle h = 0$</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle 2x - 3$</span><span class="ch-y">now substitute $\displaystyle h = 0$</span></div>
+  </div>
+  <div class="sol shown">
+<p>Check it against last time: $\displaystyle f'(2) = 2(2) - 3 = 1$, which is the number
+we worked for a whole frame on Thursday. One computation now covers every
+point at once.</p>
+  </div>
+  <div class="key"><p>Nothing in that chain is new. The only difference from Thursday is
+that $\displaystyle x$ stayed a letter &mdash; and the payoff is a formula instead of a number.</p></div>
+</section>
+<section class="beat" aria-label="Now You" data-source-line="136">
+  <h2>Now You</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>$\displaystyle f(x) = 3x^{2} - x$. Find $\displaystyle f'(x)$ from the definition:</p>
+<div class="dm">$$f'(x) \;=\; \lim_{h\to 0}\frac{f(x+h) - f(x)}{h}$$</div>
+<p>Then use it to write down $\displaystyle f'(0)$ and $\displaystyle f'(2)$ without doing any more limits.</p></div>
+  <div class="chain">
+    <div class="ch-row"><span class="ch-l">$\displaystyle f'(x)$</span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{\left[3(x+h)^{2} - (x+h)\right] - \left[3x^{2} - x\right]}{h}$</span><span class="ch-y pair">the definition</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{3x^{2} + 6xh + 3h^{2} - x - h - 3x^{2} + x}{h}$</span><span class="ch-y">multiply out, and distribute the minus</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{6xh + 3h^{2} - h}{h}$</span><span class="ch-y">collect</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{h(6x + 3h - 1)}{h}$</span><span class="ch-y">factor $\displaystyle h$ out</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\,(6x + 3h - 1)$</span><span class="ch-y">cancel $\displaystyle h$</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle 6x - 1$</span><span class="ch-y">substitute $\displaystyle h = 0$</span></div>
+  </div>
+  <div class="sol shown">
+<p>$\displaystyle f'(0) = -1$ and $\displaystyle f'(2) = 11$ &mdash; substitution into the formula, no
+limits required. That is what the section bought.</p>
+  </div>
+</section>
+<section class="beat" aria-label="Four Ways to Write the Same Thing" data-source-line="162">
+  <h2>Four Ways to Write the Same Thing</h2>
+<div class="dm">$$f'(x) \;=\; y' \;=\; \frac{dy}{dx} \;=\; \frac{d}{dx}f(x)$$</div>
+<p>$\displaystyle \frac{dy}{dx}$ is <strong>Leibniz notation</strong>. It is not a fraction &mdash; it is
+one symbol &mdash; but it is built to look like the quotient it came from, and it
+carries the variables with it, which is why every later chapter uses it.</p>
+<p>To say “the derivative at a point” in Leibniz notation you have to say where:</p>
+<div class="dm">$$f'(2) \;=\; \left.\frac{dy}{dx}\right|_{x=2}$$</div>
+  <div class="key"><p>$\displaystyle \frac{dy}{dx}$ tells you what is changing and with respect to what.
+In a problem with more than one letter in it, that is not decoration &mdash; it is
+the only notation that stays unambiguous.</p></div>
+</section>
+<section class="beat" aria-label="Differentiable at a Point" data-source-line="208">
+  <h2>Differentiable at a Point</h2>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; Differentiable at a point</span><p>$\displaystyle f$ is <strong>differentiable at $\displaystyle a$</strong> when</p>
+<div class="dm">$$f'(a) \;=\; \lim_{h\to 0}\frac{f(a+h)-f(a)}{h}$$</div>
+<p><strong>exists</strong>. $\displaystyle f$ is differentiable on an interval when it is
+differentiable at every point of that interval.</p></div>
+<p>Nothing new is being defined &mdash; that is the same limit you have been computing
+all period. What is new is the question: <em>does it exist?</em> So far it always
+has. Here is one where it does not.</p>
+  <div class="turn my"><span class="badge">My turn</span><p>$\displaystyle f(x) = |x|$ at $\displaystyle a = 0$. Compute $\displaystyle f'(0)$ &mdash; or show it does not
+exist.</p></div>
+  <div class="steps">
+    <div class="stp"><div class="dm">$$f'(0) \;=\; \lim_{h\to 0}\frac{|0+h| - |0|}{h} \;=\; \lim_{h\to 0}\frac{|h|}{h}$$</div></div>
+    <div class="stp"><p>There is nothing left to simplify, and no $\displaystyle h$ to cancel. But $\displaystyle |h|$ means two
+different things depending on the sign of $\displaystyle h$, so take the two sides
+separately.</p></div>
+    <div class="stp"><p><strong>From the right</strong>, $\displaystyle h > 0$, so $\displaystyle |h| = h$:</p>
+<div class="dm">$$\lim_{h\to 0^{+}}\frac{|h|}{h} \;=\; \lim_{h\to 0^{+}}\frac{h}{h} \;=\; \lim_{h\to 0^{+}} 1 \;=\; 1$$</div></div>
+    <div class="stp"><p><strong>From the left</strong>, $\displaystyle h < 0$, so $\displaystyle |h| = -h$:</p>
+<div class="dm">$$\lim_{h\to 0^{-}}\frac{|h|}{h} \;=\; \lim_{h\to 0^{-}}\frac{-h}{h} \;=\; \lim_{h\to 0^{-}} (-1) \;=\; -1$$</div></div>
+    <div class="stp"><p>The one-sided limits are $\displaystyle 1$ and $\displaystyle -1$. They disagree, so the limit does not
+exist &mdash; and $\displaystyle f'(0)$ is that limit.</p></div>
+  </div>
+  <div class="sol shown">
+<p>So $\displaystyle f(x) = |x|$ is <strong>not differentiable at $\displaystyle 0$</strong>. Everywhere else it
+is: near any $\displaystyle a > 0$ the graph <em>is</em> the line $\displaystyle y = x$, and near any $\displaystyle a < 0$
+it <em>is</em> the line $\displaystyle y = -x$. No computation needed &mdash; look at it in a
+moment and you will see why.</p>
+<div class="dm">$$f(x) = |x| \text{ is differentiable on } (-\infty, 0) \cup (0, \infty).$$</div>
+  </div>
+  <div class="key"><p>“Does not exist” is a real answer here, and it is the first time in
+this section that it is. Notice what did the work: not the algebra &mdash; there
+was none &mdash; but the <em>two sides</em> disagreeing. That is a limit failing in
+exactly the way §2.2 taught you limits fail.</p></div>
+</section>
+<section class="beat" aria-label="Differentiable Is Where There Is a Tangent Line" data-source-line="276">
+  <h2>Differentiable Is Where There Is a Tangent Line</h2>
+<p>Start with a curve where nothing goes wrong.</p>
+  <figure style="width:54%"><button type="button" class="zoom" data-src="figures/cubic_tangents.png" aria-label="Enlarge figure"><img src="figures/cubic_tangents.png" alt="The graph of the cubic f of x equals 2x minus x cubed over
+     six, on a square grid from minus 3.5 to 3.5 in both directions. Three
+     short tangent lines are drawn on it: at x equals minus 3 a steep falling
+     line labeled slope minus 2.5, at the origin a rising line labeled slope
+     2, and at x equals 2, where the curve reaches its peak, a horizontal line
+     labeled slope 0."></button></figure>
+<p>Pick any point on that curve and there is <strong>exactly one</strong> line through it
+that matches the curve's direction. Three are drawn, and nothing makes those
+three special &mdash; you could draw one at every point, and the slope you would
+get is $\displaystyle f'(a)$.</p>
+<p>So this $\displaystyle f$ is <strong>differentiable on $\displaystyle (-\infty, \infty)$</strong>. Most functions
+you have met are like this.</p>
+<p>Now the one from a moment ago.</p>
+  <figure style="width:72%"><button type="button" class="zoom" data-src="figures/abs_tangent.png" aria-label="Enlarge figure"><img src="figures/abs_tangent.png" alt="The graph of y equals the absolute value of x. Short
+     highlighted segments lie along the graph at x equals minus 1.3 and x
+     equals 1.3, labeled slope minus 1 and slope plus 1, showing the tangent
+     line at those points is the graph itself. At the origin two dashed rays
+     run downward, the continuation of each branch through the corner, labeled
+     two candidates with no way to choose."></button></figure>
+<p>Away from $\displaystyle 0$ there is no ambiguity either: the graph is already a straight
+line, so the tangent line <em>is</em> that line, slope $\displaystyle -1$ on the left and $\displaystyle +1$
+on the right. At the corner, each side hands you a different line and there is
+no way to pick one &mdash; which is the picture of the two one-sided limits you
+computed disagreeing.</p>
+  <div class="key"><p>$\displaystyle f$ is differentiable at $\displaystyle a$ exactly where the graph has
+<strong>one clear tangent line</strong> at $\displaystyle a$ &mdash; one line, with a slope you could
+write down. The cubic has one everywhere. $\displaystyle |x|$ has one everywhere except a
+single point.</p></div>
+</section>
+<section class="beat" aria-label="Four Ways to Have No Tangent Line" data-source-line="335">
+  <h2>Four Ways to Have No Tangent Line</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>A corner is one way. Think in <strong>pictures</strong>, not formulas: what
+else could a graph do at a point that would leave you with no tangent line?</p></div>
+  <div class="sol shown">
+<figure><button type="button" class="zoom" data-src="figures/four_failures.png" aria-label="Enlarge figure"><img src="figures/four_failures.png" alt="Four small graphs. First, a line broken at the origin into two pieces
+     at different heights with an open circle above and a filled dot below,
+     labeled a break, not continuous. Second, y equals the absolute value of x,
+     with its vertex at the origin, labeled a corner. Third, y equals x to the
+     two-thirds power, which comes down to a sharp point at the origin, labeled
+     a cusp. Fourth, the cube root of x, which passes smoothly through the
+     origin with a dashed vertical line marking its tangent, labeled a vertical
+     tangent."></button></figure>
+<p><strong>A break.</strong> $\displaystyle f$ is not even continuous at $\displaystyle a$. You can rule this one out
+without writing a difference quotient at all.</p>
+<p><strong>A corner.</strong> The two one-sided slopes are different <em>numbers</em> &mdash;
+$\displaystyle -1$ and $\displaystyle +1$ for $\displaystyle |x|$.</p>
+<p><strong>A cusp.</strong> The two one-sided slopes run off in <em>opposite</em>
+directions, one to $\displaystyle +\infty$ and one to $\displaystyle -\infty$, so the curve comes to a
+point.</p>
+<p><strong>A vertical tangent.</strong> The slopes run to $\displaystyle +\infty$ from <em>both</em>
+sides. There genuinely <em>is</em> a tangent line here &mdash; it is vertical &mdash; but
+a vertical line has no slope, so $\displaystyle f'(a)$ still does not exist.</p>
+  </div>
+  <div class="key"><p>Name which one. “Not differentiable” on its own does not earn the
+point; <em>a cusp at $\displaystyle x=2$</em> does.</p></div>
+</section>
+<section class="beat" aria-label="Differentiable Means Continuous. Not the Reverse." data-source-line="386">
+  <h2>Differentiable Means Continuous. Not the Reverse.</h2>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; Differentiability implies continuity</span><p>If $\displaystyle f$ is differentiable at $\displaystyle a$, then $\displaystyle f$ is continuous at $\displaystyle a$.</p></div>
+<p>You have already used this, backwards. “A break means no derivative” was the
+first item on the list you just made &mdash; and that is this theorem read in
+reverse: no continuity, so no differentiability.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Is the converse true? If $\displaystyle f$ is continuous at $\displaystyle a$, must $\displaystyle f$ be
+differentiable at $\displaystyle a$?</p></div>
+  <div class="sol shown">
+<p><strong>No.</strong> $\displaystyle f(x) = |x|$ is continuous at $\displaystyle 0$ &mdash; you can draw it without
+lifting the pencil &mdash; and we computed $\displaystyle f'(0)$ and found it does not exist.
+One counterexample is all a converse needs.</p>
+<p>Continuity says the graph does not <strong>break</strong>. Differentiability says it
+does not break <em>and</em> has no corner, no cusp and no vertical tangent. It is
+the stronger condition, so it implies the weaker one and not the other way
+round.</p>
+  </div>
+  <div class="key"><p>Differentiable $\displaystyle \Rightarrow$ continuous. Continuous
+$\displaystyle \not\Rightarrow$ differentiable. Reading that arrow backwards is the single
+most common error in this chapter, and it is worth three points on the final.</p></div>
+</section>
+<section class="beat" aria-label="Quiz 3 Is Tomorrow" data-source-line="428">
+  <h2>Quiz 3 Is Tomorrow</h2>
+<p>It covers <strong>all four days of this week</strong>: §2.5 (the Intermediate Value
+Theorem), §2.6 (limits at infinity and horizontal asymptotes), and §2.7 (the
+derivative from the definition, and the tangent line). Two to warm up on.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p><strong>(1)</strong> Evaluate
+$\displaystyle\lim_{x\to-\infty}\frac{\sqrt{9x^{2}+1}}{2x-3}$. Show the step
+where the sign of $\displaystyle x$ matters.</p></div>
+  <div class="sol shown">
+<p>$\displaystyle \sqrt{9x^{2}+1} = \sqrt{x^{2}}\sqrt{9 + 1/x^{2}} = |x|\sqrt{9+1/x^{2}}$, and
+on this side $\displaystyle x < 0$, so $\displaystyle |x| = -x$:</p>
+<div class="dm">$$\lim_{x\to-\infty}\frac{-x\sqrt{9+1/x^{2}}}{2x-3}
+= \lim_{x\to-\infty}\frac{-\sqrt{9+1/x^{2}}}{2 - 3/x}
+= \frac{-3}{2}$$</div>
+<p>Answer $\displaystyle -\frac32$. If you got $\displaystyle +\frac32$ you did everything right except the
+one step the question asked you to show.</p>
+  </div>
+  <div class="turn your"><span class="badge">Your turn</span><p><strong>(2)</strong> Show that $\displaystyle x^{5} + 2x = 5$ has a solution between $\displaystyle 1$
+and $\displaystyle 2$. Name the theorem and check its hypothesis.</p></div>
+  <div class="sol shown">
+<p>Let $\displaystyle f(x) = x^{5} + 2x - 5$, so a solution is a zero of $\displaystyle f$.</p>
+<p>$\displaystyle f$ is a polynomial, so it is <strong>continuous</strong> on $\displaystyle [1,2]$ &mdash; that is the
+hypothesis, and it is the part people skip.</p>
+<p>$\displaystyle f(1) = -2 < 0$ and $\displaystyle f(2) = 31 > 0$, so $\displaystyle 0$ lies between them.</p>
+<p>By the <strong>Intermediate Value Theorem</strong> there is a $\displaystyle c$ in $\displaystyle (1,2)$ with
+$\displaystyle f(c) = 0$.</p>
+  </div>
+  <div class="key"><p>Also on it, and not warmed up here: computing $\displaystyle f'(a)$ from the
+definition, writing a tangent line, and finding a horizontal asymptote. Those
+are §2.7 and §2.6 and you have worked all three this week.</p></div>
+  <p class="practicelink"><a href="https://datascienceuwl.github.io/MTH207/extra-practice/#day12" target="_blank" rel="noopener">More practice for this day &rarr;</a></p>
+</section>
+<section class="beat" aria-label="The Picture: $f$ Above, $f&#x27;$ Below" data-source-line="486">
+  <h2>The Picture: $f$ Above, $f&#x27;$ Below</h2>
+  <div class="daybreak"><span><p>Day 13 &mdash; Tue Sep 29, Quiz 3 first</p></span></div>
+  <figure><button type="button" class="zoom" data-src="figures/f_and_fprime.png" aria-label="Enlarge figure"><img src="figures/f_and_fprime.png" alt="Two graphs stacked and sharing an x-axis. On top, the cubic f of x
+     equals x cubed minus three x, with short horizontal tangent segments
+     marked at x equals minus one and x equals one. Below it, the parabola f
+     prime of x equals three x squared minus three, which crosses zero at
+     exactly those two values of x, is negative between them where f is
+     falling, and positive outside them where f is
+     rising."></button></figure>
+  <div class="key"><p>Three readings, and they are the whole skill:
+<strong>$\displaystyle f'>0$</strong> where $\displaystyle f$ rises, <strong>$\displaystyle f'<0$</strong> where $\displaystyle f$ falls, and
+<strong>$\displaystyle f'=0$</strong> exactly where $\displaystyle f$ levels off.</p></div>
+</section>
+<section class="beat" aria-label="From a Graph of $f$ to a Graph of $f&#x27;$" data-source-line="519">
+  <h2>From a Graph of $f$ to a Graph of $f&#x27;$</h2>
+<p>You have a sheet with a curve on it. <strong>You are not given its formula and
+you do not need it.</strong> A derivative is a slope, and a slope is something you can
+measure with a straight edge.</p>
+  <div class="turn my"><span class="badge">My turn</span><p>One point together. Estimate the slope of $\displaystyle f$ at $\displaystyle x=-1$, write it in
+the table, and plot it on the lower grid.</p></div>
+  <figure style="width:54%"><button type="button" class="zoom" data-src="figures/activity_demo.png" aria-label="Enlarge figure"><img src="figures/activity_demo.png" alt="Two stacked graphs sharing an x-axis. On top, the curve
+     with a straight tangent line drawn at x equals minus one and a right
+     triangle under it whose horizontal leg is labelled run 1 and whose
+     vertical leg is labelled rise 1.5. Below, an otherwise empty grid with a
+     single point plotted at x equals minus one, height one point
+     five."></button></figure>
+  <div class="sol shown">
+<p>Lay the straight edge so it just grazes the curve at $\displaystyle x=-1$. Go
+<strong>one unit right</strong> &mdash; then the rise <em>is</em> the slope, with no dividing
+to do. Here the rise is $\displaystyle 1.5$, so $\displaystyle f'(-1) = 1.5$. Write $\displaystyle 1.5$ in the table, and
+plot the single point $\displaystyle (-1,\,1.5)$ on the lower grid.</p>
+  </div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Now the other six points. Fill in the table, plot every one, then
+connect them with a smooth curve.</p></div>
+  <div class="sol shown">
+<figure style="width:54%"><button type="button" class="zoom" data-src="figures/activity_result.png" aria-label="Enlarge figure"><img src="figures/activity_result.png" alt="The same two graphs, now with all seven slopes plotted on
+     the lower grid and a smooth downward parabola drawn through them, peaking
+     at height two above x equals zero and crossing the axis at x equals minus
+     two and x equals two."></button></figure>
+<p>A <strong>parabola</strong> &mdash; and you never had a formula for anything.</p>
+<p>Two readings to check against the top graph. Your curve <strong>crosses zero at
+$\displaystyle x=\pm2$</strong>, which is exactly where $\displaystyle f$ levels off. And your curve is
+<strong>highest at $\displaystyle x=0$</strong>, which is where $\displaystyle f$ climbs most steeply.</p>
+  </div>
+<p><a href="https://learnlens.org/calclens/derivatives/builder/?f=2x-x%5E3%2F6&unitrun=true" target="_blank" rel="noopener">Watch it draw itself in CalcLens</a>
+&mdash; the same curve and the same window. Drag the point across and each tangent
+slope drops onto the lower axis; <em>Sweep and trace</em> does continuously what
+you just did at seven points. <em>Show the true $\displaystyle f'$</em> is there when you want
+to check yourself, so leave it alone until your own curve is drawn.</p>
+  <div class="key"><p>You just built a whole function out of slopes, one point at a time.
+That is all $\displaystyle f'$ is &mdash; and it is why $\displaystyle f'$ deserves to be called a
+<strong>function</strong> rather than a number.</p></div>
+</section>
+<section class="beat" aria-label="Doing It Again" data-source-line="579">
+  <h2>Doing It Again</h2>
+<p>$\displaystyle f'$ is a function, so it has a derivative of its own:</p>
+<div class="dm">$$f''(x) \;=\; \left(f'\right)'(x), \qquad
+f'''(x), \qquad f^{(4)}(x), \ \ldots$$</div>
+<p>If $\displaystyle f(x) = x^{2} - 3x$ then $\displaystyle f'(x) = 2x - 3$, and differentiating again gives
+$\displaystyle f''(x) = 2$. One more gives $\displaystyle f'''(x) = 0$.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>You are a passenger in a car with every one of your five senses
+switched off. What can you still feel?</p></div>
+  <div class="sol shown">
+<p>Almost everyone says <strong>speed</strong>. You cannot feel speed &mdash; sitting still in
+a parked car and sitting in a smooth plane at $\displaystyle 500$ mph feel identical, which
+is the whole content of the answer.</p>
+<p>What you feel is <strong>acceleration</strong>, which is $\displaystyle s''(t)$ &mdash; you feel it as a
+force, which is why $\displaystyle F = ma$. And you feel <strong>jerk</strong>, $\displaystyle s'''(t)$, the rate
+at which the acceleration itself changes: it is what makes a sudden stop
+unpleasant, and what a good driver is smoothing out.</p>
+  </div>
+  <div class="key"><p>$\displaystyle s'$ is velocity. $\displaystyle s''$ is acceleration. $\displaystyle s'''$ is jerk. Your body is
+a second- and third-derivative detector and a very poor first-derivative one.</p></div>
+</section>
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="613">
+  <h2>What You Should Be Able to Do</h2>
+<ul><li>Explain the difference between $\displaystyle f'(a)$ and $\displaystyle f'(x)$ &mdash; a number and a
+function.</li><li>Compute $\displaystyle f'(x)$ from the definition, with $\displaystyle x$ left as a letter.</li><li><strong>Sketch $\displaystyle f'$ from the graph of $\displaystyle f$</strong>, getting the zeros, the sign
+and the steepness right.</li><li>Name the three ways differentiability fails, and identify which one a
+given graph shows.</li><li>Say why differentiable implies continuous, and give a function that is
+continuous but not differentiable.</li><li>Compute a second derivative and say what it means about the original.</li></ul>
+  <div class="key"><p>Every derivative so far has cost a limit. Next: the rules that make
+almost all of them cost nothing.</p></div>
+  <p class="practicelink"><a href="https://datascienceuwl.github.io/MTH207/extra-practice/#day13" target="_blank" rel="noopener">More practice for this day &rarr;</a></p>
+</section>
+</main>
+<p class="hint">13 sections &middot; worked solutions included</p>
+<dialog class="lb" aria-label="Enlarged figure">
+  <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
+</dialog>
+<script>
+// Editor scroll-sync. Same protocol the filled/blank builds use, so the editor
+// side needs no new message types: we post htmlSectionChanged as the reader
+// scrolls, and honour goToSection when the cursor moves in the tex.
+(function(){
+  if(!window.parent || window.parent===window) return;
+  var secs=document.querySelectorAll('main > section[data-source-line]');
+  if(!secs.length) return;
+  var cur=null, t=null;
+  function report(){
+    // the section covering 30% down the viewport -- the one being read, not
+    // the one clipped at the top edge
+    var mark=window.innerHeight*0.3, best=null;
+    for(var i=0;i<secs.length;i++){
+      var r=secs[i].getBoundingClientRect();
+      if(r.top<=mark && r.bottom>0) best=secs[i];
+    }
+    if(!best) return;
+    var line=parseInt(best.dataset.sourceLine,10);
+    if(!isNaN(line) && line!==cur){
+      cur=line;
+      window.parent.postMessage({type:'htmlSectionChanged',sourceLine:line},'*');
+    }
+  }
+  addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(report,80);},
+                   {passive:true});
+  addEventListener('message',function(e){
+    if(!e.data || e.data.type!=='goToSection' || e.data.sourceLine==null) return;
+    // nearest section at or before the cursor: a cursor inside a frame should
+    // scroll to that frame, not fail to match its exact opening line
+    var best=null;
+    for(var i=0;i<secs.length;i++){
+      if(parseInt(secs[i].dataset.sourceLine,10)<=e.data.sourceLine) best=secs[i];
+    }
+    if(best){ cur=parseInt(best.dataset.sourceLine,10);
+              best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+// ── Advancing the page ────────────────────────────────────────────────────
+// One action, whether it arrives from a block's own arrow or from a key. A
+// presentation remote is just a USB keyboard sending Right/PageDown, so making
+// the page respond to those keys is all a clicker needs -- no pairing, no app.
+//
+// The order is document order within the section you are looking at: chain
+// rows, step lines and closed reveals alike. When a section has nothing left
+// hidden, the next press moves to the next section. That is the slide feel,
+// on a scrolling page.
+(function(){
+  function units(sec){
+    return [].slice.call(sec.querySelectorAll('.rv, .stp, details.sol'));
+  }
+  function covered(u){
+    return u.tagName === 'DETAILS' ? !u.open : u.hidden;
+  }
+  function uncover(u, yes){
+    if(u.tagName === 'DETAILS'){ u.open = yes; } else { u.hidden = !yes; }
+    pair(u, yes);
+  }
+  // Anything marked .pair in the same chain row rides with it.
+  function pair(u, yes){
+    var row = u.closest ? u.closest('.ch-row') : null;
+    if(!row) return;
+    [].forEach.call(row.querySelectorAll('.pair'), function(p){ p.hidden = !yes; });
+  }
+  function tidy(sec){
+    // a block's arrow retires once that block has nothing left to give
+    [].forEach.call(sec.querySelectorAll('.steps, .chain'), function(box){
+      var b = box.querySelector('button.more');
+      if(b) b.hidden = !box.querySelector('.rv[hidden], .stp[hidden]');
+    });
+  }
+  function sections(){
+    return [].slice.call(document.querySelectorAll('main > section.beat'));
+  }
+  function here(){
+    var mark = window.innerHeight * 0.3, best = null;
+    sections().forEach(function(s){
+      var r = s.getBoundingClientRect();
+      if(r.top <= mark && r.bottom > 0) best = s;
+    });
+    return best || sections()[0];
+  }
+  function go(sec, d){
+    var all = sections(), i = all.indexOf(sec) + d;
+    if(i >= 0 && i < all.length) all[i].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.__advance = function(d){
+    var sec = here();
+    if(!sec) return;
+    var us = units(sec);
+    if(d > 0){
+      for(var i = 0; i < us.length; i++){
+        if(covered(us[i])){
+          uncover(us[i], true); tidy(sec);
+          us[i].scrollIntoView({block:'nearest'});
+          return;
+        }
+      }
+      go(sec, 1);
+    } else {
+      for(var j = us.length - 1; j >= 0; j--){
+        if(!covered(us[j])){ uncover(us[j], false); tidy(sec); return; }
+      }
+      go(sec, -1);
+    }
+  };
+  var FWD = {ArrowRight:1, ArrowDown:1, PageDown:1, ' ':1, Enter:1, Spacebar:1};
+  var BACK = {ArrowLeft:1, ArrowUp:1, PageUp:1, Backspace:1};
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    // let a focused control have its own keys
+    var t = e.target;
+    if(t && t.closest && t.closest('button, a, summary, input, textarea, dialog')) return;
+    if(FWD[e.key]){ e.preventDefault(); window.__advance(1); }
+    else if(BACK[e.key]){ e.preventDefault(); window.__advance(-1); }
+  });
+
+  // Reveal-all. Drives the same uncover() every other control uses, so a page
+  // opened this way ends in exactly the state stepping through would leave it.
+  var ra = document.querySelector('.revealall');
+  if(ra) ra.addEventListener('click', function(){
+    var on = ra.getAttribute('aria-pressed') === 'true';
+    [].forEach.call(sections(), function(sec){
+      units(sec).forEach(function(u){ uncover(u, !on); });
+      tidy(sec);
+    });
+    ra.setAttribute('aria-pressed', on ? 'false' : 'true');
+    ra.textContent = on ? 'Reveal all answers' : 'Hide all answers';
+  });
+})();
+
+// One button per derivation: each press uncovers the next line.
+(function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.steps > button.more, .chain > button.more, details.sol > button.more');
+    if(!b) return;
+    var box=b.parentElement;
+    // .rv marks a revealable unit: a whole step block, a chain row, or the
+    // right-hand side of the chain's first row. One selector covers all three.
+    var next=box.querySelector('.rv[hidden], .stp[hidden]');
+    if(next){
+      next.hidden=false;
+      // its citation, if it has one, arrives on the same press
+      var row=next.closest?next.closest('.ch-row'):null;
+      if(row) [].forEach.call(row.querySelectorAll('.pair'),
+                              function(p){ p.hidden=false; });
+    }
+    if(!box.querySelector('.rv[hidden], .stp[hidden]')) b.hidden=true;
+  });
+})();
+(function(){
+  var dlg=document.querySelector('dialog.lb'), img=dlg.querySelector('img');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button.zoom');
+    if(b){ img.src=b.dataset.src;
+           img.alt=b.querySelector('img').alt;   // carry the real alt text over
+           dlg.showModal(); return; }
+    if(e.target.closest('dialog.lb .close') || e.target===dlg) dlg.close();
+  });
+  dlg.addEventListener('close',function(){ img.removeAttribute('src'); });
+})();
+</script>
+</body></html>
