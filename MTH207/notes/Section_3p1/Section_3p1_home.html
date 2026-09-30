@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTH 207 &mdash; 3.1 Derivatives of Polynomials and Exponentials</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
+  loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
+<script id="MathJax-script" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0;
+  /* Line length, in characters, so it holds at every font size. 46ch was at the
+     narrow end of the readable 45-75 band and left half the width empty. This
+     is the AT-HOME value; the projected build overrides it below, because there
+     the scarce thing is screen area, not eye travel -- the font is already
+     ~30px on a 1920 screen, so a longer line is still easy to scan and buys
+     fewer scroll steps. */
+  --measure:68ch}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  /* Projected on a 1920 screen this lands near 30px, which is legible from the
+     back of the room; on a laptop later it falls back to comfortable reading. */
+  font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
+/* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
+   expose the next thing. Read later: it is just a long page. */
+
+.beat{padding:2.4rem 6vw 3rem;
+  border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
+h1{font-size:1.9rem;margin:0 0 .3rem}
+h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
+h2.cont{color:var(--slate);font-size:1.3rem}
+p{margin:0 0 .9rem;max-width:var(--measure)}
+ul{max-width:var(--measure)}
+.turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
+.turn.my{border-left-color:var(--slate);background:#f6f8fb}
+.badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;background:var(--amber);color:#3a2c00;padding:.32rem .6rem;
+  border-radius:3px;margin-bottom:.7rem}
+.turn.my .badge{background:var(--slate);color:#fff}
+.turn .work{font-size:.85rem;color:var(--slate);font-style:italic;margin:.6rem 0 0}
+.key{border-left:6px solid var(--ink);background:#f2f3f5;padding:.9rem 1.2rem;margin:1.2rem 0}
+.sol.shown{margin:1.1rem 0;border-left:5px solid var(--slate);background:#fff;
+  padding:.7rem 1.1rem;border-radius:0 5px 5px 0}
+.sol-label{display:block;font:600 .78rem/1 system-ui,sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate);margin-bottom:.5rem}
+details.sol{margin:1.1rem 0;border:1px solid var(--rule);border-radius:5px;background:#fff}
+details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-ui,sans-serif;
+  color:var(--slate)}
+details.sol[open] summary{border-bottom:1px solid var(--rule)}
+details.sol > :not(summary){padding:0 1.1rem}
+details.sol > p:last-child{padding-bottom:.9rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;
+  max-width:min(100%, calc(var(--measure) * 1.25))}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;margin:.6rem 0}
+table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--rule);padding:.3rem .9rem .3rem 0;text-align:left}
+th{border-bottom:2px solid var(--ink)}
+.boxed{margin:1.1rem 0;padding:.8rem 1.1rem;border-radius:5px;background:#fff;
+  border:1px solid var(--rule)}
+.boxed.dfn{border-left:5px solid var(--ink)}
+.boxed.thm{border-left:5px solid var(--amber)}
+.boxed.ex{border-left:5px solid var(--slate)}
+.badge.dfn{background:var(--ink);color:#fff}
+.badge.thm{background:var(--amber);color:#3a2c00}
+.ex{margin:1rem 0}
+.workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
+.badge.ex{background:var(--ink);color:#fff}
+.grid-item{margin:0}
+/* A figure is not prose. --measure is a READING measure -- how far the eye
+   travels across a line of text -- and has no business capping a diagram: on a
+   1920 projector it left roughly 370px empty beside every wide plot. So a
+   figure takes the full beat width and centres, and scale=N is now read as a
+   fraction of THAT, still centred, not of the reading measure. An img keeps
+   max-width (not width), so a small figure centres at its natural size instead
+   of being upscaled into blur.
+
+   No height cap: a beat is allowed to be taller than the screen. This is a
+   scrolling document, not a slide -- min-height:100vh is a floor. The
+   "over-tall slide scrolls its title away" rule belongs to the retired reveal
+   decks, which is why deck_check only geometry-checks when _slides.html
+   exists. */
+figure{margin:1.2rem auto;max-width:100%}
+figure img{max-width:100%;height:auto;display:block;margin:0 auto}
+button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
+  border-radius:3px;display:block;max-width:100%}
+button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+dialog.lb{border:none;padding:0;max-width:96vw;max-height:96vh;background:transparent}
+dialog.lb::backdrop{background:rgba(13,27,42,.88)}
+dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
+dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
+  background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem;text-align:center}
+header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
+header.top p{color:var(--slate);margin:.2rem 0 0}
+.dm{margin:.9rem 0;text-align:center}
+/* A derivation advanced by one button. [hidden] needs !important because .stp
+   sets display, which would otherwise win over the UA's hidden rule. */
+/* An equation chain. display:table so the three columns agree across rows --
+   that is the whole point: the = signs must line up. */
+.chain{display:table;margin:1.1rem 0 .4rem;border-collapse:collapse;
+  /* .beat is a column flexbox, which stretches its children to full width --
+     a shrink-to-fit table then became 1408px and the LHS floated to the far
+     right. align-self keeps the table the width of its own contents. */
+  align-self:start}
+.daybreak{display:flex;align-items:center;gap:1rem;margin:2.2rem 0 1.6rem;
+  color:var(--slate);font:600 .8rem/1 system-ui,sans-serif;letter-spacing:.1em;
+  text-transform:uppercase}
+.daybreak::before,.daybreak::after{content:"";flex:1;height:1px;
+  background:var(--rule)}
+.practicelink{margin:1.4rem 0 0}
+.practicelink a{display:inline-block;border:1px solid var(--amber);
+  border-radius:4px;padding:.45rem .9rem;color:var(--ink);text-decoration:none;
+  font:600 .9rem/1 system-ui,sans-serif;background:#fffdf5}
+.practicelink a:hover{background:var(--amber);color:#3a2c00}
+.ch-row{display:table-row}
+/* Row spacing. .12rem was fine while every row was one line tall, but a
+   chain whose rows are stacked fractions -- dividing inside a square root,
+   say -- ran them together with nothing to separate one step from the next.
+   These are table cells, so padding is the only lever; margin does nothing. */
+.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.45rem 0}
+.ch-l{text-align:right}
+.ch-e{text-align:center;padding-left:.5rem;padding-right:.5rem}
+.ch-r{text-align:left}
+/* The reason column. Set back and lighter so the algebra still reads as the
+   line and the citation as an annotation on it, not a second equation. */
+.ch-y{text-align:left;padding-left:2.2rem;font-size:.82em;color:#5b6b7a;
+  font-style:italic;max-width:26ch}
+.chain [hidden]{display:none!important}
+@media print{.chain [hidden]{display:table-cell!important}
+  .chain .ch-row[hidden]{display:table-row!important}}
+.steps{margin:1.1rem 0}
+.steps .stp{display:block;margin:.2rem 0}
+.steps [hidden]{display:none!important}
+.chain button.more,
+.steps button.more,
+details.sol button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
+  background:none;border:1px solid var(--amber);border-radius:50%;
+  width:2rem;height:2rem;padding:0;cursor:pointer;margin-top:.5rem;
+  display:inline-flex;align-items:center;justify-content:center}
+.chain button.more:hover,
+.steps button.more:hover,
+details.sol button.more:hover{background:#fff8e2}
+.chain button.more:focus-visible,
+.steps button.more:focus-visible,
+details.sol button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media print{.steps .stp{display:block!important}.steps button.more{display:none}}
+/* The in-page reveal. This used to be a text link to the twin page, and it was
+   missed constantly -- it looked like navigation, because it was. A filled
+   button that says what it does, in the first thing you see, is the fix. */
+/* --slate, not --blue: this palette has no --blue, and an undefined custom
+   property is not an error -- the background simply did not paint and the
+   button was white text on a cream page. Invisible, and working perfectly. */
+.revealall{font:600 1rem system-ui,sans-serif;cursor:pointer;
+  margin:.6rem 0 .2rem;padding:.55rem 1.1rem;border-radius:8px;
+  border:2px solid var(--slate);background:var(--slate);color:#fff}
+.revealall:hover{filter:brightness(1.12)}
+.revealall:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+.revealall[aria-pressed="true"]{background:var(--bg);color:var(--slate)}
+@media print{.revealall{display:none}}
+.switch{margin:.35rem 0 0}
+.switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px}
+.switch a:hover{border-bottom-width:2px}
+.switch a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media print{.switch{display:none}}
+.hint{position:fixed;right:1rem;bottom:1rem;font:.72rem system-ui,sans-serif;color:var(--slate);
+  background:#fff;border:1px solid var(--rule);border-radius:4px;padding:.35rem .6rem;opacity:.75}
+@media print{.beat{min-height:auto;page-break-inside:avoid}.hint{display:none}
+  details.sol{break-inside:avoid}details.sol summary{display:none}}
+</style></head>
+<body>
+<header class="top">
+  <h1>3.1 &nbsp;Derivatives of Polynomials and Exponentials</h1>
+  <p>MTH 207 Calculus I &mdash; Differentiation Rules</p>
+  <p class="switch"><a class="twin" href="../../practice/Section_3p1/Section_3p1_class.html">Let me try the examples first &rarr;</a></p>
+</header>
+<main>
+<section class="beat" aria-label="You Have Been Doing This the Hard Way" data-source-line="47">
+  <h2>You Have Been Doing This the Hard Way</h2>
+<p>Every derivative so far has cost a limit. Here is what those limits bought:</p>
+<table><caption>Everything we have computed from the definition</caption><tr><th scope="col">$\displaystyle f(x)$</th><th scope="col">$\displaystyle f'(x)$</th></tr><tr><td>$\displaystyle x^{2}$</td><td>$\displaystyle 2x$</td></tr><tr><td>$\displaystyle x^{2}-3x$</td><td>$\displaystyle 2x-3$</td></tr><tr><td>$\displaystyle 3x^{2}-x$</td><td>$\displaystyle 6x-1$</td></tr><tr><td>$\displaystyle x^{3}-3x$</td><td>$\displaystyle 3x^{2}-3$</td></tr></table>
+  <div class="turn your"><span class="badge">Your turn</span><p>Cover the right-hand column. Guess $\displaystyle f'(x)$ for $\displaystyle f(x) = x^{5}$, and
+say what rule you are guessing.</p></div>
+  <div class="sol shown">
+<p>$\displaystyle f'(x) = 5x^{4}$. The exponent comes down in front, and the new exponent is one
+less.</p>
+<p>That guess is correct, it is called the <strong>Power Rule</strong>, and the rest of
+this section is (a) checking that it is actually true and (b) finding out
+exactly where it stops working.</p>
+  </div>
+</section>
+<section class="beat" aria-label="Where the Rule Comes From" data-source-line="80">
+  <h2>Where the Rule Comes From</h2>
+<p>A guessed pattern is not a theorem. Check one case honestly.</p>
+  <div class="turn my"><span class="badge">My turn</span><p>$\displaystyle f(x) = x^{3}$. Find $\displaystyle f'(x)$ from the definition.</p></div>
+  <div class="chain">
+    <div class="ch-row"><span class="ch-l">$\displaystyle f'(x)$</span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{(x+h)^{3} - x^{3}}{h}$</span><span class="ch-y pair">the definition</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{x^{3} + 3x^{2}h + 3xh^{2} + h^{3} - x^{3}}{h}$</span><span class="ch-y">expand $\displaystyle (x+h)^{3}$</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{3x^{2}h + 3xh^{2} + h^{3}}{h}$</span><span class="ch-y">the $\displaystyle x^{3}$ terms cancel &mdash; every survivor has an $\displaystyle h$</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{h\left(3x^{2} + 3xh + h^{2}\right)}{h}$</span><span class="ch-y">factor $\displaystyle h$ out</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\,\left(3x^{2} + 3xh + h^{2}\right)$</span><span class="ch-y">cancel $\displaystyle h$: the limit never uses $\displaystyle h = 0$</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle 3x^{2}$</span><span class="ch-y">substitute $\displaystyle h = 0$ &mdash; the last two terms die</span></div>
+  </div>
+  <div class="key"><p>$\displaystyle 3x^{2}$, exactly as guessed. The same expansion works for any whole
+number $\displaystyle n$: everything but one term carries a spare $\displaystyle h$ and dies, and the
+survivor is $\displaystyle nx^{n-1}$.</p></div>
+</section>
+<section class="beat" aria-label="Five Rules, and Then Almost Everything" data-source-line="112">
+  <h2>Five Rules, and Then Almost Everything</h2>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; The Power Rule</span><div class="dm">$$\frac{d}{dx}\left(x^{n}\right) \;=\; nx^{n-1}$$</div></div>
+<p>That holds for <strong>every</strong> real number $\displaystyle n$ &mdash; not just whole numbers. $\displaystyle n$
+may be negative, or a fraction, or $\displaystyle \pi$.</p>
+<p>Two cases are worth writing down on their own, because you will use them
+constantly and neither looks like a power at first glance:</p>
+<table><caption>The rules so far &mdash; one more arrives by the end of today</caption><tr><th scope="col">rule</th><th scope="col">what it says</th></tr><tr><td>constant</td><td>$\displaystyle \frac{d}{dx}(c) = 0$</td></tr><tr><td>identity</td><td>$\displaystyle \frac{d}{dx}(x) = 1$</td></tr><tr><td>power</td><td>$\displaystyle \frac{d}{dx}\left(x^{n}\right) = nx^{n-1}$</td></tr><tr><td>constant multiple</td><td>$\displaystyle \frac{d}{dx}\left[c\,f(x)\right] = c\,f'(x)$</td></tr><tr><td>sum and difference</td><td>$\displaystyle \frac{d}{dx}\left[f(x) \pm g(x)\right] = f'(x) \pm g'(x)$</td></tr></table>
+<p>The first two are the Power Rule in disguise: $\displaystyle c = cx^{0}$ gives $\displaystyle 0$, and
+$\displaystyle x = x^{1}$ gives $\displaystyle 1x^{0} = 1$. Write them down anyway &mdash; a horizontal line
+has slope $\displaystyle 0$ and the line $\displaystyle y=x$ has slope $\displaystyle 1$, and you should not have to
+derive either one mid-problem.</p>
+  <div class="key"><p>Between them these handle every polynomial, every root and every
+$\displaystyle 1/x^{n}$ &mdash; provided you first rewrite it as a power. $\displaystyle \sqrt{x}$ is
+$\displaystyle x^{1/2}$; $\displaystyle \frac{1}{x^{3}}$ is $\displaystyle x^{-3}$. The rewriting is the work.</p></div>
+</section>
+<section class="beat" aria-label="Now You" data-source-line="157">
+  <h2>Now You</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Differentiate each. Two of them are traps.
+<ol><li>$\displaystyle f(x) = 3x^{4} - 2x + 7$</li><li>$\displaystyle g(x) = \sqrt{x}$</li><li>$\displaystyle h(x) = \frac{1}{x^{3}}$</li><li>$\displaystyle p(x) = \pi^{2}$</li><li>$\displaystyle q(x) = x^{e}$</li></ol></p></div>
+  <div class="sol shown">
+<p><strong>1.</strong> $\displaystyle f'(x) = 12x^{3} - 2$. The $\displaystyle 7$ contributes nothing.</p>
+<p><strong>2.</strong> Rewrite first: $\displaystyle g(x) = x^{1/2}$, so
+$\displaystyle g'(x) = \frac12 x^{-1/2} = \frac{1}{2\sqrt{x}}$.</p>
+<p><strong>3.</strong> Rewrite first: $\displaystyle h(x) = x^{-3}$, so
+$\displaystyle h'(x) = -3x^{-4} = -\frac{3}{x^{4}}$.</p>
+<p><strong>4.</strong> $\displaystyle p'(x) = 0$. $\displaystyle \pi^{2}$ is a <em>number</em> &mdash; roughly $\displaystyle 9.87$ &mdash;
+and there is no $\displaystyle x$ in it. The trap is that $\displaystyle \pi$ looks like a variable.</p>
+<p><strong>5.</strong> $\displaystyle q'(x) = e\,x^{e-1}$. Here $\displaystyle e$ is the <em>exponent</em> and it is a
+constant, so the Power Rule applies exactly as written. The trap is that
+$\displaystyle e$ looks like it must involve $\displaystyle e^{x}$.</p>
+  </div>
+  <div class="key"><p>Before differentiating, ask one question: <strong>is the variable in
+the base or in the exponent?</strong> Base means Power Rule. Exponent means something
+else entirely &mdash; the next frame.</p></div>
+</section>
+<section class="beat" aria-label="Two Rules That Do Not Exist" data-source-line="196">
+  <h2>Two Rules That Do Not Exist</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Both of these are false. Find a single example that kills each.</p>
+<div class="dm">$$\text{(a)}\quad \frac{d}{dx}\left[f(x)g(x)\right] = f'(x)\,g'(x)
+\qquad\qquad
+\text{(b)}\quad \frac{d}{dx}\left(e^{x}\right) = x\,e^{x-1}$$</div></div>
+  <div class="sol shown">
+<p>Take $\displaystyle f(x) = x^{2}$ and $\displaystyle g(x) = x^{3}$.</p>
+<p>The claim says the answer is $\displaystyle 2x \cdot 3x^{2} = 6x^{3}$.</p>
+<p>But $\displaystyle f(x)g(x) = x^{5}$, whose derivative we know is $\displaystyle 5x^{4}$.</p>
+<p>$\displaystyle 6x^{3} \neq 5x^{4}$, so the claim is false. The real rule for a product needs
+something more careful &mdash; that is 3.2.</p>
+  </div>
+  <div class="sol shown">
+<p>The Power Rule is about $\displaystyle x^{n}$: variable in the <strong>base</strong>, constant in the
+<strong>exponent</strong>. In $\displaystyle e^{x}$ it is the other way round &mdash; the base $\displaystyle e$ is a
+constant and the variable is upstairs. The rule simply does not reach it.</p>
+<p>The truth is remarkable:</p>
+<div class="dm">$$\frac{d}{dx}\left(e^{x}\right) \;=\; e^{x}$$</div>
+<p>A function that is its own derivative. The next frame says why.</p>
+  </div>
+  <div class="key"><p>Neither of these is a slip in the algebra. Both are a correct rule
+used outside the hypothesis it came with &mdash; the same failure as the Quotient
+Law question on Quiz 2, where the law was quoted without checking the
+denominator.</p></div>
+</section>
+<section class="beat" aria-label="Why That Number" data-source-line="237">
+  <h2>Why That Number</h2>
+<p>Every exponential $\displaystyle y = b^{x}$ passes through $\displaystyle (0,1)$. What differs is the
+<strong>slope</strong> there:</p>
+  <figure><button type="button" class="zoom" data-src="figures/why_e.png" aria-label="Enlarge figure"><img src="figures/why_e.png" alt="Three small graphs side by side, each an exponential curve through
+     the point zero comma one with its tangent line drawn at that point. For y
+     equals two to the x the tangent slope is 0.69, shallower than 45 degrees.
+     For y equals e to the x the slope is exactly 1. For y equals three to the
+     x it is 1.10, slightly steeper."></button></figure>
+  <div class="turn your"><span class="badge">Your turn</span><p>The slope at $\displaystyle (0,1)$ is $\displaystyle 0.69$ when $\displaystyle b = 2$ and $\displaystyle 1.10$ when
+$\displaystyle b = 3$. What does that guarantee about some base in between?</p></div>
+  <div class="sol shown">
+<p>The slope climbs continuously from $\displaystyle 0.69$ to $\displaystyle 1.10$ as $\displaystyle b$ goes from $\displaystyle 2$ to
+$\displaystyle 3$, so somewhere between them is a base whose tangent at $\displaystyle (0,1)$ has slope
+<strong>exactly $\displaystyle 1$</strong>. (That is the Intermediate Value Theorem, from §2.5.)</p>
+<p>That base has a name.</p>
+  </div>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; The number e</span><p>$\displaystyle e$ is the base whose exponential has slope exactly $\displaystyle 1$ at $\displaystyle (0,1)$ &mdash;
+equivalently, the one positive number for which</p>
+<div class="dm">$$\lim_{h\to 0}\frac{e^{h}-1}{h} \;=\; 1$$</div>
+<p>To four places, $\displaystyle e \approx 2.7183$. It is irrational, like $\displaystyle \pi$.</p></div>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; Derivative of the natural exponential</span><div class="dm">$$\frac{d}{dx}\left(e^{x}\right) \;=\; e^{x}$$</div></div>
+  <div class="chain">
+    <div class="ch-row"><span class="ch-l">$\displaystyle \frac{d}{dx}\left(e^{x}\right)$</span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{e^{x+h}-e^{x}}{h}$</span><span class="ch-y pair">the definition of the derivative</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{e^{x}\left(e^{h}-1\right)}{h}$</span><span class="ch-y">$\displaystyle e^{x+h}=e^{x}e^{h}$, then factor</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle e^{x}\lim_{h\to 0}\frac{e^{h}-1}{h}$</span><span class="ch-y">$\displaystyle e^{x}$ has no $\displaystyle h$ in it, so it comes out of the limit</span></div>
+    <div class="ch-row"><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle e^{x}\cdot 1 \;=\; e^{x}$</span><span class="ch-y">that limit is $\displaystyle 1$ &mdash; which is exactly what $\displaystyle e$ was chosen to make true</span></div>
+  </div>
+<table><caption>All six. The last one is the only one the Power Rule cannot reach.</caption><tr><th scope="col">rule</th><th scope="col">what it says</th></tr><tr><td>constant</td><td>$\displaystyle \frac{d}{dx}(c) = 0$</td></tr><tr><td>identity</td><td>$\displaystyle \frac{d}{dx}(x) = 1$</td></tr><tr><td>power</td><td>$\displaystyle \frac{d}{dx}\left(x^{n}\right) = nx^{n-1}$</td></tr><tr><td>constant multiple</td><td>$\displaystyle \frac{d}{dx}\left[c\,f(x)\right] = c\,f'(x)$</td></tr><tr><td>sum and difference</td><td>$\displaystyle \frac{d}{dx}\left[f(x) \pm g(x)\right] = f'(x) \pm g'(x)$</td></tr><tr><td>natural exponential</td><td>$\displaystyle \frac{d}{dx}\left(e^{x}\right) = e^{x}$</td></tr></table>
+  <div class="key"><p>$\displaystyle e$ is not a random constant someone picked. It is the base that
+makes the slope come out at exactly $\displaystyle 1$ &mdash; and row six is what that choice
+buys: a function equal to its own derivative. Every other row is the Power
+Rule or a consequence of it; this one is not, which is why the variable being
+in the <strong>exponent</strong> is the thing to check first.</p></div>
+</section>
+<section class="beat" aria-label="Tangent, and the Line Across It" data-source-line="311">
+  <h2>Tangent, and the Line Across It</h2>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; The normal line</span><p>The <strong>normal line</strong> to a curve at a point is the line through that point
+<strong>perpendicular</strong> to the tangent. Its slope is $\displaystyle -1/m$, where $\displaystyle m$ is the
+slope of the tangent.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>$\displaystyle y = 4 - x^{2}$. Find the equations of the tangent line <em>and</em>
+the normal line at $\displaystyle x = 1$.</p></div>
+  <div class="sol shown">
+<p>$\displaystyle y' = -2x$, so at $\displaystyle x = 1$ the slope is $\displaystyle m = -2$, and the point is $\displaystyle (1,3)$.</p>
+<p><strong>Tangent:</strong> $\displaystyle y - 3 = -2(x-1)$, so $\displaystyle y = -2x + 5$.</p>
+<p><strong>Normal:</strong> slope $\displaystyle -1/(-2) = \frac12$, so $\displaystyle y - 3 = \frac12(x-1)$, giving
+$\displaystyle y = \frac12 x + \frac52$.</p>
+<figure style="width:64%"><button type="button" class="zoom" data-src="figures/tangent_normal.png" aria-label="Enlarge figure"><img src="figures/tangent_normal.png" alt="The downward parabola y equals four minus x squared with
+     the point one comma three marked. A solid line through it falls steeply
+     with slope negative two, the tangent. A dashed line through the same point
+     rises gently with slope one half, the normal, and the two lines meet at a
+     visible right angle because the axes are drawn to equal
+     scale."></button></figure>
+  </div>
+  <div class="key"><p>Check the slopes multiply to $\displaystyle -1$: $\displaystyle (-2)\left(\frac12\right) = -1$.
+If they do not, one of the two lines is wrong.</p></div>
+</section>
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="348">
+  <h2>What You Should Be Able to Do</h2>
+<ul><li>Differentiate any polynomial, root or $\displaystyle 1/x^{n}$ &mdash; rewriting it as a
+power first.</li><li>Say why the Power Rule follows from the definition, at least for $\displaystyle x^{3}$.</li><li>Recognise when the variable is in the <strong>exponent</strong> instead of the
+base, and know the Power Rule does not apply there.</li><li>State $\displaystyle \frac{d}{dx}\left(e^{x}\right) = e^{x}$ and say what is special
+about $\displaystyle e$.</li><li>Write the equation of the <strong>tangent</strong> line and the <strong>normal</strong>
+line at a point, and check they are perpendicular.</li><li>Give an example showing $\displaystyle \frac{d}{dx}(fg) \neq f'g'$.</li></ul>
+  <div class="key"><p>Products and quotients are next, and the example above is the reason
+they need a section of their own.</p></div>
+  <p class="practicelink"><a href="https://datascienceuwl.github.io/MTH207/extra-practice/#day14" target="_blank" rel="noopener">More practice for this day &rarr;</a></p>
+</section>
+</main>
+<p class="hint">8 sections &middot; worked solutions included</p>
+<dialog class="lb" aria-label="Enlarged figure">
+  <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
+</dialog>
+<script>
+// Editor scroll-sync. Same protocol the filled/blank builds use, so the editor
+// side needs no new message types: we post htmlSectionChanged as the reader
+// scrolls, and honour goToSection when the cursor moves in the tex.
+(function(){
+  if(!window.parent || window.parent===window) return;
+  var secs=document.querySelectorAll('main > section[data-source-line]');
+  if(!secs.length) return;
+  var cur=null, t=null;
+  function report(){
+    // the section covering 30% down the viewport -- the one being read, not
+    // the one clipped at the top edge
+    var mark=window.innerHeight*0.3, best=null;
+    for(var i=0;i<secs.length;i++){
+      var r=secs[i].getBoundingClientRect();
+      if(r.top<=mark && r.bottom>0) best=secs[i];
+    }
+    if(!best) return;
+    var line=parseInt(best.dataset.sourceLine,10);
+    if(!isNaN(line) && line!==cur){
+      cur=line;
+      window.parent.postMessage({type:'htmlSectionChanged',sourceLine:line},'*');
+    }
+  }
+  addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(report,80);},
+                   {passive:true});
+  addEventListener('message',function(e){
+    if(!e.data || e.data.type!=='goToSection' || e.data.sourceLine==null) return;
+    // nearest section at or before the cursor: a cursor inside a frame should
+    // scroll to that frame, not fail to match its exact opening line
+    var best=null;
+    for(var i=0;i<secs.length;i++){
+      if(parseInt(secs[i].dataset.sourceLine,10)<=e.data.sourceLine) best=secs[i];
+    }
+    if(best){ cur=parseInt(best.dataset.sourceLine,10);
+              best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+// ── Advancing the page ────────────────────────────────────────────────────
+// One action, whether it arrives from a block's own arrow or from a key. A
+// presentation remote is just a USB keyboard sending Right/PageDown, so making
+// the page respond to those keys is all a clicker needs -- no pairing, no app.
+//
+// The order is document order within the section you are looking at: chain
+// rows, step lines and closed reveals alike. When a section has nothing left
+// hidden, the next press moves to the next section. That is the slide feel,
+// on a scrolling page.
+(function(){
+  function units(sec){
+    return [].slice.call(sec.querySelectorAll('.rv, .stp, details.sol'));
+  }
+  function covered(u){
+    return u.tagName === 'DETAILS' ? !u.open : u.hidden;
+  }
+  function uncover(u, yes){
+    if(u.tagName === 'DETAILS'){ u.open = yes; } else { u.hidden = !yes; }
+    pair(u, yes);
+  }
+  // Anything marked .pair in the same chain row rides with it.
+  function pair(u, yes){
+    var row = u.closest ? u.closest('.ch-row') : null;
+    if(!row) return;
+    [].forEach.call(row.querySelectorAll('.pair'), function(p){ p.hidden = !yes; });
+  }
+  function tidy(sec){
+    // a block's arrow retires once that block has nothing left to give
+    [].forEach.call(sec.querySelectorAll('.steps, .chain'), function(box){
+      var b = box.querySelector('button.more');
+      if(b) b.hidden = !box.querySelector('.rv[hidden], .stp[hidden]');
+    });
+  }
+  function sections(){
+    return [].slice.call(document.querySelectorAll('main > section.beat'));
+  }
+  function here(){
+    var mark = window.innerHeight * 0.3, best = null;
+    sections().forEach(function(s){
+      var r = s.getBoundingClientRect();
+      if(r.top <= mark && r.bottom > 0) best = s;
+    });
+    return best || sections()[0];
+  }
+  function go(sec, d){
+    var all = sections(), i = all.indexOf(sec) + d;
+    if(i >= 0 && i < all.length) all[i].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.__advance = function(d){
+    var sec = here();
+    if(!sec) return;
+    var us = units(sec);
+    if(d > 0){
+      for(var i = 0; i < us.length; i++){
+        if(covered(us[i])){
+          uncover(us[i], true); tidy(sec);
+          us[i].scrollIntoView({block:'nearest'});
+          return;
+        }
+      }
+      go(sec, 1);
+    } else {
+      for(var j = us.length - 1; j >= 0; j--){
+        if(!covered(us[j])){ uncover(us[j], false); tidy(sec); return; }
+      }
+      go(sec, -1);
+    }
+  };
+  var FWD = {ArrowRight:1, ArrowDown:1, PageDown:1, ' ':1, Enter:1, Spacebar:1};
+  var BACK = {ArrowLeft:1, ArrowUp:1, PageUp:1, Backspace:1};
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    // let a focused control have its own keys
+    var t = e.target;
+    if(t && t.closest && t.closest('button, a, summary, input, textarea, dialog')) return;
+    if(FWD[e.key]){ e.preventDefault(); window.__advance(1); }
+    else if(BACK[e.key]){ e.preventDefault(); window.__advance(-1); }
+  });
+
+  // Reveal-all. Drives the same uncover() every other control uses, so a page
+  // opened this way ends in exactly the state stepping through would leave it.
+  var ra = document.querySelector('.revealall');
+  if(ra) ra.addEventListener('click', function(){
+    var on = ra.getAttribute('aria-pressed') === 'true';
+    [].forEach.call(sections(), function(sec){
+      units(sec).forEach(function(u){ uncover(u, !on); });
+      tidy(sec);
+    });
+    ra.setAttribute('aria-pressed', on ? 'false' : 'true');
+    ra.textContent = on ? 'Reveal all answers' : 'Hide all answers';
+  });
+})();
+
+// One button per derivation: each press uncovers the next line.
+(function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.steps > button.more, .chain > button.more, details.sol > button.more');
+    if(!b) return;
+    var box=b.parentElement;
+    // .rv marks a revealable unit: a whole step block, a chain row, or the
+    // right-hand side of the chain's first row. One selector covers all three.
+    var next=box.querySelector('.rv[hidden], .stp[hidden]');
+    if(next){
+      next.hidden=false;
+      // its citation, if it has one, arrives on the same press
+      var row=next.closest?next.closest('.ch-row'):null;
+      if(row) [].forEach.call(row.querySelectorAll('.pair'),
+                              function(p){ p.hidden=false; });
+    }
+    if(!box.querySelector('.rv[hidden], .stp[hidden]')) b.hidden=true;
+  });
+})();
+(function(){
+  var dlg=document.querySelector('dialog.lb'), img=dlg.querySelector('img');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button.zoom');
+    if(b){ img.src=b.dataset.src;
+           img.alt=b.querySelector('img').alt;   // carry the real alt text over
+           dlg.showModal(); return; }
+    if(e.target.closest('dialog.lb .close') || e.target===dlg) dlg.close();
+  });
+  dlg.addEventListener('close',function(){ img.removeAttribute('src'); });
+})();
+</script>
+</body></html>
