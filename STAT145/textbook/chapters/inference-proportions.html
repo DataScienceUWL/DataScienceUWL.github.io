@@ -666,7 +666,7 @@ window.Quarto = {
 </section>
 <section id="sec-null-dist-buildup" class="level2" data-number="12.2">
 <h2 data-number="12.2" class="anchored" data-anchor-id="sec-null-dist-buildup"><span class="header-section-number">12.2</span> Building the null distribution by simulation</h2>
-<p>We do not need calculus or a formula to picture the null distribution — we can build it directly with simulation. This mirrors the logic of the randomization tests chapter, applied here to a single proportion.</p>
+<p>We do not need calculus or a formula to picture the null distribution — we can build it directly with simulation, just as we did in the randomization tests chapter. But this is a randomization test of a <em>different kind</em>. There we compared two groups by <strong>shuffling the group labels</strong> on the data we already had; here there is only <strong>one</strong> group and a single claimed value (<span class="math inline">\(H_0: p = 0.10\)</span>), so there are no labels to shuffle. Instead we <strong>draw fresh samples from a null population</strong> built to match <span class="math inline">\(H_0\)</span> — a world in which the true complication rate really is 10%. Sampling repeatedly from a hypothesized population this way is exactly the <strong>sampling-distribution</strong> idea that the normal approximation will formalize in the next section; the simulation lets us <em>see</em> it first, concretely, before any formula.</p>
 <section id="the-marbles-metaphor" class="level3" data-number="12.2.1">
 <h3 data-number="12.2.1" class="anchored" data-anchor-id="the-marbles-metaphor"><span class="header-section-number">12.2.1</span> The marbles metaphor</h3>
 <p>Imagine a large bag of marbles: 10% orange (complication) and 90% blue (no complication). This bag models the world under <span class="math inline">\(H_0\)</span>. Each surgery is one draw from the bag; a “study” of <span class="math inline">\(n = 62\)</span> surgeries is one scoop of 62 marbles. The proportion of orange marbles in the scoop is one simulated <span class="math inline">\(\hat{p}_{sim}\)</span> from the null distribution.</p>
@@ -680,8 +680,7 @@ window.Quarto = {
 </section>
 <section id="from-one-draw-to-many" class="level3" data-number="12.2.2">
 <h3 data-number="12.2.2" class="anchored" data-anchor-id="from-one-draw-to-many"><span class="header-section-number">12.2.2</span> From one draw to many</h3>
-<p>The natural next question is: <strong>what happens as we accumulate more draws?</strong> Does the null distribution take a recognizable shape? Does it settle down or keep drifting?</p>
-<p>This is the moment where a static picture struggles. Jumping from “one draw at <span class="math inline">\(\hat{p}_{sim1} = 0.081\)</span>” to a smooth histogram of 10,000 draws is a big cognitive leap when you have not seen this before. It is worth pausing to build the distribution one increment at a time.</p>
+<p>What happens as we accumulate more draws — does the null distribution take a recognizable shape? Rather than jump straight from one draw to a smooth histogram, it helps to build the distribution a few increments at a time.</p>
 <div class="statlens">
 <p><strong>Predict → Do → Explain.</strong> Open the <a href="https://learnlens.org/statlens/conceptual/sampling-lab/?activity=sampling-distribution-proportion.json&amp;p=0.10&amp;n=62" target="_blank">Sampling Distribution Lab (proportion mode)</a> — preloaded with <span class="math inline">\(p = 0.10\)</span> and <span class="math inline">\(n = 62\)</span>, the null-hypothesis world for the medical-consultant case. The gated activity opens with a <strong>Predict</strong> step (commit to where the distribution of <span class="math inline">\(\hat{p}_{sim}\)</span> will be centered, how spread out, and what shape), walks you through drawing 1, 10, 100, and 1,000 samples in sequence, and closes with an <strong>Explain</strong> step where you articulate what the buildup showed. Your responses save locally in the tool, so you can return to your work on the same device.</p>
 </div>
@@ -709,11 +708,7 @@ Figure&nbsp;12.1: The null distribution of p-hat from 1,000 simulated studies un
 </div>
 </div>
 </div>
-<p>Two observations to record before we compute anything:</p>
-<ol type="1">
-<li><strong>The distribution is centered near <span class="math inline">\(p = 0.10\)</span>.</strong> That is not luck — it is because we built it under <span class="math inline">\(H_0\)</span>, where the truth is <span class="math inline">\(p = 0.10\)</span>. Simulated <span class="math inline">\(\hat{p}\)</span> values scatter symmetrically-ish around that center.</li>
-<li><strong>The distribution has a shape we can measure.</strong> It looks roughly bell-shaped but with a mild right skew, because <span class="math inline">\(p = 0.10\)</span> is close to 0 and <span class="math inline">\(\hat{p}\)</span> cannot go below zero.</li>
-</ol>
+<p>As the bullets above anticipated, the distribution is <strong>centered at <span class="math inline">\(p = 0.10\)</span></strong> (because we built it under <span class="math inline">\(H_0\)</span>) and is roughly bell-shaped with a mild right skew (because <span class="math inline">\(p = 0.10\)</span> sits near 0 and <span class="math inline">\(\hat{p}\)</span> cannot go below it). Now we can read the evidence.</p>
 </section>
 <section id="reading-the-p-value" class="level3" data-number="12.2.4">
 <h3 data-number="12.2.4" class="anchored" data-anchor-id="reading-the-p-value"><span class="header-section-number">12.2.4</span> Reading the <span class="math inline">\(p\)</span>-value</h3>
@@ -734,7 +729,7 @@ Figure&nbsp;12.1: The null distribution of p-hat from 1,000 simulated studies un
 <li>Repeatedly scoop <span class="math inline">\(n\)</span> marbles and record the simulated <span class="math inline">\(\hat{p}_{sim}\)</span>.</li>
 <li>Read the <span class="math inline">\(p\)</span>-value as the tail area of the null distribution beyond the observed <span class="math inline">\(\hat{p}\)</span>.</li>
 </ol>
-<p>This works for <strong>any</strong> sample size and does not require the success–failure condition. The formula-based approach in the next section is faster when its conditions are met, but the simulation is always available as a backup.</p>
+<p>This works for <strong>any</strong> sample size and does not require the success–failure condition. Because this is a <em>single</em> proportion, the exact null probabilities are in fact given by the <strong>binomial distribution</strong> (see the <a href="../chapters/binomial.html">Binomial Distribution chapter</a>) — the simulation is a tangible stand-in for that exact calculation, and the normal formula in the next section is a fast approximation to it. We lead with the simulation because <em>sampling from the null world</em> is the idea at the heart of every hypothesis test; the exact and approximate formulas come after.</p>
 </div>
 </section>
 </section>
