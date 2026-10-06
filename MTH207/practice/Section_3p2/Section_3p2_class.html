@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTH 207 &mdash; 3.2 The Product and Quotient Rules</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
+  loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
+<script id="MathJax-script" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0;
+  /* Line length, in characters, so it holds at every font size. 46ch was at the
+     narrow end of the readable 45-75 band and left half the width empty. This
+     is the AT-HOME value; the projected build overrides it below, because there
+     the scarce thing is screen area, not eye travel -- the font is already
+     ~30px on a 1920 screen, so a longer line is still easy to scan and buys
+     fewer scroll steps. */
+  --measure:68ch}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  /* Projected on a 1920 screen this lands near 30px, which is legible from the
+     back of the room; on a laptop later it falls back to comfortable reading. */
+  font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
+/* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
+   expose the next thing. Read later: it is just a long page. */
+:root{--measure:88ch}
+main{scroll-snap-type:y proximity}
+.beat{scroll-snap-align:start;min-height:100vh}
+.beat{padding:2.4rem 6vw 3rem;
+  border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
+h1{font-size:1.9rem;margin:0 0 .3rem}
+h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
+h2.cont{color:var(--slate);font-size:1.3rem}
+p{margin:0 0 .9rem;max-width:var(--measure)}
+ul{max-width:var(--measure)}
+.turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
+.turn.my{border-left-color:var(--slate);background:#f6f8fb}
+.badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;background:var(--amber);color:#3a2c00;padding:.32rem .6rem;
+  border-radius:3px;margin-bottom:.7rem}
+.turn.my .badge{background:var(--slate);color:#fff}
+.turn .work{font-size:.85rem;color:var(--slate);font-style:italic;margin:.6rem 0 0}
+.key{border-left:6px solid var(--ink);background:#f2f3f5;padding:.9rem 1.2rem;margin:1.2rem 0}
+.sol.shown{margin:1.1rem 0;border-left:5px solid var(--slate);background:#fff;
+  padding:.7rem 1.1rem;border-radius:0 5px 5px 0}
+.sol-label{display:block;font:600 .78rem/1 system-ui,sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate);margin-bottom:.5rem}
+details.sol{margin:1.1rem 0;border:1px solid var(--rule);border-radius:5px;background:#fff}
+details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-ui,sans-serif;
+  color:var(--slate)}
+details.sol[open] summary{border-bottom:1px solid var(--rule)}
+details.sol > :not(summary){padding:0 1.1rem}
+details.sol > p:last-child{padding-bottom:.9rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;
+  max-width:min(100%, calc(var(--measure) * 1.25))}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;margin:.6rem 0}
+table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--rule);padding:.3rem .9rem .3rem 0;text-align:left}
+th{border-bottom:2px solid var(--ink)}
+.boxed{margin:1.1rem 0;padding:.8rem 1.1rem;border-radius:5px;background:#fff;
+  border:1px solid var(--rule)}
+.boxed.dfn{border-left:5px solid var(--ink)}
+.boxed.thm{border-left:5px solid var(--amber)}
+.boxed.ex{border-left:5px solid var(--slate)}
+.badge.dfn{background:var(--ink);color:#fff}
+.badge.thm{background:var(--amber);color:#3a2c00}
+.ex{margin:1rem 0}
+.workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
+.badge.ex{background:var(--ink);color:#fff}
+.grid-item{margin:0}
+/* A figure is not prose. --measure is a READING measure -- how far the eye
+   travels across a line of text -- and has no business capping a diagram: on a
+   1920 projector it left roughly 370px empty beside every wide plot. So a
+   figure takes the full beat width and centres, and scale=N is now read as a
+   fraction of THAT, still centred, not of the reading measure. An img keeps
+   max-width (not width), so a small figure centres at its natural size instead
+   of being upscaled into blur.
+
+   No height cap: a beat is allowed to be taller than the screen. This is a
+   scrolling document, not a slide -- min-height:100vh is a floor. The
+   "over-tall slide scrolls its title away" rule belongs to the retired reveal
+   decks, which is why deck_check only geometry-checks when _slides.html
+   exists. */
+figure{margin:1.2rem auto;max-width:100%}
+figure img{max-width:100%;height:auto;display:block;margin:0 auto}
+button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
+  border-radius:3px;display:block;max-width:100%}
+button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+dialog.lb{border:none;padding:0;max-width:96vw;max-height:96vh;background:transparent}
+dialog.lb::backdrop{background:rgba(13,27,42,.88)}
+dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
+dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
+  background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem;text-align:center}
+header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
+header.top p{color:var(--slate);margin:.2rem 0 0}
+.dm{margin:.9rem 0;text-align:center}
+/* A derivation advanced by one button. [hidden] needs !important because .stp
+   sets display, which would otherwise win over the UA's hidden rule. */
+/* An equation chain. display:table so the three columns agree across rows --
+   that is the whole point: the = signs must line up. */
+.chain{display:table;margin:1.1rem 0 .4rem;border-collapse:collapse;
+  /* .beat is a column flexbox, which stretches its children to full width --
+     a shrink-to-fit table then became 1408px and the LHS floated to the far
+     right. align-self keeps the table the width of its own contents. */
+  align-self:start}
+.daybreak{display:flex;align-items:center;gap:1rem;margin:2.2rem 0 1.6rem;
+  color:var(--slate);font:600 .8rem/1 system-ui,sans-serif;letter-spacing:.1em;
+  text-transform:uppercase}
+.daybreak::before,.daybreak::after{content:"";flex:1;height:1px;
+  background:var(--rule)}
+.practicelink{margin:1.4rem 0 0}
+.practicelink a{display:inline-block;border:1px solid var(--amber);
+  border-radius:4px;padding:.45rem .9rem;color:var(--ink);text-decoration:none;
+  font:600 .9rem/1 system-ui,sans-serif;background:#fffdf5}
+.practicelink a:hover{background:var(--amber);color:#3a2c00}
+.ch-row{display:table-row}
+/* Row spacing. .12rem was fine while every row was one line tall, but a
+   chain whose rows are stacked fractions -- dividing inside a square root,
+   say -- ran them together with nothing to separate one step from the next.
+   These are table cells, so padding is the only lever; margin does nothing. */
+.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.45rem 0}
+.ch-l{text-align:right}
+.ch-e{text-align:center;padding-left:.5rem;padding-right:.5rem}
+.ch-r{text-align:left}
+/* The reason column. Set back and lighter so the algebra still reads as the
+   line and the citation as an annotation on it, not a second equation. */
+.ch-y{text-align:left;padding-left:2.2rem;font-size:.82em;color:#5b6b7a;
+  font-style:italic;max-width:26ch}
+.chain [hidden]{display:none!important}
+@media print{.chain [hidden]{display:table-cell!important}
+  .chain .ch-row[hidden]{display:table-row!important}}
+.steps{margin:1.1rem 0}
+.steps .stp{display:block;margin:.2rem 0}
+.steps [hidden]{display:none!important}
+.chain button.more,
+.steps button.more,
+details.sol button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
+  background:none;border:1px solid var(--amber);border-radius:50%;
+  width:2rem;height:2rem;padding:0;cursor:pointer;margin-top:.5rem;
+  display:inline-flex;align-items:center;justify-content:center}
+.chain button.more:hover,
+.steps button.more:hover,
+details.sol button.more:hover{background:#fff8e2}
+.chain button.more:focus-visible,
+.steps button.more:focus-visible,
+details.sol button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media print{.steps .stp{display:block!important}.steps button.more{display:none}}
+/* The in-page reveal. This used to be a text link to the twin page, and it was
+   missed constantly -- it looked like navigation, because it was. A filled
+   button that says what it does, in the first thing you see, is the fix. */
+/* --slate, not --blue: this palette has no --blue, and an undefined custom
+   property is not an error -- the background simply did not paint and the
+   button was white text on a cream page. Invisible, and working perfectly. */
+.revealall{font:600 1rem system-ui,sans-serif;cursor:pointer;
+  margin:.6rem 0 .2rem;padding:.55rem 1.1rem;border-radius:8px;
+  border:2px solid var(--slate);background:var(--slate);color:#fff}
+.revealall:hover{filter:brightness(1.12)}
+.revealall:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+.revealall[aria-pressed="true"]{background:var(--bg);color:var(--slate)}
+@media print{.revealall{display:none}}
+.switch{margin:.35rem 0 0}
+.switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px}
+.switch a:hover{border-bottom-width:2px}
+.switch a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media print{.switch{display:none}}
+.hint{position:fixed;right:1rem;bottom:1rem;font:.72rem system-ui,sans-serif;color:var(--slate);
+  background:#fff;border:1px solid var(--rule);border-radius:4px;padding:.35rem .6rem;opacity:.75}
+@media print{.beat{min-height:auto;page-break-inside:avoid}.hint{display:none}
+  details.sol{break-inside:avoid}details.sol summary{display:none}}
+</style></head>
+<body>
+<header class="top">
+  <h1>3.2 &nbsp;The Product and Quotient Rules</h1>
+  <p>MTH 207 Calculus I &mdash; Differentiation Rules</p>
+  <p class="switch"><button class="revealall" type="button" aria-pressed="false">Reveal all answers</button></p>
+</header>
+<main>
+<section class="beat" aria-label="The Guess You Already Disproved" data-source-line="78">
+  <h2>The Guess You Already Disproved</h2>
+<p>Five rules so far, and not one of them differentiates a <strong>product</strong>.
+Before Exam 1 you showed the obvious guess is false. Do it once more, because
+the wreckage tells us what the real rule has to look like.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Let $\displaystyle f(x)=x^{2}$ and $\displaystyle g(x)=x^{3}$. Work out both of these.</p>
+<div class="dm">$$\text{(i)}\quad \frac{d}{dx}\left[f(x)g(x)\right]
+\qquad\qquad
+\text{(ii)}\quad f'(x)\,g'(x)$$</div>
+<p><strong>No new rules</strong> &mdash; multiply first for (i).</p></div>
+  <details class="sol"><summary>Show: (i) f(x)g(x)=x^ 5 , so the derivative&hellip;</summary>
+<p>(i) $\displaystyle f(x)g(x)=x^{5}$, so the derivative is $\displaystyle 5x^{4}$.
+(ii) $\displaystyle f'(x)g'(x)=(2x)(3x^{2})=6x^{3}$. Not equal, and not even the same degree.</p>
+  </details>
+  <div class="key"><p>So $\displaystyle (fg)' \neq f'g'$. But look at what the right answer is made of:
+$\displaystyle 5x^{4}$, from pieces $\displaystyle x^{2}$, $\displaystyle x^{3}$, $\displaystyle 2x$, $\displaystyle 3x^{2}$. The honest question is
+not “what is the rule” &mdash; it is <strong>what combination of those four
+pieces gives $\displaystyle 5x^{4}$</strong>.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Try $\displaystyle f'(x)\,g(x) + f(x)\,g'(x)$ on these two functions. What do you
+get?</p></div>
+  <details class="sol"><summary>Show: the answer</summary>
+<p>$\displaystyle (2x)(x^{3}) + (x^{2})(3x^{2}) = 2x^{4} + 3x^{4} = 5x^{4}$. It works.</p>
+  </details>
+</section>
+<section class="beat" aria-label="Where the Product Rule Comes From" data-source-line="141">
+  <h2>Where the Product Rule Comes From</h2>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; The Product Rule</span><p>If $\displaystyle f$ and $\displaystyle g$ are both differentiable, then</p>
+<div class="dm">$$\frac{d}{dx}\left[f(x)g(x)\right] \;=\; f'(x)\,g(x) \;+\; f(x)\,g'(x)$$</div></div>
+  <div class="key"><p><strong>Learn the shape, not the letters.</strong> It is a <strong>sum of two
+products</strong>, and each product carries a derivative on <strong>exactly one</strong>
+factor &mdash; first one gets primed, then the other. Two terms, two factors
+apiece, one prime each.</p>
+<p>That last part is the whole content of the previous frame: a term with
+<em>two</em> primes in it, $\displaystyle f'g'$, is the guess you already killed.</p></div>
+  <div class="turn my"><span class="badge">My turn</span><p>One instance proves nothing, so here is the argument. It runs through
+the definition, and it needs exactly one trick.</p></div>
+  <div class="chain" aria-live="polite">
+    <div class="ch-row"><span class="ch-l">$\displaystyle \frac{d}{dx}\left[f(x)g(x)\right]$</span><span class="ch-e">$\displaystyle =$</span><span class="ch-r rv" hidden>$\displaystyle \lim_{h\to 0}\frac{f(x+h)g(x+h)-f(x)g(x)}{h}$</span><span class="ch-y pair" hidden>the definition of the derivative</span></div>
+    <div class="ch-row rv" hidden><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\frac{f(x+h)g(x+h)-f(x+h)g(x)+f(x+h)g(x)-f(x)g(x)}{h}$</span><span class="ch-y"><strong>subtract and add</strong> $\displaystyle f(x+h)g(x)$ &mdash; the whole trick</span></div>
+    <div class="ch-row rv" hidden><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle \lim_{h\to 0}\left[f(x+h)\,\frac{g(x+h)-g(x)}{h} + g(x)\,\frac{f(x+h)-f(x)}{h}\right]$</span><span class="ch-y">group the first two and the last two, then factor</span></div>
+    <div class="ch-row rv" hidden><span class="ch-l"></span><span class="ch-e">$\displaystyle =$</span><span class="ch-r">$\displaystyle f(x)\,g'(x) + g(x)\,f'(x)$</span><span class="ch-y">two difference quotients; and $\displaystyle \lim_{h\to 0}f(x+h) = f(x)$ because $\displaystyle f$ is continuous</span></div>
+    <button type="button" class="more" aria-label="Next step of watch for the one step you could not have guessed">&#9654;</button>
+  </div>
+  <div class="key"><p>Subtracting and adding the same thing changes nothing, which is why
+it is legal &mdash; and it turns one hopeless fraction into two difference
+quotients, which is why it is worth doing. That is the entire proof.</p></div>
+  <div class="key"><p>Notice the last line used that $\displaystyle f$ is <strong>continuous</strong> at $\displaystyle x$. We
+only assumed $\displaystyle f$ was differentiable &mdash; and differentiable implies continuous,
+from §2.8. That theorem is not decoration; it is load-bearing here.</p></div>
+</section>
+<section class="beat" aria-label="Now You: Products" data-source-line="190">
+  <h2>Now You: Products</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Differentiate each. Say which rule you are using before you use it.</p>
+<div class="dm">$$\text{(a)}\;\; y = 3e^{x}
+\qquad
+\text{(b)}\;\; y = x\,e^{x}
+\qquad
+\text{(c)}\;\; y = \left(x^{2}+3x\right)e^{x}$$</div></div>
+  <details class="sol"><summary>Show: the first one is a trap, and the trap is the lesson</summary>
+<p><strong>(a)</strong> $\displaystyle 3$ is a <em>constant</em>, not a function of $\displaystyle x$. This is the
+Constant Multiple Rule: $\displaystyle y' = 3e^{x}$. The Product Rule also works &mdash; it gives
+$\displaystyle 0\cdot e^{x} + 3e^{x}$ &mdash; but you did not need it.</p>
+    <div class="rv" hidden><p><strong>(b)</strong> Now both factors move, so the Product Rule is required:</p>
+<div class="dm">$$y' = (1)e^{x} + x\,e^{x} = e^{x}(1+x)$$</div></div>
+    <div class="rv" hidden><p><strong>(c)</strong> Same shape, bigger first factor:</p>
+<div class="dm">$$y' = (2x+3)e^{x} + \left(x^{2}+3x\right)e^{x} = e^{x}\left(x^{2}+5x+3\right)$$</div></div>
+    <button type="button" class="more" aria-label="Next part of the first one is a trap, and the trap is the lesson">&#9654;</button>
+  </details>
+  <div class="key"><p>Factoring $\displaystyle e^{x}$ out at the end is not required, but do it anyway:
+every one of these answers has $\displaystyle e^{x}$ in both terms, and the factored form is
+what you will need the moment anyone asks where $\displaystyle y'=0$.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Now a tangent line. For $\displaystyle y = x\,e^{x}$, find the equation of the
+tangent at $\displaystyle x=0$.</p></div>
+  <details class="sol"><summary>Show: y(0) = 0 e^ 0 = 0&hellip;</summary>
+<p>$\displaystyle y(0) = 0\cdot e^{0} = 0$, and from (b), $\displaystyle y'(0) = e^{0}(1+0) = 1$. So the
+tangent is $\displaystyle y - 0 = 1(x-0)$, that is, $\displaystyle \mathbf{y = x}$.</p>
+  </details>
+</section>
+<section class="beat" aria-label="Think Before You Differentiate" data-source-line="234">
+  <h2>Think Before You Differentiate</h2>
+<p>The Product and Quotient Rules are always <em>correct</em>. They are not always
+the <strong>fastest</strong>, and on a timed paper that difference is points.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Differentiate these. Look hard at each one <strong>before</strong> you reach
+for a rule.</p>
+<div class="dm">$$\text{(a)}\;\; H(u) = \left(u - 3\sqrt{u}\right)\left(u + 3\sqrt{u}\right)
+\qquad
+\text{(b)}\;\; f(x) = \frac{x^{3}+2x}{x}$$</div></div>
+  <details class="sol"><summary>Show: both collapse before any rule is needed</summary>
+<p><strong>(a)</strong> That is a difference of squares:</p>
+<div class="dm">$$H(u) = u^{2} - \left(3\sqrt{u}\right)^{2} = u^{2} - 9u
+\qquad\Longrightarrow\qquad H'(u) = 2u - 9$$</div>
+    <div class="rv" hidden><p><strong>(b)</strong> Divide term by term, which is legal for every $\displaystyle x\neq0$:</p>
+<div class="dm">$$f(x) = x^{2} + 2 \qquad\Longrightarrow\qquad f'(x) = 2x$$</div></div>
+    <div class="rv" hidden><p>Both are Power Rule problems wearing a disguise. The Product and Quotient Rules
+get the same answers and take three times as long.</p></div>
+    <button type="button" class="more" aria-label="Next part of both collapse before any rule is needed">&#9654;</button>
+  </details>
+  <div class="key"><p>Before any rule: <strong>can I multiply it out, divide it through, or
+factor it?</strong> Algebra you already have beats a rule you just learned, and this is
+the same pitch as the whole course &mdash; calculus is algebra and trig plus one
+new idea.</p></div>
+</section>
+<section class="beat" aria-label="The Quotient Rule, and the Order That Ruins It" data-source-line="300">
+  <h2>The Quotient Rule, and the Order That Ruins It</h2>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; The Quotient Rule</span><p>If $\displaystyle f$ and $\displaystyle g$ are differentiable and $\displaystyle g(x)\neq 0$, then</p>
+<div class="dm">$$\frac{d}{dx}\left[\frac{f(x)}{g(x)}\right]
+\;=\; \frac{f'(x)\,g(x) \;-\; f(x)\,g'(x)}{\left[g(x)\right]^{2}}$$</div></div>
+  <div class="key"><p><strong>Say it this way and the order stays put.</strong> Write
+$\displaystyle \text{hi}$ for the top, $\displaystyle \text{lo}$ for the bottom, and $\displaystyle D$ for “the
+derivative of”:</p>
+<div class="dm">$$\left(\frac{\text{hi}}{\text{lo}}\right)'
+\;=\; \frac{\text{lo}\,D\,\text{hi} \;-\; \text{hi}\,D\,\text{lo}}{\text{lo}^{2}}$$</div>
+<p><strong>“Lo D hi, minus hi D lo, over lo squared.”</strong> It is the same rule as
+above, and it is worth saying out loud until it is automatic &mdash; notice that it
+starts with the <strong>bottom</strong>, which is precisely the thing people get
+backwards.</p></div>
+<p>It is proved from the Product Rule &mdash; write $\displaystyle f = (f/g)\cdot g$ and solve. We
+are not doing that today; it is in §3.2 of the book if you want it.</p>
+  <div class="key"><p>Two ways to get this wrong, and both are in tonight's homework.
+<strong>First:</strong> it is <em>not</em> $\displaystyle f'/g'$. <strong>Second, and far more common:</strong>
+the numerator is subtracted in one order only. $\displaystyle f'g - fg'$ is right;
+$\displaystyle fg' - f'g$ is its negative, and a sign error on every single problem.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Even with <em>lo D hi</em>, you will doubt yourself mid-exam. So
+learn to <strong>check</strong>.
+Take $\displaystyle f(x)=x^{3}$ and $\displaystyle g(x)=x$, where you already know the answer, and run the
+Quotient Rule both ways. Which order survives?</p></div>
+  <details class="sol"><summary>Show: the check, in ten seconds</summary>
+<p>You know the answer without any rule: $\displaystyle \frac{x^{3}}{x} = x^{2}$, so the
+derivative is $\displaystyle 2x$.</p>
+    <div class="rv" hidden><p>Right order, $\displaystyle f'g$ first:</p>
+<div class="dm">$$\frac{(3x^{2})(x) - (x^{3})(1)}{x^{2}} = \frac{3x^{3}-x^{3}}{x^{2}} = \frac{2x^{3}}{x^{2}} = 2x$$</div>
+<p>That is the $\displaystyle 2x$ you already knew, so this order is the right one.</p></div>
+    <div class="rv" hidden><p>Wrong order, $\displaystyle fg'$ first:</p>
+<div class="dm">$$\frac{(x^{3})(1) - (3x^{2})(x)}{x^{2}} = \frac{x^{3}-3x^{3}}{x^{2}} = \frac{-2x^{3}}{x^{2}} = -2x$$</div>
+<p>Off by a sign, and it would be off by a sign on every problem you did.</p></div>
+    <button type="button" class="more" aria-label="Next part of the check, in ten seconds">&#9654;</button>
+  </details>
+  <div class="key"><p>That is a ten-second test you can run <strong>on the exam</strong>, on a
+function simple enough to differentiate another way. You do not have to
+remember the order &mdash; you have to remember that you can check it.</p></div>
+</section>
+<section class="beat" aria-label="Now You: Quotients" data-source-line="370">
+  <h2>Now You: Quotients</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Differentiate.</p>
+<div class="dm">$$\text{(a)}\;\; g(x) = \frac{2+5x}{3-4x}
+\qquad\qquad
+\text{(b)}\;\; y = \frac{e^{x}}{x}$$</div></div>
+  <details class="sol"><summary>Show: (a) &mdash; and the numerator does not simplify as much as you hope</summary>
+<p>$\displaystyle f = 2+5x$ so $\displaystyle f' = 5$;   $\displaystyle g = 3-4x$ so $\displaystyle g' = -4$.</p>
+<div class="dm">$$y' = \frac{5(3-4x) - (2+5x)(-4)}{(3-4x)^{2}}
+= \frac{15-20x + 8+20x}{(3-4x)^{2}}
+= \frac{23}{(3-4x)^{2}}$$</div>
+<p>The $\displaystyle x$ terms cancel. That is a feature of this problem, not a rule &mdash; but it
+is a good sign you got the order right, because the wrong order gives $\displaystyle -23$.</p>
+  </details>
+  <details class="sol"><summary>Show: (b) &mdash; and then look at it again</summary>
+<div class="dm">$$y' = \frac{e^{x}\cdot x - e^{x}\cdot 1}{x^{2}}
+= \frac{e^{x}(x-1)}{x^{2}}$$</div>
+  </details>
+  <div class="key"><p>In (b), factoring $\displaystyle e^{x}$ out of the numerator is what turns an
+answer into something you can read: it is zero exactly at $\displaystyle x=1$, and that is
+the question §4.1 will ask about this function.</p></div>
+</section>
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="407">
+  <h2>What You Should Be Able to Do</h2>
+<ul><li>State the Product Rule and the Quotient Rule, and say why
+      $\displaystyle (fg)' \neq f'g'$.</li><li>Differentiate a product or a quotient, including ones with $\displaystyle e^{x}$ in
+      them.</li><li><strong>Simplify first when you can</strong> &mdash; multiply out, divide through,
+      factor &mdash; and recognize when a rule is not needed at all.</li><li>Check the Quotient Rule's order on a function you already know, instead
+      of hoping you remembered it.</li><li>Find a tangent line to a curve whose slope needs one of these rules.</li></ul>
+  <div class="key"><p>HW15 and HW16 are both due Sunday night. HW15 is products, HW16 is
+quotients &mdash; do them in that order; the second is harder and assumes the
+first.</p></div>
+</section>
+</main>
+<p class="hint">7 sections &middot; solutions open on click</p>
+<dialog class="lb" aria-label="Enlarged figure">
+  <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
+</dialog>
+<script>
+// Editor scroll-sync. Same protocol the filled/blank builds use, so the editor
+// side needs no new message types: we post htmlSectionChanged as the reader
+// scrolls, and honour goToSection when the cursor moves in the tex.
+(function(){
+  if(!window.parent || window.parent===window) return;
+  var secs=document.querySelectorAll('main > section[data-source-line]');
+  if(!secs.length) return;
+  var cur=null, t=null;
+  function report(){
+    // the section covering 30% down the viewport -- the one being read, not
+    // the one clipped at the top edge
+    var mark=window.innerHeight*0.3, best=null;
+    for(var i=0;i<secs.length;i++){
+      var r=secs[i].getBoundingClientRect();
+      if(r.top<=mark && r.bottom>0) best=secs[i];
+    }
+    if(!best) return;
+    var line=parseInt(best.dataset.sourceLine,10);
+    if(!isNaN(line) && line!==cur){
+      cur=line;
+      window.parent.postMessage({type:'htmlSectionChanged',sourceLine:line},'*');
+    }
+  }
+  addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(report,80);},
+                   {passive:true});
+  addEventListener('message',function(e){
+    if(!e.data || e.data.type!=='goToSection' || e.data.sourceLine==null) return;
+    // nearest section at or before the cursor: a cursor inside a frame should
+    // scroll to that frame, not fail to match its exact opening line
+    var best=null;
+    for(var i=0;i<secs.length;i++){
+      if(parseInt(secs[i].dataset.sourceLine,10)<=e.data.sourceLine) best=secs[i];
+    }
+    if(best){ cur=parseInt(best.dataset.sourceLine,10);
+              best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+// ── Advancing the page ────────────────────────────────────────────────────
+// One action, whether it arrives from a block's own arrow or from a key. A
+// presentation remote is just a USB keyboard sending Right/PageDown, so making
+// the page respond to those keys is all a clicker needs -- no pairing, no app.
+//
+// The order is document order within the section you are looking at: chain
+// rows, step lines and closed reveals alike. When a section has nothing left
+// hidden, the next press moves to the next section. That is the slide feel,
+// on a scrolling page.
+(function(){
+  function units(sec){
+    return [].slice.call(sec.querySelectorAll('.rv, .stp, details.sol'));
+  }
+  function covered(u){
+    return u.tagName === 'DETAILS' ? !u.open : u.hidden;
+  }
+  function uncover(u, yes){
+    if(u.tagName === 'DETAILS'){ u.open = yes; } else { u.hidden = !yes; }
+    pair(u, yes);
+  }
+  // Anything marked .pair in the same chain row rides with it.
+  function pair(u, yes){
+    var row = u.closest ? u.closest('.ch-row') : null;
+    if(!row) return;
+    [].forEach.call(row.querySelectorAll('.pair'), function(p){ p.hidden = !yes; });
+  }
+  function tidy(sec){
+    // a block's arrow retires once that block has nothing left to give
+    [].forEach.call(sec.querySelectorAll('.steps, .chain'), function(box){
+      var b = box.querySelector('button.more');
+      if(b) b.hidden = !box.querySelector('.rv[hidden], .stp[hidden]');
+    });
+  }
+  function sections(){
+    return [].slice.call(document.querySelectorAll('main > section.beat'));
+  }
+  function here(){
+    var mark = window.innerHeight * 0.3, best = null;
+    sections().forEach(function(s){
+      var r = s.getBoundingClientRect();
+      if(r.top <= mark && r.bottom > 0) best = s;
+    });
+    return best || sections()[0];
+  }
+  function go(sec, d){
+    var all = sections(), i = all.indexOf(sec) + d;
+    if(i >= 0 && i < all.length) all[i].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.__advance = function(d){
+    var sec = here();
+    if(!sec) return;
+    var us = units(sec);
+    if(d > 0){
+      for(var i = 0; i < us.length; i++){
+        if(covered(us[i])){
+          uncover(us[i], true); tidy(sec);
+          us[i].scrollIntoView({block:'nearest'});
+          return;
+        }
+      }
+      go(sec, 1);
+    } else {
+      for(var j = us.length - 1; j >= 0; j--){
+        if(!covered(us[j])){ uncover(us[j], false); tidy(sec); return; }
+      }
+      go(sec, -1);
+    }
+  };
+  var FWD = {ArrowRight:1, ArrowDown:1, PageDown:1, ' ':1, Enter:1, Spacebar:1};
+  var BACK = {ArrowLeft:1, ArrowUp:1, PageUp:1, Backspace:1};
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    // let a focused control have its own keys
+    var t = e.target;
+    if(t && t.closest && t.closest('button, a, summary, input, textarea, dialog')) return;
+    if(FWD[e.key]){ e.preventDefault(); window.__advance(1); }
+    else if(BACK[e.key]){ e.preventDefault(); window.__advance(-1); }
+  });
+
+  // Reveal-all. Drives the same uncover() every other control uses, so a page
+  // opened this way ends in exactly the state stepping through would leave it.
+  var ra = document.querySelector('.revealall');
+  if(ra) ra.addEventListener('click', function(){
+    var on = ra.getAttribute('aria-pressed') === 'true';
+    [].forEach.call(sections(), function(sec){
+      units(sec).forEach(function(u){ uncover(u, !on); });
+      tidy(sec);
+    });
+    ra.setAttribute('aria-pressed', on ? 'false' : 'true');
+    ra.textContent = on ? 'Reveal all answers' : 'Hide all answers';
+  });
+})();
+
+// One button per derivation: each press uncovers the next line.
+(function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.steps > button.more, .chain > button.more, details.sol > button.more');
+    if(!b) return;
+    var box=b.parentElement;
+    // .rv marks a revealable unit: a whole step block, a chain row, or the
+    // right-hand side of the chain's first row. One selector covers all three.
+    var next=box.querySelector('.rv[hidden], .stp[hidden]');
+    if(next){
+      next.hidden=false;
+      // its citation, if it has one, arrives on the same press
+      var row=next.closest?next.closest('.ch-row'):null;
+      if(row) [].forEach.call(row.querySelectorAll('.pair'),
+                              function(p){ p.hidden=false; });
+    }
+    if(!box.querySelector('.rv[hidden], .stp[hidden]')) b.hidden=true;
+  });
+})();
+(function(){
+  var dlg=document.querySelector('dialog.lb'), img=dlg.querySelector('img');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button.zoom');
+    if(b){ img.src=b.dataset.src;
+           img.alt=b.querySelector('img').alt;   // carry the real alt text over
+           dlg.showModal(); return; }
+    if(e.target.closest('dialog.lb .close') || e.target===dlg) dlg.close();
+  });
+  dlg.addEventListener('close',function(){ img.removeAttribute('src'); });
+})();
+</script>
+</body></html>
