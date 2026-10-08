@@ -567,7 +567,10 @@ window.Quarto = {
   <li><a href="#sec-simulation-power" id="toc-sec-simulation-power" class="nav-link" data-scroll-target="#sec-simulation-power"><span class="header-section-number">30.4</span> Simulation-based power estimation</a></li>
   <li><a href="#sec-power-curves" id="toc-sec-power-curves" class="nav-link" data-scroll-target="#sec-power-curves"><span class="header-section-number">30.5</span> Power curves</a></li>
   <li><a href="#sec-power-targets" id="toc-sec-power-targets" class="nav-link" data-scroll-target="#sec-power-targets"><span class="header-section-number">30.6</span> Typical power targets</a></li>
-  <li><a href="#sec-computing-power" id="toc-sec-computing-power" class="nav-link" data-scroll-target="#sec-computing-power"><span class="header-section-number">30.7</span> Computing power for a two-sample test</a></li>
+  <li><a href="#sec-computing-power" id="toc-sec-computing-power" class="nav-link" data-scroll-target="#sec-computing-power"><span class="header-section-number">30.7</span> Computing power for a two-sample test</a>
+  <ul class="collapse">
+  <li><a href="#setting-up-the-null-and-alternative-distributions" id="toc-setting-up-the-null-and-alternative-distributions" class="nav-link" data-scroll-target="#setting-up-the-null-and-alternative-distributions"><span class="header-section-number">30.7.1</span> Setting up the null and alternative distributions</a></li>
+  </ul></li>
   <li><a href="#sec-statistical-power-review" id="toc-sec-statistical-power-review" class="nav-link" data-scroll-target="#sec-statistical-power-review"><span class="header-section-number">30.8</span> Chapter review</a>
   <ul class="collapse">
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">30.8.1</span> Summary</a></li>
@@ -709,9 +712,8 @@ Table&nbsp;30.1: Probabilities of each outcome in a hypothesis test.
 <p>The power of the test is the probability of rejecting the null claim when the alternative claim is true.</p>
 <p>How easy it is to detect the effect depends on both how big the effect is (e.g., how good the medical treatment is) as well as the sample size.</p>
 </div>
-<div class="original">
 <div class="workedexample">
-<p>Consider the blood pressure medication example from the Type II error and power chapter. A new medication is expected to lower blood pressure by 3 mmHg compared to a standard medication. The standard deviation of blood pressure change is <span class="math inline">\(\sigma = 12\)</span> mmHg, and we use a two-sided test with <span class="math inline">\(\alpha = 0.05\)</span>.</p>
+<p>Consider a clinical trial comparing a new blood pressure medication to a standard one. The new medication is expected to lower blood pressure by 3 mmHg compared to a standard medication. The standard deviation of blood pressure change is <span class="math inline">\(\sigma = 12\)</span> mmHg, and we use a two-sided test with <span class="math inline">\(\alpha = 0.05\)</span>.</p>
 <p>What is the approximate power with <span class="math inline">\(n = 100\)</span> patients per group? With <span class="math inline">\(n = 500\)</span> per group?</p>
 <hr>
 <p><strong>With <span class="math inline">\(n = 100\)</span> per group:</strong></p>
@@ -727,6 +729,7 @@ Table&nbsp;30.1: Probabilities of each outcome in a hypothesis test.
 <p><span class="math display">\[Z = \frac{-1.49 - (-3)}{0.76} = \frac{1.51}{0.76} = 1.99 \quad \to \quad P(Z &lt; 1.99) \approx 0.977\]</span></p>
 <p>The power is approximately <strong>97.7%</strong> — excellent. With 500 patients per group, we would almost certainly detect a 3 mmHg effect.</p>
 </div>
+<div class="original">
 <section id="effect-size-uparrow-effect-to-uparrow-power" class="level3" data-number="30.3.2">
 <h3 data-number="30.3.2" class="anchored" data-anchor-id="effect-size-uparrow-effect-to-uparrow-power"><span class="header-section-number">30.3.2</span> Effect size: <span class="math inline">\(\uparrow\)</span> effect <span class="math inline">\(\to \uparrow\)</span> power</h3>
 <p>A larger effect is easier to detect. If a drug lowers blood pressure by 10 mmHg instead of 3 mmHg, the signal is much stronger relative to the noise, and even a modest sample size will detect it.</p>
@@ -834,9 +837,9 @@ Table&nbsp;30.2: Factors that affect power. All relationships assume the other f
 <li><strong>Sample size</strong> <span class="math inline">\(n = 25\)</span>, <strong>discernibility level</strong> <span class="math inline">\(\alpha = 0.05\)</span>.</li>
 <li><strong>One simulated experiment</strong>: generate 25 random values from <span class="math inline">\(N(15, 6)\)</span>, compute <span class="math inline">\(\bar{x}\)</span> and <span class="math inline">\(s\)</span>, calculate <span class="math inline">\(t = (\bar{x} - 12) / (s / \sqrt{25})\)</span>, find the <span class="math inline">\(p\)</span>-value, and check if <span class="math inline">\(p &lt; 0.05\)</span>.</li>
 <li><strong>Repeat</strong> 10,000 times.</li>
-<li><strong>Estimate power</strong>: suppose 8,247 of the 10,000 simulations rejected <span class="math inline">\(H_0\)</span>. Then <span class="math inline">\(\widehat{\text{Power}} = 8{,}247 / 10{,}000 = 0.825\)</span>.</li>
+<li><strong>Estimate power</strong>: in one run of this simulation (<code>set.seed(30)</code> in R), 6,706 of the 10,000 simulated studies rejected <span class="math inline">\(H_0\)</span>, so <span class="math inline">\(\widehat{\text{Power}} = 6{,}706/10{,}000 \approx 0.67\)</span>.</li>
 </ol>
-<p>She would estimate the power at about 82.5%, which exceeds the conventional 80% target.</p>
+<p>She would estimate the power at about 67%, short of the conventional 80% target; she would need about 34 sites to reach 80%.</p>
 </div>
 <p>The beauty of simulation-based power analysis is its flexibility. It works for any test procedure — not just <span class="math inline">\(t\)</span>-tests — and can accommodate complex scenarios like non-normal data, unequal group sizes, missing data, or multi-stage designs.</p>
 </section>
@@ -922,7 +925,7 @@ From the curve, at <span class="math inline">\(n = 100\)</span> per group the po
 <div class="workedexample">
 <p>Why is 80% a reasonable target? Why not 95% or 99%?</p>
 <hr>
-<p>The choice of 80% reflects a practical tradeoff. Increasing power beyond 80% requires increasingly large sample sizes, and the gains become smaller. Going from 80% to 90% power might require 30-50% more observations. Going from 90% to 95% might require another 30% or more. At some point, the cost and logistical difficulty of recruiting additional participants outweigh the marginal reduction in Type II error risk.</p>
+<p>The choice of 80% reflects a practical tradeoff. Increasing power beyond 80% requires increasingly large sample sizes, and the gains become smaller. Going from 80% to 90% power might require 30-50% more observations. Going from 90% to 95% might require roughly another 25%. At some point, the cost and logistical difficulty of recruiting additional participants outweigh the marginal reduction in Type II error risk.</p>
 <p>The 80% target also reflects the observation that in most settings, a Type II error (missing a real effect) is considered less serious than a Type I error (claiming a false effect), so we are comfortable with <span class="math inline">\(\beta = 0.20\)</span> even when <span class="math inline">\(\alpha = 0.05\)</span>. If the consequences of missing an effect are severe — for example, in a drug safety trial — a higher power target is appropriate.</p>
 </div>
 <div class="caution">
@@ -932,7 +935,6 @@ From the curve, at <span class="math inline">\(n = 100\)</span> per group the po
 </section>
 <section id="sec-computing-power" class="level2" data-number="30.7">
 <h2 data-number="30.7" class="anchored" data-anchor-id="sec-computing-power"><span class="header-section-number">30.7</span> Computing power for a two-sample test</h2>
-<div class="original">
 <p>While a full derivation of power formulas is beyond the scope of this course, it is useful to see the mechanics of a power calculation for the common case of comparing two group means. This section walks through the logic step by step using the blood pressure medication example.</p>
 <section id="setting-up-the-null-and-alternative-distributions" class="level3" data-number="30.7.1">
 <h3 data-number="30.7.1" class="anchored" data-anchor-id="setting-up-the-null-and-alternative-distributions"><span class="header-section-number">30.7.1</span> Setting up the null and alternative distributions</h3>
@@ -955,9 +957,6 @@ From the curve, at <span class="math inline">\(n = 100\)</span> per group the po
 <p><span class="math display">\[Z = \frac{-3.33 - (-3)}{1.70} = \frac{-0.33}{1.70} = -0.20\]</span></p>
 <p><span class="math display">\[P(Z &lt; -0.20) \approx 0.42\]</span></p>
 <p>The power is approximately <strong>42%</strong>. This is quite low — the study has less than a coin-flip chance of detecting the 3 mmHg effect.</p>
-</section>
-</div>
-<div class="original">
 <div class="guidedpractice">
 <p>Using the same setup (<span class="math inline">\(\sigma = 12\)</span>, <span class="math inline">\(\alpha = 0.05\)</span>, true effect <span class="math inline">\(= -3\)</span> mmHg), compute the power when <span class="math inline">\(n = 250\)</span> per group.</p>
 <details>
@@ -967,7 +966,7 @@ Show answer
 With <span class="math inline">\(n = 250\)</span>: <span class="math inline">\(SE = 12\sqrt{2/250} = 12 \times 0.0894 = 1.073\)</span>. Rejection boundary: <span class="math inline">\(1.96 \times 1.073 = 2.10\)</span>. Under <span class="math inline">\(H_A\)</span> centered at <span class="math inline">\(-3\)</span>: <span class="math inline">\(Z = (-2.10 - (-3)) / 1.073 = 0.90/1.073 = 0.84\)</span>. <span class="math inline">\(P(Z &lt; 0.84) \approx 0.80\)</span>. The power is approximately 80% — right at the conventional target. So about 250 patients per group would be needed to achieve 80% power for this effect size.
 </details>
 </div>
-</div>
+</section>
 </section>
 <section id="sec-statistical-power-review" class="level2" data-number="30.8">
 <h2 data-number="30.8" class="anchored" data-anchor-id="sec-statistical-power-review"><span class="header-section-number">30.8</span> Chapter review</h2>

@@ -629,19 +629,24 @@ window.Quarto = {
 <p><span class="math display">\[P(\text{no errors}) = 0.95^6 = 0.735\]</span></p>
 <p>So the probability of making <strong>at least one</strong> Type I error is:</p>
 <p><span class="math display">\[P(\text{at least one error}) = 1 - 0.735 = 0.265\]</span></p>
-<p>That is about a 27% chance of at least one false positive – much higher than the 5% we intended.</p>
+<p>That is about a 27% chance of at least one false positive if the tests were independent. Pairwise comparisons are not actually independent – each group appears in several comparisons – so the true chance is somewhat lower (about 20% for all six comparisons among four groups), but it is still much higher than the 5% we intended.</p>
 </div>
 <section id="family-wise-error-rate" class="level3 original" data-number="18.1.1">
 <h3 data-number="18.1.1" class="anchored" data-anchor-id="family-wise-error-rate"><span class="header-section-number">18.1.1</span> Family-wise error rate</h3>
 <p>The probability of making at least one Type I error across all tests in a family of comparisons is called the <strong>family-wise error rate</strong> (FWER). When conducting <span class="math inline">\(m\)</span> independent tests, each at discernibility level <span class="math inline">\(\alpha\)</span>, the FWER is:</p>
 <p><span class="math display">\[\text{FWER} = 1 - (1 - \alpha)^m\]</span></p>
-<p>The table below shows how the FWER grows with the number of comparisons when <span class="math inline">\(\alpha = 0.05\)</span>:</p>
+<p>The table below applies this independent-tests formula to all pairwise comparisons among <span class="math inline">\(k\)</span> groups when <span class="math inline">\(\alpha = 0.05\)</span>:</p>
 <table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: center;">Number of groups (<span class="math inline">\(k\)</span>)</th>
 <th style="text-align: center;">Number of comparisons (<span class="math inline">\(m\)</span>)</th>
-<th style="text-align: center;">FWER</th>
+<th style="text-align: center;">FWER from the independent-tests formula</th>
 </tr>
 </thead>
 <tbody>
@@ -672,7 +677,7 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>With 10 groups, there is a 90% chance of making at least one Type I error if we use unadjusted pairwise tests. This is the core of the multiple comparisons problem: we need procedures that control the FWER at an acceptable level (typically 0.05).</p>
+<p>These values are an approximation. Pairwise comparisons share groups, so the tests are correlated, and the actual FWER for unadjusted pairwise <span class="math inline">\(t\)</span>-tests is lower than the formula gives – roughly 0.12 for 3 groups and about 0.6 for 10 groups. Even so, with 10 groups we are more likely than not to make at least one Type I error if we use unadjusted pairwise tests. This is the core of the multiple comparisons problem: we need procedures that control the FWER at an acceptable level (typically 0.05).</p>
 <div class="definition">
 <p><strong>Family-wise error rate (FWER).</strong></p>
 <p>The <strong>family-wise error rate</strong> is the probability of making one or more Type I errors among all the hypothesis tests in a family of comparisons. Methods like the Bonferroni correction and Tukey’s HSD are designed to keep the FWER at or below a specified level <span class="math inline">\(\alpha\)</span>.</p>
@@ -699,9 +704,9 @@ window.Quarto = {
 <p>The Bonferroni correction is simple and broadly applicable – it can be used with any type of test, not just pairwise comparisons of means. However, it is <strong>conservative</strong>, meaning it may fail to detect real differences when they exist (higher Type II error). When the number of comparisons is very large, the Bonferroni correction can be overly strict.</p>
 <section id="example-exam-scores" class="level3" data-number="18.2.1">
 <h3 data-number="18.2.1" class="anchored" data-anchor-id="example-exam-scores"><span class="header-section-number">18.2.1</span> Example: Exam scores</h3>
-<p>Suppose an ANOVA comparing three exam versions (A, B, C) gave <span class="math inline">\(F = 3.48\)</span> with <span class="math inline">\(p = 0.036\)</span>. We rejected <span class="math inline">\(H_0\)</span> and now want to know which exams differ.</p>
+<p>The ANOVA comparing the three exam versions (A, B, C) in the previous chapter gave <span class="math inline">\(F = 3.48\)</span>, with a <span class="math inline">\(p\)</span>-value of 0.033 from the F-distribution. We rejected <span class="math inline">\(H_0\)</span> and now want to know which exams differ.</p>
 <p>With <span class="math inline">\(k = 3\)</span> groups, there are <span class="math inline">\(\binom{3}{2} = 3\)</span> pairwise comparisons. The Bonferroni-adjusted discernibility level is <span class="math inline">\(\alpha^* = 0.05/3 = 0.0167\)</span>.</p>
-<p>Suppose the three pairwise <span class="math inline">\(t\)</span>-test <span class="math inline">\(p\)</span>-values are:</p>
+<p>Two-sample <span class="math inline">\(t\)</span>-tests for the three pairs (using the pooled standard deviation from the ANOVA) give these <span class="math inline">\(p\)</span>-values:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -713,17 +718,17 @@ window.Quarto = {
 <tbody>
 <tr class="odd">
 <td>A vs.&nbsp;B</td>
-<td style="text-align: center;">0.245</td>
+<td style="text-align: center;">0.222</td>
 <td style="text-align: center;">No</td>
 </tr>
 <tr class="even">
 <td>A vs.&nbsp;C</td>
-<td style="text-align: center;">0.068</td>
+<td style="text-align: center;">0.144</td>
 <td style="text-align: center;">No</td>
 </tr>
 <tr class="odd">
 <td>B vs.&nbsp;C</td>
-<td style="text-align: center;">0.011</td>
+<td style="text-align: center;">0.009</td>
 <td style="text-align: center;">Yes</td>
 </tr>
 </tbody>
@@ -764,35 +769,35 @@ window.Quarto = {
 <tbody>
 <tr class="odd">
 <td>IF - OF</td>
-<td style="text-align: center;">-0.002</td>
-<td style="text-align: center;">(-0.016, 0.012)</td>
+<td style="text-align: center;">-0.001</td>
+<td style="text-align: center;">(-0.011, 0.008)</td>
 <td style="text-align: center;">No</td>
 </tr>
 <tr class="even">
 <td>C - OF</td>
 <td style="text-align: center;">-0.018</td>
-<td style="text-align: center;">(-0.038, 0.002)</td>
-<td style="text-align: center;">No</td>
+<td style="text-align: center;">(-0.032, -0.004)</td>
+<td style="text-align: center;">Yes</td>
 </tr>
 <tr class="odd">
 <td>C - IF</td>
 <td style="text-align: center;">-0.016</td>
-<td style="text-align: center;">(-0.035, 0.003)</td>
-<td style="text-align: center;">No</td>
+<td style="text-align: center;">(-0.030, -0.003)</td>
+<td style="text-align: center;">Yes</td>
 </tr>
 </tbody>
 </table>
-<p>Interestingly, although the overall ANOVA was discernible, none of the individual Tukey pairwise comparisons reaches discernibility at the 0.05 level. This can happen because the ANOVA considers all groups simultaneously, while the pairwise comparisons are more conservative. In this case, the overall pattern of catchers having lower OBP than the other two positions drives the ANOVA result, but no single pairwise difference is large enough to be declared discernible on its own.</p>
+<p>Catchers have a discernibly lower mean on-base percentage than both outfielders and infielders: neither the C − OF interval nor the C − IF interval contains zero, even after Tukey’s adjustment for making three comparisons. The difference between infielders and outfielders is not discernible – its interval comfortably includes zero. So the discernible ANOVA result is driven by catchers, whose average OBP is roughly 0.016 to 0.018 lower than that of the other two positions.</p>
 </section>
 </div>
 </section>
 <section id="sec-posthoc-interpretation" class="level2" data-number="18.4">
 <h2 data-number="18.4" class="anchored" data-anchor-id="sec-posthoc-interpretation"><span class="header-section-number">18.4</span> Interpreting post-hoc results</h2>
 <div class="original">
-<p>Post-hoc tests (like Bonferroni or Tukey’s HSD) are conducted <em>after</em> a discernible ANOVA result. Several important principles guide their interpretation:</p>
+<p>Post-hoc tests (like Bonferroni or Tukey’s HSD) are typically conducted <em>after</em> a discernible ANOVA result. Several important principles guide their interpretation:</p>
 <section id="when-to-use-post-hoc-tests" class="level3" data-number="18.4.1">
 <h3 data-number="18.4.1" class="anchored" data-anchor-id="when-to-use-post-hoc-tests"><span class="header-section-number">18.4.1</span> When to use post-hoc tests</h3>
-<p>Post-hoc pairwise comparisons should only be conducted after ANOVA rejects the null hypothesis. If the ANOVA <span class="math inline">\(p\)</span>-value is not discernible, there is no justification for exploring pairwise differences – doing so would be data snooping.</p>
+<p>A common convention is to conduct post-hoc pairwise comparisons only after ANOVA rejects the null hypothesis. If the ANOVA <span class="math inline">\(p\)</span>-value is not discernible, many analysts treat hunting through pairwise differences as a form of data snooping. This is a convention rather than a strict requirement: Tukey’s HSD controls the family-wise error rate on its own, whether or not an ANOVA is run first.</p>
 </section>
 <section id="reporting-results" class="level3" data-number="18.4.2">
 <h3 data-number="18.4.2" class="anchored" data-anchor-id="reporting-results"><span class="header-section-number">18.4.2</span> Reporting results</h3>
@@ -818,25 +823,25 @@ window.Quarto = {
 </tr>
 <tr class="odd">
 <td>C</td>
-<td style="text-align: center;">79.4</td>
+<td style="text-align: center;">78.9</td>
 <td style="text-align: center;">b</td>
 </tr>
 </tbody>
 </table>
-<p>In this notation, Groups A and B share the letter “a” (not discernibly different), and Groups A and C share the letter “b” is not shared by B and C (they are discernibly different). Group A, sharing a letter with both B and C, is not discernibly different from either.</p>
+<p>In this notation, Groups A and B share the letter “a”, so they are not discernibly different, and Groups A and C share the letter “b”, so they are not discernibly different either. Groups B and C share no letter, so they are discernibly different. Group A, sharing a letter with both B and C, is not discernibly different from either.</p>
 </section>
 <section id="confidence-intervals-for-differences" class="level3" data-number="18.4.3">
 <h3 data-number="18.4.3" class="anchored" data-anchor-id="confidence-intervals-for-differences"><span class="header-section-number">18.4.3</span> Confidence intervals for differences</h3>
 <p>An especially useful way to present multiple comparison results is through confidence intervals for pairwise differences. If a confidence interval contains zero, the two groups are not discernibly different. If the interval is entirely positive or entirely negative, the groups differ.</p>
 <div class="cell">
 <div class="cell-output-display">
-<div id="fig-pairwise-ci" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Three horizontal confidence intervals for pairwise differences in exam scores. The interval for B minus C is entirely below zero, indicating B has a discernibly lower mean than C. The other two intervals contain zero.">
+<div id="fig-pairwise-ci" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Three horizontal Tukey HSD confidence intervals for pairwise differences in exam scores. The interval for B minus C is entirely below zero, indicating B has a discernibly lower mean than C. The other two intervals contain zero.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-pairwise-ci-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="multiple-comparisons_files/figure-html/fig-pairwise-ci-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;18.1: Confidence intervals for pairwise differences in mean exam scores. The interval for B vs.&nbsp;C does not contain zero, indicating a discernible difference. ↗ Try this live — see every pair’s Tukey/Bonferroni CI in a live forest plot."><img src="multiple-comparisons_files/figure-html/fig-pairwise-ci-1.png" class="img-fluid figure-img" alt="Three horizontal confidence intervals for pairwise differences in exam scores. The interval for B minus C is entirely below zero, indicating B has a discernibly lower mean than C. The other two intervals contain zero." width="2100"></a>
+<a href="multiple-comparisons_files/figure-html/fig-pairwise-ci-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;18.1: Tukey HSD 95% confidence intervals for pairwise differences in mean exam scores. The interval for B vs.&nbsp;C does not contain zero, indicating a discernible difference. ↗ Try this live — see every pair’s Tukey/Bonferroni CI in a live forest plot."><img src="multiple-comparisons_files/figure-html/fig-pairwise-ci-1.png" class="img-fluid figure-img" alt="Three horizontal Tukey HSD confidence intervals for pairwise differences in exam scores. The interval for B minus C is entirely below zero, indicating B has a discernibly lower mean than C. The other two intervals contain zero." width="2100"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pairwise-ci-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;18.1: Confidence intervals for pairwise differences in mean exam scores. The interval for B vs.&nbsp;C does not contain zero, indicating a discernible difference. <a href="https://learnlens.org/statlens/inference/multiple-comparisons/">↗ Try this live</a> — see every pair’s Tukey/Bonferroni CI in a live forest plot.
+Figure&nbsp;18.1: Tukey HSD 95% confidence intervals for pairwise differences in mean exam scores. The interval for B vs.&nbsp;C does not contain zero, indicating a discernible difference. <a href="https://learnlens.org/statlens/inference/multiple-comparisons/?dataset=classdata">↗ Try this live</a> — see every pair’s Tukey/Bonferroni CI in a live forest plot.
 </figcaption>
 </figure>
 </div>
@@ -847,7 +852,7 @@ Figure&nbsp;18.1: Confidence intervals for pairwise differences in mean exam sco
 <h3 data-number="18.4.4" class="anchored" data-anchor-id="common-mistakes"><span class="header-section-number">18.4.4</span> Common mistakes</h3>
 <ol type="1">
 <li><p><strong>Running multiple pairwise tests without correction.</strong> This inflates the Type I error rate. Always use a correction method when conducting multiple comparisons.</p></li>
-<li><p><strong>Conducting post-hoc tests after a non-discernible ANOVA.</strong> If the overall <span class="math inline">\(F\)</span>-test does not reject <span class="math inline">\(H_0\)</span>, there is no justification for exploring pairwise differences.</p></li>
+<li><p><strong>Hunting for pairwise differences after a non-discernible ANOVA.</strong> By common convention, if the overall <span class="math inline">\(F\)</span>-test does not reject <span class="math inline">\(H_0\)</span>, we do not go looking for pairwise differences. If you do examine them, use a method such as Tukey’s HSD that controls the family-wise error rate, and report the results as exploratory.</p></li>
 <li><p><strong>Ignoring practical importance.</strong> A statistically discernible difference may be too small to matter in practice. Always consider the magnitude of the differences, not just the <span class="math inline">\(p\)</span>-values.</p></li>
 <li><p><strong>Over-interpreting non-discernible pairwise comparisons.</strong> A non-discernible pairwise comparison after a discernible ANOVA does not mean the groups are equal – it means we do not have enough evidence to declare them different individually.</p></li>
 </ol>
@@ -961,7 +966,7 @@ Figure&nbsp;18.1: Confidence intervals for pairwise differences in mean exam sco
 <li>You want to compare mean scores across two teaching methods.</li>
 <li>You want to test the same difference-in-means for 100 different genes to see which are associated with a disease.</li>
 </ol></li>
-<li><p><strong>Check conditions before you trust the post-hoc.</strong> Open the <a href="https://learnlens.org/statlens/inference/multiple-comparisons/?dataset=insectsprays" target="_blank">Multiple Comparisons tool</a> loaded with the classic <code>insectsprays</code> data (6 insecticides, count of dead insects per plot).</p>
+<li><p><strong>Check conditions before you trust the post-hoc.</strong> Open the <a href="https://learnlens.org/statlens/inference/multiple-comparisons/?dataset=insectsprays" target="_blank">Multiple Comparisons tool</a> loaded with the classic <code>insectsprays</code> data (6 insecticides, count of insects found on each treated plot).</p>
 <ol type="a">
 <li>Confirm from the tool’s display: how many groups? What is the smallest per-group <span class="math inline">\(n\)</span>? Is that enough for the pairwise procedure to work?</li>
 <li>What conditions does the Tukey HSD test require, beyond just “3+ groups”?</li>

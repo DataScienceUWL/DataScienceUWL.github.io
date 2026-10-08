@@ -682,19 +682,19 @@ The QQ plot suggests the data are right-skewed. The bulk of the data are approxi
 <li><strong>Income distributions</strong> — strongly right-skewed; a few very high earners pull the tail out.</li>
 <li><strong>Waiting times</strong> — typically right-skewed, often bounded below by zero.</li>
 <li><strong>Count data</strong> — usually better modeled by the binomial or Poisson, not the normal.</li>
-<li><strong>Proportions and percentages</strong> — bounded between 0 and 1, so they can’t be strictly normal.</li>
+<li><strong>Individual values that are percentages</strong> (e.g., each person’s body-fat percentage) — bounded, so they can’t be strictly normal. (A sample proportion <span class="math inline">\(\hat{p}\)</span> from a large sample is different: as a <em>statistic</em>, it is approximately normal.)</li>
 <li><strong>Ages</strong> — bounded below by 0 and often bounded above by natural limits, so the tails don’t behave like a normal.</li>
 </ul>
 <div class="important">
-<p><strong>When the normal model doesn’t fit, don’t force it.</strong> For skewed data, consider a transformation (e.g., log for right-skewed positive data), a different model (binomial for counts of successes, Poisson for rare event counts), or a <strong>simulation-based method</strong> like the bootstrap or a randomization test. Those simulation methods (developed in the randomization-tests and bootstrap-CI chapters) don’t require normality — they let the data speak for themselves.</p>
+<p><strong>When the normal model doesn’t fit, don’t force it.</strong> For skewed data, consider a transformation (e.g., log for right-skewed positive data), a different model (binomial for counts of successes, Poisson for rare event counts), or a <strong>simulation-based method</strong> like the bootstrap or a randomization test. Those simulation methods (developed in the randomization-tests and bootstrap-CI chapters) don’t require normality — though with very small samples from skewed populations they also tend to give intervals that are too narrow.</p>
 </div>
 <div class="workedexample">
 <p>A hospital measures the time patients wait to be seen in the emergency room. The data range from 3 minutes to 6 hours, with most patients waiting under 45 minutes but a long right tail. A researcher wants to run a one-sample <span class="math inline">\(t\)</span>-test to see if the mean wait time exceeds 30 minutes. Is a <span class="math inline">\(t\)</span>-test appropriate?</p>
 <hr>
-<p>The data are strongly right-skewed and bounded below by zero, so they are clearly not normal. A one-sample <span class="math inline">\(t\)</span>-test <em>may</em> still be reasonable if the sample size is large — the CLT says the sampling distribution of <span class="math inline">\(\bar{x}\)</span> will be approximately normal even when the population is skewed. But with a small sample (say, <span class="math inline">\(n &lt; 30\)</span>), the <span class="math inline">\(t\)</span>-test could give misleading results. A safer approach is a bootstrap confidence interval for the mean wait time, which doesn’t rely on normality of the population.</p>
+<p>The data are strongly right-skewed and bounded below by zero, so they are clearly not normal. A one-sample <span class="math inline">\(t\)</span>-test <em>may</em> still be reasonable if the sample size is large — the CLT says the sampling distribution of <span class="math inline">\(\bar{x}\)</span> will be approximately normal even when the population is skewed. But with a small sample (say, <span class="math inline">\(n &lt; 30\)</span>), the <span class="math inline">\(t\)</span>-test could give misleading results. A bootstrap interval avoids assuming a normal population but does not rescue a tiny sample: with <span class="math inline">\(n = 8\)</span> from a strongly right-skewed population, StatLens’s CI Coverage Simulator shows 95% percentile intervals capturing the mean only about 84% of the time (about 88% for the <span class="math inline">\(t\)</span>-interval). With strongly skewed data, the real remedy is more data.</p>
 </div>
 <div class="statlens">
-<p><strong>See it in action.</strong> Open the <a href="https://learnlens.org/statlens/explore/descriptive/" target="_blank">Descriptive Statistics Explorer</a> on any bundled dataset — switch to the histogram view to eyeball symmetry and unimodality, then check the sample statistics for extreme outliers. For a formal look, StatLens’s Normal Distribution Explorer’s overlay mode fits a normal curve to your data so you can see where the fit is good and where it fails.</p>
+<p><strong>See it in action.</strong> Open the <a href="https://learnlens.org/statlens/explore/descriptive/" target="_blank">Descriptive Statistics Explorer</a> on any bundled dataset — switch to the histogram view to eyeball symmetry and unimodality, then check the sample statistics for extreme outliers. For a QQ plot, open the <a href="https://learnlens.org/statlens/inference/one-mean/" target="_blank">One-Sample t-Test</a> page, load a dataset, and switch its conditions panel to <strong>QQ Plot</strong>.</p>
 </div>
 </section>
 <section id="sec-normal-distribution-review" class="level2" data-number="28.3">
@@ -706,7 +706,7 @@ The QQ plot suggests the data are right-skewed. The bulk of the data are approxi
 <li>The four QQ-plot patterns worth recognizing: <strong>normal</strong> (straight), <strong>right-skewed</strong> (curves up at the right), <strong>left-skewed</strong> (curves down at the left), and <strong>heavy-tailed</strong> (curves away at both ends).</li>
 <li>The normal model fits <strong>symmetric, unimodal, bell-shaped</strong> variables without extreme outliers. Standardized test scores, adult heights, and measurement errors are canonical examples.</li>
 <li>The normal model does <strong>not</strong> fit strongly skewed data (income, waiting times), bounded data (proportions, ages), or count data (better handled by the binomial or Poisson).</li>
-<li>When the normal model doesn’t fit, use a <strong>simulation-based</strong> method (bootstrap CI, randomization test) or a <strong>different distribution family</strong> appropriate for the data.</li>
+<li>When the normal model doesn’t fit, use a <strong>simulation-based</strong> method (bootstrap CI, randomization test) or a <strong>different distribution family</strong> appropriate for the data — and remember that no method rescues a very small sample from a strongly skewed population.</li>
 </ul>
 </section>
 <section id="key-terms" class="level3" data-number="28.3.2">
@@ -731,7 +731,7 @@ The QQ plot suggests the data are right-skewed. The bulk of the data are approxi
 <!--- MOM original-29-01
 title: "Reading a QQ plot"
 type: multipart
-license: "CC BY-NC — UWL original"
+license: "CC BY-SA 4.0 — UWL original"
 status: skeleton
 --->
 <ol start="2" type="1">
@@ -748,7 +748,7 @@ status: skeleton
 <!--- MOM original-29-02
 title: "Which variables would you model as normal?"
 type: multipart
-license: "CC BY-NC — UWL original"
+license: "CC BY-SA 4.0 — UWL original"
 status: skeleton
 --->
 <ol start="3" type="1">
@@ -762,7 +762,7 @@ status: skeleton
 <!--- MOM original-29-03
 title: "Small-sample QQ plot interpretation"
 type: multipart
-license: "CC BY-NC — UWL original"
+license: "CC BY-SA 4.0 — UWL original"
 status: skeleton
 --->
 <ol start="4" type="1">
@@ -777,7 +777,7 @@ status: skeleton
 <!--- MOM original-29-04
 title: "Pick a method: t-test vs. bootstrap"
 type: multipart
-license: "CC BY-NC — UWL original"
+license: "CC BY-SA 4.0 — UWL original"
 status: skeleton
 --->
 <ol start="5" type="1">
@@ -791,7 +791,7 @@ status: skeleton
 <!--- MOM original-29-05
 title: "Two normality checks, one dataset"
 type: multipart
-license: "CC BY-NC — UWL original"
+license: "CC BY-SA 4.0 — UWL original"
 status: skeleton
 --->
 

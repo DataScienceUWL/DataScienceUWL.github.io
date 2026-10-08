@@ -612,7 +612,7 @@ window.Quarto = {
 <h2 data-number="23.1" class="anchored" data-anchor-id="sec-mlr-motivation"><span class="header-section-number">23.1</span> From one predictor to many</h2>
 <div class="original">
 <p>A single-predictor regression is a starting point, not an ending point. In the real world, a response variable is almost never driven by just one thing. When we ignore other variables that also influence the response, two things can go wrong.</p>
-<p><strong>Confounding can bias the slope estimate.</strong> If we regress interest rate on debt-to-income ratio alone, and borrowers with higher debt-to-income also tend to have shorter loan terms and more credit checks, the fitted slope absorbs the effects of <em>all three</em>. Our estimate of “how much does an extra unit of debt-to-income cost, for a comparable borrower?” is contaminated by the unmeasured differences in loan term and credit history.</p>
+<p><strong>Confounding can bias the slope estimate.</strong> Suppose we regress interest rate on debt-to-income ratio alone. If borrowers with higher debt-to-income also tended to have longer loan terms and more credit checks, the fitted slope would absorb part of the effects of those variables too. Our estimate of “how much does an extra unit of debt-to-income cost, for a comparable borrower?” would then be contaminated by the unmeasured differences in loan term and credit history.</p>
 <p><strong>Predictive accuracy suffers.</strong> Even when we don’t care about causal interpretation, ignoring available predictors leaves signal on the table. A model with three good predictors typically predicts future observations more accurately than a model with one.</p>
 <p>Multiple regression solves the first problem by fitting all predictors together in a single model, so each coefficient represents the effect of that predictor <em>while holding the others fixed</em>. And it addresses the second by explaining more of the total variability with the additional predictors.</p>
 </div>
@@ -649,28 +649,28 @@ window.Quarto = {
 <td>(Intercept)</td>
 <td style="text-align: right;">4.31</td>
 <td style="text-align: right;">0.20</td>
-<td style="text-align: right;">21.9</td>
+<td style="text-align: right;">22.1</td>
 <td style="text-align: right;">&lt; 0.0001</td>
 </tr>
 <tr class="even">
 <td>debt_to_income</td>
 <td style="text-align: right;">0.041</td>
-<td style="text-align: right;">0.006</td>
-<td style="text-align: right;">6.94</td>
+<td style="text-align: right;">0.003</td>
+<td style="text-align: right;">13.3</td>
 <td style="text-align: right;">&lt; 0.0001</td>
 </tr>
 <tr class="odd">
 <td>term</td>
 <td style="text-align: right;">0.16</td>
-<td style="text-align: right;">0.006</td>
-<td style="text-align: right;">24.6</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">37.9</td>
 <td style="text-align: right;">&lt; 0.0001</td>
 </tr>
 <tr class="even">
 <td>credit_checks</td>
 <td style="text-align: right;">0.25</td>
-<td style="text-align: right;">0.020</td>
-<td style="text-align: right;">12.7</td>
+<td style="text-align: right;">0.019</td>
+<td style="text-align: right;">12.8</td>
 <td style="text-align: right;">&lt; 0.0001</td>
 </tr>
 </tbody>
@@ -691,7 +691,7 @@ window.Quarto = {
 <section id="sec-mlr-interpretation" class="level2" data-number="23.4">
 <h2 data-number="23.4" class="anchored" data-anchor-id="sec-mlr-interpretation"><span class="header-section-number">23.4</span> Interpreting coefficients “holding others constant”</h2>
 <p>The single most important interpretive habit in multiple regression is the phrase <strong>“holding the other predictors constant.”</strong> It appears in every coefficient interpretation, and dropping it turns a correct sentence into a wrong one.</p>
-<p>To see why, consider the loans model above. In a simple regression on <code>debt_to_income</code> alone, the fitted slope would absorb the effects of <em>all three</em> of debt-to-income, term, and credit checks — because borrowers with higher debt-to-income <em>tend also</em> to take out longer-term loans and to have more credit checks. The single-predictor slope estimate would be inflated by that bundle of effects.</p>
+<p>To see why, consider the loans model above. A simple regression on <code>debt_to_income</code> alone has no way to separate debt-to-income from anything that travels with it. In these data, borrowers with higher debt-to-income are only slightly more likely to take out longer-term loans and to have more credit checks (correlations of about 0.05 and 0.03), so the simple-regression slope, 0.047, is only a little larger than the multiple-regression slope. When predictors are more strongly related to each other, the gap between the simple and multiple slopes can be much larger.</p>
 <p>The multiple-regression slope <span class="math inline">\(b_1 = 0.041\)</span> isolates the debt-to-income effect from the term and credit-check effects. That is why it can be interpreted as “for each additional unit of debt-to-income, holding term and credit checks fixed.” The “holding fixed” is not a philosophical qualifier; it is the <em>only</em> way the coefficient makes sense.</p>
 <div class="important">
 <p>Every coefficient interpretation in multiple regression should include the phrase <strong>“holding the other predictors constant”</strong> (or an equivalent like “controlling for” or “at fixed values of”). Interpreting <span class="math inline">\(b_j\)</span> <em>without</em> that qualifier is one of the most common errors students make with multiple regression output.</p>
@@ -785,7 +785,7 @@ window.Quarto = {
 <p>For every additional coin in the dish, the total amount goes up by about $0.13 on average — roughly the average value of a US coin, as we’d hope. For every additional <em>low</em> coin (a penny, nickel, or dime), the total goes up by only about $0.02 on average — which sounds reasonable but is barely discernible from zero, because adding a low coin only adds pennies, nickels, or dimes.</p>
 </div>
 <p>Now fit the model with <em>both</em> predictors together. IMS reports</p>
-<p><span class="math display">\[\widehat{\text{total\_amount}} = 0.02 + 0.21 \cdot \text{number\_of\_coins} - 0.16 \cdot \text{number\_of\_low\_coins},\]</span></p>
+<p><span class="math display">\[\widehat{\text{total\_amount}} = 0.80 + 0.21 \cdot \text{number\_of\_coins} - 0.16 \cdot \text{number\_of\_low\_coins},\]</span></p>
 <p>both coefficients discernible.</p>
 <div class="workedexample">
 <p>Explain what happened. Why is the coefficient on <code>number_of_low_coins</code> <em>negative</em> in the multi-predictor model when it was slightly <em>positive</em> on its own?</p>
@@ -857,7 +857,7 @@ window.Quarto = {
 <li>Interpret the coefficient on <code>credit_checks</code> in context. Include the phrase “holding the other predictors constant.”</li>
 <li>The individual <span class="math inline">\(t\)</span>-test on <code>credit_checks</code> has a very small p-value. State the null hypothesis this test evaluates, in symbols <em>and</em> in words, including the “given other predictors are in the model” qualifier.</li>
 </ol></li>
-<li><p><strong>Simple vs.&nbsp;multiple regression slope.</strong> Suppose the <em>simple</em> regression of interest rate on <code>credit_checks</code> alone gives a slope of 0.60 — larger than the multi-predictor slope of 0.25.</p>
+<li><p><strong>Simple vs.&nbsp;multiple regression slope.</strong> Suppose the <em>simple</em> regression of interest rate on <code>credit_checks</code> alone gives a slope of 0.28 — slightly larger than the multi-predictor slope of 0.25.</p>
 <ol type="a">
 <li>Why is the simple-regression slope larger?</li>
 <li>Which slope answers the question “for two borrowers with the same debt-to-income and same loan term, how much does one extra credit check cost the borrower with more inquiries?”</li>

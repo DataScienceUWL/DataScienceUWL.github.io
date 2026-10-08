@@ -1068,15 +1068,13 @@ The Z-score for the 95th percentile is <span class="math inline">\(Z = 1.645\)</
 </section>
 <section id="connecting-simulation-and-normal-approximation" class="level3" data-number="11.5.3">
 <h3 data-number="11.5.3" class="anchored" data-anchor-id="connecting-simulation-and-normal-approximation"><span class="header-section-number">11.5.3</span> Connecting simulation and normal approximation</h3>
-<div class="original">
 <p>Let’s see the connection between simulation-based methods and the normal approximation in a concrete example. As a quick reminder from the <a href="../chapters/randomization-tests.html">randomization tests chapter</a>, a hypothesis test weighs the <strong>null hypothesis</strong> <span class="math inline">\(H_0\)</span> (“no effect”) against the <strong>alternative</strong> <span class="math inline">\(H_A\)</span> (“real effect”), computes a <strong><span class="math inline">\(p\)</span>-value</strong> (probability of the observed data or more extreme under <span class="math inline">\(H_0\)</span>), and <strong>rejects</strong> <span class="math inline">\(H_0\)</span> when the <span class="math inline">\(p\)</span>-value falls below the discernibility level <span class="math inline">\(\alpha\)</span>.</p>
-<p>In the randomization tests chapter, we tested whether opportunity cost reminders reduce spending. We simulated 10,000 randomization samples and found a null distribution that was bell-shaped with a center of 0 and a spread described by <span class="math inline">\(SE \approx 0.078\)</span>. The observed difference was 0.20.</p>
-<p><strong>Simulation approach:</strong> Count how many of the 10,000 simulated differences were at least as extreme as 0.20. The proportion gives the <span class="math inline">\(p\)</span>-value: approximately 0.006.</p>
+<p>In the randomization tests chapter, we tested whether opportunity cost reminders reduce spending. We simulated 1,000 randomization samples and found a null distribution that was bell-shaped with a center of 0. The observed difference was 0.20. To model that null distribution with a normal curve, we also need its spread: the standard deviation of the null distribution, which is the <strong>standard error</strong> (<span class="math inline">\(SE\)</span>). You can estimate it by computing the standard deviation of the simulated differences; a formula we will meet in the <a href="../chapters/inference-proportions.html">inference for proportions chapter</a> gives <span class="math inline">\(SE \approx 0.078\)</span>, and we use that value here.</p>
+<p><strong>Simulation approach:</strong> Count how many of the 1,000 simulated differences were at least as extreme as 0.20. The proportion gives the <span class="math inline">\(p\)</span>-value: 5 of the 1,000, or about 0.005.</p>
 <p><strong>Normal approximation approach:</strong> Model the null distribution as <span class="math inline">\(N(0, 0.078)\)</span>. Compute the Z-score:</p>
 <p><span class="math display">\[Z = \frac{0.20 - 0}{0.078} = 2.56\]</span></p>
 <p>The area to the right of <span class="math inline">\(Z = 2.56\)</span> is 0.0052.</p>
-<p>Both approaches give nearly the same <span class="math inline">\(p\)</span>-value (0.006 vs.&nbsp;0.0052) and the same conclusion: reject <span class="math inline">\(H_0\)</span>. The normal approximation works because the conditions are met – independent observations and a sufficiently large sample.</p>
-</div>
+<p>Both approaches give nearly the same <span class="math inline">\(p\)</span>-value (0.005 vs.&nbsp;0.0052) and the same conclusion: reject <span class="math inline">\(H_0\)</span>. The normal approximation works because the conditions are met – independent observations and a sufficiently large sample.</p>
 </section>
 <section id="confidence-intervals-using-the-normal-model" class="level3" data-number="11.5.4">
 <h3 data-number="11.5.4" class="anchored" data-anchor-id="confidence-intervals-using-the-normal-model"><span class="header-section-number">11.5.4</span> Confidence intervals using the normal model</h3>
@@ -1331,22 +1329,22 @@ The Z-score for the 95th percentile is <span class="math inline">\(Z = 1.645\)</
 <!--- MOM original-12-01
 title: "Bridge: normal curve on a simulated sampling distribution"
 type: multipart
-license: "CC BY-NC — UWL original"
+license: "CC BY-SA 4.0 — UWL original"
 status: skeleton
 --->
 <ol start="16" type="1">
-<li><strong>Bridge: simulation p-value vs.&nbsp;normal-approximation p-value.</strong> In the randomization tests chapter, you tested for sex discrimination in a bank promotion study by shuffling promotion decisions many times and recording the difference in promotion rates between male and female applicants. The observed difference was <span class="math inline">\(\hat{p}_M - \hat{p}_F = 0.292\)</span>. Suppose the randomization distribution of the difference, based on 10,000 shuffles, was centered near 0 with a standard deviation of about 0.115, and 47 of the 10,000 shuffles produced a difference <span class="math inline">\(\ge 0.292\)</span>.</li>
+<li><strong>Bridge: simulation p-value vs.&nbsp;normal-approximation p-value.</strong> In the randomization tests chapter, you tested for sex discrimination in a bank promotion study by shuffling promotion decisions many times and recording the difference in promotion rates between male and female applicants. The observed difference was <span class="math inline">\(\hat{p}_M - \hat{p}_F = 0.292\)</span>. Suppose the randomization distribution of the difference, based on 10,000 shuffles, was centered near 0 with a standard deviation of about 0.13, and 245 of the 10,000 shuffles produced a difference <span class="math inline">\(\ge 0.292\)</span>.</li>
 </ol>
 <ol type="a">
 <li><p>Compute the <strong>simulation p-value</strong> (one-tailed).</p></li>
-<li><p>Now compute the <strong>normal-approximation p-value</strong> for the same test. Treat the randomization distribution as approximately <span class="math inline">\(N(0, 0.115)\)</span> and compute the Z-score for the observed statistic <span class="math inline">\(0.292\)</span>; then use the tail probability under the standard normal (via technology).</p></li>
+<li><p>Now compute the <strong>normal-approximation p-value</strong> for the same test. Treat the randomization distribution as approximately <span class="math inline">\(N(0, 0.13)\)</span> and compute the Z-score for the observed statistic <span class="math inline">\(0.292\)</span>; then use the tail probability under the standard normal (via technology).</p></li>
 <li><p>Do the two p-values agree? Within what tolerance?</p></li>
 <li><p>Under what conditions would you expect the two p-values to <em>disagree</em>? Name one situation where the simulation p-value would be more trustworthy.</p></li>
 </ol>
 <!--- MOM original-12-02
 title: "Bridge: simulation p-value vs. normal-approximation p-value"
 type: multipart
-license: "CC BY-NC — UWL original"
+license: "CC BY-SA 4.0 — UWL original"
 status: skeleton
 --->
 <!-- StatLens Interactive Exercises — Normal Approximation -->
