@@ -752,7 +752,12 @@ Figure&nbsp;12.1: One thousand simulated studies of 62 patients each, in a world
 <h3 data-number="12.4.1" class="anchored" data-anchor-id="same-data-different-answers"><span class="header-section-number">12.4.1</span> Same data, different answers</h3>
 <p>Here is everything we have for the consultant, side by side.</p>
 <table class="table-striped caption-top table">
-<caption>Three routes to the consultant’s answer.</caption>
+<caption>The consultant’s answer, simulated and modeled.</caption>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
 <thead>
 <tr class="header">
 <th></th>
@@ -762,13 +767,13 @@ Figure&nbsp;12.1: One thousand simulated studies of 62 patients each, in a world
 </thead>
 <tbody>
 <tr class="odd">
-<td>Simulation</td>
-<td>about 0.12 (1 in 8)</td>
+<td>Simulation, 1,000 studies</td>
+<td>0.132 ± 0.021</td>
 <td>bootstrap: (0.000, 0.113)</td>
 </tr>
 <tr class="even">
-<td>Exact binomial count</td>
-<td>0.121</td>
+<td>Simulation, 10,000 studies</td>
+<td>0.116 ± 0.006</td>
 <td></td>
 </tr>
 <tr class="odd">
@@ -778,8 +783,8 @@ Figure&nbsp;12.1: One thousand simulated studies of 62 patients each, in a world
 </tr>
 </tbody>
 </table>
-<p>The simulation and the exact count agree; the normal model is the odd one out. (The exact count uses the binomial distribution, the topic of the <a href="../chapters/binomial.html">binomial chapter</a>. It is exactly what the simulation was estimating.)</p>
-<p><a href="#fig-oneprop-fit" class="quarto-xref">Figure&nbsp;<span>12.2</span></a> shows why. With only about 6 complications expected, there are only a handful of possible rates (0/62, 1/62, 2/62, …), each one a big chunk of probability, bunched against zero. A smooth bell curve can’t match that lumpy, lopsided pile. Here it puts too little area at or below her 3 complications (0.088 against 0.121), and it spreads into impossible negative rates. With 826 people and an expected 413 “yes” answers (right panel), the pile is smooth and symmetric, and the curve fits almost perfectly.</p>
+<p>A simulated share is itself an estimate, so it comes with a margin; StatLens shows it beside the <span class="math inline">\(p\)</span>-value (“± 0.020” at 1,000 studies). Could the gap between the simulation and the normal model just be simulation noise? No.&nbsp;Even the 1,000-study margin doesn’t reach down to 0.088, and with 10,000 studies the margin shrinks to about ± 0.006 while the answer stays near 0.12. The simulation is consistent; the normal model is the one that’s off.</p>
+<p><a href="#fig-oneprop-fit" class="quarto-xref">Figure&nbsp;<span>12.2</span></a> shows why. With only about 6 complications expected, there are only a handful of possible rates (0/62, 1/62, 2/62, …), each one a big chunk of probability, bunched against zero. A smooth bell curve can’t match that lumpy, lopsided pile. Here it puts too little area at or below her 3 complications (0.088 against about 0.12), and it spreads into impossible negative rates. With 826 people and an expected 413 “yes” answers (right panel), the pile is smooth and symmetric, and the curve fits almost perfectly.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-oneprop-fit" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Two side-by-side histograms of simulated proportions, each with a normal curve on top and the p-value tail shaded. Left panel, 62 patients with a null rate of 0.10: the lumpy bars stop at zero while the normal curve extends below zero; the shaded share is about 0.12 for the simulation but 0.088 under the curve. Right panel, 826 people with a null rate of 0.50: the bars form a smooth symmetric hill that the curve follows closely, and the shaded shares are both about 0.29 to 0.30.">
@@ -804,6 +809,11 @@ Figure&nbsp;12.2: Simulated null distributions (10,000 studies each) with the no
 </ul>
 <table class="table-striped caption-top table">
 <caption>When the conditions hold, the shortcut and the simulation agree.</caption>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
 <thead>
 <tr class="header">
 <th></th>
@@ -813,8 +823,8 @@ Figure&nbsp;12.2: Simulated null distributions (10,000 studies each) with the no
 </thead>
 <tbody>
 <tr class="odd">
-<td>Simulation / exact count</td>
-<td>0.301</td>
+<td>Simulation, 1,000 studies</td>
+<td>0.304 ± 0.029</td>
 <td>bootstrap: (0.475, 0.544)</td>
 </tr>
 <tr class="even">
@@ -824,7 +834,7 @@ Figure&nbsp;12.2: Simulated null distributions (10,000 studies each) with the no
 </tr>
 </tbody>
 </table>
-<p>This time the two routes agree to about a percentage point. That is what “the conditions hold” buys you: the formula gives the simulation’s answer without running it.</p>
+<p>This time the normal answer falls well inside the simulation’s margin, and the two intervals match. That is what “the conditions hold” buys you: the formula gives the simulation’s answer without running it.</p>
 <div class="statlens">
 <p><strong>Run it yourself.</strong> Open the <a href="https://learnlens.org/statlens/simulate/randomization-one-prop/?p=0.5&amp;direction=greater&amp;seed=ch12gp2" target="_blank">one-proportion randomization test</a>, choose <strong>Enter Summary</strong>, and type <strong>421</strong> successes out of <strong>826</strong>. Add 1,000 studies and compare the share with the table. Then do the same in the <a href="https://learnlens.org/statlens/inference/one-prop/" target="_blank">one-proportion <span class="math inline">\(z\)</span> test</a> (null value 0.50, “greater than”).</p>
 </div>
@@ -887,7 +897,7 @@ The values kept (0.48 through 0.54) are the ones inside the interval; the two re
 <ul>
 <li><strong>Check the conditions first.</strong> Independence, and at least 10 expected successes and failures.</li>
 <li><strong>Conditions hold:</strong> the normal formulas are quick, and they give the simulation’s answer.</li>
-<li><strong>Conditions fail:</strong> use a simulation (randomization test, bootstrap interval) or the exact binomial count. The normal answer can be noticeably off, and an interval can even include impossible values.</li>
+<li><strong>Conditions fail:</strong> use a simulation (randomization test, bootstrap interval). The normal answer can be noticeably off, and an interval can even include impossible values.</li>
 <li><strong>Any time:</strong> a simulation is a good check on a formula.</li>
 </ul>
 </div>
@@ -924,14 +934,14 @@ The values kept (0.48 through 0.54) are the ones inside the interval; the two re
 <li>Test: <span class="math inline">\(z = (\hat{p} - p_0)/\sqrt{p_0(1-p_0)/n}\)</span>.</li>
 <li>Interval: <span class="math inline">\(\hat{p} \pm z^* \sqrt{\hat{p}(1-\hat{p})/n}\)</span>.</li>
 </ul></li>
-<li><strong>Compare.</strong> When there are at least 10 expected successes and failures (and the observations are independent), the formulas give the simulation’s answer. When there aren’t, they can be noticeably off, and simulation or the exact binomial count is the better route.</li>
+<li><strong>Compare.</strong> When there are at least 10 expected successes and failures (and the observations are independent), the formulas give the simulation’s answer. When there aren’t, they can be noticeably off, and simulation is the better route. A simulated answer comes with a margin; more studies shrink it.</li>
 <li><strong>One story.</strong> A 95% interval holds the null values a two-sided 5% test would not reject.</li>
 <li><strong>Four questions.</strong> A complete conclusion says whether it could be chance, how big the effect is, who it applies to, and whether anything caused it.</li>
 </ul>
 </section>
 <section id="key-terms" class="level3" data-number="12.6.2">
 <h3 data-number="12.6.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">12.6.2</span> Key terms</h3>
-<p>Null value (<span class="math inline">\(p_0\)</span>), one-proportion randomization test, normal model for <span class="math inline">\(\hat{p}\)</span>, standard error of <span class="math inline">\(\hat{p}\)</span>, <span class="math inline">\(z\)</span> test for one proportion, confidence interval for one proportion, success–failure condition, exact binomial <span class="math inline">\(p\)</span>-value.</p>
+<p>Null value (<span class="math inline">\(p_0\)</span>), one-proportion randomization test, normal model for <span class="math inline">\(\hat{p}\)</span>, standard error of <span class="math inline">\(\hat{p}\)</span>, <span class="math inline">\(z\)</span> test for one proportion, confidence interval for one proportion, success–failure condition, simulation margin.</p>
 </section>
 <section id="attribution" class="level3" data-number="12.6.3">
 <h3 data-number="12.6.3" class="anchored" data-anchor-id="attribution"><span class="header-section-number">12.6.3</span> Attribution</h3>
