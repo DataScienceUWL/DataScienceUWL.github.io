@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>30&nbsp; Type II Error and Power – Introduction to Statistics: A Simulation-First Approach</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/statistical-power.html" rel="next">
+<link href="../chapters/normal-distribution.html" rel="prev">
+<link href="../images/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-c76bc2edb0e532e390ad582fcbf98d52.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-b051a4077f235303ebbd7141cd2ba605.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-d1d57f57c49822ed2310d70635f51a75.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://hypothes.is/embed.js"></script>
+<script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-v.html">Unit 5: Foundations</a></li><li class="breadcrumb-item"><a href="../chapters/type-ii-error.html"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Introduction to Statistics: A Simulation-First Approach</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/DataScienceUWL/simfirst-stats" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="../Introduction-to-Statistics--A-Simulation-First-Approach.pdf" title="Download PDF" class="quarto-navigation-tool px-1" aria-label="Download PDF"><i class="bi bi-file-pdf"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-i.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 1: Explore</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/intro-to-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction to Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/study-design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Data Collection and Study Design</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/data-visualization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Exploring Categorical Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/describing-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Exploring Quantitative Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/relationships.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Relationships Between Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-explore.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explore — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-explore.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Explore</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-eda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Exploring a Distribution</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-ii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 2: Simulate</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sampling-variability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Sampling Variability</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/randomization-tests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Randomization Tests</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/decision-errors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Decision Errors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/bootstrap-ci.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Bootstrap Confidence Intervals</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sampling-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Sampling Distributions via Simulation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-simulate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulate — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-simulate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Simulate</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 3: Compute</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/normal-approximation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Normal Approximation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/one-proportion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">One Proportion</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/inference-proportions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Inference for Proportions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ci-for-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Confidence Intervals for Means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/hypothesis-tests-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Hypothesis Tests for Means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-calculate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Compute — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-calculate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Compute</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-proportions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Inference for Proportions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Comparing Two Means</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 4: Apply</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chisq-gof.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Chi-Square Goodness of Fit</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chisq-independence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Chi-Square Test of Independence</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Analysis of Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Multiple Comparisons</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Correlation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/linear-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Linear Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/prediction-model-fit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Prediction and Model Fit</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/anova-for-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">ANOVA for Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Multiple Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-apply.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Apply — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-apply.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Apply</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Comparing Several Means (ANOVA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-chisq.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Association Between Two Categorical Variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-chisq-ai.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Association Between Two Categorical Variables (AI version)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Fitting and Testing a Regression Line</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-v.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 5: Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/probability-rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Probability Rules</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/random-variables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Random Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/expected-value.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Expected Value and Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/binomial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Binomial Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/normal-distribution.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">More About the Normal Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/type-ii-error.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/statistical-power.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">Statistical Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sample-size.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">Sample Size Planning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-foundations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundations — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-foundations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Foundations</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../technology-setup.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Technology Setup</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/datasets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Datasets</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/statlens-guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">StatLens Quick Reference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/tables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Statistical Tables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/exercise-solutions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">E</span>&nbsp; <span class="chapter-title">Exercise Solutions</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-error-recap" id="toc-sec-error-recap" class="nav-link active" data-scroll-target="#sec-error-recap"><span class="header-section-number">30.1</span> Recap: the two error types</a></li>
+  <li><a href="#sec-visualizing-type-ii" id="toc-sec-visualizing-type-ii" class="nav-link" data-scroll-target="#sec-visualizing-type-ii"><span class="header-section-number">30.2</span> Visualizing Type II error</a></li>
+  <li><a href="#sec-factors-type-ii" id="toc-sec-factors-type-ii" class="nav-link" data-scroll-target="#sec-factors-type-ii"><span class="header-section-number">30.3</span> Factors that affect the Type II error rate</a></li>
+  <li><a href="#sec-practical-significance-revisited" id="toc-sec-practical-significance-revisited" class="nav-link" data-scroll-target="#sec-practical-significance-revisited"><span class="header-section-number">30.4</span> Practical vs.&nbsp;statistical discernibility revisited</a></li>
+  <li><a href="#sec-type-ii-error-review" id="toc-sec-type-ii-error-review" class="nav-link" data-scroll-target="#sec-type-ii-error-review"><span class="header-section-number">30.5</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">30.5.1</span> Summary</a></li>
+  </ul></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">30.6</span> Exercises</a>
+  <ul class="collapse">
+  <li><a href="#statlens-exercises" id="toc-statlens-exercises" class="nav-link" data-scroll-target="#statlens-exercises">StatLens Exercises</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/DataScienceUWL/simfirst-stats/edit/main/chapters/type-ii-error.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/DataScienceUWL/simfirst-stats/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+<div class="pilot-edition-banner" role="note" style="background:#fff4e5;border-bottom:1px solid #f0c27b;color:#5c3b00;padding:.5rem 1rem;font-size:.9rem;text-align:center;">
+  <strong>Pilot edition, Spring 2027.</strong> This version of the book is being tested in a few sections and changes during the semester.
+</div>
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-v.html">Unit 5: Foundations</a></li><li class="breadcrumb-item"><a href="../chapters/type-ii-error.html"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>Extended Content.</strong> This chapter extends beyond a standard one-semester introductory course. It is included for completeness and for instructors who wish to cover additional topics. Content is in draft form.</p>
+</div>
+</div>
+</div>
+<div class="chapterintro">
+<p>In the chapter on decision errors we met the two ways a hypothesis test can go wrong and named their probabilities <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span>. The Type I error rate <span class="math inline">\(\alpha\)</span> is ours to choose; the Type II error rate <span class="math inline">\(\beta\)</span> is not — it depends on the unknown truth. This chapter takes a closer look at <span class="math inline">\(\beta\)</span>: we use simulation to <em>see</em> how often a real effect goes undetected, examine the factors that drive the Type II error rate, and connect these ideas to the <strong>power</strong> of a study. This material extends beyond the core STAT 145 sequence and is intended for readers who want to go deeper.</p>
+</div>
+<section id="sec-error-recap" class="level2" data-number="30.1">
+<h2 data-number="30.1" class="anchored" data-anchor-id="sec-error-recap"><span class="header-section-number">30.1</span> Recap: the two error types</h2>
+<p>Recall from the chapter on decision errors:</p>
+<ul>
+<li>A <strong>Type I error</strong> rejects a true <span class="math inline">\(H_0\)</span>; its probability is the discernibility level <span class="math inline">\(\alpha\)</span>, which we choose.</li>
+<li>A <strong>Type II error</strong> fails to reject <span class="math inline">\(H_0\)</span> when <span class="math inline">\(H_A\)</span> is true; its probability is <span class="math inline">\(\beta\)</span>.</li>
+</ul>
+<p>We can set <span class="math inline">\(\alpha\)</span> directly, but <span class="math inline">\(\beta\)</span> depends on the effect size, the sample size, and the variability in the data. The rest of this chapter studies what determines <span class="math inline">\(\beta\)</span> — and how to drive it down.</p>
+</section>
+<section id="sec-visualizing-type-ii" class="level2" data-number="30.2">
+<h2 data-number="30.2" class="anchored" data-anchor-id="sec-visualizing-type-ii"><span class="header-section-number">30.2</span> Visualizing Type II error</h2>
+<div class="original">
+<p>The most effective way to build intuition about Type II error is to think about what happens when there <em>is</em> a real effect but our test fails to detect it. Simulation makes this concrete.</p>
+<section id="a-simulation-thought-experiment" class="level3" data-number="30.2.1">
+<h3 data-number="30.2.1" class="anchored" data-anchor-id="a-simulation-thought-experiment"><span class="header-section-number">30.2.1</span> A simulation thought experiment</h3>
+<p>Imagine the following scenario. A tutoring program truly raises students’ exam scores by an average of 5 points (on a 100-point scale). The standard deviation of exam scores in the population is 15 points. A researcher recruits <span class="math inline">\(n = 20\)</span> students, has them go through the tutoring program, and compares their scores to the known population mean using a one-sided one-sample <span class="math inline">\(t\)</span>-test (<span class="math inline">\(H_A: \mu &gt; 70\)</span>) at <span class="math inline">\(\alpha = 0.05\)</span>.</p>
+<p>Here is what might happen:</p>
+<ul>
+<li><strong>The truth</strong>: <span class="math inline">\(\mu = 75\)</span> (population mean with tutoring), while <span class="math inline">\(\mu_0 = 70\)</span> (the null hypothesis value without tutoring). The real effect is <span class="math inline">\(\mu - \mu_0 = 5\)</span> points.</li>
+<li><strong>One simulated study</strong>: The researcher collects 20 scores. Due to natural variability, the sample mean might be <span class="math inline">\(\bar{x} = 73.2\)</span> with <span class="math inline">\(s = 14.8\)</span>. The test statistic is:</li>
+</ul>
+<p><span class="math display">\[t = \frac{73.2 - 70}{14.8 / \sqrt{20}} = \frac{3.2}{3.31} = 0.97\]</span></p>
+<p>The <span class="math inline">\(p\)</span>-value for this test is about 0.17 — not discernible at <span class="math inline">\(\alpha = 0.05\)</span>. The researcher fails to reject <span class="math inline">\(H_0\)</span>, even though the tutoring program really does work. This is a Type II error.</p>
+<ul>
+<li><strong>Another simulated study</strong>: A different random sample of 20 students happens to include several who benefited greatly from tutoring. The sample mean is <span class="math inline">\(\bar{x} = 76.8\)</span> with <span class="math inline">\(s = 13.5\)</span>. Now:</li>
+</ul>
+<p><span class="math display">\[t = \frac{76.8 - 70}{13.5 / \sqrt{20}} = \frac{6.8}{3.02} = 2.25\]</span></p>
+<p>The <span class="math inline">\(p\)</span>-value is about 0.018 — discernible at <span class="math inline">\(\alpha = 0.05\)</span>. This time the researcher correctly rejects <span class="math inline">\(H_0\)</span>. This is a correct decision.</p>
+</section>
+<section id="what-happens-across-many-studies" class="level3" data-number="30.2.2">
+<h3 data-number="30.2.2" class="anchored" data-anchor-id="what-happens-across-many-studies"><span class="header-section-number">30.2.2</span> What happens across many studies?</h3>
+<p>If we repeated this experiment 1,000 times — each time drawing a fresh sample of 20 students from a population where the true effect is 5 points — we would find that roughly 400 of those experiments reject <span class="math inline">\(H_0\)</span> and roughly 600 do not. That means:</p>
+<ul>
+<li>About 40% of the time, we correctly detect the real effect.</li>
+<li>About 60% of the time, we commit a Type II error.</li>
+</ul>
+<p>The Type II error rate is <span class="math inline">\(\beta \approx 0.60\)</span> — alarmingly high! About three in five studies with this design would miss the real effect. This is not because the effect doesn’t exist; it’s because the sample size is too small relative to the effect size and variability.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-type-ii-sim" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A dot plot showing the results of 1,000 simulated hypothesis tests. About 400 points are green circles (reject H-null, correct decision) and about 600 points are red triangles (fail to reject H-null, Type II error). The circles tend to have larger sample means, while the triangles cluster closer to the null hypothesis value.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-type-ii-sim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="type-ii-error_files/figure-html/fig-type-ii-sim-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;30.1: Visualization of 1,000 simulated hypothesis tests when the true effect is 5 points. Each point represents one simulated study. Green circles are studies that correctly rejected H₀ (correct decisions); red triangles are studies that failed to reject H₀ (Type II errors). ↗ Try this live — simulate many studies as hits / Type II misses / Type I false alarms."><img src="type-ii-error_files/figure-html/fig-type-ii-sim-1.png" class="img-fluid figure-img" alt="A dot plot showing the results of 1,000 simulated hypothesis tests. About 400 points are green circles (reject H-null, correct decision) and about 600 points are red triangles (fail to reject H-null, Type II error). The circles tend to have larger sample means, while the triangles cluster closer to the null hypothesis value." width="2100"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-type-ii-sim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;30.1: Visualization of 1,000 simulated hypothesis tests when the true effect is 5 points. Each point represents one simulated study. Green circles are studies that correctly rejected H₀ (correct decisions); red triangles are studies that failed to reject H₀ (Type II errors). <a href="https://learnlens.org/statlens/conceptual/decision-errors/">↗ Try this live</a> — simulate many studies as hits / Type II misses / Type I false alarms.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="guidedpractice">
+<p>In the tutoring program simulation above, what would happen to the Type II error rate if the researcher increased the sample size from 20 to 100 students? Would <span class="math inline">\(\beta\)</span> increase, decrease, or stay the same?</p>
+<details>
+<summary>
+Show answer
+</summary>
+The Type II error rate would decrease substantially. With 100 students instead of 20, the standard error drops from <span class="math inline">\(15/\sqrt{20} = 3.35\)</span> to <span class="math inline">\(15/\sqrt{100} = 1.50\)</span>. The test becomes much more precise, making it easier to distinguish the true mean of 75 from the null value of 70. In fact, with <span class="math inline">\(n = 100\)</span>, the power would be about 95%, meaning <span class="math inline">\(\beta \approx 0.05\)</span> — the test would miss the real effect only about 5% of the time.
+</details>
+</div>
+</section>
+</div>
+<div class="original">
+<div class="statlens">
+<p><strong>See it in action.</strong> Open the <a href="https://learnlens.org/statlens/distribution/power/?alpha=0.05&amp;n=30&amp;delta=1&amp;sigma=2&amp;tail=right" target="_blank">Power &amp; Error Visualizer</a> to <em>see</em> Type II error: it overlays the null and alternative curves and shades <span class="math inline">\(\alpha\)</span>, <span class="math inline">\(\beta\)</span>, and the power <span class="math inline">\(1-\beta\)</span>. Increase sample size or effect size and watch <span class="math inline">\(\beta\)</span> shrink; lower <span class="math inline">\(\alpha\)</span> and watch it grow. For the sim companion, pair with the <a href="https://learnlens.org/statlens/conceptual/power-sim/?delta=1&amp;sigma=2&amp;n=30&amp;alpha=0.05&amp;tail=right" target="_blank">Power Lab</a> (repeated z-tests, empirical reject-rate).</p>
+</div>
+</div>
+</section>
+<section id="sec-factors-type-ii" class="level2" data-number="30.3">
+<h2 data-number="30.3" class="anchored" data-anchor-id="sec-factors-type-ii"><span class="header-section-number">30.3</span> Factors that affect the Type II error rate</h2>
+<div class="original">
+<p>Four key factors determine how likely a study is to commit a Type II error:</p>
+<section id="effect-size" class="level3" data-number="30.3.1">
+<h3 data-number="30.3.1" class="anchored" data-anchor-id="effect-size"><span class="header-section-number">30.3.1</span> 1. Effect size</h3>
+<p>The <strong>effect size</strong> is the magnitude of the difference between the true parameter value and the null hypothesis value. Larger effects are easier to detect.</p>
+<ul>
+<li>If a tutoring program raises scores by 20 points, almost any reasonable study will detect it.</li>
+<li>If a tutoring program raises scores by 2 points, you need a very large or very precise study to detect it.</li>
+</ul>
+<p>Intuitively, a large effect “sticks out” from the noise, while a small effect can easily be hidden by random variability.</p>
+</section>
+<section id="sample-size" class="level3" data-number="30.3.2">
+<h3 data-number="30.3.2" class="anchored" data-anchor-id="sample-size"><span class="header-section-number">30.3.2</span> 2. Sample size</h3>
+<p>Larger samples provide more precise estimates and smaller standard errors. The standard error of the sample mean is <span class="math inline">\(SE = \sigma / \sqrt{n}\)</span>, which decreases as <span class="math inline">\(n\)</span> increases. A smaller standard error means the sampling distribution is narrower, making it easier to distinguish the true effect from zero.</p>
+<div class="important">
+<p><strong>More data, fewer missed effects.</strong> Increasing the sample size is the most common way to reduce the Type II error rate. This is why large clinical trials with thousands of participants are more likely to detect treatment effects than small pilot studies.</p>
+</div>
+</section>
+<section id="population-variability-sigma" class="level3" data-number="30.3.3">
+<h3 data-number="30.3.3" class="anchored" data-anchor-id="population-variability-sigma"><span class="header-section-number">30.3.3</span> 3. Population variability (<span class="math inline">\(\sigma\)</span>)</h3>
+<p>When individual observations are highly variable, it is harder to estimate the population mean precisely. The standard error depends directly on <span class="math inline">\(\sigma\)</span>: high variability means a wide sampling distribution, which makes it harder to distinguish <span class="math inline">\(H_A\)</span> from <span class="math inline">\(H_0\)</span>.</p>
+<p>For example, if exam scores range from 20 to 100 with <span class="math inline">\(\sigma = 25\)</span>, it is much harder to detect a 5-point effect than if scores range from 60 to 80 with <span class="math inline">\(\sigma = 5\)</span>.</p>
+<div class="guidedpractice">
+<p>A researcher is studying whether a dietary supplement improves reaction time. She can either recruit participants from the general population (where reaction times are highly variable) or from a group of trained athletes (where reaction times are more consistent). Which group would give her study a lower Type II error rate, assuming the supplement has the same true effect in both populations?</p>
+<details>
+<summary>
+Show answer
+</summary>
+The group of trained athletes would give a lower Type II error rate because their reaction times are less variable (smaller <span class="math inline">\(\sigma\)</span>). A smaller <span class="math inline">\(\sigma\)</span> leads to a smaller standard error, making it easier to detect the true effect of the supplement.
+</details>
+</div>
+</section>
+<section id="discernibility-level-alpha" class="level3" data-number="30.3.4">
+<h3 data-number="30.3.4" class="anchored" data-anchor-id="discernibility-level-alpha"><span class="header-section-number">30.3.4</span> 4. Discernibility level (<span class="math inline">\(\alpha\)</span>)</h3>
+<p>As we discussed in <a href="decision-errors.html#sec-tradeoff" class="quarto-xref"><span>Section 8.5</span></a>, a smaller <span class="math inline">\(\alpha\)</span> makes the test more conservative — it demands stronger evidence before rejecting <span class="math inline">\(H_0\)</span>. This directly increases <span class="math inline">\(\beta\)</span> because the rejection region shrinks.</p>
+<p>The table below summarizes these four factors:</p>
+<div id="tbl-factors-beta" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-factors-beta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;30.1: How each factor affects the Type II error rate.
+</figcaption>
+<div aria-describedby="tbl-factors-beta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 31%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Factor</th>
+<th style="text-align: left;">Change</th>
+<th style="text-align: left;">Effect on <span class="math inline">\(\beta\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Effect size</td>
+<td style="text-align: left;">Larger effect</td>
+<td style="text-align: left;"><span class="math inline">\(\beta\)</span> decreases</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sample size (<span class="math inline">\(n\)</span>)</td>
+<td style="text-align: left;">Larger <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\beta\)</span> decreases</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Population variability (<span class="math inline">\(\sigma\)</span>)</td>
+<td style="text-align: left;">Larger <span class="math inline">\(\sigma\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\beta\)</span> increases</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Discernibility level (<span class="math inline">\(\alpha\)</span>)</td>
+<td style="text-align: left;">Smaller <span class="math inline">\(\alpha\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\beta\)</span> increases</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<div class="workedexample">
+<p>A researcher plans a two-sample <span class="math inline">\(t\)</span>-test to compare a new therapy to a standard therapy. She knows from pilot data that the standard deviation of patient outcomes is about <span class="math inline">\(\sigma = 12\)</span>. She is hoping to detect a difference of at least 4 points between the two therapies. Her initial plan calls for 30 patients per group with <span class="math inline">\(\alpha = 0.05\)</span>.</p>
+<p>The standard error for the difference in means is approximately:</p>
+<p><span class="math display">\[SE = \sqrt{\frac{12^2}{30} + \frac{12^2}{30}} = \sqrt{\frac{144}{30} + \frac{144}{30}} = \sqrt{9.6} = 3.10\]</span></p>
+<p>The rejection boundary for a two-sided test is approximately <span class="math inline">\(1.96 \times SE = 1.96 \times 3.10 = 6.07\)</span>. Since the true effect is only 4 points — smaller than the rejection boundary of 6.07 — the study will more often than not fail to detect the effect. The Type II error rate will be high.</p>
+<p>What could she change to reduce the Type II error rate?</p>
+<hr>
+<p>She has several options: (1) increase the sample size to reduce the standard error, (2) try to reduce variability through better measurement or a more homogeneous study population, or (3) increase <span class="math inline">\(\alpha\)</span> to 0.10 (though this increases the Type I error rate). The most practical option is usually to increase the sample size.</p>
+</div>
+</section>
+</div>
+</section>
+<section id="sec-practical-significance-revisited" class="level2" data-number="30.4">
+<h2 data-number="30.4" class="anchored" data-anchor-id="sec-practical-significance-revisited"><span class="header-section-number">30.4</span> Practical vs.&nbsp;statistical discernibility revisited</h2>
+<div class="original">
+<p>The concepts of Type I and Type II error are closely connected to the distinction between <strong>statistical discernibility</strong> and <strong>practical importance</strong> that we first encountered in earlier chapters.</p>
+<p><strong>Statistical discernibility</strong> means the data provide enough evidence to reject <span class="math inline">\(H_0\)</span> at our chosen <span class="math inline">\(\alpha\)</span> level. It says: “The effect is probably not zero.”</p>
+<p><strong>Practical importance</strong> means the effect is large enough to matter in the real world. It says: “The effect is big enough to be useful.”</p>
+<p>These are different questions, and they can give different answers:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 35%">
+<col style="width: 32%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Scenario</th>
+<th style="text-align: left;">Statistically discernible?</th>
+<th style="text-align: left;">Practically important?</th>
+<th style="text-align: left;">What happened?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Large effect, large <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">Ideal outcome</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Large effect, small <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;">Possibly not</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">Type II error risk — effect exists but may be missed</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Small effect, large <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">“Discernible but trivial” — very large studies can detect tiny, unimportant effects</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Small effect, small <span class="math inline">\(n\)</span></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">No news</td>
+</tr>
+</tbody>
+</table>
+<p>The second row (large effect, small <span class="math inline">\(n\)</span>) is the Type II error danger zone: a real, important effect exists, but the study is too small to detect it. The third row (small effect, large <span class="math inline">\(n\)</span>) represents a different problem: a large study that detects a trivially small effect that has no practical importance.</p>
+<div class="workedexample">
+<p>A study with 50,000 participants finds that a new teaching method raises test scores by 0.3 points on a 100-point scale, with <span class="math inline">\(p = 0.002\)</span>. Is this result practically important?</p>
+<hr>
+<p>The result is statistically discernible (<span class="math inline">\(p = 0.002 &lt; 0.05\)</span>), meaning we have strong evidence that the effect is not zero. However, a 0.3-point improvement on a 100-point scale is almost certainly too small to matter in practice. No school would adopt a new teaching method for a gain of one-third of a point. This is a case of statistical discernibility without practical importance — the study was so large that it detected a real but trivially small effect.</p>
+</div>
+<div class="important">
+<p><strong>Statistical discernibility is not the same as practical importance.</strong> A statistically discernible result tells you the effect is probably real, but it does not tell you the effect is important. Always consider the <em>size</em> of the effect, not just whether it is statistically discernible.</p>
+</div>
+<div class="guidedpractice">
+<p>A small pilot study with 12 participants finds that a new exercise program reduces resting heart rate by 8 beats per minute, but the result is not statistically discernible (<span class="math inline">\(p = 0.09\)</span>). Does this mean the exercise program doesn’t work?</p>
+<details>
+<summary>
+Show answer
+</summary>
+Not necessarily. An 8 bpm reduction in resting heart rate is a clinically meaningful effect. The study may simply have been too small to detect it — this is a potential Type II error. The non-discernible result means we don’t have enough evidence to be confident the effect is real, but it doesn’t prove the program is ineffective. A larger study with more participants would be warranted.
+</details>
+</div>
+</div>
+</section>
+<section id="sec-type-ii-error-review" class="level2" data-number="30.5">
+<h2 data-number="30.5" class="anchored" data-anchor-id="sec-type-ii-error-review"><span class="header-section-number">30.5</span> Chapter review</h2>
+<section id="summary" class="level3 original" data-number="30.5.1">
+<h3 data-number="30.5.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">30.5.1</span> Summary</h3>
+<p>This chapter looked closely at the Type II error rate <span class="math inline">\(\beta\)</span> and the power of a test. Simulation shows that a study with a small sample, a small true effect, or high variability can fail to detect a real effect a large fraction of the time. Four factors govern <span class="math inline">\(\beta\)</span>: the <strong>effect size</strong> (larger effects are easier to detect), the <strong>sample size</strong> (more data lowers <span class="math inline">\(\beta\)</span>), the <strong>population variability</strong> (more variability raises <span class="math inline">\(\beta\)</span>), and the <strong>discernibility level</strong> (a smaller <span class="math inline">\(\alpha\)</span> raises <span class="math inline">\(\beta\)</span>). Finally, statistical discernibility and practical importance are not the same: a very large study can detect a trivially small effect, while a small study can miss an important one.</p>
+</section>
+</section>
+<section id="exercises" class="level2 exercises" data-number="30.6">
+<h2 class="exercises anchored" data-number="30.6" data-anchor-id="exercises"><span class="header-section-number">30.6</span> Exercises</h2>
+<p>Answers to odd-numbered exercises are provided in the <a href="../appendices/exercise-solutions.html#sec-solutions-type-ii-error">Exercise Solutions appendix</a> at the back of the book.</p>
+<!-- Generated by build_textbook_exercises.py — DO NOT EDIT -->
+<!-- Sources: _14-ex-foundations-errors -->
+<ol type="1">
+<li><strong>Which is higher?</strong> In each part below, there is a value of interest and two scenarios: (i) and (ii). For each part, report if the value of interest is larger under scenario (i), scenario (ii), or whether the value is equal under the scenarios.</li>
+</ol>
+<ol type="a">
+<li><p>The standard error of <span class="math inline">\(\hat{p}\)</span> when (i)&nbsp;<span class="math inline">\(n = 125\)</span> or (ii)&nbsp;<span class="math inline">\(n = 500\)</span>.</p></li>
+<li><p>The margin of error of a confidence interval when the confidence level is (i)&nbsp;90% or (ii)&nbsp;80%.</p></li>
+<li><p>The p-value for a Z-statistic of 2.5 calculated based on a (i)&nbsp;sample with <span class="math inline">\(n = 500\)</span> or based on a (ii)&nbsp;sample with <span class="math inline">\(n = 1000\)</span>.</p></li>
+<li><p>The probability of making a Type II error when the alternative hypothesis is true and the discernibility level is (i)&nbsp;0.05 or (ii)&nbsp;0.10. </p></li>
+</ol>
+<ol start="2" type="1">
+<li><strong>Same observation, different sample size.</strong> Suppose you conduct a hypothesis test based on a sample where the sample size is <span class="math inline">\(n = 50\)</span>, and arrive at a p-value of 0.08. You then refer back to your notes and discover that you made a careless mistake, the sample size should have been <span class="math inline">\(n = 500\)</span>. Will your p-value increase, decrease, or stay the same? Explain. </li>
+</ol>
+<ol start="3" type="1">
+<li><strong>Practical importance vs.&nbsp;statistical discernibility.</strong> Determine whether the following statement is true or false, and explain your reasoning: “With large sample sizes, even small differences between the null value and the observed point estimate can be statistically discernible.” </li>
+</ol>
+<!-- StatLens Interactive Exercises — Type II Error -->
+<!-- HAND-AUTHORED (not generated). Pedagogy: Type II error as the missed-     -->
+<!-- detection region under H_A, β as a function of n, δ, σ, α.                -->
+<section id="statlens-exercises" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="statlens-exercises">StatLens Exercises</h3>
+<p>Let <a href="https://learnlens.org/statlens" target="_blank">StatLens</a> do the arithmetic; spend your effort on the reasoning a calculator can’t do.</p>
+<ol type="1">
+<li><p><strong>See <span class="math inline">\(\beta\)</span> on the dual-curve picture.</strong> Open the <a href="https://learnlens.org/statlens/distribution/power/?alpha=0.05&amp;n=30&amp;delta=1&amp;sigma=2&amp;tail=right" target="_blank">Power &amp; Error Visualizer</a>.</p>
+<ol type="a">
+<li>Where on the picture is <span class="math inline">\(\beta\)</span> shaded? Why does it live under the <strong>alternative</strong> curve, not the null?</li>
+<li>Read the value of <span class="math inline">\(\beta\)</span>. What does “<span class="math inline">\(\beta = 0.14\)</span>” mean in plain English for an experiment at these settings?</li>
+<li>Now decrease <span class="math inline">\(\delta\)</span> to 0.5 (smaller effect). What happens to <span class="math inline">\(\beta\)</span>? Why?</li>
+<li>Reset and decrease <span class="math inline">\(\sigma\)</span> to 1 (less noise). What happens to <span class="math inline">\(\beta\)</span>? Why?</li>
+</ol></li>
+<li><p><strong>Simulating Type II errors.</strong> Open the <a href="https://learnlens.org/statlens/conceptual/power-sim/?delta=0.5&amp;sigma=1&amp;n=20&amp;alpha=0.05&amp;tail=right" target="_blank">Power Lab (simulation)</a>.</p>
+<ol type="a">
+<li>Run 500 simulated <span class="math inline">\(z\)</span>-tests at these settings. The empirical reject rate is the simulated power. What’s the simulated <span class="math inline">\(\beta = 1 -\)</span> power?</li>
+<li>In the hit/miss/false-alarm strip, what colour represents Type II errors? Roughly what fraction of dots are that colour?</li>
+<li>Increase <span class="math inline">\(n\)</span> to 200 and re-run. Does <span class="math inline">\(\beta\)</span> shrink as expected?</li>
+<li>A researcher says: “I’ll just call <span class="math inline">\(\beta\)</span> small because my <span class="math inline">\(\alpha\)</span> is small.” Why is this wrong?</li>
+</ol></li>
+<li><p><strong>When is “no evidence” no evidence?</strong> A trial of <span class="math inline">\(n = 30\)</span> patients tests a new treatment with <span class="math inline">\(H_0: \mu = 0\)</span> vs.&nbsp;<span class="math inline">\(H_A: \mu &gt; 0\)</span> at <span class="math inline">\(\alpha = 0.05\)</span>. The result: p = 0.18, “no discernible effect.”</p>
+<ol type="a">
+<li>Using the <a href="https://learnlens.org/statlens/distribution/power/?alpha=0.05&amp;n=30&amp;delta=0.3&amp;sigma=1&amp;tail=right" target="_blank">Power &amp; Error Visualizer</a> (preset to <span class="math inline">\(\delta = 0.3, \sigma = 1\)</span>), compute the power if the true effect were <span class="math inline">\(\delta = 0.3\)</span>. Is that high enough to call “no detected effect” informative?</li>
+<li>What if the true effect were <span class="math inline">\(\delta = 1\)</span>? Re-check with the tool.</li>
+<li>Explain in one sentence the difference between “no evidence of effect” and “evidence of no effect.”</li>
+<li>What sentence should <em>actually</em> appear in the trial’s discussion section, given the modest power?</li>
+</ol></li>
+</ol>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/normal-distribution.html" class="pagination-link" aria-label="More About the Normal Distribution">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">More About the Normal Distribution</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/statistical-power.html" class="pagination-link" aria-label="Statistical Power">
+        <span class="nav-page-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">Statistical Power</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Introduction to Statistics: A Simulation-First Approach</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/DataScienceUWL/simfirst-stats/edit/main/chapters/type-ii-error.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/DataScienceUWL/simfirst-stats/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>Licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>

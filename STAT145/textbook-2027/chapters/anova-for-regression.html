@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>23&nbsp; ANOVA for Regression – Introduction to Statistics: A Simulation-First Approach</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/multiple-regression.html" rel="next">
+<link href="../chapters/prediction-model-fit.html" rel="prev">
+<link href="../images/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-c76bc2edb0e532e390ad582fcbf98d52.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-b051a4077f235303ebbd7141cd2ba605.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-d1d57f57c49822ed2310d70635f51a75.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://hypothes.is/embed.js"></script>
+<script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-iv.html">Unit 4: Apply</a></li><li class="breadcrumb-item"><a href="../chapters/anova-for-regression.html"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">ANOVA for Regression</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Introduction to Statistics: A Simulation-First Approach</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/DataScienceUWL/simfirst-stats" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="../Introduction-to-Statistics--A-Simulation-First-Approach.pdf" title="Download PDF" class="quarto-navigation-tool px-1" aria-label="Download PDF"><i class="bi bi-file-pdf"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-i.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 1: Explore</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/intro-to-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction to Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/study-design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Data Collection and Study Design</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/data-visualization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Exploring Categorical Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/describing-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Exploring Quantitative Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/relationships.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Relationships Between Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-explore.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explore — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-explore.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Explore</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-eda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Exploring a Distribution</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-ii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 2: Simulate</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sampling-variability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Sampling Variability</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/randomization-tests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Randomization Tests</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/decision-errors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Decision Errors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/bootstrap-ci.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Bootstrap Confidence Intervals</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sampling-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Sampling Distributions via Simulation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-simulate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulate — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-simulate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Simulate</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 3: Compute</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/normal-approximation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Normal Approximation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/one-proportion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">One Proportion</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/inference-proportions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Inference for Proportions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ci-for-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Confidence Intervals for Means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/hypothesis-tests-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Hypothesis Tests for Means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-calculate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Compute — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-calculate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Compute</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-proportions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Inference for Proportions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Comparing Two Means</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 4: Apply</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chisq-gof.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Chi-Square Goodness of Fit</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chisq-independence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Chi-Square Test of Independence</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Analysis of Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Multiple Comparisons</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Correlation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/linear-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Linear Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/prediction-model-fit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Prediction and Model Fit</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/anova-for-regression.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">ANOVA for Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Multiple Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-apply.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Apply — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-apply.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Apply</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Comparing Several Means (ANOVA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-chisq.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Association Between Two Categorical Variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-chisq-ai.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Association Between Two Categorical Variables (AI version)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Fitting and Testing a Regression Line</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-v.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 5: Foundations</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/probability-rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Probability Rules</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/random-variables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Random Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/expected-value.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Expected Value and Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/binomial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Binomial Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/normal-distribution.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">More About the Normal Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/type-ii-error.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/statistical-power.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">Statistical Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sample-size.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">Sample Size Planning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-foundations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundations — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-foundations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Foundations</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../technology-setup.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Technology Setup</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/datasets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Datasets</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/statlens-guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">StatLens Quick Reference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/tables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Statistical Tables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/exercise-solutions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">E</span>&nbsp; <span class="chapter-title">Exercise Solutions</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-two-questions" id="toc-sec-two-questions" class="nav-link active" data-scroll-target="#sec-two-questions"><span class="header-section-number">23.1</span> The two-question view of regression</a></li>
+  <li><a href="#sec-ss-partition" id="toc-sec-ss-partition" class="nav-link" data-scroll-target="#sec-ss-partition"><span class="header-section-number">23.2</span> Partitioning the total sum of squares</a></li>
+  <li><a href="#sec-anova-table-regression" id="toc-sec-anova-table-regression" class="nav-link" data-scroll-target="#sec-anova-table-regression"><span class="header-section-number">23.3</span> The ANOVA table for regression</a></li>
+  <li><a href="#sec-f-stat-regression" id="toc-sec-f-stat-regression" class="nav-link" data-scroll-target="#sec-f-stat-regression"><span class="header-section-number">23.4</span> The <span class="math inline">\(F\)</span>-statistic and its distribution</a></li>
+  <li><a href="#sec-possum-anova" id="toc-sec-possum-anova" class="nav-link" data-scroll-target="#sec-possum-anova"><span class="header-section-number">23.5</span> Worked example: possum head length on total length</a></li>
+  <li><a href="#sec-f-equals-t-squared" id="toc-sec-f-equals-t-squared" class="nav-link" data-scroll-target="#sec-f-equals-t-squared"><span class="header-section-number">23.6</span> <span class="math inline">\(F = t^2\)</span> in simple regression</a></li>
+  <li><a href="#sec-anova-mlr-bridge" id="toc-sec-anova-mlr-bridge" class="nav-link" data-scroll-target="#sec-anova-mlr-bridge"><span class="header-section-number">23.7</span> Bridge to multiple regression</a></li>
+  <li><a href="#sec-anova-for-regression-review" id="toc-sec-anova-for-regression-review" class="nav-link" data-scroll-target="#sec-anova-for-regression-review"><span class="header-section-number">23.8</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">23.8.1</span> Summary</a></li>
+  <li><a href="#terms" id="toc-terms" class="nav-link" data-scroll-target="#terms"><span class="header-section-number">23.8.2</span> Terms</a></li>
+  <li><a href="#attribution" id="toc-attribution" class="nav-link" data-scroll-target="#attribution"><span class="header-section-number">23.8.3</span> Attribution</a></li>
+  </ul></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">23.9</span> Exercises</a>
+  <ul class="collapse">
+  <li><a href="#statlens-exercises" id="toc-statlens-exercises" class="nav-link" data-scroll-target="#statlens-exercises">StatLens Exercises</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/DataScienceUWL/simfirst-stats/edit/main/chapters/anova-for-regression.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/DataScienceUWL/simfirst-stats/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+<div class="pilot-edition-banner" role="note" style="background:#fff4e5;border-bottom:1px solid #f0c27b;color:#5c3b00;padding:.5rem 1rem;font-size:.9rem;text-align:center;">
+  <strong>Pilot edition, Spring 2027.</strong> This version of the book is being tested in a few sections and changes during the semester.
+</div>
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-iv.html">Unit 4: Apply</a></li><li class="breadcrumb-item"><a href="../chapters/anova-for-regression.html"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">ANOVA for Regression</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">ANOVA for Regression</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="chapterintro">
+<p>In the linear regression chapter we tested a single hypothesis: is the population slope <span class="math inline">\(\beta_1\)</span> zero? That test used a <span class="math inline">\(t\)</span>-statistic, and it answered a single question about a single coefficient. In this chapter we develop a <em>different</em> view of regression that scales naturally to models with many predictors: the <strong>analysis of variance (ANOVA) table for regression</strong>. This view partitions the total variability in the response into a piece the model explains and a piece it doesn’t, and summarizes the resulting evidence for the model <em>as a whole</em> with an <span class="math inline">\(F\)</span>-statistic. In simple regression the ANOVA <span class="math inline">\(F\)</span>-test is algebraically equivalent to the <span class="math inline">\(t\)</span>-test on <span class="math inline">\(\beta_1\)</span> (specifically, <span class="math inline">\(F = t^2\)</span>), so it provides no new answers there — but the framework is the one that carries over to multiple regression, where it becomes essential.</p>
+</div>
+<div class="statlens">
+<p><strong>See it in action.</strong> Open the <a href="https://learnlens.org/statlens/inference/slope/?dataset=possum_total&amp;anova=true" target="_blank">Slope tool with ANOVA panel</a> to display the ANOVA table for a simple regression fit (SS partition, <span class="math inline">\(F\)</span>-statistic, model <span class="math inline">\(R^2\)</span>), with the <span class="math inline">\(F = t^2\)</span> equivalence shown below the table. Pair with the <a href="https://learnlens.org/statlens/explore/regression/" target="_blank">Regression Explorer</a> to see the fitted line and residuals side by side.</p>
+</div>
+<section id="sec-two-questions" class="level2" data-number="23.1">
+<h2 data-number="23.1" class="anchored" data-anchor-id="sec-two-questions"><span class="header-section-number">23.1</span> The two-question view of regression</h2>
+<p>When we fit a simple linear regression model <span class="math inline">\(\hat{y} = b_0 + b_1 x\)</span> to sample data, we can ask two related but distinct questions:</p>
+<ol type="1">
+<li><strong>Is the slope different from zero?</strong> This is a <em>coefficient-level</em> question. In the linear regression chapter we answered it with a <span class="math inline">\(t\)</span>-test on <span class="math inline">\(b_1\)</span>.</li>
+<li><strong>Is the model useful at all?</strong> This is a <em>model-level</em> question. Does the fitted regression explain a discernible share of the variability in <span class="math inline">\(y\)</span>, compared to using <span class="math inline">\(\bar{y}\)</span> as a “prediction” for every case?</li>
+</ol>
+<p>In simple regression these two questions have the same answer, because a single-predictor model is “useful” exactly when its one slope coefficient is nonzero. When we add more predictors in the next chapter, the two questions come apart — some coefficients can be individually nonsignificant while the model as a whole is highly significant, or vice versa. The ANOVA-for-regression view is the tool we use to ask the <em>model-level</em> question.</p>
+</section>
+<section id="sec-ss-partition" class="level2" data-number="23.2">
+<h2 data-number="23.2" class="anchored" data-anchor-id="sec-ss-partition"><span class="header-section-number">23.2</span> Partitioning the total sum of squares</h2>
+<p>The <strong>total variability</strong> in the response is measured by</p>
+<p><span class="math display">\[SST = \sum_{i=1}^{n} (y_i - \bar{y})^2,\]</span></p>
+<p>the sum of squared deviations of each observation from the sample mean. For any fitted regression line, we can split each deviation <span class="math inline">\(y_i - \bar{y}\)</span> into two pieces:</p>
+<p><span class="math display">\[y_i - \bar{y} = \underbrace{(\hat{y}_i - \bar{y})}_{\text{explained by the model}} + \underbrace{(y_i - \hat{y}_i)}_{\text{unexplained (the residual)}}.\]</span></p>
+<p>Squaring and summing gives an identity that is arguably the single most important formula in this chapter:</p>
+<div class="important">
+<p><strong>The sum-of-squares decomposition for regression.</strong></p>
+<p><span class="math display">\[SST = SSR + SSE,\]</span></p>
+<p>where</p>
+<ul>
+<li><span class="math inline">\(SST = \sum (y_i - \bar{y})^2\)</span> is the <strong>total sum of squares</strong> (total variability in <span class="math inline">\(y\)</span>),</li>
+<li><span class="math inline">\(SSR = \sum (\hat{y}_i - \bar{y})^2\)</span> is the <strong>regression sum of squares</strong> (variability <em>explained</em> by the model),</li>
+<li><span class="math inline">\(SSE = \sum (y_i - \hat{y}_i)^2\)</span> is the <strong>error</strong> or <strong>residual sum of squares</strong> (variability <em>not</em> explained).</li>
+</ul>
+</div>
+<p>The cross-product term that would appear in a naive expansion vanishes because the ordinary least-squares fit is orthogonal to the residuals by construction; you can take that as a promise for now.</p>
+<p>This decomposition also gives an interpretation of <span class="math inline">\(R^2\)</span> that is the same one you already know but written in the new language:</p>
+<p><span class="math display">\[R^2 = \frac{SSR}{SST} = 1 - \frac{SSE}{SST}.\]</span></p>
+<p><span class="math inline">\(R^2\)</span> is the fraction of total variability that the regression model explains.</p>
+</section>
+<section id="sec-anova-table-regression" class="level2" data-number="23.3">
+<h2 data-number="23.3" class="anchored" data-anchor-id="sec-anova-table-regression"><span class="header-section-number">23.3</span> The ANOVA table for regression</h2>
+<p>Software organizes the sum-of-squares decomposition, degrees of freedom, and derived quantities into an <strong>ANOVA table</strong>:</p>
+<div id="tbl-anova-simple" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-anova-simple-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;23.1: The ANOVA table for a simple linear regression fit. In simple regression the numerator degrees of freedom is always 1 (one slope estimated); the denominator is <span class="math inline">\(n - 2\)</span> (one intercept and one slope).
+</figcaption>
+<div aria-describedby="tbl-anova-simple-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Source</th>
+<th style="text-align: center;">df</th>
+<th style="text-align: center;">SS</th>
+<th style="text-align: center;">MS</th>
+<th style="text-align: center;"><span class="math inline">\(F\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(p\)</span>-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Regression</td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(SSR\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(MSR = SSR / 1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(F = MSR/MSE\)</span></td>
+<td style="text-align: center;">(from <span class="math inline">\(F_{1,\,n-2}\)</span>)</td>
+</tr>
+<tr class="even">
+<td>Residual</td>
+<td style="text-align: center;"><span class="math inline">\(n - 2\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(SSE\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(MSE = SSE / (n-2)\)</span></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td>Total</td>
+<td style="text-align: center;"><span class="math inline">\(n - 1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(SST\)</span></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>Two of the columns deserve extra comment.</p>
+<ul>
+<li>The <strong>degrees of freedom</strong> row is what you would guess: we lose two df fitting the two coefficients (<span class="math inline">\(b_0\)</span> and <span class="math inline">\(b_1\)</span>), leaving <span class="math inline">\(n - 2\)</span> for the residual row; the regression row picks up the remaining <span class="math inline">\(1\)</span> so that everything sums to the total’s <span class="math inline">\(n - 1\)</span>.</li>
+<li><span class="math inline">\(MSE\)</span> estimates the residual variance <span class="math inline">\(\sigma^2\)</span> around the true regression line. Its square root, <span class="math inline">\(s = \sqrt{MSE}\)</span>, is the <strong>residual standard error</strong> that software reports on the same output.</li>
+</ul>
+</section>
+<section id="sec-f-stat-regression" class="level2" data-number="23.4">
+<h2 data-number="23.4" class="anchored" data-anchor-id="sec-f-stat-regression"><span class="header-section-number">23.4</span> The <span class="math inline">\(F\)</span>-statistic and its distribution</h2>
+<p>The <strong><span class="math inline">\(F\)</span>-statistic</strong> for regression is a ratio of two variance estimates:</p>
+<p><span class="math display">\[F = \frac{MSR}{MSE} = \frac{SSR / 1}{SSE / (n-2)}.\]</span></p>
+<p>Under <span class="math inline">\(H_0: \beta_1 = 0\)</span> (and the LINE conditions from the linear regression chapter), this statistic follows an <span class="math inline">\(F\)</span> distribution with <span class="math inline">\(1\)</span> numerator degree of freedom and <span class="math inline">\(n - 2\)</span> denominator degrees of freedom. When the true slope is zero, both <span class="math inline">\(MSR\)</span> and <span class="math inline">\(MSE\)</span> estimate the same noise variance <span class="math inline">\(\sigma^2\)</span>, so <span class="math inline">\(F\)</span> hovers near 1. When the slope is nonzero, the model captures real signal and <span class="math inline">\(MSR\)</span> inflates relative to <span class="math inline">\(MSE\)</span>, driving <span class="math inline">\(F\)</span> above 1. So the test is always right-tailed: we compute a <span class="math inline">\(p\)</span>-value as the area <em>to the right</em> of the observed <span class="math inline">\(F\)</span> on the <span class="math inline">\(F_{1,\,n-2}\)</span> curve.</p>
+<div class="definition">
+<p>The <strong>model-level <span class="math inline">\(F\)</span>-test</strong> for a simple linear regression tests</p>
+<p><span class="math display">\[H_0: \beta_1 = 0 \quad \text{vs.} \quad H_A: \beta_1 \ne 0\]</span></p>
+<p>with test statistic <span class="math inline">\(F = MSR / MSE\)</span>. Under <span class="math inline">\(H_0\)</span> and the LINE conditions, <span class="math inline">\(F \sim F_{1,\,n-2}\)</span>. Small <span class="math inline">\(p\)</span>-values (large <span class="math inline">\(F\)</span>) provide evidence that the regression model captures real signal in <span class="math inline">\(y\)</span>.</p>
+</div>
+</section>
+<section id="sec-possum-anova" class="level2" data-number="23.5">
+<h2 data-number="23.5" class="anchored" data-anchor-id="sec-possum-anova"><span class="header-section-number">23.5</span> Worked example: possum head length on total length</h2>
+<div class="workedexample">
+<p>The linear regression chapter fit a model of possum head length (mm) on total length (cm) using <span class="math inline">\(n = 104\)</span> possums. Suppose the software reports the following:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Quantity</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Slope estimate <span class="math inline">\(b_1\)</span></td>
+<td>0.573</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(SE(b_1)\)</span></td>
+<td>0.059</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(t\)</span>-statistic for <span class="math inline">\(H_0: \beta_1 = 0\)</span></td>
+<td>9.66</td>
+</tr>
+<tr class="even">
+<td>Residual standard error <span class="math inline">\(s\)</span></td>
+<td>2.60 mm</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(R^2\)</span></td>
+<td>0.478</td>
+</tr>
+</tbody>
+</table>
+<p>Fill in the ANOVA table.</p>
+<hr>
+<p><strong>Total sum of squares.</strong> With <span class="math inline">\(n = 104\)</span>, the residual row has <span class="math inline">\(df = n - 2 = 102\)</span>. The regression row has <span class="math inline">\(df = 1\)</span>. The total row has <span class="math inline">\(df = n - 1 = 103\)</span>.</p>
+<p>The residual mean square is <span class="math inline">\(MSE = s^2 = 2.60^2 = 6.76\)</span>, so <span class="math display">\[SSE = df_{\text{resid}} \times MSE = 102 \times 6.76 = 689.5.\]</span></p>
+<p><span class="math inline">\(R^2 = 0.478\)</span> means the model explains <span class="math inline">\(47.8\%\)</span> of the total variability, so <span class="math display">\[SSR = \frac{R^2}{1 - R^2} \cdot SSE = \frac{0.478}{0.522} \times 689.5 \approx 631.\]</span></p>
+<p>(Equivalently, <span class="math inline">\(SST = SSE / (1 - R^2) \approx 689.5 / 0.522 \approx 1321\)</span> and <span class="math inline">\(SSR = SST - SSE \approx 631\)</span>.)</p>
+<p><strong>The regression mean square</strong> is <span class="math inline">\(MSR = SSR / 1 = 631\)</span>, and</p>
+<p><span class="math display">\[F = \frac{MSR}{MSE} = \frac{631}{6.76} \approx 93.3.\]</span></p>
+<p>Compare to <span class="math inline">\(t^2 = 9.66^2 \approx 93.3\)</span> — the two match to within rounding.</p>
+<p>Under <span class="math inline">\(H_0\)</span> the null distribution is <span class="math inline">\(F_{1, 102}\)</span>, and <span class="math inline">\(F = 93.3\)</span> is far into the right tail; the <span class="math inline">\(p\)</span>-value from software is essentially zero. The ANOVA <span class="math inline">\(F\)</span>-test rejects the null of no linear relationship, in exact agreement with the slope <span class="math inline">\(t\)</span>-test (<span class="math inline">\(t = 9.66\)</span>) in the software output above.</p>
+</div>
+</section>
+<section id="sec-f-equals-t-squared" class="level2" data-number="23.6">
+<h2 data-number="23.6" class="anchored" data-anchor-id="sec-f-equals-t-squared"><span class="header-section-number">23.6</span> <span class="math inline">\(F = t^2\)</span> in simple regression</h2>
+<p>The near-equality of <span class="math inline">\(F\)</span> and <span class="math inline">\(t^2\)</span> in the worked example is not a coincidence.</p>
+<div class="important">
+<p><strong>In a simple linear regression</strong>, the ANOVA <span class="math inline">\(F\)</span>-statistic and the slope <span class="math inline">\(t\)</span>-statistic satisfy</p>
+<p><span class="math display">\[F = t^2,\]</span></p>
+<p>and the two tests give <strong>identical</strong> <span class="math inline">\(p\)</span>-values. Rejecting <span class="math inline">\(H_0: \beta_1 = 0\)</span> with the <span class="math inline">\(t\)</span>-test is the same event as rejecting the model-level <span class="math inline">\(H_0\)</span> with the <span class="math inline">\(F\)</span>-test.</p>
+</div>
+<p>This equivalence is a special case of a broader algebraic fact about <span class="math inline">\(F\)</span> distributions: an <span class="math inline">\(F\)</span> random variable with <span class="math inline">\(1\)</span> numerator degree of freedom is the square of a <span class="math inline">\(t\)</span> random variable with the corresponding denominator degrees of freedom. So in simple regression the two tests are literally the same test dressed in different notation.</p>
+<p>Why bother introducing the ANOVA framework at all, then? Because in <strong>multiple regression</strong> — with two or more predictors — the <span class="math inline">\(F\)</span>-test tests whether <em>any</em> of the slopes are nonzero. There is no single <span class="math inline">\(t\)</span>-statistic that answers that question; each predictor gets its own <span class="math inline">\(t\)</span>, and the model-level <span class="math inline">\(F\)</span> combines them. The ANOVA-for-regression view is the correct generalization; the coincidence of <span class="math inline">\(F = t^2\)</span> in the one-predictor case simply reflects that the two views have to agree when there is only one slope to test.</p>
+</section>
+<section id="sec-anova-mlr-bridge" class="level2" data-number="23.7">
+<h2 data-number="23.7" class="anchored" data-anchor-id="sec-anova-mlr-bridge"><span class="header-section-number">23.7</span> Bridge to multiple regression</h2>
+<p>The next chapter introduces regression models with <strong>more than one</strong> predictor. The ANOVA framework extends naturally.</p>
+<ul>
+<li>The <strong>regression sum of squares</strong> picks up the variability jointly explained by all the predictors together; its degrees of freedom equal the number of predictors <span class="math inline">\(k\)</span>.</li>
+<li>The <strong>residual sum of squares</strong> measures the variability the multi-predictor model still cannot explain; its degrees of freedom are <span class="math inline">\(n - k - 1\)</span> (one lost per slope plus one for the intercept).</li>
+<li>The <strong>overall <span class="math inline">\(F\)</span>-statistic</strong> tests <span class="math inline">\(H_0: \beta_1 = \beta_2 = \cdots = \beta_k = 0\)</span>, i.e.&nbsp;“none of the predictors help.” Under <span class="math inline">\(H_0\)</span> it follows an <span class="math inline">\(F_{k,\,n-k-1}\)</span> distribution.</li>
+<li>The <strong>coefficient-level <span class="math inline">\(t\)</span>-tests</strong> answer individual questions about each predictor “controlling for the others.” A predictor with a discernible <span class="math inline">\(t\)</span>-test contributes above and beyond the other predictors already in the model.</li>
+</ul>
+<p>In simple regression there is only one <span class="math inline">\(t\)</span>-test and one <span class="math inline">\(F\)</span>-test and they agree; in multiple regression there are <span class="math inline">\(k+1\)</span> tests and they can disagree in informative ways. The rest of that story is Chapter 23.</p>
+</section>
+<section id="sec-anova-for-regression-review" class="level2" data-number="23.8">
+<h2 data-number="23.8" class="anchored" data-anchor-id="sec-anova-for-regression-review"><span class="header-section-number">23.8</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="23.8.1">
+<h3 data-number="23.8.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">23.8.1</span> Summary</h3>
+<p>This chapter introduced the ANOVA-for-regression framework. The total sum of squares <span class="math inline">\(SST\)</span> decomposes as <span class="math inline">\(SST = SSR + SSE\)</span>, splitting the response’s variability into a piece the model explains and a piece it does not. Organizing this decomposition alongside degrees of freedom, mean squares, and an <span class="math inline">\(F\)</span>-statistic gives the <strong>ANOVA table for regression</strong>. The <span class="math inline">\(F\)</span>-statistic tests the model as a whole; in simple regression it satisfies <span class="math inline">\(F = t^2\)</span> and gives the same <span class="math inline">\(p\)</span>-value as the slope <span class="math inline">\(t\)</span>-test, but the framework generalizes to multiple regression where the two views come apart. Along the way we reinterpreted <span class="math inline">\(R^2 = SSR/SST\)</span> as the fraction of total variability the model explains.</p>
+</section>
+<section id="terms" class="level3" data-number="23.8.2">
+<h3 data-number="23.8.2" class="anchored" data-anchor-id="terms"><span class="header-section-number">23.8.2</span> Terms</h3>
+<p><span class="math inline">\(SST\)</span>, <span class="math inline">\(SSR\)</span>, <span class="math inline">\(SSE\)</span>, sum-of-squares decomposition, regression mean square <span class="math inline">\(MSR\)</span>, residual mean square <span class="math inline">\(MSE\)</span>, ANOVA table for regression, model-level <span class="math inline">\(F\)</span>-test, <span class="math inline">\(F\)</span> distribution, residual standard error, <span class="math inline">\(F = t^2\)</span> equivalence in simple regression.</p>
+</section>
+<section id="attribution" class="level3" data-number="23.8.3">
+<h3 data-number="23.8.3" class="anchored" data-anchor-id="attribution"><span class="header-section-number">23.8.3</span> Attribution</h3>
+<p>This chapter’s ANOVA-for-regression framing — SS partition, <span class="math inline">\(F\)</span>-statistic, <span class="math inline">\(R^2\)</span> through the ANOVA lens, and residual standard error — is presented here as a unified treatment. The two contemporary CC BY-SA OER intro-stats texts (IMS 2e’s <code>inf-model-slr.qmd</code> and OpenIntro Statistics’s regression chapters) both use the coefficient-level <span class="math inline">\(t\)</span>-test route to slope inference without a formal ANOVA table; the exposition here is authored fresh rather than remixed from either. The <span class="math inline">\(F = t^2\)</span> equivalence and the bridge section to multiple regression are original to this chapter.</p>
+</section>
+</section>
+<section id="exercises" class="level2 exercises" data-number="23.9">
+<h2 class="exercises anchored" data-number="23.9" data-anchor-id="exercises"><span class="header-section-number">23.9</span> Exercises</h2>
+<!-- Standard textbook exercises for ch 22 anova-for-regression -->
+<p>Answers to odd-numbered exercises are provided in the <a href="../appendices/exercise-solutions.html">Exercise Solutions appendix</a> at the back of the book.</p>
+<ol type="1">
+<li><p><strong>Reading the ANOVA table.</strong> A regression of highway miles-per-gallon on curb weight for <span class="math inline">\(n = 60\)</span> vehicles produces the following (abbreviated) ANOVA table:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Source</th>
+<th style="text-align: center;">df</th>
+<th style="text-align: center;">SS</th>
+<th style="text-align: center;">MS</th>
+<th style="text-align: center;"><span class="math inline">\(F\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Regression</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">442</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td>Residual</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">128</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td>Total</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+</tbody>
+</table>
+<ol type="a">
+<li>Fill in the missing degrees of freedom, mean squares, total sum of squares, and <span class="math inline">\(F\)</span>-statistic.</li>
+<li>Compute <span class="math inline">\(R^2\)</span>.</li>
+<li>State the null and alternative hypotheses that the <span class="math inline">\(F\)</span>-test evaluates. Given the value of <span class="math inline">\(F\)</span> you computed, is the p-value small or large? (You may reason from the size of <span class="math inline">\(F\)</span> alone.)</li>
+</ol></li>
+<li><p><strong>Filling gaps from <span class="math inline">\(R^2\)</span> and <span class="math inline">\(s\)</span>.</strong> A regression of test scores on hours studied for <span class="math inline">\(n = 25\)</span> students reports residual standard error <span class="math inline">\(s = 4.20\)</span> (points) and <span class="math inline">\(R^2 = 0.36\)</span>.</p>
+<ol type="a">
+<li>Compute <span class="math inline">\(MSE\)</span> and <span class="math inline">\(SSE\)</span>.</li>
+<li>Compute <span class="math inline">\(SST\)</span> and <span class="math inline">\(SSR\)</span>.</li>
+<li>Report the ANOVA <span class="math inline">\(F\)</span>-statistic.</li>
+</ol></li>
+<li><p><strong>The <span class="math inline">\(F = t^2\)</span> equivalence.</strong> A software output reports <span class="math inline">\(t = 3.1\)</span> for the slope with 47 degrees of freedom, and <span class="math inline">\(F = 9.61\)</span> for the model.</p>
+<ol type="a">
+<li>Show numerically that <span class="math inline">\(F = t^2\)</span> for this fit.</li>
+<li>Explain in one sentence why the two tests must give the same p-value.</li>
+</ol></li>
+<li><p><strong>Interpreting <span class="math inline">\(R^2\)</span> using sums of squares.</strong> Suppose a fitted regression has <span class="math inline">\(SSR = 200\)</span> and <span class="math inline">\(SSE = 800\)</span>.</p>
+<ol type="a">
+<li>Compute <span class="math inline">\(R^2\)</span>.</li>
+<li>In plain English, what does the value of <span class="math inline">\(R^2\)</span> tell you about how useful the regression is at explaining <span class="math inline">\(y\)</span>?</li>
+<li>Would you feel confident using this model for prediction? What other information would you want to see before deciding?</li>
+</ol></li>
+<li><p><strong>When the <span class="math inline">\(F\)</span>-test does <em>not</em> reject.</strong> A study of <span class="math inline">\(n = 40\)</span> light bulbs regresses lifetime on bulb voltage. The ANOVA reports <span class="math inline">\(F = 0.34\)</span> with 1 and 38 degrees of freedom.</p>
+<ol type="a">
+<li>Estimate the p-value roughly (you may use the “<span class="math inline">\(F\)</span> near 1 means no evidence” rule).</li>
+<li>What conclusion does this suggest about the linear relationship between voltage and lifetime in this sample?</li>
+<li>Does a non-rejecting <span class="math inline">\(F\)</span>-test mean there is no relationship at all between voltage and lifetime? What are two alternative explanations?</li>
+</ol></li>
+</ol>
+<!-- StatLens Interactive Exercises — ANOVA for Regression -->
+<!-- HAND-AUTHORED. Focus on the F-vs-t view, reading an ANOVA table, and     -->
+<!-- the bridge to multiple regression.                                       -->
+<section id="statlens-exercises" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="statlens-exercises">StatLens Exercises</h3>
+<p>Let <a href="https://learnlens.org/statlens" target="_blank">StatLens</a> do the arithmetic; spend your effort on the reasoning a calculator can’t do.</p>
+<ol type="1">
+<li><p><strong>Frame the question.</strong> A researcher fits a simple linear regression of a student’s final exam score on hours studied.</p>
+<ol type="a">
+<li>Write the null and alternative hypotheses that the <strong>model-level <span class="math inline">\(F\)</span>-test</strong> evaluates. Write them again for the <strong>slope <span class="math inline">\(t\)</span>-test</strong>.</li>
+<li>Why are these the <em>same</em> hypothesis in a simple regression? What would need to be true for them to differ?</li>
+<li>Suppose the <span class="math inline">\(F\)</span>-statistic comes out to 12.25 with 1 and 48 degrees of freedom. What <span class="math inline">\(t\)</span>-statistic on 48 df would give the same p-value?</li>
+</ol></li>
+<li><p><strong>Open the ANOVA panel.</strong> Open the <a href="https://learnlens.org/statlens/inference/slope/?dataset=possum_total&amp;anova=true" target="_blank">Slope tool with ANOVA panel</a> for the possum head-length regression.</p>
+<ol type="a">
+<li>Report the sums of squares <span class="math inline">\(SSR\)</span>, <span class="math inline">\(SSE\)</span>, <span class="math inline">\(SST\)</span> and verify that <span class="math inline">\(SSR + SSE = SST\)</span>.</li>
+<li>Report the degrees of freedom for each row. Explain why <span class="math inline">\(df_{\text{regression}} = 1\)</span> and <span class="math inline">\(df_{\text{residual}} = n - 2\)</span>.</li>
+<li>Report the <span class="math inline">\(F\)</span>-statistic and the <span class="math inline">\(t\)</span>-statistic for the slope, and confirm <span class="math inline">\(F = t^2\)</span>.</li>
+<li>Report <span class="math inline">\(R^2\)</span>. Verify from the ANOVA table that <span class="math inline">\(R^2 = SSR / SST\)</span>.</li>
+</ol></li>
+<li><p><strong>Read <span class="math inline">\(R^2\)</span> correctly.</strong> A fitted regression reports <span class="math inline">\(R^2 = 0.72\)</span>.</p>
+<ol type="a">
+<li>Complete this sentence: “About ____ % of the variability in the response is explained by ____.” Which value goes in each blank?</li>
+<li>A student concludes: “<span class="math inline">\(R^2 = 0.72\)</span> means my model is 72% accurate.” Why is this wrong, and what’s the correct statement?</li>
+<li>What does <span class="math inline">\(R^2 = 0.72\)</span> <em>not</em> tell you about the model? Give three specific things.</li>
+</ol></li>
+<li><p><strong>When <span class="math inline">\(F\)</span> rejects and <span class="math inline">\(t\)</span> agrees.</strong> Open <a href="https://learnlens.org/statlens/inference/slope/?anova=true" target="_blank"><code>inference/slope/?anova=true</code></a> on any regression dataset with a clear linear trend.</p>
+<ol type="a">
+<li>Report <span class="math inline">\(F\)</span>, its degrees of freedom, and the p-value.</li>
+<li>Now switch datasets to one you expect to have <em>no</em> linear relationship. Report <span class="math inline">\(F\)</span> and the p-value. Is <span class="math inline">\(F\)</span> close to 1?</li>
+<li>Explain in one sentence why “<span class="math inline">\(F\)</span> close to 1” is the “no linear signal” case.</li>
+</ol></li>
+<li><p><strong>The multiple-regression preview.</strong> In simple regression, the model-level <span class="math inline">\(F\)</span>-test and the slope <span class="math inline">\(t\)</span>-test <em>must</em> agree. In multiple regression, they can diverge.</p>
+<ol type="a">
+<li>Imagine a multiple regression with 3 predictors where the overall <span class="math inline">\(F\)</span>-test rejects at <span class="math inline">\(\alpha = 0.05\)</span> but <em>no</em> individual predictor’s <span class="math inline">\(t\)</span>-test does. What could explain this? (Hint: think about <em>joint</em> vs.&nbsp;<em>individual</em> contributions.)</li>
+<li>Imagine the reverse: no individual <span class="math inline">\(t\)</span>-test rejects, and the <span class="math inline">\(F\)</span>-test doesn’t either. What does this suggest about the model?</li>
+<li>Imagine one predictor’s <span class="math inline">\(t\)</span>-test rejects while the model-level <span class="math inline">\(F\)</span>-test does not. Which conclusion should you trust?</li>
+</ol></li>
+</ol>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/prediction-model-fit.html" class="pagination-link" aria-label="Prediction and Model Fit">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Prediction and Model Fit</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/multiple-regression.html" class="pagination-link" aria-label="Multiple Regression">
+        <span class="nav-page-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Multiple Regression</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Introduction to Statistics: A Simulation-First Approach</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/DataScienceUWL/simfirst-stats/edit/main/chapters/anova-for-regression.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/DataScienceUWL/simfirst-stats/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>Licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>12&nbsp; One Proportion – Introduction to Statistics: A Simulation-First Approach</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/inference-proportions.html" rel="next">
+<link href="../chapters/normal-approximation.html" rel="prev">
+<link href="../images/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-c76bc2edb0e532e390ad582fcbf98d52.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-b051a4077f235303ebbd7141cd2ba605.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-d1d57f57c49822ed2310d70635f51a75.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://hypothes.is/embed.js"></script>
+<script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-iii.html">Unit 3: Compute</a></li><li class="breadcrumb-item"><a href="../chapters/one-proportion.html"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">One Proportion</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Introduction to Statistics: A Simulation-First Approach</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/DataScienceUWL/simfirst-stats" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="../Introduction-to-Statistics--A-Simulation-First-Approach.pdf" title="Download PDF" class="quarto-navigation-tool px-1" aria-label="Download PDF"><i class="bi bi-file-pdf"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-i.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 1: Explore</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/intro-to-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction to Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/study-design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Data Collection and Study Design</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/data-visualization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Exploring Categorical Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/describing-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Exploring Quantitative Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/relationships.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Relationships Between Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-explore.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explore — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-explore.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Explore</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-eda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Exploring a Distribution</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-ii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 2: Simulate</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sampling-variability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Sampling Variability</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/randomization-tests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Randomization Tests</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/decision-errors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Decision Errors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/bootstrap-ci.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Bootstrap Confidence Intervals</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sampling-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Sampling Distributions via Simulation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-simulate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulate — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-simulate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Simulate</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 3: Compute</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/normal-approximation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Normal Approximation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/one-proportion.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">One Proportion</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/inference-proportions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Inference for Proportions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ci-for-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Confidence Intervals for Means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/hypothesis-tests-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Hypothesis Tests for Means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-calculate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Compute — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-calculate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Compute</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-proportions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Inference for Proportions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Comparing Two Means</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 4: Apply</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chisq-gof.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Chi-Square Goodness of Fit</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chisq-independence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Chi-Square Test of Independence</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Analysis of Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Multiple Comparisons</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Correlation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/linear-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Linear Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/prediction-model-fit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Prediction and Model Fit</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/anova-for-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">ANOVA for Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Multiple Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-apply.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Apply — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-apply.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Apply</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Comparing Several Means (ANOVA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-chisq.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Association Between Two Categorical Variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-chisq-ai.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Association Between Two Categorical Variables (AI version)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Fitting and Testing a Regression Line</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-v.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 5: Foundations</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/probability-rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Probability Rules</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/random-variables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Random Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/expected-value.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Expected Value and Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/binomial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Binomial Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/normal-distribution.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">More About the Normal Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/type-ii-error.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/statistical-power.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">Statistical Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sample-size.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">Sample Size Planning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-foundations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundations — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-foundations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Foundations</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../technology-setup.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Technology Setup</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/datasets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Datasets</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/statlens-guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">StatLens Quick Reference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/tables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Statistical Tables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/exercise-solutions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">E</span>&nbsp; <span class="chapter-title">Exercise Solutions</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-oneprop-question" id="toc-sec-oneprop-question" class="nav-link active" data-scroll-target="#sec-oneprop-question"><span class="header-section-number">12.1</span> The question</a></li>
+  <li><a href="#sec-oneprop-simulate" id="toc-sec-oneprop-simulate" class="nav-link" data-scroll-target="#sec-oneprop-simulate"><span class="header-section-number">12.2</span> Simulate</a>
+  <ul class="collapse">
+  <li><a href="#a-world-where-she-is-average" id="toc-a-world-where-she-is-average" class="nav-link" data-scroll-target="#a-world-where-she-is-average"><span class="header-section-number">12.2.1</span> A world where she is average</a></li>
+  <li><a href="#the-interval" id="toc-the-interval" class="nav-link" data-scroll-target="#the-interval"><span class="header-section-number">12.2.2</span> The interval</a></li>
+  </ul></li>
+  <li><a href="#sec-oneprop-model" id="toc-sec-oneprop-model" class="nav-link" data-scroll-target="#sec-oneprop-model"><span class="header-section-number">12.3</span> Model</a>
+  <ul class="collapse">
+  <li><a href="#a-shortcut-for-the-null-distribution" id="toc-a-shortcut-for-the-null-distribution" class="nav-link" data-scroll-target="#a-shortcut-for-the-null-distribution"><span class="header-section-number">12.3.1</span> A shortcut for the null distribution</a></li>
+  <li><a href="#the-z-test" id="toc-the-z-test" class="nav-link" data-scroll-target="#the-z-test"><span class="header-section-number">12.3.2</span> The <span class="math inline">\(z\)</span> test</a></li>
+  <li><a href="#the-confidence-interval" id="toc-the-confidence-interval" class="nav-link" data-scroll-target="#the-confidence-interval"><span class="header-section-number">12.3.3</span> The confidence interval</a></li>
+  <li><a href="#when-the-shortcut-works" id="toc-when-the-shortcut-works" class="nav-link" data-scroll-target="#when-the-shortcut-works"><span class="header-section-number">12.3.4</span> When the shortcut works</a></li>
+  </ul></li>
+  <li><a href="#sec-oneprop-compare" id="toc-sec-oneprop-compare" class="nav-link" data-scroll-target="#sec-oneprop-compare"><span class="header-section-number">12.4</span> Compare</a>
+  <ul class="collapse">
+  <li><a href="#same-data-different-answers" id="toc-same-data-different-answers" class="nav-link" data-scroll-target="#same-data-different-answers"><span class="header-section-number">12.4.1</span> Same data, different answers</a></li>
+  <li><a href="#when-the-conditions-hold-payday-loan-borrowers" id="toc-when-the-conditions-hold-payday-loan-borrowers" class="nav-link" data-scroll-target="#when-the-conditions-hold-payday-loan-borrowers"><span class="header-section-number">12.4.2</span> When the conditions hold: payday-loan borrowers</a></li>
+  <li><a href="#sec-oneprop-ci-test" id="toc-sec-oneprop-ci-test" class="nav-link" data-scroll-target="#sec-oneprop-ci-test"><span class="header-section-number">12.4.3</span> The interval and the test tell one story</a></li>
+  <li><a href="#which-method-should-you-use" id="toc-which-method-should-you-use" class="nav-link" data-scroll-target="#which-method-should-you-use"><span class="header-section-number">12.4.4</span> Which method should you use?</a></li>
+  </ul></li>
+  <li><a href="#sec-oneprop-four-questions" id="toc-sec-oneprop-four-questions" class="nav-link" data-scroll-target="#sec-oneprop-four-questions"><span class="header-section-number">12.5</span> The four questions</a></li>
+  <li><a href="#sec-one-proportion-review" id="toc-sec-one-proportion-review" class="nav-link" data-scroll-target="#sec-one-proportion-review"><span class="header-section-number">12.6</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">12.6.1</span> Summary</a></li>
+  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">12.6.2</span> Key terms</a></li>
+  <li><a href="#attribution" id="toc-attribution" class="nav-link" data-scroll-target="#attribution"><span class="header-section-number">12.6.3</span> Attribution</a></li>
+  </ul></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">12.7</span> Exercises</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/DataScienceUWL/simfirst-stats/edit/main/chapters/one-proportion.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/DataScienceUWL/simfirst-stats/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+<div class="pilot-edition-banner" role="note" style="background:#fff4e5;border-bottom:1px solid #f0c27b;color:#5c3b00;padding:.5rem 1rem;font-size:.9rem;text-align:center;">
+  <strong>Pilot edition, Spring 2027.</strong> This version of the book is being tested in a few sections and changes during the semester.
+</div>
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-iii.html">Unit 3: Compute</a></li><li class="breadcrumb-item"><a href="../chapters/one-proportion.html"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">One Proportion</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">One Proportion</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- PILOT EDITION (Spring 2027): the TEMPLATE chapter for Units 3-4.
+     Structure: Simulate -> Model -> Compare. Rules: docs/specs/Sim_First_Design_Charter.md.
+     Listed only in textbook/_edition-2027.yml; the main edition still uses inference-proportions.qmd.
+     Adapted from IMS 2e Ch 16 "Inference for a single proportion" (CC BY-SA 3.0). -->
+<div class="chapterintro">
+<p>In the bootstrap chapter we met a medical consultant who advertises that her clients have fewer complications than the national average: <strong>3 complications in 62 liver-donor surgeries</strong>, against a national rate of about <strong>10%</strong>. Is she really better than average? Or would another 62 of her patients tell a different story?</p>
+<p>Every result would come out differently with new data. This chapter asks how differently, for a single proportion, in three steps: <strong>simulate</strong> what chance alone produces, <strong>model</strong> it with a formula that skips the simulation, and <strong>compare</strong> the two to learn when the formula can be trusted.</p>
+</div>
+<section id="sec-oneprop-question" class="level2" data-number="12.1">
+<h2 data-number="12.1" class="anchored" data-anchor-id="sec-oneprop-question"><span class="header-section-number">12.1</span> The question</h2>
+<p>Let <span class="math inline">\(p\)</span> be the consultant’s true complication rate, the rate we would see over all the patients she could ever advise. Her sample rate is</p>
+<p><span class="math display">\[\hat{p} = \frac{3}{62} = 0.048,\]</span></p>
+<p>about half the national 10%. But 62 patients is not many, and complication counts bounce around from one group of patients to the next. The question is whether a rate this low could easily come from an <em>average</em> consultant:</p>
+<ul>
+<li><span class="math inline">\(H_0\)</span>: her true rate is the national rate, <span class="math inline">\(p = 0.10\)</span>.</li>
+<li><span class="math inline">\(H_A\)</span>: her true rate is lower, <span class="math inline">\(p &lt; 0.10\)</span>.</li>
+</ul>
+<p>The <a href="../chapters/bootstrap-ci.html#sec-medical-consultant">bootstrap chapter</a> noted that her stronger claim, that her work <em>causes</em> fewer complications, can’t be settled with these data: patients who hire a consultant may differ in other ways. Here we ask only whether her rate is lower.</p>
+</section>
+<section id="sec-oneprop-simulate" class="level2" data-number="12.2">
+<h2 data-number="12.2" class="anchored" data-anchor-id="sec-oneprop-simulate"><span class="header-section-number">12.2</span> Simulate</h2>
+<section id="a-world-where-she-is-average" class="level3" data-number="12.2.1">
+<h3 data-number="12.2.1" class="anchored" data-anchor-id="a-world-where-she-is-average"><span class="header-section-number">12.2.1</span> A world where she is average</h3>
+<p>In the randomization tests chapter we compared two groups by shuffling their labels. Here there is only <strong>one</strong> group and a claimed value, <span class="math inline">\(p = 0.10\)</span>, so there is nothing to shuffle. Instead we build the null world directly: imagine thousands of patients, 10% of whom have a complication, and draw 62 of them at a time. Each draw is one simulated study by an average consultant.</p>
+<div class="statlens">
+<p><strong>Predict → Do → Explain.</strong></p>
+<ul>
+<li><strong>Predict.</strong> An average consultant expects about <span class="math inline">\(62 \times 0.10 \approx 6\)</span> complications in 62 surgeries. How often would she get <strong>3 or fewer</strong> just by chance: about 1 study in 100, 1 in 20, or 1 in 5?</li>
+<li><strong>Do.</strong> Open the <a href="https://learnlens.org/statlens/simulate/randomization-one-prop/?dataset=medical_consultant&amp;success=complication&amp;p=0.10&amp;direction=less&amp;seed=ch12gp1" target="_blank">one-proportion randomization test</a>. It is set to the null world (<span class="math inline">\(p = 0.10\)</span>) and to “less than.” Add <strong>1,000</strong> simulated studies.</li>
+<li><strong>Explain.</strong> What share of the simulated studies had a rate at or below her 0.048? Would her record stand out among 1,000 average consultants?</li>
+</ul>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-oneprop-null" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A histogram of 1,000 simulated complication rates, each from 62 patients with a true rate of 10%. The bars are centered near 0.10 and spread from 0 to about 0.25, with a longer tail on the right. The bars at or below 0.048 on the left are shaded; they hold roughly one eighth of the studies.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-oneprop-null-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="one-proportion_files/figure-html/fig-oneprop-null-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;12.1: One thousand simulated studies of 62 patients each, in a world where the true complication rate is 10%. Studies with a rate at or below the consultant’s 0.048 (3 or fewer complications) are shaded. ↗ Try this live"><img src="one-proportion_files/figure-html/fig-oneprop-null-1.png" class="img-fluid figure-img" style="width:70.0%" alt="A histogram of 1,000 simulated complication rates, each from 62 patients with a true rate of 10%. The bars are centered near 0.10 and spread from 0 to about 0.25, with a longer tail on the right. The bars at or below 0.048 on the left are shaded; they hold roughly one eighth of the studies."></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-oneprop-null-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;12.1: One thousand simulated studies of 62 patients each, in a world where the true complication rate is 10%. Studies with a rate at or below the consultant’s 0.048 (3 or fewer complications) are shaded. <a href="https://learnlens.org/statlens/simulate/randomization-one-prop/?dataset=medical_consultant&amp;success=complication&amp;p=0.10&amp;direction=less&amp;seed=ch12gp1">↗ Try this live</a>
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>About 13% of the simulated studies, <strong>roughly 1 in 8</strong>, did as well as she did or better, with nothing special going on. That is the <span class="math inline">\(p\)</span>-value. Her record is not unusual for an average consultant, so we <strong>do not</strong> have convincing evidence that her true rate is below 10%. (Your StatLens run will give a slightly different share, about 12%; that is the simulation’s own variability.)</p>
+</section>
+<section id="the-interval" class="level3" data-number="12.2.2">
+<h3 data-number="12.2.2" class="anchored" data-anchor-id="the-interval"><span class="header-section-number">12.2.2</span> The interval</h3>
+<p>The bootstrap chapter estimated her true rate the other way, by resampling her 62 patients. The 95% bootstrap interval ran from <strong>0.000 to 0.113</strong>: plausible true rates from 0% up to about 11%.</p>
+<p>The national 10% sits inside that interval, which is the same message the test gave. A value inside the interval is one we would not reject; we come back to this connection in the <a href="#sec-oneprop-ci-test">Compare section</a>.</p>
+<div class="workedexample">
+<p>We did not reject <span class="math inline">\(p = 0.10\)</span>. Does that mean her true rate <em>is</em> 10%?</p>
+<hr>
+<p>No.&nbsp;Failing to reject means the data are <strong>compatible</strong> with 10%, not that 10% is correct. The interval says her true rate could be anywhere from about 0% to 11%: much better than average, about average, or a little worse. With only 62 patients, the data can’t tell these apart.</p>
+</div>
+</section>
+</section>
+<section id="sec-oneprop-model" class="level2" data-number="12.3">
+<h2 data-number="12.3" class="anchored" data-anchor-id="sec-oneprop-model"><span class="header-section-number">12.3</span> Model</h2>
+<section id="a-shortcut-for-the-null-distribution" class="level3" data-number="12.3.1">
+<h3 data-number="12.3.1" class="anchored" data-anchor-id="a-shortcut-for-the-null-distribution"><span class="header-section-number">12.3.1</span> A shortcut for the null distribution</h3>
+<p>The simulation needed a computer and a thousand studies. Look again at <a href="#fig-oneprop-null" class="quarto-xref">Figure&nbsp;<span>12.1</span></a>: the simulated rates have a center (at the null value, 0.10) and a typical spread, and the shape is roughly a hill. The <a href="../chapters/sampling-distributions.html#sec-clt">sampling distributions chapter</a> showed that the <strong>normal curve</strong> often models a pile of simulated statistics like this one. If it fits, we can skip the simulation.</p>
+<p>The center is the null value <span class="math inline">\(p_0\)</span>. The spread has a formula:</p>
+<p><span class="math display">\[SE = \sqrt{\frac{p_0\,(1 - p_0)}{n}} = \sqrt{\frac{0.10 \times 0.90}{62}} = 0.038.\]</span></p>
+<p>The standard deviation of our 1,000 simulated rates was 0.039, close to the formula’s 0.038. The formula is describing the same spread the simulation produced.</p>
+<div class="important">
+<p><strong>A normal model for <span class="math inline">\(\hat{p}\)</span>.</strong> When the conditions below hold, the sample proportion <span class="math inline">\(\hat{p}\)</span> from a sample of size <span class="math inline">\(n\)</span> behaves approximately like a normal distribution with</p>
+<ul>
+<li>center: the true proportion <span class="math inline">\(p\)</span>;</li>
+<li>spread: <span class="math inline">\(SE = \sqrt{p\,(1-p)/n}\)</span>.</li>
+</ul>
+</div>
+</section>
+<section id="the-z-test" class="level3" data-number="12.3.2">
+<h3 data-number="12.3.2" class="anchored" data-anchor-id="the-z-test"><span class="header-section-number">12.3.2</span> The <span class="math inline">\(z\)</span> test</h3>
+<p>To read a <span class="math inline">\(p\)</span>-value off the normal model, measure how far <span class="math inline">\(\hat{p}\)</span> is from the null value in standard errors:</p>
+<p><span class="math display">\[z = \frac{\hat{p} - p_0}{SE_0}, \qquad SE_0 = \sqrt{\frac{p_0\,(1 - p_0)}{n}}.\]</span></p>
+<p>The <span class="math inline">\(p\)</span>-value is the area beyond <span class="math inline">\(z\)</span> under the standard normal curve, in the direction of <span class="math inline">\(H_A\)</span>. Use <span class="math inline">\(p_0\)</span> in the standard error because a test asks what would happen <strong>if <span class="math inline">\(H_0\)</span> were true</strong>.</p>
+<div class="statlens">
+<p><strong>Predict → Do → Explain.</strong></p>
+<ul>
+<li><strong>Predict.</strong> In <a href="#fig-oneprop-null" class="quarto-xref">Figure&nbsp;<span>12.1</span></a> the simulated rates are lopsided: they pile up against 0 on the left and trail off to the right. Will the normal curve’s <span class="math inline">\(p\)</span>-value come out <strong>smaller than</strong>, <strong>larger than</strong>, or <strong>about the same as</strong> the simulation’s 1 in 8?</li>
+<li><strong>Do.</strong> Open the <a href="https://learnlens.org/statlens/inference/one-prop/?dataset=medical_consultant&amp;success=complication" target="_blank">one-proportion <span class="math inline">\(z\)</span> test</a>. It opens on the consultant’s data; check that the null value is 0.10 and choose the “less than” alternative, then read the <span class="math inline">\(p\)</span>-value.</li>
+<li><strong>Explain.</strong> How far is the normal answer from the simulation’s? Keep the number in mind for the Compare section.</li>
+</ul>
+</div>
+<div class="workedexample">
+<p>Compute the <span class="math inline">\(z\)</span> test for the consultant.</p>
+<hr>
+<p><span class="math inline">\(SE_0 = 0.038\)</span> (above), so</p>
+<p><span class="math display">\[z = \frac{0.048 - 0.10}{0.038} = -1.35.\]</span></p>
+<p>The area to the left of <span class="math inline">\(z = -1.35\)</span> is <strong>0.088</strong>. That is noticeably <strong>smaller</strong> than the simulation’s 1 in 8 (about 0.12). Same data, different answers. The Compare section explains why.</p>
+</div>
+</section>
+<section id="the-confidence-interval" class="level3" data-number="12.3.3">
+<h3 data-number="12.3.3" class="anchored" data-anchor-id="the-confidence-interval"><span class="header-section-number">12.3.3</span> The confidence interval</h3>
+<p>A confidence interval uses the same shape around the sample’s own estimate, so its standard error uses <span class="math inline">\(\hat{p}\)</span>:</p>
+<div class="important">
+<p><strong>Confidence interval for one proportion.</strong></p>
+<p><span class="math display">\[\hat{p} \pm z^* \times \sqrt{\frac{\hat{p}\,(1-\hat{p})}{n}}\]</span></p>
+<p>with <span class="math inline">\(z^* = 1.645\)</span> for 90%, <span class="math inline">\(1.96\)</span> for 95%, and <span class="math inline">\(2.576\)</span> for 99% confidence.</p>
+</div>
+<p>For the consultant, <span class="math inline">\(SE = \sqrt{0.048 \times 0.952 / 62} = 0.027\)</span>, and the 95% interval is</p>
+<p><span class="math display">\[0.048 \pm 1.96 \times 0.027 = (-0.005,\ 0.102).\]</span></p>
+<p>The lower end is <strong>negative</strong>, a complication rate below zero. Something is off.</p>
+</section>
+<section id="when-the-shortcut-works" class="level3" data-number="12.3.4">
+<h3 data-number="12.3.4" class="anchored" data-anchor-id="when-the-shortcut-works"><span class="header-section-number">12.3.4</span> When the shortcut works</h3>
+<p>The normal model is an approximation, and it needs two conditions:</p>
+<ol type="1">
+<li><strong>Independence.</strong> The observations are independent of one another, for example a random sample, or patients whose outcomes don’t affect each other.</li>
+<li><strong>Success–failure.</strong> Enough successes and failures that the pile of possible <span class="math inline">\(\hat{p}\)</span> values is close to a symmetric hill: at least 10 expected of each.
+<ul>
+<li>For a <strong>test</strong>, use the null value: <span class="math inline">\(np_0 \ge 10\)</span> and <span class="math inline">\(n(1-p_0) \ge 10\)</span>.</li>
+<li>For an <strong>interval</strong>, use the estimate: <span class="math inline">\(n\hat{p} \ge 10\)</span> and <span class="math inline">\(n(1-\hat{p}) \ge 10\)</span>.</li>
+</ul></li>
+</ol>
+<p>The consultant fails both versions: <span class="math inline">\(np_0 = 62 \times 0.10 = 6.2\)</span> expected complications under <span class="math inline">\(H_0\)</span>, and only 3 observed.</p>
+</section>
+</section>
+<section id="sec-oneprop-compare" class="level2" data-number="12.4">
+<h2 data-number="12.4" class="anchored" data-anchor-id="sec-oneprop-compare"><span class="header-section-number">12.4</span> Compare</h2>
+<section id="same-data-different-answers" class="level3" data-number="12.4.1">
+<h3 data-number="12.4.1" class="anchored" data-anchor-id="same-data-different-answers"><span class="header-section-number">12.4.1</span> Same data, different answers</h3>
+<p>Here is everything we have for the consultant, side by side.</p>
+<table class="table-striped caption-top table">
+<caption>Three routes to the consultant’s answer.</caption>
+<thead>
+<tr class="header">
+<th></th>
+<th><span class="math inline">\(p\)</span>-value (<span class="math inline">\(H_A\)</span>: <span class="math inline">\(p &lt; 0.10\)</span>)</th>
+<th>95% interval for <span class="math inline">\(p\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Simulation</td>
+<td>about 0.12 (1 in 8)</td>
+<td>bootstrap: (0.000, 0.113)</td>
+</tr>
+<tr class="even">
+<td>Exact binomial count</td>
+<td>0.121</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Normal model</td>
+<td>0.088</td>
+<td>(-0.005, 0.102)</td>
+</tr>
+</tbody>
+</table>
+<p>The simulation and the exact count agree; the normal model is the odd one out. (The exact count uses the binomial distribution, the topic of the <a href="../chapters/binomial.html">binomial chapter</a>. It is exactly what the simulation was estimating.)</p>
+<p><a href="#fig-oneprop-fit" class="quarto-xref">Figure&nbsp;<span>12.2</span></a> shows why. With only about 6 complications expected, there are only a handful of possible rates (0/62, 1/62, 2/62, …), each one a big chunk of probability, bunched against zero. A smooth bell curve can’t match that lumpy, lopsided pile. Here it puts too little area at or below her 3 complications (0.088 against 0.121), and it spreads into impossible negative rates. With 826 people and an expected 413 “yes” answers (right panel), the pile is smooth and symmetric, and the curve fits almost perfectly.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-oneprop-fit" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Two side-by-side histograms of simulated proportions, each with a normal curve on top and the p-value tail shaded. Left panel, 62 patients with a null rate of 0.10: the lumpy bars stop at zero while the normal curve extends below zero; the shaded share is about 0.12 for the simulation but 0.088 under the curve. Right panel, 826 people with a null rate of 0.50: the bars form a smooth symmetric hill that the curve follows closely, and the shaded shares are both about 0.29 to 0.30.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-oneprop-fit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="one-proportion_files/figure-html/fig-oneprop-fit-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;12.2: Simulated null distributions (10,000 studies each) with the normal model drawn over them; the tail that makes the p-value is shaded in both (orange bars for the simulation, red area for the curve). Left: the consultant (n = 62, null rate 0.10); the curve spills below zero and its shaded area is too small. Right: the payday-loan survey (n = 826, null rate 0.50); the curve fits and the two shaded shares agree. ↗ Try this live — then change n to 826 and p to 0.5."><img src="one-proportion_files/figure-html/fig-oneprop-fit-1.png" class="img-fluid figure-img" style="width:100.0%" alt="Two side-by-side histograms of simulated proportions, each with a normal curve on top and the p-value tail shaded. Left panel, 62 patients with a null rate of 0.10: the lumpy bars stop at zero while the normal curve extends below zero; the shaded share is about 0.12 for the simulation but 0.088 under the curve. Right panel, 826 people with a null rate of 0.50: the bars form a smooth symmetric hill that the curve follows closely, and the shaded shares are both about 0.29 to 0.30."></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-oneprop-fit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;12.2: Simulated null distributions (10,000 studies each) with the normal model drawn over them; the tail that makes the p-value is shaded in both (orange bars for the simulation, red area for the curve). Left: the consultant (n = 62, null rate 0.10); the curve spills below zero and its shaded area is too small. Right: the payday-loan survey (n = 826, null rate 0.50); the curve fits and the two shaded shares agree. <a href="https://learnlens.org/statlens/conceptual/sampling-lab/?type=prop&amp;p=0.10&amp;n=62">↗ Try this live</a> — then change n to 826 and p to 0.5.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="when-the-conditions-hold-payday-loan-borrowers" class="level3" data-number="12.4.2">
+<h3 data-number="12.4.2" class="anchored" data-anchor-id="when-the-conditions-hold-payday-loan-borrowers"><span class="header-section-number">12.4.2</span> When the conditions hold: payday-loan borrowers</h3>
+<p>A random sample of <strong>826 payday-loan borrowers</strong> was asked whether they would support a rule requiring lenders to check a borrower’s credit before making a loan. <strong>421 (51%)</strong> said yes. Is there convincing evidence that a <strong>majority</strong> of borrowers support the rule?</p>
+<ul>
+<li><span class="math inline">\(H_0\)</span>: <span class="math inline">\(p = 0.50\)</span>; <span class="math inline">\(H_A\)</span>: <span class="math inline">\(p &gt; 0.50\)</span>.</li>
+<li>Conditions: a random sample, and <span class="math inline">\(np_0 = n(1-p_0) = 413\)</span>, well above 10.</li>
+</ul>
+<table class="table-striped caption-top table">
+<caption>When the conditions hold, the shortcut and the simulation agree.</caption>
+<thead>
+<tr class="header">
+<th></th>
+<th><span class="math inline">\(p\)</span>-value (<span class="math inline">\(H_A\)</span>: <span class="math inline">\(p &gt; 0.50\)</span>)</th>
+<th>95% interval for <span class="math inline">\(p\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Simulation / exact count</td>
+<td>0.301</td>
+<td>bootstrap: (0.475, 0.544)</td>
+</tr>
+<tr class="even">
+<td>Normal model</td>
+<td>0.289 (<span class="math inline">\(z = 0.56\)</span>)</td>
+<td>(0.476, 0.544)</td>
+</tr>
+</tbody>
+</table>
+<p>This time the two routes agree to about a percentage point. That is what “the conditions hold” buys you: the formula gives the simulation’s answer without running it.</p>
+<div class="statlens">
+<p><strong>Run it yourself.</strong> Open the <a href="https://learnlens.org/statlens/simulate/randomization-one-prop/?p=0.5&amp;direction=greater&amp;seed=ch12gp2" target="_blank">one-proportion randomization test</a>, choose <strong>Enter Summary</strong>, and type <strong>421</strong> successes out of <strong>826</strong>. Add 1,000 studies and compare the share with the table. Then do the same in the <a href="https://learnlens.org/statlens/inference/one-prop/" target="_blank">one-proportion <span class="math inline">\(z\)</span> test</a> (null value 0.50, “greater than”).</p>
+</div>
+</section>
+<section id="sec-oneprop-ci-test" class="level3" data-number="12.4.3">
+<h3 data-number="12.4.3" class="anchored" data-anchor-id="sec-oneprop-ci-test"><span class="header-section-number">12.4.3</span> The interval and the test tell one story</h3>
+<p>The borrowers’ 95% interval runs from about 0.476 to 0.544. A confidence interval is the set of null values a two-sided test would <strong>not</strong> reject at the matching level.</p>
+<div class="statlens">
+<p><strong>Predict → Do → Explain.</strong></p>
+<ul>
+<li><strong>Predict.</strong> A two-sided test at the 5% level asks whether <span class="math inline">\(p\)</span> differs from a null value. For the borrowers’ data, which of these null values would it reject: <strong>0.46, 0.48, 0.50, 0.52, 0.54, 0.56</strong>? Use the interval.</li>
+<li><strong>Do.</strong> In the <a href="https://learnlens.org/statlens/simulate/randomization-one-prop/?p=0.46&amp;direction=two-sided&amp;seed=ch12gp4" target="_blank">randomization test</a>, enter 421 out of 826, run 1,000 studies, and read the <span class="math inline">\(p\)</span>-value. Change the null value and repeat.</li>
+<li><strong>Explain.</strong> Which null values survived? Where are they relative to the interval?</li>
+</ul>
+</div>
+<details>
+<summary>
+Check your answer
+</summary>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Null value</th>
+<th>0.46</th>
+<th>0.48</th>
+<th>0.50</th>
+<th>0.52</th>
+<th>0.54</th>
+<th>0.56</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Two-sided <span class="math inline">\(p\)</span>-value</td>
+<td>0.004</td>
+<td>0.088</td>
+<td>0.578</td>
+<td>0.553</td>
+<td>0.080</td>
+<td>0.004</td>
+</tr>
+<tr class="even">
+<td>Decision at 5%</td>
+<td>reject</td>
+<td>keep</td>
+<td>keep</td>
+<td>keep</td>
+<td>keep</td>
+<td>reject</td>
+</tr>
+</tbody>
+</table>
+The values kept (0.48 through 0.54) are the ones inside the interval; the two rejected (0.46 and 0.56) are outside it. The interval is the list of null values the data can’t rule out.
+</details>
+</section>
+<section id="which-method-should-you-use" class="level3" data-number="12.4.4">
+<h3 data-number="12.4.4" class="anchored" data-anchor-id="which-method-should-you-use"><span class="header-section-number">12.4.4</span> Which method should you use?</h3>
+<div class="important">
+<p><strong>Choosing a route for one proportion.</strong></p>
+<ul>
+<li><strong>Check the conditions first.</strong> Independence, and at least 10 expected successes and failures.</li>
+<li><strong>Conditions hold:</strong> the normal formulas are quick, and they give the simulation’s answer.</li>
+<li><strong>Conditions fail:</strong> use a simulation (randomization test, bootstrap interval) or the exact binomial count. The normal answer can be noticeably off, and an interval can even include impossible values.</li>
+<li><strong>Any time:</strong> a simulation is a good check on a formula.</li>
+</ul>
+</div>
+</section>
+</section>
+<section id="sec-oneprop-four-questions" class="level2" data-number="12.5">
+<h2 data-number="12.5" class="anchored" data-anchor-id="sec-oneprop-four-questions"><span class="header-section-number">12.5</span> The four questions</h2>
+<p>A conclusion isn’t finished at “reject” or “don’t reject.” Here are both examples, answered in full.</p>
+<div class="important four-questions">
+<p><strong>The consultant (3 complications in 62 surgeries)</strong></p>
+<ol type="1">
+<li><strong>Could it be chance?</strong> Yes. About 1 in 8 average consultants would do this well.</li>
+<li><strong>How big is it?</strong> Her rate, 4.8%, is about half the national 10%, but the interval runs from 0% to about 11%. The data can’t distinguish “much better” from “about average.”</li>
+<li><strong>Who does it apply to?</strong> Her past 62 clients, who are not a random sample of all the patients she might advise.</li>
+<li><strong>Did one thing cause the other?</strong> Not from these data. This is an observational record, and her clients may differ from other patients in ways that matter.</li>
+</ol>
+<p><strong>The payday-loan borrowers (421 of 826 support credit checks)</strong></p>
+<ol type="1">
+<li><strong>Could it be chance?</strong> Yes. A 51% “yes” is well within what an evenly split population produces (<span class="math inline">\(p \approx 0.29\)</span>).</li>
+<li><strong>How big is it?</strong> Support is somewhere between about 48% and 54%, close to an even split either way.</li>
+<li><strong>Who does it apply to?</strong> Payday-loan borrowers like the ones sampled, since the sample was random.</li>
+<li><strong>Did one thing cause the other?</strong> Not a causal question. This is a survey of opinions.</li>
+</ol>
+</div>
+</section>
+<section id="sec-one-proportion-review" class="level2" data-number="12.6">
+<h2 data-number="12.6" class="anchored" data-anchor-id="sec-one-proportion-review"><span class="header-section-number">12.6</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="12.6.1">
+<h3 data-number="12.6.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">12.6.1</span> Summary</h3>
+<ul>
+<li><strong>Simulate.</strong> For one proportion, the null world is a population with the claimed rate <span class="math inline">\(p_0\)</span>. Draw samples of size <span class="math inline">\(n\)</span> from it; the share of simulated studies at least as extreme as the data is the <span class="math inline">\(p\)</span>-value. A bootstrap interval estimates <span class="math inline">\(p\)</span> from the sample itself.</li>
+<li><strong>Model.</strong> The sample proportion has an approximately normal sampling distribution with center <span class="math inline">\(p\)</span> and <span class="math inline">\(SE = \sqrt{p(1-p)/n}\)</span>.
+<ul>
+<li>Test: <span class="math inline">\(z = (\hat{p} - p_0)/\sqrt{p_0(1-p_0)/n}\)</span>.</li>
+<li>Interval: <span class="math inline">\(\hat{p} \pm z^* \sqrt{\hat{p}(1-\hat{p})/n}\)</span>.</li>
+</ul></li>
+<li><strong>Compare.</strong> When there are at least 10 expected successes and failures (and the observations are independent), the formulas give the simulation’s answer. When there aren’t, they can be noticeably off, and simulation or the exact binomial count is the better route.</li>
+<li><strong>One story.</strong> A 95% interval holds the null values a two-sided 5% test would not reject.</li>
+<li><strong>Four questions.</strong> A complete conclusion says whether it could be chance, how big the effect is, who it applies to, and whether anything caused it.</li>
+</ul>
+</section>
+<section id="key-terms" class="level3" data-number="12.6.2">
+<h3 data-number="12.6.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">12.6.2</span> Key terms</h3>
+<p>Null value (<span class="math inline">\(p_0\)</span>), one-proportion randomization test, normal model for <span class="math inline">\(\hat{p}\)</span>, standard error of <span class="math inline">\(\hat{p}\)</span>, <span class="math inline">\(z\)</span> test for one proportion, confidence interval for one proportion, success–failure condition, exact binomial <span class="math inline">\(p\)</span>-value.</p>
+</section>
+<section id="attribution" class="level3" data-number="12.6.3">
+<h3 data-number="12.6.3" class="anchored" data-anchor-id="attribution"><span class="header-section-number">12.6.3</span> Attribution</h3>
+<p>Adapted from <em>Introduction to Modern Statistics</em>, 2nd ed.&nbsp;(Çetinkaya-Rundel &amp; Hardin), Chapter 16, “Inference for a single proportion” (CC BY-SA 3.0): the medical-consultant and payday-loan examples and the parametric-simulation approach. Reorganized for this book’s Simulate → Model → Compare structure; changes made.</p>
+</section>
+</section>
+<section id="exercises" class="level2 exercises" data-number="12.7">
+<h2 class="exercises anchored" data-number="12.7" data-anchor-id="exercises"><span class="header-section-number">12.7</span> Exercises</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Pilot draft.</strong> This chapter’s exercises will be regrouped from the one-proportion items in the current <em>Inference for Proportions</em> exercise set (IMS 16 and UWL 16-01 to 16-06) once the template chapter is approved.</p>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/normal-approximation.html" class="pagination-link" aria-label="Normal Approximation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Normal Approximation</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/inference-proportions.html" class="pagination-link" aria-label="Inference for Proportions">
+        <span class="nav-page-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Inference for Proportions</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Introduction to Statistics: A Simulation-First Approach</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/DataScienceUWL/simfirst-stats/edit/main/chapters/one-proportion.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/DataScienceUWL/simfirst-stats/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>Licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>

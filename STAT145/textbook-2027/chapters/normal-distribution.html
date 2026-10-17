@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>29&nbsp; More About the Normal Distribution – Introduction to Statistics: A Simulation-First Approach</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/type-ii-error.html" rel="next">
+<link href="../chapters/binomial.html" rel="prev">
+<link href="../images/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-16f0be44cf0b9c8dc4714857273be9e1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-c76bc2edb0e532e390ad582fcbf98d52.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-b051a4077f235303ebbd7141cd2ba605.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-d1d57f57c49822ed2310d70635f51a75.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://hypothes.is/embed.js"></script>
+<script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-v.html">Unit 5: Foundations</a></li><li class="breadcrumb-item"><a href="../chapters/normal-distribution.html"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">More About the Normal Distribution</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Introduction to Statistics: A Simulation-First Approach</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/DataScienceUWL/simfirst-stats" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="../Introduction-to-Statistics--A-Simulation-First-Approach.pdf" title="Download PDF" class="quarto-navigation-tool px-1" aria-label="Download PDF"><i class="bi bi-file-pdf"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-i.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 1: Explore</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/intro-to-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction to Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/study-design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Data Collection and Study Design</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/data-visualization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Exploring Categorical Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/describing-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Exploring Quantitative Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/relationships.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Relationships Between Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-explore.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explore — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-explore.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Explore</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-eda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Exploring a Distribution</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-ii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 2: Simulate</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sampling-variability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Sampling Variability</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/randomization-tests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Randomization Tests</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/decision-errors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Decision Errors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/bootstrap-ci.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Bootstrap Confidence Intervals</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sampling-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Sampling Distributions via Simulation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-simulate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulate — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-simulate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Simulate</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iii.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 3: Compute</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/normal-approximation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Normal Approximation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/one-proportion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">One Proportion</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/inference-proportions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Inference for Proportions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/ci-for-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Confidence Intervals for Means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/hypothesis-tests-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Hypothesis Tests for Means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-calculate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Compute — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-calculate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Compute</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-proportions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Inference for Proportions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Comparing Two Means</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 4: Apply</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chisq-gof.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Chi-Square Goodness of Fit</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chisq-independence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Chi-Square Test of Independence</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Analysis of Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Multiple Comparisons</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Correlation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/linear-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Linear Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/prediction-model-fit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Prediction and Model Fit</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/anova-for-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">ANOVA for Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Multiple Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-apply.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Apply — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-apply.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Apply</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Comparing Several Means (ANOVA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-chisq.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Association Between Two Categorical Variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-chisq-ai.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Association Between Two Categorical Variables (AI version)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../projects/project-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project: Fitting and Testing a Regression Line</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../parts/part-v.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unit 5: Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/probability-rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Probability Rules</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/random-variables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Random Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/expected-value.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Expected Value and Variance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/binomial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Binomial Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/normal-distribution.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">More About the Normal Distribution</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/type-ii-error.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/statistical-power.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">Statistical Power</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/sample-size.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">Sample Size Planning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reviews/review-foundations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundations — Unit Review</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tech/tech-tutorial-foundations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tech Tutorial: Foundations</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../technology-setup.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Technology Setup</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/datasets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Datasets</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/statlens-guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">StatLens Quick Reference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/tables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Statistical Tables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/exercise-solutions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">E</span>&nbsp; <span class="chapter-title">Exercise Solutions</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-checking-normality" id="toc-sec-checking-normality" class="nav-link active" data-scroll-target="#sec-checking-normality"><span class="header-section-number">29.1</span> Checking whether data are normal</a>
+  <ul class="collapse">
+  <li><a href="#method-1-histogram-with-a-normal-curve-overlay" id="toc-method-1-histogram-with-a-normal-curve-overlay" class="nav-link" data-scroll-target="#method-1-histogram-with-a-normal-curve-overlay"><span class="header-section-number">29.1.1</span> Method 1: Histogram with a normal curve overlay</a></li>
+  <li><a href="#method-2-normal-probability-plots-qq-plots" id="toc-method-2-normal-probability-plots-qq-plots" class="nav-link" data-scroll-target="#method-2-normal-probability-plots-qq-plots"><span class="header-section-number">29.1.2</span> Method 2: Normal probability plots (QQ plots)</a></li>
+  </ul></li>
+  <li><a href="#sec-when-normal" id="toc-sec-when-normal" class="nav-link" data-scroll-target="#sec-when-normal"><span class="header-section-number">29.2</span> When to use — and not use — the normal model</a></li>
+  <li><a href="#sec-normal-distribution-review" id="toc-sec-normal-distribution-review" class="nav-link" data-scroll-target="#sec-normal-distribution-review"><span class="header-section-number">29.3</span> Chapter review</a>
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">29.3.1</span> Summary</a></li>
+  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">29.3.2</span> Key terms</a></li>
+  </ul></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">29.4</span> Exercises</a>
+  <ul class="collapse">
+  <li><a href="#statlens-exercises" id="toc-statlens-exercises" class="nav-link" data-scroll-target="#statlens-exercises">StatLens Exercises</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/DataScienceUWL/simfirst-stats/edit/main/chapters/normal-distribution.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/DataScienceUWL/simfirst-stats/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+<div class="pilot-edition-banner" role="note" style="background:#fff4e5;border-bottom:1px solid #f0c27b;color:#5c3b00;padding:.5rem 1rem;font-size:.9rem;text-align:center;">
+  <strong>Pilot edition, Spring 2027.</strong> This version of the book is being tested in a few sections and changes during the semester.
+</div>
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../parts/part-v.html">Unit 5: Foundations</a></li><li class="breadcrumb-item"><a href="../chapters/normal-distribution.html"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">More About the Normal Distribution</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">More About the Normal Distribution</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>Builds on the normal-approximation chapter.</strong> This chapter assumes you’ve already met the normal distribution as it was developed in the <a href="../chapters/normal-approximation.html">normal-approximation chapter</a> — the <span class="math inline">\(N(\mu, \sigma)\)</span> notation, the 68-95-99.7 rule, z-scores, and finding tail probabilities and percentiles. Here we look at two extensions that didn’t fit earlier: <strong>how to check whether data actually are approximately normal</strong>, and <strong>which real-world variables the normal model fits well (and which it doesn’t).</strong></p>
+</div>
+</div>
+</div>
+<div class="chapterintro">
+<p>The normal distribution is powerful precisely because so many real-world variables are approximately normal. But <em>approximately</em> is a word doing a lot of work — some variables really are close to normal, others are clearly not, and it matters which is which before you use the normal model to compute probabilities or run a formula-based test. This chapter gives you two tools for making that call.</p>
+</div>
+<section id="sec-checking-normality" class="level2" data-number="29.1">
+<h2 data-number="29.1" class="anchored" data-anchor-id="sec-checking-normality"><span class="header-section-number">29.1</span> Checking whether data are normal</h2>
+<p>Before using the normal distribution as a model, we should check whether the assumption of normality is reasonable. Two visual methods are commonly used, and they complement each other.</p>
+<section id="method-1-histogram-with-a-normal-curve-overlay" class="level3" data-number="29.1.1">
+<h3 data-number="29.1.1" class="anchored" data-anchor-id="method-1-histogram-with-a-normal-curve-overlay"><span class="header-section-number">29.1.1</span> Method 1: Histogram with a normal curve overlay</h3>
+<p>The simplest approach is to plot a histogram of the data and overlay the best-fitting normal curve (using <span class="math inline">\(\bar{x}\)</span> for <span class="math inline">\(\mu\)</span> and <span class="math inline">\(s\)</span> for <span class="math inline">\(\sigma\)</span>). If the histogram closely matches the curve, the normal model is reasonable. If the histogram is skewed, bimodal, or has long tails the curve doesn’t capture, the model is a poor fit.</p>
+<p>This works well when <span class="math inline">\(n\)</span> is large enough for the histogram to reveal the true shape — typically <span class="math inline">\(n \geq 50\)</span> or so. With smaller samples, the histogram is noisy and even genuinely normal data can look ragged.</p>
+</section>
+<section id="method-2-normal-probability-plots-qq-plots" class="level3" data-number="29.1.2">
+<h3 data-number="29.1.2" class="anchored" data-anchor-id="method-2-normal-probability-plots-qq-plots"><span class="header-section-number">29.1.2</span> Method 2: Normal probability plots (QQ plots)</h3>
+<div class="definition">
+<p>A <strong>normal probability plot</strong> (also called a <strong>QQ plot</strong>, short for “quantile-quantile plot”) plots the observed data values against the values we would expect if the data were perfectly normal. If the data are approximately normal, the points will fall close to a straight line.</p>
+</div>
+<p><strong>How to read a QQ plot:</strong></p>
+<ul>
+<li><strong>Points on or near the line</strong>: The data are consistent with a normal distribution.</li>
+<li><strong>Points curving up at the right end</strong>: The distribution is <strong>right-skewed</strong> (a long upper tail).</li>
+<li><strong>Points curving down at the left end</strong>: The distribution is <strong>left-skewed</strong> (a long lower tail).</li>
+<li><strong>Points curving away from the line at both ends</strong>: The distribution has <strong>heavier tails</strong> than normal — more extreme values than the normal predicts.</li>
+</ul>
+<p><a href="#fig-qq-plots" class="quarto-xref">Figure&nbsp;<span>29.1</span></a> shows the four patterns you will see most often.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-qq-plots" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A two-by-two grid of QQ plots. Top-left shows points following the diagonal line closely. Top-right shows points curving above the line at the right end. Bottom-left shows points curving below the line at the left end. Bottom-right shows points curving away from the line at both the lower-left and upper-right ends.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-qq-plots-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="normal-distribution_files/figure-html/fig-qq-plots-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;29.1: Four QQ plots illustrating common patterns: (a) approximately normal data — points fall close to the line; (b) right-skewed data — points curve upward at the right; (c) left-skewed data — points curve downward at the left; (d) heavy-tailed data — points curve away from the line at both ends."><img src="normal-distribution_files/figure-html/fig-qq-plots-1.png" class="img-fluid figure-img" alt="A two-by-two grid of QQ plots. Top-left shows points following the diagonal line closely. Top-right shows points curving above the line at the right end. Bottom-left shows points curving below the line at the left end. Bottom-right shows points curving away from the line at both the lower-left and upper-right ends." width="1950"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-qq-plots-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;29.1: Four QQ plots illustrating common patterns: (a) approximately normal data — points fall close to the line; (b) right-skewed data — points curve upward at the right; (c) left-skewed data — points curve downward at the left; (d) heavy-tailed data — points curve away from the line at both ends.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="important">
+<p><strong>Sample size matters.</strong> With small sample sizes (<span class="math inline">\(n &lt; 30\)</span>), we should expect more variability in the QQ plot even when the data truly come from a normal distribution. Deviations must be more severe to be considered evidence against normality when <span class="math inline">\(n\)</span> is small.</p>
+</div>
+<div class="guidedpractice">
+<p>A researcher collects data and creates a QQ plot. The points follow the diagonal line closely in the middle of the distribution but curve upward at the right end. What does this suggest about the shape of the data?</p>
+<details>
+<summary>
+Show answer
+</summary>
+The QQ plot suggests the data are right-skewed. The bulk of the data are approximately normal, but there are larger values in the upper tail than the normal distribution would predict.
+</details>
+</div>
+</section>
+</section>
+<section id="sec-when-normal" class="level2" data-number="29.2">
+<h2 data-number="29.2" class="anchored" data-anchor-id="sec-when-normal"><span class="header-section-number">29.2</span> When to use — and not use — the normal model</h2>
+<p>The normal distribution is a good model for data that are:</p>
+<ul>
+<li><strong>Symmetric</strong>: The histogram is roughly mirror-image around the center.</li>
+<li><strong>Unimodal</strong>: There is a single peak.</li>
+<li><strong>Bell-shaped</strong>: The histogram has the characteristic tapered shape of the normal curve.</li>
+<li><strong>No extreme outliers</strong>: Outliers distort both the mean and standard deviation, making the normal model a poor fit.</li>
+</ul>
+<p>Many variables are approximately normal:</p>
+<ul>
+<li>Standardized test scores (SAT, ACT, GRE)</li>
+<li>Heights of adults (within a sex)</li>
+<li>Measurement errors in scientific instruments</li>
+<li>Many biological measurements (blood pressure, cholesterol levels)</li>
+<li>Averages of many small independent effects — which is why sample means behave normally by the Central Limit Theorem</li>
+</ul>
+<p>Many variables are <strong>not</strong> normal:</p>
+<ul>
+<li><strong>Income distributions</strong> — strongly right-skewed; a few very high earners pull the tail out.</li>
+<li><strong>Waiting times</strong> — typically right-skewed, often bounded below by zero.</li>
+<li><strong>Count data</strong> — usually better modeled by the binomial or Poisson, not the normal.</li>
+<li><strong>Individual values that are percentages</strong> (e.g., each person’s body-fat percentage) — bounded, so they can’t be strictly normal. (A sample proportion <span class="math inline">\(\hat{p}\)</span> from a large sample is different: as a <em>statistic</em>, it is approximately normal.)</li>
+<li><strong>Ages</strong> — bounded below by 0 and often bounded above by natural limits, so the tails don’t behave like a normal.</li>
+</ul>
+<div class="important">
+<p><strong>When the normal model doesn’t fit, don’t force it.</strong> For skewed data, consider a transformation (e.g., log for right-skewed positive data), a different model (binomial for counts of successes, Poisson for rare event counts), or a <strong>simulation-based method</strong> like the bootstrap or a randomization test. Those simulation methods (developed in the randomization-tests and bootstrap-CI chapters) don’t require normality — though with very small samples from skewed populations they also tend to give intervals that are too narrow.</p>
+</div>
+<div class="workedexample">
+<p>A hospital measures the time patients wait to be seen in the emergency room. The data range from 3 minutes to 6 hours, with most patients waiting under 45 minutes but a long right tail. A researcher wants to run a one-sample <span class="math inline">\(t\)</span>-test to see if the mean wait time exceeds 30 minutes. Is a <span class="math inline">\(t\)</span>-test appropriate?</p>
+<hr>
+<p>The data are strongly right-skewed and bounded below by zero, so they are clearly not normal. A one-sample <span class="math inline">\(t\)</span>-test <em>may</em> still be reasonable if the sample size is large — the CLT says the sampling distribution of <span class="math inline">\(\bar{x}\)</span> will be approximately normal even when the population is skewed. But with a small sample (say, <span class="math inline">\(n &lt; 30\)</span>), the <span class="math inline">\(t\)</span>-test could give misleading results. A bootstrap interval avoids assuming a normal population but does not rescue a tiny sample: with <span class="math inline">\(n = 8\)</span> from a strongly right-skewed population, StatLens’s CI Coverage Simulator shows 95% percentile intervals capturing the mean only about 84% of the time (about 88% for the <span class="math inline">\(t\)</span>-interval). With strongly skewed data, the real remedy is more data.</p>
+</div>
+<div class="statlens">
+<p><strong>See it in action.</strong> Open the <a href="https://learnlens.org/statlens/explore/descriptive/" target="_blank">Descriptive Statistics Explorer</a> on any bundled dataset — switch to the histogram view to eyeball symmetry and unimodality, then check the sample statistics for extreme outliers. For a QQ plot, open the <a href="https://learnlens.org/statlens/inference/one-mean/" target="_blank">One-Sample t-Test</a> page, load a dataset, and switch its conditions panel to <strong>QQ Plot</strong>.</p>
+</div>
+</section>
+<section id="sec-normal-distribution-review" class="level2" data-number="29.3">
+<h2 data-number="29.3" class="anchored" data-anchor-id="sec-normal-distribution-review"><span class="header-section-number">29.3</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="29.3.1">
+<h3 data-number="29.3.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">29.3.1</span> Summary</h3>
+<ul>
+<li>Before applying the normal model, <strong>check whether the data are approximately normal</strong>. Two visual tools help: a <strong>histogram with a normal-curve overlay</strong>, and a <strong>QQ plot</strong> (points near the diagonal = approximately normal; systematic curvature = departure from normality).</li>
+<li>The four QQ-plot patterns worth recognizing: <strong>normal</strong> (straight), <strong>right-skewed</strong> (curves up at the right), <strong>left-skewed</strong> (curves down at the left), and <strong>heavy-tailed</strong> (curves away at both ends).</li>
+<li>The normal model fits <strong>symmetric, unimodal, bell-shaped</strong> variables without extreme outliers. Standardized test scores, adult heights, and measurement errors are canonical examples.</li>
+<li>The normal model does <strong>not</strong> fit strongly skewed data (income, waiting times), bounded data (proportions, ages), or count data (better handled by the binomial or Poisson).</li>
+<li>When the normal model doesn’t fit, use a <strong>simulation-based</strong> method (bootstrap CI, randomization test) or a <strong>different distribution family</strong> appropriate for the data — and remember that no method rescues a very small sample from a strongly skewed population.</li>
+</ul>
+</section>
+<section id="key-terms" class="level3" data-number="29.3.2">
+<h3 data-number="29.3.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">29.3.2</span> Key terms</h3>
+<p>QQ plot (normal probability plot), normality assessment, histogram-with-normal-overlay, symmetric / unimodal / bell-shaped, heavy-tailed distribution, right-skewed / left-skewed, bootstrap alternative to normal-based inference.</p>
+</section>
+</section>
+<section id="exercises" class="level2 exercises" data-number="29.4">
+<h2 class="exercises anchored" data-number="29.4" data-anchor-id="exercises"><span class="header-section-number">29.4</span> Exercises</h2>
+<p>Answers to odd-numbered exercises are provided in the <a href="../appendices/exercise-solutions.html#sec-solutions-normal-distribution">Exercise Solutions appendix</a> at the back of the book.</p>
+<!-- Generated by build_textbook_exercises.py — DO NOT EDIT -->
+<!-- Sources: _29-ex-normal-distribution-extended -->
+<ol type="1">
+<li><strong>Reading a QQ plot.</strong> For each described pattern below, name the shape of the underlying data distribution and briefly explain how you can tell.</li>
+</ol>
+<ol type="a">
+<li><p>Points fall very close to the reference line across the whole range.</p></li>
+<li><p>Points hug the line in the middle but curve <strong>upward</strong> away from the line at the right end.</p></li>
+<li><p>Points hug the line in the middle but curve <strong>downward</strong> away from the line at the left end.</p></li>
+<li><p>Points fall below the line at the left end <strong>and</strong> above the line at the right end.</p></li>
+</ol>
+<!--- MOM original-29-01
+title: "Reading a QQ plot"
+type: multipart
+license: "CC BY-SA 4.0 — UWL original"
+status: skeleton
+--->
+<ol start="2" type="1">
+<li><strong>Which of these variables would you model as normal?</strong> For each variable, decide whether the normal distribution is a reasonable model for individual observations. Answer <em>yes</em>, <em>no</em>, or <em>depends</em>, and explain in one sentence.</li>
+</ol>
+<ol type="a">
+<li><p>Adult male heights in a large city.</p></li>
+<li><p>Household incomes in the United States.</p></li>
+<li><p>The number of car accidents at a given intersection per day.</p></li>
+<li><p>The average of many random draws from any distribution.</p></li>
+<li><p>The proportion of a small sample that responds “yes” to a survey question.</p></li>
+<li><p>Systolic blood pressure of healthy adults.</p></li>
+</ol>
+<!--- MOM original-29-02
+title: "Which variables would you model as normal?"
+type: multipart
+license: "CC BY-SA 4.0 — UWL original"
+status: skeleton
+--->
+<ol start="3" type="1">
+<li><strong>Small-sample QQ plot interpretation.</strong> A researcher has a sample of <span class="math inline">\(n = 15\)</span> measurements. The QQ plot shows some scatter around the reference line — the points don’t fall perfectly on it, but there’s no clear systematic curve either.</li>
+</ol>
+<ol type="a">
+<li><p>Is this stronger evidence <em>for</em> or <em>against</em> the data being approximately normal? Explain.</p></li>
+<li><p>If the same amount of scatter appeared in a QQ plot with <span class="math inline">\(n = 500\)</span>, would your conclusion change? Why?</p></li>
+<li><p>A colleague says “the points don’t fall exactly on the line, so we can’t use a <span class="math inline">\(t\)</span>-test.” Is this reasoning sound? Explain.</p></li>
+</ol>
+<!--- MOM original-29-03
+title: "Small-sample QQ plot interpretation"
+type: multipart
+license: "CC BY-SA 4.0 — UWL original"
+status: skeleton
+--->
+<ol start="4" type="1">
+<li><strong>Pick a method.</strong> For each scenario, decide whether a <strong>one-sample <span class="math inline">\(t\)</span>-test</strong> is reasonable, or whether a <strong>bootstrap CI</strong> (or different approach) would be safer. Explain in one sentence.</li>
+</ol>
+<ol type="a">
+<li><p>You want to estimate the mean commute time in a city. A histogram of your <span class="math inline">\(n = 40\)</span> commute-time observations is roughly symmetric with no outliers.</p></li>
+<li><p>You want to estimate the mean insurance claim amount. Your <span class="math inline">\(n = 25\)</span> observations are strongly right-skewed with three extreme outliers.</p></li>
+<li><p>You want to estimate the mean systolic blood pressure of adult women. Your <span class="math inline">\(n = 200\)</span> observations look approximately normal.</p></li>
+<li><p>You want to test whether the mean wait time at an emergency room exceeds 30 minutes. Your <span class="math inline">\(n = 8\)</span> observations are strongly right-skewed and bounded below by 0.</p></li>
+</ol>
+<!--- MOM original-29-04
+title: "Pick a method: t-test vs. bootstrap"
+type: multipart
+license: "CC BY-SA 4.0 — UWL original"
+status: skeleton
+--->
+<ol start="5" type="1">
+<li><strong>Two normality checks, one dataset.</strong> You have a dataset of daily rainfall (inches) for 300 days at a weather station. You plot both a histogram with a fitted normal overlay and a QQ plot. The histogram is strongly right-skewed with many days near 0 and a few days with heavy rain; the QQ plot’s points curve sharply upward at the right end.</li>
+</ol>
+<ol type="a">
+<li><p>Do the two plots agree or disagree on normality?</p></li>
+<li><p>Suggest one transformation of the data that might make the transformed values more nearly normal, and explain why it would help.</p></li>
+<li><p>Suppose you compute a 95% one-sample <span class="math inline">\(t\)</span> confidence interval for the mean daily rainfall from these 300 observations. Given the CLT and <span class="math inline">\(n = 300\)</span>, do you trust it? What’s the caveat?</p></li>
+</ol>
+<!--- MOM original-29-05
+title: "Two normality checks, one dataset"
+type: multipart
+license: "CC BY-SA 4.0 — UWL original"
+status: skeleton
+--->
+<!-- StatLens Interactive Exercises — Normal Distribution -->
+<!-- HAND-AUTHORED (not generated). Pedagogy: standardizing, finding tail      -->
+<!-- areas, inverse-normal calculations, and the empirical rule.              -->
+<section id="statlens-exercises" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="statlens-exercises">StatLens Exercises</h3>
+<p>Let <a href="https://learnlens.org/statlens" target="_blank">StatLens</a> do the arithmetic; spend your effort on the reasoning a calculator can’t do.</p>
+<ol type="1">
+<li><p><strong>The empirical rule, checked against the actual normal.</strong> Open the <a href="https://learnlens.org/statlens/distribution/normal/?mu=0&amp;sigma=1&amp;tail=between" target="_blank">Normal tool</a> preset to <span class="math inline">\(\mu = 0, \sigma = 1\)</span>.</p>
+<ol type="a">
+<li>Set the middle-region boundaries to <span class="math inline">\(\pm 1\)</span>. What is the area? Is it 68%?</li>
+<li>Now <span class="math inline">\(\pm 2\)</span>. Is it 95%?</li>
+<li>Now <span class="math inline">\(\pm 3\)</span>. Is it 99.7%?</li>
+<li>The empirical rule says “68–95–99.7.” Where do the exact percentages come from — the rule or the curve?</li>
+</ol></li>
+<li><p><strong>Standardizing across different normals.</strong> Adult resting heart rates are approximately <span class="math inline">\(N(\mu = 72, \sigma = 12)\)</span> beats per minute. Adult body temperatures are approximately <span class="math inline">\(N(\mu = 98.6, \sigma = 0.7)\)</span> °F.</p>
+<ol type="a">
+<li>A patient has a heart rate of 90. What is the patient’s <span class="math inline">\(z\)</span>-score?</li>
+<li>Another patient has a body temperature of 99.6 °F. What is that patient’s <span class="math inline">\(z\)</span>-score?</li>
+<li>Which patient is <em>more</em> unusual relative to their respective population? Why does the <span class="math inline">\(z\)</span>-score answer this even though the two measurements are in different units?</li>
+<li>Use the standard normal <span class="math inline">\(z\)</span> tool to find the percentile rank of each patient (the area to the left of their <span class="math inline">\(z\)</span>-score). Are they in roughly the same percentile?</li>
+</ol></li>
+<li><p><strong>Inverse-normal (working backward).</strong> A standardized test has scores <span class="math inline">\(\sim N(500, 100)\)</span>.</p>
+<ol type="a">
+<li>What score corresponds to the <strong>top 10%</strong> of test-takers? Use the normal tool to set the right-tail area to 0.10 and read off the boundary.</li>
+<li>What score is at the <strong>25th percentile</strong>? Use the left-tail area of 0.25.</li>
+<li>What is the <strong>interquartile range</strong> of the score distribution?</li>
+<li>A scholarship is offered to students scoring above the <strong>90th percentile</strong>. The college says: “Half of our applicants miss out by 50 points or fewer.” Is this surprising, given the distribution?</li>
+</ol></li>
+<li><p><strong>Within vs.&nbsp;between normals — a common confusion.</strong> A factory measures the diameters of bolts. The population of individual diameters is <span class="math inline">\(N(\mu = 10.0\text{ mm}, \sigma = 0.05\text{ mm})\)</span>. The quality team measures samples of <span class="math inline">\(n = 25\)</span> bolts at a time and computes the sample mean diameter <span class="math inline">\(\bar{x}\)</span>.</p>
+<ol type="a">
+<li>Find <span class="math inline">\(P(\text{individual bolt} &gt; 10.10\text{ mm})\)</span> using the <a href="https://learnlens.org/statlens/distribution/normal/?mu=10&amp;sigma=0.05&amp;tail=right" target="_blank">normal tool at <span class="math inline">\(\mu = 10, \sigma = 0.05\)</span></a>.</li>
+<li>Find <span class="math inline">\(P(\bar{x} &gt; 10.10\text{ mm})\)</span> using the <a href="https://learnlens.org/statlens/distribution/normal/?mu=10&amp;sigma=0.01&amp;tail=right" target="_blank">normal tool at the <em>sampling-distribution</em> parameters</a> (<span class="math inline">\(\mu = 10\)</span>, <span class="math inline">\(\sigma_{\bar{x}} = 0.05/\sqrt{25} = 0.01\)</span>).</li>
+<li>Which is smaller, and by how much? Why does the same threshold (10.10 mm) become much more “extreme” for <span class="math inline">\(\bar{x}\)</span> than for an individual bolt?</li>
+<li>A quality engineer says: “We never see sample means above 10.10 mm — the process is in control.” How would you push back if the <strong>individual-bolt</strong> rate of “above 10.10” is 2%?</li>
+</ol></li>
+<li><p><strong>The normal distribution as a model — not reality.</strong> Heights of adult males are <em>approximately</em> normal. Hourly wages in a population are <em>not</em>.</p>
+<ol type="a">
+<li>Why is <strong>height</strong> well-modeled by a normal — and what feature of the data-generating process makes it so?</li>
+<li>Why are <strong>hourly wages</strong> typically <em>not</em> well-modeled by a normal? Sketch the shape you’d expect.</li>
+<li>Suppose you use a normal model anyway to predict wage percentiles. What kind of errors are you likely to make?</li>
+<li>When does the normal still help, even when the underlying variable isn’t normal? (Hint: think back to the sampling distributions chapter.)</li>
+</ol></li>
+</ol>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/binomial.html" class="pagination-link" aria-label="Binomial Distribution">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Binomial Distribution</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/type-ii-error.html" class="pagination-link" aria-label="Type II Error and Power">
+        <span class="nav-page-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Type II Error and Power</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Introduction to Statistics: A Simulation-First Approach</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/DataScienceUWL/simfirst-stats/edit/main/chapters/normal-distribution.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/DataScienceUWL/simfirst-stats/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>Licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
