@@ -670,7 +670,7 @@ Figure&nbsp;12.1: One thousand simulated studies of 62 patients each, in a world
 </div>
 </div>
 </div>
-<p>About 13% of the simulated studies, <strong>roughly 1 in 8</strong>, did as well as she did or better, with nothing special going on. That is the <span class="math inline">\(p\)</span>-value. Her record is not unusual for an average consultant, so we <strong>do not</strong> have convincing evidence that her true rate is below 10%. (Your StatLens run will give a slightly different share, about 12%; that is the simulation’s own variability.)</p>
+<p>About 13% of the simulated studies, <strong>roughly 1 in 8</strong>, did as well as she did or better, with nothing special going on. That is the <span class="math inline">\(p\)</span>-value. Her record is not unusual for an average consultant, so we <strong>do not</strong> have convincing evidence that her true rate is below 10%. (Your StatLens run will give a slightly different share, about 12%. That difference is <strong>simulation error</strong>, which the <a href="../chapters/randomization-tests.html#sec-simulation-error">randomization tests chapter</a> showed shrinks as you run more simulations.)</p>
 </section>
 <section id="the-interval" class="level3" data-number="12.2.2">
 <h3 data-number="12.2.2" class="anchored" data-anchor-id="the-interval"><span class="header-section-number">12.2.2</span> The interval</h3>
@@ -767,13 +767,13 @@ Figure&nbsp;12.1: One thousand simulated studies of 62 patients each, in a world
 </thead>
 <tbody>
 <tr class="odd">
-<td>Simulation, 1,000 studies</td>
-<td>0.132 ± 0.021</td>
+<td>Simulation, six runs of 1,000 studies</td>
+<td>0.105 to 0.127</td>
 <td>bootstrap: (0.000, 0.113)</td>
 </tr>
 <tr class="even">
-<td>Simulation, 10,000 studies</td>
-<td>0.116 ± 0.006</td>
+<td>Simulation, six runs of 10,000 studies</td>
+<td>0.118 to 0.128</td>
 <td></td>
 </tr>
 <tr class="odd">
@@ -783,7 +783,26 @@ Figure&nbsp;12.1: One thousand simulated studies of 62 patients each, in a world
 </tr>
 </tbody>
 </table>
-<p>A simulated share is itself an estimate, so it comes with a margin; StatLens shows it beside the <span class="math inline">\(p\)</span>-value (“± 0.020” at 1,000 studies). Could the gap between the simulation and the normal model just be simulation noise? No.&nbsp;Even the 1,000-study margin doesn’t reach down to 0.088, and with 10,000 studies the margin shrinks to about ± 0.006 while the answer stays near 0.12. The simulation is consistent; the normal model is the one that’s off.</p>
+<p>Could the gap between the simulation and the normal model just be simulation error? Rerun the simulation and see. Six runs of 1,000 studies landed between 0.105 to 0.127. Six runs of 10,000 landed between 0.118 to 0.128. More simulations steady the answer near 0.12, and none of the runs comes close to 0.088. The simulation is consistent; the normal model is the one that’s off.</p>
+<div class="elaboration callout callout-style-default callout-tip callout-titled" title="Going deeper: where does StatLens's ± come from?">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Going deeper: where does StatLens’s ± come from?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The share of simulated studies that land in the tail is itself a <strong>sample proportion</strong>: out of <span class="math inline">\(N\)</span> simulated studies, some fraction <span class="math inline">\(\hat{p}_{\text{sim}}\)</span> were at least as extreme as the data. So it has a standard error, and it is this chapter’s formula with <span class="math inline">\(N\)</span>, the number of simulated studies, in place of <span class="math inline">\(n\)</span>:</p>
+<p><span class="math display">\[SE_{\text{sim}} = \sqrt{\frac{\hat{p}_{\text{sim}}\,(1 - \hat{p}_{\text{sim}})}{N}}.\]</span></p>
+<p>For the consultant, a share near 0.125 from <span class="math inline">\(N = 1{,}000\)</span> studies gives <span class="math inline">\(SE_{\text{sim}} = \sqrt{0.125 \times 0.875 / 1000} = 0.010\)</span>. StatLens reports <span class="math inline">\(1.96 \times SE_{\text{sim}} \approx 0.020\)</span>, the “± 0.020” beside its <span class="math inline">\(p\)</span>-value. Because <span class="math inline">\(N\)</span> is under a square root, 10,000 studies cut the simulation error by a factor of <span class="math inline">\(\sqrt{10} \approx 3\)</span>, to about ± 0.006.</p>
+<p>Notice what is <strong>not</strong> in the formula: the consultant’s 62 patients. Simulation error depends on <span class="math inline">\(N\)</span>, how many studies we simulate, never on <span class="math inline">\(n\)</span>, the size of her sample. More simulations make our <em>estimate of the <span class="math inline">\(p\)</span>-value</em> sharper; only more patients would make the <em>evidence</em> stronger.</p>
+</div>
+</div>
+</div>
 <p><a href="#fig-oneprop-fit" class="quarto-xref">Figure&nbsp;<span>12.2</span></a> shows why. With only about 6 complications expected, there are only a handful of possible rates (0/62, 1/62, 2/62, …), each one a big chunk of probability, bunched against zero. A smooth bell curve can’t match that lumpy, lopsided pile. Here it puts too little area at or below her 3 complications (0.088 against about 0.12), and it spreads into impossible negative rates. With 826 people and an expected 413 “yes” answers (right panel), the pile is smooth and symmetric, and the curve fits almost perfectly.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -823,8 +842,8 @@ Figure&nbsp;12.2: Simulated null distributions (10,000 studies each) with the no
 </thead>
 <tbody>
 <tr class="odd">
-<td>Simulation, 1,000 studies</td>
-<td>0.304 ± 0.029</td>
+<td>Simulation, six runs of 1,000 studies</td>
+<td>0.270 to 0.315</td>
 <td>bootstrap: (0.475, 0.544)</td>
 </tr>
 <tr class="even">
@@ -834,7 +853,7 @@ Figure&nbsp;12.2: Simulated null distributions (10,000 studies each) with the no
 </tr>
 </tbody>
 </table>
-<p>This time the normal answer falls well inside the simulation’s margin, and the two intervals match. That is what “the conditions hold” buys you: the formula gives the simulation’s answer without running it.</p>
+<p>This time the normal answer sits right among the simulation runs, and the two intervals match. That is what “the conditions hold” buys you: the formula gives the simulation’s answer without running it.</p>
 <div class="statlens">
 <p><strong>Run it yourself.</strong> Open the <a href="https://learnlens.org/statlens/simulate/randomization-one-prop/?p=0.5&amp;direction=greater&amp;seed=ch12gp2" target="_blank">one-proportion randomization test</a>, choose <strong>Enter Summary</strong>, and type <strong>421</strong> successes out of <strong>826</strong>. Add 1,000 studies and compare the share with the table. Then do the same in the <a href="https://learnlens.org/statlens/inference/one-prop/" target="_blank">one-proportion <span class="math inline">\(z\)</span> test</a> (null value 0.50, “greater than”).</p>
 </div>
@@ -934,14 +953,14 @@ The values kept (0.48 through 0.54) are the ones inside the interval; the two re
 <li>Test: <span class="math inline">\(z = (\hat{p} - p_0)/\sqrt{p_0(1-p_0)/n}\)</span>.</li>
 <li>Interval: <span class="math inline">\(\hat{p} \pm z^* \sqrt{\hat{p}(1-\hat{p})/n}\)</span>.</li>
 </ul></li>
-<li><strong>Compare.</strong> When there are at least 10 expected successes and failures (and the observations are independent), the formulas give the simulation’s answer. When there aren’t, they can be noticeably off, and simulation is the better route. A simulated answer comes with a margin; more studies shrink it.</li>
+<li><strong>Compare.</strong> When there are at least 10 expected successes and failures (and the observations are independent), the formulas give the simulation’s answer. When there aren’t, they can be noticeably off, and simulation is the better route. A simulated answer has <strong>simulation error</strong>: rerunning moves it a little, and more simulations shrink it. It does not depend on the sample size.</li>
 <li><strong>One story.</strong> A 95% interval holds the null values a two-sided 5% test would not reject.</li>
 <li><strong>Four questions.</strong> A complete conclusion says whether it could be chance, how big the effect is, who it applies to, and whether anything caused it.</li>
 </ul>
 </section>
 <section id="key-terms" class="level3" data-number="12.6.2">
 <h3 data-number="12.6.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">12.6.2</span> Key terms</h3>
-<p>Null value (<span class="math inline">\(p_0\)</span>), one-proportion randomization test, normal model for <span class="math inline">\(\hat{p}\)</span>, standard error of <span class="math inline">\(\hat{p}\)</span>, <span class="math inline">\(z\)</span> test for one proportion, confidence interval for one proportion, success–failure condition, simulation margin.</p>
+<p>Null value (<span class="math inline">\(p_0\)</span>), one-proportion randomization test, normal model for <span class="math inline">\(\hat{p}\)</span>, standard error of <span class="math inline">\(\hat{p}\)</span>, <span class="math inline">\(z\)</span> test for one proportion, confidence interval for one proportion, success–failure condition, simulation error.</p>
 </section>
 <section id="attribution" class="level3" data-number="12.6.3">
 <h3 data-number="12.6.3" class="anchored" data-anchor-id="attribution"><span class="header-section-number">12.6.3</span> Attribution</h3>
