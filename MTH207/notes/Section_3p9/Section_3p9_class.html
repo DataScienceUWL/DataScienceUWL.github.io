@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTH 207 &mdash; 3.9 Related Rates</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
+  loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
+<script id="MathJax-script" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0;
+  /* Line length, in characters, so it holds at every font size. 46ch was at the
+     narrow end of the readable 45-75 band and left half the width empty. This
+     is the AT-HOME value; the projected build overrides it below, because there
+     the scarce thing is screen area, not eye travel -- the font is already
+     ~30px on a 1920 screen, so a longer line is still easy to scan and buys
+     fewer scroll steps. */
+  --measure:68ch}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  /* Projected on a 1920 screen this lands near 30px, which is legible from the
+     back of the room; on a laptop later it falls back to comfortable reading. */
+  font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
+/* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
+   expose the next thing. Read later: it is just a long page. */
+:root{--measure:88ch}
+main{scroll-snap-type:y proximity}
+.beat{scroll-snap-align:start;min-height:100vh}
+.beat{padding:2.4rem 6vw 3rem;
+  border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
+h1{font-size:1.9rem;margin:0 0 .3rem}
+h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
+h2.cont{color:var(--slate);font-size:1.3rem}
+p{margin:0 0 .9rem;max-width:var(--measure)}
+ul{max-width:var(--measure)}
+.turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
+.turn.my{border-left-color:var(--slate);background:#f6f8fb}
+.badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;background:var(--amber);color:#3a2c00;padding:.32rem .6rem;
+  border-radius:3px;margin-bottom:.7rem}
+.turn.my .badge{background:var(--slate);color:#fff}
+.turn .work{font-size:.85rem;color:var(--slate);font-style:italic;margin:.6rem 0 0}
+.key{border-left:6px solid var(--ink);background:#f2f3f5;padding:.9rem 1.2rem;margin:1.2rem 0}
+.sol.shown{margin:1.1rem 0;border-left:5px solid var(--slate);background:#fff;
+  padding:.7rem 1.1rem;border-radius:0 5px 5px 0}
+.sol-label{display:block;font:600 .78rem/1 system-ui,sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate);margin-bottom:.5rem}
+details.sol{margin:1.1rem 0;border:1px solid var(--rule);border-radius:5px;background:#fff}
+details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-ui,sans-serif;
+  color:var(--slate)}
+details.sol[open] summary{border-bottom:1px solid var(--rule)}
+details.sol > :not(summary){padding:0 1.1rem}
+details.sol > p:last-child{padding-bottom:.9rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;
+  max-width:min(100%, calc(var(--measure) * 1.25))}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;margin:.6rem 0}
+table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--rule);padding:.3rem .9rem .3rem 0;text-align:left}
+th{border-bottom:2px solid var(--ink)}
+.boxed{margin:1.1rem 0;padding:.8rem 1.1rem;border-radius:5px;background:#fff;
+  border:1px solid var(--rule)}
+.boxed.dfn{border-left:5px solid var(--ink)}
+.boxed.thm{border-left:5px solid var(--amber)}
+.boxed.ex{border-left:5px solid var(--slate)}
+.badge.dfn{background:var(--ink);color:#fff}
+.badge.thm{background:var(--amber);color:#3a2c00}
+.ex{margin:1rem 0}
+.workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
+.badge.ex{background:var(--ink);color:#fff}
+.grid-item{margin:0}
+/* A figure is not prose. --measure is a READING measure -- how far the eye
+   travels across a line of text -- and has no business capping a diagram: on a
+   1920 projector it left roughly 370px empty beside every wide plot. So a
+   figure takes the full beat width and centres, and scale=N is now read as a
+   fraction of THAT, still centred, not of the reading measure. An img keeps
+   max-width (not width), so a small figure centres at its natural size instead
+   of being upscaled into blur.
+
+   No height cap: a beat is allowed to be taller than the screen. This is a
+   scrolling document, not a slide -- min-height:100vh is a floor. The
+   "over-tall slide scrolls its title away" rule belongs to the retired reveal
+   decks, which is why deck_check only geometry-checks when _slides.html
+   exists. */
+figure{margin:1.2rem auto;max-width:100%}
+figure img{max-width:100%;height:auto;display:block;margin:0 auto}
+button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
+  border-radius:3px;display:block;max-width:100%}
+button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+dialog.lb{border:none;padding:0;max-width:96vw;max-height:96vh;background:transparent}
+dialog.lb::backdrop{background:rgba(13,27,42,.88)}
+dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
+dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
+  background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem;text-align:center}
+header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
+header.top p{color:var(--slate);margin:.2rem 0 0}
+.dm{margin:.9rem 0;text-align:center}
+/* A derivation advanced by one button. [hidden] needs !important because .stp
+   sets display, which would otherwise win over the UA's hidden rule. */
+/* An equation chain. display:table so the three columns agree across rows --
+   that is the whole point: the = signs must line up. */
+.chain{display:table;margin:1.1rem 0 .4rem;border-collapse:collapse;
+  /* .beat is a column flexbox, which stretches its children to full width --
+     a shrink-to-fit table then became 1408px and the LHS floated to the far
+     right. align-self keeps the table the width of its own contents. */
+  align-self:start}
+.daybreak{display:flex;align-items:center;gap:1rem;margin:2.2rem 0 1.6rem;
+  color:var(--slate);font:600 .8rem/1 system-ui,sans-serif;letter-spacing:.1em;
+  text-transform:uppercase}
+.daybreak::before,.daybreak::after{content:"";flex:1;height:1px;
+  background:var(--rule)}
+.practicelink{margin:1.4rem 0 0}
+.practicelink a{display:inline-block;border:1px solid var(--amber);
+  border-radius:4px;padding:.45rem .9rem;color:var(--ink);text-decoration:none;
+  font:600 .9rem/1 system-ui,sans-serif;background:#fffdf5}
+.practicelink a:hover{background:var(--amber);color:#3a2c00}
+.chain.gen .ch-y{max-width:44ch;padding-left:1.6rem}
+.gc-cap{display:block;margin:0 0 .35rem;font:600 .82rem/1.3 system-ui,sans-serif;
+  letter-spacing:.02em;color:#5b6b7a;text-transform:uppercase}
+.ch-row{display:table-row}
+/* Row spacing. .12rem was fine while every row was one line tall, but a
+   chain whose rows are stacked fractions -- dividing inside a square root,
+   say -- ran them together with nothing to separate one step from the next.
+   These are table cells, so padding is the only lever; margin does nothing. */
+.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.45rem 0}
+.ch-l{text-align:right}
+.ch-e{text-align:center;padding-left:.5rem;padding-right:.5rem}
+.ch-r{text-align:left}
+/* The reason column. Set back and lighter so the algebra still reads as the
+   line and the citation as an annotation on it, not a second equation. */
+.ch-y{text-align:left;padding-left:2.2rem;font-size:.82em;color:#5b6b7a;
+  font-style:italic;max-width:26ch}
+.chain [hidden]{display:none!important}
+@media print{.chain [hidden]{display:table-cell!important}
+  .chain .ch-row[hidden]{display:table-row!important}}
+.steps{margin:1.1rem 0}
+.steps .stp{display:block;margin:.2rem 0}
+.steps [hidden]{display:none!important}
+.chain button.more,
+.steps button.more,
+details.sol button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
+  background:none;border:1px solid var(--amber);border-radius:50%;
+  width:2rem;height:2rem;padding:0;cursor:pointer;margin-top:.5rem;
+  display:inline-flex;align-items:center;justify-content:center}
+.chain button.more:hover,
+.steps button.more:hover,
+details.sol button.more:hover{background:#fff8e2}
+.chain button.more:focus-visible,
+.steps button.more:focus-visible,
+details.sol button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media print{.steps .stp{display:block!important}.steps button.more{display:none}}
+/* The in-page reveal. This used to be a text link to the twin page, and it was
+   missed constantly -- it looked like navigation, because it was. A filled
+   button that says what it does, in the first thing you see, is the fix. */
+/* --slate, not --blue: this palette has no --blue, and an undefined custom
+   property is not an error -- the background simply did not paint and the
+   button was white text on a cream page. Invisible, and working perfectly. */
+.revealall{font:600 1rem system-ui,sans-serif;cursor:pointer;
+  margin:.6rem 0 .2rem;padding:.55rem 1.1rem;border-radius:8px;
+  border:2px solid var(--slate);background:var(--slate);color:#fff}
+.revealall:hover{filter:brightness(1.12)}
+.revealall:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+.revealall[aria-pressed="true"]{background:var(--bg);color:var(--slate)}
+@media print{.revealall{display:none}}
+.switch{margin:.35rem 0 0}
+.switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px}
+.switch a:hover{border-bottom-width:2px}
+.switch a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media print{.switch{display:none}}
+.hint{position:fixed;right:1rem;bottom:1rem;font:.72rem system-ui,sans-serif;color:var(--slate);
+  background:#fff;border:1px solid var(--rule);border-radius:4px;padding:.35rem .6rem;opacity:.75}
+@media print{.beat{min-height:auto;page-break-inside:avoid}.hint{display:none}
+  details.sol{break-inside:avoid}details.sol summary{display:none}}
+</style></head>
+<body>
+<header class="top">
+  <h1>3.9 &nbsp;Related Rates</h1>
+  <p>MTH 207 Calculus I &mdash; Differentiation Rules</p>
+  <p class="switch"><button class="revealall" type="button" aria-pressed="false">Reveal all answers</button></p>
+</header>
+<main>
+<section class="beat" aria-label="A Rate You Cannot Measure" data-source-line="79">
+  <h2>A Rate You Cannot Measure</h2>
+<p>Some rates you can measure directly. Others you can only get from a rate you
+<em>can</em> measure, through an equation that ties them together.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>A square's sides are growing at $\displaystyle 3$ cm/s. How fast is its
+<strong>area</strong> growing at the moment the side is $\displaystyle 10$ cm?
+<span style="display:block;height:0.3em"></span>
+Try it before we have a method. Write down whatever you can.</p></div>
+  <details class="sol"><summary>Show: what the question is actually asking</summary>
+<p>Two quantities change with time: the side $\displaystyle s$ and the area $\displaystyle A$. You are told
+$\displaystyle \frac{ds}{dt} = 3$ and asked for $\displaystyle \frac{dA}{dt}$.</p>
+    <div class="rv" hidden><p>The $\displaystyle 10$ is <strong>not</strong> what the square is &mdash; it is <em>where</em> it is at
+one instant. A moment later the side is not $\displaystyle 10$ any more.</p></div>
+    <button type="button" class="more" aria-label="Next part of what the question is actually asking">&#9654;</button>
+  </details>
+  <div class="key"><p>Everything in this section is two quantities, an equation relating
+them, and <strong>time</strong> as the variable underneath both. You have done this
+before: it is §3.5, with $\displaystyle t$ where $\displaystyle x$ used to be.</p></div>
+</section>
+<section class="beat" aria-label="Substitute Last" data-source-line="115">
+  <h2>Substitute Last</h2>
+<p>There are two orders you could work in. Only one of them is arithmetic.</p>
+  <div class="turn my"><span class="badge">My turn</span><p>Both roads, side by side.</p></div>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">the wrong order &mdash; substitute, then differentiate</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle A = s^{2}$</span><span class="ch-y">the relating equation</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle A = \left(10\right)^{2} = 100$</span><span class="ch-y">substitute $\displaystyle s = 10$ <strong>first</strong></span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{dA}{dt} = 0$</span><span class="ch-y">$\displaystyle 100$ is a <strong>constant</strong> &mdash; its derivative is zero</span></div>
+    <button type="button" class="more" aria-label="Next step of the wrong order &mdash; substitute, then differentiate">&#9654;</button>
+  </div>
+<span style="display:block;height:0.4em"></span>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">the right order &mdash; differentiate, then substitute</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle A = s^{2}$</span><span class="ch-y">the same relating equation</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{dA}{dt} = 2s\,\frac{ds}{dt}$</span><span class="ch-y">differentiate with respect to $\displaystyle t$; $\displaystyle s$ is a function of $\displaystyle t$, so it carries $\displaystyle \frac{ds}{dt}$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{dA}{dt} = 2\left(10\right)\left(3\right) = 60$</span><span class="ch-y"><strong>now</strong> substitute $\displaystyle s=10$ and $\displaystyle \frac{ds}{dt}=3$</span></div>
+    <button type="button" class="more" aria-label="Next step of the right order &mdash; differentiate, then substitute">&#9654;</button>
+  </div>
+  <div class="key"><p><strong>Substituting early freezes the picture.</strong> The instant you
+write $\displaystyle s=10$ you have replaced a moving square with a still photograph, and a
+photograph has no rates in it. Substitute at the <strong>last</strong> step, never the
+first.</p></div>
+  <div class="key"><p>A value that is <strong>constant for all time</strong> is different &mdash; that
+one you may substitute whenever you like. The test is not when you are told
+the number, it is whether the quantity <em>moves</em>.</p></div>
+</section>
+<section class="beat" aria-label="The Method" data-source-line="157">
+  <h2>The Method</h2>
+  <div class="key"><p><strong>Five steps, in this order, every time.</strong>
+<ol><li><strong>Draw</strong> it, and label what moves with letters &mdash; not numbers.</li><li>Write what you <strong>know</strong> and what you <strong>want</strong>, as derivatives:
+      $\displaystyle \frac{ds}{dt}=3$, find $\displaystyle \frac{dA}{dt}$.</li><li>Find the <strong>relating equation</strong> &mdash; one equation, in those letters.</li><li><strong>Differentiate both sides with respect to $\displaystyle t$.</strong></li><li><strong>Now</strong> substitute the instant's values, and solve.</li></ol></p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Two cars leave the same point. One drives <strong>south</strong> at
+$\displaystyle 60$ mi/h, the other <strong>west</strong> at $\displaystyle 25$ mi/h. How fast is the distance
+between them changing <strong>two hours</strong> later?</p></div>
+  <details class="sol"><summary>Show: steps 1&ndash;3: draw it, name it, relate it</summary>
+<p>A right triangle, growing. Let $\displaystyle x$ = the southbound distance, $\displaystyle y$ = the
+westbound, $\displaystyle z$ = the gap. They are legs and hypotenuse, so</p>
+<div class="dm">$$z^{2} = x^{2} + y^{2}$$</div>
+<p>Known: $\displaystyle \frac{dx}{dt} = 60$, $\displaystyle \frac{dy}{dt} = 25$. Want: $\displaystyle \frac{dz}{dt}$.</p>
+  </details>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">steps 4&ndash;5: differentiate, then put the numbers in</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle z^{2} = x^{2}+y^{2}$</span><span class="ch-y">the relating equation &mdash; letters only</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle 2z\,\frac{dz}{dt} = 2x\,\frac{dx}{dt} + 2y\,\frac{dy}{dt}$</span><span class="ch-y">differentiate with respect to $\displaystyle t$ &mdash; every variable carries its own rate</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle x = 120,\quad y = 50,\quad z = \sqrt{120^{2}+50^{2}} = 130$</span><span class="ch-y">where they are after two hours</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle 2\left(130\right)\frac{dz}{dt} = 2\left(120\right)\left(60\right) + 2\left(50\right)\left(25\right)$</span><span class="ch-y"><strong>now</strong> substitute</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{dz}{dt} = \frac{8450}{130} = 65\ \text{mi/h}$</span><span class="ch-y">solve, and say the units</span></div>
+    <button type="button" class="more" aria-label="Next step of steps 4&ndash;5: differentiate, then put the numbers in">&#9654;</button>
+  </div>
+</section>
+<section class="beat" aria-label="What Is Constant and What Is Not" data-source-line="201">
+  <h2>What Is Constant and What Is Not</h2>
+<p>Not every number in the story is a variable. Telling them apart decides what
+your equation even looks like.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>A cylindrical tank of radius $\displaystyle 2$ m is filled at $\displaystyle 3$ m$\displaystyle ^{3}$/min. How
+fast is the <strong>water level</strong> rising?
+<span style="display:block;height:0.3em"></span>
+Before computing: which of $\displaystyle r$, $\displaystyle h$, $\displaystyle V$ actually <strong>change</strong>?</p></div>
+  <details class="sol"><summary>Show: only two of the three move</summary>
+<p>$\displaystyle V$ and $\displaystyle h$ change. The radius $\displaystyle r=2$ is a property of the <strong>tank</strong>, not of
+the water &mdash; it is the same at every instant, so it is a <strong>constant</strong>
+and may go in immediately.</p>
+  </details>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">substitute the constant early, the variables last</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle V = \pi r^{2} h$</span><span class="ch-y">volume of a cylinder</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle V = \pi\left(2\right)^{2}h = 4\pi h$</span><span class="ch-y">$\displaystyle r$ is constant &mdash; this one you <strong>may</strong> substitute now</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{dV}{dt} = 4\pi\,\frac{dh}{dt}$</span><span class="ch-y">differentiate with respect to $\displaystyle t$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle 3 = 4\pi\,\frac{dh}{dt} \qquad\Longrightarrow\qquad \frac{dh}{dt} = \frac{3}{4\pi}\ \text{m/min}$</span><span class="ch-y">now the instantaneous value</span></div>
+    <button type="button" class="more" aria-label="Next step of substitute the constant early, the variables last">&#9654;</button>
+  </div>
+  <div class="key"><p><strong>Constant for all time $\displaystyle \to$ substitute early. Changing $\displaystyle \to$
+substitute last.</strong> Ask of every number: is this a fact about the container, or
+about this instant?</p></div>
+  <div class="key"><p><strong>Steady in, not steady up.</strong> Here the level does rise steadily
+&mdash; but only because the tank is a cylinder. Pour into a <strong>cone</strong> or a
+<strong>sphere</strong> at a constant rate and the level races and then crawls, because
+the area it is spreading over keeps changing.</p></div>
+  <p class="practicelink"><a href="https://datascienceuwl.github.io/MTH207/extra-practice/#day26" target="_blank" rel="noopener">More practice for this day &rarr;</a></p>
+</section>
+<section class="beat" aria-label="When the Picture Gives the Equation" data-source-line="253">
+  <h2>When the Picture Gives the Equation</h2>
+<p>Yesterday the relating equation was handed to you. Today you have to find it
+&mdash; and it is almost always hiding in a pair of <strong>similar triangles</strong>.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>A street light sits on a $\displaystyle 15$ ft pole. A man $\displaystyle 6$ ft tall walks away
+from it at $\displaystyle 5$ ft/s. How fast is the tip of his <strong>shadow</strong> moving?
+<span style="display:block;height:0.3em"></span>
+Draw it first. Label the distance from the pole $\displaystyle x$ and the shadow length $\displaystyle s$.</p></div>
+  <details class="sol"><summary>Show: the two triangles, and what is similar to what</summary>
+<p>The big triangle runs from the lamp to the shadow's tip: height $\displaystyle 15$, base
+$\displaystyle x+s$. The small one is the man: height $\displaystyle 6$, base $\displaystyle s$. Same angles, so</p>
+<div class="dm">$$\frac{x+s}{15} = \frac{s}{6}$$</div>
+  </details>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">simplify the relation first, then differentiate</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle 6\left(x+s\right) = 15 s$</span><span class="ch-y">cross-multiply</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle 6x = 9s \qquad\Longrightarrow\qquad s = \tfrac{2}{3}x$</span><span class="ch-y">the relating equation, as simple as it goes</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{ds}{dt} = \tfrac{2}{3}\,\frac{dx}{dt} = \tfrac{2}{3}\left(5\right) = \tfrac{10}{3}\ \text{ft/s}$</span><span class="ch-y">how fast the <strong>shadow</strong> lengthens</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{d}{dt}\left(x+s\right) = 5 + \tfrac{10}{3} = \tfrac{25}{3}\ \text{ft/s}$</span><span class="ch-y">the <strong>tip</strong> is at $\displaystyle x+s$ &mdash; that is what was asked</span></div>
+    <button type="button" class="more" aria-label="Next step of simplify the relation first, then differentiate">&#9654;</button>
+  </div>
+  <div class="key"><p><strong>Read the question again before you answer it.</strong> The shadow's
+<em>length</em> and the shadow's <em>tip</em> are different quantities with
+different rates, and only one of them was asked for.</p></div>
+  <div class="key"><p>Notice what is <em>not</em> here: no value of $\displaystyle x$. The tip moves at
+$\displaystyle \frac{25}{3}$ ft/s no matter where he is &mdash; some related rates are constant,
+and the algebra tells you so.</p></div>
+</section>
+<section class="beat" aria-label="The Trough" data-source-line="297">
+  <h2>The Trough</h2>
+<p>The hardest shape in the homework, and it is still the same five steps.</p>
+  <div class="turn my"><span class="badge">My turn</span><p>A trough $\displaystyle 10$ ft long has ends shaped like isosceles triangles, $\displaystyle 3$ ft
+across the top and $\displaystyle 1$ ft deep. Water pours in at $\displaystyle 12$ ft$\displaystyle ^{3}$/min. How fast
+is the depth rising when the water is $\displaystyle \tfrac12$ ft deep?</p></div>
+  <details class="sol"><summary>Show: why the volume formula is not enough</summary>
+<p>Volume $\displaystyle =$ (cross-sectional area) $\displaystyle \times$ length, and the length $\displaystyle 10$ is
+constant. But the water's cross-section is a <strong>triangle that changes
+shape</strong>: when the water is deeper it is also <strong>wider</strong>. So the width is
+not a second variable &mdash; it is a function of the depth, and similar triangles
+give it.</p>
+  </details>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">get width in terms of depth, then volume in terms of depth alone</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle \frac{w}{y} = \frac{3}{1} \qquad\Longrightarrow\qquad w = 3y$</span><span class="ch-y">similar triangles: full trough is $\displaystyle 3$ across and $\displaystyle 1$ deep</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle A = \tfrac12\,w\,y = \tfrac12\left(3y\right)y = \tfrac32 y^{2}$</span><span class="ch-y">area of the water's triangle, in $\displaystyle y$ only</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle V = 10\cdot\tfrac32 y^{2} = 15y^{2}$</span><span class="ch-y">times the length &mdash; <strong>one variable left</strong></span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{dV}{dt} = 30y\,\frac{dy}{dt}$</span><span class="ch-y">now differentiate with respect to $\displaystyle t$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle 12 = 30\left(\tfrac12\right)\frac{dy}{dt} = 15\,\frac{dy}{dt}$</span><span class="ch-y">substitute $\displaystyle \frac{dV}{dt}=12$ and $\displaystyle y=\tfrac12$ <strong>last</strong></span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{dy}{dt} = \tfrac{4}{5}\ \text{ft/min}$</span><span class="ch-y">solve, with units</span></div>
+    <button type="button" class="more" aria-label="Next step of get width in terms of depth, then volume in terms of depth alone">&#9654;</button>
+  </div>
+  <div class="key"><p><strong>Reduce to one variable before you differentiate.</strong> Two
+unknowns in the relating equation means two unknown rates and one equation &mdash;
+unsolvable. Similar triangles are what remove the second one.</p></div>
+</section>
+<section class="beat" aria-label="Units Are Part of the Answer" data-source-line="340">
+  <h2>Units Are Part of the Answer</h2>
+  <div class="key"><p>A rate without units is not finished. Read them off the derivative
+itself: $\displaystyle \frac{dV}{dt}$ is <strong>volume per time</strong> &mdash; ft$\displaystyle ^{3}$/min &mdash;
+and $\displaystyle \frac{dy}{dt}$ is <strong>length per time</strong>, ft/min.</p></div>
+  <div class="key"><p><strong>And the sign is information.</strong> A negative rate means the
+quantity is <strong>shrinking</strong>, and that is an answer, not an error. Two
+quantities can be related with one rising while the other falls &mdash; walk
+<em>toward</em> the lamp and the shadow shortens.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>A balloon is deflating. Which of these are negative?</p>
+<div class="dm">$$\frac{dV}{dt} \qquad \frac{dr}{dt} \qquad \frac{dA}{dt}$$</div></div>
+  <details class="sol"><summary>Show: all three, and for the same reason</summary>
+<p>Shrinking volume forces shrinking radius, and shrinking radius forces
+shrinking surface area &mdash; they are tied by $\displaystyle V=\frac43\pi r^{3}$ and
+$\displaystyle A = 4\pi r^{2}$, both increasing in $\displaystyle r$. But <strong>none of the three rates
+equals another</strong>: they have different units and different sizes.</p>
+  </details>
+</section>
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="372">
+  <h2>What You Should Be Able to Do</h2>
+<ul><li><strong>Draw</strong> the situation and label what moves with <strong>letters</strong>,
+      never with the instant's numbers.</li><li>Write what you know and want as <strong>derivatives with respect to
+      time</strong>.</li><li>Find the <strong>relating equation</strong> &mdash; a formula, Pythagoras, or
+      <strong>similar triangles</strong> &mdash; and reduce it to <strong>one variable</strong>.</li><li><strong>Differentiate first, substitute last.</strong> Every moving quantity
+      carries its own rate.</li><li>Substitute a quantity early <strong>only</strong> when it is constant for all
+      time.</li><li>State the answer with <strong>units</strong>, and read a negative rate as
+      shrinking.</li></ul>
+  <div class="key"><p>No new calculus here &mdash; this is §3.5's Chain Rule with $\displaystyle t$
+underneath. What is new is that nobody hands you the equation.</p></div>
+  <p class="practicelink"><a href="https://datascienceuwl.github.io/MTH207/extra-practice/#day27" target="_blank" rel="noopener">More practice for this day &rarr;</a></p>
+</section>
+</main>
+<p class="hint">8 sections &middot; solutions open on click</p>
+<dialog class="lb" aria-label="Enlarged figure">
+  <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
+</dialog>
+<script>
+// Editor scroll-sync. Same protocol the filled/blank builds use, so the editor
+// side needs no new message types: we post htmlSectionChanged as the reader
+// scrolls, and honour goToSection when the cursor moves in the tex.
+(function(){
+  if(!window.parent || window.parent===window) return;
+  var secs=document.querySelectorAll('main > section[data-source-line]');
+  if(!secs.length) return;
+  var cur=null, t=null;
+  function report(){
+    // the section covering 30% down the viewport -- the one being read, not
+    // the one clipped at the top edge
+    var mark=window.innerHeight*0.3, best=null;
+    for(var i=0;i<secs.length;i++){
+      var r=secs[i].getBoundingClientRect();
+      if(r.top<=mark && r.bottom>0) best=secs[i];
+    }
+    if(!best) return;
+    var line=parseInt(best.dataset.sourceLine,10);
+    if(!isNaN(line) && line!==cur){
+      cur=line;
+      window.parent.postMessage({type:'htmlSectionChanged',sourceLine:line},'*');
+    }
+  }
+  addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(report,80);},
+                   {passive:true});
+  addEventListener('message',function(e){
+    if(!e.data || e.data.type!=='goToSection' || e.data.sourceLine==null) return;
+    // nearest section at or before the cursor: a cursor inside a frame should
+    // scroll to that frame, not fail to match its exact opening line
+    var best=null;
+    for(var i=0;i<secs.length;i++){
+      if(parseInt(secs[i].dataset.sourceLine,10)<=e.data.sourceLine) best=secs[i];
+    }
+    if(best){ cur=parseInt(best.dataset.sourceLine,10);
+              best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+// ── Advancing the page ────────────────────────────────────────────────────
+// One action, whether it arrives from a block's own arrow or from a key. A
+// presentation remote is just a USB keyboard sending Right/PageDown, so making
+// the page respond to those keys is all a clicker needs -- no pairing, no app.
+//
+// The order is document order within the section you are looking at: chain
+// rows, step lines and closed reveals alike. When a section has nothing left
+// hidden, the next press moves to the next section. That is the slide feel,
+// on a scrolling page.
+(function(){
+  function units(sec){
+    return [].slice.call(sec.querySelectorAll('.rv, .stp, details.sol'));
+  }
+  function covered(u){
+    return u.tagName === 'DETAILS' ? !u.open : u.hidden;
+  }
+  function uncover(u, yes){
+    if(u.tagName === 'DETAILS'){ u.open = yes; } else { u.hidden = !yes; }
+    pair(u, yes);
+  }
+  // Anything marked .pair in the same chain row rides with it.
+  function pair(u, yes){
+    var row = u.closest ? u.closest('.ch-row') : null;
+    if(!row) return;
+    [].forEach.call(row.querySelectorAll('.pair'), function(p){ p.hidden = !yes; });
+  }
+  function tidy(sec){
+    // a block's arrow retires once that block has nothing left to give
+    [].forEach.call(sec.querySelectorAll('.steps, .chain'), function(box){
+      var b = box.querySelector('button.more');
+      if(b) b.hidden = !box.querySelector('.rv[hidden], .stp[hidden]');
+    });
+  }
+  function sections(){
+    return [].slice.call(document.querySelectorAll('main > section.beat'));
+  }
+  function here(){
+    var mark = window.innerHeight * 0.3, best = null;
+    sections().forEach(function(s){
+      var r = s.getBoundingClientRect();
+      if(r.top <= mark && r.bottom > 0) best = s;
+    });
+    return best || sections()[0];
+  }
+  function go(sec, d){
+    var all = sections(), i = all.indexOf(sec) + d;
+    if(i >= 0 && i < all.length) all[i].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.__advance = function(d){
+    var sec = here();
+    if(!sec) return;
+    var us = units(sec);
+    if(d > 0){
+      for(var i = 0; i < us.length; i++){
+        if(covered(us[i])){
+          uncover(us[i], true); tidy(sec);
+          us[i].scrollIntoView({block:'nearest'});
+          return;
+        }
+      }
+      go(sec, 1);
+    } else {
+      for(var j = us.length - 1; j >= 0; j--){
+        if(!covered(us[j])){ uncover(us[j], false); tidy(sec); return; }
+      }
+      go(sec, -1);
+    }
+  };
+  var FWD = {ArrowRight:1, ArrowDown:1, PageDown:1, ' ':1, Enter:1, Spacebar:1};
+  var BACK = {ArrowLeft:1, ArrowUp:1, PageUp:1, Backspace:1};
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    // let a focused control have its own keys
+    var t = e.target;
+    if(t && t.closest && t.closest('button, a, summary, input, textarea, dialog')) return;
+    if(FWD[e.key]){ e.preventDefault(); window.__advance(1); }
+    else if(BACK[e.key]){ e.preventDefault(); window.__advance(-1); }
+  });
+
+  // Reveal-all. Drives the same uncover() every other control uses, so a page
+  // opened this way ends in exactly the state stepping through would leave it.
+  var ra = document.querySelector('.revealall');
+  if(ra) ra.addEventListener('click', function(){
+    var on = ra.getAttribute('aria-pressed') === 'true';
+    [].forEach.call(sections(), function(sec){
+      units(sec).forEach(function(u){ uncover(u, !on); });
+      tidy(sec);
+    });
+    ra.setAttribute('aria-pressed', on ? 'false' : 'true');
+    ra.textContent = on ? 'Reveal all answers' : 'Hide all answers';
+  });
+})();
+
+// One button per derivation: each press uncovers the next line.
+(function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.steps > button.more, .chain > button.more, details.sol > button.more');
+    if(!b) return;
+    var box=b.parentElement;
+    // .rv marks a revealable unit: a whole step block, a chain row, or the
+    // right-hand side of the chain's first row. One selector covers all three.
+    var next=box.querySelector('.rv[hidden], .stp[hidden]');
+    if(next){
+      next.hidden=false;
+      // its citation, if it has one, arrives on the same press
+      var row=next.closest?next.closest('.ch-row'):null;
+      if(row) [].forEach.call(row.querySelectorAll('.pair'),
+                              function(p){ p.hidden=false; });
+    }
+    if(!box.querySelector('.rv[hidden], .stp[hidden]')) b.hidden=true;
+  });
+})();
+(function(){
+  var dlg=document.querySelector('dialog.lb'), img=dlg.querySelector('img');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button.zoom');
+    if(b){ img.src=b.dataset.src;
+           img.alt=b.querySelector('img').alt;   // carry the real alt text over
+           dlg.showModal(); return; }
+    if(e.target.closest('dialog.lb .close') || e.target===dlg) dlg.close();
+  });
+  dlg.addEventListener('close',function(){ img.removeAttribute('src'); });
+})();
+</script>
+</body></html>
