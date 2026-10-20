@@ -623,12 +623,13 @@ window.Quarto = {
   </ul></li>
   <li><a href="#sec-two-sided-tests" id="toc-sec-two-sided-tests" class="nav-link" data-scroll-target="#sec-two-sided-tests"><span class="header-section-number">7.9</span> Two-sided tests</a></li>
   <li><a href="#sec-randomization-summary" id="toc-sec-randomization-summary" class="nav-link" data-scroll-target="#sec-randomization-summary"><span class="header-section-number">7.10</span> The randomization test procedure: a summary</a></li>
-  <li><a href="#sec-randomization-tests-review" id="toc-sec-randomization-tests-review" class="nav-link" data-scroll-target="#sec-randomization-tests-review"><span class="header-section-number">7.11</span> Chapter review</a>
+  <li><a href="#sec-randomization-complete-example" id="toc-sec-randomization-complete-example" class="nav-link" data-scroll-target="#sec-randomization-complete-example"><span class="header-section-number">7.11</span> A complete example: names on résumés</a></li>
+  <li><a href="#sec-randomization-tests-review" id="toc-sec-randomization-tests-review" class="nav-link" data-scroll-target="#sec-randomization-tests-review"><span class="header-section-number">7.12</span> Chapter review</a>
   <ul class="collapse">
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">7.11.1</span> Summary</a></li>
-  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">7.11.2</span> Key terms</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">7.12.1</span> Summary</a></li>
+  <li><a href="#key-terms" id="toc-key-terms" class="nav-link" data-scroll-target="#key-terms"><span class="header-section-number">7.12.2</span> Key terms</a></li>
   </ul></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">7.12</span> Exercises</a>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">7.13</span> Exercises</a>
   <ul class="collapse">
   <li><a href="#statlens-exercises" id="toc-statlens-exercises" class="nav-link" data-scroll-target="#statlens-exercises">StatLens Exercises</a></li>
   </ul></li>
@@ -1185,10 +1186,77 @@ Testing a single proportion by simulation
 </div>
 </div>
 </section>
-<section id="sec-randomization-tests-review" class="level2" data-number="7.11">
-<h2 data-number="7.11" class="anchored" data-anchor-id="sec-randomization-tests-review"><span class="header-section-number">7.11</span> Chapter review</h2>
-<section id="summary" class="level3" data-number="7.11.1">
-<h3 data-number="7.11.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">7.11.1</span> Summary</h3>
+<section id="sec-randomization-complete-example" class="level2" data-number="7.11">
+<h2 data-number="7.11" class="anchored" data-anchor-id="sec-randomization-complete-example"><span class="header-section-number">7.11</span> A complete example: names on résumés</h2>
+<p>This section runs one study through every step of the procedure, start to finish.</p>
+<p><strong>The question.</strong> Do employers treat job applicants differently because of the race their name suggests? In 2001–2002, economists Marianne Bertrand and Sendhil Mullainathan answered help-wanted ads in Boston and Chicago newspapers with 4,870 fictitious résumés. Each résumé was <strong>randomly assigned</strong> either a name common among white Americans (such as Emily or Greg) or one common among Black Americans (such as Lakisha or Jamal). They then counted which résumés got a callback.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p><strong>Step 1: State the hypotheses.</strong> Let <span class="math inline">\(p_W\)</span> and <span class="math inline">\(p_B\)</span> be the callback rates for résumés with white-sounding and Black-sounding names. The difference is <strong>white − Black</strong>.</p>
+<ul>
+<li><span class="math inline">\(H_0: p_W - p_B = 0\)</span>. The name makes no difference; any gap is chance.</li>
+<li><span class="math inline">\(H_A: p_W - p_B &gt; 0\)</span>. Résumés with white-sounding names get more callbacks.</li>
+</ul>
+<p>The study set out to look for discrimination against Black applicants, so the alternative is one-sided.</p>
+<p><strong>Step 2: Look at the data.</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>Callback</th>
+<th>No callback</th>
+<th>Total</th>
+<th>Callback rate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>White-sounding name</td>
+<td>235</td>
+<td>2,200</td>
+<td>2,435</td>
+<td>9.7%</td>
+</tr>
+<tr class="even">
+<td>Black-sounding name</td>
+<td>157</td>
+<td>2,278</td>
+<td>2,435</td>
+<td>6.4%</td>
+</tr>
+</tbody>
+</table>
+<p>The observed difference is <span class="math inline">\(\hat{p}_W - \hat{p}_B = 0.097 - 0.064 = 0.032\)</span>, a gap of about 3.2 percentage points.</p>
+<p><strong>Step 3: Model the null hypothesis by shuffling.</strong> If names made no difference, the 392 callbacks would have gone to the same résumés whatever name was on them. So shuffle the name labels across all 4,870 résumés, deal 2,435 to each group, and compute the difference again. Before running it, think back to the sex discrimination study, where 24 files per group made chance gaps of 10 to 20 percentage points routine. With 2,435 résumés per group, should chance gaps be bigger or smaller?</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-resume-rand-dist" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A histogram of 1,000 simulated differences in callback rates, white minus Black, when name labels are shuffled. The distribution is centered at zero and runs from about −0.02 to about 0.03. A dashed line at the observed difference of 0.032 sits to the right of every simulated value.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-resume-rand-dist-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="randomization-tests-2027_files/figure-html/fig-resume-rand-dist-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;7.4: 1,000 shuffles of the name labels in the résumé study. Every simulated difference falls between about −0.02 and 0.03; none reaches the observed 0.032 (dashed line). ↗ Try this live and press +1k."><img src="randomization-tests-2027_files/figure-html/fig-resume-rand-dist-1.png" class="img-fluid figure-img" alt="A histogram of 1,000 simulated differences in callback rates, white minus Black, when name labels are shuffled. The distribution is centered at zero and runs from about −0.02 to about 0.03. A dashed line at the observed difference of 0.032 sits to the right of every simulated value." width="2100"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-resume-rand-dist-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7.4: 1,000 shuffles of the name labels in the résumé study. Every simulated difference falls between about −0.02 and 0.03; none reaches the observed 0.032 (dashed line). <a href="https://learnlens.org/statlens/simulate/randomization-diff-props/?dataset=resume&amp;success=callback&amp;direction=greater&amp;seed=ch07explore1">↗ Try this live</a> and press +1k.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Smaller, by a lot. With thousands of résumés per group, the shuffled gaps stay within about two or three percentage points of zero.</p>
+<p><strong>Step 4: Find the p-value.</strong> Not one of the 1,000 shuffles produced a gap as large as 3.2 points. The <span class="math inline">\(p\)</span>-value is essentially zero: less than about 1 in 1,000. A rerun might turn up one such shuffle, but no rerun will make this gap look like something chance produces.</p>
+<p><strong>Step 5: Conclude, in context.</strong> The <span class="math inline">\(p\)</span>-value is far below any usual discernibility level, such as 0.05, so we reject <span class="math inline">\(H_0\)</span>. The data provide very strong evidence that résumés with white-sounding names received more callbacks than otherwise similar résumés with Black-sounding names.</p>
+<div class="important four-questions">
+<p><strong>The four questions, answered</strong></p>
+<ol type="1">
+<li><strong>Could it be chance?</strong> No.&nbsp;Shuffling never produced a gap this large.</li>
+<li><strong>How big is it?</strong> About 3.2 percentage points: 9.7% against 6.4%. White-sounding names got about 1.5 times as many callbacks, roughly one per 10 résumés against one per 16. The bootstrap chapter puts an interval around that gap.</li>
+<li><strong>Who does it apply to?</strong> Employers who placed help-wanted ads in Boston and Chicago newspapers in 2001–2002. Other cities, other kinds of jobs, and hiring today may differ.</li>
+<li><strong>Did one thing cause the other?</strong> Yes, for these résumés. Names were randomly assigned, so résumé quality and everything else was balanced between the groups, and the name caused the gap. What the name signaled to employers is a separate question, and the researchers chose names that signal race strongly.</li>
+</ol>
+</div>
+</section>
+<section id="sec-randomization-tests-review" class="level2" data-number="7.12">
+<h2 data-number="7.12" class="anchored" data-anchor-id="sec-randomization-tests-review"><span class="header-section-number">7.12</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="7.12.1">
+<h3 data-number="7.12.1" class="anchored" data-anchor-id="summary"><span class="header-section-number">7.12.1</span> Summary</h3>
 <ul>
 <li>A <strong>hypothesis test</strong> evaluates two competing claims: the null hypothesis (<span class="math inline">\(H_0\)</span>), which represents no effect or no difference, and the alternative hypothesis (<span class="math inline">\(H_A\)</span>), which represents the claim under investigation.</li>
 <li>A <strong>randomization test</strong> (or permutation test) assesses the null hypothesis by shuffling the data to simulate what would happen if there were truly no effect. The collection of simulated sample statistics forms the <strong>randomization distribution</strong>.</li>
@@ -1200,8 +1268,8 @@ Testing a single proportion by simulation
 <li>Statistical discernibility does not imply practical importance.</li>
 </ul>
 </section>
-<section id="key-terms" class="level3" data-number="7.11.2">
-<h3 data-number="7.11.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">7.11.2</span> Key terms</h3>
+<section id="key-terms" class="level3" data-number="7.12.2">
+<h3 data-number="7.12.2" class="anchored" data-anchor-id="key-terms"><span class="header-section-number">7.12.2</span> Key terms</h3>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -1262,8 +1330,8 @@ Testing a single proportion by simulation
 </table>
 </section>
 </section>
-<section id="exercises" class="level2 exercises" data-number="7.12">
-<h2 class="exercises anchored" data-number="7.12" data-anchor-id="exercises"><span class="header-section-number">7.12</span> Exercises</h2>
+<section id="exercises" class="level2 exercises" data-number="7.13">
+<h2 class="exercises anchored" data-number="7.13" data-anchor-id="exercises"><span class="header-section-number">7.13</span> Exercises</h2>
 <p>Answers to odd-numbered exercises are provided in the <a href="../appendices/exercise-solutions.html#sec-solutions-randomization-tests">Exercise Solutions appendix</a> at the back of the book.</p>
 <!-- Generated by build_textbook_exercises.py — DO NOT EDIT -->
 <!-- Sources: _11-ex-foundations-randomization -->
@@ -1361,7 +1429,7 @@ Testing a single proportion by simulation
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="randomization-tests-2027_files/figure-html/unnamed-chunk-4-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="randomization-tests-2027_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></a></p>
+<p><a href="randomization-tests-2027_files/figure-html/unnamed-chunk-4-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="randomization-tests-2027_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="2100"></a></p>
 </figure>
 </div>
 </div>
@@ -1373,7 +1441,7 @@ Testing a single proportion by simulation
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="randomization-tests-2027_files/figure-html/unnamed-chunk-5-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="randomization-tests-2027_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="randomization-tests-2027_files/figure-html/unnamed-chunk-5-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="randomization-tests-2027_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="2100"></a></p>
 </figure>
 </div>
 </div>
@@ -1398,7 +1466,7 @@ Testing a single proportion by simulation
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="randomization-tests-2027_files/figure-html/unnamed-chunk-6-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="randomization-tests-2027_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></a></p>
+<p><a href="randomization-tests-2027_files/figure-html/unnamed-chunk-6-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="randomization-tests-2027_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="2100"></a></p>
 </figure>
 </div>
 </div>
@@ -1475,6 +1543,12 @@ Turnbull, B., B. Brown, and M. Hu. 1974. <span>“Survivorship of Heart Transpla
 </div>
 </div>
 </section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>Bertrand, M., &amp; Mullainathan, S. (2004). Are Emily and Greg more employable than Lakisha and Jamal? A field experiment on labor market discrimination. <em>American Economic Review</em>, 94(4), 991–1013. The data are the <code>resume</code> dataset in the <code>openintro</code> R package and in StatLens.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
