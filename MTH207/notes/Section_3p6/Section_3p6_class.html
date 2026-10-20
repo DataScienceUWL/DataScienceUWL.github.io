@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTH 207 &mdash; 3.6 Logarithmic and Inverse Trig Derivatives</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
+  loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
+<script id="MathJax-script" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0;
+  /* Line length, in characters, so it holds at every font size. 46ch was at the
+     narrow end of the readable 45-75 band and left half the width empty. This
+     is the AT-HOME value; the projected build overrides it below, because there
+     the scarce thing is screen area, not eye travel -- the font is already
+     ~30px on a 1920 screen, so a longer line is still easy to scan and buys
+     fewer scroll steps. */
+  --measure:68ch}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  /* Projected on a 1920 screen this lands near 30px, which is legible from the
+     back of the room; on a laptop later it falls back to comfortable reading. */
+  font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
+/* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
+   expose the next thing. Read later: it is just a long page. */
+:root{--measure:88ch}
+main{scroll-snap-type:y proximity}
+.beat{scroll-snap-align:start;min-height:100vh}
+.beat{padding:2.4rem 6vw 3rem;
+  border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
+h1{font-size:1.9rem;margin:0 0 .3rem}
+h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
+h2.cont{color:var(--slate);font-size:1.3rem}
+p{margin:0 0 .9rem;max-width:var(--measure)}
+ul{max-width:var(--measure)}
+.turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
+.turn.my{border-left-color:var(--slate);background:#f6f8fb}
+.badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;background:var(--amber);color:#3a2c00;padding:.32rem .6rem;
+  border-radius:3px;margin-bottom:.7rem}
+.turn.my .badge{background:var(--slate);color:#fff}
+.turn .work{font-size:.85rem;color:var(--slate);font-style:italic;margin:.6rem 0 0}
+.key{border-left:6px solid var(--ink);background:#f2f3f5;padding:.9rem 1.2rem;margin:1.2rem 0}
+.sol.shown{margin:1.1rem 0;border-left:5px solid var(--slate);background:#fff;
+  padding:.7rem 1.1rem;border-radius:0 5px 5px 0}
+.sol-label{display:block;font:600 .78rem/1 system-ui,sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate);margin-bottom:.5rem}
+details.sol{margin:1.1rem 0;border:1px solid var(--rule);border-radius:5px;background:#fff}
+details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-ui,sans-serif;
+  color:var(--slate)}
+details.sol[open] summary{border-bottom:1px solid var(--rule)}
+details.sol > :not(summary){padding:0 1.1rem}
+details.sol > p:last-child{padding-bottom:.9rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;
+  max-width:min(100%, calc(var(--measure) * 1.25))}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;margin:.6rem 0}
+table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--rule);padding:.3rem .9rem .3rem 0;text-align:left}
+th{border-bottom:2px solid var(--ink)}
+.boxed{margin:1.1rem 0;padding:.8rem 1.1rem;border-radius:5px;background:#fff;
+  border:1px solid var(--rule)}
+.boxed.dfn{border-left:5px solid var(--ink)}
+.boxed.thm{border-left:5px solid var(--amber)}
+.boxed.ex{border-left:5px solid var(--slate)}
+.badge.dfn{background:var(--ink);color:#fff}
+.badge.thm{background:var(--amber);color:#3a2c00}
+.ex{margin:1rem 0}
+.workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
+.badge.ex{background:var(--ink);color:#fff}
+.grid-item{margin:0}
+/* A figure is not prose. --measure is a READING measure -- how far the eye
+   travels across a line of text -- and has no business capping a diagram: on a
+   1920 projector it left roughly 370px empty beside every wide plot. So a
+   figure takes the full beat width and centres, and scale=N is now read as a
+   fraction of THAT, still centred, not of the reading measure. An img keeps
+   max-width (not width), so a small figure centres at its natural size instead
+   of being upscaled into blur.
+
+   No height cap: a beat is allowed to be taller than the screen. This is a
+   scrolling document, not a slide -- min-height:100vh is a floor. The
+   "over-tall slide scrolls its title away" rule belongs to the retired reveal
+   decks, which is why deck_check only geometry-checks when _slides.html
+   exists. */
+figure{margin:1.2rem auto;max-width:100%}
+figure img{max-width:100%;height:auto;display:block;margin:0 auto}
+button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
+  border-radius:3px;display:block;max-width:100%}
+button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+dialog.lb{border:none;padding:0;max-width:96vw;max-height:96vh;background:transparent}
+dialog.lb::backdrop{background:rgba(13,27,42,.88)}
+dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
+dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
+  background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem;text-align:center}
+header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
+header.top p{color:var(--slate);margin:.2rem 0 0}
+.dm{margin:.9rem 0;text-align:center}
+/* A derivation advanced by one button. [hidden] needs !important because .stp
+   sets display, which would otherwise win over the UA's hidden rule. */
+/* An equation chain. display:table so the three columns agree across rows --
+   that is the whole point: the = signs must line up. */
+.chain{display:table;margin:1.1rem 0 .4rem;border-collapse:collapse;
+  /* .beat is a column flexbox, which stretches its children to full width --
+     a shrink-to-fit table then became 1408px and the LHS floated to the far
+     right. align-self keeps the table the width of its own contents. */
+  align-self:start}
+.daybreak{display:flex;align-items:center;gap:1rem;margin:2.2rem 0 1.6rem;
+  color:var(--slate);font:600 .8rem/1 system-ui,sans-serif;letter-spacing:.1em;
+  text-transform:uppercase}
+.daybreak::before,.daybreak::after{content:"";flex:1;height:1px;
+  background:var(--rule)}
+.practicelink{margin:1.4rem 0 0}
+.practicelink a{display:inline-block;border:1px solid var(--amber);
+  border-radius:4px;padding:.45rem .9rem;color:var(--ink);text-decoration:none;
+  font:600 .9rem/1 system-ui,sans-serif;background:#fffdf5}
+.practicelink a:hover{background:var(--amber);color:#3a2c00}
+.chain.gen .ch-y{max-width:44ch;padding-left:1.6rem}
+.gc-cap{display:block;margin:0 0 .35rem;font:600 .82rem/1.3 system-ui,sans-serif;
+  letter-spacing:.02em;color:#5b6b7a;text-transform:uppercase}
+.ch-row{display:table-row}
+/* Row spacing. .12rem was fine while every row was one line tall, but a
+   chain whose rows are stacked fractions -- dividing inside a square root,
+   say -- ran them together with nothing to separate one step from the next.
+   These are table cells, so padding is the only lever; margin does nothing. */
+.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.45rem 0}
+.ch-l{text-align:right}
+.ch-e{text-align:center;padding-left:.5rem;padding-right:.5rem}
+.ch-r{text-align:left}
+/* The reason column. Set back and lighter so the algebra still reads as the
+   line and the citation as an annotation on it, not a second equation. */
+.ch-y{text-align:left;padding-left:2.2rem;font-size:.82em;color:#5b6b7a;
+  font-style:italic;max-width:26ch}
+.chain [hidden]{display:none!important}
+@media print{.chain [hidden]{display:table-cell!important}
+  .chain .ch-row[hidden]{display:table-row!important}}
+.steps{margin:1.1rem 0}
+.steps .stp{display:block;margin:.2rem 0}
+.steps [hidden]{display:none!important}
+.chain button.more,
+.steps button.more,
+details.sol button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
+  background:none;border:1px solid var(--amber);border-radius:50%;
+  width:2rem;height:2rem;padding:0;cursor:pointer;margin-top:.5rem;
+  display:inline-flex;align-items:center;justify-content:center}
+.chain button.more:hover,
+.steps button.more:hover,
+details.sol button.more:hover{background:#fff8e2}
+.chain button.more:focus-visible,
+.steps button.more:focus-visible,
+details.sol button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media print{.steps .stp{display:block!important}.steps button.more{display:none}}
+/* The in-page reveal. This used to be a text link to the twin page, and it was
+   missed constantly -- it looked like navigation, because it was. A filled
+   button that says what it does, in the first thing you see, is the fix. */
+/* --slate, not --blue: this palette has no --blue, and an undefined custom
+   property is not an error -- the background simply did not paint and the
+   button was white text on a cream page. Invisible, and working perfectly. */
+.revealall{font:600 1rem system-ui,sans-serif;cursor:pointer;
+  margin:.6rem 0 .2rem;padding:.55rem 1.1rem;border-radius:8px;
+  border:2px solid var(--slate);background:var(--slate);color:#fff}
+.revealall:hover{filter:brightness(1.12)}
+.revealall:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+.revealall[aria-pressed="true"]{background:var(--bg);color:var(--slate)}
+@media print{.revealall{display:none}}
+.switch{margin:.35rem 0 0}
+.switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px}
+.switch a:hover{border-bottom-width:2px}
+.switch a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media print{.switch{display:none}}
+.hint{position:fixed;right:1rem;bottom:1rem;font:.72rem system-ui,sans-serif;color:var(--slate);
+  background:#fff;border:1px solid var(--rule);border-radius:4px;padding:.35rem .6rem;opacity:.75}
+@media print{.beat{min-height:auto;page-break-inside:avoid}.hint{display:none}
+  details.sol{break-inside:avoid}details.sol summary{display:none}}
+</style></head>
+<body>
+<header class="top">
+  <h1>3.6 &nbsp;Logarithmic and Inverse Trig Derivatives</h1>
+  <p>MTH 207 Calculus I &mdash; Differentiation Rules</p>
+  <p class="switch"><button class="revealall" type="button" aria-pressed="false">Reveal all answers</button></p>
+</header>
+<main>
+<section class="beat" aria-label="Three More for the Catalog" data-source-line="99">
+  <h2>Three More for the Catalog</h2>
+<p>This section adds the last three kinds of function to your catalog of
+derivatives:</p>
+<ul><li><strong>exponentials of any base</strong> &mdash; $\displaystyle 2^{x}$, $\displaystyle 5^{x}$, not just $\displaystyle e^{x}$</li><li><strong>logarithms</strong> &mdash; $\displaystyle \ln x$ and $\displaystyle \log_a x$</li><li><strong>inverse trig functions</strong> &mdash; $\displaystyle \arcsin$, $\displaystyle \arctan$ and the rest</li></ul>
+<p>After today every standard function you know has a derivative rule.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Differentiate each, or get as far as you can.</p>
+<div class="dm">$$\text{(a)}\;\; y = e^{3x}
+\qquad\qquad
+\text{(b)}\;\; y = 2^{x}$$</div></div>
+  <details class="sol"><summary>Show: (a) you already own this</summary>
+<p>Outside $\displaystyle e^{(\;)}$, inside $\displaystyle 3x$. The Chain Rule:</p>
+<div class="dm">$$y' = e^{3x}\cdot 3 = 3e^{3x}$$</div>
+  </details>
+  <details class="sol"><summary>Show: (b) looks the same and is not</summary>
+<p>In $\displaystyle e^{3x}$ the variable is in the exponent but the <strong>base is $\displaystyle e$</strong>, which
+is its own derivative. In $\displaystyle 2^{x}$ the base is $\displaystyle 2$. The Power Rule cannot touch
+it &mdash; that rule is for $\displaystyle x^{n}$, a <strong>variable base and constant
+exponent</strong>. This is the other way round.</p>
+  </details>
+  <div class="key"><p>$\displaystyle x^{2}$ and $\displaystyle 2^{x}$ are not the same kind of object and do not get
+the same rule. Say which is which before you differentiate either.</p></div>
+</section>
+<section class="beat" aria-label="Where $\frac1x$ Comes From" data-source-line="149">
+  <h2>Where $\frac1x$ Comes From</h2>
+<p>$\displaystyle \ln x$ is the inverse of $\displaystyle e^{x}$, and you have no rule for inverses. But you
+have one for <strong>equations you cannot solve</strong> &mdash; yesterday.</p>
+  <div class="turn my"><span class="badge">My turn</span><p>Derive $\displaystyle \frac{d}{dx}\ln x$ using implicit differentiation.</p></div>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">rewrite, differentiate both sides, substitute back</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle y = \ln x$</span><span class="ch-y">the thing we want the derivative of</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle e^{y} = x$</span><span class="ch-y">rewrite without the logarithm</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{d}{dx}\left[\,e^{y}\,\right] = \frac{d}{dx}\left[\,x\,\right]$</span><span class="ch-y">apply $\displaystyle \frac{d}{dx}$ to <strong>both sides</strong> &mdash; §3.5</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle e^{y}\,\frac{dy}{dx} = 1$</span><span class="ch-y">$\displaystyle y$ is a function of $\displaystyle x$, so $\displaystyle e^{y}$ carries a $\displaystyle \frac{dy}{dx}$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{dy}{dx} = \frac{1}{e^{y}}$</span><span class="ch-y">solve</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{dy}{dx} = \frac{1}{x}$</span><span class="ch-y">and $\displaystyle e^{y}$ <strong>is</strong> $\displaystyle x$ &mdash; line two</span></div>
+    <button type="button" class="more" aria-label="Next step of rewrite, differentiate both sides, substitute back">&#9654;</button>
+  </div>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; Derivative of the Natural Logarithm</span><div class="dm">$$\frac{d}{dx}\,\ln x \;=\; \frac1x \qquad (x>0)$$</div></div>
+  <div class="key"><p>Yesterday's method, one day later, on something you will use for the
+rest of the course. Implicit differentiation was not a detour.</p></div>
+</section>
+<section class="beat" aria-label="One Rewrite, Both Rules" data-source-line="206">
+  <h2>One Rewrite, Both Rules</h2>
+<p>You now have $\displaystyle e^{x}$ and $\displaystyle \ln x$. <strong>Every other base is one rewrite away
+from them</strong> &mdash; so there is nothing new to learn, only something to notice.</p>
+  <div class="key"><p><strong>Any base, written naturally.</strong> Since $\displaystyle a = e^{\ln a}$ and
+$\displaystyle \log_a x$ is just $\displaystyle \ln x$ rescaled,</p>
+<div class="dm">$$a^{x} = e^{\,x\ln a} \qquad\qquad \log_a x = \frac{\ln x}{\ln a}$$</div>
+<p>and in both, $\displaystyle \ln a$ is a <strong>number</strong>.</p></div>
+  <div class="turn my"><span class="badge">My turn</span><p>Differentiate each <strong>by rewriting</strong>. No new rule.</p></div>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">the exponential</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle y = a^{x} = e^{\,x\ln a}$</span><span class="ch-y">rewrite with base $\displaystyle e$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle y' = e^{\,x\ln a}\cdot\frac{d}{dx}\left(x\ln a\right) = e^{\,x\ln a}\cdot\ln a$</span><span class="ch-y">Chain Rule; the inside is a <strong>number</strong> times $\displaystyle x$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle y' = a^{x}\ln a$</span><span class="ch-y">and $\displaystyle e^{\,x\ln a}$ is where we started</span></div>
+    <button type="button" class="more" aria-label="Next step of the exponential">&#9654;</button>
+  </div>
+<span style="display:block;height:0.4em"></span>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">the logarithm</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle y = \log_a x = \frac{1}{\ln a}\cdot\ln x$</span><span class="ch-y">change of base &mdash; $\displaystyle \frac{1}{\ln a}$ is a number out front</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle y' = \frac{1}{\ln a}\cdot\frac{1}{x} = \frac{1}{x\ln a}$</span><span class="ch-y">constant multiple; no Quotient Rule</span></div>
+    <button type="button" class="more" aria-label="Next step of the logarithm">&#9654;</button>
+  </div>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; Two consequences, not two new rules</span><div class="dm">$$\frac{d}{dx}\,a^{x} = a^{x}\ln a \qquad\qquad
+\frac{d}{dx}\,\log_a x = \frac{1}{x\ln a}$$</div></div>
+  <div class="key"><p><strong>Both carry $\displaystyle \ln a$ &mdash; exponentials multiply by it,
+logarithms divide by it.</strong> Base $\displaystyle e$ makes $\displaystyle \ln a = 1$ and both collapse to what
+you already knew, which is why $\displaystyle e$ is the convenient base.</p></div>
+  <div class="key"><p><strong>Keep the shortcut, keep the rewrite.</strong> After about five of
+these you will stop rewriting and just use the rules &mdash; that is fine and
+expected. What matters is that you can <strong>rebuild</strong> them in two lines,
+because the final asks you to do exactly that for $\displaystyle a^{x}$, and because the
+next frame is the case where <em>neither</em> rule applies.</p></div>
+</section>
+<section class="beat" aria-label="Expand Before You Differentiate" data-source-line="259">
+  <h2>Expand Before You Differentiate</h2>
+<p>The Chain and Quotient Rules will grind through a messy logarithm. The log laws
+make most of that work disappear <strong>before</strong> you start.</p>
+  <div class="key"><p>Inside a logarithm, products become sums, quotients become
+differences, and exponents come out front:</p>
+<div class="dm">$$\ln(AB) = \ln A + \ln B \qquad
+\ln\!\frac{A}{B} = \ln A - \ln B \qquad
+\ln\!\left(A^{n}\right) = n\ln A$$</div></div>
+  <div class="turn my"><span class="badge">My turn</span><p>Watch how much work that saves.</p></div>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">expand first, then differentiate term by term</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle y = \ln\!\left(\frac{\left(2x+3\right)^{5}}{\sqrt{x^{4}+1}}\right)$</span><span class="ch-y">as given &mdash; a quotient, a power and a root, all inside one log</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle y = \ln\!\left(\frac{\left(2x+3\right)^{5}}{\left(x^{4}+1\right)^{1/2}}\right)$</span><span class="ch-y">before any law: a square root <strong>is</strong> the power $\displaystyle \tfrac12$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle y = \ln\!\left(\left(2x+3\right)^{5}\right) - \ln\!\left(\left(x^{4}+1\right)^{1/2}\right)$</span><span class="ch-y">$\displaystyle \ln\!\frac{A}{B} = \ln A - \ln B$, with $\displaystyle A = \left(2x+3\right)^{5}$ and $\displaystyle B = \left(x^{4}+1\right)^{1/2}$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle y = 5\ln\left(2x+3\right) - \tfrac12\ln\left(x^{4}+1\right)$</span><span class="ch-y">$\displaystyle \ln\!\left(A^{n}\right) = n\ln A$ on <strong>each</strong> term &mdash; the $\displaystyle 5$ and the $\displaystyle \tfrac12$ come out front</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle y' = 5\cdot\frac{2}{2x+3} - \tfrac12\cdot\frac{4x^{3}}{x^{4}+1}$</span><span class="ch-y">now differentiate: two easy Chain Rules, no Quotient Rule anywhere</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle y' = \frac{10}{2x+3} - \frac{2x^{3}}{x^{4}+1}$</span><span class="ch-y">tidy</span></div>
+    <button type="button" class="more" aria-label="Next step of expand first, then differentiate term by term">&#9654;</button>
+  </div>
+  <div class="key"><p><strong>Expanding is not optional tidying &mdash; it is the method.</strong>
+Differentiating that quotient directly is a Quotient Rule with a Chain Rule in
+each piece, for the same answer and five times the algebra.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Differentiate $\displaystyle y = \ln\!\left(\ln x\right)$.</p></div>
+  <details class="sol"><summary>Show: no law applies &mdash; so it is just the Chain Rule</summary>
+<p>Outside $\displaystyle \ln(\;)$, inside $\displaystyle \ln x$:</p>
+<div class="dm">$$y' = \frac{1}{\ln x}\cdot\frac{1}{x} = \frac{1}{x\ln x}$$</div>
+  </details>
+  <div class="key"><p>The laws expand a log <strong>of a product, quotient or power</strong>. A log
+<strong>of a log</strong> is none of those &mdash; there is nothing to expand, so it is an
+ordinary composite.</p></div>
+</section>
+<section class="beat" aria-label="Take the Log of Both Sides" data-source-line="316">
+  <h2>Take the Log of Both Sides</h2>
+<p>If the logs make a messy function easy, put one there on purpose.</p>
+  <div class="key"><p><strong>Logarithmic differentiation.</strong> Take $\displaystyle \ln$ of both sides,
+expand with the laws, differentiate <strong>implicitly</strong>, then solve for $\displaystyle y'$
+and put $\displaystyle y$ back.</p></div>
+  <div class="turn my"><span class="badge">My turn</span><p>A product of three awkward factors.</p></div>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">log both sides, expand, differentiate, solve</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle y = \frac{x^{3}\sqrt{x^{2}+1}}{\left(3x+2\right)^{5}}$</span><span class="ch-y">Quotient, Product and Chain all at once &mdash; or</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \ln y = 3\ln x + \tfrac12\ln\left(x^{2}+1\right) - 5\ln\left(3x+2\right)$</span><span class="ch-y">take $\displaystyle \ln$ of both sides and expand</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{1}{y}\,\frac{dy}{dx} = \frac{3}{x} + \frac{x}{x^{2}+1} - \frac{15}{3x+2}$</span><span class="ch-y">differentiate both sides &mdash; the left needs the Chain Rule, and that is where $\displaystyle \frac1y$ comes from</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{dy}{dx} = y\left(\frac{3}{x} + \frac{x}{x^{2}+1} - \frac{15}{3x+2}\right)$</span><span class="ch-y">multiply by y</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{dy}{dx} = \frac{x^{3}\sqrt{x^{2}+1}}{\left(3x+2\right)^{5}}\left(\frac{3}{x} + \frac{x}{x^{2}+1} - \frac{15}{3x+2}\right)$</span><span class="ch-y">put the original $\displaystyle y$ back</span></div>
+    <button type="button" class="more" aria-label="Next step of log both sides, expand, differentiate, solve">&#9654;</button>
+  </div>
+<span style="display:block;height:0.4em"></span>
+  <div class="turn your"><span class="badge">Your turn</span><p>Now one the old rules <strong>cannot</strong> touch: $\displaystyle y = x^{x}$, for $\displaystyle x>0$.</p></div>
+  <details class="sol"><summary>Show: neither a power nor an exponential &mdash; both move</summary>
+<p>$\displaystyle x^{n}$ has a constant exponent and $\displaystyle a^{x}$ a constant base. Here
+<strong>neither</strong> is constant, so no rule you own applies. Take logs:</p>
+<div class="dm">$$\ln y = x\ln x
+\qquad\Longrightarrow\qquad
+\frac{1}{y}\,\frac{dy}{dx} = \ln x + x\cdot\frac1x = \ln x + 1$$</div>
+<div class="dm">$$\frac{dy}{dx} = x^{x}\left(\ln x + 1\right)$$</div>
+  </details>
+</section>
+<section class="beat" aria-label="Inverse Trig Functions" data-source-line="401">
+  <h2>Inverse Trig Functions</h2>
+<p>A reminder, not a re-teach. Each one takes a number and hands back an
+<strong>angle</strong>.</p>
+<div class="cols">
+<div class="grid-item"><strong>$\displaystyle \theta = \arcsin t$</strong><p>means $\displaystyle t = \sin\theta$,  with $\displaystyle -\frac{\pi}{2}\le\theta\le\frac{\pi}{2}$</p></div>
+<div class="grid-item"><strong>$\displaystyle \theta = \arccos t$</strong><p>means $\displaystyle t = \cos\theta$,  with $\displaystyle 0\le\theta\le\pi$</p></div>
+<div class="grid-item"><strong>$\displaystyle \theta = \arctan t$</strong><p>means $\displaystyle t = \tan\theta$,  with $\displaystyle -\frac{\pi}{2} \lt \theta \lt \frac{\pi}{2}$</p></div>
+</div>
+  <div class="key"><p><strong>$\displaystyle \arctan t$ is the angle whose tangent is $\displaystyle t$</strong>, and the
+other two read the same way. The range says <em>which</em> such angle, because
+there are infinitely many &mdash; and each one answers from <strong>half the
+circle</strong>.</p></div>
+  <figure style="width:60%"><button type="button" class="zoom" data-src="figures/inv_ranges.png" aria-label="Enlarge figure"><img src="figures/inv_ranges.png" alt="Three unit circles. For arcsin the right half is
+     highlighted, for arccos the top half, and for arctan the right half with
+     open circles at both ends because the tangent is undefined
+     there."></button></figure>
+  <div class="key"><p>Reading it backwards is what we need next: $\displaystyle \theta = \arctan t$
+<em>means</em> $\displaystyle \tan\theta = t$.  If any of this is shaky, the
+<strong>Trig Review</strong> page in Canvas has the whole thing with practice.</p></div>
+</section>
+<section class="beat" aria-label="The Derivative of $\arctan$" data-source-line="438">
+  <h2>The Derivative of $\arctan$</h2>
+<p>This is how the inverse trig derivatives are found. Undo the inverse first.</p>
+  <div class="turn my"><span class="badge">My turn</span><p>Derive $\displaystyle \frac{d}{dx}\arctan x$.</p></div>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">rewrite, differentiate, convert</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle y = \arctan x$</span><span class="ch-y">the thing we want</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \tan y = x$</span><span class="ch-y"><strong>rewrite</strong> &mdash; no inverse left in it</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \sec^{2}y\;\frac{dy}{dx} = 1$</span><span class="ch-y"><strong>differentiate</strong> both sides</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{dy}{dx} = \frac{1}{\sec^{2}y}$</span><span class="ch-y">solve &mdash; but this is still in $\displaystyle y$, so it is not an answer</span></div>
+    <button type="button" class="more" aria-label="Next step of rewrite, differentiate, convert">&#9654;</button>
+  </div>
+<span style="display:block;height:0.4em"></span>
+  <div class="key"><p><strong>Draw the triangle.</strong> $\displaystyle \tan y = x$ means
+$\displaystyle \frac{\text{opp}}{\text{adj}} = \frac{x}{1}$ &mdash; so label the opposite side
+$\displaystyle x$ and the adjacent side $\displaystyle 1$, and Pythagoras fills in the hypotenuse. Now
+read whatever you need straight off it. <strong>No identity to remember.</strong></p></div>
+  <figure style="width:34%"><button type="button" class="zoom" data-src="figures/tri_arctan.png" aria-label="Enlarge figure"><img src="figures/tri_arctan.png" alt="A right triangle for tan y equals x. The angle y has
+     opposite side x and adjacent side one, so the hypotenuse is the square
+     root of one plus x squared, and secant y, hypotenuse over adjacent, is
+     that square root."></button></figure>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">and now finish it</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle \sec y = \frac{\text{hyp}}{\text{adj}} = \frac{\sqrt{1+x^{2}}}{1}$</span><span class="ch-y">read off the left-hand triangle</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \sec^{2}y = 1+x^{2}$</span><span class="ch-y">square it</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{dy}{dx} = \frac{1}{1+x^{2}}$</span><span class="ch-y">substitute &mdash; and there is no $\displaystyle y$ left</span></div>
+    <button type="button" class="more" aria-label="Next step of and now finish it">&#9654;</button>
+  </div>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; Derivative of the arctangent</span><div class="dm">$$\frac{d}{dx}\arctan x = \frac{1}{1+x^{2}}$$</div></div>
+<span style="display:block;height:1em"></span>
+  <div class="turn your"><span class="badge">Your turn</span><p>Now derive $\displaystyle \frac{d}{dx}\arcsin x$ the same way. <strong>Draw your
+own triangle</strong> for $\displaystyle \sin y = x$ first &mdash; which side is $\displaystyle x$, and which side is
+$\displaystyle 1$?</p></div>
+  <details class="sol"><summary>Show: the triangle you should have drawn</summary>
+<p>$\displaystyle \sin y = \frac{\text{opp}}{\text{hyp}} = \frac{x}{1}$ &mdash; so this time $\displaystyle x$ is
+the <strong>opposite</strong> side and $\displaystyle 1$ is the <strong>hypotenuse</strong>, and Pythagoras
+fills in the adjacent side.
+<figure style="width:34%"><button type="button" class="zoom" data-src="figures/tri_arcsin.png" aria-label="Enlarge figure"><img src="figures/tri_arcsin.png" alt="A right triangle for sine y equals x. The angle y has
+     opposite side x and hypotenuse one, so the adjacent side is the square
+     root of one minus x squared, and cosine y, adjacent over hypotenuse, is
+     that square root."></button></figure></p>
+  </details>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">rewrite, differentiate, read it off the triangle</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle y = \arcsin x$</span><span class="ch-y">the thing we want</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \sin y = x = \frac{x}{1}$</span><span class="ch-y"><strong>rewrite</strong> &mdash; opposite $\displaystyle x$, hypotenuse $\displaystyle 1$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \cos y\;\frac{dy}{dx} = 1 \qquad\Longrightarrow\qquad \frac{dy}{dx} = \frac{1}{\cos y}$</span><span class="ch-y"><strong>differentiate</strong> both sides, then solve</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \cos y = \frac{\text{adj}}{\text{hyp}} = \frac{\sqrt{1-x^{2}}}{1}$</span><span class="ch-y">Pythagoras gave the adjacent side &mdash; read it off</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \frac{dy}{dx} = \frac{1}{\sqrt{1-x^{2}}}$</span><span class="ch-y">substitute</span></div>
+    <button type="button" class="more" aria-label="Next step of rewrite, differentiate, read it off the triangle">&#9654;</button>
+  </div>
+  <div class="key"><p><strong>Rewrite</strong>, <strong>differentiate</strong>, <strong>convert</strong>. The
+last one gets skipped &mdash; an answer still in $\displaystyle y$ is not finished, and the
+triangle is the fastest way to finish it.</p></div>
+<span style="display:block;height:0.4em"></span>
+<p>You have now derived two of the six. Here is the whole set &mdash; look at how
+it is arranged before you reach for a pen.</p>
+<div class="dm">$$\begin{array}{ll|l}
+\frac{d}{dx}\arcsin x = \dfrac{1}{\sqrt{1-x^{2}}} &
+\frac{d}{dx}\arctan x = \dfrac{1}{1+x^{2}} &
+\text{memorize these two} \\[16pt]
+\frac{d}{dx}\arccos x = -\dfrac{1}{\sqrt{1-x^{2}}} &
+\frac{d}{dx}\mathrm{arccot}\,x = -\dfrac{1}{1+x^{2}} &
+\text{the one above, with a minus} \\[16pt]
+\frac{d}{dx}\mathrm{arcsec}\,x = \dfrac{1}{|x|\sqrt{x^{2}-1}} &
+\frac{d}{dx}\mathrm{arccsc}\,x = -\dfrac{1}{|x|\sqrt{x^{2}-1}} &
+\text{reference only}
+\end{array}$$</div>
+  <div class="key"><p><strong>Memorize two.</strong> $\displaystyle \arcsin$ and $\displaystyle \arctan$ &mdash; the top row. That
+is the entire memorization load for this section.</p></div>
+  <div class="key"><p><strong>The middle row is free, and here is why.</strong> The “co”
+functions are <strong>complementary</strong>:</p>
+<div class="dm">$$\arcsin x + \arccos x = \frac{\pi}{2}
+\qquad\qquad
+\arctan x + \mathrm{arccot}\, x = \frac{\pi}{2}$$</div>
+<p>Differentiate <strong>both sides</strong> of either one. The right side is a
+<strong>constant</strong>, so its derivative is $\displaystyle 0$:</p>
+<div class="dm">$$\frac{d}{dx}\arcsin x + \frac{d}{dx}\arccos x = 0
+\qquad\Longrightarrow\qquad
+\frac{d}{dx}\arccos x = -\frac{d}{dx}\arcsin x$$</div>
+<p>That is the whole derivation. You do not learn the “co” derivatives &mdash; you
+<strong>flip the sign</strong> of the one above it.</p></div>
+  <div class="key"><p><strong>The bottom row you do not learn at all.</strong> $\displaystyle \mathrm{arcsec}$
+and $\displaystyle \mathrm{arccsc}$ are in Stewart and on <strong>Look It Up</strong>; this course
+never asks for them. The triangle still builds them if you ever need one.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Now <em>use</em> them. Differentiate.</p>
+<div class="dm">$$\text{(a)}\;\; y = \arcsin\!\left(x^{3}\right)
+\qquad\qquad
+\text{(b)}\;\; y = x\arctan x$$</div></div>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">(a) a chain &mdash; outside first, then the inside</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle y = \arcsin\!\left(x^{3}\right)$</span><span class="ch-y">outside is $\displaystyle \arcsin$, inside is $\displaystyle x^{3}$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle y' = \frac{1}{\sqrt{1-\left(x^{3}\right)^{2}}}\cdot\frac{d}{dx}\left[\,x^{3}\,\right]$</span><span class="ch-y">the $\displaystyle \arcsin$ rule <strong>evaluated at the inside</strong>, times the inside's derivative</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle y' = \frac{3x^{2}}{\sqrt{1-x^{6}}}$</span><span class="ch-y">tidy &mdash; $\displaystyle \left(x^{3}\right)^{2} = x^{6}$</span></div>
+    <button type="button" class="more" aria-label="Next step of (a) a chain &mdash; outside first, then the inside">&#9654;</button>
+  </div>
+<span style="display:block;height:0.4em"></span>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">(b) a product, with $\displaystyle \arctan$ as one factor</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle y = x\arctan x$</span><span class="ch-y">$\displaystyle f = x$,  $\displaystyle g = \arctan x$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle y' = \frac{d}{dx}\left[\,x\,\right]\arctan x + x\,\frac{d}{dx}\left[\,\arctan x\,\right]$</span><span class="ch-y">Product Rule written out first</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle y' = \arctan x + \frac{x}{1+x^{2}}$</span><span class="ch-y">and $\displaystyle \frac{d}{dx}\arctan x = \frac{1}{1+x^{2}}$</span></div>
+    <button type="button" class="more" aria-label="Next step of (b) a product, with $\displaystyle \arctan$ as one factor">&#9654;</button>
+  </div>
+  <div class="key"><p>Nothing new &mdash; that is §3.2 and §3.4. The only thing inverse trig
+adds is <strong>which formula goes on the outside</strong>. Notice (b) does
+<strong>not</strong> simplify: $\displaystyle \arctan x$ and a rational function do not combine.</p></div>
+</section>
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="607">
+  <h2>What You Should Be Able to Do</h2>
+<ul><li>Say whether something is $\displaystyle x^{n}$ or $\displaystyle a^{x}$ &mdash; <strong>which letter is
+      moving</strong> &mdash; before choosing a rule.</li><li>Differentiate $\displaystyle a^{x}$ and $\displaystyle \log_a x$, keeping the $\displaystyle \ln a$: exponentials
+      <strong>multiply</strong> by it, logarithms <strong>divide</strong> by it.</li><li><strong>Derive</strong> $\displaystyle \frac{d}{dx}a^{x}$ by rewriting $\displaystyle a^{x}=e^{\,x\ln a}$,
+      and $\displaystyle \frac{d}{dx}\ln x$ by differentiating $\displaystyle e^{y}=x$ implicitly.</li><li><strong>Expand first</strong>: inside a log, products, quotients and exponents
+      all come apart before you differentiate.</li><li>Use <strong>logarithmic differentiation</strong> on an ugly product or quotient,
+      and on a variable power like $\displaystyle x^{x}$.</li><li>Say what $\displaystyle \arcsin$, $\displaystyle \arccos$ and $\displaystyle \arctan$ <strong>return</strong> &mdash; an
+      angle, from half the circle.</li><li><strong>Derive</strong> $\displaystyle \frac{d}{dx}\arctan x$ and $\displaystyle \frac{d}{dx}\arcsin x$ by
+      rewriting, differentiating and reading the triangle.</li><li>Differentiate $\displaystyle \arcsin$ and $\displaystyle \arctan$ <strong>inside</strong> a chain or a
+      product &mdash; memorizing only those two.</li></ul>
+  <div class="key"><p>Every elementary function now has a derivative rule. §3.9 stops
+asking for new rules and starts asking what they are <em>for</em>.</p></div>
+  <p class="practicelink"><a href="https://datascienceuwl.github.io/MTH207/extra-practice/#day25" target="_blank" rel="noopener">More practice for this day &rarr;</a></p>
+</section>
+</main>
+<p class="hint">8 sections &middot; solutions open on click</p>
+<dialog class="lb" aria-label="Enlarged figure">
+  <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
+</dialog>
+<script>
+// Editor scroll-sync. Same protocol the filled/blank builds use, so the editor
+// side needs no new message types: we post htmlSectionChanged as the reader
+// scrolls, and honour goToSection when the cursor moves in the tex.
+(function(){
+  if(!window.parent || window.parent===window) return;
+  var secs=document.querySelectorAll('main > section[data-source-line]');
+  if(!secs.length) return;
+  var cur=null, t=null;
+  function report(){
+    // the section covering 30% down the viewport -- the one being read, not
+    // the one clipped at the top edge
+    var mark=window.innerHeight*0.3, best=null;
+    for(var i=0;i<secs.length;i++){
+      var r=secs[i].getBoundingClientRect();
+      if(r.top<=mark && r.bottom>0) best=secs[i];
+    }
+    if(!best) return;
+    var line=parseInt(best.dataset.sourceLine,10);
+    if(!isNaN(line) && line!==cur){
+      cur=line;
+      window.parent.postMessage({type:'htmlSectionChanged',sourceLine:line},'*');
+    }
+  }
+  addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(report,80);},
+                   {passive:true});
+  addEventListener('message',function(e){
+    if(!e.data || e.data.type!=='goToSection' || e.data.sourceLine==null) return;
+    // nearest section at or before the cursor: a cursor inside a frame should
+    // scroll to that frame, not fail to match its exact opening line
+    var best=null;
+    for(var i=0;i<secs.length;i++){
+      if(parseInt(secs[i].dataset.sourceLine,10)<=e.data.sourceLine) best=secs[i];
+    }
+    if(best){ cur=parseInt(best.dataset.sourceLine,10);
+              best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+// ── Advancing the page ────────────────────────────────────────────────────
+// One action, whether it arrives from a block's own arrow or from a key. A
+// presentation remote is just a USB keyboard sending Right/PageDown, so making
+// the page respond to those keys is all a clicker needs -- no pairing, no app.
+//
+// The order is document order within the section you are looking at: chain
+// rows, step lines and closed reveals alike. When a section has nothing left
+// hidden, the next press moves to the next section. That is the slide feel,
+// on a scrolling page.
+(function(){
+  function units(sec){
+    return [].slice.call(sec.querySelectorAll('.rv, .stp, details.sol'));
+  }
+  function covered(u){
+    return u.tagName === 'DETAILS' ? !u.open : u.hidden;
+  }
+  function uncover(u, yes){
+    if(u.tagName === 'DETAILS'){ u.open = yes; } else { u.hidden = !yes; }
+    pair(u, yes);
+  }
+  // Anything marked .pair in the same chain row rides with it.
+  function pair(u, yes){
+    var row = u.closest ? u.closest('.ch-row') : null;
+    if(!row) return;
+    [].forEach.call(row.querySelectorAll('.pair'), function(p){ p.hidden = !yes; });
+  }
+  function tidy(sec){
+    // a block's arrow retires once that block has nothing left to give
+    [].forEach.call(sec.querySelectorAll('.steps, .chain'), function(box){
+      var b = box.querySelector('button.more');
+      if(b) b.hidden = !box.querySelector('.rv[hidden], .stp[hidden]');
+    });
+  }
+  function sections(){
+    return [].slice.call(document.querySelectorAll('main > section.beat'));
+  }
+  function here(){
+    var mark = window.innerHeight * 0.3, best = null;
+    sections().forEach(function(s){
+      var r = s.getBoundingClientRect();
+      if(r.top <= mark && r.bottom > 0) best = s;
+    });
+    return best || sections()[0];
+  }
+  function go(sec, d){
+    var all = sections(), i = all.indexOf(sec) + d;
+    if(i >= 0 && i < all.length) all[i].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.__advance = function(d){
+    var sec = here();
+    if(!sec) return;
+    var us = units(sec);
+    if(d > 0){
+      for(var i = 0; i < us.length; i++){
+        if(covered(us[i])){
+          uncover(us[i], true); tidy(sec);
+          us[i].scrollIntoView({block:'nearest'});
+          return;
+        }
+      }
+      go(sec, 1);
+    } else {
+      for(var j = us.length - 1; j >= 0; j--){
+        if(!covered(us[j])){ uncover(us[j], false); tidy(sec); return; }
+      }
+      go(sec, -1);
+    }
+  };
+  var FWD = {ArrowRight:1, ArrowDown:1, PageDown:1, ' ':1, Enter:1, Spacebar:1};
+  var BACK = {ArrowLeft:1, ArrowUp:1, PageUp:1, Backspace:1};
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    // let a focused control have its own keys
+    var t = e.target;
+    if(t && t.closest && t.closest('button, a, summary, input, textarea, dialog')) return;
+    if(FWD[e.key]){ e.preventDefault(); window.__advance(1); }
+    else if(BACK[e.key]){ e.preventDefault(); window.__advance(-1); }
+  });
+
+  // Reveal-all. Drives the same uncover() every other control uses, so a page
+  // opened this way ends in exactly the state stepping through would leave it.
+  var ra = document.querySelector('.revealall');
+  if(ra) ra.addEventListener('click', function(){
+    var on = ra.getAttribute('aria-pressed') === 'true';
+    [].forEach.call(sections(), function(sec){
+      units(sec).forEach(function(u){ uncover(u, !on); });
+      tidy(sec);
+    });
+    ra.setAttribute('aria-pressed', on ? 'false' : 'true');
+    ra.textContent = on ? 'Reveal all answers' : 'Hide all answers';
+  });
+})();
+
+// One button per derivation: each press uncovers the next line.
+(function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.steps > button.more, .chain > button.more, details.sol > button.more');
+    if(!b) return;
+    var box=b.parentElement;
+    // .rv marks a revealable unit: a whole step block, a chain row, or the
+    // right-hand side of the chain's first row. One selector covers all three.
+    var next=box.querySelector('.rv[hidden], .stp[hidden]');
+    if(next){
+      next.hidden=false;
+      // its citation, if it has one, arrives on the same press
+      var row=next.closest?next.closest('.ch-row'):null;
+      if(row) [].forEach.call(row.querySelectorAll('.pair'),
+                              function(p){ p.hidden=false; });
+    }
+    if(!box.querySelector('.rv[hidden], .stp[hidden]')) b.hidden=true;
+  });
+})();
+(function(){
+  var dlg=document.querySelector('dialog.lb'), img=dlg.querySelector('img');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button.zoom');
+    if(b){ img.src=b.dataset.src;
+           img.alt=b.querySelector('img').alt;   // carry the real alt text over
+           dlg.showModal(); return; }
+    if(e.target.closest('dialog.lb .close') || e.target===dlg) dlg.close();
+  });
+  dlg.addEventListener('close',function(){ img.removeAttribute('src'); });
+})();
+</script>
+</body></html>
