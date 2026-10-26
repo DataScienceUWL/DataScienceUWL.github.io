@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTH 207 &mdash; 4.1 Maximum and Minimum Values</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
+  loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
+<script id="MathJax-script" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0;
+  /* Line length, in characters, so it holds at every font size. 46ch was at the
+     narrow end of the readable 45-75 band and left half the width empty. This
+     is the AT-HOME value; the projected build overrides it below, because there
+     the scarce thing is screen area, not eye travel -- the font is already
+     ~30px on a 1920 screen, so a longer line is still easy to scan and buys
+     fewer scroll steps. */
+  --measure:68ch}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  /* Projected on a 1920 screen this lands near 30px, which is legible from the
+     back of the room; on a laptop later it falls back to comfortable reading. */
+  font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
+/* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
+   expose the next thing. Read later: it is just a long page. */
+:root{--measure:88ch}
+main{scroll-snap-type:y proximity}
+.beat{scroll-snap-align:start;min-height:100vh}
+.beat{padding:2.4rem 6vw 3rem;
+  border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
+h1{font-size:1.9rem;margin:0 0 .3rem}
+h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
+h2.cont{color:var(--slate);font-size:1.3rem}
+p{margin:0 0 .9rem;max-width:var(--measure)}
+ul{max-width:var(--measure)}
+.turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
+.turn.my{border-left-color:var(--slate);background:#f6f8fb}
+.badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;background:var(--amber);color:#3a2c00;padding:.32rem .6rem;
+  border-radius:3px;margin-bottom:.7rem}
+.turn.my .badge{background:var(--slate);color:#fff}
+.turn .work{font-size:.85rem;color:var(--slate);font-style:italic;margin:.6rem 0 0}
+.key{border-left:6px solid var(--ink);background:#f2f3f5;padding:.9rem 1.2rem;margin:1.2rem 0}
+.sol.shown{margin:1.1rem 0;border-left:5px solid var(--slate);background:#fff;
+  padding:.7rem 1.1rem;border-radius:0 5px 5px 0}
+.sol-label{display:block;font:600 .78rem/1 system-ui,sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate);margin-bottom:.5rem}
+details.sol{margin:1.1rem 0;border:1px solid var(--rule);border-radius:5px;background:#fff}
+details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-ui,sans-serif;
+  color:var(--slate)}
+details.sol[open] summary{border-bottom:1px solid var(--rule)}
+details.sol > :not(summary){padding:0 1.1rem}
+details.sol > p:last-child{padding-bottom:.9rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;
+  max-width:min(100%, calc(var(--measure) * 1.25))}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;margin:.6rem 0}
+table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--rule);padding:.3rem .9rem .3rem 0;text-align:left}
+th{border-bottom:2px solid var(--ink)}
+.boxed{margin:1.1rem 0;padding:.8rem 1.1rem;border-radius:5px;background:#fff;
+  border:1px solid var(--rule)}
+.boxed.dfn{border-left:5px solid var(--ink)}
+.boxed.thm{border-left:5px solid var(--amber)}
+.boxed.ex{border-left:5px solid var(--slate)}
+.badge.dfn{background:var(--ink);color:#fff}
+.badge.thm{background:var(--amber);color:#3a2c00}
+.ex{margin:1rem 0}
+.workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
+.badge.ex{background:var(--ink);color:#fff}
+.grid-item{margin:0}
+/* A figure is not prose. --measure is a READING measure -- how far the eye
+   travels across a line of text -- and has no business capping a diagram: on a
+   1920 projector it left roughly 370px empty beside every wide plot. So a
+   figure takes the full beat width and centres, and scale=N is now read as a
+   fraction of THAT, still centred, not of the reading measure. An img keeps
+   max-width (not width), so a small figure centres at its natural size instead
+   of being upscaled into blur.
+
+   No height cap: a beat is allowed to be taller than the screen. This is a
+   scrolling document, not a slide -- min-height:100vh is a floor. The
+   "over-tall slide scrolls its title away" rule belongs to the retired reveal
+   decks, which is why deck_check only geometry-checks when _slides.html
+   exists. */
+figure{margin:1.2rem auto;max-width:100%}
+figure img{max-width:100%;height:auto;display:block;margin:0 auto}
+button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
+  border-radius:3px;display:block;max-width:100%}
+button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+dialog.lb{border:none;padding:0;max-width:96vw;max-height:96vh;background:transparent}
+dialog.lb::backdrop{background:rgba(13,27,42,.88)}
+dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
+dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
+  background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem;text-align:center}
+header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
+header.top p{color:var(--slate);margin:.2rem 0 0}
+.dm{margin:.9rem 0;text-align:center}
+/* A derivation advanced by one button. [hidden] needs !important because .stp
+   sets display, which would otherwise win over the UA's hidden rule. */
+/* An equation chain. display:table so the three columns agree across rows --
+   that is the whole point: the = signs must line up. */
+.chain{display:table;margin:1.1rem 0 .4rem;border-collapse:collapse;
+  /* .beat is a column flexbox, which stretches its children to full width --
+     a shrink-to-fit table then became 1408px and the LHS floated to the far
+     right. align-self keeps the table the width of its own contents. */
+  align-self:start}
+.daybreak{display:flex;align-items:center;gap:1rem;margin:2.2rem 0 1.6rem;
+  color:var(--slate);font:600 .8rem/1 system-ui,sans-serif;letter-spacing:.1em;
+  text-transform:uppercase}
+.daybreak::before,.daybreak::after{content:"";flex:1;height:1px;
+  background:var(--rule)}
+.practicelink{margin:1.4rem 0 0}
+.practicelink a{display:inline-block;border:1px solid var(--amber);
+  border-radius:4px;padding:.45rem .9rem;color:var(--ink);text-decoration:none;
+  font:600 .9rem/1 system-ui,sans-serif;background:#fffdf5}
+.practicelink a:hover{background:var(--amber);color:#3a2c00}
+.chain.gen .ch-y{max-width:44ch;padding-left:1.6rem}
+.gc-cap{display:block;margin:0 0 .35rem;font:600 .82rem/1.3 system-ui,sans-serif;
+  letter-spacing:.02em;color:#5b6b7a;text-transform:uppercase}
+.ch-row{display:table-row}
+/* Row spacing. .12rem was fine while every row was one line tall, but a
+   chain whose rows are stacked fractions -- dividing inside a square root,
+   say -- ran them together with nothing to separate one step from the next.
+   These are table cells, so padding is the only lever; margin does nothing. */
+.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.45rem 0}
+.ch-l{text-align:right}
+.ch-e{text-align:center;padding-left:.5rem;padding-right:.5rem}
+.ch-r{text-align:left}
+/* The reason column. Set back and lighter so the algebra still reads as the
+   line and the citation as an annotation on it, not a second equation. */
+.ch-y{text-align:left;padding-left:2.2rem;font-size:.82em;color:#5b6b7a;
+  font-style:italic;max-width:26ch}
+.chain [hidden]{display:none!important}
+@media print{.chain [hidden]{display:table-cell!important}
+  .chain .ch-row[hidden]{display:table-row!important}}
+.steps{margin:1.1rem 0}
+.steps .stp{display:block;margin:.2rem 0}
+.steps [hidden]{display:none!important}
+.chain button.more,
+.steps button.more,
+details.sol button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
+  background:none;border:1px solid var(--amber);border-radius:50%;
+  width:2rem;height:2rem;padding:0;cursor:pointer;margin-top:.5rem;
+  display:inline-flex;align-items:center;justify-content:center}
+.chain button.more:hover,
+.steps button.more:hover,
+details.sol button.more:hover{background:#fff8e2}
+.chain button.more:focus-visible,
+.steps button.more:focus-visible,
+details.sol button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media print{.steps .stp{display:block!important}.steps button.more{display:none}}
+/* The in-page reveal. This used to be a text link to the twin page, and it was
+   missed constantly -- it looked like navigation, because it was. A filled
+   button that says what it does, in the first thing you see, is the fix. */
+/* --slate, not --blue: this palette has no --blue, and an undefined custom
+   property is not an error -- the background simply did not paint and the
+   button was white text on a cream page. Invisible, and working perfectly. */
+.revealall{font:600 1rem system-ui,sans-serif;cursor:pointer;
+  margin:.6rem 0 .2rem;padding:.55rem 1.1rem;border-radius:8px;
+  border:2px solid var(--slate);background:var(--slate);color:#fff}
+.revealall:hover{filter:brightness(1.12)}
+.revealall:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+.revealall[aria-pressed="true"]{background:var(--bg);color:var(--slate)}
+@media print{.revealall{display:none}}
+.switch{margin:.35rem 0 0}
+.switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px}
+.switch a:hover{border-bottom-width:2px}
+.switch a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media print{.switch{display:none}}
+.hint{position:fixed;right:1rem;bottom:1rem;font:.72rem system-ui,sans-serif;color:var(--slate);
+  background:#fff;border:1px solid var(--rule);border-radius:4px;padding:.35rem .6rem;opacity:.75}
+@media print{.beat{min-height:auto;page-break-inside:avoid}.hint{display:none}
+  details.sol{break-inside:avoid}details.sol summary{display:none}}
+</style></head>
+<body>
+<header class="top">
+  <h1>4.1 &nbsp;Maximum and Minimum Values</h1>
+  <p>MTH 207 Calculus I &mdash; Applications of Differentiation</p>
+  <p class="switch"><button class="revealall" type="button" aria-pressed="false">Reveal all answers</button></p>
+</header>
+<main>
+<section class="beat" aria-label="What We Are Actually Looking For" data-source-line="83">
+  <h2>What We Are Actually Looking For</h2>
+<p>Chapter 3 was about <em>computing</em> derivatives. Chapter 4 is about
+<strong>using</strong> them, and the first use is the one every application wants:
+find the biggest or smallest value something can take.</p>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; Absolute and Local Extrema</span><p>Let $\displaystyle c$ be in the domain of $\displaystyle f$.
+<ul><li>$\displaystyle f(c)$ is the <strong>absolute maximum</strong> if $\displaystyle f(c) \geq f(x)$ for
+      <strong>all</strong> $\displaystyle x$ in the domain.</li><li>$\displaystyle f(c)$ is a <strong>local maximum</strong> if $\displaystyle f(c) \geq f(x)$ for all $\displaystyle x$
+      <strong>near</strong> $\displaystyle c$.</li></ul>
+Absolute and local <strong>minimum</strong> are the same with $\displaystyle \leq$.</p></div>
+  <div class="key"><p>The only difference is the range of the comparison: <strong>all
+$\displaystyle x$</strong>, or <strong>$\displaystyle x$ near $\displaystyle c$</strong>. A local maximum is a hilltop; an absolute
+maximum is the highest hilltop &mdash; and it might be the edge of the map
+rather than a hilltop at all.</p></div>
+</section>
+<section class="beat" aria-label="Fermat&#x27;s Theorem: Where an Extremum Can Hide" data-source-line="114">
+  <h2>Fermat&#x27;s Theorem: Where an Extremum Can Hide</h2>
+<p>Searching every $\displaystyle x$ is hopeless &mdash; there are infinitely many. Calculus
+narrows the search to a handful.</p>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; Fermat's Theorem</span><p>If $\displaystyle f$ has a local maximum or minimum at $\displaystyle c$, <strong>and</strong> $\displaystyle f'(c)$ exists,
+then</p>
+<div class="dm">$$f'(c) = 0.$$</div></div>
+  <div class="turn my"><span class="badge">My turn</span><p>Why must the tangent be flat at a hilltop?
+<span style="display:block;height:0.3em"></span>
+Watch the argument once &mdash; it is one sentence about signs.</p></div>
+  <details class="sol"><summary>Show: the argument, in signs</summary>
+<p>Suppose $\displaystyle f$ has a local max at $\displaystyle c$. Just to the left the function is still
+climbing or level, and just to the right it is falling or level:</p>
+<div class="dm">$$\text{left of } c:\; \frac{f(x)-f(c)}{x-c} \geq 0,
+  \qquad
+  \text{right of } c:\; \frac{f(x)-f(c)}{x-c} \leq 0$$</div>
+<p>If $\displaystyle f'(c)$ exists, both one-sided limits must equal it. One is
+$\displaystyle \geq 0$ and the other is $\displaystyle \leq 0$, so the only number they can both be is</p>
+<div class="dm">$$f'(c) = 0.$$</div>
+  </details>
+  <div class="key"><p>This is why the derivative is the right tool: it turns “find the
+highest point” into “solve $\displaystyle f'(x)=0$” &mdash; an <strong>equation</strong>, which is
+something algebra can do.</p></div>
+</section>
+<section class="beat" aria-label="Fermat Runs One Way" data-source-line="153">
+  <h2>Fermat Runs One Way</h2>
+<p>Fermat says: <em>extremum $\displaystyle \Rightarrow$ flat tangent</em>. Students read it
+backwards &mdash; <em>flat tangent $\displaystyle \Rightarrow$ extremum</em> &mdash; and that
+statement is <strong>false</strong>.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Two questions, no computation needed.
+<ol><li>$\displaystyle f(x)=x^{3}$ has $\displaystyle f'(0)=0$. Does $\displaystyle f$ have a local max or min at $\displaystyle 0$?</li><li>$\displaystyle f(x)=|x|$ has a local minimum at $\displaystyle 0$. What is $\displaystyle f'(0)$?</li></ol></p></div>
+  <details class="sol"><summary>Show: both answers, in one picture</summary>
+<figure><button type="button" class="zoom" data-src="figures/critical_candidates.png" aria-label="Enlarge figure"><img src="figures/critical_candidates.png" alt="Two panels. On the left, y equals x cubed with its
+     horizontal tangent at the origin; the curve passes straight through and
+     keeps rising, so there is no local maximum or minimum. On the right,
+     y equals the absolute value of x, which has a sharp corner at the
+     origin: a local minimum at a point where no tangent line
+     exists."></button></figure>
+    <div class="rv" hidden><p><strong>1.</strong> No. $\displaystyle f'(0)=0$ and the curve goes straight through &mdash; flat is not
+the same as turning around.</p></div>
+    <div class="rv" hidden><p><strong>2.</strong> $\displaystyle f'(0)$ <strong>does not exist</strong>. The corner has no single tangent
+line, so Fermat's hypothesis fails and Fermat says nothing at all.</p></div>
+    <button type="button" class="more" aria-label="Next part of both answers, in one picture">&#9654;</button>
+  </details>
+  <div class="key"><p>So $\displaystyle f'(c)=0$ makes $\displaystyle c$ a <strong>candidate</strong>, never a conclusion &mdash;
+and an extremum can sit where $\displaystyle f'$ does not exist, which Fermat never
+promised to find. Both gaps are why the next definition is written the way
+it is.</p></div>
+</section>
+<section class="beat" aria-label="Critical Numbers: the Candidate List" data-source-line="196">
+  <h2>Critical Numbers: the Candidate List</h2>
+<p>Both gaps go into the definition, which is why it has two clauses.</p>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; Critical Number</span><p>A <strong>critical number</strong> of $\displaystyle f$ is a number $\displaystyle c$ <strong>in the domain of
+$\displaystyle f$</strong> such that either</p>
+<div class="dm">$$f'(c) = 0 \qquad\text{or}\qquad f'(c) \text{ does not exist.}$$</div></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Find all critical numbers of $\displaystyle f(x) = x^{3} - 6x^{2} + 5$.</p></div>
+  <details class="sol"><summary>Show: differentiate, then solve</summary>
+<div class="dm">$$f'(x) = 3x^{2} - 12x$$</div>
+<p>$\displaystyle f'$ is a polynomial, so it exists everywhere &mdash; only the first clause can
+fire:</p>
+<div class="dm">$$3x^{2} - 12x = 0$$</div>
+<div class="dm">$$3x\left(x - 4\right) = 0$$</div>
+<div class="dm">$$c = 0 \quad\text{and}\quad c = 4$$</div>
+  </details>
+  <div class="turn your"><span class="badge">Your turn</span><p>Now $\displaystyle g(x) = \dfrac{x}{x^{2}+1}$.</p></div>
+  <details class="sol"><summary>Show: Quotient Rule, then set the numerator to zero</summary>
+<div class="dm">$$g'(x) = \frac{\left(x^{2}+1\right)\left(1\right) - x\left(2x\right)}
+               {\left(x^{2}+1\right)^{2}}
+        = \frac{1 - x^{2}}{\left(x^{2}+1\right)^{2}}$$</div>
+<p>A fraction is zero exactly when its <strong>numerator</strong> is zero:</p>
+<div class="dm">$$1 - x^{2} = 0 \quad\Longrightarrow\quad c = -1,\; 1$$</div>
+<p>The denominator is never zero, so $\displaystyle g'$ exists everywhere and there is nothing
+from the second clause.</p>
+  </details>
+</section>
+<section class="beat" aria-label="Where the Derivative Fails to Exist" data-source-line="237">
+  <h2>Where the Derivative Fails to Exist</h2>
+<p>The second clause is the one the homework hides problems in, and it is the
+one students skip.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Find all critical numbers of $\displaystyle h(x) = \left(x-1\right)^{2/3}$.</p></div>
+  <details class="sol"><summary>Show: the derivative is never zero &mdash; so look at the other clause</summary>
+<div class="dm">$$h'(x) = \tfrac{2}{3}\left(x-1\right)^{-1/3}
+        = \frac{2}{3\sqrt[3]{x-1}}$$</div>
+<p>Set it to zero: a fraction with numerator $\displaystyle 2$ is <strong>never</strong> zero, so the
+first clause gives nothing.
+<span style="display:block;height:0.4em"></span>
+Now the second clause. $\displaystyle h'(x)$ is undefined at $\displaystyle x = 1$, and $\displaystyle x = 1$
+<strong>is in the domain of $\displaystyle h$</strong> &mdash; $\displaystyle h(1) = 0$. So</p>
+<div class="dm">$$c = 1$$</div>
+<p>is a critical number, and it is the only one.</p>
+  </details>
+  <div class="key"><p>Two things have to be true: $\displaystyle f'(c)$ fails to exist, <strong>and</strong>
+$\displaystyle c$ is in the domain of $\displaystyle f$. A point where the <em>function</em> is undefined
+is not a critical number &mdash; there is no value there to be a maximum.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Quick check: does $\displaystyle k(x) = \dfrac{1}{x}$ have a critical number at
+$\displaystyle 0$?</p></div>
+  <details class="sol"><summary>Show: no &mdash; and the reason is the domain, not the derivative</summary>
+<p>$\displaystyle k'(x) = -\dfrac{1}{x^{2}}$ is never zero, and it fails to exist at $\displaystyle x=0$ &mdash;
+but $\displaystyle k(0)$ is undefined, so $\displaystyle 0$ is <strong>not in the domain</strong> and cannot be a
+critical number. $\displaystyle k$ has no critical numbers at all.</p>
+  </details>
+</section>
+<section class="beat" aria-label="Does a Maximum Even Exist?" data-source-line="278">
+  <h2>Does a Maximum Even Exist?</h2>
+<p>Yesterday we built a candidate list. Today we use it &mdash; but first, a
+question worth asking before any search: is there anything to find?</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Does $\displaystyle f(x) = x$ have an absolute maximum on the interval
+$\displaystyle (0,1)$? On $\displaystyle [0,1]$?</p></div>
+  <details class="sol"><summary>Show: the first has none, and the reason is the missing endpoint</summary>
+<figure><button type="button" class="zoom" data-src="figures/evt_hypotheses.png" aria-label="Enlarge figure"><img src="figures/evt_hypotheses.png" alt="Two panels. On the left, the line y equals x drawn over
+     the open interval from 0 to 1, with hollow circles at both ends: the
+     values climb toward 1 but never reach it, so there is no absolute
+     maximum. On the right, a function on the closed interval from 0 to 1
+     that jumps downward partway across, so although the interval is closed
+     the function attains no maximum either."></button></figure>
+    <div class="rv" hidden><p>On $\displaystyle (0,1)$ the values climb toward $\displaystyle 1$ and never reach it &mdash; for any $\displaystyle x$ you
+pick, $\displaystyle \frac{x+1}{2}$ is bigger. <strong>No absolute maximum exists.</strong>
+<span style="display:block;height:0.4em"></span>
+On $\displaystyle [0,1]$ the endpoint is included, so the maximum is $\displaystyle f(1)=1$.</p></div>
+    <button type="button" class="more" aria-label="Next part of the first has none, and the reason is the missing endpoint">&#9654;</button>
+  </details>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; The Extreme Value Theorem</span><p>If $\displaystyle f$ is <strong>continuous</strong> on a <strong>closed, bounded</strong> interval
+$\displaystyle [a,b]$, then $\displaystyle f$ attains an absolute maximum and an absolute minimum
+somewhere on $\displaystyle [a,b]$.</p></div>
+  <div class="key"><p>Both hypotheses do real work, and the right-hand picture is the
+other failure: <strong>closed but discontinuous</strong>, and again nothing is
+attained. Drop <em>closed</em> or drop <em>continuous</em> and the guarantee is
+gone.</p></div>
+</section>
+<section class="beat" aria-label="The Closed Interval Method" data-source-line="322">
+  <h2>The Closed Interval Method</h2>
+<p>The EVT says the answer exists. Fermat says it is at a critical number &mdash;
+<em>or</em> at an endpoint, which Fermat never covered because Fermat is about
+interior points. So check both.</p>
+  <div class="key"><p><strong>To find the absolute extrema of a continuous $\displaystyle f$ on
+$\displaystyle [a,b]$:</strong>
+<ol><li>Find the <strong>critical numbers</strong> of $\displaystyle f$ in $\displaystyle (a,b)$.</li><li>Evaluate $\displaystyle f$ at each one, <strong>and at both endpoints</strong> $\displaystyle a$ and $\displaystyle b$.</li><li>The <strong>largest</strong> value on that list is the absolute maximum; the
+      <strong>smallest</strong> is the absolute minimum.</li></ol>
+No derivative test, no graph. It is a finite list and you compare numbers.</p></div>
+  <div class="turn my"><span class="badge">My turn</span><p>Find the absolute maximum and minimum of
+$\displaystyle f(x) = x^{3} - 3x + 1$ on $\displaystyle [0,3]$.
+<span style="display:block;height:0.3em"></span>
+Watch this one. You get the next.</p></div>
+  <details class="sol"><summary>Show: step 1 &mdash; the critical numbers</summary>
+<div class="dm">$$f'(x) = 3x^{2} - 3 = 3\left(x^{2}-1\right) = 3\left(x-1\right)\left(x+1\right)$$</div>
+<div class="dm">$$c = 1 \quad\text{and}\quad c = -1$$</div>
+<p>⚠ $\displaystyle c=-1$ is <strong>not in $\displaystyle [0,3]$</strong>, so it is thrown away. Only $\displaystyle c=1$
+survives.</p>
+  </details>
+  <details class="sol"><summary>Show: step 2 &mdash; evaluate at the survivor and both endpoints</summary>
+<div class="dm">$$f(0) = 0 - 0 + 1 = 1$$</div>
+<div class="dm">$$f(1) = 1 - 3 + 1 = -1$$</div>
+<div class="dm">$$f(3) = 27 - 9 + 1 = 19$$</div>
+  </details>
+  <details class="sol"><summary>Show: step 3 &mdash; compare the three numbers</summary>
+<p>Largest is $\displaystyle 19$, smallest is $\displaystyle -1$:</p>
+<div class="dm">$$\text{absolute max } = 19 \text{ at } x = 3,
+  \qquad
+  \text{absolute min } = -1 \text{ at } x = 1$$</div>
+  </details>
+</section>
+<section class="beat" aria-label="Notice Where the Maximum Was" data-source-line="372">
+  <h2>Notice Where the Maximum Was</h2>
+<p>The maximum was at $\displaystyle x=3$ &mdash; an <strong>endpoint</strong>, where $\displaystyle f'(3) = 24 \neq 0$.</p>
+  <figure style="width:84%"><button type="button" class="zoom" data-src="figures/closed_interval.png" aria-label="Enlarge figure"><img src="figures/closed_interval.png" alt="A cubic drawn on a closed interval. It has a local maximum
+     at an interior critical number and an absolute minimum at another, but
+     the curve rises steeply at the right-hand end so the absolute maximum is
+     at the right endpoint, where the tangent is clearly not
+     horizontal."></button></figure>
+  <div class="key"><p>An absolute extremum on a closed interval can sit at an endpoint,
+where the derivative is nothing in particular. That is exactly why step 2
+evaluates the endpoints <strong>every time</strong>, even when they look
+uninteresting &mdash; and it is why <em>“if $\displaystyle f$ has an absolute minimum at
+$\displaystyle c$, then $\displaystyle f'(c)=0$”</em> is <strong>false</strong>.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Find the absolute maximum and minimum of
+$\displaystyle g(x) = 2x^{3} + 3x^{2} - 12x$ on $\displaystyle [-3, 2]$.</p></div>
+  <details class="sol"><summary>Show: critical numbers first</summary>
+<div class="dm">$$g'(x) = 6x^{2} + 6x - 12 = 6\left(x^{2}+x-2\right) = 6\left(x+2\right)\left(x-1\right)$$</div>
+<div class="dm">$$c = -2 \quad\text{and}\quad c = 1 \qquad\text{--- both are inside } [-3,2]$$</div>
+  </details>
+  <details class="sol"><summary>Show: evaluate at all four</summary>
+<div class="dm">$$g(-3) = -54 + 27 + 36 = 9$$</div>
+<div class="dm">$$g(-2) = -16 + 12 + 24 = 20$$</div>
+<div class="dm">$$g(1) = 2 + 3 - 12 = -7$$</div>
+<div class="dm">$$g(2) = 16 + 12 - 24 = 4$$</div>
+  </details>
+  <details class="sol"><summary>Show: compare</summary>
+<div class="dm">$$\text{absolute max } = 20 \text{ at } x = -2,
+  \qquad
+  \text{absolute min } = -7 \text{ at } x = 1$$</div>
+<p>This time both winners are interior critical numbers &mdash; which is why you
+cannot guess, you evaluate.</p>
+  </details>
+</section>
+<section class="beat" aria-label="When the Winner Has No Derivative" data-source-line="422">
+  <h2>When the Winner Has No Derivative</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Find the absolute maximum and minimum of
+$\displaystyle f(x) = x^{2/3}$ on $\displaystyle \left[-1, 8\right]$.</p></div>
+  <details class="sol"><summary>Show: the critical number comes from the SECOND clause</summary>
+<div class="dm">$$f'(x) = \tfrac{2}{3}x^{-1/3} = \frac{2}{3\sqrt[3]{x}}$$</div>
+<p>Never zero. But $\displaystyle f'(0)$ <strong>does not exist</strong>, and $\displaystyle 0$ is in the domain
+($\displaystyle f(0)=0$), so</p>
+<div class="dm">$$c = 0$$</div>
+<p>is the only critical number.</p>
+  </details>
+  <details class="sol"><summary>Show: evaluate at the critical number and both endpoints</summary>
+<div class="dm">$$f(-1) = \left(-1\right)^{2/3} = 1$$</div>
+<div class="dm">$$f(0) = 0$$</div>
+<div class="dm">$$f(8) = 8^{2/3} = \left(\sqrt[3]{8}\right)^{2} = 4$$</div>
+<div class="dm">$$\text{absolute max } = 4 \text{ at } x = 8,
+  \qquad
+  \text{absolute min } = 0 \text{ at } x = 0$$</div>
+  </details>
+  <div class="key"><p>The minimum sits exactly where the derivative fails to exist. A
+student who only ever solves $\displaystyle f'(x)=0$ never finds it &mdash; and that is the
+whole reason the definition of a critical number has two clauses.</p></div>
+</section>
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="457">
+  <h2>What You Should Be Able to Do</h2>
+<ul><li>State the difference between a <strong>local</strong> and an <strong>absolute</strong>
+      extremum &mdash; the quantifier, “near $\displaystyle c$” versus “all $\displaystyle x$”.</li><li>Find <strong>critical numbers</strong>: solve $\displaystyle f'(x)=0$ <strong>and</strong> find where
+      $\displaystyle f'$ fails to exist, keeping only numbers <strong>in the domain</strong>.</li><li>Say why $\displaystyle f'(c)=0$ makes $\displaystyle c$ a <strong>candidate</strong>, not an answer, and
+      give $\displaystyle x^{3}$ as the counterexample.</li><li>State the <strong>Extreme Value Theorem</strong> with both hypotheses, and say
+      what fails without each.</li><li>Run the <strong>Closed Interval Method</strong>: critical numbers inside, then
+      both endpoints, then compare the list.</li></ul>
+  <div class="key"><p>The derivative does not hand you the maximum. It hands you a
+<strong>short list</strong>, and you finish the job by evaluating and comparing.</p></div>
+  <p class="practicelink"><a href="https://datascienceuwl.github.io/MTH207/extra-practice/#day30" target="_blank" rel="noopener">More practice for this day &rarr;</a></p>
+</section>
+</main>
+<p class="hint">10 sections &middot; solutions open on click</p>
+<dialog class="lb" aria-label="Enlarged figure">
+  <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
+</dialog>
+<script>
+// Editor scroll-sync. Same protocol the filled/blank builds use, so the editor
+// side needs no new message types: we post htmlSectionChanged as the reader
+// scrolls, and honour goToSection when the cursor moves in the tex.
+(function(){
+  if(!window.parent || window.parent===window) return;
+  var secs=document.querySelectorAll('main > section[data-source-line]');
+  if(!secs.length) return;
+  var cur=null, t=null;
+  function report(){
+    // the section covering 30% down the viewport -- the one being read, not
+    // the one clipped at the top edge
+    var mark=window.innerHeight*0.3, best=null;
+    for(var i=0;i<secs.length;i++){
+      var r=secs[i].getBoundingClientRect();
+      if(r.top<=mark && r.bottom>0) best=secs[i];
+    }
+    if(!best) return;
+    var line=parseInt(best.dataset.sourceLine,10);
+    if(!isNaN(line) && line!==cur){
+      cur=line;
+      window.parent.postMessage({type:'htmlSectionChanged',sourceLine:line},'*');
+    }
+  }
+  addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(report,80);},
+                   {passive:true});
+  addEventListener('message',function(e){
+    if(!e.data || e.data.type!=='goToSection' || e.data.sourceLine==null) return;
+    // nearest section at or before the cursor: a cursor inside a frame should
+    // scroll to that frame, not fail to match its exact opening line
+    var best=null;
+    for(var i=0;i<secs.length;i++){
+      if(parseInt(secs[i].dataset.sourceLine,10)<=e.data.sourceLine) best=secs[i];
+    }
+    if(best){ cur=parseInt(best.dataset.sourceLine,10);
+              best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+// ── Advancing the page ────────────────────────────────────────────────────
+// One action, whether it arrives from a block's own arrow or from a key. A
+// presentation remote is just a USB keyboard sending Right/PageDown, so making
+// the page respond to those keys is all a clicker needs -- no pairing, no app.
+//
+// The order is document order within the section you are looking at: chain
+// rows, step lines and closed reveals alike. When a section has nothing left
+// hidden, the next press moves to the next section. That is the slide feel,
+// on a scrolling page.
+(function(){
+  function units(sec){
+    return [].slice.call(sec.querySelectorAll('.rv, .stp, details.sol'));
+  }
+  function covered(u){
+    return u.tagName === 'DETAILS' ? !u.open : u.hidden;
+  }
+  function uncover(u, yes){
+    if(u.tagName === 'DETAILS'){ u.open = yes; } else { u.hidden = !yes; }
+    pair(u, yes);
+  }
+  // Anything marked .pair in the same chain row rides with it.
+  function pair(u, yes){
+    var row = u.closest ? u.closest('.ch-row') : null;
+    if(!row) return;
+    [].forEach.call(row.querySelectorAll('.pair'), function(p){ p.hidden = !yes; });
+  }
+  function tidy(sec){
+    // a block's arrow retires once that block has nothing left to give
+    [].forEach.call(sec.querySelectorAll('.steps, .chain'), function(box){
+      var b = box.querySelector('button.more');
+      if(b) b.hidden = !box.querySelector('.rv[hidden], .stp[hidden]');
+    });
+  }
+  function sections(){
+    return [].slice.call(document.querySelectorAll('main > section.beat'));
+  }
+  function here(){
+    var mark = window.innerHeight * 0.3, best = null;
+    sections().forEach(function(s){
+      var r = s.getBoundingClientRect();
+      if(r.top <= mark && r.bottom > 0) best = s;
+    });
+    return best || sections()[0];
+  }
+  function go(sec, d){
+    var all = sections(), i = all.indexOf(sec) + d;
+    if(i >= 0 && i < all.length) all[i].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.__advance = function(d){
+    var sec = here();
+    if(!sec) return;
+    var us = units(sec);
+    if(d > 0){
+      for(var i = 0; i < us.length; i++){
+        if(covered(us[i])){
+          uncover(us[i], true); tidy(sec);
+          us[i].scrollIntoView({block:'nearest'});
+          return;
+        }
+      }
+      go(sec, 1);
+    } else {
+      for(var j = us.length - 1; j >= 0; j--){
+        if(!covered(us[j])){ uncover(us[j], false); tidy(sec); return; }
+      }
+      go(sec, -1);
+    }
+  };
+  var FWD = {ArrowRight:1, ArrowDown:1, PageDown:1, ' ':1, Enter:1, Spacebar:1};
+  var BACK = {ArrowLeft:1, ArrowUp:1, PageUp:1, Backspace:1};
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    // let a focused control have its own keys
+    var t = e.target;
+    if(t && t.closest && t.closest('button, a, summary, input, textarea, dialog')) return;
+    if(FWD[e.key]){ e.preventDefault(); window.__advance(1); }
+    else if(BACK[e.key]){ e.preventDefault(); window.__advance(-1); }
+  });
+
+  // Reveal-all. Drives the same uncover() every other control uses, so a page
+  // opened this way ends in exactly the state stepping through would leave it.
+  var ra = document.querySelector('.revealall');
+  if(ra) ra.addEventListener('click', function(){
+    var on = ra.getAttribute('aria-pressed') === 'true';
+    [].forEach.call(sections(), function(sec){
+      units(sec).forEach(function(u){ uncover(u, !on); });
+      tidy(sec);
+    });
+    ra.setAttribute('aria-pressed', on ? 'false' : 'true');
+    ra.textContent = on ? 'Reveal all answers' : 'Hide all answers';
+  });
+})();
+
+// One button per derivation: each press uncovers the next line.
+(function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.steps > button.more, .chain > button.more, details.sol > button.more');
+    if(!b) return;
+    var box=b.parentElement;
+    // .rv marks a revealable unit: a whole step block, a chain row, or the
+    // right-hand side of the chain's first row. One selector covers all three.
+    var next=box.querySelector('.rv[hidden], .stp[hidden]');
+    if(next){
+      next.hidden=false;
+      // its citation, if it has one, arrives on the same press
+      var row=next.closest?next.closest('.ch-row'):null;
+      if(row) [].forEach.call(row.querySelectorAll('.pair'),
+                              function(p){ p.hidden=false; });
+    }
+    if(!box.querySelector('.rv[hidden], .stp[hidden]')) b.hidden=true;
+  });
+})();
+(function(){
+  var dlg=document.querySelector('dialog.lb'), img=dlg.querySelector('img');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button.zoom');
+    if(b){ img.src=b.dataset.src;
+           img.alt=b.querySelector('img').alt;   // carry the real alt text over
+           dlg.showModal(); return; }
+    if(e.target.closest('dialog.lb .close') || e.target===dlg) dlg.close();
+  });
+  dlg.addEventListener('close',function(){ img.removeAttribute('src'); });
+})();
+</script>
+</body></html>
