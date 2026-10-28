@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTH 207 &mdash; 4.2 The Mean Value Theorem</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
+  loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
+<script id="MathJax-script" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0;
+  /* Line length, in characters, so it holds at every font size. 46ch was at the
+     narrow end of the readable 45-75 band and left half the width empty. This
+     is the AT-HOME value; the projected build overrides it below, because there
+     the scarce thing is screen area, not eye travel -- the font is already
+     ~30px on a 1920 screen, so a longer line is still easy to scan and buys
+     fewer scroll steps. */
+  --measure:68ch}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  /* Projected on a 1920 screen this lands near 30px, which is legible from the
+     back of the room; on a laptop later it falls back to comfortable reading. */
+  font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
+/* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
+   expose the next thing. Read later: it is just a long page. */
+:root{--measure:88ch}
+main{scroll-snap-type:y proximity}
+.beat{scroll-snap-align:start;min-height:100vh}
+.beat{padding:2.4rem 6vw 3rem;
+  border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
+h1{font-size:1.9rem;margin:0 0 .3rem}
+h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
+h2.cont{color:var(--slate);font-size:1.3rem}
+p{margin:0 0 .9rem;max-width:var(--measure)}
+ul{max-width:var(--measure)}
+.turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
+.turn.my{border-left-color:var(--slate);background:#f6f8fb}
+.badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;background:var(--amber);color:#3a2c00;padding:.32rem .6rem;
+  border-radius:3px;margin-bottom:.7rem}
+.turn.my .badge{background:var(--slate);color:#fff}
+.turn .work{font-size:.85rem;color:var(--slate);font-style:italic;margin:.6rem 0 0}
+.key{border-left:6px solid var(--ink);background:#f2f3f5;padding:.9rem 1.2rem;margin:1.2rem 0}
+.sol.shown{margin:1.1rem 0;border-left:5px solid var(--slate);background:#fff;
+  padding:.7rem 1.1rem;border-radius:0 5px 5px 0}
+.sol-label{display:block;font:600 .78rem/1 system-ui,sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate);margin-bottom:.5rem}
+details.sol{margin:1.1rem 0;border:1px solid var(--rule);border-radius:5px;background:#fff}
+details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-ui,sans-serif;
+  color:var(--slate)}
+details.sol[open] summary{border-bottom:1px solid var(--rule)}
+details.sol > :not(summary){padding:0 1.1rem}
+details.sol > p:last-child{padding-bottom:.9rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;
+  max-width:min(100%, calc(var(--measure) * 1.25))}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;margin:.6rem 0}
+table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--rule);padding:.3rem .9rem .3rem 0;text-align:left}
+th{border-bottom:2px solid var(--ink)}
+.boxed{margin:1.1rem 0;padding:.8rem 1.1rem;border-radius:5px;background:#fff;
+  border:1px solid var(--rule)}
+.boxed.dfn{border-left:5px solid var(--ink)}
+.boxed.thm{border-left:5px solid var(--amber)}
+.boxed.ex{border-left:5px solid var(--slate)}
+.badge.dfn{background:var(--ink);color:#fff}
+.badge.thm{background:var(--amber);color:#3a2c00}
+.ex{margin:1rem 0}
+.workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
+.badge.ex{background:var(--ink);color:#fff}
+.grid-item{margin:0}
+/* A figure is not prose. --measure is a READING measure -- how far the eye
+   travels across a line of text -- and has no business capping a diagram: on a
+   1920 projector it left roughly 370px empty beside every wide plot. So a
+   figure takes the full beat width and centres, and scale=N is now read as a
+   fraction of THAT, still centred, not of the reading measure. An img keeps
+   max-width (not width), so a small figure centres at its natural size instead
+   of being upscaled into blur.
+
+   No height cap: a beat is allowed to be taller than the screen. This is a
+   scrolling document, not a slide -- min-height:100vh is a floor. The
+   "over-tall slide scrolls its title away" rule belongs to the retired reveal
+   decks, which is why deck_check only geometry-checks when _slides.html
+   exists. */
+figure{margin:1.2rem auto;max-width:100%}
+figure img{max-width:100%;height:auto;display:block;margin:0 auto}
+button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
+  border-radius:3px;display:block;max-width:100%}
+button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+dialog.lb{border:none;padding:0;max-width:96vw;max-height:96vh;background:transparent}
+dialog.lb::backdrop{background:rgba(13,27,42,.88)}
+dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
+dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
+  background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem;text-align:center}
+header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
+header.top p{color:var(--slate);margin:.2rem 0 0}
+.dm{margin:.9rem 0;text-align:center}
+/* A derivation advanced by one button. [hidden] needs !important because .stp
+   sets display, which would otherwise win over the UA's hidden rule. */
+/* An equation chain. display:table so the three columns agree across rows --
+   that is the whole point: the = signs must line up. */
+.chain{display:table;margin:1.1rem 0 .4rem;border-collapse:collapse;
+  /* .beat is a column flexbox, which stretches its children to full width --
+     a shrink-to-fit table then became 1408px and the LHS floated to the far
+     right. align-self keeps the table the width of its own contents. */
+  align-self:start}
+.daybreak{display:flex;align-items:center;gap:1rem;margin:2.2rem 0 1.6rem;
+  color:var(--slate);font:600 .8rem/1 system-ui,sans-serif;letter-spacing:.1em;
+  text-transform:uppercase}
+.daybreak::before,.daybreak::after{content:"";flex:1;height:1px;
+  background:var(--rule)}
+.practicelink{margin:1.4rem 0 0}
+.practicelink a{display:inline-block;border:1px solid var(--amber);
+  border-radius:4px;padding:.45rem .9rem;color:var(--ink);text-decoration:none;
+  font:600 .9rem/1 system-ui,sans-serif;background:#fffdf5}
+.practicelink a:hover{background:var(--amber);color:#3a2c00}
+.chain.gen .ch-y{max-width:44ch;padding-left:1.6rem}
+.gc-cap{display:block;margin:0 0 .35rem;font:600 .82rem/1.3 system-ui,sans-serif;
+  letter-spacing:.02em;color:#5b6b7a;text-transform:uppercase}
+.ch-row{display:table-row}
+/* Row spacing. .12rem was fine while every row was one line tall, but a
+   chain whose rows are stacked fractions -- dividing inside a square root,
+   say -- ran them together with nothing to separate one step from the next.
+   These are table cells, so padding is the only lever; margin does nothing. */
+.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.45rem 0}
+.ch-l{text-align:right}
+.ch-e{text-align:center;padding-left:.5rem;padding-right:.5rem}
+.ch-r{text-align:left}
+/* The reason column. Set back and lighter so the algebra still reads as the
+   line and the citation as an annotation on it, not a second equation. */
+.ch-y{text-align:left;padding-left:2.2rem;font-size:.82em;color:#5b6b7a;
+  font-style:italic;max-width:26ch}
+.chain [hidden]{display:none!important}
+@media print{.chain [hidden]{display:table-cell!important}
+  .chain .ch-row[hidden]{display:table-row!important}}
+.steps{margin:1.1rem 0}
+.steps .stp{display:block;margin:.2rem 0}
+.steps [hidden]{display:none!important}
+.chain button.more,
+.steps button.more,
+details.sol button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
+  background:none;border:1px solid var(--amber);border-radius:50%;
+  width:2rem;height:2rem;padding:0;cursor:pointer;margin-top:.5rem;
+  display:inline-flex;align-items:center;justify-content:center}
+.chain button.more:hover,
+.steps button.more:hover,
+details.sol button.more:hover{background:#fff8e2}
+.chain button.more:focus-visible,
+.steps button.more:focus-visible,
+details.sol button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media print{.steps .stp{display:block!important}.steps button.more{display:none}}
+/* The in-page reveal. This used to be a text link to the twin page, and it was
+   missed constantly -- it looked like navigation, because it was. A filled
+   button that says what it does, in the first thing you see, is the fix. */
+/* --slate, not --blue: this palette has no --blue, and an undefined custom
+   property is not an error -- the background simply did not paint and the
+   button was white text on a cream page. Invisible, and working perfectly. */
+.revealall{font:600 1rem system-ui,sans-serif;cursor:pointer;
+  margin:.6rem 0 .2rem;padding:.55rem 1.1rem;border-radius:8px;
+  border:2px solid var(--slate);background:var(--slate);color:#fff}
+.revealall:hover{filter:brightness(1.12)}
+.revealall:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+.revealall[aria-pressed="true"]{background:var(--bg);color:var(--slate)}
+@media print{.revealall{display:none}}
+.switch{margin:.35rem 0 0}
+.switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px}
+.switch a:hover{border-bottom-width:2px}
+.switch a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media print{.switch{display:none}}
+.hint{position:fixed;right:1rem;bottom:1rem;font:.72rem system-ui,sans-serif;color:var(--slate);
+  background:#fff;border:1px solid var(--rule);border-radius:4px;padding:.35rem .6rem;opacity:.75}
+@media print{.beat{min-height:auto;page-break-inside:avoid}.hint{display:none}
+  details.sol{break-inside:avoid}details.sol summary{display:none}}
+</style></head>
+<body>
+<header class="top">
+  <h1>4.2 &nbsp;The Mean Value Theorem</h1>
+  <p>MTH 207 Calculus I &mdash; Applications of Differentiation</p>
+  <p class="switch"><button class="revealall" type="button" aria-pressed="false">Reveal all answers</button></p>
+</header>
+<main>
+<section class="beat" aria-label="You Were Going Exactly That Fast at Some Instant" data-source-line="118">
+  <h2>You Were Going Exactly That Fast at Some Instant</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>A car travels $\displaystyle 100$ miles in exactly $\displaystyle 2$ hours. Must its
+speedometer have read exactly $\displaystyle 50$ mph at some instant?
+<span style="display:block;height:0.3em"></span>
+Yes or no, and say why.</p></div>
+  <details class="sol"><summary>Show: yes &mdash; and the reason is worth saying carefully</summary>
+<p>The <strong>average</strong> speed is</p>
+<div class="dm">$$\frac{100 \text{ miles}}{2 \text{ hours}} = 50 \text{ mph}.$$</div>
+<p>If the speedometer had read <em>under</em> $\displaystyle 50$ the whole time, the car could
+not have covered $\displaystyle 100$ miles. If it had read <em>over</em> $\displaystyle 50$ the whole time,
+it would have gone further. So it was below at some moment and above at
+another &mdash; and speed changes continuously, so somewhere in between it was
+exactly $\displaystyle 50$.</p>
+  </details>
+  <div class="key"><p>That is the <strong>Mean Value Theorem</strong>, in English. The average
+rate of change over an interval is achieved exactly, as an
+<strong>instantaneous</strong> rate, at least once inside it.</p></div>
+</section>
+<section class="beat" aria-label="Rolle&#x27;s Theorem: the Flat Case" data-source-line="160">
+  <h2>Rolle&#x27;s Theorem: the Flat Case</h2>
+<p>Start with the special case where the car ends where it started.</p>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; Rolle's Theorem</span><p>Suppose
+<ol><li>$\displaystyle f$ is <strong>continuous</strong> on the closed interval $\displaystyle [a,b]$,</li><li>$\displaystyle f$ is <strong>differentiable</strong> on the open interval $\displaystyle (a,b)$, and</li><li>$\displaystyle f(a) = f(b)$.</li></ol>
+Then there is a number $\displaystyle c$ in $\displaystyle (a,b)$ with $\displaystyle \;f'(c) = 0$.</p></div>
+  <details class="sol"><summary>Show: why it is true, using what we proved yesterday</summary>
+<p>$\displaystyle f$ is continuous on a closed interval, so by the <strong>Extreme Value
+Theorem</strong> it attains an absolute max and an absolute min.
+<span style="display:block;height:0.4em"></span>
+If both are at the endpoints, then since $\displaystyle f(a)=f(b)$ the max and the min are
+equal &mdash; so $\displaystyle f$ is <strong>constant</strong>, and $\displaystyle f'(c)=0$ everywhere inside.
+<span style="display:block;height:0.4em"></span>
+Otherwise one of them is at an interior point $\displaystyle c$. That is a local extremum,
+$\displaystyle f$ is differentiable there, so <strong>Fermat</strong> gives $\displaystyle f'(c)=0$.</p>
+  </details>
+  <div class="key"><p>Rolle is EVT and Fermat put together &mdash; which is why §4.1 came
+first. Nothing new was needed.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>If $\displaystyle f$ is differentiable everywhere and $\displaystyle f'(x)$ is <strong>never</strong>
+zero, can $\displaystyle f(0)$ and $\displaystyle f(1)$ be equal?</p></div>
+  <details class="sol"><summary>Show: no &mdash; this is Rolle read backwards</summary>
+<p>If $\displaystyle f(0) = f(1)$, Rolle would hand us a $\displaystyle c$ in $\displaystyle (0,1)$ with $\displaystyle f'(c)=0$. There
+is no such $\displaystyle c$. So $\displaystyle f(0) \neq f(1)$.</p>
+  </details>
+</section>
+<section class="beat" aria-label="The Mean Value Theorem" data-source-line="213">
+  <h2>The Mean Value Theorem</h2>
+<p>Now tilt the picture. Everything is the same except the two ends are at
+different heights.</p>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; The Mean Value Theorem</span><p>Suppose
+<ol><li>$\displaystyle f$ is <strong>continuous</strong> on the closed interval $\displaystyle [a,b]$, and</li><li>$\displaystyle f$ is <strong>differentiable</strong> on the open interval $\displaystyle (a,b)$.</li></ol>
+Then there is a number $\displaystyle c$ in $\displaystyle (a,b)$ with</p>
+<div class="dm">$$f'(c) = \frac{f(b) - f(a)}{b - a}.$$</div></div>
+  <figure><button type="button" class="zoom" data-src="figures/rolle_mvt.png" aria-label="Enlarge figure"><img src="figures/rolle_mvt.png" alt="Two panels. On the left, Rolle&#x27;s theorem: a curve with
+     equal values at both endpoints, the chord between them horizontal, and a
+     horizontal tangent at an interior point c. On the right, the Mean Value
+     Theorem: the same curve tilted, with a slanted secant line joining the
+     endpoints and a tangent line at an interior point c drawn parallel to
+     that secant."></button></figure>
+  <div class="key"><p>The right-hand side is the <strong>slope of the secant</strong> through the
+two endpoints &mdash; the average rate of change. The theorem says some tangent
+is <strong>parallel</strong> to it. Rolle is the case where that secant happens to be
+horizontal.</p></div>
+</section>
+<section class="beat" aria-label="Check the Hypotheses, Then Find $c$" data-source-line="251">
+  <h2>Check the Hypotheses, Then Find $c$</h2>
+  <div class="turn my"><span class="badge">My turn</span><p>Verify that $\displaystyle f(x) = x^{2} - 2x$ satisfies the hypotheses of the MVT
+on $\displaystyle [0,3]$, and find all numbers $\displaystyle c$ the theorem guarantees.
+<span style="display:block;height:0.3em"></span>
+Watch the shape of this one. You get the next.</p></div>
+  <details class="sol"><summary>Show: hypothesis 1 &mdash; continuity, said out loud</summary>
+<p>$\displaystyle f$ is a <strong>polynomial</strong>. Polynomials are continuous everywhere, so $\displaystyle f$
+is continuous on $\displaystyle [0,3]$. ✓</p>
+  </details>
+  <details class="sol"><summary>Show: hypothesis 2 &mdash; differentiability, said out loud</summary>
+<p>Polynomials are differentiable everywhere, so $\displaystyle f$ is differentiable on
+$\displaystyle (0,3)$. ✓
+<span style="display:block;height:0.3em"></span>
+Both hypotheses hold, so the MVT applies and such a $\displaystyle c$ <strong>exists</strong>.</p>
+  </details>
+  <details class="sol"><summary>Show: now compute the secant slope</summary>
+<div class="dm">$$f(3) = 9 - 6 = 3, \qquad f(0) = 0 - 0 = 0$$</div>
+<div class="dm">$$\frac{f(3)-f(0)}{3-0} = \frac{3 - 0}{3} = 1$$</div>
+  </details>
+  <details class="sol"><summary>Show: set $\displaystyle f'(c)$ equal to it and solve</summary>
+<div class="dm">$$f'(x) = 2x - 2$$</div>
+<div class="dm">$$2c - 2 = 1$$</div>
+<div class="dm">$$2c = 3$$</div>
+<div class="dm">$$c = \tfrac{3}{2}$$</div>
+  </details>
+  <details class="sol"><summary>Show: last step: is it actually in the interval?</summary>
+<p>$\displaystyle \tfrac{3}{2}$ is in $\displaystyle (0,3)$. ✓   So $\displaystyle c = \tfrac{3}{2}$, and it
+is the only one.</p>
+  </details>
+</section>
+<section class="beat" aria-label="Now You" data-source-line="299">
+  <h2>Now You</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Verify the hypotheses of the MVT for $\displaystyle f(x) = x^{3} - 3x$ on
+$\displaystyle \left[-1, 2\right]$, and find all $\displaystyle c$.
+<span style="display:block;height:0.3em"></span>
+Write the hypothesis check as a sentence, not as a tick.</p></div>
+  <details class="sol"><summary>Show: the hypotheses</summary>
+<p>$\displaystyle f$ is a polynomial, so it is continuous on $\displaystyle [-1,2]$ and differentiable on
+$\displaystyle (-1,2)$. Both hypotheses hold.</p>
+  </details>
+  <details class="sol"><summary>Show: the secant slope</summary>
+<div class="dm">$$f(2) = 8 - 6 = 2, \qquad f(-1) = -1 + 3 = 2$$</div>
+<div class="dm">$$\frac{f(2)-f(-1)}{2-\left(-1\right)} = \frac{2 - 2}{3} = 0$$</div>
+<p>⚠ The endpoints have <strong>equal</strong> values, so this is really Rolle &mdash; the
+secant is horizontal.</p>
+  </details>
+  <details class="sol"><summary>Show: solve $\displaystyle f'(c) = 0$</summary>
+<div class="dm">$$f'(x) = 3x^{2} - 3$$</div>
+<div class="dm">$$3c^{2} - 3 = 0$$</div>
+<div class="dm">$$c^{2} = 1$$</div>
+<div class="dm">$$c = -1 \quad\text{and}\quad c = 1$$</div>
+  </details>
+  <details class="sol"><summary>Show: which ones are allowed?</summary>
+<p>The theorem promises $\displaystyle c$ <strong>strictly inside</strong> $\displaystyle (-1,2)$. So $\displaystyle c=-1$ is an
+<strong>endpoint</strong> and does not count:</p>
+<div class="dm">$$c = 1 \quad\text{only.}$$</div>
+  </details>
+  <div class="key"><p>Discarding $\displaystyle c=-1$ is the step that separates a correct answer from
+a nearly correct one. The MVT's $\displaystyle c$ lives in the <strong>open</strong> interval,
+always.</p></div>
+</section>
+<section class="beat" aria-label="What the MVT Proves" data-source-line="343">
+  <h2>What the MVT Proves</h2>
+<p>The MVT is mostly not used to <em>find</em> $\displaystyle c$. It is used to prove things
+that have nothing to do with $\displaystyle c$ at all.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>If $\displaystyle f'(x) = 0$ for every $\displaystyle x$ in an interval, must $\displaystyle f$ be constant
+there?</p></div>
+  <details class="sol"><summary>Show: yes, and the MVT is the only honest proof</summary>
+<p>Take any two points $\displaystyle x_{1} < x_{2}$ in the interval. The MVT applies, so
+there is a $\displaystyle c$ between them with</p>
+<div class="dm">$$f'(c) = \frac{f(x_{2}) - f(x_{1})}{x_{2} - x_{1}}.$$</div>
+<p>But $\displaystyle f'(c) = 0$, so the fraction is $\displaystyle 0$, so $\displaystyle f(x_{2}) = f(x_{1})$. Any two
+values of $\displaystyle f$ are equal &mdash; $\displaystyle f$ is constant.</p>
+  </details>
+  <div class="key"><p><strong>The corollary that Chapter 5 is built on.</strong> If
+$\displaystyle f'(x) = g'(x)$ on an interval, apply the above to $\displaystyle f - g$: its derivative is
+$\displaystyle 0$, so $\displaystyle f - g$ is <strong>constant</strong>, and</p>
+<div class="dm">$$f(x) = g(x) + C.$$</div>
+<p>Not $\displaystyle f = g$ &mdash; the constant need not be zero. That $\displaystyle C$ is exactly the
+$\displaystyle +\,C$ you will write on every antiderivative from §4.9 onward, and this is
+the theorem that earns it.</p></div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Is there a function with $\displaystyle f(1) = -2$, $\displaystyle f(3) = 0$, and
+$\displaystyle f'(x) > 1$ for every $\displaystyle x$?</p></div>
+  <details class="sol"><summary>Show: no &mdash; and the MVT is what rules it out</summary>
+<p>If such an $\displaystyle f$ existed, the MVT on $\displaystyle [1,3]$ would give a $\displaystyle c$ with</p>
+<div class="dm">$$f'(c) = \frac{f(3)-f(1)}{3-1} = \frac{0 - \left(-2\right)}{2} = 1.$$</div>
+<p>That contradicts $\displaystyle f'(x) > 1$ for <strong>every</strong> $\displaystyle x$. So no such function
+exists.</p>
+  </details>
+</section>
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="401">
+  <h2>What You Should Be Able to Do</h2>
+<ul><li>State the MVT, including <strong>both</strong> hypotheses and which interval
+      each one is about &mdash; closed for continuity, open for
+      differentiability.</li><li><strong>Verify the hypotheses in writing</strong> before computing anything.
+      “$\displaystyle f$ is a polynomial, so it is continuous on $\displaystyle [a,b]$ and
+      differentiable on $\displaystyle (a,b)$” earns marks.</li><li>Find every $\displaystyle c$ by solving
+      $\displaystyle f'(c) = \frac{f(b)-f(a)}{b-a}$, then <strong>discard any root outside
+      the open interval</strong>.</li><li>Recognise Rolle as the case $\displaystyle f(a)=f(b)$, and use it backwards to show
+      a function cannot repeat a value.</li><li>Explain why $\displaystyle f' = g'$ on an interval forces $\displaystyle f = g + C$.</li></ul>
+  <div class="key"><p>Up to now a theorem answered a question you already had. The MVT
+answers questions you would not have thought to ask &mdash; that is what makes it
+feel harder than its arithmetic.</p></div>
+  <p class="practicelink"><a href="https://datascienceuwl.github.io/MTH207/extra-practice/#day31" target="_blank" rel="noopener">More practice for this day &rarr;</a></p>
+</section>
+</main>
+<p class="hint">7 sections &middot; solutions open on click</p>
+<dialog class="lb" aria-label="Enlarged figure">
+  <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
+</dialog>
+<script>
+// Editor scroll-sync. Same protocol the filled/blank builds use, so the editor
+// side needs no new message types: we post htmlSectionChanged as the reader
+// scrolls, and honour goToSection when the cursor moves in the tex.
+(function(){
+  if(!window.parent || window.parent===window) return;
+  var secs=document.querySelectorAll('main > section[data-source-line]');
+  if(!secs.length) return;
+  var cur=null, t=null;
+  function report(){
+    // the section covering 30% down the viewport -- the one being read, not
+    // the one clipped at the top edge
+    var mark=window.innerHeight*0.3, best=null;
+    for(var i=0;i<secs.length;i++){
+      var r=secs[i].getBoundingClientRect();
+      if(r.top<=mark && r.bottom>0) best=secs[i];
+    }
+    if(!best) return;
+    var line=parseInt(best.dataset.sourceLine,10);
+    if(!isNaN(line) && line!==cur){
+      cur=line;
+      window.parent.postMessage({type:'htmlSectionChanged',sourceLine:line},'*');
+    }
+  }
+  addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(report,80);},
+                   {passive:true});
+  addEventListener('message',function(e){
+    if(!e.data || e.data.type!=='goToSection' || e.data.sourceLine==null) return;
+    // nearest section at or before the cursor: a cursor inside a frame should
+    // scroll to that frame, not fail to match its exact opening line
+    var best=null;
+    for(var i=0;i<secs.length;i++){
+      if(parseInt(secs[i].dataset.sourceLine,10)<=e.data.sourceLine) best=secs[i];
+    }
+    if(best){ cur=parseInt(best.dataset.sourceLine,10);
+              best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+// ── Advancing the page ────────────────────────────────────────────────────
+// One action, whether it arrives from a block's own arrow or from a key. A
+// presentation remote is just a USB keyboard sending Right/PageDown, so making
+// the page respond to those keys is all a clicker needs -- no pairing, no app.
+//
+// The order is document order within the section you are looking at: chain
+// rows, step lines and closed reveals alike. When a section has nothing left
+// hidden, the next press moves to the next section. That is the slide feel,
+// on a scrolling page.
+(function(){
+  function units(sec){
+    return [].slice.call(sec.querySelectorAll('.rv, .stp, details.sol'));
+  }
+  function covered(u){
+    return u.tagName === 'DETAILS' ? !u.open : u.hidden;
+  }
+  function uncover(u, yes){
+    if(u.tagName === 'DETAILS'){ u.open = yes; } else { u.hidden = !yes; }
+    pair(u, yes);
+  }
+  // Anything marked .pair in the same chain row rides with it.
+  function pair(u, yes){
+    var row = u.closest ? u.closest('.ch-row') : null;
+    if(!row) return;
+    [].forEach.call(row.querySelectorAll('.pair'), function(p){ p.hidden = !yes; });
+  }
+  function tidy(sec){
+    // a block's arrow retires once that block has nothing left to give
+    [].forEach.call(sec.querySelectorAll('.steps, .chain'), function(box){
+      var b = box.querySelector('button.more');
+      if(b) b.hidden = !box.querySelector('.rv[hidden], .stp[hidden]');
+    });
+  }
+  function sections(){
+    return [].slice.call(document.querySelectorAll('main > section.beat'));
+  }
+  function here(){
+    var mark = window.innerHeight * 0.3, best = null;
+    sections().forEach(function(s){
+      var r = s.getBoundingClientRect();
+      if(r.top <= mark && r.bottom > 0) best = s;
+    });
+    return best || sections()[0];
+  }
+  function go(sec, d){
+    var all = sections(), i = all.indexOf(sec) + d;
+    if(i >= 0 && i < all.length) all[i].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.__advance = function(d){
+    var sec = here();
+    if(!sec) return;
+    var us = units(sec);
+    if(d > 0){
+      for(var i = 0; i < us.length; i++){
+        if(covered(us[i])){
+          uncover(us[i], true); tidy(sec);
+          us[i].scrollIntoView({block:'nearest'});
+          return;
+        }
+      }
+      go(sec, 1);
+    } else {
+      for(var j = us.length - 1; j >= 0; j--){
+        if(!covered(us[j])){ uncover(us[j], false); tidy(sec); return; }
+      }
+      go(sec, -1);
+    }
+  };
+  var FWD = {ArrowRight:1, ArrowDown:1, PageDown:1, ' ':1, Enter:1, Spacebar:1};
+  var BACK = {ArrowLeft:1, ArrowUp:1, PageUp:1, Backspace:1};
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    // let a focused control have its own keys
+    var t = e.target;
+    if(t && t.closest && t.closest('button, a, summary, input, textarea, dialog')) return;
+    if(FWD[e.key]){ e.preventDefault(); window.__advance(1); }
+    else if(BACK[e.key]){ e.preventDefault(); window.__advance(-1); }
+  });
+
+  // Reveal-all. Drives the same uncover() every other control uses, so a page
+  // opened this way ends in exactly the state stepping through would leave it.
+  var ra = document.querySelector('.revealall');
+  if(ra) ra.addEventListener('click', function(){
+    var on = ra.getAttribute('aria-pressed') === 'true';
+    [].forEach.call(sections(), function(sec){
+      units(sec).forEach(function(u){ uncover(u, !on); });
+      tidy(sec);
+    });
+    ra.setAttribute('aria-pressed', on ? 'false' : 'true');
+    ra.textContent = on ? 'Reveal all answers' : 'Hide all answers';
+  });
+})();
+
+// One button per derivation: each press uncovers the next line.
+(function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.steps > button.more, .chain > button.more, details.sol > button.more');
+    if(!b) return;
+    var box=b.parentElement;
+    // .rv marks a revealable unit: a whole step block, a chain row, or the
+    // right-hand side of the chain's first row. One selector covers all three.
+    var next=box.querySelector('.rv[hidden], .stp[hidden]');
+    if(next){
+      next.hidden=false;
+      // its citation, if it has one, arrives on the same press
+      var row=next.closest?next.closest('.ch-row'):null;
+      if(row) [].forEach.call(row.querySelectorAll('.pair'),
+                              function(p){ p.hidden=false; });
+    }
+    if(!box.querySelector('.rv[hidden], .stp[hidden]')) b.hidden=true;
+  });
+})();
+(function(){
+  var dlg=document.querySelector('dialog.lb'), img=dlg.querySelector('img');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button.zoom');
+    if(b){ img.src=b.dataset.src;
+           img.alt=b.querySelector('img').alt;   // carry the real alt text over
+           dlg.showModal(); return; }
+    if(e.target.closest('dialog.lb .close') || e.target===dlg) dlg.close();
+  });
+  dlg.addEventListener('close',function(){ img.removeAttribute('src'); });
+})();
+</script>
+</body></html>
