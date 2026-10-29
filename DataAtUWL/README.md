@@ -15,7 +15,8 @@ push; GitHub Pages redeploys in about a minute.
 1. Open `talks.js` and copy the commented example block into the `TALKS` array.
 2. Fill in the fields. Dates are local time, `"YYYY-MM-DDTHH:MM"`, no timezone suffix.
 3. Drop the poster into `posters/` and point `poster:` at it, or set `poster: null`
-   until the poster is ready.
+   until the poster is ready. Posters are generated, not hand-drawn — see
+   `Series-Assets/poster-generator/` in OneDrive; edit `posters.py` and run it.
 4. Commit and push.
 
 Order in the array doesn't matter — the page sorts by date. You never edit
@@ -74,9 +75,13 @@ filesystem works in most browsers, but a server is closer to how Pages serves it
 
 ## Source material
 
-Posters, the editable template, the speaker tracker, and printing instructions
+Posters, the poster generator, the speaker tracker, and printing instructions
 live in OneDrive under **Data at UWL**. The posters in `posters/` here are copies
 for the web; OneDrive holds the masters.
+
+Note the poster carries a *condensed* blurb — about five lines — while `talks.js`
+here carries the speaker's full abstract. That split is deliberate: the poster is
+read from across a hallway, the page is read up close.
 
 ## UWL branding
 

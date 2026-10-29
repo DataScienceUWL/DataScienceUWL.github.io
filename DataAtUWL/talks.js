@@ -51,6 +51,24 @@ const TALKS = [
     links: [],
   },
 
+  {
+    id: "2026-11-05-medical-research",
+    number: 2,
+    term: "Fall 2026",
+    title: "Statistically Supporting Medical Research",
+    speakers: "Barb Miller & Matthew Nowell",
+    org: "Emplify Health by Gundersen",
+    kind: "Industry",
+    start: "2026-11-05T16:00",
+    end: "2026-11-05T17:00",
+    location: "Centennial Hall 2211",
+    abstract:
+      "The Research Navigation Department of the Gundersen Medical Foundation supports grassroots research of our organization's clinicians and medical learners.\n\nWe'll share an overview of our team-based process for approaching research. We will zoom in on the roles that our biostats team plays in the lifecycle of a typical research study: consulting on study design, data retrieval, statistical analysis and reporting. We will also highlight the professional roles within our biostats team from bachelor's to PhD-level.",
+    poster: "posters/2026-11-05_medical-research.svg",
+    tags: ["Medical research", "Biostatistics", "Career paths"],
+    links: [],
+  },
+
   /* ---- Copy this block for the next talk -------------------------------
      Talks are not only about careers. A faculty or student research talk, a
      methods talk, or a walk through an applied project all belong here --
