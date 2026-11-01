@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTH 207 &mdash; Review Exam 2 Review</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
+  loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
+<script id="MathJax-script" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0;
+  /* Line length, in characters, so it holds at every font size. 46ch was at the
+     narrow end of the readable 45-75 band and left half the width empty. This
+     is the AT-HOME value; the projected build overrides it below, because there
+     the scarce thing is screen area, not eye travel -- the font is already
+     ~30px on a 1920 screen, so a longer line is still easy to scan and buys
+     fewer scroll steps. */
+  --measure:68ch}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  /* Projected on a 1920 screen this lands near 30px, which is legible from the
+     back of the room; on a laptop later it falls back to comfortable reading. */
+  font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
+/* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
+   expose the next thing. Read later: it is just a long page. */
+:root{--measure:88ch}
+main{scroll-snap-type:y proximity}
+.beat{scroll-snap-align:start;min-height:100vh}
+.beat{padding:2.4rem 6vw 3rem;
+  border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
+h1{font-size:1.9rem;margin:0 0 .3rem}
+h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
+h2.cont{color:var(--slate);font-size:1.3rem}
+p{margin:0 0 .9rem;max-width:var(--measure)}
+ul{max-width:var(--measure)}
+.turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
+.turn.my{border-left-color:var(--slate);background:#f6f8fb}
+.badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;background:var(--amber);color:#3a2c00;padding:.32rem .6rem;
+  border-radius:3px;margin-bottom:.7rem}
+.turn.my .badge{background:var(--slate);color:#fff}
+.turn .work{font-size:.85rem;color:var(--slate);font-style:italic;margin:.6rem 0 0}
+.key{border-left:6px solid var(--ink);background:#f2f3f5;padding:.9rem 1.2rem;margin:1.2rem 0}
+.sol.shown{margin:1.1rem 0;border-left:5px solid var(--slate);background:#fff;
+  padding:.7rem 1.1rem;border-radius:0 5px 5px 0}
+.sol-label{display:block;font:600 .78rem/1 system-ui,sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate);margin-bottom:.5rem}
+details.sol{margin:1.1rem 0;border:1px solid var(--rule);border-radius:5px;background:#fff}
+details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-ui,sans-serif;
+  color:var(--slate)}
+details.sol[open] summary{border-bottom:1px solid var(--rule)}
+details.sol > :not(summary){padding:0 1.1rem}
+details.sol > p:last-child{padding-bottom:.9rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;
+  max-width:min(100%, calc(var(--measure) * 1.25))}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;margin:.6rem 0}
+table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--rule);padding:.3rem .9rem .3rem 0;text-align:left}
+th{border-bottom:2px solid var(--ink)}
+.boxed{margin:1.1rem 0;padding:.8rem 1.1rem;border-radius:5px;background:#fff;
+  border:1px solid var(--rule)}
+.boxed.dfn{border-left:5px solid var(--ink)}
+.boxed.thm{border-left:5px solid var(--amber)}
+.boxed.ex{border-left:5px solid var(--slate)}
+.badge.dfn{background:var(--ink);color:#fff}
+.badge.thm{background:var(--amber);color:#3a2c00}
+.ex{margin:1rem 0}
+.workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
+.badge.ex{background:var(--ink);color:#fff}
+.grid-item{margin:0}
+/* A figure is not prose. --measure is a READING measure -- how far the eye
+   travels across a line of text -- and has no business capping a diagram: on a
+   1920 projector it left roughly 370px empty beside every wide plot. So a
+   figure takes the full beat width and centres, and scale=N is now read as a
+   fraction of THAT, still centred, not of the reading measure. An img keeps
+   max-width (not width), so a small figure centres at its natural size instead
+   of being upscaled into blur.
+
+   No height cap: a beat is allowed to be taller than the screen. This is a
+   scrolling document, not a slide -- min-height:100vh is a floor. The
+   "over-tall slide scrolls its title away" rule belongs to the retired reveal
+   decks, which is why deck_check only geometry-checks when _slides.html
+   exists. */
+figure{margin:1.2rem auto;max-width:100%}
+figure img{max-width:100%;height:auto;display:block;margin:0 auto}
+button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
+  border-radius:3px;display:block;max-width:100%}
+button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+dialog.lb{border:none;padding:0;max-width:96vw;max-height:96vh;background:transparent}
+dialog.lb::backdrop{background:rgba(13,27,42,.88)}
+dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
+dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
+  background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem;text-align:center}
+header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
+header.top p{color:var(--slate);margin:.2rem 0 0}
+.dm{margin:.9rem 0;text-align:center}
+/* A derivation advanced by one button. [hidden] needs !important because .stp
+   sets display, which would otherwise win over the UA's hidden rule. */
+/* An equation chain. display:table so the three columns agree across rows --
+   that is the whole point: the = signs must line up. */
+.chain{display:table;margin:1.1rem 0 .4rem;border-collapse:collapse;
+  /* .beat is a column flexbox, which stretches its children to full width --
+     a shrink-to-fit table then became 1408px and the LHS floated to the far
+     right. align-self keeps the table the width of its own contents. */
+  align-self:start}
+.daybreak{display:flex;align-items:center;gap:1rem;margin:2.2rem 0 1.6rem;
+  color:var(--slate);font:600 .8rem/1 system-ui,sans-serif;letter-spacing:.1em;
+  text-transform:uppercase}
+.daybreak::before,.daybreak::after{content:"";flex:1;height:1px;
+  background:var(--rule)}
+.practicelink{margin:1.4rem 0 0}
+.practicelink a{display:inline-block;border:1px solid var(--amber);
+  border-radius:4px;padding:.45rem .9rem;color:var(--ink);text-decoration:none;
+  font:600 .9rem/1 system-ui,sans-serif;background:#fffdf5}
+.practicelink a:hover{background:var(--amber);color:#3a2c00}
+.chain.gen .ch-y{max-width:44ch;padding-left:1.6rem}
+.gc-cap{display:block;margin:0 0 .35rem;font:600 .82rem/1.3 system-ui,sans-serif;
+  letter-spacing:.02em;color:#5b6b7a;text-transform:uppercase}
+.ch-row{display:table-row}
+/* Row spacing. .12rem was fine while every row was one line tall, but a
+   chain whose rows are stacked fractions -- dividing inside a square root,
+   say -- ran them together with nothing to separate one step from the next.
+   These are table cells, so padding is the only lever; margin does nothing. */
+.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.45rem 0}
+.ch-l{text-align:right}
+.ch-e{text-align:center;padding-left:.5rem;padding-right:.5rem}
+.ch-r{text-align:left}
+/* The reason column. Set back and lighter so the algebra still reads as the
+   line and the citation as an annotation on it, not a second equation. */
+.ch-y{text-align:left;padding-left:2.2rem;font-size:.82em;color:#5b6b7a;
+  font-style:italic;max-width:26ch}
+.chain [hidden]{display:none!important}
+@media print{.chain [hidden]{display:table-cell!important}
+  .chain .ch-row[hidden]{display:table-row!important}}
+.steps{margin:1.1rem 0}
+.steps .stp{display:block;margin:.2rem 0}
+.steps [hidden]{display:none!important}
+.chain button.more,
+.steps button.more,
+details.sol button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
+  background:none;border:1px solid var(--amber);border-radius:50%;
+  width:2rem;height:2rem;padding:0;cursor:pointer;margin-top:.5rem;
+  display:inline-flex;align-items:center;justify-content:center}
+.chain button.more:hover,
+.steps button.more:hover,
+details.sol button.more:hover{background:#fff8e2}
+.chain button.more:focus-visible,
+.steps button.more:focus-visible,
+details.sol button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media print{.steps .stp{display:block!important}.steps button.more{display:none}}
+/* The in-page reveal. This used to be a text link to the twin page, and it was
+   missed constantly -- it looked like navigation, because it was. A filled
+   button that says what it does, in the first thing you see, is the fix. */
+/* --slate, not --blue: this palette has no --blue, and an undefined custom
+   property is not an error -- the background simply did not paint and the
+   button was white text on a cream page. Invisible, and working perfectly. */
+.revealall{font:600 1rem system-ui,sans-serif;cursor:pointer;
+  margin:.6rem 0 .2rem;padding:.55rem 1.1rem;border-radius:8px;
+  border:2px solid var(--slate);background:var(--slate);color:#fff}
+.revealall:hover{filter:brightness(1.12)}
+.revealall:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+.revealall[aria-pressed="true"]{background:var(--bg);color:var(--slate)}
+@media print{.revealall{display:none}}
+.switch{margin:.35rem 0 0}
+.switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px}
+.switch a:hover{border-bottom-width:2px}
+.switch a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media print{.switch{display:none}}
+.hint{position:fixed;right:1rem;bottom:1rem;font:.72rem system-ui,sans-serif;color:var(--slate);
+  background:#fff;border:1px solid var(--rule);border-radius:4px;padding:.35rem .6rem;opacity:.75}
+@media print{.beat{min-height:auto;page-break-inside:avoid}.hint{display:none}
+  details.sol{break-inside:avoid}details.sol summary{display:none}}
+</style></head>
+<body>
+<header class="top">
+  <h1>Review &nbsp;Exam 2 Review</h1>
+  <p>MTH 207 Calculus I &mdash; Differentiation Rules and First Applications</p>
+  <p class="switch"><button class="revealall" type="button" aria-pressed="false">Reveal all answers</button></p>
+</header>
+<main>
+<section class="beat" aria-label="What Exam 2 Actually Asks" data-source-line="87">
+  <h2>What Exam 2 Actually Asks</h2>
+<p>Nine questions and two True/False, 100 points:</p>
+<table><caption>Where the points are &mdash; study in this order, not chapter order</caption><tr><th scope="col">points</th><th scope="col">what it asks</th></tr><tr><td>15</td><td>related rates &mdash; <strong>with units</strong></td></tr><tr><td>15</td><td>four derivatives: quotient, any-base, logarithmic</td></tr><tr><td>14</td><td><strong>derive</strong> two rules you are not allowed to quote</td></tr><tr><td>12</td><td>absolute extrema on a closed interval</td></tr><tr><td>9</td><td>the Chain Rule read off a table</td></tr><tr><td>8</td><td>implicit differentiation</td></tr><tr><td>8</td><td>linear approximation &mdash; <strong>you</strong> pick $\displaystyle f$ and the point</td></tr><tr><td>8</td><td>the Mean Value Theorem: hypotheses, <em>then</em> all $\displaystyle c$</td></tr><tr><td>7</td><td>a limit, justified</td></tr><tr><td>4</td><td>two True/False, one sentence each</td></tr></table>
+  <div class="key"><p><strong>Twenty-six of those points are writing, not computing.</strong> The
+two derivations are fourteen. The MVT question says “clearly state why each
+hypothesis is satisfied” before it asks for a single number. The True/False
+want a reason. On Exam 1 this class averaged <strong>65%</strong> on the questions
+that asked you to compute something and <strong>40%</strong> on the ones that asked
+you to say something &mdash; and that gap, not the calculus, is what moved people
+down a letter grade.</p></div>
+</section>
+<section class="beat" aria-label="Do the Hypotheses Hold? Three in Three Minutes" data-source-line="122">
+  <h2>Do the Hypotheses Hold? Three in Three Minutes</h2>
+<p>The Mean Value Theorem needs <strong>both</strong> of these, and they are not the
+same interval:</p>
+<ul><li>$\displaystyle f$ continuous on the <strong>closed</strong> interval $\displaystyle [a,b]$</li><li>$\displaystyle f$ differentiable on the <strong>open</strong> interval $\displaystyle (a,b)$</li></ul>
+  <div class="turn your"><span class="badge">Your turn</span><p>For each one, does the MVT apply? One sentence of reason each &mdash;
+that sentence is the exam answer.
+<span style="display:block;height:0.3em"></span>
+(a) $\displaystyle f(x) = x^{3}+x$ on $\displaystyle [-1,2]$  
+(b) $\displaystyle f(x) = \dfrac{1}{x}$ on $\displaystyle [-1,1]$  
+(c) $\displaystyle f(x) = \left|x-2\right|$ on $\displaystyle [0,3]$</p></div>
+  <details class="sol"><summary>Show: all three, with the sentence that earns the point</summary>
+<p><strong>(a) Yes.</strong> A polynomial is continuous everywhere, so it is continuous
+on $\displaystyle [-1,2]$; and differentiable everywhere, so differentiable on $\displaystyle (-1,2)$.
+<span style="display:block;height:0.2em"></span>
+<strong>(b) No.</strong> $\displaystyle f$ is undefined at $\displaystyle 0$, and $\displaystyle 0$ is <em>inside</em> the
+interval, so $\displaystyle f$ is not continuous on $\displaystyle [-1,1]$. The first hypothesis fails.
+<span style="display:block;height:0.2em"></span>
+<strong>(c) No.</strong> The absolute value is continuous everywhere, so that
+hypothesis is fine &mdash; but there is a corner at $\displaystyle x=2$, which is inside
+$\displaystyle (0,3)$, so $\displaystyle f'(2)$ does not exist. The <em>second</em> hypothesis fails.</p>
+  </details>
+  <div class="key"><p>Notice (c). Saying “it is not differentiable” is only half an
+answer &mdash; the credit is in naming <strong>which</strong> hypothesis fails and
+<strong>where</strong>. And notice that a bad point at an <em>endpoint</em> would not
+matter at all, because differentiability is only required on the open
+interval.</p></div>
+</section>
+<section class="beat" aria-label="The MVT, All the Way Through" data-source-line="164">
+  <h2>The MVT, All the Way Through</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Verify that $\displaystyle f(x) = \sqrt{x}$ satisfies the hypotheses of the MVT
+on $\displaystyle [0,4]$, and find <strong>all</strong> numbers $\displaystyle c$ the conclusion promises.</p></div>
+  <details class="sol"><summary>Show: step 1 &mdash; the hypotheses, and why this one is interesting</summary>
+<p>$\displaystyle f(x)=\sqrt{x}$ is continuous on $\displaystyle [0,4]$. Its derivative is
+$\displaystyle f'(x) = \frac{1}{2\sqrt{x}}$, which does <strong>not</strong> exist at $\displaystyle x=0$ &mdash; but
+$\displaystyle 0$ is an <strong>endpoint</strong>, and differentiability is only required on the
+open interval $\displaystyle (0,4)$. So both hypotheses hold.</p>
+  </details>
+  <details class="sol"><summary>Show: step 2 &mdash; the secant slope, which is the right-hand side</summary>
+<div class="dm">$$\frac{f(4)-f(0)}{4-0} = \frac{2-0}{4} = \frac{1}{2}$$</div>
+  </details>
+  <details class="sol"><summary>Show: step 3 &mdash; set $\displaystyle f'(c)$ equal to it and solve</summary>
+<div class="dm">$$\frac{1}{2\sqrt{c}} = \frac{1}{2} \quad\Longrightarrow\quad \sqrt{c} = 1
+\quad\Longrightarrow\quad c = 1$$</div>
+<p>and $\displaystyle c=1$ is in $\displaystyle (0,4)$, so it counts. <strong>There is exactly one: $\displaystyle c=1$.</strong></p>
+  </details>
+  <div class="key"><p>Two habits worth carrying in. The secant slope is a <strong>number</strong>
+&mdash; compute it first and it stops being frightening. And always check the
+$\displaystyle c$ you find is actually <em>inside</em> the open interval: the theorem promises
+nothing outside it, and an answer outside it is wrong even if the algebra was
+right.</p></div>
+</section>
+<section class="beat" aria-label="Absolute Extrema: The Table Is the Method" data-source-line="199">
+  <h2>Absolute Extrema: The Table Is the Method</h2>
+<p>Four steps, every time: critical numbers in $\displaystyle [a,b]$; a table of $\displaystyle x$ and
+$\displaystyle f(x)$ with the endpoints in it; the Extreme Value Theorem says the answers
+are in that table; write them in sentences.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Find the absolute maximum and minimum of</p>
+<div class="dm">$$f(x) = x^{4} - 2x^{2} + 3 \quad\text{on}\quad [-2,2]$$</div>
+<p>All four steps. Write the answers in sentences.</p></div>
+  <details class="sol"><summary>Show: step 1 &mdash; critical numbers</summary>
+<div class="dm">$$f'(x) = 4x^{3} - 4x = 4x\left(x^{2}-1\right) = 4x\left(x-1\right)\left(x+1\right)$$</div>
+<div class="dm">$$c = -1,\quad c = 0,\quad c = 1$$</div>
+<p>$\displaystyle f'$ exists everywhere, so that is all of them &mdash; and all three are inside
+$\displaystyle [-2,2]$, so none gets discarded.</p>
+  </details>
+  <details class="sol"><summary>Show: step 2 &mdash; the table, endpoints included</summary>
+<table><caption>Five candidates: three critical numbers and both endpoints</caption><tr><th scope="col">$\displaystyle x$</th><th scope="col">$\displaystyle f(x)$</th><th scope="col">why it is on the list</th></tr><tr><td>$\displaystyle -2$</td><td>$\displaystyle 11$</td><td>left endpoint</td></tr><tr><td>$\displaystyle -1$</td><td>$\displaystyle 2$</td><td>critical number</td></tr><tr><td>$\displaystyle 0$</td><td>$\displaystyle 3$</td><td>critical number</td></tr><tr><td>$\displaystyle 1$</td><td>$\displaystyle 2$</td><td>critical number</td></tr><tr><td>$\displaystyle 2$</td><td>$\displaystyle 11$</td><td>right endpoint</td></tr></table>
+  </details>
+  <details class="sol"><summary>Show: steps 3 and 4 &mdash; compare, then say it properly</summary>
+<p>$\displaystyle f$ has an absolute <strong>maximum value of $\displaystyle 11$</strong>, at <strong>$\displaystyle x=-2$ and
+$\displaystyle x=2$</strong>; and an absolute <strong>minimum value of $\displaystyle 2$</strong>, at <strong>$\displaystyle x=-1$ and
+$\displaystyle x=1$</strong>.</p>
+  </details>
+  <div class="key"><p><strong>The value is unique; the location need not be.</strong> There is
+one largest value, $\displaystyle 11$ &mdash; but it happens at two different places, and both
+belong in the answer. This is exactly why the sentence has to carry a $\displaystyle y$ and
+an $\displaystyle x$: “the maximum is $\displaystyle 11$” does not tell me where, and “the maximum is
+at $\displaystyle x=2$” leaves out the other place it happens.</p></div>
+</section>
+<section class="beat" aria-label="Related Rates: Just the First Line" data-source-line="251">
+  <h2>Related Rates: Just the First Line</h2>
+<p>Every related-rates problem turns on one decision made before any calculus
+happens: <strong>which relation do you write down, and does it have a second
+changing length in it that has to go?</strong></p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Four setups. For each, say only two things &mdash; what relation you
+write first, and whether a second changing length has to be eliminated before
+you differentiate. <strong>Do not work any of them out.</strong>
+<span style="display:block;height:0.3em"></span>
+(a) A spherical balloon is inflated. How fast is the radius growing?
+<span style="display:block;height:0.2em"></span>
+(b) A kite stays $\displaystyle 100$ ft above the ground and drifts horizontally. How fast
+is the string paying out?
+<span style="display:block;height:0.2em"></span>
+(c) A trough whose cross-section is a triangle, narrow at the bottom, is
+filling with water. How fast is the depth rising?
+<span style="display:block;height:0.2em"></span>
+(d) A rocket rises straight up; an observer stands a fixed distance away. How
+fast is the angle of elevation changing?</p></div>
+  <details class="sol"><summary>Show: what each one needs, and which one is different</summary>
+<p><strong>(a)</strong> $\displaystyle V = \frac{4}{3}\pi r^{3}$. Two changing quantities, $\displaystyle V$ and
+$\displaystyle r$; one equation. Complete &mdash; nothing to eliminate.
+<span style="display:block;height:0.2em"></span>
+<strong>(b)</strong> Pythagoras. Two changing quantities &mdash; the horizontal distance
+and the string &mdash; and one equation, since the $\displaystyle 100$ is a constant and not a
+variable. Complete.
+<span style="display:block;height:0.2em"></span>
+<strong>(c)</strong> Volume $\displaystyle =$ cross-sectional area $\displaystyle \times$ length, and the
+triangle's <em>width</em> grows as the depth grows. So the changing quantities
+are the volume, the width and the depth &mdash; <strong>three</strong> &mdash; against
+<strong>one</strong> equation. One short. <strong>Similar triangles</strong> supply the
+missing relation between width and depth, and that substitution happens
+<em>before</em> you differentiate.
+<span style="display:block;height:0.2em"></span>
+<strong>(d)</strong> A trigonometric ratio:
+$\displaystyle \tan\theta = \frac{\text{height}}{\text{distance}}$. Two changing
+quantities, the angle and the height, and one equation &mdash; the distance is
+constant. Complete.</p>
+  </details>
+  <div class="key"><p>Only one of those four needs a second relation, and there is a
+count that decides it every time: <strong>you need one fewer equation than
+you have changing quantities.</strong>
+<span style="display:block;height:0.3em"></span>
+$\displaystyle V = \frac{4}{3}\pi r^{3}$ has <strong>two</strong> changing quantities, $\displaystyle V$ and $\displaystyle r$,
+and <strong>one</strong> equation. $\displaystyle 2-1=1$, so it is complete &mdash; give me one rate
+and the other is determined.
+<span style="display:block;height:0.2em"></span>
+$\displaystyle V = \frac{1}{3}\pi r^{2}h$ has <strong>three</strong>, $\displaystyle V$ and $\displaystyle r$ and $\displaystyle h$, and
+still only <strong>one</strong> equation. You are one short, so go and find a second
+relation &mdash; and it will almost always be similar triangles, read off the
+picture.
+<span style="display:block;height:0.3em"></span>
+So the question is never “are there two letters”. It is <em>do I have one
+fewer equation than I have changing quantities</em>.</p></div>
+  <div class="key"><p>Why one fewer, and not the same number? Every equation you write
+removes a degree of freedom. With as many equations as quantities nothing
+could move at all. Leaving exactly one free is what lets the problem hand you
+a single rate and have everything else follow &mdash; which is precisely what a
+related-rates problem does.</p></div>
+  <div class="key"><p>One more thing that costs people the problem: a relation that is
+true at <strong>every</strong> instant goes in <em>early</em>; a value true at
+<strong>one</strong> instant goes in <em>last</em>. Substitute the one-instant number
+before you differentiate and you have frozen the quantity, and its derivative
+is zero.</p></div>
+</section>
+<section class="beat" aria-label="Derive One You Have Not Been Asked For" data-source-line="328">
+  <h2>Derive One You Have Not Been Asked For</h2>
+<p>Fourteen points ask you to <strong>derive</strong> a rule rather than use it. The two
+on the paper are not these two &mdash; but the moves are the same, and these are
+the two Quiz 6 said had not landed.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>Derive $\displaystyle \dfrac{d}{dx}\tan x$, using only the rules for sine and
+cosine.</p></div>
+  <details class="sol"><summary>Show: a quotient, and then one rearrangement</summary>
+<div class="dm">$$\tan x = \frac{\sin x}{\cos x}
+ \quad\Longrightarrow\quad
+ \frac{d}{dx}\tan x = \frac{\left(\cos x\right)\left(\cos x\right)
+ - \left(\sin x\right)\left(-\sin x\right)}{\cos^{2}x}$$</div>
+<div class="dm">$$= \frac{\cos^{2}x + \sin^{2}x}{\cos^{2}x}
+ = \frac{1}{\cos^{2}x} = \sec^{2}x$$</div>
+<p>The Pythagorean identity is doing the last step. Without it you stop one line
+short.</p>
+  </details>
+  <div class="turn your"><span class="badge">Your turn</span><p>Now derive $\displaystyle \dfrac{d}{dx}\sin^{-1}x$, using the trig derivatives but
+<strong>no</strong> inverse-trig rule.</p></div>
+  <details class="sol"><summary>Show: set it up so the inverse disappears</summary>
+<p>Let $\displaystyle y = \sin^{-1}x$. Take the sine of both sides to get rid of the inverse:</p>
+<div class="dm">$$\sin y = x$$</div>
+<p>Differentiate both sides with respect to $\displaystyle x$ &mdash; Chain Rule on the left:</p>
+<div class="dm">$$\cos y\cdot\frac{dy}{dx} = 1 \quad\Longrightarrow\quad
+\frac{dy}{dx} = \frac{1}{\cos y}$$</div>
+  </details>
+  <details class="sol"><summary>Show: now turn the $\displaystyle y$ back into an $\displaystyle x$</summary>
+<p>Draw the triangle: $\displaystyle \sin y = x$ means opposite $\displaystyle x$, hypotenuse $\displaystyle 1$, so the
+adjacent side is $\displaystyle \sqrt{1-x^{2}}$ and $\displaystyle \cos y = \sqrt{1-x^{2}}$.</p>
+<div class="dm">$$\frac{d}{dx}\sin^{-1}x = \frac{1}{\sqrt{1-x^{2}}}$$</div>
+  </details>
+  <div class="key"><p>Every one of these derivations has the same three beats:
+<strong>rewrite so you can differentiate</strong> (a quotient, or take sine of both
+sides), <strong>differentiate</strong>, then <strong>convert back</strong> so no $\displaystyle y$ survives
+in the answer. An answer still containing $\displaystyle y$ is not finished.</p></div>
+</section>
+</main>
+<p class="hint">6 sections &middot; solutions open on click</p>
+<dialog class="lb" aria-label="Enlarged figure">
+  <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
+</dialog>
+<script>
+// Editor scroll-sync. Same protocol the filled/blank builds use, so the editor
+// side needs no new message types: we post htmlSectionChanged as the reader
+// scrolls, and honour goToSection when the cursor moves in the tex.
+(function(){
+  if(!window.parent || window.parent===window) return;
+  var secs=document.querySelectorAll('main > section[data-source-line]');
+  if(!secs.length) return;
+  var cur=null, t=null;
+  function report(){
+    // the section covering 30% down the viewport -- the one being read, not
+    // the one clipped at the top edge
+    var mark=window.innerHeight*0.3, best=null;
+    for(var i=0;i<secs.length;i++){
+      var r=secs[i].getBoundingClientRect();
+      if(r.top<=mark && r.bottom>0) best=secs[i];
+    }
+    if(!best) return;
+    var line=parseInt(best.dataset.sourceLine,10);
+    if(!isNaN(line) && line!==cur){
+      cur=line;
+      window.parent.postMessage({type:'htmlSectionChanged',sourceLine:line},'*');
+    }
+  }
+  addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(report,80);},
+                   {passive:true});
+  addEventListener('message',function(e){
+    if(!e.data || e.data.type!=='goToSection' || e.data.sourceLine==null) return;
+    // nearest section at or before the cursor: a cursor inside a frame should
+    // scroll to that frame, not fail to match its exact opening line
+    var best=null;
+    for(var i=0;i<secs.length;i++){
+      if(parseInt(secs[i].dataset.sourceLine,10)<=e.data.sourceLine) best=secs[i];
+    }
+    if(best){ cur=parseInt(best.dataset.sourceLine,10);
+              best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+// ── Advancing the page ────────────────────────────────────────────────────
+// One action, whether it arrives from a block's own arrow or from a key. A
+// presentation remote is just a USB keyboard sending Right/PageDown, so making
+// the page respond to those keys is all a clicker needs -- no pairing, no app.
+//
+// The order is document order within the section you are looking at: chain
+// rows, step lines and closed reveals alike. When a section has nothing left
+// hidden, the next press moves to the next section. That is the slide feel,
+// on a scrolling page.
+(function(){
+  function units(sec){
+    return [].slice.call(sec.querySelectorAll('.rv, .stp, details.sol'));
+  }
+  function covered(u){
+    return u.tagName === 'DETAILS' ? !u.open : u.hidden;
+  }
+  function uncover(u, yes){
+    if(u.tagName === 'DETAILS'){ u.open = yes; } else { u.hidden = !yes; }
+    pair(u, yes);
+  }
+  // Anything marked .pair in the same chain row rides with it.
+  function pair(u, yes){
+    var row = u.closest ? u.closest('.ch-row') : null;
+    if(!row) return;
+    [].forEach.call(row.querySelectorAll('.pair'), function(p){ p.hidden = !yes; });
+  }
+  function tidy(sec){
+    // a block's arrow retires once that block has nothing left to give
+    [].forEach.call(sec.querySelectorAll('.steps, .chain'), function(box){
+      var b = box.querySelector('button.more');
+      if(b) b.hidden = !box.querySelector('.rv[hidden], .stp[hidden]');
+    });
+  }
+  function sections(){
+    return [].slice.call(document.querySelectorAll('main > section.beat'));
+  }
+  function here(){
+    var mark = window.innerHeight * 0.3, best = null;
+    sections().forEach(function(s){
+      var r = s.getBoundingClientRect();
+      if(r.top <= mark && r.bottom > 0) best = s;
+    });
+    return best || sections()[0];
+  }
+  function go(sec, d){
+    var all = sections(), i = all.indexOf(sec) + d;
+    if(i >= 0 && i < all.length) all[i].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.__advance = function(d){
+    var sec = here();
+    if(!sec) return;
+    var us = units(sec);
+    if(d > 0){
+      for(var i = 0; i < us.length; i++){
+        if(covered(us[i])){
+          uncover(us[i], true); tidy(sec);
+          us[i].scrollIntoView({block:'nearest'});
+          return;
+        }
+      }
+      go(sec, 1);
+    } else {
+      for(var j = us.length - 1; j >= 0; j--){
+        if(!covered(us[j])){ uncover(us[j], false); tidy(sec); return; }
+      }
+      go(sec, -1);
+    }
+  };
+  var FWD = {ArrowRight:1, ArrowDown:1, PageDown:1, ' ':1, Enter:1, Spacebar:1};
+  var BACK = {ArrowLeft:1, ArrowUp:1, PageUp:1, Backspace:1};
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    // let a focused control have its own keys
+    var t = e.target;
+    if(t && t.closest && t.closest('button, a, summary, input, textarea, dialog')) return;
+    if(FWD[e.key]){ e.preventDefault(); window.__advance(1); }
+    else if(BACK[e.key]){ e.preventDefault(); window.__advance(-1); }
+  });
+
+  // Reveal-all. Drives the same uncover() every other control uses, so a page
+  // opened this way ends in exactly the state stepping through would leave it.
+  var ra = document.querySelector('.revealall');
+  if(ra) ra.addEventListener('click', function(){
+    var on = ra.getAttribute('aria-pressed') === 'true';
+    [].forEach.call(sections(), function(sec){
+      units(sec).forEach(function(u){ uncover(u, !on); });
+      tidy(sec);
+    });
+    ra.setAttribute('aria-pressed', on ? 'false' : 'true');
+    ra.textContent = on ? 'Reveal all answers' : 'Hide all answers';
+  });
+})();
+
+// One button per derivation: each press uncovers the next line.
+(function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.steps > button.more, .chain > button.more, details.sol > button.more');
+    if(!b) return;
+    var box=b.parentElement;
+    // .rv marks a revealable unit: a whole step block, a chain row, or the
+    // right-hand side of the chain's first row. One selector covers all three.
+    var next=box.querySelector('.rv[hidden], .stp[hidden]');
+    if(next){
+      next.hidden=false;
+      // its citation, if it has one, arrives on the same press
+      var row=next.closest?next.closest('.ch-row'):null;
+      if(row) [].forEach.call(row.querySelectorAll('.pair'),
+                              function(p){ p.hidden=false; });
+    }
+    if(!box.querySelector('.rv[hidden], .stp[hidden]')) b.hidden=true;
+  });
+})();
+(function(){
+  var dlg=document.querySelector('dialog.lb'), img=dlg.querySelector('img');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button.zoom');
+    if(b){ img.src=b.dataset.src;
+           img.alt=b.querySelector('img').alt;   // carry the real alt text over
+           dlg.showModal(); return; }
+    if(e.target.closest('dialog.lb .close') || e.target===dlg) dlg.close();
+  });
+  dlg.addEventListener('close',function(){ img.removeAttribute('src'); });
+})();
+</script>
+</body></html>
