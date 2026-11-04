@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTH 207 &mdash; 4.3 Derivatives and the Shape of a Graph</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
+  loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
+<script id="MathJax-script" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0;
+  /* Line length, in characters, so it holds at every font size. 46ch was at the
+     narrow end of the readable 45-75 band and left half the width empty. This
+     is the AT-HOME value; the projected build overrides it below, because there
+     the scarce thing is screen area, not eye travel -- the font is already
+     ~30px on a 1920 screen, so a longer line is still easy to scan and buys
+     fewer scroll steps. */
+  --measure:68ch}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  /* Projected on a 1920 screen this lands near 30px, which is legible from the
+     back of the room; on a laptop later it falls back to comfortable reading. */
+  font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
+/* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
+   expose the next thing. Read later: it is just a long page. */
+:root{--measure:88ch}
+main{scroll-snap-type:y proximity}
+.beat{scroll-snap-align:start;min-height:100vh}
+.beat{padding:2.4rem 6vw 3rem;
+  border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
+h1{font-size:1.9rem;margin:0 0 .3rem}
+h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
+h2.cont{color:var(--slate);font-size:1.3rem}
+p{margin:0 0 .9rem;max-width:var(--measure)}
+ul{max-width:var(--measure)}
+.turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
+.turn.my{border-left-color:var(--slate);background:#f6f8fb}
+.badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;background:var(--amber);color:#3a2c00;padding:.32rem .6rem;
+  border-radius:3px;margin-bottom:.7rem}
+.turn.my .badge{background:var(--slate);color:#fff}
+.turn .work{font-size:.85rem;color:var(--slate);font-style:italic;margin:.6rem 0 0}
+.key{border-left:6px solid var(--ink);background:#f2f3f5;padding:.9rem 1.2rem;margin:1.2rem 0}
+.sol.shown{margin:1.1rem 0;border-left:5px solid var(--slate);background:#fff;
+  padding:.7rem 1.1rem;border-radius:0 5px 5px 0}
+.sol-label{display:block;font:600 .78rem/1 system-ui,sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate);margin-bottom:.5rem}
+details.sol{margin:1.1rem 0;border:1px solid var(--rule);border-radius:5px;background:#fff}
+details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-ui,sans-serif;
+  color:var(--slate)}
+details.sol[open] summary{border-bottom:1px solid var(--rule)}
+details.sol > :not(summary){padding:0 1.1rem}
+details.sol > p:last-child{padding-bottom:.9rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;
+  max-width:min(100%, calc(var(--measure) * 1.25))}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;margin:.6rem 0}
+table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--rule);padding:.3rem .9rem .3rem 0;text-align:left}
+th{border-bottom:2px solid var(--ink)}
+.boxed{margin:1.1rem 0;padding:.8rem 1.1rem;border-radius:5px;background:#fff;
+  border:1px solid var(--rule)}
+.boxed.dfn{border-left:5px solid var(--ink)}
+.boxed.thm{border-left:5px solid var(--amber)}
+.boxed.ex{border-left:5px solid var(--slate)}
+.badge.dfn{background:var(--ink);color:#fff}
+.badge.thm{background:var(--amber);color:#3a2c00}
+.ex{margin:1rem 0}
+.workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
+.badge.ex{background:var(--ink);color:#fff}
+.grid-item{margin:0}
+/* A figure is not prose. --measure is a READING measure -- how far the eye
+   travels across a line of text -- and has no business capping a diagram: on a
+   1920 projector it left roughly 370px empty beside every wide plot. So a
+   figure takes the full beat width and centres, and scale=N is now read as a
+   fraction of THAT, still centred, not of the reading measure. An img keeps
+   max-width (not width), so a small figure centres at its natural size instead
+   of being upscaled into blur.
+
+   No height cap: a beat is allowed to be taller than the screen. This is a
+   scrolling document, not a slide -- min-height:100vh is a floor. The
+   "over-tall slide scrolls its title away" rule belongs to the retired reveal
+   decks, which is why deck_check only geometry-checks when _slides.html
+   exists. */
+figure{margin:1.2rem auto;max-width:100%}
+figure img{max-width:100%;height:auto;display:block;margin:0 auto}
+button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
+  border-radius:3px;display:block;max-width:100%}
+button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+dialog.lb{border:none;padding:0;max-width:96vw;max-height:96vh;background:transparent}
+dialog.lb::backdrop{background:rgba(13,27,42,.88)}
+dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
+dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
+  background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem;text-align:center}
+header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
+header.top p{color:var(--slate);margin:.2rem 0 0}
+.dm{margin:.9rem 0;text-align:center}
+/* A derivation advanced by one button. [hidden] needs !important because .stp
+   sets display, which would otherwise win over the UA's hidden rule. */
+/* An equation chain. display:table so the three columns agree across rows --
+   that is the whole point: the = signs must line up. */
+.chain{display:table;margin:1.1rem 0 .4rem;border-collapse:collapse;
+  /* .beat is a column flexbox, which stretches its children to full width --
+     a shrink-to-fit table then became 1408px and the LHS floated to the far
+     right. align-self keeps the table the width of its own contents. */
+  align-self:start}
+.daybreak{display:flex;align-items:center;gap:1rem;margin:2.2rem 0 1.6rem;
+  color:var(--slate);font:600 .8rem/1 system-ui,sans-serif;letter-spacing:.1em;
+  text-transform:uppercase}
+.daybreak::before,.daybreak::after{content:"";flex:1;height:1px;
+  background:var(--rule)}
+.practicelink{margin:1.4rem 0 0}
+.practicelink a{display:inline-block;border:1px solid var(--amber);
+  border-radius:4px;padding:.45rem .9rem;color:var(--ink);text-decoration:none;
+  font:600 .9rem/1 system-ui,sans-serif;background:#fffdf5}
+.practicelink a:hover{background:var(--amber);color:#3a2c00}
+.chain.gen .ch-y{max-width:44ch;padding-left:1.6rem}
+.gc-cap{display:block;margin:0 0 .35rem;font:600 .82rem/1.3 system-ui,sans-serif;
+  letter-spacing:.02em;color:#5b6b7a;text-transform:uppercase}
+.ch-row{display:table-row}
+/* Row spacing. .12rem was fine while every row was one line tall, but a
+   chain whose rows are stacked fractions -- dividing inside a square root,
+   say -- ran them together with nothing to separate one step from the next.
+   These are table cells, so padding is the only lever; margin does nothing. */
+.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.45rem 0}
+.ch-l{text-align:right}
+.ch-e{text-align:center;padding-left:.5rem;padding-right:.5rem}
+.ch-r{text-align:left}
+/* The reason column. Set back and lighter so the algebra still reads as the
+   line and the citation as an annotation on it, not a second equation. */
+.ch-y{text-align:left;padding-left:2.2rem;font-size:.82em;color:#5b6b7a;
+  font-style:italic;max-width:26ch}
+.chain [hidden]{display:none!important}
+@media print{.chain [hidden]{display:table-cell!important}
+  .chain .ch-row[hidden]{display:table-row!important}}
+.steps{margin:1.1rem 0}
+.steps .stp{display:block;margin:.2rem 0}
+.steps [hidden]{display:none!important}
+.chain button.more,
+.steps button.more,
+details.sol button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
+  background:none;border:1px solid var(--amber);border-radius:50%;
+  width:2rem;height:2rem;padding:0;cursor:pointer;margin-top:.5rem;
+  display:inline-flex;align-items:center;justify-content:center}
+.chain button.more:hover,
+.steps button.more:hover,
+details.sol button.more:hover{background:#fff8e2}
+.chain button.more:focus-visible,
+.steps button.more:focus-visible,
+details.sol button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media print{.steps .stp{display:block!important}.steps button.more{display:none}}
+/* The in-page reveal. This used to be a text link to the twin page, and it was
+   missed constantly -- it looked like navigation, because it was. A filled
+   button that says what it does, in the first thing you see, is the fix. */
+/* --slate, not --blue: this palette has no --blue, and an undefined custom
+   property is not an error -- the background simply did not paint and the
+   button was white text on a cream page. Invisible, and working perfectly. */
+.revealall{font:600 1rem system-ui,sans-serif;cursor:pointer;
+  margin:.6rem 0 .2rem;padding:.55rem 1.1rem;border-radius:8px;
+  border:2px solid var(--slate);background:var(--slate);color:#fff}
+.revealall:hover{filter:brightness(1.12)}
+.revealall:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+.revealall[aria-pressed="true"]{background:var(--bg);color:var(--slate)}
+@media print{.revealall{display:none}}
+.switch{margin:.35rem 0 0}
+.switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px}
+.switch a:hover{border-bottom-width:2px}
+.switch a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media print{.switch{display:none}}
+.hint{position:fixed;right:1rem;bottom:1rem;font:.72rem system-ui,sans-serif;color:var(--slate);
+  background:#fff;border:1px solid var(--rule);border-radius:4px;padding:.35rem .6rem;opacity:.75}
+@media print{.beat{min-height:auto;page-break-inside:avoid}.hint{display:none}
+  details.sol{break-inside:avoid}details.sol summary{display:none}}
+</style></head>
+<body>
+<header class="top">
+  <h1>4.3 &nbsp;Derivatives and the Shape of a Graph</h1>
+  <p>MTH 207 Calculus I &mdash; Applications of Differentiation</p>
+  <p class="switch"><button class="revealall" type="button" aria-pressed="false">Reveal all answers</button></p>
+</header>
+<main>
+<section class="beat" aria-label="What Section 4.1 Left Unfinished" data-source-line="78">
+  <h2>What Section 4.1 Left Unfinished</h2>
+<p>Fermat's Theorem told us where to <em>look</em>: a local maximum or minimum can
+only happen at a <strong>critical number</strong>. It did not tell us which critical
+numbers are actually extrema &mdash; and we already know some are not.</p>
+  <figure style="width:72%"><button type="button" class="zoom" data-src="figures/cubic_candidate.png" aria-label="Enlarge figure"><img src="figures/cubic_candidate.png" alt="The graph of y equals x cubed, with the horizontal
+     tangent line at the origin drawn as a dashed line and the origin marked
+     with a dot. The curve rises from lower left to upper right, flattening
+     momentarily at the origin and then continuing to rise, so the flat
+     tangent sits at a point that is neither a peak nor a valley. The caption
+     reads f of x equals x cubed at c equals zero, f prime of zero equals
+     zero but no local max or min, and a note beside the tangent says the
+     tangent is flat and the curve goes straight
+     through."></button></figure>
+  <div class="key"><p>$\displaystyle f(x) = x^{3}$ has $\displaystyle f'(0) = 0$, so $\displaystyle 0$ is a critical number. But
+look at it: the curve flattens for an instant and <strong>carries straight
+on</strong>. There is no hill and no valley at the origin. A critical number is a
+<strong>candidate</strong>, nothing more.</p></div>
+<p>So we need a test that looks at a critical number and says: maximum, minimum,
+or neither. Every such test is going to be phrased in terms of whether $\displaystyle f$ is
+<strong>rising or falling</strong> on each side of that candidate &mdash; so before we can
+prove anything, those two words have to mean something exact.</p>
+</section>
+<section class="beat" aria-label="What Increasing Really Means" data-source-line="120">
+  <h2>What Increasing Really Means</h2>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; Increasing and Decreasing</span><p>Let $\displaystyle x_{1}$ and $\displaystyle x_{2}$ be any two points of an interval $\displaystyle I$ with
+$\displaystyle x_{1} < x_{2}$.
+<ul><li>$\displaystyle f$ is <strong>increasing</strong> on $\displaystyle I$ if $\displaystyle f(x_{1}) < f(x_{2})$.</li><li>$\displaystyle f$ is <strong>decreasing</strong> on $\displaystyle I$ if $\displaystyle f(x_{1}) > f(x_{2})$.</li></ul></p></div>
+  <figure style="width:88%"><button type="button" class="zoom" data-src="figures/increasing_defn.png" aria-label="Enlarge figure"><img src="figures/increasing_defn.png" alt="Two panels. On the left a rising curve with two inputs x
+     one and x two marked on the axis, x one to the left of x two, and dotted
+     lines up to the curve and across to their outputs. A vertical double
+     arrow at the left edge spans the two outputs and is labelled f of x two
+     minus f of x one is greater than zero. The panel is titled increasing: x
+     one less than x two implies f of x one less than f of x two. On the
+     right the same two inputs on a falling curve, where the output at x two
+     is the lower one, and the arrow is labelled f of x two minus f of x one
+     is less than zero, with the panel titled
+     decreasing."></button></figure>
+  <div class="key"><p>Two things to carry, and they are both about the words rather than
+the pictures. <strong>“On an interval”</strong> &mdash; increasing is never a property
+of a single point, always of a stretch, which is why every answer in this
+section is an <strong>interval</strong>. And <strong>“any two points”</strong> &mdash; it has
+to hold for every pair in that stretch, not just the pair you happened to
+look at.</p></div>
+</section>
+<section class="beat" aria-label="Why $f&#x27; &gt; 0$ Means Increasing" data-source-line="178">
+  <h2>Why $f&#x27; &gt; 0$ Means Increasing</h2>
+<p>Take a rising function, pick any two points, and draw the <strong>secant</strong>
+between them.</p>
+  <figure style="width:92%"><button type="button" class="zoom" data-src="figures/mvt_increasing.png" aria-label="Enlarge figure"><img src="figures/mvt_increasing.png" alt="A curve rising from left to right. Two points, at x one
+     and x two, are marked and joined by a straight grey secant line; a
+     leader points to it from a label reading the SECANT, slope the quantity
+     f of x two minus f of x one over x two minus x one. Between those
+     points, at c, a dashed orange tangent line is drawn which is visibly
+     parallel to the secant; a second leader points to it from a label
+     reading the TANGENT at c, slope f prime of c, parallel. A horizontal
+     double arrow along the bottom spans x one to x two and is labelled x two
+     minus x one; a vertical double arrow at the right spans the two function
+     values and is labelled f of x two minus f of x one. Neither difference
+     is given a sign."></button></figure>
+  <div class="key"><p><strong>That picture is the whole argument.</strong> If $\displaystyle f' > 0$ everywhere
+on the interval then every tangent slopes <em>up</em> &mdash; and the Mean Value
+Theorem says the secant between any two points is parallel to one of those
+tangents. So the secant slopes up too, which says exactly that
+$\displaystyle f(x_{2}) > f(x_{1})$. Flip every “up” to “down” and you have the other
+half.</p></div>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; The Increasing/Decreasing Test</span><p>If $\displaystyle f'(x) > 0$ on an interval, then $\displaystyle f$ is <strong>increasing</strong> on that
+interval. If $\displaystyle f'(x) < 0$ on an interval, then $\displaystyle f$ is <strong>decreasing</strong>
+there.</p></div>
+  <div class="key"><p>Worth noticing what the MVT just bought. We knew nothing about $\displaystyle f$
+except the <strong>sign of its derivative</strong>, and concluded something about the
+<strong>values</strong> of $\displaystyle f$ at two points we never computed. That is what the MVT
+is for &mdash; it is the bridge from derivative information back to function
+information. Without it, “$\displaystyle f' > 0$ means rising” is a picture you believe;
+with it, it is a <strong>theorem</strong>.</p></div>
+  <details class="sol"><summary>Show: if you want the algebra behind it</summary>
+<p>The MVT, as we stated it in §4.2 with $\displaystyle a = x_{1}$ and $\displaystyle b = x_{2}$:</p>
+<div class="dm">$$f'(c) = \frac{f(x_{2}) - f(x_{1})}{x_{2} - x_{1}}$$</div>
+<p>Multiply both sides by $\displaystyle x_{2}-x_{1}$, which is <strong>positive</strong> because we
+chose $\displaystyle x_{1} < x_{2}$:</p>
+<div class="dm">$$f(x_{2}) - f(x_{1}) = f'(c)\left(x_{2} - x_{1}\right)$$</div>
+<p>Now the difference sits alone on the left and the right is a product whose
+second factor is positive &mdash; so the sign of $\displaystyle f(x_{2}) - f(x_{1})$ is the
+sign of $\displaystyle f'(c)$, and nothing else.</p>
+<div class="dm">$$f'(c) > 0 \;\Longrightarrow\; f(x_{2}) > f(x_{1}),
+\qquad f'(c) < 0 \;\Longrightarrow\; f(x_{2}) < f(x_{1})$$</div>
+<p>And $\displaystyle x_{1} < x_{2}$ were <em>any</em> two points of the interval, so each line
+is a statement about every pair at once &mdash; which is the definition.</p>
+  </details>
+</section>
+<section class="beat" aria-label="The Sign Chart" data-source-line="240">
+  <h2>The Sign Chart</h2>
+<p>The test is about <em>intervals</em>, so the work is to split the number line
+into intervals on which $\displaystyle f'$ cannot change sign. Those breaks happen only at
+critical numbers &mdash; and at points where $\displaystyle f$ is undefined.</p>
+<p><ol><li><strong>Mark every place $\displaystyle f'$ could change sign</strong> &mdash; that is $\displaystyle f'(c)=0$
+      or $\displaystyle f'(c)$ does not exist. They cut the line into intervals.</li><li><strong>Determine the sign of $\displaystyle f'$ on each interval</strong>: pick a point
+      inside it and evaluate $\displaystyle f'$. You need the <strong>sign</strong>, not the value.</li><li><strong>Put the signs on the chart and interpret them</strong> &mdash; rising where
+      $\displaystyle f' > 0$, falling where $\displaystyle f' < 0$.</li></ol></p>
+<p>Work it on $\displaystyle f(x) = x^{3}-12x-5$. ⚠ Every chart in this section starts the
+same way, so watch the <em>shape</em> of the work, not the numbers.</p>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">step 1 &mdash; differentiate, then FACTOR</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle f(x) = x^{3}-12x-5$</span><span class="ch-y">the function we were handed</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle f'(x) = 3x^{2}-12$</span><span class="ch-y">Power Rule, term by term</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle f'(x) = 3\left(x^{2}-4\right)$</span><span class="ch-y">pull the common factor of $\displaystyle 3$ out &mdash; always do this before anything else</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle f'(x) = 3\left(x-2\right)\left(x+2\right)$</span><span class="ch-y">difference of squares; now the roots can be <em>read off</em></span></div>
+    <button type="button" class="more" aria-label="Next step of step 1 &mdash; differentiate, then FACTOR">&#9654;</button>
+  </div>
+  <div class="key"><p><strong>Factoring is not tidying, it is the whole step.</strong>
+$\displaystyle 3x^{2}-12$ and $\displaystyle 3(x-2)(x+2)$ are the same function, but only the second one
+tells you where it is zero without solving anything.</p></div>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">step 2 &mdash; the critical numbers, and there are two kinds</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle f'(x) = 3\left(x-2\right)\left(x+2\right) = 0$</span><span class="ch-y">set the factored form equal to zero</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle x = -2 \quad\text{and}\quad x = 2$</span><span class="ch-y">a product is zero exactly when a factor is</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \text{$f'$ exists for every $x$}$</span><span class="ch-y">$\displaystyle f'$ is a polynomial &mdash; so the second kind of critical number, where $\displaystyle f'$ fails to exist, contributes none here</span></div>
+    <button type="button" class="more" aria-label="Next step of step 2 &mdash; the critical numbers, and there are two kinds">&#9654;</button>
+  </div>
+<p>Those two numbers cut the line into three intervals:
+$\displaystyle (-\infty,-2)$, $\displaystyle (-2,2)$ and $\displaystyle (2,\infty)$.</p>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">step 3 &mdash; one test point inside each interval</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle f'(-3) = 3(-3-2)(-3+2) = 3(-5)(-1) = 15 > 0$</span><span class="ch-y">any point of $\displaystyle (-\infty,-2)$ would do; $\displaystyle -3$ is just the easiest</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle f'(0) = 3(0-2)(0+2) = 3(-2)(2) = -12 < 0$</span><span class="ch-y">$\displaystyle 0$ is almost always the easiest point in a middle interval</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle f'(3) = 3(3-2)(3+2) = 3(1)(5) = 15 > 0$</span><span class="ch-y">and one from $\displaystyle (2,\infty)$</span></div>
+    <button type="button" class="more" aria-label="Next step of step 3 &mdash; one test point inside each interval">&#9654;</button>
+  </div>
+  <div class="key"><p><strong>Only the sign was ever needed.</strong> The $\displaystyle 15$, $\displaystyle -12$ and $\displaystyle 15$
+did no work that $\displaystyle +$, $\displaystyle -$ and $\displaystyle +$ would not have done. Here they were free,
+so we wrote them &mdash; but substitute into the <strong>factored</strong> form and you
+can stop as soon as you know whether each factor is positive or negative.
+On a messier $\displaystyle f'$ that is the difference between a line of work and a page of
+it, and no calculator is ever needed for any of it.</p></div>
+<p>Now put those three signs on the chart:</p>
+  <figure style="width:96%"><button type="button" class="zoom" data-src="figures/signchart_notation.png" aria-label="Enlarge figure"><img src="figures/signchart_notation.png" alt="Two number lines drawn one above the other for f of x
+     equals x cubed minus twelve x minus five. The upper line is the sign
+     chart, labelled f prime: the numbers negative two and two are marked on
+     it with dots and written below the line, a zero sits above each of them,
+     and the sign of f prime in each of the three intervals is written at the
+     same level as those zeros, reading plus, then minus, then plus. The lower
+     line is labelled f and carries the same two marked numbers, but instead
+     of signs it has three slanted arrows above it: an upward arrow on the
+     left, a downward arrow in the middle, and an upward arrow on the right,
+     so the shape of the function can be read directly off the
+     line."></button></figure>
+  <div class="key"><p><strong>Two number lines, and the second one is the point.</strong> The top
+line is bookkeeping: the signs of $\displaystyle f'$ and, at each marked number, whether it
+got there because $\displaystyle f'=0$ or because $\displaystyle f'$ <strong>DNE</strong>. The bottom line turns
+that into a <em>picture</em> &mdash; up, down, up. Read the arrows and you can
+already see the shape of the graph, with a peak at $\displaystyle x=-2$ and a valley at
+$\displaystyle x=2$, before computing a single $\displaystyle y$-value.</p></div>
+  <figure style="width:92%"><button type="button" class="zoom" data-src="figures/graph_cubic.png" aria-label="Enlarge figure"><img src="figures/graph_cubic.png" alt="The graph of y equals x cubed minus twelve x minus five,
+     on the same x-range as the sign chart above it and shaded in the same
+     three bands. The curve rises to a local maximum at x equals negative two,
+     where the value is eleven, falls across the middle band, and rises again
+     after a local minimum at x equals two, where the value is negative
+     twenty-one. Both turning points are marked and
+     labelled."></button></figure>
+  <div class="key"><p>The arrows were right. The curve climbs to the peak at $\displaystyle x=-2$,
+falls to the valley at $\displaystyle x=2$, and climbs again &mdash; and the only thing the
+graph adds is the two $\displaystyle y$-values, $\displaystyle 11$ and $\displaystyle -21$. Everything about the
+<em>shape</em> was already on the second number line.</p></div>
+  <div class="key"><p>A number lands on the chart for one of <strong>two</strong> reasons, and the
+chart records which. Here both came from $\displaystyle f'=0$. They do not have to &mdash; so
+run the same three steps on $\displaystyle f(x) = x^{2/3}$ and watch the second kind
+appear:</p></div>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">steps 1 and 2 &mdash; differentiate, and look for BOTH kinds</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle f(x) = x^{2/3}$</span><span class="ch-y">the function</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle f'(x) = \tfrac{2}{3}x^{-1/3}$</span><span class="ch-y">Power Rule &mdash; subtract one from the exponent</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle f'(x) = \frac{2}{3\sqrt[3]{x}}$</span><span class="ch-y">a negative exponent is a denominator; now both kinds are visible at a glance</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \text{$f'$ is never $0$}$</span><span class="ch-y">the numerator is the constant $\displaystyle 2$, and $\displaystyle 2 \neq 0$ &mdash; so the FIRST kind contributes nothing</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle \text{$f'(0)$ does not exist}$</span><span class="ch-y">the denominator is $\displaystyle 0$ at $\displaystyle x=0$, and $\displaystyle f(0)=0$ is defined &mdash; so $\displaystyle x=0$ IS a critical number, of the second kind</span></div>
+    <button type="button" class="more" aria-label="Next step of steps 1 and 2 &mdash; differentiate, and look for BOTH kinds">&#9654;</button>
+  </div>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">step 3 &mdash; one test point on each side of $\displaystyle 0$</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle f'(-1) = \frac{2}{3\sqrt[3]{-1}} = \frac{2}{3(-1)} = -\tfrac{2}{3} < 0$</span><span class="ch-y">the cube root of a negative is negative &mdash; $\displaystyle \sqrt[3]{-1} = -1$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle f'(1) = \frac{2}{3\sqrt[3]{1}} = \frac{2}{3} > 0$</span><span class="ch-y">and on the right</span></div>
+    <button type="button" class="more" aria-label="Next step of step 3 &mdash; one test point on each side of $\displaystyle 0$">&#9654;</button>
+  </div>
+  <figure style="width:96%"><button type="button" class="zoom" data-src="figures/signchart_dne.png" aria-label="Enlarge figure"><img src="figures/signchart_dne.png" alt="Two number lines for f of x equals x to the two thirds. The
+     upper sign chart is labelled f prime and has a single marked number,
+     zero, with the letters DNE above it rather than a zero, because the
+     derivative is undefined there rather than equal to zero; the signs are
+     minus on the left and plus on the right. The lower line, labelled f,
+     carries a downward arrow on the left and an upward arrow on the right, so
+     the valley at the origin is visible even though the derivative never
+     equals zero."></button></figure>
+  <figure style="width:88%"><button type="button" class="zoom" data-src="figures/graph_x23.png" aria-label="Enlarge figure"><img src="figures/graph_x23.png" alt="The graph of y equals x to the two thirds, shaded in two
+     bands matching the sign chart above it. The curve falls steeply to the
+     origin and rises steeply away from it, meeting at a sharp cusp rather
+     than a smooth valley floor; the cusp is marked and annotated that the
+     tangent there is vertical, so f prime of zero does not exist, and that it
+     is a local minimum all the same."></button></figure>
+  <div class="key"><p>A minimum where the derivative does not exist. The curve comes to a
+<strong>point</strong> rather than levelling off &mdash; the tangent there is vertical, so
+$\displaystyle f'(0)$ cannot be a number. Fermat's Theorem never promised $\displaystyle f'(c)=0$ at an
+extremum; it promised $\displaystyle c$ is a <strong>critical number</strong>, and “$\displaystyle f'$ does not
+exist” is the other half of that definition earning its place.</p></div>
+  <div class="key"><p>Testing <em>one</em> point per interval is enough, and that is not a
+shortcut &mdash; it is the Intermediate Value Theorem. If $\displaystyle f'$ were positive
+somewhere in an interval and negative somewhere else in it, $\displaystyle f'$ would have
+to be zero in between, and that zero would be a critical number we had
+already marked.</p></div>
+</section>
+<section class="beat" aria-label="Your Turn: Rising, Falling, and What Happens Between" data-source-line="386">
+  <h2>Your Turn: Rising, Falling, and What Happens Between</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>For $\displaystyle f(x) = 2x^{3} - 9x^{2} + 12x$, find the intervals where $\displaystyle f$ is
+increasing and where it is decreasing.
+<span style="display:block;height:0.3em"></span>
+<strong>Draw both number lines</strong> &mdash; the sign chart, and the arrows underneath it.
+Then say, in a sentence, what happens at each critical number.</p></div>
+  <details class="sol"><summary>Show: step 1 &mdash; the critical numbers</summary>
+<div class="dm">$$f'(x) = 6x^{2} - 18x + 12 = 6\left(x^{2}-3x+2\right) = 6\left(x-1\right)\left(x-2\right)$$</div>
+<p>$\displaystyle f'$ is a polynomial, so it exists everywhere. The critical numbers are
+$\displaystyle x=1$ and $\displaystyle x=2$.</p>
+  </details>
+  <details class="sol"><summary>Show: step 2 &mdash; one test point per interval, recorded as a chart</summary>
+<p>Test $\displaystyle x=0$: $\displaystyle 6(-1)(-2) > 0$. Test $\displaystyle x=1.5$: $\displaystyle 6(0.5)(-0.5) < 0$. Test $\displaystyle x=3$:
+$\displaystyle 6(2)(1) > 0$. Only the sign matters, so pick the easiest number in each
+interval &mdash; then record the three answers on one line:</p>
+    <div class="rv" hidden><figure style="width:90%"><button type="button" class="zoom" data-src="figures/signchart_yt1.png" aria-label="Enlarge figure"><img src="figures/signchart_yt1.png" alt="Two number lines for f prime equals six times the quantity
+     x minus one times the quantity x minus two. The upper sign chart marks 1
+     and 2, with a zero above each and the signs plus, minus, plus across the
+     three intervals. The lower line shows the same two marks with an upward
+     arrow, then a downward arrow, then an upward arrow, so the peak at x
+     equals one and the valley at x equals two can be read off
+     directly."></button></figure></div>
+    <button type="button" class="more" aria-label="Next part of step 2 &mdash; one test point per interval, recorded as a chart">&#9654;</button>
+  </details>
+  <details class="sol"><summary>Show: step 3 &mdash; say it</summary>
+<p>$\displaystyle f$ is increasing on $\displaystyle (-\infty,1)$ and on $\displaystyle (2,\infty)$, and decreasing on
+$\displaystyle (1,2)$. At $\displaystyle x=1$ the function stops rising and starts falling, so there is a
+<strong>local maximum</strong>, of value $\displaystyle f(1) = 5$. At $\displaystyle x=2$ it stops falling and
+starts rising, so there is a <strong>local minimum</strong>, of value $\displaystyle f(2) = 4$.</p>
+  </details>
+</section>
+<section class="beat" aria-label="The First Derivative Test" data-source-line="428">
+  <h2>The First Derivative Test</h2>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; The First Derivative Test</span><p>Suppose $\displaystyle c$ is a critical number of a continuous function $\displaystyle f$.
+<ul><li>If $\displaystyle f'$ changes from <strong>positive to negative</strong> at $\displaystyle c$, then $\displaystyle f$ has
+      a <strong>local maximum</strong> at $\displaystyle c$.</li><li>If $\displaystyle f'$ changes from <strong>negative to positive</strong> at $\displaystyle c$, then $\displaystyle f$ has
+      a <strong>local minimum</strong> at $\displaystyle c$.</li><li>If $\displaystyle f'$ <strong>does not change sign</strong> at $\displaystyle c$, then $\displaystyle f$ has
+      <strong>neither</strong> at $\displaystyle c$.</li></ul></p></div>
+  <div class="key"><p>The third bullet is the one that matters, and it is the reason
+$\displaystyle x^{3}$ was the first thing on the board today. A critical number is not a
+promise. The test is about the <strong>change</strong> in sign, never about the value
+of $\displaystyle f'$ at $\displaystyle c$ &mdash; which is zero, and tells you nothing by itself.</p></div>
+</section>
+<section class="beat" aria-label="Your Turn: A Critical Number That Is Neither" data-source-line="453">
+  <h2>Your Turn: A Critical Number That Is Neither</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Find the critical numbers of $\displaystyle f(x) = x^{3} - 3x^{2} + 3x$ and
+classify each one.
+<span style="display:block;height:0.3em"></span>
+<strong>Draw both number lines</strong> &mdash; the sign chart, and the arrows underneath it.</p></div>
+  <details class="sol"><summary>Show: there is one critical number, and it is not an extremum</summary>
+<div class="dm">$$f'(x) = 3x^{2} - 6x + 3 = 3\left(x^{2}-2x+1\right) = 3\left(x-1\right)^{2}$$</div>
+<p>So $\displaystyle x=1$ is the only critical number. Now test either side:</p>
+<div class="dm">$$f'(0) = 3(1) > 0 \qquad f'(2) = 3(1) > 0$$</div>
+<p>$\displaystyle f'$ is positive on <em>both</em> sides &mdash; in fact $\displaystyle f'\geq 0$ everywhere,
+since it is $\displaystyle 3$ times a square.</p>
+    <div class="rv" hidden><figure style="width:90%"><button type="button" class="zoom" data-src="figures/signchart_nochange.png" aria-label="Enlarge figure"><img src="figures/signchart_nochange.png" alt="Two number lines for f prime equals three times the
+     quantity x minus one, squared. The upper sign chart marks a single
+     number, 1, with a zero above it, and the sign of f prime is plus on both
+     sides. The lower line shows an upward arrow on each side of the mark and
+     no change of direction at it, so the curve flattens for an instant and
+     carries on rising rather than turning."></button></figure></div>
+    <div class="rv" hidden><p>There is <strong>no sign change</strong>, so by the First Derivative Test $\displaystyle f$ has
+<strong>neither</strong> a maximum nor a minimum at $\displaystyle x=1$. The curve flattens for an
+instant and carries on rising.</p></div>
+    <button type="button" class="more" aria-label="Next part of there is one critical number, and it is not an extremum">&#9654;</button>
+  </details>
+  <div class="key"><p>This is $\displaystyle x^{3}$ wearing a disguise &mdash; and you could not have
+spotted it from $\displaystyle f'(1) = 0$ alone. The squared factor is the tell: a factor
+of $\displaystyle f'$ raised to an <strong>even</strong> power touches zero without crossing it, so
+the sign on the two sides is the same.</p></div>
+</section>
+<section class="beat" aria-label="One That Is Not a Polynomial" data-source-line="501">
+  <h2>One That Is Not a Polynomial</h2>
+  <div class="turn my"><span class="badge">My turn</span><p>Find the intervals of increase and decrease of
+$\displaystyle f(x) = x e^{-x}$, and classify any local extrema.
+<span style="display:block;height:0.3em"></span>
+Watch this one &mdash; it is about which factors you are allowed to ignore.</p></div>
+  <details class="sol"><summary>Show: product rule first, then factor</summary>
+<div class="dm">$$f'(x) = (1)e^{-x} + x\left(-e^{-x}\right) = e^{-x}\left(1 - x\right)$$</div>
+  </details>
+  <details class="sol"><summary>Show: the sign is decided by one factor only</summary>
+<p>$\displaystyle e^{-x}$ is <strong>always positive</strong>, so it can never change the sign of
+$\displaystyle f'$ &mdash; the whole sign question is the sign of $\displaystyle 1-x$.</p>
+<div class="dm">$$f'(x) > 0 \iff x < 1 \qquad f'(x) < 0 \iff x > 1$$</div>
+<figure style="width:90%"><button type="button" class="zoom" data-src="figures/signchart_yt3.png" aria-label="Enlarge figure"><img src="figures/signchart_yt3.png" alt="Two number lines for f prime equals e to the minus x times
+     the quantity one minus x. The upper sign chart marks a single number, 1,
+     with a zero above it, and the signs are plus on the left and minus on the
+     right. The lower line shows an upward arrow on the left and a downward
+     arrow on the right, so the peak at x equals one is
+     visible."></button></figure>
+    <div class="rv" hidden><p>So $\displaystyle f$ is increasing on $\displaystyle (-\infty,1)$ and decreasing on $\displaystyle (1,\infty)$, and by
+the First Derivative Test there is a <strong>local maximum</strong> at $\displaystyle x=1$, of
+value $\displaystyle f(1) = e^{-1} = \frac{1}{e}$.</p></div>
+    <button type="button" class="more" aria-label="Next part of the sign is decided by one factor only">&#9654;</button>
+  </details>
+  <div class="key"><p>Factor $\displaystyle f'$ before you test anything, then throw away every factor
+that cannot change sign. An exponential is never zero and never negative; a
+square is never negative; a sum of squares plus one is never zero. Each one
+you discard is an interval you do not have to test.</p></div>
+</section>
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="541">
+  <h2>What You Should Be Able to Do</h2>
+<ul><li>Use the sign of $\displaystyle f'$ to find the intervals where $\displaystyle f$ increases and
+      decreases, and <strong>say why</strong> one test point per interval is enough.</li><li>Apply the First Derivative Test to classify a critical number as a
+      local maximum, a local minimum, or neither.</li><li>Recognize when a critical number is <strong>neither</strong>, and explain it
+      from the sign of $\displaystyle f'$ on the two sides.</li><li>Factor $\displaystyle f'$ and discard the factors that cannot change sign.</li></ul>
+</section>
+<section class="beat" aria-label="Concavity: Which Way It Bends" data-source-line="561">
+  <h2>Concavity: Which Way It Bends</h2>
+<p>Increasing and decreasing is about where the curve <em>goes</em>. Concavity is
+about which way it <em>bends</em>, and it is the second derivative that knows.</p>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; Concave Up and Concave Down</span><p>$\displaystyle f$ is <strong>concave up</strong> on an interval if $\displaystyle f'' > 0$ there, and
+<strong>concave down</strong> if $\displaystyle f'' < 0$ there.</p></div>
+  <div class="key"><p>Why that is the right definition: $\displaystyle f''$ is the derivative of $\displaystyle f'$,
+so $\displaystyle f'' > 0$ says the <strong>slope is increasing</strong>. A curve whose slope keeps
+growing has to curl upward &mdash; it holds its tangent line <em>below</em> itself.</p></div>
+  <figure style="width:96%"><button type="button" class="zoom" data-src="figures/concavity_tangent.png" aria-label="Enlarge figure"><img src="figures/concavity_tangent.png" alt="Two panels. On the left, the square root curve with a
+     dashed tangent line drawn at x equals 4. The tangent lies above the
+     curve everywhere except where they touch. The panel is titled f double
+     prime less than zero, concave down, and annotated that the tangent lies
+     above so it overestimates. On the right, an upward parabola with a
+     dashed tangent line that lies below the curve everywhere except at the
+     point of contact. That panel is titled f double prime greater than zero,
+     concave up, and annotated that the tangent lies below so it
+     underestimates."></button></figure>
+  <div class="key"><p><strong>This is the question §3.10 could not answer.</strong> When we
+estimated $\displaystyle \sqrt{9.2}$ with a tangent line and asked whether the estimate was
+too big or too small, the honest answer was “look at the picture” &mdash; the
+reason is concavity, and we did not have it yet. Now we do: the square root
+is concave down, so its tangent line lies above it, so a linear approximation
+to a square root <strong>overestimates</strong>. Every time.</p></div>
+</section>
+<section class="beat" aria-label="Inflection Points, and the Trap" data-source-line="598">
+  <h2>Inflection Points, and the Trap</h2>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; Inflection Point</span><p>A point on the curve where $\displaystyle f$ is continuous and the <strong>concavity
+changes</strong> &mdash; from up to down, or down to up.</p></div>
+  <div class="key"><p><strong>Read that again: it is about a CHANGE.</strong> Solving $\displaystyle f''=0$
+gives you candidates, exactly the way solving $\displaystyle f'=0$ gave you candidates in
+§4.1. It does not give you inflection points, and the test is the same shape
+as the First Derivative Test: check the sign of $\displaystyle f''$ on <em>both sides</em>.</p></div>
+  <figure style="width:96%"><button type="button" class="zoom" data-src="figures/inflection_trap.png" aria-label="Enlarge figure"><img src="figures/inflection_trap.png" alt="Two panels, each showing a curve through the origin with a
+     dotted vertical line at x equals zero. On the left, y equals x to the
+     fourth, which is concave up on both sides of the origin; it is labelled
+     f double prime of zero equals zero but concave up on both sides, not an
+     inflection point. On the right, y equals x cubed, whose concavity does
+     change at the origin; it is labelled f double prime of zero equals zero
+     and concavity does change, an inflection
+     point."></button></figure>
+  <div class="key"><p>Both have $\displaystyle f''(0) = 0$. Only one has an inflection point there. So
+“$\displaystyle f''(c) = 0$, therefore $\displaystyle (c,f(c))$ is an inflection point” is
+<strong>false</strong>, and it is false for exactly the reason “$\displaystyle f'(c)=0$, therefore
+$\displaystyle f$ has an extremum at $\displaystyle c$” was false in §4.1. Same mistake, one derivative
+up.</p></div>
+</section>
+<section class="beat" aria-label="Your Turn: Concavity and Inflection" data-source-line="631">
+  <h2>Your Turn: Concavity and Inflection</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>For $\displaystyle f(x) = x^{3} - 3x^{2} + 3x$ &mdash; yesterday's function &mdash;
+find the intervals of concavity and any inflection points.
+<span style="display:block;height:0.3em"></span>
+<strong>Draw both number lines again</strong>, but now the top one is the sign chart
+for $\displaystyle f''$, and underneath it draw the <em>bend</em> rather than arrows.</p></div>
+  <details class="sol"><summary>Show: differentiate twice, then check for a CHANGE</summary>
+<div class="dm">$$f'(x) = 3\left(x-1\right)^{2} \qquad f''(x) = 6\left(x-1\right)$$</div>
+<p>$\displaystyle f''=0$ at $\displaystyle x=1$. Test either side:</p>
+<div class="dm">$$f''(0) = -6 < 0 \quad\text{concave down} \qquad f''(2) = 6 > 0 \quad\text{concave up}$$</div>
+<figure style="width:90%"><button type="button" class="zoom" data-src="figures/signchart_concavity_yt.png" aria-label="Enlarge figure"><img src="figures/signchart_concavity_yt.png" alt="Two number lines for f double prime equals six times the
+     quantity x minus one. The upper sign chart marks the number 1 with a zero
+     above it and the signs minus on the left and plus on the right. The lower
+     line shows a downward-curving arc on the left and an upward-curving arc
+     on the right, so the change of bend at x equals one is
+     visible."></button></figure>
+    <div class="rv" hidden><p>The concavity <strong>does</strong> change, so there is an inflection point at
+$\displaystyle x=1$, namely the point $\displaystyle (1,1)$.</p></div>
+    <button type="button" class="more" aria-label="Next part of differentiate twice, then check for a CHANGE">&#9654;</button>
+  </details>
+  <div class="key"><p>Hold yesterday's result next to this one. At $\displaystyle x=1$ this function
+has a critical number that is <strong>not</strong> an extremum, and an inflection
+point. Those are not a coincidence: the curve flattens out and keeps going
+precisely because it is switching which way it bends.</p></div>
+</section>
+<section class="beat" aria-label="The Second Derivative Test" data-source-line="665">
+  <h2>The Second Derivative Test</h2>
+<div class="boxed thm"><span class="badge thm">Theorem &mdash; The Second Derivative Test</span><p>Suppose $\displaystyle f''$ is continuous near $\displaystyle c$ and $\displaystyle f'(c) = 0$.
+<ul><li>If $\displaystyle f''(c) > 0$, then $\displaystyle f$ has a <strong>local minimum</strong> at $\displaystyle c$.</li><li>If $\displaystyle f''(c) < 0$, then $\displaystyle f$ has a <strong>local maximum</strong> at $\displaystyle c$.</li><li>If $\displaystyle f''(c) = 0$, the test says <strong>nothing</strong>. Go back to the first
+      derivative test.</li></ul></p></div>
+  <div class="key"><p>It is a picture, not a rule to memorize. A horizontal tangent on a
+curve that is bending <em>upward</em> sits at the bottom of a bowl; a
+horizontal tangent on a curve bending <em>downward</em> sits at the top of a
+hill. And notice what is cheaper here: this test evaluates $\displaystyle f''$ at
+<strong>one point</strong>, where the first derivative test needs the sign of $\displaystyle f'$ on
+<em>both sides</em>.</p></div>
+</section>
+<section class="beat" aria-label="Your Turn: One Function, Three Warnings" data-source-line="690">
+  <h2>Your Turn: One Function, Three Warnings</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Let $\displaystyle f(x) = x^{4} - 4x^{3}$. Find all critical numbers, classify
+each, and find the intervals of concavity and any inflection points.
+<span style="display:block;height:0.3em"></span>
+<strong>Four number lines this time</strong>: a sign chart for $\displaystyle f'$ with its arrows,
+and a sign chart for $\displaystyle f''$ with its bends.</p></div>
+  <details class="sol"><summary>Show: step 1 &mdash; critical numbers</summary>
+<div class="dm">$$f'(x) = 4x^{3} - 12x^{2} = 4x^{2}\left(x-3\right)$$</div>
+<p>So $\displaystyle x=0$ and $\displaystyle x=3$.</p>
+  </details>
+  <details class="sol"><summary>Show: step 2 &mdash; try the second derivative test, and watch it fail</summary>
+<div class="dm">$$f''(x) = 12x^{2} - 24x = 12x\left(x-2\right)$$</div>
+<p>At $\displaystyle x=3$: $\displaystyle f''(3) = 36 > 0$, so a <strong>local minimum</strong>, of value
+$\displaystyle f(3) = 81 - 108 = -27$.
+<span style="display:block;height:0.2em"></span>
+At $\displaystyle x=0$: $\displaystyle f''(0) = 0$. The test says <strong>nothing</strong>. Fall back to the sign
+of $\displaystyle f'$: the factor $\displaystyle 4x^{2}$ is never negative, so the sign of $\displaystyle f'$ is the
+sign of $\displaystyle x-3$, which is negative on both sides of $\displaystyle 0$. No sign change, so
+$\displaystyle x=0$ is <strong>neither</strong> a maximum nor a minimum.</p>
+  </details>
+  <details class="sol"><summary>Show: the two charts side by side, which is the whole analysis</summary>
+<figure style="width:94%"><button type="button" class="zoom" data-src="figures/signchart_both.png" aria-label="Enlarge figure"><img src="figures/signchart_both.png" alt="Four number lines in two pairs. The first pair is for f
+     prime equals four x squared times the quantity x minus three: the sign
+     chart marks 0 and 3 with a zero above each and the signs minus, minus,
+     plus, and beneath it a line of arrows points down, down, then up, so the
+     direction does not change at zero and that critical number is not an
+     extremum. The second pair is for f double prime equals twelve x times the
+     quantity x minus two: the sign chart marks 0 and 2 with a zero above each
+     and the signs plus, minus, plus, and beneath it, instead of arrows, three
+     small arcs are drawn, curving up, then down, then up, so the change of
+     bend at both marks is visible."></button></figure>
+    <div class="rv" hidden><p>Read them together: $\displaystyle x=0$ appears on <em>both</em> charts, and it is an
+inflection point on the lower one while being a non-extremum on the upper one.</p></div>
+    <button type="button" class="more" aria-label="Next part of the two charts side by side, which is the whole analysis">&#9654;</button>
+  </details>
+  <details class="sol"><summary>Show: step 3 &mdash; concavity</summary>
+<p>$\displaystyle f''=12x(x-2)$ is zero at $\displaystyle x=0$ and $\displaystyle x=2$, and it is an upward parabola, so
+it is positive outside $\displaystyle [0,2]$ and negative inside.</p>
+<div class="dm">$$\text{concave up on } (-\infty,0) \text{ and } (2,\infty);
+\quad \text{concave down on } (0,2)$$</div>
+<p>Concavity changes at both, so there are inflection points at $\displaystyle x=0$ and
+$\displaystyle x=2$.</p>
+  </details>
+  <div class="key"><p>Three warnings in one function. $\displaystyle x=0$ is a critical number that is
+<strong>not</strong> an extremum; the second derivative test is <strong>silent</strong>
+there; and $\displaystyle x=0$ <strong>is</strong> an inflection point. A critical number and an
+inflection point can sit at the same place, and neither one implies the
+other.</p></div>
+</section>
+<section class="beat" aria-label="Reading the Shape from the Signs Alone" data-source-line="751">
+  <h2>Reading the Shape from the Signs Alone</h2>
+<p>Everything so far started from a formula for $\displaystyle f$. The harder question &mdash; and
+the one worth the most on Exam 3 &mdash; hands you $\displaystyle f'$ and $\displaystyle f''$ and never tells
+you what $\displaystyle f$ is.</p>
+  <div class="turn your"><span class="badge">Your turn</span><p>A function $\displaystyle f$ has</p>
+<div class="dm">$$f'(x) = \left(x+1\right)\left(x-2\right) \qquad f''(x) = 2x-1$$</div>
+<p>Find the intervals of increase and decrease, classify the critical numbers,
+find the intervals of concavity, and locate any inflection points.
+<span style="display:block;height:0.3em"></span>
+<strong>Build all four number lines.</strong> You are never given $\displaystyle f$, so the charts
+are the only picture you get &mdash; and they are enough.</p></div>
+  <details class="sol"><summary>Show: from $\displaystyle f'$ &mdash; where it rises and falls</summary>
+<p>$\displaystyle f'=0$ at $\displaystyle x=-1$ and $\displaystyle x=2$. It is an upward parabola, so it is positive
+outside $\displaystyle [-1,2]$ and negative inside:</p>
+<div class="dm">$$\text{increasing on } (-\infty,-1) \text{ and } (2,\infty);
+\quad \text{decreasing on } (-1,2)$$</div>
+<p>So $\displaystyle f'$ goes $\displaystyle +$ to $\displaystyle -$ at $\displaystyle x=-1$: <strong>local maximum</strong>. And $\displaystyle -$ to $\displaystyle +$ at
+$\displaystyle x=2$: <strong>local minimum</strong>.</p>
+  </details>
+  <details class="sol"><summary>Show: from $\displaystyle f''$ &mdash; which way it bends</summary>
+<p>$\displaystyle f''=0$ at $\displaystyle x=\frac{1}{2}$, negative to its left and positive to its right:</p>
+<div class="dm">$$\text{concave down on } \left(-\infty,\tfrac{1}{2}\right);
+\quad \text{concave up on } \left(\tfrac{1}{2},\infty\right)$$</div>
+<p>and the concavity changes, so there is an inflection point at
+$\displaystyle x=\frac{1}{2}$.</p>
+  </details>
+  <details class="sol"><summary>Show: all four lines at once</summary>
+<figure style="width:94%"><button type="button" class="zoom" data-src="figures/signchart_signinfo.png" aria-label="Enlarge figure"><img src="figures/signchart_signinfo.png" alt="Four number lines in two pairs for a function given only by
+     its derivatives. The first pair is for f prime equals the quantity x plus
+     one times the quantity x minus two: the sign chart marks negative one and
+     two, each with a zero above, and the signs plus, minus, plus; beneath it
+     the arrows point up, down, up, showing a maximum at negative one and a
+     minimum at two. The second pair is for f double prime equals two x minus
+     one: the sign chart marks one half with a zero above it and the signs
+     minus then plus, and beneath it an arc curving down then an arc curving
+     up, showing the single inflection point."></button></figure>
+  </details>
+  <details class="sol"><summary>Show: the cross-check that costs nothing</summary>
+<p>The two answers must agree. $\displaystyle f''(-1) = -3 < 0$: concave down at the local
+maximum, which is what a hilltop should be. $\displaystyle f''(2) = 3 > 0$: concave up at
+the local minimum. If those had disagreed, one of the sign charts was wrong.</p>
+  </details>
+  <div class="turn your"><span class="badge">Your turn</span><p>Now the other direction, and no formula at all: sketch the graph of
+<em>any</em> function with $\displaystyle f'(x) > 0$ and $\displaystyle f''(x) < 0$ for every $\displaystyle x$.</p></div>
+  <details class="sol"><summary>Show: what the two conditions each demand</summary>
+<p>$\displaystyle f' > 0$ everywhere: <strong>always rising</strong>, never flat, never falling.
+$\displaystyle f'' < 0$ everywhere: <strong>always concave down</strong>, bending the same way the
+whole time. Together: a curve that climbs the entire way but climbs ever more
+slowly &mdash; $\displaystyle \sqrt{x}$, or $\displaystyle \ln x$, or the left half of a downward parabola.
+There is no critical number, no extremum and no inflection point anywhere,
+because nothing ever changes sign.</p>
+  </details>
+  <div class="key"><p>Notice you never needed $\displaystyle f$. Every question in this frame was
+answered from <strong>where $\displaystyle f'$ and $\displaystyle f''$ are positive and where they are
+negative</strong> &mdash; and that is all a sign chart ever carries. Exam 3 pays
+seventeen points for exactly this, and never once gives you the function.</p></div>
+</section>
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="825">
+  <h2>What You Should Be Able to Do</h2>
+<ul><li>Use the sign of $\displaystyle f''$ to find intervals of concavity, and say what
+      concave up and concave down mean about the <strong>tangent line</strong>.</li><li>Find inflection points &mdash; and explain why $\displaystyle f''(c)=0$ is not enough.</li><li>Apply the Second Derivative Test, and say what to do when it returns
+      nothing.</li><li>Given only $\displaystyle f'$ and $\displaystyle f''$, describe the shape of $\displaystyle f$ completely; and
+      given a description, sketch a curve that fits it.</li></ul>
+</section>
+</main>
+<p class="hint">16 sections &middot; solutions open on click</p>
+<dialog class="lb" aria-label="Enlarged figure">
+  <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
+</dialog>
+<script>
+// Editor scroll-sync. Same protocol the filled/blank builds use, so the editor
+// side needs no new message types: we post htmlSectionChanged as the reader
+// scrolls, and honour goToSection when the cursor moves in the tex.
+(function(){
+  if(!window.parent || window.parent===window) return;
+  var secs=document.querySelectorAll('main > section[data-source-line]');
+  if(!secs.length) return;
+  var cur=null, t=null;
+  function report(){
+    // the section covering 30% down the viewport -- the one being read, not
+    // the one clipped at the top edge
+    var mark=window.innerHeight*0.3, best=null;
+    for(var i=0;i<secs.length;i++){
+      var r=secs[i].getBoundingClientRect();
+      if(r.top<=mark && r.bottom>0) best=secs[i];
+    }
+    if(!best) return;
+    var line=parseInt(best.dataset.sourceLine,10);
+    if(!isNaN(line) && line!==cur){
+      cur=line;
+      window.parent.postMessage({type:'htmlSectionChanged',sourceLine:line},'*');
+    }
+  }
+  addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(report,80);},
+                   {passive:true});
+  addEventListener('message',function(e){
+    if(!e.data || e.data.type!=='goToSection' || e.data.sourceLine==null) return;
+    // nearest section at or before the cursor: a cursor inside a frame should
+    // scroll to that frame, not fail to match its exact opening line
+    var best=null;
+    for(var i=0;i<secs.length;i++){
+      if(parseInt(secs[i].dataset.sourceLine,10)<=e.data.sourceLine) best=secs[i];
+    }
+    if(best){ cur=parseInt(best.dataset.sourceLine,10);
+              best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+// ── Advancing the page ────────────────────────────────────────────────────
+// One action, whether it arrives from a block's own arrow or from a key. A
+// presentation remote is just a USB keyboard sending Right/PageDown, so making
+// the page respond to those keys is all a clicker needs -- no pairing, no app.
+//
+// The order is document order within the section you are looking at: chain
+// rows, step lines and closed reveals alike. When a section has nothing left
+// hidden, the next press moves to the next section. That is the slide feel,
+// on a scrolling page.
+(function(){
+  function units(sec){
+    return [].slice.call(sec.querySelectorAll('.rv, .stp, details.sol'));
+  }
+  function covered(u){
+    return u.tagName === 'DETAILS' ? !u.open : u.hidden;
+  }
+  function uncover(u, yes){
+    if(u.tagName === 'DETAILS'){ u.open = yes; } else { u.hidden = !yes; }
+    pair(u, yes);
+  }
+  // Anything marked .pair in the same chain row rides with it.
+  function pair(u, yes){
+    var row = u.closest ? u.closest('.ch-row') : null;
+    if(!row) return;
+    [].forEach.call(row.querySelectorAll('.pair'), function(p){ p.hidden = !yes; });
+  }
+  function tidy(sec){
+    // a block's arrow retires once that block has nothing left to give
+    [].forEach.call(sec.querySelectorAll('.steps, .chain'), function(box){
+      var b = box.querySelector('button.more');
+      if(b) b.hidden = !box.querySelector('.rv[hidden], .stp[hidden]');
+    });
+  }
+  function sections(){
+    return [].slice.call(document.querySelectorAll('main > section.beat'));
+  }
+  function here(){
+    var mark = window.innerHeight * 0.3, best = null;
+    sections().forEach(function(s){
+      var r = s.getBoundingClientRect();
+      if(r.top <= mark && r.bottom > 0) best = s;
+    });
+    return best || sections()[0];
+  }
+  function go(sec, d){
+    var all = sections(), i = all.indexOf(sec) + d;
+    if(i >= 0 && i < all.length) all[i].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.__advance = function(d){
+    var sec = here();
+    if(!sec) return;
+    var us = units(sec);
+    if(d > 0){
+      for(var i = 0; i < us.length; i++){
+        if(covered(us[i])){
+          uncover(us[i], true); tidy(sec);
+          us[i].scrollIntoView({block:'nearest'});
+          return;
+        }
+      }
+      go(sec, 1);
+    } else {
+      for(var j = us.length - 1; j >= 0; j--){
+        if(!covered(us[j])){ uncover(us[j], false); tidy(sec); return; }
+      }
+      go(sec, -1);
+    }
+  };
+  var FWD = {ArrowRight:1, ArrowDown:1, PageDown:1, ' ':1, Enter:1, Spacebar:1};
+  var BACK = {ArrowLeft:1, ArrowUp:1, PageUp:1, Backspace:1};
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    // let a focused control have its own keys
+    var t = e.target;
+    if(t && t.closest && t.closest('button, a, summary, input, textarea, dialog')) return;
+    if(FWD[e.key]){ e.preventDefault(); window.__advance(1); }
+    else if(BACK[e.key]){ e.preventDefault(); window.__advance(-1); }
+  });
+
+  // Reveal-all. Drives the same uncover() every other control uses, so a page
+  // opened this way ends in exactly the state stepping through would leave it.
+  var ra = document.querySelector('.revealall');
+  if(ra) ra.addEventListener('click', function(){
+    var on = ra.getAttribute('aria-pressed') === 'true';
+    [].forEach.call(sections(), function(sec){
+      units(sec).forEach(function(u){ uncover(u, !on); });
+      tidy(sec);
+    });
+    ra.setAttribute('aria-pressed', on ? 'false' : 'true');
+    ra.textContent = on ? 'Reveal all answers' : 'Hide all answers';
+  });
+})();
+
+// One button per derivation: each press uncovers the next line.
+(function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.steps > button.more, .chain > button.more, details.sol > button.more');
+    if(!b) return;
+    var box=b.parentElement;
+    // .rv marks a revealable unit: a whole step block, a chain row, or the
+    // right-hand side of the chain's first row. One selector covers all three.
+    var next=box.querySelector('.rv[hidden], .stp[hidden]');
+    if(next){
+      next.hidden=false;
+      // its citation, if it has one, arrives on the same press
+      var row=next.closest?next.closest('.ch-row'):null;
+      if(row) [].forEach.call(row.querySelectorAll('.pair'),
+                              function(p){ p.hidden=false; });
+    }
+    if(!box.querySelector('.rv[hidden], .stp[hidden]')) b.hidden=true;
+  });
+})();
+(function(){
+  var dlg=document.querySelector('dialog.lb'), img=dlg.querySelector('img');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button.zoom');
+    if(b){ img.src=b.dataset.src;
+           img.alt=b.querySelector('img').alt;   // carry the real alt text over
+           dlg.showModal(); return; }
+    if(e.target.closest('dialog.lb .close') || e.target===dlg) dlg.close();
+  });
+  dlg.addEventListener('close',function(){ img.removeAttribute('src'); });
+})();
+</script>
+</body></html>
