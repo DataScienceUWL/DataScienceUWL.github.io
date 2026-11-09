@@ -182,21 +182,22 @@ details.sol button.more:focus-visible{outline:3px solid var(--amber);outline-off
   <p class="switch"><button class="revealall" type="button" aria-pressed="false">Reveal all answers</button></p>
 </header>
 <main>
-<section class="beat" aria-label="We Have Done This Before, the Hard Way" data-source-line="61">
-  <h2>We Have Done This Before, the Hard Way</h2>
-<p>Back in §2.4 we spent most of a class on one limit:</p>
-<div class="dm">$$\lim_{x \to 0} \frac{\sin x}{x} = 1$$</div>
-<p>It took the Squeeze Theorem, two inequalities from a picture of the unit
-circle, and a page of work.</p>
-  <div class="key"><p>Why was it hard? Substituting gives $\displaystyle \frac{0}{0}$, which is not a
-number and not an answer. Every limit law we have says “take the limit of
-the top over the limit of the bottom” &mdash; and that law is <strong>silent</strong>
-when both come out zero.</p></div>
-<p>Today we get a tool that settles that limit in one line. But the tool is
-dangerous in a specific way, so we spend the first ten minutes on when
-<em>not</em> to use it.</p>
+<section class="beat" aria-label="A Limit None of Our Tools Can Touch" data-source-line="73">
+  <h2>A Limit None of Our Tools Can Touch</h2>
+<p>Here is a limit that looks harmless:</p>
+<div class="dm">$$\lim_{x \to 1} \frac{\ln x}{x - 1}$$</div>
+<p>Substitute and you get $\displaystyle \frac{\ln 1}{1-1} = \frac{0}{0}$ &mdash; not an answer,
+just a report that the limit laws gave up. So reach for the Chapter 2
+toolkit:</p>
+<ul><li><strong>Factor and cancel?</strong> Nothing to factor &mdash; $\displaystyle \ln x$ is not a
+      polynomial and shares no factor with $\displaystyle x-1$.</li><li><strong>Rationalise, or multiply by a conjugate?</strong> There is no radical.</li><li><strong>Divide by the highest power?</strong> That is for limits at infinity.</li></ul>
+  <div class="key"><p>Every technique we own is exhausted &mdash; and yet the limit plainly
+<em>exists</em>: plot it and the curve walks through $\displaystyle x=1$ without a flicker.
+We are not stuck because the problem is hard. We are stuck because we are
+missing a tool.</p></div>
+<p>By the end of today this is <strong>one line</strong>.</p>
 </section>
-<section class="beat" aria-label="Indeterminate Does Not Mean Hard. It Means Undecided." data-source-line="83">
+<section class="beat" aria-label="Indeterminate Does Not Mean Hard. It Means Undecided." data-source-line="103">
   <h2>Indeterminate Does Not Mean Hard. It Means Undecided.</h2>
 <div class="boxed dfn"><span class="badge dfn">Definition &mdash; Indeterminate Form</span><p>An <strong>indeterminate form</strong> is a combination of limiting values that the
 limit laws cannot evaluate &mdash; the answer depends on <em>which</em> functions
@@ -207,10 +208,12 @@ produced it, not on the form alone.</p></div>
      infinity, infinity minus infinity, one to the infinity, zero to the
      zero, and infinity to the zero. The right box, outlined in green and
      headed not indeterminate, the limit laws already answered, just read it
-     off, lists zero over five equals zero, five over zero is infinite,
-     infinity plus infinity equals infinity, zero to the infinity equals
-     zero, infinity times infinity equals infinity, five over infinity equals
-     zero, and minus infinity minus infinity equals minus infinity. A caption
+     off, lists zero over five tends to zero, five over zero tends to plus
+     or minus infinity, infinity plus infinity tends to infinity, zero to the
+     infinity tends to zero, infinity times infinity tends to infinity, five
+     over infinity tends to zero, and infinity minus five tends to infinity.
+     Every entry uses an arrow rather than an equals sign, because these are
+     limit forms and not arithmetic. A caption
      reads that an indeterminate form is not a value, it is a report that the
      limit laws could not decide, and the answer depends on which functions
      produced it."></button></figure>
@@ -220,14 +223,16 @@ zero blows up, every time. $\displaystyle \frac{0}{0}$ <em>is</em>, because the 
 anything: $\displaystyle \frac{2x}{x} \to 2$, $\displaystyle \frac{x^{2}}{x} \to 0$ and
 $\displaystyle \frac{x}{x^{3}} \to \infty$ are all $\displaystyle \frac{0}{0}$ at $\displaystyle x=0$.</p></div>
 </section>
-<section class="beat" aria-label="l&#x27;Hospital&#x27;s Rule" data-source-line="118">
+<section class="beat" aria-label="l&#x27;Hospital&#x27;s Rule" data-source-line="140">
   <h2>l&#x27;Hospital&#x27;s Rule</h2>
 <div class="boxed thm"><span class="badge thm">Theorem &mdash; l'Hospital's Rule</span><p>Suppose $\displaystyle f$ and $\displaystyle g$ are differentiable near $\displaystyle a$ and $\displaystyle g'(x) \neq 0$ near $\displaystyle a$.
 If $\displaystyle \lim_{x \to a} \frac{f(x)}{g(x)}$ has the form $\displaystyle \frac{0}{0}$ or
 $\displaystyle \frac{\infty}{\infty}$, then</p>
 <div class="dm">$$\lim_{x \to a} \frac{f(x)}{g(x)} = \lim_{x \to a} \frac{f'(x)}{g'(x)}$$</div>
-<p>provided the limit on the right exists or is $\displaystyle \pm\infty$. The same holds for
-one-sided limits and for $\displaystyle x \to \pm\infty$.</p></div>
+<p>provided the limit on the right exists or is $\displaystyle \pm\infty$.</p>
+<p><strong>And $\displaystyle a$ does not have to be a number.</strong> Everything above stays true
+when $\displaystyle x \to a$ is replaced by any of</p>
+<div class="dm">$$x \to a^{+} \qquad x \to a^{-} \qquad x \to \infty \qquad x \to -\infty$$</div></div>
   <figure style="width:88%"><button type="button" class="zoom" data-src="figures/lhopital_why.png" aria-label="Enlarge figure"><img src="figures/lhopital_why.png" alt="Two curves, f in blue and g in green, both passing through
      the same point on the x axis at x equals a, each drawn with its dashed
      tangent line through that point. The blue curve is steeper, labelled f
@@ -242,13 +247,59 @@ one-sided limits and for $\displaystyle x \to \pm\infty$.</p></div>
 top. Separately, differentiate the bottom. Put one over the other. Writing
 $\displaystyle \frac{f'g - fg'}{g^{2}}$ here is the single most common way to lose these
 marks, and HW33 has a True/False item about exactly it.</p></div>
+  <div class="key"><p>⚠ <strong>That last clause is not small print.</strong> A large share of
+what you will do with this rule happens at infinity: the growth comparisons
+later today, four of the five problems in tonight's homework, and Exam 3's
+$\displaystyle \lim_{x\to\infty} \frac{x^{2}}{e^{3x}}$. “$\displaystyle \frac{\infty}{\infty}$ as
+$\displaystyle x \to \infty$” is just as legal as “$\displaystyle \frac{0}{0}$ at a point”, and you
+do not need a different theorem for it.</p></div>
   <div class="key"><p>And the hypothesis is not decoration. Both have to vanish (or both
 blow up) &mdash; that is what creates the common factor the picture cancels. If
 only one of them is zero there is nothing to cancel and the rule is simply
 <strong>false</strong>.</p></div>
 </section>
-<section class="beat" aria-label="My Turn: Check the Form. Then Check It Again." data-source-line="156">
-  <h2>My Turn: Check the Form. Then Check It Again.</h2>
+<section class="beat" aria-label="My Turn: The Limit We Opened With" data-source-line="191">
+  <h2>My Turn: The Limit We Opened With</h2>
+  <div class="turn my"><span class="badge">My turn</span><p>Evaluate $\displaystyle \lim_{x \to 1} \frac{\ln x}{x-1}$.</p></div>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">one application, and it is finished</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle \lim_{x \to 1} \frac{\ln x}{x-1}$</span><span class="ch-y">substituting gives $\displaystyle \frac{\ln 1}{1-1} = \frac{0}{0}$ &mdash; indeterminate, so the rule applies</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle = \lim_{x \to 1} \frac{1/x}{1}$</span><span class="ch-y">derivative of the top over derivative of the bottom: $\displaystyle \frac{d}{dx}\ln x = \frac{1}{x}$, and $\displaystyle \frac{d}{dx}(x-1) = 1$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle = \lim_{x \to 1} \frac{1}{x} = 1$</span><span class="ch-y">check the form &mdash; $\displaystyle \frac{1}{1}$ is a number, not indeterminate, so STOP and substitute</span></div>
+    <button type="button" class="more" aria-label="Next step of one application, and it is finished">&#9654;</button>
+  </div>
+  <div class="key"><p>Three lines, and the thing Chapter 2 could not touch is done. Two
+habits to take from it: the rule is <strong>one derivative on top, one on the
+bottom</strong> and never the Quotient Rule &mdash; and you <strong>stop the moment the
+form stops being indeterminate</strong>.</p></div>
+</section>
+<section class="beat" aria-label="Your Turn: The Same Limit, Two Ways" data-source-line="236">
+  <h2>Your Turn: The Same Limit, Two Ways</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Evaluate $\displaystyle \lim_{x \to 4} \frac{x^{2}-2x-8}{x^{2}-4x}$
+<strong>twice</strong> &mdash; once by factoring, the way you would have done it in
+Chapter 2, and once with l'Hospital's Rule.</p></div>
+  <details class="sol"><summary>Show: by factoring, the Chapter 2 way</summary>
+<p>Both top and bottom are zero at $\displaystyle x=4$, so $\displaystyle (x-4)$ is a factor of each:</p>
+<div class="dm">$$\frac{x^{2}-2x-8}{x^{2}-4x} = \frac{(x-4)(x+2)}{x(x-4)} = \frac{x+2}{x}$$</div>
+<p>The $\displaystyle (x-4)$ cancels, and now substitution works:
+$\displaystyle \frac{4+2}{4} = \frac{6}{4} = \frac{3}{2}$.</p>
+  </details>
+  <details class="sol"><summary>Show: by l'Hospital, in one line</summary>
+<p>The form is $\displaystyle \frac{16-8-8}{16-16} = \frac{0}{0}$, so the rule applies:</p>
+<div class="dm">$$\lim_{x \to 4} \frac{x^{2}-2x-8}{x^{2}-4x} = \lim_{x \to 4} \frac{2x-2}{2x-4} = \frac{6}{4} = \frac{3}{2}$$</div>
+<p>Check the form before stopping: $\displaystyle \frac{6}{4}$ is a number.</p>
+  </details>
+  <div class="key"><p>Same answer &mdash; and that is the point. The rule is not a different
+kind of mathematics, it is a shortcut past the cancelling. Notice
+<em>why</em> it worked: factoring found a common factor of $\displaystyle (x-4)$, and the
+picture two frames ago is that same common factor being cancelled
+automatically.</p></div>
+  <div class="key"><p>So when both routes are open, take whichever is shorter. The rule
+earns its keep on the limits where the Chapter 2 toolkit has nothing to
+offer &mdash; like the one we opened on.</p></div>
+</section>
+<section class="beat" aria-label="My Turn: When Once Is Not Enough" data-source-line="273">
+  <h2>My Turn: When Once Is Not Enough</h2>
   <div class="turn my"><span class="badge">My turn</span><p>Evaluate $\displaystyle \lim_{x \to 0} \frac{1 - \cos x}{x^{2}}$.</p></div>
   <div class="chain gen" aria-live="polite">
     <p class="gc-cap">one application is not enough</p>
@@ -268,29 +319,13 @@ $\displaystyle \frac{\cos x}{2}$ the form is $\displaystyle \frac{1}{2}$, <em>no
 differentiating again gives $\displaystyle \frac{-\sin x}{0}$, which is nonsense. The rule
 is a loop with an exit condition, and the exit condition is the form.</p></div>
 </section>
-<section class="beat" aria-label="Your Turn: The Same Limit, Two Ways" data-source-line="185">
-  <h2>Your Turn: The Same Limit, Two Ways</h2>
-  <div class="turn your"><span class="badge">Your turn</span><p>Evaluate $\displaystyle \lim_{x \to 2} \frac{x^{3} - 8}{x^{2} - 4}$
-<strong>twice</strong> &mdash; once by factoring, the way you would have done it in
-Chapter 2, and once with l'Hospital's Rule.</p></div>
-  <details class="sol"><summary>Show: by factoring, the Chapter 2 way</summary>
-<div class="dm">$$\frac{x^{3}-8}{x^{2}-4} = \frac{(x-2)(x^{2}+2x+4)}{(x-2)(x+2)} = \frac{x^{2}+2x+4}{x+2}$$</div>
-<p>The common factor cancels, and now substitution works:
-$\displaystyle \frac{4+4+4}{4} = \frac{12}{4} = 3$.</p>
-  </details>
-  <details class="sol"><summary>Show: by l'Hospital, in one line</summary>
-<p>The form is $\displaystyle \frac{8-8}{4-4} = \frac{0}{0}$, so</p>
-<div class="dm">$$\lim_{x \to 2} \frac{x^{3}-8}{x^{2}-4} = \lim_{x \to 2} \frac{3x^{2}}{2x} = \frac{12}{4} = 3$$</div>
-  </details>
-  <div class="key"><p>Same answer, and that is the point &mdash; the rule is not a different
-kind of mathematics, it is a shortcut past the cancelling. Notice also
-<em>why</em> it worked: factoring found a common factor of $\displaystyle (x-2)$, and the
-picture two frames ago is that common factor being cancelled automatically.</p></div>
-</section>
-<section class="beat" aria-label="Infinity Over Infinity, and Who Wins the Race" data-source-line="215">
+<section class="beat" aria-label="Infinity Over Infinity, and Who Wins the Race" data-source-line="302">
   <h2>Infinity Over Infinity, and Who Wins the Race</h2>
 <p>The other quotient form works exactly the same way.</p>
-  <div class="turn my"><span class="badge">My turn</span><p>Evaluate $\displaystyle \lim_{x \to \infty} \frac{\ln x}{x}$.</p></div>
+  <div class="turn my"><span class="badge">My turn</span><p>Evaluate $\displaystyle \lim_{x \to \infty} \frac{\ln x}{x}$.
+<span style="display:block;height:0.2em"></span>
+Note what we are relying on: $\displaystyle x \to \infty$, not $\displaystyle x \to a$. That is the
+clause the theorem added.</p></div>
   <details class="sol"><summary>Show: Both pieces run off to , so&hellip;</summary>
 <p>Both pieces run off to $\displaystyle \infty$, so the form is
 $\displaystyle \frac{\infty}{\infty}$ and the rule applies:
@@ -310,7 +345,7 @@ logarithm</strong>. Worth knowing before you start, because it tells you what th
 answer should be &mdash; and if your work disagrees with the picture, your work
 is wrong.</p></div>
 </section>
-<section class="beat" aria-label="Your Turn: Two Limits That Are NOT Indeterminate" data-source-line="247">
+<section class="beat" aria-label="Your Turn: Two Limits That Are NOT Indeterminate" data-source-line="337">
   <h2>Your Turn: Two Limits That Are NOT Indeterminate</h2>
   <div class="turn your"><span class="badge">Your turn</span><p>Neither of these needs l'Hospital's Rule. For each one, say what
 the form is and find the limit.
@@ -338,7 +373,7 @@ forms. <strong>Substitute first, every time.</strong> Only if what comes back is
 of the seven does anything else happen, and HW33 contains two problems
 designed to catch you here.</p></div>
 </section>
-<section class="beat" aria-label="Where We Are" data-source-line="286">
+<section class="beat" aria-label="Where We Are" data-source-line="376">
   <h2>Where We Are</h2>
 <ul><li>Substitute first. Write down the <strong>form</strong>.</li><li>If it is $\displaystyle \frac{0}{0}$ or $\displaystyle \frac{\infty}{\infty}$, l'Hospital applies:
       differentiate top and bottom <strong>separately</strong>.</li><li>Re-check the form before applying it again, and stop as soon as it is
@@ -348,7 +383,7 @@ $\displaystyle 1^{\infty}$, $\displaystyle 0^{0}$ and $\displaystyle \infty^{0}$
 of them can be fed to the rule directly. Every one is handled by
 <strong>rewriting it as a quotient first</strong>.</p>
 </section>
-<section class="beat" aria-label="Zero Times Infinity: Make It a Quotient" data-source-line="311">
+<section class="beat" aria-label="Zero Times Infinity: Make It a Quotient" data-source-line="401">
   <h2>Zero Times Infinity: Make It a Quotient</h2>
 <p>l'Hospital's Rule only ever reads a <em>quotient</em>. So every remaining form
 is handled the same way: turn it into one.</p>
@@ -375,7 +410,7 @@ $\displaystyle \frac{0}{0}$ and technically fine &mdash; but differentiating $\d
 worse, not better. Choosing badly is not wrong, it is just long.</p>
   </details>
 </section>
-<section class="beat" aria-label="Infinity Minus Infinity: Make It One Fraction" data-source-line="345">
+<section class="beat" aria-label="Infinity Minus Infinity: Make It One Fraction" data-source-line="435">
   <h2>Infinity Minus Infinity: Make It One Fraction</h2>
   <div class="key"><p>$\displaystyle \infty - \infty$ is indeterminate for the same reason as the
 others: it depends entirely on <em>how fast</em> each piece grows. The fix is
@@ -393,7 +428,7 @@ a quotient appears.</p></div>
     <button type="button" class="more" aria-label="Next step of combine first, differentiate second">&#9654;</button>
   </div>
 </section>
-<section class="beat" aria-label="The Power Forms: Take a Logarithm" data-source-line="371">
+<section class="beat" aria-label="The Power Forms: Take a Logarithm" data-source-line="461">
   <h2>The Power Forms: Take a Logarithm</h2>
 <p>Three forms are left &mdash; $\displaystyle 1^{\infty}$, $\displaystyle 0^{0}$ and $\displaystyle \infty^{0}$ &mdash; and all
 three are an exponent problem. You cannot differentiate your way out of an
@@ -418,7 +453,7 @@ $\displaystyle \ln y$, not of $\displaystyle y$. Writing $\displaystyle 3$ as th
 common error on this kind of problem &mdash; the last line must undo the
 logarithm.</p></div>
 </section>
-<section class="beat" aria-label="Your Turn: A Famous One" data-source-line="410">
+<section class="beat" aria-label="Your Turn: A Famous One" data-source-line="500">
   <h2>Your Turn: A Famous One</h2>
   <div class="turn your"><span class="badge">Your turn</span><p>Evaluate $\displaystyle \lim_{x \to 0^{+}} x^{x}$.
 <span style="display:block;height:0.3em"></span>
@@ -441,17 +476,44 @@ the $\displaystyle x$:</p>
 accident. On Exam 3 a correct number with no work behind it is not worth
 much &mdash; the method is what is being bought.</p></div>
 </section>
-<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="443">
+<section class="beat" aria-label="Your Turn: When the Rule Goes Round in Circles" data-source-line="550">
+  <h2>Your Turn: When the Rule Goes Round in Circles</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Evaluate $\displaystyle \lim_{x \to \infty} \frac{e^{x}+e^{-x}}{e^{x}-e^{-x}}$.
+<span style="display:block;height:0.3em"></span>
+Apply the rule once. Then apply it again. <strong>What do you notice?</strong></p></div>
+  <details class="sol"><summary>Show: apply it twice and look carefully</summary>
+<p>The form is $\displaystyle \frac{\infty}{\infty}$, so the rule is allowed:</p>
+<div class="dm">$$\lim_{x \to \infty} \frac{e^{x}+e^{-x}}{e^{x}-e^{-x}} = \lim_{x \to \infty} \frac{e^{x}-e^{-x}}{e^{x}+e^{-x}}$$</div>
+<p>The numerator and denominator have simply <strong>swapped</strong>. Apply it again
+and they swap back &mdash; you are exactly where you started. The form is still
+$\displaystyle \frac{\infty}{\infty}$ every time, so the rule never stops being
+<em>legal</em>; it just never gets anywhere.</p>
+  </details>
+  <details class="sol"><summary>Show: so go back to Chapter 2</summary>
+<p>Divide the top and the bottom by $\displaystyle e^{x}$, the fastest-growing piece:</p>
+<div class="dm">$$\lim_{x \to \infty} \frac{e^{x}+e^{-x}}{e^{x}-e^{-x}} = \lim_{x \to \infty} \frac{1+e^{-2x}}{1-e^{-2x}} = \frac{1+0}{1-0} = 1$$</div>
+<p>Done in one line, by the §2.6 method, with no derivatives at all.</p>
+  </details>
+  <div class="key"><p>So the rule has <strong>three</strong> ways of not helping, and you have
+now seen all of them:
+<ul><li>the form is <strong>not indeterminate</strong> &mdash; using it gives a wrong
+      answer (yesterday's two traps);</li><li>it is legal, but the new limit is <strong>harder</strong> than the old one;</li><li>it is legal forever and <strong>cycles</strong> &mdash; as here.</li></ul>
+In all three the answer is the same: the Chapter 2 toolkit never stopped
+working. l'Hospital's Rule was added to it, not a replacement for it.</p></div>
+</section>
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="592">
   <h2>What You Should Be Able to Do</h2>
 <ul><li>Substitute, and name the <strong>form</strong> before doing anything else.</li><li>Say which forms are indeterminate and which the limit laws already
       settle.</li><li>Apply l'Hospital's Rule to $\displaystyle \frac{0}{0}$ and $\displaystyle \frac{\infty}{\infty}$,
       differentiating top and bottom separately, and <strong>re-check the
       form</strong> before each repeat.</li><li>Rewrite $\displaystyle 0 \cdot \infty$ as a quotient and $\displaystyle \infty - \infty$ as one
       fraction.</li><li>Handle $\displaystyle 1^{\infty}$, $\displaystyle 0^{0}$ and $\displaystyle \infty^{0}$ by taking a logarithm &mdash;
-      and remember to exponentiate at the end.</li></ul>
+      and remember to exponentiate at the end.</li><li>Recognise the three ways the rule does <strong>not</strong> help &mdash; a form
+      that was never indeterminate, a new limit that is worse, and one that
+      cycles &mdash; and fall back on the Chapter 2 toolkit in each case.</li></ul>
 </section>
 </main>
-<p class="hint">13 sections &middot; solutions open on click</p>
+<p class="hint">15 sections &middot; solutions open on click</p>
 <dialog class="lb" aria-label="Enlarged figure">
   <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
 </dialog>
