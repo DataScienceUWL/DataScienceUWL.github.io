@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTH 207 &mdash; 5.2 The Definite Integral</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]},options:{enableMenu:false},
+  loader:{load:['[tex]/ams','a11y/assistive-mml']}};</script>
+<script id="MathJax-script" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--ink:#0D1B2A;--slate:#415A77;--amber:#E0A800;--bg:#FDFBF7;--rule:#dcd8d0;
+  /* Line length, in characters, so it holds at every font size. 46ch was at the
+     narrow end of the readable 45-75 band and left half the width empty. This
+     is the AT-HOME value; the projected build overrides it below, because there
+     the scarce thing is screen area, not eye travel -- the font is already
+     ~30px on a 1920 screen, so a longer line is still easy to scan and buys
+     fewer scroll steps. */
+  --measure:68ch}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  /* Projected on a 1920 screen this lands near 30px, which is legible from the
+     back of the room; on a laptop later it falls back to comfortable reading. */
+  font:clamp(17px,1.55vw,30px)/1.6 Georgia,'Times New Roman',serif}
+/* Projected: one beat per screen, and scroll-snap so it cannot land halfway and
+   expose the next thing. Read later: it is just a long page. */
+:root{--measure:88ch}
+main{scroll-snap-type:y proximity}
+.beat{scroll-snap-align:start;min-height:100vh}
+.beat{padding:2.4rem 6vw 3rem;
+  border-bottom:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center}
+h1{font-size:1.9rem;margin:0 0 .3rem}
+h2{font-size:1.6rem;line-height:1.25;margin:0 0 1.4rem;color:var(--ink)}
+h2.cont{color:var(--slate);font-size:1.3rem}
+p{margin:0 0 .9rem;max-width:var(--measure)}
+ul{max-width:var(--measure)}
+.turn{border-left:6px solid var(--amber);padding:.9rem 1.2rem;margin:1.2rem 0;background:#fffdf5}
+.turn.my{border-left-color:var(--slate);background:#f6f8fb}
+.badge{display:inline-block;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;background:var(--amber);color:#3a2c00;padding:.32rem .6rem;
+  border-radius:3px;margin-bottom:.7rem}
+.turn.my .badge{background:var(--slate);color:#fff}
+.turn .work{font-size:.85rem;color:var(--slate);font-style:italic;margin:.6rem 0 0}
+.key{border-left:6px solid var(--ink);background:#f2f3f5;padding:.9rem 1.2rem;margin:1.2rem 0}
+.sol.shown{margin:1.1rem 0;border-left:5px solid var(--slate);background:#fff;
+  padding:.7rem 1.1rem;border-radius:0 5px 5px 0}
+.sol-label{display:block;font:600 .78rem/1 system-ui,sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate);margin-bottom:.5rem}
+details.sol{margin:1.1rem 0;border:1px solid var(--rule);border-radius:5px;background:#fff}
+details.sol summary{cursor:pointer;padding:.75rem 1.1rem;font:600 .95rem system-ui,sans-serif;
+  color:var(--slate)}
+details.sol[open] summary{border-bottom:1px solid var(--rule)}
+details.sol > :not(summary){padding:0 1.1rem}
+details.sol > p:last-child{padding-bottom:.9rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem;
+  max-width:min(100%, calc(var(--measure) * 1.25))}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;margin:.6rem 0}
+table caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--slate);padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--rule);padding:.3rem .9rem .3rem 0;text-align:left}
+th{border-bottom:2px solid var(--ink)}
+.boxed{margin:1.1rem 0;padding:.8rem 1.1rem;border-radius:5px;background:#fff;
+  border:1px solid var(--rule)}
+.boxed.dfn{border-left:5px solid var(--ink)}
+.boxed.thm{border-left:5px solid var(--amber)}
+.boxed.ex{border-left:5px solid var(--slate)}
+.badge.dfn{background:var(--ink);color:#fff}
+.badge.thm{background:var(--amber);color:#3a2c00}
+.ex{margin:1rem 0}
+.workspace{min-height:5.5rem;border-bottom:1px dashed var(--rule);margin:.8rem 0 1.4rem}
+.badge.ex{background:var(--ink);color:#fff}
+.grid-item{margin:0}
+/* A figure is not prose. --measure is a READING measure -- how far the eye
+   travels across a line of text -- and has no business capping a diagram: on a
+   1920 projector it left roughly 370px empty beside every wide plot. So a
+   figure takes the full beat width and centres, and scale=N is now read as a
+   fraction of THAT, still centred, not of the reading measure. An img keeps
+   max-width (not width), so a small figure centres at its natural size instead
+   of being upscaled into blur.
+
+   No height cap: a beat is allowed to be taller than the screen. This is a
+   scrolling document, not a slide -- min-height:100vh is a floor. The
+   "over-tall slide scrolls its title away" rule belongs to the retired reveal
+   decks, which is why deck_check only geometry-checks when _slides.html
+   exists. */
+figure{margin:1.2rem auto;max-width:100%}
+figure img{max-width:100%;height:auto;display:block;margin:0 auto}
+button.zoom{padding:0;border:1px solid var(--rule);background:none;cursor:zoom-in;
+  border-radius:3px;display:block;max-width:100%}
+button.zoom:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+dialog.lb{border:none;padding:0;max-width:96vw;max-height:96vh;background:transparent}
+dialog.lb::backdrop{background:rgba(13,27,42,.88)}
+dialog.lb img{max-width:96vw;max-height:88vh;object-fit:contain;background:#fff}
+dialog.lb .close{position:absolute;top:.5rem;right:.75rem;font:1.6rem/1 system-ui,sans-serif;
+  background:#fff;border:1px solid var(--rule);border-radius:4px;cursor:pointer;padding:.1em .45em}
+figcaption{font-size:.85rem;color:var(--slate);margin-top:.4rem;text-align:center}
+header.top{padding:2rem 8vw 1rem;border-bottom:2px solid var(--ink)}
+header.top p{color:var(--slate);margin:.2rem 0 0}
+.dm{margin:.9rem 0;text-align:center}
+/* A derivation advanced by one button. [hidden] needs !important because .stp
+   sets display, which would otherwise win over the UA's hidden rule. */
+/* An equation chain. display:table so the three columns agree across rows --
+   that is the whole point: the = signs must line up. */
+.chain{display:table;margin:1.1rem 0 .4rem;border-collapse:collapse;
+  /* .beat is a column flexbox, which stretches its children to full width --
+     a shrink-to-fit table then became 1408px and the LHS floated to the far
+     right. align-self keeps the table the width of its own contents. */
+  align-self:start}
+.daybreak{display:flex;align-items:center;gap:1rem;margin:2.2rem 0 1.6rem;
+  color:var(--slate);font:600 .8rem/1 system-ui,sans-serif;letter-spacing:.1em;
+  text-transform:uppercase}
+.daybreak::before,.daybreak::after{content:"";flex:1;height:1px;
+  background:var(--rule)}
+.practicelink{margin:1.4rem 0 0}
+.practicelink a{display:inline-block;border:1px solid var(--amber);
+  border-radius:4px;padding:.45rem .9rem;color:var(--ink);text-decoration:none;
+  font:600 .9rem/1 system-ui,sans-serif;background:#fffdf5}
+.practicelink a:hover{background:var(--amber);color:#3a2c00}
+.chain.gen .ch-y{max-width:44ch;padding-left:1.6rem}
+.gc-cap{display:block;margin:0 0 .35rem;font:600 .82rem/1.3 system-ui,sans-serif;
+  letter-spacing:.02em;color:#5b6b7a;text-transform:uppercase}
+.ch-row{display:table-row}
+/* Row spacing. .12rem was fine while every row was one line tall, but a
+   chain whose rows are stacked fractions -- dividing inside a square root,
+   say -- ran them together with nothing to separate one step from the next.
+   These are table cells, so padding is the only lever; margin does nothing. */
+.ch-l,.ch-e,.ch-r,.ch-y{display:table-cell;vertical-align:middle;padding:.45rem 0}
+.ch-l{text-align:right}
+.ch-e{text-align:center;padding-left:.5rem;padding-right:.5rem}
+.ch-r{text-align:left}
+/* The reason column. Set back and lighter so the algebra still reads as the
+   line and the citation as an annotation on it, not a second equation. */
+.ch-y{text-align:left;padding-left:2.2rem;font-size:.82em;color:#5b6b7a;
+  font-style:italic;max-width:26ch}
+.chain [hidden]{display:none!important}
+@media print{.chain [hidden]{display:table-cell!important}
+  .chain .ch-row[hidden]{display:table-row!important}}
+.steps{margin:1.1rem 0}
+.steps .stp{display:block;margin:.2rem 0}
+.steps [hidden]{display:none!important}
+.chain button.more,
+.steps button.more,
+details.sol button.more{font:.8rem/1 system-ui,sans-serif;color:var(--amber);
+  background:none;border:1px solid var(--amber);border-radius:50%;
+  width:2rem;height:2rem;padding:0;cursor:pointer;margin-top:.5rem;
+  display:inline-flex;align-items:center;justify-content:center}
+.chain button.more:hover,
+.steps button.more:hover,
+details.sol button.more:hover{background:#fff8e2}
+.chain button.more:focus-visible,
+.steps button.more:focus-visible,
+details.sol button.more:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media print{.steps .stp{display:block!important}.steps button.more{display:none}}
+/* The in-page reveal. This used to be a text link to the twin page, and it was
+   missed constantly -- it looked like navigation, because it was. A filled
+   button that says what it does, in the first thing you see, is the fix. */
+/* --slate, not --blue: this palette has no --blue, and an undefined custom
+   property is not an error -- the background simply did not paint and the
+   button was white text on a cream page. Invisible, and working perfectly. */
+.revealall{font:600 1rem system-ui,sans-serif;cursor:pointer;
+  margin:.6rem 0 .2rem;padding:.55rem 1.1rem;border-radius:8px;
+  border:2px solid var(--slate);background:var(--slate);color:#fff}
+.revealall:hover{filter:brightness(1.12)}
+.revealall:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+.revealall[aria-pressed="true"]{background:var(--bg);color:var(--slate)}
+@media print{.revealall{display:none}}
+.switch{margin:.35rem 0 0}
+.switch a{font:.9rem system-ui,sans-serif;color:var(--blue);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px}
+.switch a:hover{border-bottom-width:2px}
+.switch a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media print{.switch{display:none}}
+.hint{position:fixed;right:1rem;bottom:1rem;font:.72rem system-ui,sans-serif;color:var(--slate);
+  background:#fff;border:1px solid var(--rule);border-radius:4px;padding:.35rem .6rem;opacity:.75}
+@media print{.beat{min-height:auto;page-break-inside:avoid}.hint{display:none}
+  details.sol{break-inside:avoid}details.sol summary{display:none}}
+</style></head>
+<body>
+<header class="top">
+  <h1>5.2 &nbsp;The Definite Integral</h1>
+  <p>MTH 207 Calculus I &mdash; Integrals</p>
+  <p class="switch"><button class="revealall" type="button" aria-pressed="false">Reveal all answers</button></p>
+</header>
+<main>
+<section class="beat" aria-label="The Bracket Gets a Name" data-source-line="57">
+  <h2>The Bracket Gets a Name</h2>
+<p>In §5.1 every estimate had the same shape &mdash; factor the width out once,
+then add up the heights:</p>
+<div class="dm">$$R_{4} = \Delta x\left[f(x_{1}) + f(x_{2}) + f(x_{3}) + f(x_{4})\right]$$</div>
+<p>That bracket is going to get long when $\displaystyle n$ is $\displaystyle 100$, so it gets a symbol.</p>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; Sigma Notation</span><div class="dm">$$\sum_{i=1}^{n} a_{i} = a_{1} + a_{2} + a_{3} + \cdots + a_{n}$$</div>
+<p>The $\displaystyle i$ is the <strong>index</strong>: it starts at the number below, climbs by one,
+and stops at the number above. It is a counter, not a variable of the problem.</p></div>
+  <div class="key"><p>Three things to read off every $\displaystyle \Sigma$: <strong>where the index
+starts</strong>, <strong>where it stops</strong>, and <strong>what changes as it climbs</strong>. The
+last one is the only one students get wrong.</p></div>
+</section>
+<section class="beat" aria-label="Your Turn: Read One, Then Write One" data-source-line="83">
+  <h2>Your Turn: Read One, Then Write One</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p><strong>(a)</strong> Write out $\displaystyle\sum_{i=1}^{5}(2i-1)$ term by
+term and add it up.
+<span style="display:block;height:0.2em"></span>
+<strong>(b)</strong> Now go the other way: write $\displaystyle 3 + 6 + 9 + 12 + \cdots + 30$ using
+$\displaystyle \Sigma$.</p></div>
+  <details class="sol"><summary>Show: (a)</summary>
+<p><strong>(a)</strong> The index runs $\displaystyle 1,2,3,4,5$ and the thing that changes is
+$\displaystyle 2i-1$:</p>
+<div class="dm">$$\sum_{i=1}^{5}(2i-1) = 1 + 3 + 5 + 7 + 9 = \mathbf{25}$$</div>
+<p><strong>(b)</strong> Every term is a multiple of $\displaystyle 3$, and the multipliers run $\displaystyle 1$
+through $\displaystyle 10$:</p>
+<div class="dm">$$3 + 6 + 9 + \cdots + 30 = \sum_{i=1}^{10} 3i$$</div>
+<p>⚠ There is more than one right answer here &mdash; $\displaystyle \sum_{i=3}^{30}$ with a
+different term would also work. What matters is that the three parts agree.</p>
+  </details>
+  <div class="key"><p>Going <em>backwards</em> is the harder direction and the one Riemann
+sums need: you will be handed a pattern and asked for the $\displaystyle \Sigma$.</p></div>
+</section>
+<section class="beat" aria-label="My Turn: A Riemann Sum That Works for Every $n$" data-source-line="109">
+  <h2>My Turn: A Riemann Sum That Works for Every $n$</h2>
+  <div class="turn my"><span class="badge">My turn</span><p>Take $\displaystyle f(x) = 4-x^{2}$ on $\displaystyle [0,2]$ again &mdash; but this time with $\displaystyle n$
+strips instead of four, and right endpoints. Write $\displaystyle R_{n}$ in $\displaystyle \Sigma$
+notation.</p></div>
+  <figure style="width:84%"><button type="button" class="zoom" data-src="figures/riemann_general_n.png" aria-label="Enlarge figure"><img src="figures/riemann_general_n.png" alt="A curve over an interval from a to b, cut into strips of
+     equal width. Only five strips are drawn, with gaps between them: the
+     first two labeled one and two, then an ellipsis, then a highlighted
+     strip labeled i, then another ellipsis, then the last two labeled n
+     minus one and n. The axis beneath is labeled x nought equals a, x one, x
+     two, then x i minus one and x i under the highlighted strip, then x n
+     minus one and x n equals b. The highlighted strip is annotated with its
+     width, Delta x, and its height, f of x i. A heading says every strip has
+     the same width, Delta x equals b minus a over n."></button></figure>
+  <details class="sol"><summary>Show: step 1 &mdash; the width, which no longer has a number</summary>
+<div class="dm">$$\Delta x = \frac{b-a}{n} = \frac{2-0}{n} = \frac{2}{n}$$</div>
+<p>With $\displaystyle n=4$ that is $\displaystyle \tfrac12$, which is what the four-strip estimate used.
+Now it stays a letter.</p>
+  </details>
+  <details class="sol"><summary>Show: step 2 &mdash; where is the $\displaystyle i$th right endpoint?</summary>
+<p>Start at $\displaystyle a$ and take $\displaystyle i$ steps of width $\displaystyle \Delta x$:</p>
+<div class="dm">$$x_{i} = a + i\,\Delta x = 0 + i\cdot\frac{2}{n} = \frac{2i}{n}$$</div>
+<p>⚠ Check it at the ends: $\displaystyle i=1$ gives $\displaystyle \tfrac2n$, the right edge of the first
+strip, and $\displaystyle i=n$ gives $\displaystyle 2$, the right edge of the last. That check costs five
+seconds and catches an off-by-one.</p>
+  </details>
+  <details class="sol"><summary>Show: step 3 &mdash; the height, then the sum</summary>
+<p>The height of the $\displaystyle i$th rectangle is $\displaystyle f$ evaluated there:</p>
+<div class="dm">$$f(x_{i}) = 4 - \left(\frac{2i}{n}\right)^{2} = 4 - \frac{4i^{2}}{n^{2}}$$</div>
+<div class="dm">$$R_{n} = \sum_{i=1}^{n} f(x_{i})\,\Delta x = \sum_{i=1}^{n}\left(4 - \frac{4i^{2}}{n^{2}}\right)\frac{2}{n}$$</div>
+  </details>
+  <div class="key"><p><strong>That is the whole setup, and it is three questions every
+time.</strong> How wide is a strip? Where is the $\displaystyle i$th sample point? What is $\displaystyle f$
+there? ⚠ All three are on the picture &mdash; $\displaystyle \Delta x$ under the $\displaystyle i$th strip,
+$\displaystyle x_{i}$ on the axis, $\displaystyle f(x_{i})$ up its side. ⚠ Nothing has been evaluated &mdash; $\displaystyle n$ is still a letter, and that is
+exactly what lets us take a limit.</p></div>
+</section>
+<section class="beat" aria-label="Three Sums, and Two Rules for Breaking Them Up" data-source-line="163">
+  <h2>Three Sums, and Two Rules for Breaking Them Up</h2>
+<p>To turn that $\displaystyle \Sigma$ into a formula in $\displaystyle n$, you need these. Stewart gives
+them; the exam gives you the third one.</p>
+<div class="dm">$$\sum_{i=1}^{n} 1 = n \qquad \sum_{i=1}^{n} i = \frac{n(n+1)}{2} \qquad \sum_{i=1}^{n} i^{2} = \frac{n(n+1)(2n+1)}{6}$$</div>
+<p>And two rules that let you split a messy sum into those pieces:</p>
+<div class="dm">$$\sum_{i=1}^{n}\left(a_{i} + b_{i}\right) = \sum_{i=1}^{n} a_{i} + \sum_{i=1}^{n} b_{i} \qquad\qquad \sum_{i=1}^{n} c\,a_{i} = c\sum_{i=1}^{n} a_{i}$$</div>
+  <div class="key"><p>⚠ <strong>A constant comes out, and $\displaystyle n$ is a constant here.</strong> Inside
+$\displaystyle \sum_{i=1}^{n}$ the only thing that changes is $\displaystyle i$ &mdash; so $\displaystyle \tfrac{2}{n}$ and
+$\displaystyle \tfrac{4}{n^{2}}$ both come straight out of the sum. That single observation
+is what makes the algebra ahead short instead of hopeless.</p></div>
+</section>
+<section class="beat" aria-label="Your Turn: Set Up, Do Not Evaluate" data-source-line="185">
+  <h2>Your Turn: Set Up, Do Not Evaluate</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Let $\displaystyle f(x) = x + 1$ on $\displaystyle [0,2]$, with $\displaystyle n$ strips and <strong>right</strong>
+endpoints. Write $\displaystyle R_{n}$ in $\displaystyle \Sigma$ notation &mdash; the same three questions as
+the My Turn. Stop before you evaluate anything.</p></div>
+  <details class="sol"><summary>Show: Width</summary>
+<p><strong>Width</strong>: $\displaystyle \Delta x = \dfrac{2-0}{n} = \dfrac{2}{n}$.
+<span style="display:block;height:0.2em"></span>
+<strong>Sample point</strong>: $\displaystyle x_{i} = 0 + i\cdot\dfrac{2}{n} = \dfrac{2i}{n}$.
+Check: $\displaystyle i=n$ gives $\displaystyle 2$. Good.
+<span style="display:block;height:0.2em"></span>
+<strong>Height</strong>: $\displaystyle f(x_{i}) = \dfrac{2i}{n} + 1$.</p>
+<div class="dm">$$R_{n} = \sum_{i=1}^{n}\left(\frac{2i}{n} + 1\right)\frac{2}{n}$$</div>
+  </details>
+  <div class="key"><p>Shortly this becomes a number. ⚠ Notice which sum formula this one
+will need &mdash; there is an $\displaystyle i$ but no $\displaystyle i^{2}$, so $\displaystyle \sum i$ and $\displaystyle \sum 1$ will
+finish it and $\displaystyle \sum i^{2}$ will not appear.</p></div>
+</section>
+<section class="beat" aria-label="The Definition, and Its Own Symbol" data-source-line="214">
+  <h2>The Definition, and Its Own Symbol</h2>
+<p>We built $\displaystyle R_{n}$ and stopped there. Now let $\displaystyle n$ run.</p>
+<div class="boxed dfn"><span class="badge dfn">Definition &mdash; The Definite Integral</span><p>If $\displaystyle f$ is continuous on $\displaystyle [a,b]$, cut the interval into $\displaystyle n$ equal strips of
+width $\displaystyle \Delta x = \frac{b-a}{n}$ and pick any sample point $\displaystyle x_{i}^{*}$ in the
+$\displaystyle i$th strip. Then</p>
+<div class="dm">$$\int_{a}^{b} f(x)\,dx = \lim_{n \to \infty} \sum_{i=1}^{n} f(x_{i}^{*})\,\Delta x$$</div></div>
+  <div class="key"><p>Read the symbol against the sum it came from. The $\displaystyle \int$ is a
+stretched $\displaystyle S$ for “sum”; the $\displaystyle dx$ is what $\displaystyle \Delta x$ became; $\displaystyle a$ and $\displaystyle b$ are
+where the index starts and stops. ⚠ The $\displaystyle \ast$ on $\displaystyle x_{i}^{*}$ says
+<em>any</em> sample point &mdash; left, right or middle &mdash; because §5.1 showed they
+all march to the same number.</p></div>
+</section>
+<section class="beat" aria-label="Four Parts, and One of Them Is a Decoy" data-source-line="238">
+  <h2>Four Parts, and One of Them Is a Decoy</h2>
+<div class="dm">$$\int_{\underbrace{a}_{\text{start}}}^{\overbrace{b}^{\text{stop}}} \underbrace{f(x)}_{\text{integrand}}\ \underbrace{dx}_{\text{which letter}}$$</div>
+  <div class="turn your"><span class="badge">Your turn</span><p>Is $\displaystyle\int_{0}^{3} t^{2}\,dt$ the same number as
+$\displaystyle\int_{0}^{3} x^{2}\,dx$?</p></div>
+  <details class="sol"><summary>Show: Yes &ndash;- they are the same number</summary>
+<p><strong>Yes &mdash; they are the same number.</strong> The letter is a
+<strong>dummy variable</strong>: it names the thing the index sweeps and then
+disappears when the limit is taken. Rename it to anything you like.
+<span style="display:block;height:0.2em"></span>
+⚠ What you may <em>not</em> do is reuse a letter that already means something
+else in the problem &mdash; which is why §5.3 will be fussy about
+$\displaystyle \int_{a}^{x} f(t)\,dt$.</p>
+  </details>
+  <div class="key"><p>The $\displaystyle dx$ is not decoration and it is not a multiplication. It tells
+you which letter is being swept, and it is the fossil of the $\displaystyle \Delta x$ that
+every term carried.</p></div>
+</section>
+<section class="beat" aria-label="My Turn: Finish What §5.1 Started" data-source-line="263">
+  <h2>My Turn: Finish What §5.1 Started</h2>
+  <div class="turn my"><span class="badge">My turn</span><p>Evaluate $\displaystyle\int_{0}^{2}\left(4-x^{2}\right)dx$ as a limit
+of Riemann sums &mdash; using the setup we already built.</p></div>
+  <details class="sol"><summary>Show: where we left it</summary>
+<div class="dm">$$R_{n} = \sum_{i=1}^{n}\left(4 - \frac{4i^{2}}{n^{2}}\right)\frac{2}{n}$$</div>
+  </details>
+  <div class="chain gen" aria-live="polite">
+    <p class="gc-cap">one move at a time &mdash; every row is the same number</p>
+    <div class="ch-row"><span class="ch-r">$\displaystyle R_{n} = \frac{2}{n}\sum_{i=1}^{n}\left(4 - \frac{4i^{2}}{n^{2}}\right)$</span><span class="ch-y">$\displaystyle \frac{2}{n}$ does not depend on $\displaystyle i$, so it comes out front</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle R_{n} = \frac{2}{n}\left[\sum_{i=1}^{n} 4 \;-\; \sum_{i=1}^{n}\frac{4i^{2}}{n^{2}}\right]$</span><span class="ch-y">the sum of a difference splits into two sums</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle R_{n} = \frac{2}{n}\left[\sum_{i=1}^{n} 4 \;-\; \frac{4}{n^{2}}\sum_{i=1}^{n} i^{2}\right]$</span><span class="ch-y">$\displaystyle \frac{4}{n^{2}}$ has no $\displaystyle i$ in it either, so it comes out too</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle R_{n} = \frac{2}{n}\left[4n \;-\; \frac{4}{n^{2}}\sum_{i=1}^{n} i^{2}\right]$</span><span class="ch-y">$\displaystyle \sum 4 = 4n$ &mdash; adding $\displaystyle 4$ to itself $\displaystyle n$ times</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle R_{n} = \frac{2}{n}\left[4n \;-\; \frac{4}{n^{2}}\cdot\frac{n(n+1)(2n+1)}{6}\right]$</span><span class="ch-y">the $\displaystyle \sum i^{2}$ formula</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle R_{n} = 8 \;-\; \frac{8(n+1)(2n+1)}{6n^{2}}$</span><span class="ch-y">multiply the $\displaystyle \frac{2}{n}$ through both terms</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle R_{n} = 8 \;-\; \frac{4(n+1)(2n+1)}{3n^{2}}$</span><span class="ch-y">reduce $\displaystyle \frac{8}{6}$ to $\displaystyle \frac{4}{3}$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle R_{n} = 8 \;-\; \frac{4\left(2n^{2}+3n+1\right)}{3n^{2}}$</span><span class="ch-y">expand $\displaystyle (n+1)(2n+1)$</span></div>
+    <div class="ch-row rv" hidden><span class="ch-r">$\displaystyle R_{n} = \frac{16}{3} - \frac{4}{n} - \frac{4}{3n^{2}}$</span><span class="ch-y">divide term by term &mdash; a function of $\displaystyle n$ alone</span></div>
+    <button type="button" class="more" aria-label="Next step of one move at a time &mdash; every row is the same number">&#9654;</button>
+  </div>
+  <details class="sol"><summary>Show: now let $\displaystyle n \to \infty$</summary>
+<p>The last two terms go to zero:</p>
+<div class="dm">$$\int_{0}^{2}\left(4-x^{2}\right)dx = \lim_{n\to\infty}\left(\frac{16}{3} - \frac{4}{n} - \frac{4}{3n^{2}}\right) = \mathbf{\frac{16}{3}}$$</div>
+<p>⚠ Put $\displaystyle n=4$ into that formula: $\displaystyle \frac{16}{3} - 1 - \frac{1}{12} = \frac{17}{4} = 4.25$ &mdash; which is
+exactly the $\displaystyle R_{4}$ computed by hand in §5.1.</p>
+  </details>
+  <div class="key"><p>⚠ <strong>That is the number §5.1 could not name.</strong> §5.1
+watched $\displaystyle 4.25,\ 4.81,\ 5.13$ climb and could only say it was heading
+somewhere. It was heading here.</p></div>
+</section>
+<section class="beat" aria-label="Your Turn: One You Can Check by Geometry" data-source-line="303">
+  <h2>Your Turn: One You Can Check by Geometry</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Evaluate $\displaystyle\int_{0}^{2}\left(x+1\right)dx$ as a limit of
+Riemann sums, starting from the setup
+$\displaystyle R_{n} = \sum_{i=1}^{n}\left(\frac{2i}{n}+1\right)\frac{2}{n}$.
+<span style="display:block;height:0.2em"></span>
+Then check your answer a second way, without any calculus at all.</p></div>
+  <details class="sol"><summary>Show: Pull 2 n out and split: R_&hellip;</summary>
+<p>Pull $\displaystyle \frac{2}{n}$ out and split:</p>
+<div class="dm">$$R_{n} = \frac{2}{n}\left[\frac{2}{n}\sum_{i=1}^{n} i \;+\; \sum_{i=1}^{n} 1\right] = \frac{2}{n}\left[\frac{2}{n}\cdot\frac{n(n+1)}{2} + n\right]$$</div>
+<div class="dm">$$R_{n} = \frac{2}{n}\left[(n+1) + n\right] = \frac{2(2n+1)}{n} = 4 + \frac{2}{n}$$</div>
+<div class="dm">$$\int_{0}^{2}(x+1)\,dx = \lim_{n\to\infty}\left(4 + \frac{2}{n}\right) = \mathbf{4}$$</div>
+<p><strong>The check</strong>: $\displaystyle y = x+1$ is a straight line, so the region is a
+<strong>trapezoid</strong> with parallel sides $\displaystyle f(0)=1$ and $\displaystyle f(2)=3$ and width $\displaystyle 2$:</p>
+<div class="dm">$$\frac{1+3}{2}\cdot 2 = 4 \quad\checkmark$$</div>
+  </details>
+  <div class="key"><p>⚠ <strong>No $\displaystyle \sum i^{2}$ appeared.</strong> The integrand was linear, so
+only $\displaystyle \sum i$ and $\displaystyle \sum 1$ were needed. Look at the power of $\displaystyle x$ before you
+reach for a formula.</p></div>
+</section>
+<section class="beat" aria-label="When the Integral Is Not the Area" data-source-line="330">
+  <h2>When the Integral Is Not the Area</h2>
+<p>Every strip so far sat above the axis. If $\displaystyle f$ dips below, its rectangles have
+<strong>negative</strong> height &mdash; and the sum subtracts them.</p>
+  <figure style="width:74%"><button type="button" class="zoom" data-src="figures/signed_area.png" aria-label="Enlarge figure"><img src="figures/signed_area.png" alt="The curve y equals x squared minus one on the interval
+     from zero to two. The region between the curve and the axis from zero to
+     one lies below the axis and is shaded red, labeled counts minus two
+     thirds. The region from one to two lies above the axis, shaded green,
+     labeled counts plus four thirds. Two lines of text record that the
+     integral equals four thirds minus two thirds, which is two thirds, while
+     the geometric area equals four thirds plus two thirds, which is
+     two."></button></figure>
+  <div class="key"><p>⚠ <strong>Two different numbers, and the integral is the smaller
+one.</strong> $\displaystyle \int_{0}^{2}(x^{2}-1)\,dx = \frac{2}{3}$, but the <em>area</em> of the
+region between the curve and the axis is $\displaystyle 2$. They agree only when
+$\displaystyle f \ge 0$ across the whole interval.</p></div>
+</section>
+<section class="beat" aria-label="Five Properties, and Where Each One Comes From" data-source-line="369">
+  <h2>Five Properties, and Where Each One Comes From</h2>
+<p>Every one of these falls out of the sum it came from &mdash; none needs to be
+memorized as a separate fact.</p>
+<ul><li>$\displaystyle \int_{a}^{b} c\,dx = c(b-a)$   &mdash; a rectangle:
+      height $\displaystyle c$, width $\displaystyle b-a$.</li><li>$\displaystyle \int_{a}^{b}\left[f(x) \pm g(x)\right]dx = \int_{a}^{b} f(x)\,dx \pm \int_{a}^{b} g(x)\,dx$</li><li>$\displaystyle \int_{a}^{b} c\,f(x)\,dx = c\int_{a}^{b} f(x)\,dx$  
+      &mdash; a constant came out of the $\displaystyle \Sigma$, so it comes out of the $\displaystyle \int$.</li><li>$\displaystyle \int_{a}^{b} f(x)\,dx = \int_{a}^{c} f(x)\,dx + \int_{c}^{b} f(x)\,dx$   &mdash; cut the interval, add the pieces.</li><li>$\displaystyle \int_{b}^{a} f(x)\,dx = -\int_{a}^{b} f(x)\,dx$,   and   $\displaystyle\int_{a}^{a} f(x)\,dx = 0$.</li></ul>
+  <div class="key"><p>⚠ <strong>The first one is the one that gets dropped.</strong>
+$\displaystyle \int_{a}^{b} c\,dx$ is <em>not</em> $\displaystyle c$ &mdash; the width matters. And the last
+one is why direction has meaning: running the sum backwards flips the sign of
+every $\displaystyle \Delta x$.</p></div>
+</section>
+<section class="beat" aria-label="My Turn: Name the Property on Every Line" data-source-line="396">
+  <h2>My Turn: Name the Property on Every Line</h2>
+  <div class="turn my"><span class="badge">My turn</span><p>Suppose $\displaystyle\int_{0}^{3} g(x)\,dx = 8$ and
+$\displaystyle\int_{3}^{5} g(x)\,dx = -5$. Find
+$\displaystyle\int_{0}^{5} g(x)\,dx$,  $\displaystyle\int_{5}^{3} g(x)\,dx$,
+ and $\displaystyle\int_{0}^{3}\left(2g(x)-4\right)dx$.</p></div>
+  <details class="sol"><summary>Show: (a) &mdash; the pieces join</summary>
+<div class="dm">$$\int_{0}^{5} g(x)\,dx = \int_{0}^{3} g(x)\,dx + \int_{3}^{5} g(x)\,dx = 8 + (-5) = \mathbf{3}$$</div>
+<p><strong>Property</strong>: cutting the interval at $\displaystyle 3$ and adding the pieces.</p>
+  </details>
+  <details class="sol"><summary>Show: (b) &mdash; the limits are backwards</summary>
+<div class="dm">$$\int_{5}^{3} g(x)\,dx = -\int_{3}^{5} g(x)\,dx = -(-5) = \mathbf{5}$$</div>
+<p><strong>Property</strong>: reversing the limits flips the sign. ⚠ A negative integral
+that becomes positive is not a mistake.</p>
+  </details>
+  <details class="sol"><summary>Show: (c) &mdash; split, then the constant</summary>
+<div class="dm">$$\int_{0}^{3}\left(2g(x)-4\right)dx = 2\int_{0}^{3} g(x)\,dx - \int_{0}^{3} 4\,dx$$</div>
+<div class="dm">$$= 2(8) - 4(3-0) = 16 - 12 = \mathbf{4}$$</div>
+<p><strong>Properties</strong>: linearity for the split and the $\displaystyle 2$, then
+$\displaystyle \int_{a}^{b} c\,dx = c(b-a)$ for the $\displaystyle 4$. ⚠ The second term is $\displaystyle 12$, not
+$\displaystyle 4$ &mdash; the width is $\displaystyle 3$.</p>
+  </details>
+  <div class="key"><p><strong>Write the property beside the line.</strong> Exam 3 asks for it in
+words, and a right number with no reason does not show you knew which rule
+applied.</p></div>
+</section>
+<section class="beat" aria-label="Your Turn: One Runs Backwards" data-source-line="433">
+  <h2>Your Turn: One Runs Backwards</h2>
+  <div class="turn your"><span class="badge">Your turn</span><p>Suppose $\displaystyle\int_{1}^{5} h(x)\,dx = 10$ and
+$\displaystyle\int_{1}^{3} h(x)\,dx = 4$. Find, naming the property each time:
+<span style="display:block;height:0.2em"></span>
+<strong>(a)</strong> $\displaystyle\int_{3}^{5} h(x)\,dx$   
+<strong>(b)</strong> $\displaystyle\int_{5}^{1} h(x)\,dx$   
+<strong>(c)</strong> $\displaystyle\int_{1}^{3}\left(3h(x)+2\right)dx$</p></div>
+  <details class="sol"><summary>Show: (a)</summary>
+<p><strong>(a)</strong> The pieces rule runs <em>backwards</em> here &mdash; you are
+given the whole and one piece, so subtract:</p>
+<div class="dm">$$\int_{1}^{5} h = \int_{1}^{3} h + \int_{3}^{5} h \ \Longrightarrow\ \int_{3}^{5} h(x)\,dx = 10 - 4 = \mathbf{6}$$</div>
+<p><strong>(b)</strong> Reversing the limits:</p>
+<div class="dm">$$\int_{5}^{1} h(x)\,dx = -\int_{1}^{5} h(x)\,dx = \mathbf{-10}$$</div>
+<p><strong>(c)</strong> Linearity, then the constant &mdash; and the width is $\displaystyle 3-1=2$:</p>
+<div class="dm">$$\int_{1}^{3}\left(3h(x)+2\right)dx = 3(4) + 2(3-1) = 12 + 4 = \mathbf{16}$$</div>
+  </details>
+  <div class="key"><p>⚠ <strong>(a) is the one that catches people.</strong> Every worked example
+adds the two pieces; here you are handed the total and have to run the same
+property in reverse. The property is identical &mdash; the algebra is not.</p></div>
+</section>
+<section class="beat" aria-label="What You Should Be Able to Do" data-source-line="460">
+  <h2>What You Should Be Able to Do</h2>
+<ul><li>Write a Riemann sum in $\displaystyle \Sigma$ notation for a general $\displaystyle n$ &mdash; width,
+      sample point, height.</li><li>Turn that sum into a formula in $\displaystyle n$ using $\displaystyle \sum 1$, $\displaystyle \sum i$,
+      $\displaystyle \sum i^{2}$, then take $\displaystyle n \to \infty$.</li><li>Say why the integral is <strong>signed</strong> area, and when it is not the
+      geometric area.</li><li>Use the properties &mdash; and <strong>name</strong> the one you used.</li></ul>
+  <div class="key"><p>⚠ Two of these are on Exam 3 as full questions: the limit of
+Riemann sums, and the properties with their names. Neither is a place to
+guess and move on.</p></div>
+</section>
+</main>
+<p class="hint">14 sections &middot; solutions open on click</p>
+<dialog class="lb" aria-label="Enlarged figure">
+  <button class="close" aria-label="Close">&times;</button><img alt="Enlarged figure">
+</dialog>
+<script>
+// Editor scroll-sync. Same protocol the filled/blank builds use, so the editor
+// side needs no new message types: we post htmlSectionChanged as the reader
+// scrolls, and honour goToSection when the cursor moves in the tex.
+(function(){
+  if(!window.parent || window.parent===window) return;
+  var secs=document.querySelectorAll('main > section[data-source-line]');
+  if(!secs.length) return;
+  var cur=null, t=null;
+  function report(){
+    // the section covering 30% down the viewport -- the one being read, not
+    // the one clipped at the top edge
+    var mark=window.innerHeight*0.3, best=null;
+    for(var i=0;i<secs.length;i++){
+      var r=secs[i].getBoundingClientRect();
+      if(r.top<=mark && r.bottom>0) best=secs[i];
+    }
+    if(!best) return;
+    var line=parseInt(best.dataset.sourceLine,10);
+    if(!isNaN(line) && line!==cur){
+      cur=line;
+      window.parent.postMessage({type:'htmlSectionChanged',sourceLine:line},'*');
+    }
+  }
+  addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(report,80);},
+                   {passive:true});
+  addEventListener('message',function(e){
+    if(!e.data || e.data.type!=='goToSection' || e.data.sourceLine==null) return;
+    // nearest section at or before the cursor: a cursor inside a frame should
+    // scroll to that frame, not fail to match its exact opening line
+    var best=null;
+    for(var i=0;i<secs.length;i++){
+      if(parseInt(secs[i].dataset.sourceLine,10)<=e.data.sourceLine) best=secs[i];
+    }
+    if(best){ cur=parseInt(best.dataset.sourceLine,10);
+              best.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+})();
+// ── Advancing the page ────────────────────────────────────────────────────
+// One action, whether it arrives from a block's own arrow or from a key. A
+// presentation remote is just a USB keyboard sending Right/PageDown, so making
+// the page respond to those keys is all a clicker needs -- no pairing, no app.
+//
+// The order is document order within the section you are looking at: chain
+// rows, step lines and closed reveals alike. When a section has nothing left
+// hidden, the next press moves to the next section. That is the slide feel,
+// on a scrolling page.
+(function(){
+  function units(sec){
+    return [].slice.call(sec.querySelectorAll('.rv, .stp, details.sol'));
+  }
+  function covered(u){
+    return u.tagName === 'DETAILS' ? !u.open : u.hidden;
+  }
+  function uncover(u, yes){
+    if(u.tagName === 'DETAILS'){ u.open = yes; } else { u.hidden = !yes; }
+    pair(u, yes);
+  }
+  // Anything marked .pair in the same chain row rides with it.
+  function pair(u, yes){
+    var row = u.closest ? u.closest('.ch-row') : null;
+    if(!row) return;
+    [].forEach.call(row.querySelectorAll('.pair'), function(p){ p.hidden = !yes; });
+  }
+  function tidy(sec){
+    // a block's arrow retires once that block has nothing left to give
+    [].forEach.call(sec.querySelectorAll('.steps, .chain'), function(box){
+      var b = box.querySelector('button.more');
+      if(b) b.hidden = !box.querySelector('.rv[hidden], .stp[hidden]');
+    });
+  }
+  function sections(){
+    return [].slice.call(document.querySelectorAll('main > section.beat'));
+  }
+  function here(){
+    var mark = window.innerHeight * 0.3, best = null;
+    sections().forEach(function(s){
+      var r = s.getBoundingClientRect();
+      if(r.top <= mark && r.bottom > 0) best = s;
+    });
+    return best || sections()[0];
+  }
+  function go(sec, d){
+    var all = sections(), i = all.indexOf(sec) + d;
+    if(i >= 0 && i < all.length) all[i].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.__advance = function(d){
+    var sec = here();
+    if(!sec) return;
+    var us = units(sec);
+    if(d > 0){
+      for(var i = 0; i < us.length; i++){
+        if(covered(us[i])){
+          uncover(us[i], true); tidy(sec);
+          us[i].scrollIntoView({block:'nearest'});
+          return;
+        }
+      }
+      go(sec, 1);
+    } else {
+      for(var j = us.length - 1; j >= 0; j--){
+        if(!covered(us[j])){ uncover(us[j], false); tidy(sec); return; }
+      }
+      go(sec, -1);
+    }
+  };
+  var FWD = {ArrowRight:1, ArrowDown:1, PageDown:1, ' ':1, Enter:1, Spacebar:1};
+  var BACK = {ArrowLeft:1, ArrowUp:1, PageUp:1, Backspace:1};
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    // let a focused control have its own keys
+    var t = e.target;
+    if(t && t.closest && t.closest('button, a, summary, input, textarea, dialog')) return;
+    if(FWD[e.key]){ e.preventDefault(); window.__advance(1); }
+    else if(BACK[e.key]){ e.preventDefault(); window.__advance(-1); }
+  });
+
+  // Reveal-all. Drives the same uncover() every other control uses, so a page
+  // opened this way ends in exactly the state stepping through would leave it.
+  var ra = document.querySelector('.revealall');
+  if(ra) ra.addEventListener('click', function(){
+    var on = ra.getAttribute('aria-pressed') === 'true';
+    [].forEach.call(sections(), function(sec){
+      units(sec).forEach(function(u){ uncover(u, !on); });
+      tidy(sec);
+    });
+    ra.setAttribute('aria-pressed', on ? 'false' : 'true');
+    ra.textContent = on ? 'Reveal all answers' : 'Hide all answers';
+  });
+})();
+
+// One button per derivation: each press uncovers the next line.
+(function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.steps > button.more, .chain > button.more, details.sol > button.more');
+    if(!b) return;
+    var box=b.parentElement;
+    // .rv marks a revealable unit: a whole step block, a chain row, or the
+    // right-hand side of the chain's first row. One selector covers all three.
+    var next=box.querySelector('.rv[hidden], .stp[hidden]');
+    if(next){
+      next.hidden=false;
+      // its citation, if it has one, arrives on the same press
+      var row=next.closest?next.closest('.ch-row'):null;
+      if(row) [].forEach.call(row.querySelectorAll('.pair'),
+                              function(p){ p.hidden=false; });
+    }
+    if(!box.querySelector('.rv[hidden], .stp[hidden]')) b.hidden=true;
+  });
+})();
+(function(){
+  var dlg=document.querySelector('dialog.lb'), img=dlg.querySelector('img');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button.zoom');
+    if(b){ img.src=b.dataset.src;
+           img.alt=b.querySelector('img').alt;   // carry the real alt text over
+           dlg.showModal(); return; }
+    if(e.target.closest('dialog.lb .close') || e.target===dlg) dlg.close();
+  });
+  dlg.addEventListener('close',function(){ img.removeAttribute('src'); });
+})();
+</script>
+</body></html>
